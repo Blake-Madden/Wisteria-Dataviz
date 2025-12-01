@@ -410,8 +410,7 @@ namespace Wisteria::Graphs
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @}
 

@@ -91,8 +91,7 @@ namespace Wisteria::Graphs
                 This is useful if using a hatched brush, as this color will be solid
                 and show underneath it. Leave as @c nullptr just to use the brush scheme.*/
         explicit CategoricalBarChart(
-            Canvas* canvas,
-            const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
+            Canvas* canvas, const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
             const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr)
             : BarChart(canvas)
             {

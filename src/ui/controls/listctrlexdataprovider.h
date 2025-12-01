@@ -274,8 +274,7 @@ namespace Wisteria::UI
         virtual void
         SetItemText(size_t row, size_t column, const wxString& text,
                     NumberFormatInfo format =
-                        NumberFormatInfo{
-                            NumberFormatInfo::NumberFormatType::StandardFormatting },
+                        NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
                     double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
         /// @returns The row's attributes (visual look).
         /// @param row The row to return.
@@ -369,7 +368,7 @@ namespace Wisteria::UI
             {
             // Insert a mapping of empty string to ID #1 before anything else is inserted.
             // If a client wants to create an empty string label, then that will already be in here.
-            std::pair<LabelIDMap::const_iterator, bool> const insertionPos =
+            const std::pair<LabelIDMap::const_iterator, bool> insertionPos =
                 m_labelsInUse.insert(std::make_pair(wxString{}, m_currentLabelId));
             m_labelsMap.insert(std::make_pair(m_currentLabelId, insertionPos.first));
             }
@@ -1220,8 +1219,7 @@ namespace Wisteria::UI
         void
         SetItemText(const size_t row, const size_t column, const wxString& text,
                     const NumberFormatInfo format =
-                        NumberFormatInfo{
-                            NumberFormatInfo::NumberFormatType::StandardFormatting },
+                        NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
                     const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
             {
             DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
