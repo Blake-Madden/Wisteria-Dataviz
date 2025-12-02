@@ -114,7 +114,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
 
                 while (++i < text_length)
                     {
-                    if (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
+                    if (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))) != 0)
                         {
                         break;
                         }
@@ -143,14 +143,14 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 // skip any newlines in the file between the ')'
                 // and the first command of the next text section
                 while (i + 1 < text_length &&
-                       std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))))
+                       (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))) != 0))
                     {
                     ++i;
                     }
                 long horizontalPosition{ 10 };
                 if (i + 1 < text_length &&
                     (*std::next(ps_buffer, i + 1) == '-' ||
-                     std::iswdigit(static_cast<wchar_t>(*std::next(ps_buffer, i + 1)))))
+                     (std::iswdigit(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))) != 0)))
                     {
                     horizontalPosition = std::strtol(std::next(ps_buffer, i + 1), nullptr, 10);
                     }
@@ -182,7 +182,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         newLineCommandFound = true;
                         }
 
-                    if (!std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
+                    if (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))) == 0)
                         {
                         commandChar = *std::next(ps_buffer, i);
                         }

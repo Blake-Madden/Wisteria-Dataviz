@@ -25,7 +25,6 @@
 #include <wx/imaglist.h>
 #include <wx/mimetype.h>
 #include <wx/paper.h>
-#include <wx/print.h>
 #include <wx/ribbon/buttonbar.h>
 #include <wx/spinctrl.h>
 #include <wx/tokenzr.h>
@@ -37,7 +36,6 @@
 #endif
 #include "../../base/canvas.h"
 #include "../../math/mathematics.h"
-#include "../../util/donttranslate.h"
 #include "../../util/fileutil.h"
 #include "../dialogs/gridexportdlg.h"
 #include "../dialogs/listctrlitemviewdlg.h"

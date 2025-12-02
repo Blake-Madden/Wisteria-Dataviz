@@ -340,13 +340,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
 
         // plot the points
         const auto& wordsRuler{ GetCustomAxes()[0] };
-        m_jitterWords.SetJitterWidth(wordsRuler.CalcTickMarkOuterWidth() * 2);
+        m_jitterWords.SetJitterWidth(static_cast<size_t>(wordsRuler.CalcTickMarkOuterWidth()) * 2);
 
         const auto& middleRuler{ GetCustomAxes()[1] };
-        m_jitterScores.SetJitterWidth(middleRuler.CalcTickMarkOuterWidth() * 2);
+        m_jitterScores.SetJitterWidth(static_cast<size_t>(middleRuler.CalcTickMarkOuterWidth()) *
+                                      2);
 
         const auto& syllablesRuler{ GetCustomAxes()[2] };
-        m_jitterSyllables.SetJitterWidth(syllablesRuler.CalcTickMarkOuterWidth() * 2);
+        m_jitterSyllables.SetJitterWidth(
+            static_cast<size_t>(syllablesRuler.CalcTickMarkOuterWidth()) * 2);
 
         auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());

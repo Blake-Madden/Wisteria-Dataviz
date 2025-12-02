@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __PPTX_TEXT_EXTRACT_H__
-#define __PPTX_TEXT_EXTRACT_H__
+#ifndef PPTX_TEXT_EXTRACT_H
+#define PPTX_TEXT_EXTRACT_H
 
 #include "html_extract_text.h"
 
@@ -145,7 +145,8 @@ namespace lily_of_the_valley
                     if ((start == nullptr) || start > endSentinel)
                         {
                         if (get_filtered_text_length() > 0 &&
-                            !std::iswspace(get_filtered_text()[get_filtered_text_length() - 1]))
+                            (std::iswspace(get_filtered_text()[get_filtered_text_length() - 1]) ==
+                             0))
                             {
                             add_character(L' ');
                             }
@@ -227,4 +228,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__PPTX_TEXT_EXTRACT_H__
+#endif // PPTX_TEXT_EXTRACT_H

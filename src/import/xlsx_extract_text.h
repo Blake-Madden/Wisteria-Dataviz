@@ -33,7 +33,7 @@ namespace lily_of_the_valley
                 This is recommended @c false if cells represent complex text and tabs and
                 newlines should be preserved.*/
         xlsx_string_table_parse(const wchar_t* html_text, const size_t length,
-                                const bool removeNewlinesAndTabs) noexcept
+                                const bool removeNewlinesAndTabs)
             : m_html_text(html_text), m_html_text_end(html_text + length),
               m_removeNewlinesAndTabs(removeNewlinesAndTabs)
             {
@@ -175,7 +175,7 @@ namespace lily_of_the_valley
 
             /// @brief Sets the string value of the cell.
             /// @param value The value for the cell.
-            void set_value(const std::wstring& value) noexcept { m_value = value; }
+            void set_value(const std::wstring& value) { m_value = value; }
 
             /// @returns The cell's value.
             [[nodiscard]]
@@ -349,7 +349,7 @@ namespace lily_of_the_valley
                 loaded via read_shared_strings().
             @param index The (zero-based) index into the string table.*/
         [[nodiscard]]
-        std::wstring get_shared_string(const size_t index) const noexcept
+        std::wstring get_shared_string(const size_t index) const
             {
             return (index < get_shared_strings().size()) ? get_shared_strings()[index] :
                                                            std::wstring();

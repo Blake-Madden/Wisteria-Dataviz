@@ -273,16 +273,8 @@ namespace Wisteria::UI
                 for when it is compared to other cells during a sort operation.*/
         virtual void
         SetItemText(size_t row, size_t column, const wxString& text,
-                    Wisteria::NumberFormatInfo format =
-                        NumberFormatInfo{
-                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
-                    double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
-        /// @private
-        virtual void
-        SetItemText(size_t row, size_t column, wxString&& text,
-                    Wisteria::NumberFormatInfo format =
-                        NumberFormatInfo{
-                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
+                    NumberFormatInfo format =
+                        NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
                     double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
         /// @returns The row's attributes (visual look).
         /// @param row The row to return.
@@ -376,7 +368,7 @@ namespace Wisteria::UI
             {
             // Insert a mapping of empty string to ID #1 before anything else is inserted.
             // If a client wants to create an empty string label, then that will already be in here.
-            std::pair<LabelIDMap::const_iterator, bool> insertionPos =
+            const std::pair<LabelIDMap::const_iterator, bool> insertionPos =
                 m_labelsInUse.insert(std::make_pair(wxString{}, m_currentLabelId));
             m_labelsMap.insert(std::make_pair(m_currentLabelId, insertionPos.first));
             }
@@ -459,7 +451,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         const wxString& GetLabel(long id) const;
         /// @private
-        const std::vector<std::pair<size_t, Wisteria::SortDirection>> m_columnsToCompare;
+        std::vector<std::pair<size_t, SortDirection>> m_columnsToCompare;
         /// @private
         const ListCtrlLabelManager::IDLabelMap& m_labelsMap;
         /// @private
@@ -656,7 +648,7 @@ namespace Wisteria::UI
             }
 
       private:
-        const std::vector<std::pair<size_t, Wisteria::SortDirection>> m_columnsToCompare;
+        std::vector<std::pair<size_t, SortDirection>> m_columnsToCompare;
         };
 
     /// @brief Comparison (less than) for string data provider.
@@ -701,7 +693,7 @@ namespace Wisteria::UI
             }
 
       private:
-        const std::vector<size_t> m_columnsToCompare;
+        std::vector<size_t> m_columnsToCompare;
         };
 
     /// @brief Comparison (greater than) for string data provider.
@@ -745,7 +737,7 @@ namespace Wisteria::UI
             }
 
       private:
-        const std::vector<size_t> m_columnsToCompare;
+        std::vector<size_t> m_columnsToCompare;
         };
 
     /// @brief Data provider filled with text (numbers would be formatted as text).
@@ -804,22 +796,6 @@ namespace Wisteria::UI
                    "use ListCtrlExNumericDataProvider instead.");
             ListCellString& cell = m_virtualData.operator[](row).operator[](column);
             cell.m_strVal = text;
-            cell.SetNumberFormatType(format);
-            }
-
-        /// @private
-        void SetItemText(const size_t row, const size_t column, wxString&& text,
-                         const Wisteria::NumberFormatInfo format =
-                             NumberFormatInfo{
-                                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
-                         [[maybe_unused]] const double sortableValue =
-                             std::numeric_limits<double>::quiet_NaN() /*Not used here*/) final
-            {
-            assert(std::isnan(sortableValue) &&
-                   L"Numeric sortable value not supported by ListCtrlExDataProvider, "
-                   "use ListCtrlExNumericDataProvider instead.");
-            ListCellString& cell = m_virtualData.operator[](row).operator[](column);
-            cell.m_strVal = std::move(text);
             cell.SetNumberFormatType(format);
             }
 
@@ -1242,23 +1218,8 @@ namespace Wisteria::UI
                 it is compared to other cells during a sort operation.*/
         void
         SetItemText(const size_t row, const size_t column, const wxString& text,
-                    const Wisteria::NumberFormatInfo format =
-                        NumberFormatInfo{
-                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
-                    const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
-            {
-            DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
-            cell.m_numericValue = sortableValue;
-            cell.m_labelCode = m_labelManager.CreateLabelId(text);
-            cell.SetNumberFormatType(format);
-            }
-
-        /// @private
-        void
-        SetItemText(const size_t row, const size_t column, wxString&& text,
-                    const Wisteria::NumberFormatInfo format =
-                        NumberFormatInfo{
-                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
+                    const NumberFormatInfo format =
+                        NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
                     const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
             {
             DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);

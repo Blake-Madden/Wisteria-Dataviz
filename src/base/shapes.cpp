@@ -9,7 +9,6 @@
 #include "shapes.h"
 #include "image.h"
 #include "label.h"
-#include "polygon.h"
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
 

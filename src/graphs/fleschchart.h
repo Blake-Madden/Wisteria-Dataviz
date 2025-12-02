@@ -97,15 +97,15 @@ namespace Wisteria::Graphs
             }
 
       private:
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
 
-        const Wisteria::Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
-        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
-        const Wisteria::Data::Column<double>* m_syllablesPerWordColumn{ nullptr };
+        const Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
+        const Data::Column<double>* m_scoresColumn{ nullptr };
+        const Data::Column<double>* m_syllablesPerWordColumn{ nullptr };
 
-        Wisteria::Data::Jitter m_jitterWords{ Wisteria::AxisType::LeftYAxis };
-        Wisteria::Data::Jitter m_jitterScores{ Wisteria::AxisType::LeftYAxis };
-        Wisteria::Data::Jitter m_jitterSyllables{ Wisteria::AxisType::LeftYAxis };
+        Data::Jitter m_jitterWords{ Wisteria::AxisType::LeftYAxis };
+        Data::Jitter m_jitterScores{ Wisteria::AxisType::LeftYAxis };
+        Data::Jitter m_jitterSyllables{ Wisteria::AxisType::LeftYAxis };
         bool m_showConnectionLine{ true };
         };
     } // namespace Wisteria::Graphs

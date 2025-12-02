@@ -89,8 +89,7 @@ namespace Wisteria::Data
     void DatasetClone::MapColumns()
         {
         // ID
-        m_idColumnsMap.emplace_back(
-            std::make_pair(&m_fromDataset->GetIdColumn(), &m_toDataset->GetIdColumn()));
+        m_idColumnsMap.emplace_back(&m_fromDataset->GetIdColumn(), &m_toDataset->GetIdColumn());
 
         // continuous
         m_continuousColumnsMap.clear();
@@ -106,8 +105,8 @@ namespace Wisteria::Data
             assert(m_fromDataset->GetContinuousColumn(i).GetName() ==
                        m_toDataset->GetContinuousColumn(i).GetName() &&
                    L"Continuous columns aren't mapped correctly!");
-            m_continuousColumnsMap.emplace_back(std::make_pair(
-                &m_fromDataset->GetContinuousColumn(i), &m_toDataset->GetContinuousColumn(i)));
+            m_continuousColumnsMap.emplace_back(&m_fromDataset->GetContinuousColumn(i),
+                                                &m_toDataset->GetContinuousColumn(i));
             }
 
         // categoricals
@@ -122,8 +121,8 @@ namespace Wisteria::Data
             assert(m_fromDataset->GetCategoricalColumn(i).GetName() ==
                        m_toDataset->GetCategoricalColumn(i).GetName() &&
                    L"Categorical columns aren't mapped correctly!");
-            m_catColumnsMap.emplace_back(std::make_pair(&m_fromDataset->GetCategoricalColumn(i),
-                                                        &m_toDataset->GetCategoricalColumn(i)));
+            m_catColumnsMap.emplace_back(&m_fromDataset->GetCategoricalColumn(i),
+                                         &m_toDataset->GetCategoricalColumn(i));
             }
 
         // dates
@@ -137,8 +136,8 @@ namespace Wisteria::Data
             assert(m_fromDataset->GetDateColumn(i).GetName() ==
                        m_toDataset->GetDateColumn(i).GetName() &&
                    L"Date columns aren't mapped correctly!");
-            m_dateColumnsMap.emplace_back(
-                std::make_pair(&m_fromDataset->GetDateColumn(i), &m_toDataset->GetDateColumn(i)));
+            m_dateColumnsMap.emplace_back(&m_fromDataset->GetDateColumn(i),
+                                          &m_toDataset->GetDateColumn(i));
             }
         }
 

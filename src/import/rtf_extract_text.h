@@ -395,7 +395,7 @@ namespace lily_of_the_valley
         /** @brief Constructs an RTF parser object.
             @param extraction_type Specifies whether to convert the RTF to plain text or HTML.*/
         explicit rtf_extract_text(
-            const rtf_extraction_type& extraction_type = rtf_extraction_type::rtf_to_text) noexcept;
+            const rtf_extraction_type& extraction_type = rtf_extraction_type::rtf_to_text);
 
         /** @returns The default font size from the RTF's font information.*/
         [[nodiscard]]
@@ -416,14 +416,12 @@ namespace lily_of_the_valley
         [[nodiscard]]
         std::string get_font() const
             {
-            if (m_font_table.size())
+            if (!m_font_table.empty())
                 {
                 return m_font_table[0];
                 }
-            else
-                {
-                return "Arial";
-                }
+
+            return "Arial";
             }
 
         /** @returns The default font color from the RTF's font information.*/
@@ -506,11 +504,11 @@ namespace lily_of_the_valley
 
         // Route the string to the appropriate destination stream.
         /*****************************************************************************************/
-        void ecParseString(const wchar_t* text, const size_t length) noexcept;
+        void ecParseString(const wchar_t* text, const size_t length);
 
         /// Processes a font property.
         /*****************************************************************************************/
-        void ecProcessFontProperty(const wchar_t* htmlCmd, const size_t htmlCmdLength) noexcept;
+        void ecProcessFontProperty(const wchar_t* htmlCmd, const size_t htmlCmdLength);
 
         /*****************************************************************************************/
         void ecProcessFontColor(const int idx);
@@ -519,7 +517,7 @@ namespace lily_of_the_valley
         void ecProcessHighlight(const int idx);
 
         // Send a character to the output.
-        inline void ecPrintChar(const wchar_t ch) noexcept
+        void ecPrintChar(const wchar_t ch)
             {
             if (ch == 3913 || ch == 3929 || ch == 3928) // avoid embedded header/footer symbols
                 {
@@ -529,7 +527,7 @@ namespace lily_of_the_valley
             }
 
         // Send a string to the output.
-        inline void ecPrintString(const wchar_t* text, const size_t length) noexcept
+        void ecPrintString(const wchar_t* text, const size_t length)
             {
             add_characters({ text, length });
             }
@@ -540,7 +538,7 @@ namespace lily_of_the_valley
 
         // Set a property that requires code to evaluate.
         /*****************************************************************************************/
-        inline void ecParseSpecialProperty(IPROP iprop)
+        void ecParseSpecialProperty(IPROP iprop)
             {
             switch (iprop)
                 {
@@ -568,7 +566,7 @@ namespace lily_of_the_valley
         void ecTranslateKeyword(const char* szKeyword, int param, const bool fParam);
 
         /*****************************************************************************************/
-        inline void ecChangeDest() noexcept
+        void ecChangeDest() noexcept
             {
             if (m_rds == RDS::rdsSkip) // if we're skipping text,
                 {
@@ -607,20 +605,20 @@ namespace lily_of_the_valley
         [[nodiscard]]
         constexpr static bool is_numeric_7bit(const wchar_t ch) noexcept
             {
-            return (ch >= L'0' && ch <= L'9') ? true : false;
+            return ch >= L'0' && ch <= L'9';
             }
 
         rtf_extraction_type m_extraction_type{ rtf_extraction_type::rtf_to_text };
-        RIS m_ris;
-        RDS m_rds;
+        RIS m_ris{ RIS::risNorm };
+        RDS m_rds{ RDS::rdsNorm };
         int m_cGroup{ 0 };
         SAVE* m_psave{ nullptr };
-        bool m_fSkipDestIfUnk{ true };
+        bool m_fSkipDestIfUnk{ false };
         long m_cbBin{ 0 };
         long m_lParam{ 0 };
         const char* m_rtf_text{ nullptr };
         size_t m_paragraphCount{ 0 };
-        int m_font_size{ 8 };
+        int m_font_size{ 12 };
         const rtf_symbol_table* m_keyword_command_table{ nullptr };
         SEP m_sep;
         para_prop m_pap;
@@ -672,7 +670,7 @@ namespace lily_of_the_valley
             /// @brief Add another `<span>` generating tag for the current environment.
             void add_command() noexcept
                 {
-                if (m_stacks.size())
+                if (!m_stacks.empty())
                     {
                     ++(m_stacks.back());
                     }

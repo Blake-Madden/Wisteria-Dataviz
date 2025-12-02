@@ -8,6 +8,7 @@
 
 #include "label.h"
 #include "polygon.h"
+#include <algorithm>
 #include <wx/fontenum.h>
 #include <wx/regex.h>
 #include <wx/tokenzr.h>
@@ -106,10 +107,7 @@ namespace Wisteria::GraphItems
                 {
                 ++m_lineCount;
                 const auto currentLineLength = lineTokenizer.GetNextToken().length();
-                if (currentLineLength > longestLineCharacterCount)
-                    {
-                    longestLineCharacterCount = currentLineLength;
-                    }
+                longestLineCharacterCount = std::max(currentLineLength, longestLineCharacterCount);
                 }
             m_longestLineLength = longestLineCharacterCount;
             }

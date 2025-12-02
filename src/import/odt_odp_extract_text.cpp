@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "odt_odp_extract_text.h"
+#include <algorithm>
 
 namespace lily_of_the_valley
     {
@@ -163,10 +164,7 @@ namespace lily_of_the_valley
                 auto spacesCount = read_attribute_as_long(start + 1, TEXT_C, false);
                 // if unreasonable number of spaces value is found, then use 10
                 // (more than 10 spaces could mean that this tag is messed up)
-                if (spacesCount > 10)
-                    {
-                    spacesCount = 10;
-                    }
+                spacesCount = std::min<long>(spacesCount, 10);
                 // if no space count specified, then default to one space
                 fill_with_character(static_cast<size_t>(std::max(spacesCount, 1L)), L' ');
                 end = find_close_tag(start + 1);

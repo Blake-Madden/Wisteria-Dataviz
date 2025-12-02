@@ -107,7 +107,7 @@ namespace lily_of_the_valley
             {
             clear_log();
             clear();
-            if (!unicodeText || length == 0)
+            if ((unicodeText == nullptr) || length == 0)
                 {
                 return nullptr;
                 }

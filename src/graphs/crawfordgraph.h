@@ -55,7 +55,7 @@ namespace Wisteria::Graphs
             @param shapes The shape scheme to use for the points.
                Leave as @c nullptr to use the standard shapes.*/
         explicit CrawfordGraph(
-            Wisteria::Canvas* canvas,
+            Canvas* canvas,
             const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
             const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr);
 
@@ -77,10 +77,10 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& groupColumnName = std::nullopt);
 
       private:
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
 
-        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
-        const Wisteria::Data::Column<double>* m_syllablesPer100WordsColumn{ nullptr };
+        const Data::Column<double>* m_scoresColumn{ nullptr };
+        const Data::Column<double>* m_syllablesPer100WordsColumn{ nullptr };
         };
     } // namespace Wisteria::Graphs
 

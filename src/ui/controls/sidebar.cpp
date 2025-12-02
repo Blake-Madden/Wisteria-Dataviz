@@ -1129,19 +1129,18 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
         (m_selectedFolder.has_value() && m_selectedFolder.value() < m_folders.size()) ?
             m_selectedFolder.value_or(folderIndex.value()) :
             folderIndex.value();
-    const auto previouslySelectedSubItem =
-        m_folders[previouslySelectedFolder].m_selectedItem ?
-            std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
-            std::nullopt;
+    const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
+                                               m_folders[previouslySelectedFolder].m_selectedItem :
+                                               std::nullopt;
 
-    m_selectedFolder = folderIndex.value();
+    m_selectedFolder = folderIndex;
     if (m_selectedFolder)
         {
         ActivateFolder(m_selectedFolder.value());
         }
     const auto needsExpanding = !m_folders[GetSelectedFolder().value()].m_isExpanded;
     m_folders[GetSelectedFolder().value()].Expand();
-    m_folders[GetSelectedFolder().value()].m_selectedItem = subItemIndex.value();
+    m_folders[GetSelectedFolder().value()].m_selectedItem = subItemIndex;
 
     EnsureFolderVisible(GetSelectedFolder().value());
     RecalcSizes();
@@ -1201,10 +1200,9 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem, const bool 
         (m_selectedFolder.has_value() && m_selectedFolder.value() < m_folders.size()) ?
             m_selectedFolder.value_or(item) :
             item;
-    const auto previouslySelectedSubItem =
-        m_folders[previouslySelectedFolder].m_selectedItem ?
-            std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
-            std::nullopt;
+    const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
+                                               m_folders[previouslySelectedFolder].m_selectedItem :
+                                               std::nullopt;
 
     m_selectedFolder = item;
     ActivateFolder(item);

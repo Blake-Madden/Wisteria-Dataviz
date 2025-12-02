@@ -8,6 +8,7 @@
 
 #include "axis.h"
 #include "currencyformat.h"
+#include <algorithm>
 
 namespace Wisteria::GraphItems
     {
@@ -717,14 +718,8 @@ namespace Wisteria::GraphItems
                     }
                 // see if the left or right hinges of this box goes outside the
                 // current bounding box
-                if (labelBox.GetLeft() < topLeftCorner.x)
-                    {
-                    topLeftCorner.x = labelBox.GetLeft();
-                    }
-                if (labelBox.GetRight() > bottomRightCorner.x)
-                    {
-                    bottomRightCorner.x = labelBox.GetRight();
-                    }
+                topLeftCorner.x = std::min(labelBox.GetLeft(), topLeftCorner.x);
+                bottomRightCorner.x = std::max(labelBox.GetRight(), bottomRightCorner.x);
             };
 
             if (!GetHeader().GetText().empty())
@@ -767,14 +762,9 @@ namespace Wisteria::GraphItems
                     labelBox.Offset(0, -(labelBox.GetHeight() / 2));
                     }
                 // adjust y now
-                if (labelBox.GetY() < topLeftCorner.y)
-                    {
-                    topLeftCorner.y = labelBox.GetY();
-                    }
-                if (labelBox.GetY() + labelBox.GetHeight() > bottomRightCorner.y)
-                    {
-                    bottomRightCorner.y = labelBox.GetY() + labelBox.GetHeight();
-                    }
+                topLeftCorner.y = std::min(labelBox.GetY(), topLeftCorner.y);
+                bottomRightCorner.y =
+                    std::max(labelBox.GetY() + labelBox.GetHeight(), bottomRightCorner.y);
             };
 
             if (GetHeader().IsShown() && !GetHeader().GetText().empty())

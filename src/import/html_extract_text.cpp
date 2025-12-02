@@ -10,9 +10,6 @@
 #include <algorithm>
 #include <utility>
 
-using namespace string_util;
-using namespace lily_of_the_valley;
-
 namespace lily_of_the_valley
     {
     //------------------------------------------------------------------
@@ -278,8 +275,8 @@ namespace lily_of_the_valley
             {
             return nullptr;
             }
-        bool is_inside_of_quotes = false;
-        bool is_inside_of_single_quotes = false;
+        bool isInsideOfQuotes = false;
+        bool isInsideOfSingleQuotes = false;
         while (string != nullptr)
             {
             if (string[0] == 0)
@@ -288,20 +285,20 @@ namespace lily_of_the_valley
                 }
             if (string[0] == 0x22) // double quote
                 {
-                is_inside_of_quotes = !is_inside_of_quotes;
+                isInsideOfQuotes = !isInsideOfQuotes;
                 // whether this double quote ends a quote pair or starts a new one, turn this flag
                 // off. This means that a double quote can close a single quote.
-                is_inside_of_single_quotes = false;
+                isInsideOfSingleQuotes = false;
                 }
             // if a single quote already started a quote pair (and this is closing it) or
             // we are not inside a double quote then count single quotes
-            else if ((!is_inside_of_quotes || is_inside_of_single_quotes) &&
+            else if ((!isInsideOfQuotes || isInsideOfSingleQuotes) &&
                      string[0] == 0x27) // single quote
                 {
-                is_inside_of_quotes = !is_inside_of_quotes;
-                is_inside_of_single_quotes = true;
+                isInsideOfQuotes = !isInsideOfQuotes;
+                isInsideOfSingleQuotes = true;
                 }
-            if (!is_inside_of_quotes && string[0] == ch)
+            if (!isInsideOfQuotes && string[0] == ch)
                 {
                 return string;
                 }
@@ -320,7 +317,7 @@ namespace lily_of_the_valley
            four characters, then it's probably not really meant to be a super or subscript.*/
         if (textSize > 0)
             {
-            constexpr size_t maxSubscriptLength{ 4 };
+            constexpr size_t MAX_SUBSCRIPT_LENGTH{ 4 };
             size_t currentStartPosition{ 0 };
             while (textSize > 0)
                 {
@@ -377,7 +374,7 @@ namespace lily_of_the_valley
                             add_characters({ text, index });
                             }
                         // in case this is an unencoded ampersand then treat it as such
-                        if (std::iswspace(text[index + 1]))
+                        if (std::iswspace(text[index + 1]) != 0)
                             {
                             add_character(L'&');
                             add_character(L' ');
@@ -468,7 +465,7 @@ namespace lily_of_the_valley
                                     if (semicolon[0] == L';' && value == L'&')
                                         {
                                         const wchar_t* nextTerminator = semicolon + 1;
-                                        while (!std::iswspace(*nextTerminator) &&
+                                        while ((std::iswspace(*nextTerminator) == 0) &&
                                                *nextTerminator != L';' &&
                                                nextTerminator < (text + textSize))
                                             {
@@ -589,7 +586,7 @@ namespace lily_of_the_valley
                         if (m_superscript_stack > 0)
                             {
                             // convert what we can along the way
-                            if (index <= maxSubscriptLength)
+                            if (index <= MAX_SUBSCRIPT_LENGTH)
                                 {
                                 for (size_t i = 0; i < index; ++i)
                                     {
@@ -605,7 +602,7 @@ namespace lily_of_the_valley
                             {
                             // convert what we can along the way
                             // (if really a subscript)
-                            if (index <= maxSubscriptLength)
+                            if (index <= MAX_SUBSCRIPT_LENGTH)
                                 {
                                 for (size_t i = 0; i < index; ++i)
                                     {
@@ -648,7 +645,7 @@ namespace lily_of_the_valley
                 if (m_superscript_stack > 0)
                     {
                     // convert what we can along the way
-                    if (textSize <= maxSubscriptLength)
+                    if (textSize <= MAX_SUBSCRIPT_LENGTH)
                         {
                         for (size_t i = 0; i < textSize; ++i)
                             {
@@ -664,7 +661,7 @@ namespace lily_of_the_valley
                     {
                     // convert what we can along the way
                     // (if really a subscript)
-                    if (textSize <= maxSubscriptLength)
+                    if (textSize <= MAX_SUBSCRIPT_LENGTH)
                         {
                         for (size_t i = 0; i < textSize; ++i)
                             {
@@ -912,7 +909,8 @@ namespace lily_of_the_valley
                 std::advance(foundTag, 1);
                 }
             // step over assignment operator
-            if ((foundTag != nullptr) && foundTag < elementEnd && is_either(*foundTag, L':', L'='))
+            if ((foundTag != nullptr) && foundTag < elementEnd &&
+                string_util::is_either(*foundTag, L':', L'='))
                 {
                 std::advance(foundTag, 1);
                 }
@@ -922,7 +920,8 @@ namespace lily_of_the_valley
                 std::advance(foundTag, 1);
                 }
             // step over any opening quotes
-            if ((foundTag != nullptr) && foundTag < elementEnd && is_either(*foundTag, L'\'', L'"'))
+            if ((foundTag != nullptr) && foundTag < elementEnd &&
+                string_util::is_either(*foundTag, L'\'', L'"'))
                 {
                 std::advance(foundTag, 1);
                 }
@@ -953,7 +952,7 @@ namespace lily_of_the_valley
                     {
                     while (end - 1 > foundTag)
                         {
-                        if (is_either<wchar_t>(*(end - 1), L'/', L' '))
+                        if (string_util::is_either<wchar_t>(*(end - 1), L'/', L' '))
                             {
                             --end;
                             }
@@ -1001,13 +1000,13 @@ namespace lily_of_the_valley
                 return nullptr;
                 }
             if ((foundTag == text) ||
-                (allowQuotedTags && is_either<wchar_t>(foundTag[-1], L'\'', L'\"')))
+                (allowQuotedTags && string_util::is_either<wchar_t>(foundTag[-1], L'\'', L'\"')))
                 {
                 return foundTag;
                 }
             // this tag should not be count if it is really just part of a bigger tag
             // (e.g., "color" will not count if what we are really on is "bgcolor")
-            if (std::iswspace(foundTag[-1]) || (foundTag[-1] == L';'))
+            if ((std::iswspace(foundTag[-1]) != 0) || (foundTag[-1] == L';'))
                 {
                 return foundTag;
                 }
@@ -1021,17 +1020,16 @@ namespace lily_of_the_valley
                                                  const bool include_outer_text,
                                                  const bool preserve_newlines)
         {
-        static const std::wstring HTML_STYLE_END(L"</style>");
-        static const std::wstring HTML_SCRIPT(L"script");
-        static const std::wstring HTML_SCRIPT_END(L"</script>");
-        static const std::wstring HTML_NOSCRIPT_END(L"</noscript>");
-        static const std::wstring ANNOTATION_END(L"</annotation>");
-        static const std::wstring ANNOTATION_XML_END(L"</annotation-xml>");
-        static const std::wstring HTML_TITLE_END(L"</title>");
-        static const std::wstring HTML_SUBJECT_END(L"</subject>");
-        static const std::wstring HTML_COMMENT_END(L"-->");
+        constexpr static std::wstring_view HTML_STYLE_END(L"</style>");
+        constexpr static std::wstring_view HTML_SCRIPT_END(L"</script>");
+        constexpr static std::wstring_view HTML_NOSCRIPT_END(L"</noscript>");
+        constexpr static std::wstring_view ANNOTATION_END(L"</annotation>");
+        constexpr static std::wstring_view ANNOTATION_XML_END(L"</annotation-xml>");
+        constexpr static std::wstring_view HTML_TITLE_END(L"</title>");
+        constexpr static std::wstring_view HTML_SUBJECT_END(L"</subject>");
+        constexpr static std::wstring_view HTML_COMMENT_END(L"-->");
 
-        static const std::set<case_insensitive_wstring> newParagraphElements = {
+        static const std::set<string_util::case_insensitive_wstring> newParagraphElements = {
             L"button", L"div",   L"dl", L"dt",     L"h1", L"h2",     L"h3",    L"h4", L"h5", L"h6",
             L"hr",     L"input", L"ol", L"option", L"p",  L"select", L"table", L"tr", L"ul", L"nav"
         };
@@ -1068,8 +1066,8 @@ namespace lily_of_the_valley
         const wchar_t* end = nullptr;
 
         const wchar_t* const endSentinel = html_text + text_length;
-        case_insensitive_wstring currentElement;
-        case_insensitive_wstring previousElement;
+        string_util::case_insensitive_wstring currentElement;
+        string_util::case_insensitive_wstring previousElement;
 
         // More than three consecutive A HREFs will result in them being formatted
         // into a list that is tabbed over. Even for links that are next to each other
@@ -1085,7 +1083,7 @@ namespace lily_of_the_valley
             const size_t lastNotHSpace = get_filtered_buffer().find_last_not_of(L" \t");
             if (lastNotHSpace != std::wstring::npos)
                 {
-                return is_either(get_filtered_buffer()[lastNotHSpace], L'\n', L'\r');
+                return string_util::is_either(get_filtered_buffer()[lastNotHSpace], L'\n', L'\r');
                 }
 
             return true;
@@ -1127,7 +1125,7 @@ namespace lily_of_the_valley
                                 // links, then this isn't a link list
                                 for (const auto chr : previousRead)
                                     {
-                                    if (!(std::iswpunct(chr) || std::iswspace(chr)))
+                                    if ((std::iswpunct(chr) == 0) && (std::iswspace(chr) == 0))
                                         {
                                         consecutiveAHrefs = 0;
                                         linkListPositions.clear();
@@ -1168,7 +1166,7 @@ namespace lily_of_the_valley
             if (remainingTextLength >= 4 && start[0] == L'<' && start[1] == L'!' &&
                 start[2] == L'-' && start[3] == L'-')
                 {
-                end = std::wcsstr(start, HTML_COMMENT_END.c_str());
+                end = std::wcsstr(start, HTML_COMMENT_END.data());
                 // if a comment isn't properly terminated, then it's best to just assume
                 // the rest of the file is a huge comment and throw it out.
                 if (end == nullptr)
@@ -1180,7 +1178,7 @@ namespace lily_of_the_valley
             // if it's a script (e.g., JavaScript), then skip it
             else if (currentElement == L"script")
                 {
-                end = string_util::stristr<wchar_t>(start, HTML_SCRIPT_END.c_str());
+                end = string_util::stristr<wchar_t>(start, HTML_SCRIPT_END.data());
                 // no closing </script>, so step over this <script> and jump to next '<'
                 if (end == nullptr)
                     {
@@ -1204,7 +1202,7 @@ namespace lily_of_the_valley
             // then skip it if that behavior was requested
             else if (!m_includeNoScriptSections && currentElement == L"noscript")
                 {
-                end = string_util::stristr<wchar_t>(start, HTML_NOSCRIPT_END.c_str());
+                end = string_util::stristr<wchar_t>(start, HTML_NOSCRIPT_END.data());
                 // no closing </noscript>, so step over this <noscript> and jump to next '<'
                 if (end == nullptr)
                     {
@@ -1227,7 +1225,7 @@ namespace lily_of_the_valley
             // if it's an annotation, then skip it
             else if (currentElement == L"annotation")
                 {
-                end = string_util::stristr<wchar_t>(start, ANNOTATION_END.c_str());
+                end = string_util::stristr<wchar_t>(start, ANNOTATION_END.data());
                 // no closing </annotation>, so step over this <annotation> and jump to next '<'
                 if (end == nullptr)
                     {
@@ -1249,7 +1247,7 @@ namespace lily_of_the_valley
                 }
             else if (currentElement == L"annotation-xml")
                 {
-                end = string_util::stristr<wchar_t>(start, ANNOTATION_XML_END.c_str());
+                end = string_util::stristr<wchar_t>(start, ANNOTATION_XML_END.data());
                 // no closing </annotation-xml>, so step over this <annotation-xml> and
                 // jump to the next '<'
                 if (end == nullptr)
@@ -1273,7 +1271,7 @@ namespace lily_of_the_valley
             // if it's style command section, then skip it
             else if (currentElement == L"style")
                 {
-                end = string_util::stristr<wchar_t>(start, HTML_STYLE_END.c_str());
+                end = string_util::stristr<wchar_t>(start, HTML_STYLE_END.data());
                 // no closing </style>, so step over this <style> and jump to next '<'
                 if (end == nullptr)
                     {
@@ -1361,7 +1359,7 @@ namespace lily_of_the_valley
                     break;
                     }
                 ++titleStart; // step over '>'
-                end = string_util::stristr<wchar_t>(start, HTML_TITLE_END.c_str());
+                end = string_util::stristr<wchar_t>(start, HTML_TITLE_END.data());
                 // <title> not closed with </title>, so step over <title> and move to next '<'
                 if (end == nullptr)
                     {
@@ -1394,7 +1392,7 @@ namespace lily_of_the_valley
                     break;
                     }
                 ++subjectStart; // step over '>'
-                end = string_util::stristr<wchar_t>(start, HTML_SUBJECT_END.c_str());
+                end = string_util::stristr<wchar_t>(start, HTML_SUBJECT_END.data());
                 // <subject> not closed with </subject>, so step over <subject> and move to next '<'
                 if (end == nullptr)
                     {
@@ -1420,12 +1418,13 @@ namespace lily_of_the_valley
                     }
                 }
             // stray < (i.e., < wasn't encoded) should be treated as such, instead of a tag
-            else if ((remainingTextLength >= 2 && start[0] == L'<' && std::iswspace(start[1])) ||
+            else if ((remainingTextLength >= 2 && start[0] == L'<' &&
+                      (std::iswspace(start[1]) != 0)) ||
                      (remainingTextLength >= 7 && start[0] == L'<' && start[1] == L'&' &&
-                      is_either<wchar_t>(start[2], L'n', L'N') &&
-                      is_either<wchar_t>(start[3], L'b', L'B') &&
-                      is_either<wchar_t>(start[4], L's', L'S') &&
-                      is_either<wchar_t>(start[5], L'p', L'P') && start[6] == L';'))
+                      string_util::is_either<wchar_t>(start[2], L'n', L'N') &&
+                      string_util::is_either<wchar_t>(start[3], L'b', L'B') &&
+                      string_util::is_either<wchar_t>(start[4], L's', L'S') &&
+                      string_util::is_either<wchar_t>(start[5], L'p', L'P') && start[6] == L';'))
                 {
                 end = std::wcschr(start + 1, L'<');
                 if (end == nullptr)
@@ -1748,11 +1747,11 @@ namespace lily_of_the_valley
             // space.
             if (accept_self_terminating_elements)
                 {
-                return (*text == L'/' || std::iswspace(*text));
+                return (*text == L'/' || (std::iswspace(*text) != 0));
                 }
             // if we aren't allowing "/>" and we are on a space, then just make sure
             // it isn't self terminated.
-            if (std::iswspace(*text))
+            if (std::iswspace(*text) != 0)
                 {
                 const wchar_t* closeTag = find_close_tag(text);
                 if (closeTag == nullptr)
@@ -1760,7 +1759,7 @@ namespace lily_of_the_valley
                     return false;
                     }
                 --closeTag;
-                while (closeTag > text && std::iswspace(*closeTag))
+                while (closeTag > text && (std::iswspace(*closeTag) != 0))
                     {
                     --closeTag;
                     }
@@ -1806,11 +1805,11 @@ namespace lily_of_the_valley
             // after the space.
             if (accept_self_terminating_elements)
                 {
-                return (*text == L'/' || std::iswspace(*text));
+                return (*text == L'/' || (std::iswspace(*text) != 0));
                 }
             // if we aren't allowing "/>" and we are on a space, then just make sure
             // it isn't self terminated.
-            if (std::iswspace(*text))
+            if (std::iswspace(*text) != 0)
                 {
                 const wchar_t* closeTag = find_close_tag(text);
                 if (closeTag == nullptr)
@@ -1818,7 +1817,7 @@ namespace lily_of_the_valley
                     return false;
                     }
                 --closeTag;
-                while (closeTag > text && std::iswspace(*closeTag))
+                while (closeTag > text && (std::iswspace(*closeTag) != 0))
                     {
                     --closeTag;
                     }
@@ -1888,18 +1887,18 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    case_insensitive_wstring_view
+    string_util::case_insensitive_wstring_view
     html_extract_text::get_element_name(const wchar_t* text,
                                         const bool accept_self_terminating_elements)
         {
         if (text == nullptr)
             {
-            return case_insensitive_wstring_view{};
+            return {};
             }
         const wchar_t* start{ text };
         for (;;)
             {
-            if (text[0] == 0 || std::iswspace(text[0]) || text[0] == L'>')
+            if (text[0] == 0 || (std::iswspace(text[0]) != 0) || text[0] == L'>')
                 {
                 break;
                 }
@@ -1909,7 +1908,7 @@ namespace lily_of_the_valley
                 }
             ++text;
             }
-        return case_insensitive_wstring_view(start, text - start);
+        return string_util::case_insensitive_wstring_view(start, text - start);
         }
 
     //------------------------------------------------------------------
@@ -1970,7 +1969,7 @@ namespace lily_of_the_valley
                             foundEqual = true;
                             break;
                             }
-                        if (!std::iswspace(*lookBack))
+                        if (std::iswspace(*lookBack) == 0)
                             {
                             break;
                             }
@@ -2092,7 +2091,8 @@ namespace html_utilities
         const wchar_t *currentPos = html_text, *lastEnd = html_text;
         while ((currentPos != nullptr) && (currentPos < endSentinel))
             {
-            currentPos = html_extract_text::find_element(currentPos, endSentinel, L"a", true);
+            currentPos = lily_of_the_valley::html_extract_text::find_element(
+                currentPos, endSentinel, L"a", true);
             // no more anchors, so just copy over the rest of the text and quit.
             if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
@@ -2101,7 +2101,8 @@ namespace html_utilities
                 }
             // if this is actually a bookmark, then we need to start over
             // (looking for the next <a>).
-            if (html_extract_text::find_tag(currentPos, L"name", false) != nullptr)
+            if (lily_of_the_valley::html_extract_text::find_tag(currentPos, L"name", false) !=
+                nullptr)
                 {
                 currentPos += 2;
                 continue;
@@ -2109,7 +2110,7 @@ namespace html_utilities
             // next <a> found, so copy over all the text before it,
             // then move over to the end of this element.
             add_characters({ lastEnd, static_cast<size_t>(currentPos - lastEnd) });
-            currentPos = html_extract_text::find_close_tag(currentPos);
+            currentPos = lily_of_the_valley::html_extract_text::find_close_tag(currentPos);
             if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 break;
@@ -2118,7 +2119,8 @@ namespace html_utilities
             // ...Now, find the matching </a> and copy over the text between that and the previous
             // <a>. Note that nested <a> would be very incorrect HTML, so we will safely assume that
             // there aren't any.
-            currentPos = html_extract_text::find_closing_element(currentPos, endSentinel, L"a");
+            currentPos = lily_of_the_valley::html_extract_text::find_closing_element(
+                currentPos, endSentinel, L"a");
             if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 break;
@@ -2126,7 +2128,7 @@ namespace html_utilities
             add_characters({ lastEnd, static_cast<size_t>(currentPos - lastEnd) });
             // ...finally, find the close of this </a>, move to that, and start over again looking
             // for the next <a>
-            currentPos = html_extract_text::find_close_tag(currentPos);
+            currentPos = lily_of_the_valley::html_extract_text::find_close_tag(currentPos);
             if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 break;
@@ -2595,10 +2597,6 @@ namespace html_utilities
         return pos->second;
         }
 
-    const std::wstring_view javascript_hyperlink_parse::HTML_SCRIPT{ L"script" };
-    const std::wstring_view javascript_hyperlink_parse::HTML_SCRIPT_WITH_ANGLE{ L"<script" };
-    const std::wstring_view javascript_hyperlink_parse::HTML_SCRIPT_END{ L"</script>" };
-
     //------------------------------------------------------------------
     std::wstring javascript_hyperlink_parse::get_cookies(std::wstring_view htmlText)
         {
@@ -2728,12 +2726,13 @@ namespace html_utilities
 
         while (m_html_text != nullptr)
             {
-            m_html_text =
-                html_extract_text::find_element(m_html_text, m_html_text_end, HTML_IMAGE, true);
+            m_html_text = lily_of_the_valley::html_extract_text::find_element(
+                m_html_text, m_html_text_end, HTML_IMAGE, true);
             if (m_html_text != nullptr)
                 {
                 const auto [imageSrc, imageLength] =
-                    html_extract_text::read_attribute(m_html_text, L"src", false, true);
+                    lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src",
+                                                                          false, true);
                 if (imageSrc != nullptr &&
                     // skip over base64-encoded image data, we just want file paths
                     string_util::strnicmp(imageSrc, DATA_IMAGE.data(), DATA_IMAGE.length()) != 0)
@@ -2782,7 +2781,7 @@ namespace html_utilities
         const wchar_t firstLinkChar = base[5];
         base += 6;
         // eat any whitespace after href=
-        while (!(!std::iswspace(base[0]) || base[0] == 0))
+        while ((std::iswspace(base[0]) != 0) && base[0] != 0)
             {
             ++base;
             }
@@ -2855,14 +2854,15 @@ namespace html_utilities
                     ++m_html_text;
                     continue;
                     }
-                m_current_link_is_image =
-                    html_extract_text::compare_element(m_html_text + 1, HTML_IMAGE, true);
+                m_current_link_is_image = lily_of_the_valley::html_extract_text::compare_element(
+                    m_html_text + 1, HTML_IMAGE, true);
                 m_inside_of_script_section = m_current_link_is_javascript =
-                    html_extract_text::compare_element(
+                    lily_of_the_valley::html_extract_text::compare_element(
                         m_html_text + 1, javascript_hyperlink_parse::HTML_SCRIPT, false);
                 if (m_inside_of_script_section)
                     {
-                    const wchar_t* endAngle = html_extract_text::find_close_tag(m_html_text);
+                    const wchar_t* endAngle =
+                        lily_of_the_valley::html_extract_text::find_close_tag(m_html_text);
                     const auto* endOfScriptSection = string_util::stristr<wchar_t>(
                         m_html_text, javascript_hyperlink_parse::HTML_SCRIPT_END.data());
                     if ((endAngle != nullptr) && (endAngle < m_html_text_end) &&
@@ -2876,12 +2876,15 @@ namespace html_utilities
                 // JS link
                 if ((m_include_image_links && m_current_link_is_image) ||
                     m_current_link_is_javascript ||
-                    html_extract_text::compare_element(m_html_text + 1, HTML_FRAME, false) ||
-                    html_extract_text::compare_element(m_html_text + 1, HTML_IFRAME, false))
+                    lily_of_the_valley::html_extract_text::compare_element(m_html_text + 1,
+                                                                           HTML_FRAME, false) ||
+                    lily_of_the_valley::html_extract_text::compare_element(m_html_text + 1,
+                                                                           HTML_IFRAME, false))
                     {
                     m_html_text += 4;
                     const auto [imageSrc, imageLength] =
-                        html_extract_text::read_attribute(m_html_text, L"src", false, true);
+                        lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src",
+                                                                              false, true);
                     if (imageSrc != nullptr &&
                         // skip over base64-encoded image data, we just want file paths
                         string_util::strnicmp(imageSrc, DATA_IMAGE.data(), DATA_IMAGE.length()) !=
@@ -2913,13 +2916,17 @@ namespace html_utilities
                     continue;
                     }
                 // ...or it is an anchor link
-                if (html_extract_text::compare_element(m_html_text + 1, L"a", false) ||
-                    html_extract_text::compare_element(m_html_text + 1, L"link", false) ||
-                    html_extract_text::compare_element(m_html_text + 1, L"area", false))
+                if (lily_of_the_valley::html_extract_text::compare_element(m_html_text + 1, L"a",
+                                                                           false) ||
+                    lily_of_the_valley::html_extract_text::compare_element(m_html_text + 1, L"link",
+                                                                           false) ||
+                    lily_of_the_valley::html_extract_text::compare_element(m_html_text + 1, L"area",
+                                                                           false))
                     {
                     ++m_html_text; // skip the <
                     const auto [attribText, attribLength] =
-                        html_extract_text::read_attribute(m_html_text, L"href", false, true);
+                        lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"href",
+                                                                              false, true);
                     if ((attribText != nullptr) && attribLength > 0)
                         {
                         m_html_text = attribText;
@@ -2931,15 +2938,17 @@ namespace html_utilities
                     continue;
                     }
                 // ...or a redirect in the HTTP meta section
-                if (html_extract_text::compare_element(m_html_text + 1, HTML_META, false))
+                if (lily_of_the_valley::html_extract_text::compare_element(m_html_text + 1,
+                                                                           HTML_META, false))
                     {
                     m_html_text += HTML_META.size() + 1;
-                    const std::wstring httpEquiv = html_extract_text::read_attribute_as_string(
-                        m_html_text, L"http-equiv", false, false);
+                    const std::wstring httpEquiv =
+                        lily_of_the_valley::html_extract_text::read_attribute_as_string(
+                            m_html_text, L"http-equiv", false, false);
                     if (string_util::stricmp(httpEquiv.c_str(), L"refresh") == 0)
                         {
-                        const wchar_t* url =
-                            html_extract_text::find_tag(m_html_text, L"url=", true);
+                        const wchar_t* url = lily_of_the_valley::html_extract_text::find_tag(
+                            m_html_text, L"url=", true);
                         if ((url != nullptr) && (url < m_html_text_end))
                             {
                             m_html_text = url + 4;
@@ -2950,8 +2959,8 @@ namespace html_utilities
                             // eat up any whitespace or single quotes
                             for (;;)
                                 {
-                                if (m_html_text[0] == 0 ||
-                                    (!std::iswspace(m_html_text[0]) && m_html_text[0] != L'\''))
+                                if (m_html_text[0] == 0 || ((std::iswspace(m_html_text[0]) == 0) &&
+                                                            m_html_text[0] != L'\''))
                                     {
                                     break;
                                     }
@@ -3126,7 +3135,8 @@ namespace html_utilities
                If so, the move back up a folder.
                This can happen if there is an incorrect "../" in front of this link.*/
             if ((lastSlash < m_root_url.length() - 2 && lastSlash > 0) &&
-                is_either<wchar_t>(L'/', m_root_url[lastSlash - 1], m_root_url[lastSlash + 1]))
+                string_util::is_either<wchar_t>(L'/', m_root_url[lastSlash - 1],
+                                                m_root_url[lastSlash + 1]))
                 {
                 lastSlash = m_root_url.find(L'/', lastSlash + 2);
                 }

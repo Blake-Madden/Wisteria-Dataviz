@@ -8,6 +8,7 @@
 
 #include "barchart.h"
 #include "../base/currencyformat.h"
+#include <algorithm>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGraph2D)
 
@@ -443,15 +444,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                      0;
 
         // adjust the bar axis to hold the bar
-        if (m_highestBarAxisPosition < bar.GetAxisPosition() + customWidth)
-            {
-            m_highestBarAxisPosition = bar.GetAxisPosition() + customWidth;
-            }
+        m_highestBarAxisPosition =
+            std::max(m_highestBarAxisPosition, bar.GetAxisPosition() + customWidth);
 
-        if (m_lowestBarAxisPosition > bar.GetAxisPosition() - customWidth)
-            {
-            m_lowestBarAxisPosition = bar.GetAxisPosition() - customWidth;
-            }
+        m_lowestBarAxisPosition =
+            std::min(m_lowestBarAxisPosition, bar.GetAxisPosition() - customWidth);
 
         GetBarAxis().SetRange(m_lowestBarAxisPosition - GetBarAxis().GetInterval(),
                               m_highestBarAxisPosition + GetBarAxis().GetInterval(),

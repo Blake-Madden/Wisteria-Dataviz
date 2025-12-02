@@ -15,7 +15,7 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
     // not styling text, just an orphan character that should be processed as-is
     if (*m_currentStart == tag && std::next(m_currentStart) < m_currentEndSentinel)
         {
-        if (m_currentStart[1] != tag && !std::iswalnum(m_currentStart[1]) &&
+        if (m_currentStart[1] != tag && (std::iswalnum(m_currentStart[1]) == 0) &&
             m_currentStart[1] != L'`')
             {
             add_character(*m_currentStart);
@@ -945,10 +945,11 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                 }
             // same for an ordered list
             else if (newlineCount == 1 && (m_currentStart < m_currentEndSentinel) &&
-                     std::iswdigit(*m_currentStart))
+                     (std::iswdigit(*m_currentStart) != 0))
                 {
                 const auto* scanAheadDigit{ m_currentStart };
-                while ((scanAheadDigit < m_currentEndSentinel) && std::iswdigit(*scanAheadDigit))
+                while ((scanAheadDigit < m_currentEndSentinel) &&
+                       (std::iswdigit(*scanAheadDigit) != 0))
                     {
                     ++scanAheadDigit;
                     }

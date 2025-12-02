@@ -124,11 +124,11 @@ namespace html_utilities
         static std::wstring get_cookies(std::wstring_view htmlText);
 
         /// @private
-        static const std::wstring_view HTML_SCRIPT;
+        constexpr static std::wstring_view HTML_SCRIPT{ L"script" };
         /// @private
-        static const std::wstring_view HTML_SCRIPT_WITH_ANGLE;
+        constexpr static std::wstring_view HTML_SCRIPT_WITH_ANGLE{ L"<script" };
         /// @private
-        static const std::wstring_view HTML_SCRIPT_END;
+        constexpr static std::wstring_view HTML_SCRIPT_END{ L"</script>" };
 
       private:
         const wchar_t* m_js_text_start{ nullptr };
@@ -232,7 +232,7 @@ namespace html_utilities
         [[nodiscard]]
         static const wchar_t* find_url_end(const wchar_t* text) noexcept
             {
-            while (text && is_legal_url_character(text[0]))
+            while ((text != nullptr) && is_legal_url_character(text[0]))
                 {
                 ++text;
                 }

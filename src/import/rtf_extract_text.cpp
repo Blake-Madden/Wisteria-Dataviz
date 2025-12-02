@@ -268,11 +268,8 @@ namespace lily_of_the_valley
     //------------------------------------------------
 
     rtf_extract_text::rtf_extract_text(
-        const rtf_extraction_type& extraction_type /*= rtf_extraction_type::rtf_to_text*/) noexcept
-        : m_extraction_type(extraction_type), m_ris(RIS::risNorm), m_rds(RDS::rdsNorm), m_cGroup(0),
-          m_psave(nullptr), m_fSkipDestIfUnk(false), m_cbBin(0), m_lParam(0), m_rtf_text(nullptr),
-          m_paragraphCount(0), m_font_size(12), m_keyword_command_table(nullptr),
-          m_in_bullet_state(false)
+        const rtf_extraction_type& extraction_type /*= rtf_extraction_type::rtf_to_text*/)
+        : m_extraction_type(extraction_type)
         {
         reset_property(m_chp);
         reset_property(m_pap);
@@ -656,7 +653,7 @@ namespace lily_of_the_valley
         m_rds = m_psave->rds;
         m_ris = m_psave->ris;
 
-        SAVE* psaveOld = m_psave;
+        SAVE const* psaveOld = m_psave;
         m_psave = m_psave->pNext;
         --m_cGroup;
         delete psaveOld;
@@ -758,7 +755,8 @@ namespace lily_of_the_valley
                 while (++nextKeyword != nullptr)
                     {
                     // eat up the whitespace
-                    if (nextKeyword[0] == 0 || !std::iswspace(static_cast<wchar_t>(nextKeyword[0])))
+                    if (nextKeyword[0] == 0 ||
+                        (std::iswspace(static_cast<wchar_t>(nextKeyword[0])) == 0))
                         {
                         break;
                         }
@@ -866,7 +864,7 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------
-    void rtf_extract_text::ecParseString(const wchar_t* text, const size_t length) noexcept
+    void rtf_extract_text::ecParseString(const wchar_t* text, const size_t length)
         {
         if (m_ris == RIS::risBin && --m_cbBin <= 0)
             {
@@ -888,8 +886,7 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------
-    void rtf_extract_text::ecProcessFontProperty(const wchar_t* htmlCmd,
-                                                 const size_t htmlCmdLength) noexcept
+    void rtf_extract_text::ecProcessFontProperty(const wchar_t* htmlCmd, const size_t htmlCmdLength)
         {
         assert(htmlCmd && std::wcslen(htmlCmd) == htmlCmdLength);
 

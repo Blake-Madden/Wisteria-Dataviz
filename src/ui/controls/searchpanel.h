@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __SEARCH_PANEL_H__
-#define __SEARCH_PANEL_H__
+#ifndef SEARCH_PANEL_H
+#define SEARCH_PANEL_H
 
 #include <wx/srchctrl.h>
 #include <wx/wx.h>
@@ -78,4 +78,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__SEARCH_PANEL_H__
+#endif // SEARCH_PANEL_H

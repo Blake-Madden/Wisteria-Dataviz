@@ -410,8 +410,7 @@ namespace Wisteria::Graphs
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend(const LegendOptions& options) override final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @}
 
@@ -546,14 +545,14 @@ namespace Wisteria::Graphs
                 call `GetBottomXAxis().SetLabelDisplay(...)` after adding the box and
                 its custom label.*/
         void AddBox(const BoxAndWhisker& box);
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
 
         std::vector<BoxAndWhisker> m_boxes;
         bool m_overlayLegend{ true };
         uint8_t m_labelPrecision{ 1 };
 
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
+        std::vector<Data::ColumnWithStringTable>::const_iterator m_groupColumn;
+        std::vector<Data::Column<double>>::const_iterator m_continuousColumn;
 
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };

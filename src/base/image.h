@@ -506,11 +506,11 @@ namespace Wisteria::GraphItems
         /** @brief Draws the image onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the image is being drawn in.*/
-        wxRect Draw(wxDC& dc) const override final;
+        wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the image would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final;
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Bounds the image to the given rectangle.
             @param rect The rectangle to bound the image to.
             @param dc The rendering DC.
@@ -522,12 +522,12 @@ namespace Wisteria::GraphItems
                 Call SetPageVerticalAlignment() and SetPageHorizontalAlignment()
                 to control how it is positioned inside its bounding box.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) final;
 
         /** @brief Moves the item by the specified x and y values.
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) noexcept override final
+        void Offset(const int xToMove, const int yToMove) noexcept final
             {
             SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove));
             }
@@ -536,7 +536,7 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const noexcept override final
+        bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             {
             return GetBoundingBox(dc).Contains(pt);
             }
