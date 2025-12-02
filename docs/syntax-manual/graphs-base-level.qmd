@@ -94,7 +94,7 @@ Properties common to all bar-chart-derived graphs:
   - `"start-block-re"`: A regular expression used to find the starting block for the bracket.
   - `"end-block-re"`: A regular expression used to find the ending block for the bracket.
 
-  If the regex options aren’t provided, you can specify explicit tags with the following:
+  If the regex options aren't provided, you can specify explicit tags with the following:
   - `"start-block"`: A string specifying the tag of the starting block of the bar.
   - `"end-block"`: A string specifying the tag of the ending block of the bar.
 - `"apply-brushes-to-ungrouped-bars"`: `true` to apply the brushes (from the brush scheme) to the series of bars. \
