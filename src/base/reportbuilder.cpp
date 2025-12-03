@@ -2954,7 +2954,11 @@ namespace Wisteria
                 }
             }
 
-        auto waffleChart = std::make_shared<Graphs::WaffleChart>(canvas, shapes, gridRound);
+        auto waffleChart = std::make_shared<Graphs::WaffleChart>(
+            canvas, shapes, gridRound,
+            graphNode->HasProperty(L"row-count") ?
+                std::optional<size_t>(graphNode->GetProperty(L"row-count")->AsDouble()) :
+                std::nullopt);
 
         LoadGraph(graphNode, canvas, currentRow, currentColumn, waffleChart);
         return waffleChart;

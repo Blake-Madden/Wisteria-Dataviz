@@ -686,6 +686,7 @@ Properties for `"waffle-chart"` nodes:
   Available options are:
   - "cell-count"
   - "shape-index"
+- `"row-count"`: An optional number of rows to split the grid into.
 
 ```json
 {

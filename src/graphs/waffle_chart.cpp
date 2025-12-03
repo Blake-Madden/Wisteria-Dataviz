@@ -14,7 +14,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     {
     //----------------------------------------------------------------
     WaffleChart::WaffleChart(Canvas * canvas, std::vector<GraphItems::ShapeInfo> shapes,
-                             const std::optional<GridRounding>& gridRound /*= std::nullopt*/)
+                             const std::optional<GridRounding>& gridRound /*= std::nullopt*/,
+                             const std::optional<size_t> rowCount /*= std::nullopt*/)
         : Graph2D(canvas)
         {
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
@@ -24,14 +25,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         GetTopXAxis().Show(false);
         GetRightYAxis().Show(false);
 
-        LoadShapeGrid(shapes, gridRound);
+        LoadShapeGrid(shapes, gridRound, rowCount);
         }
 
     //----------------------------------------------------------------
     void WaffleChart::LoadShapeGrid(std::vector<GraphItems::ShapeInfo> & shapes,
-                                    const std::optional<GridRounding>& gridRound)
+                                    const std::optional<GridRounding>& gridRound,
+                                    const std::optional<size_t> rowCount)
         {
-        const size_t numberOfShapes =
+        if (rowCount && rowCount.value() == 0)
+            {
+            throw std::runtime_error(
+                _(L"Requested row count for waffle chart cannot be zero.").ToUTF8());
+            }
+
+        size_t numberOfShapes =
             std::accumulate(shapes.begin(), shapes.end(), 0, [](const auto val, const auto& shp)
                             { return shp.GetRepeatCount() + val; });
         if (gridRound && numberOfShapes < gridRound.value().m_numberOfCells &&
@@ -40,14 +48,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
             shapes[gridRound.value().m_shapesIndex].Repeat(
                 shapes[gridRound.value().m_shapesIndex].GetRepeatCount() +
                 (gridRound.value().m_numberOfCells - numberOfShapes));
+            numberOfShapes = gridRound.value().m_numberOfCells;
             }
 
-        const auto numOfRows = static_cast<size_t>(std::ceil(std::sqrt(numberOfShapes)));
+        const auto numOfRows =
+            rowCount.value_or(static_cast<size_t>(std::ceil(std::sqrt(numberOfShapes))));
         m_matrix.resize(numOfRows);
 
         size_t currentRow{ 0 };
         size_t currentColumn{ 0 };
-        const size_t maxCols{ numOfRows };
+        const size_t maxCols{ rowCount ? static_cast<size_t>(std::ceil(safe_divide<double>(
+                                             numberOfShapes, rowCount.value()))) :
+                                         numOfRows };
 
         for (const auto& shape : shapes)
             {
@@ -79,13 +91,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         // size the boxes to fit in the area available
         const wxRect drawArea = GetPlotAreaBoundingBox();
 
-        const int cellsPerSide{ static_cast<int>(m_matrix.size()) };
-        const int cellWidth{ safe_divide<int>(drawArea.GetWidth(), cellsPerSide) };
-        const int cellHeight{ safe_divide<int>(drawArea.GetHeight(), cellsPerSide) };
+        const int rows{ static_cast<int>(m_matrix.size()) };
+
+        int maxCols{ 0 };
+        for (const auto& r : m_matrix)
+            {
+            maxCols = std::max(maxCols, static_cast<int>(r.size()));
+            }
+
+        const int cellWidth{ safe_divide<int>(drawArea.GetWidth(), maxCols) };
+        const int cellHeight{ safe_divide<int>(drawArea.GetHeight(), rows) };
         const int cellSize{ std::min(cellWidth, cellHeight) };
 
-        const int totalGridWidth{ cellsPerSide * cellSize };
-        const int totalGridHeight{ cellsPerSide * cellSize };
+        const int totalGridWidth{ maxCols * cellSize };
+        const int totalGridHeight{ rows * cellSize };
 
         const int offsetX{ drawArea.GetX() +
                            safe_divide<int>(drawArea.GetWidth() - totalGridWidth, 2) };

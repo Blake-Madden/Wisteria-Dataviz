@@ -3,6 +3,7 @@
 ## 1.0.7 Release
 
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
+- Add feature to waffle chart to override the number of rows in the waffle
 
 ## 1.0.6 Release
 

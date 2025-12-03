@@ -48,6 +48,8 @@ namespace Wisteria::Graphs
                 cells will be added to the specified shape (by index). This is useful for
                 when a cell represents percentages and the cells don't add to 100 because of
                 rounding issues.
+            @param rowCount The number of rows to split the shapes into. This is optional,
+                and by default the grid will have an equal number of rows and columns.
             @par Example:
             @code
             auto plot = std::make_shared<WaffleChart>(
@@ -75,11 +77,13 @@ namespace Wisteria::Graphs
                           .Repeat(4) } });
             @endcode*/
         explicit WaffleChart(Canvas* canvas, std::vector<GraphItems::ShapeInfo> shapes,
-                             const std::optional<GridRounding>& gridRound = std::nullopt);
+                             const std::optional<GridRounding>& gridRound = std::nullopt,
+                             const std::optional<size_t> rowCount = std::nullopt);
 
       private:
         void LoadShapeGrid(std::vector<GraphItems::ShapeInfo>& shapes,
-                           const std::optional<GridRounding>& gridRound);
+                           const std::optional<GridRounding>& gridRound,
+                           const std::optional<size_t> rowCount);
         void RecalcSizes(wxDC& dc) final;
 
         [[nodiscard]]
