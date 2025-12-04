@@ -497,85 +497,88 @@ namespace Wisteria::GraphItems
             const int labelWidth = static_cast<int>(leftRegionWidth * 0.85);
             const int labelHeight = static_cast<int>(r.GetHeight() * 0.70);
 
-                //--------------------------------------
-                // Left label
-                //--------------------------------------
-                {
-                const wxPoint center(static_cast<int>(r.GetX() + (leftRegionWidth * 0.5)),
-                                     static_cast<int>(cy));
+            //--------------------------------------
+            // Left label
+            //--------------------------------------
+            const wxPoint leftLabelCenter(
+                static_cast<int>(r.GetX() + (leftRegionWidth * math_constants::half)),
+                static_cast<int>(cy));
+            Label leftLabel{ GraphItemInfo(leftText)
+                                 .Pen(wxNullPen)
+                                 .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
+                                                GetGraphItemInfo().GetFontColor() :
+                                                *wxBLACK)
+                                 .Font(GetGraphItemInfo().GetFont().MakeBold())
+                                 .LabelAlignment(TextAlignment::Centered)
+                                 .DPIScaling(GetDPIScaleFactor())
+                                 .Anchoring(Anchoring::Center)
+                                 .AnchorPoint(leftLabelCenter)
+                                 .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+            leftLabel.SetBoundingBox(wxRect(leftLabelCenter.x - (labelWidth / 2),
+                                            leftLabelCenter.y - (labelHeight / 2), labelWidth,
+                                            labelHeight),
+                                     dc, GetScaling());
 
-                Label lbl{ GraphItemInfo(leftText)
-                               .Pen(wxNullPen)
-                               .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
-                                              GetGraphItemInfo().GetFontColor() :
-                                              *wxBLACK)
-                               .Font(GetGraphItemInfo().GetFont().MakeBold())
-                               .LabelAlignment(TextAlignment::Centered)
-                               .DPIScaling(GetDPIScaleFactor())
-                               .Anchoring(Anchoring::Center)
-                               .AnchorPoint(center)
-                               .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+            //--------------------------------------
+            // Right label
+            //--------------------------------------
+            const wxPoint rightLabelCenter(
+                static_cast<int>((r.GetRight() - rightRegionWidth) +
+                                 (rightRegionWidth * math_constants::half)),
+                static_cast<int>(cy));
+            Label rightLabel{ GraphItemInfo(rightText)
+                                  .Pen(wxNullPen)
+                                  .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
+                                                 GetGraphItemInfo().GetFontColor() :
+                                                 *wxBLACK)
+                                  .Font(GetGraphItemInfo().GetFont().MakeBold())
+                                  .LabelAlignment(TextAlignment::Centered)
+                                  .DPIScaling(GetDPIScaleFactor())
+                                  .Anchoring(Anchoring::Center)
+                                  .AnchorPoint(rightLabelCenter)
+                                  .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+            rightLabel.SetBoundingBox(wxRect(rightLabelCenter.x - (labelWidth / 2),
+                                             rightLabelCenter.y - (labelHeight / 2), labelWidth,
+                                             labelHeight),
+                                      dc, GetScaling());
 
-                const wxRect bb(center.x - (labelWidth / 2), center.y - (labelHeight / 2),
-                                labelWidth, labelHeight);
+            // ensure both labels have the same size (scaling)
+            const double labelScaling{ std::min(leftLabel.GetScaling(), rightLabel.GetScaling()) };
+            leftLabel.SetScaling(labelScaling);
+            rightLabel.SetScaling(labelScaling);
+            leftLabel.Draw(dc);
+            rightLabel.Draw(dc);
 
-                lbl.SetBoundingBox(bb, dc, GetScaling());
-                lbl.Draw(dc);
-                }
-
-                //--------------------------------------
-                // Right label
-                //--------------------------------------
-                {
-                const double regionStart = r.GetRight() - rightRegionWidth;
-
-                const wxPoint center(static_cast<int>(regionStart + (rightRegionWidth * 0.5)),
-                                     static_cast<int>(cy));
-
-                Label lbl{ GraphItemInfo(rightText)
-                               .Pen(wxNullPen)
-                               .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
-                                              GetGraphItemInfo().GetFontColor() :
-                                              *wxBLACK)
-                               .Font(GetGraphItemInfo().GetFont().MakeBold())
-                               .LabelAlignment(TextAlignment::Centered)
-                               .DPIScaling(GetDPIScaleFactor())
-                               .Anchoring(Anchoring::Center)
-                               .AnchorPoint(center)
-                               .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
-
-                const wxRect bb(center.x - (labelWidth / 2), center.y - (labelHeight / 2),
-                                labelWidth, labelHeight);
-
-                lbl.SetBoundingBox(bb, dc, GetScaling());
-                lbl.Draw(dc);
-                }
+            return labelScaling;
         };
 
         //--------------------------------------
         // Draw top line
         //--------------------------------------
-        drawTopLine(topLineRect);
+        const auto labelScaling = drawTopLine(topLineRect);
 
         //--------------------------------------
         // Draw bottom line (optional)
         //--------------------------------------
         if (hasBottomLine)
             {
-            const double cy = bottomLineRect.GetY() + (bottomLineRect.GetHeight() * 0.5);
+            const double cy =
+                bottomLineRect.GetY() + (bottomLineRect.GetHeight() * math_constants::half);
 
-            const wxPoint anchor(bottomLineRect.GetX() + (bottomLineRect.GetWidth() * 0.5), cy);
+            const wxPoint anchor(
+                bottomLineRect.GetX() + (bottomLineRect.GetWidth() * math_constants::half), cy);
 
-            Label lbl{ GraphItemInfo(bottomText)
-                           .Pen(wxNullPen)
-                           .LabelAlignment(TextAlignment::Centered)
-                           .DPIScaling(GetDPIScaleFactor())
-                           .Anchoring(Anchoring::Center)
-                           .AnchorPoint(anchor)
-                           .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+            Label bottomLabel{ GraphItemInfo(bottomText)
+                                   .Pen(wxNullPen)
+                                   .LabelAlignment(TextAlignment::Centered)
+                                   .DPIScaling(GetDPIScaleFactor())
+                                   .Anchoring(Anchoring::Center)
+                                   .AnchorPoint(anchor)
+                                   .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
 
-            lbl.SetBoundingBox(bottomLineRect, dc, GetScaling());
-            lbl.Draw(dc);
+            bottomLabel.SetBoundingBox(bottomLineRect, dc, GetScaling());
+            bottomLabel.SetScaling(std::min(bottomLabel.GetScaling(), labelScaling));
+            bottomLabel.Draw(dc);
             }
         }
 
