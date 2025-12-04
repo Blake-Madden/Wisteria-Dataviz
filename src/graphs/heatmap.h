@@ -219,7 +219,7 @@ namespace Wisteria::Graphs
         std::vector<wxColour> m_reversedColorSpectrum; // used for the legend
         std::pair<double, double> m_range{ 0, 0 };
         wxString m_groupHeaderPrefix{ _(L"Groups") };
-        std::vector<Data::Column<double>>::const_iterator m_continuousColumn;
+        wxString m_continuousColumnName;
         bool m_showGroupHeaders{ true };
         size_t m_groupColumnCount{ 1 };
         };

@@ -291,7 +291,7 @@ namespace Wisteria::Graphs
 
         void GhostAllBars();
 
-        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
+        wxString m_scoresColumnName;
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
 
         std::vector<double> m_scaleValues;

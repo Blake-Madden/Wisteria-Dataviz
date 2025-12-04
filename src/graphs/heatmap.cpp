@@ -43,6 +43,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         SetDataset(data);
         ResetGrouping();
         GetSelectedIds().clear();
+        m_continuousColumnName = continuousColumnName;
 
         if (GetDataset() == nullptr)
             {
@@ -50,8 +51,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             }
 
         SetGroupColumn(groupColumnName);
-        m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
+        std::vector<Data::Column<double>>::const_iterator continuousColumn =
+            GetDataset()->GetContinuousColumn(continuousColumnName);
+        if (continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(
                 wxString::Format(_(L"'%s': continuous column not found for heatmap."),
@@ -77,8 +79,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         Colors::ColorBrewer cb;
         cb.SetColorScale(GetColorScheme()->GetColors().cbegin(),
                          GetColorScheme()->GetColors().cend());
-        const auto cellColors = cb.BrewColors(m_continuousColumn->GetValues().cbegin(),
-                                              m_continuousColumn->GetValues().cend());
+        const auto cellColors = cb.BrewColors(continuousColumn->GetValues().cbegin(),
+                                              continuousColumn->GetValues().cend());
         m_range = cb.GetRange();
 
         const wxString crossedOutSymbolForNaN{ L"\u274C" };
@@ -133,9 +135,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
                 m_matrix[currentRow][currentColumn].m_valueLabel =
-                    (std::isnan(m_continuousColumn->GetValue(i)) ?
+                    (std::isnan(continuousColumn->GetValue(i)) ?
                          crossedOutSymbolForNaN :
-                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
+                         wxNumberFormatter::ToString(continuousColumn->GetValue(i), 1,
                                                      Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
                     GetDataset()->GetIdColumn().GetValue(i);
@@ -148,12 +150,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             // Prepare the (rectangular [graphs are usually viewed in landscape]) matrix of color
             // cells. If there are 10 or fewer items, then just keep them all on one row.
             const size_t cellColumnCount =
-                (m_continuousColumn->GetRowCount() <= 10) ?
+                (continuousColumn->GetRowCount() <= 10) ?
                     10 :
-                    std::ceil(std::sqrt(m_continuousColumn->GetRowCount())) *
+                    std::ceil(std::sqrt(continuousColumn->GetRowCount())) *
                         math_constants::golden_ratio;
             const size_t cellRowCount =
-                std::ceil(safe_divide<double>(m_continuousColumn->GetRowCount(), cellColumnCount));
+                std::ceil(safe_divide<double>(continuousColumn->GetRowCount(), cellColumnCount));
 
             m_matrix.resize(cellRowCount);
             for (auto& row : m_matrix)
@@ -181,9 +183,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
                 m_matrix[currentRow][currentColumn].m_valueLabel =
-                    (std::isnan(m_continuousColumn->GetValue(i)) ?
+                    (std::isnan(continuousColumn->GetValue(i)) ?
                          crossedOutSymbolForNaN :
-                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
+                         wxNumberFormatter::ToString(continuousColumn->GetValue(i), 1,
                                                      Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
                     GetDataset()->GetIdColumn().GetValue(i);
@@ -456,13 +458,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
         {
-        if (GetDataset() == nullptr || m_continuousColumn->GetRowCount() == 0)
+        if (GetDataset() == nullptr)
             {
             return nullptr;
             }
 
+        std::vector<Data::Column<double>>::const_iterator continuousColumn =
+            GetDataset()->GetContinuousColumn(m_continuousColumnName);
+        if (continuousColumn == GetDataset()->GetContinuousColumns().cend())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': continuous column not found for heatmap."),
+                                 m_continuousColumnName)
+                    .ToUTF8());
+            }
+
         std::vector<double> validData;
-        std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+        std::ranges::copy_if(continuousColumn->GetValues(), std::back_inserter(validData),
                              [](auto x) { return std::isfinite(x); });
         const auto minValue = *std::ranges::min_element(std::as_const(validData));
         const auto maxValue = *std::ranges::max_element(std::as_const(validData));
@@ -481,7 +493,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 .FontColor(GetLeftYAxis().GetFontColor()));
         if (options.IsIncludingHeader())
             {
-            legend->SetText(wxString::Format(L"%s\n", m_continuousColumn->GetName()) +
+            legend->SetText(wxString::Format(L"%s\n", continuousColumn->GetName()) +
                             legend->GetText());
             legend->GetHeaderInfo()
                 .Enable(true)

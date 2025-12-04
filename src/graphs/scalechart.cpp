@@ -49,7 +49,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         {
         SetDataset(data);
         ResetGrouping();
-        m_scoresColumn = nullptr;
+        m_scoresColumnName = scoreColumnName;
         m_jitter.ResetJitterData();
         GetSelectedIds().clear();
 
@@ -67,13 +67,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             }
 
         // get the score data
-        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
+        auto* scoresColumn = GetContinuousColumnRequired(scoreColumnName);
 
         AdjustAxes();
 
         const auto [yStart, yEnd] = GetScalingAxis().GetRange();
         frequency_set<double> jitterPoints;
-        for (const auto& datum : m_scoresColumn->GetValues())
+        for (const auto& datum : scoresColumn->GetValues())
             {
             if (std::isnan(datum))
                 {
@@ -90,14 +90,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
 
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
-                if (std::isnan(m_scoresColumn->GetValue(i)))
+                if (std::isnan(scoresColumn->GetValue(i)))
                     {
                     continue;
                     }
 
                 // constrain scores to the scale
                 const auto currentScore =
-                    std::clamp<double>(m_scoresColumn->GetValue(i), yStart, yEnd);
+                    std::clamp<double>(scoresColumn->GetValue(i), yStart, yEnd);
 
                 for (auto& bar : GetBars())
                     {
@@ -266,15 +266,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
+        auto* scoresColumn = GetContinuousColumnRequired(m_scoresColumnName);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_scoresColumn->GetValue(i)))
+            if (std::isnan(scoresColumn->GetValue(i)))
                 {
                 continue;
                 }
 
             // constrain scores to the scale
-            const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), yStart, yEnd);
+            const auto currentScore = std::clamp<double>(scoresColumn->GetValue(i), yStart, yEnd);
 
             wxCoord yPt{ 0 };
             assert(GetScalingAxis().GetPhysicalCoordinate(currentScore, yPt) &&
