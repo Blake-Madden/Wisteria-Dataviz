@@ -236,7 +236,7 @@ namespace lily_of_the_valley
 
     /// Property descriptions.
     /// @private
-    constexpr propmod rgprop[static_cast<int>(IPROP::ipropMax)] =
+    constexpr propmod RGPROP[static_cast<int>(IPROP::ipropMax)] =
         {
         {ACTN::actnByte,   PROPTYPE::propChp,    offsetof(char_prop, fBold)},       // ipropBold
         {ACTN::actnByte,   PROPTYPE::propChp,    offsetof(char_prop, fItalic)},     // ipropItalic
@@ -544,7 +544,7 @@ namespace lily_of_the_valley
 
         m_rtf_text = text;
         // read the contents from the temporary buffer created
-        while (*m_rtf_text && m_rtf_text < endSentinel)
+        while ((*m_rtf_text != 0) && m_rtf_text < endSentinel)
             {
             int ch = *(m_rtf_text);
             if (m_cGroup < 0)
@@ -592,12 +592,11 @@ namespace lily_of_the_valley
                             }
                         ++m_rtf_text;
                         // copy over the next two bytes
-                        char hexBuffer[3]{ 0 };
-                        hexBuffer[0] = static_cast<char>(ch);
-                        hexBuffer[1] = m_rtf_text[0];
+                        const std::array<char, 3> hexBuffer{ static_cast<char>(ch), m_rtf_text[0],
+                                                             0 };
                         // convert the two bytes (hex value) to character
                         char* dummy{ nullptr };
-                        ch = static_cast<int>(std::strtol(hexBuffer, &dummy, 16));
+                        ch = static_cast<int>(std::strtol(hexBuffer.data(), &dummy, 16));
                         ecParseChar(ch);
                         m_ris = RIS::risNorm;
                         } // end else (m_ris != risNorm)
@@ -672,8 +671,8 @@ namespace lily_of_the_valley
         bool fNeg{ false };
         int param{ 0 };
         char* pch{ nullptr };
-        char szKeyword[30]{ 0 };
-        char szParameter[20]{ 0 };
+        std::array<char, 30> szKeyword{};
+        std::array<char, 20> szParameter{};
 
         ++m_rtf_text;
         if (*m_rtf_text == 0)
@@ -686,10 +685,10 @@ namespace lily_of_the_valley
             {
             szKeyword[0] = static_cast<char>(ch);
             szKeyword[1] = 0;
-            ecTranslateKeyword(szKeyword, 0, fParam);
+            ecTranslateKeyword(szKeyword.data(), 0, fParam);
             return;
             }
-        for (pch = szKeyword; is_alpha_7bit(static_cast<wchar_t>(ch)); ch = *(++m_rtf_text))
+        for (pch = szKeyword.data(); is_alpha_7bit(static_cast<wchar_t>(ch)); ch = *(++m_rtf_text))
             {
             if (*m_rtf_text == 0)
                 {
@@ -711,7 +710,8 @@ namespace lily_of_the_valley
         if (is_numeric_7bit(static_cast<wchar_t>(ch)))
             {
             fParam = true; // a digit after the control means we have a parameter
-            for (pch = szParameter; is_numeric_7bit(static_cast<wchar_t>(ch)); ch = *(++m_rtf_text))
+            for (pch = szParameter.data(); is_numeric_7bit(static_cast<wchar_t>(ch));
+                 ch = *(++m_rtf_text))
                 {
                 if (*m_rtf_text == 0)
                     {
@@ -720,12 +720,12 @@ namespace lily_of_the_valley
                 *pch++ = static_cast<char>(ch);
                 }
             *pch = 0;
-            param = std::atoi(szParameter);
+            param = std::atoi(szParameter.data());
             if (fNeg)
                 {
                 param = -param;
                 }
-            m_lParam = std::atol(szParameter);
+            m_lParam = std::atol(szParameter.data());
             if (fNeg)
                 {
                 m_lParam = -m_lParam;
@@ -737,7 +737,8 @@ namespace lily_of_the_valley
             }
 
         if (m_extraction_type == rtf_extraction_type::rtf_to_html &&
-            (std::strcmp(szKeyword, "par") == 0 || std::strcmp(szKeyword, "pard") == 0))
+            (std::strcmp(szKeyword.data(), "par") == 0 ||
+             std::strcmp(szKeyword.data(), "pard") == 0))
             {
             constexpr std::string_view PAR_TAG{ "par" };
             constexpr std::string_view PARD_TAG{ "pard" };
@@ -746,7 +747,7 @@ namespace lily_of_the_valley
             // if even, then this is a terminating paragraph command
             if ((m_paragraphCount % 2) == 0)
                 {
-                std::ranges::copy(std::as_const(PAR_TAG), szKeyword);
+                std::ranges::copy(std::as_const(PAR_TAG), szKeyword.data());
                 }
             // else, it is either the start of a new paragraph or an empty paragraph
             else
@@ -766,16 +767,16 @@ namespace lily_of_the_valley
                 if (std::strncmp(nextKeyword, "\\par", 4) == 0)
                     {
                     --m_paragraphCount; // it's also not a paragraph anymore
-                    std::ranges::copy(std::as_const(LINE_TAG), szKeyword);
+                    std::ranges::copy(std::as_const(LINE_TAG), szKeyword.data());
                     }
                 else
                     {
-                    std::ranges::copy(std::as_const(PARD_TAG), szKeyword);
+                    std::ranges::copy(std::as_const(PARD_TAG), szKeyword.data());
                     }
                 }
             }
 
-        ecTranslateKeyword(szKeyword, param, fParam);
+        ecTranslateKeyword(szKeyword.data(), param, fParam);
         }
 
     //------------------------------------------------
@@ -931,7 +932,7 @@ namespace lily_of_the_valley
                 // Zero index is just a reset to the control's default color,
                 // which is not in the table. Hence, color 1 is actually the
                 // first color in the table.
-                if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
+                if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
                     {
                     const std::wstring colorCmd =
                         L"<span class=\"" + m_style_prefix + L"fc" + std::to_wstring(idx) + L"\">";
@@ -990,22 +991,22 @@ namespace lily_of_the_valley
             return; // don't do anything.
             }
 
-        switch (static_cast<int>(rgprop[static_cast<int>(iprop)].prop))
+        switch (static_cast<int>(RGPROP[static_cast<int>(iprop)].prop))
             {
         case static_cast<int>(PROPTYPE::propDop):
-            pb = (char*)&m_dop;
+            pb = reinterpret_cast<char*>(&m_dop);
             break;
         case static_cast<int>(PROPTYPE::propSep):
-            pb = (char*)&m_sep;
+            pb = reinterpret_cast<char*>(&m_sep);
             break;
         case static_cast<int>(PROPTYPE::propPap):
-            pb = (char*)&m_pap;
+            pb = reinterpret_cast<char*>(&m_pap);
             break;
         case static_cast<int>(PROPTYPE::propChp):
-            pb = (char*)&m_chp;
+            pb = reinterpret_cast<char*>(&m_chp);
             break;
         default:
-            if (rgprop[static_cast<int>(iprop)].actn != ACTN::actnSpec)
+            if (RGPROP[static_cast<int>(iprop)].actn != ACTN::actnSpec)
                 {
                 throw rtfparse_bad_table();
                 }
@@ -1017,13 +1018,13 @@ namespace lily_of_the_valley
             return;
             }
 
-        switch (rgprop[static_cast<int>(iprop)].actn)
+        switch (RGPROP[static_cast<int>(iprop)].actn)
             {
         case ACTN::actnByte:
-            pb[rgprop[static_cast<int>(iprop)].offset] = static_cast<unsigned char>(val);
+            pb[RGPROP[static_cast<int>(iprop)].offset] = static_cast<unsigned char>(val);
             break;
         case ACTN::actnWord:
-            (*(int*)(pb + rgprop[static_cast<int>(iprop)].offset)) = val;
+            (*reinterpret_cast<int*>(pb + RGPROP[static_cast<int>(iprop)].offset)) = val;
             break;
         case ACTN::actnSpec:
             ecParseSpecialProperty(iprop);
