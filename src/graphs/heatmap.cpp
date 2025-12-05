@@ -51,8 +51,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             }
 
         SetGroupColumn(groupColumnName);
-        std::vector<Data::Column<double>>::const_iterator continuousColumn =
-            GetDataset()->GetContinuousColumn(continuousColumnName);
+        const auto continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
         if (continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(
@@ -463,8 +462,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             return nullptr;
             }
 
-        std::vector<Data::Column<double>>::const_iterator continuousColumn =
-            GetDataset()->GetContinuousColumn(m_continuousColumnName);
+        const auto continuousColumn = GetDataset()->GetContinuousColumn(m_continuousColumnName);
         if (continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(

@@ -361,7 +361,7 @@ wxULongLong MemoryMappedFile::GetFileSize64(const MemoryMappedFileHandleType hFi
         return size.QuadPart;
         }
 #elif defined(__WXOSX__)
-    off_t size = lseek(hFile, 0, SEEK_END);
+    const off_t size = lseek(hFile, 0, SEEK_END);
     lseek(hFile, 0, SEEK_SET); // go back to the start of the file
     if (-1 == size)
         {
@@ -369,7 +369,7 @@ wxULongLong MemoryMappedFile::GetFileSize64(const MemoryMappedFileHandleType hFi
         }
     return wxULongLong(size);
 #else
-    off64_t size = lseek64(hFile, 0, SEEK_END);
+    const off64_t size = lseek64(hFile, 0, SEEK_END);
     lseek64(hFile, 0, SEEK_SET); // go back to the start of the file
     if (-1 == size)
         {

@@ -10,6 +10,8 @@
 #include "fileutil.h"
 #include <chrono>
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-static-cast-downcast)
+
 //--------------------------------------------------
 void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
     {
@@ -618,3 +620,5 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
         break;
         }
     }
+
+// NOLINTEND(cppcoreguidelines-pro-type-static-cast-downcast)

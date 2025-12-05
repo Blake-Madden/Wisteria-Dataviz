@@ -1299,7 +1299,7 @@ namespace Wisteria::GraphItems
         const double overlap = std::min(radius * 0.15, ScaleToScreenAndCanvas(4.0));
 
         // Petal geometry
-        constexpr int PETALS = 10;             // fuller look
+        constexpr int PETAL_COUNT{ 10 };       // fuller look
         const double innerLen = radius * 0.70; // ellipse height (radial)
         const double innerWid = radius * 0.22; // ellipse width  (tangential)
         const double innerCtr = coreR + (innerLen * math_constants::half) - overlap;
@@ -1416,14 +1416,14 @@ namespace Wisteria::GraphItems
         };
 
         // back ring first (backgroundColor), tips clamped to match front tips
-        drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor), PETALS,
-                      outerWid, outerLen, outerCtr, 0.0,
+        drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor),
+                      PETAL_COUNT, outerWid, outerLen, outerCtr, 0.0,
                       rect.GetWidth() > ScaleToScreenAndCanvas(18));
 
         // front ring (alternate foregroundColor / warm-foregroundColor), staggered half-step
-        drawPetalRing([&](int i) { return (i & 1) ? foregroundColorWarm : foregroundColor; },
-                      outlineFrom(foregroundColor), PETALS, innerWid, innerLen, innerCtr,
-                      safe_divide(180, PETALS), rect.GetWidth() > ScaleToScreenAndCanvas(18));
+        drawPetalRing([&](int i) { return ((i & 1) != 0) ? foregroundColorWarm : foregroundColor; },
+                      outlineFrom(foregroundColor), PETAL_COUNT, innerWid, innerLen, innerCtr,
+                      safe_divide(180, PETAL_COUNT), rect.GetWidth() > ScaleToScreenAndCanvas(18));
 
             // center disk (radial gradient)
             {

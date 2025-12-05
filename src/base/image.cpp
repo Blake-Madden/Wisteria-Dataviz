@@ -139,7 +139,8 @@ namespace Wisteria::GraphItems
             SetOpacity(image, opacity, true);
             return;
             }
-        const long pixelCount = image.GetWidth() * image.GetHeight();
+        const long pixelCount =
+            static_cast<long>(image.GetWidth()) * static_cast<long>(image.GetHeight());
 
         const auto redChannel = colorToPreserve.GetRed();
         const auto greenChannel = colorToPreserve.GetGreen();
@@ -175,7 +176,9 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        const long pixelCount = image.GetWidth() * image.GetHeight();
+
+        const long pixelCount =
+            static_cast<long>(image.GetWidth()) * static_cast<long>(image.GetHeight());
 
         if (!image.HasAlpha())
             {
@@ -227,7 +230,9 @@ namespace Wisteria::GraphItems
 
         // Border pixels (depends on radius) will become black.
         // On increasing radius boundary pixels should set as black.
-        std::memset(imgOutData, 0, image.GetWidth() * image.GetHeight() * 3);
+        std::memset(imgOutData, 0,
+                    static_cast<size_t>(image.GetWidth()) * static_cast<size_t>(image.GetHeight()) *
+                        3);
 
         // If total bytes in a row of image is not divisible by four,
         // blank bytes will be padded to the end of the row.

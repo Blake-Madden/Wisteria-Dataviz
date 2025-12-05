@@ -186,6 +186,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 continue;
                 }
             const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            // NOLINTBEGIN(misc-redundant-expression)
             const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
                                   is_within<size_t>(std::make_pair(30, 49), currentScore)  ? 3 :
                                   is_within<size_t>(std::make_pair(50, 59), currentScore)  ? 4 :
@@ -194,6 +195,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                                   is_within<size_t>(std::make_pair(80, 89), currentScore)  ? 7 :
                                   is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
                                                                                              8;
+            // NOLINTEND(misc-redundant-expression)
             activeScoreAreas.push_back(yAxisPos);
             }
         if (IsShowcasingScore())
@@ -247,6 +249,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             // sensical scores fall within 0-100
             const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
 
+            // NOLINTBEGIN(misc-redundant-expression)
             const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
                                   is_within<size_t>(std::make_pair(30, 49), currentScore)  ? 3 :
                                   is_within<size_t>(std::make_pair(50, 59), currentScore)  ? 4 :
@@ -255,6 +258,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                                   is_within<size_t>(std::make_pair(80, 89), currentScore)  ? 7 :
                                   is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
                                                                                              8;
+            // NOLINTEND(misc-redundant-expression)
+
             wxCoord yPt{ 0 };
             wxASSERT_MSG(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt),
                          L"Unable to find point on DB2 Plot!");

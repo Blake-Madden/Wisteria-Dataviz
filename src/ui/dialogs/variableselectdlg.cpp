@@ -52,12 +52,12 @@ namespace Wisteria::UI
             {
             assert(m_mainVarlist && L"Main variable list not created!");
             auto* button = FindWindowById(varList.m_removeId, this);
-            if (button != nullptr && m_mainVarlist)
+            if (button != nullptr && m_mainVarlist != nullptr)
                 {
                 button->Enable(varList.m_list->GetSelectedItemCount() > 0);
                 }
             button = FindWindowById(varList.m_addId, this);
-            if (button != nullptr && m_mainVarlist)
+            if (button != nullptr && m_mainVarlist != nullptr)
                 {
                 button->Enable(m_mainVarlist->GetSelectedItemCount() > 0);
                 }
@@ -78,7 +78,7 @@ namespace Wisteria::UI
         // have more than one after moving
         if (otherList->HasFlag(wxLC_SINGLE_SEL))
             {
-            if (otherList->GetItemCount() || list->GetSelectedItemCount() > 1)
+            if (otherList->GetItemCount() != 0 || list->GetSelectedItemCount() > 1)
                 {
                 wxMessageBox(_(L"Only one variable is allowed in this list."),
                              _(L"Invalid Variable Selection"), wxOK | wxICON_WARNING | wxCENTRE);
@@ -184,11 +184,11 @@ namespace Wisteria::UI
         const auto addVarControls =
             [&](const auto addId, const auto removeId, const wxString& label, const long listStyle)
         {
-            auto buttonSz = new wxBoxSizer(wxVERTICAL);
-            auto varButtonAdd = new wxButton(this, addId);
+            auto* buttonSz = new wxBoxSizer(wxVERTICAL);
+            auto* varButtonAdd = new wxButton(this, addId);
             varButtonAdd->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_GO_FORWARD));
             buttonSz->Add(varButtonAdd);
-            auto varButtonRemove = new wxButton(this, removeId);
+            auto* varButtonRemove = new wxButton(this, removeId);
             varButtonRemove->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_GO_BACK));
             buttonSz->Add(varButtonRemove);
             varsSizer->Add(buttonSz, wxGBPosition(currentButtonRow, 1), wxGBSpan(1, 1),
@@ -203,7 +203,8 @@ namespace Wisteria::UI
                            wxGBPosition(currentLabelRow, 2), wxGBSpan(1, 1));
             currentLabelRow += 2;
 
-            auto list = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
+            auto* list =
+                new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
             list->InsertColumn(0, wxString{});
             varsSizer->Add(list, wxGBPosition(currentListRow, 2), wxGBSpan(1, 1));
             currentListRow += 2;
@@ -314,7 +315,8 @@ namespace Wisteria::UI
         // make sure any variable lists set to required have something selected
         for (const auto& varList : m_varLists)
             {
-            if (varList.m_required && varList.m_list && varList.m_list->GetItemCount() == 0)
+            if (varList.m_required && varList.m_list != nullptr &&
+                varList.m_list->GetItemCount() == 0)
                 {
                 wxMessageBox(wxString::Format(_(L"Variables must be selected for the '%s' list."),
                                               varList.m_label),

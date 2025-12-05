@@ -189,7 +189,7 @@ wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart, const wchar_
            L"Invalid pointer passed to GetAttributeString()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag.empty())
         {
-        return wxString{};
+        return {};
         }
 
     const wchar_t* currentPos = std::wcsstr(sectionStart, attributeTag);
@@ -202,14 +202,14 @@ wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart, const wchar_
             const wchar_t* endPos = std::wcschr(currentPos, L'\"');
             if ((endPos == nullptr) || (endPos > sectionEnd))
                 {
-                return wxString{};
+                return {};
                 }
             return wxString(currentPos, (endPos - currentPos));
             }
 
-        return wxString{};
+        return {};
         }
-    return wxString{};
+    return {};
     }
 
 //------------------------------------------------

@@ -17,6 +17,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
     LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatCategorized(
         const LikertSurveyQuestionFormat format) noexcept
         {
+        // NOLINTBEGIN(misc-redundant-expression)
         return (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
                    LikertSurveyQuestionFormat::TwoPointCategorized :
@@ -36,12 +37,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
                    LikertSurveyQuestionFormat::SevenPointCategorized :
                    LikertSurveyQuestionFormat::SevenPointCategorized;
+        // NOLINTEND(misc-redundant-expression)
         }
 
     //-----------------------------------
     LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatUncategorized(
         const LikertSurveyQuestionFormat format) noexcept
         {
+        // NOLINTBEGIN(misc-redundant-expression)
         return (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
                    LikertSurveyQuestionFormat::TwoPoint :
@@ -61,6 +64,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
                    LikertSurveyQuestionFormat::SevenPoint :
                    LikertSurveyQuestionFormat::SevenPoint;
+        // NOLINTEND(misc-redundant-expression)
         }
 
     bool LikertChart::IsCategorized(const LikertSurveyQuestionFormat format) noexcept
@@ -391,6 +395,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 }
             }
 
+        // NOLINTBEGIN(misc-redundant-expression)
         const LikertSurveyQuestionFormat format =
             (maxVal == 7) ? LikertSurveyQuestionFormat::SevenPoint :
             (maxVal == 6) ? LikertSurveyQuestionFormat::SixPoint :
@@ -399,6 +404,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             (maxVal == 3) ? LikertSurveyQuestionFormat::ThreePoint :
             (maxVal == 2) ? LikertSurveyQuestionFormat::TwoPoint :
                             LikertSurveyQuestionFormat::TwoPoint;
+        // NOLINTEND(misc-redundant-expression)
 
         return (uniqueGroups.size() > 1) ? MakeFormatCategorized(format) : format;
         }
@@ -1273,7 +1279,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
 
         Bar questionBar(
             safe_divide<double>(question.m_threePointCategories.size(), 2) + GetBarSlotCount() +
-                0.5f,
+                0.5,
             { // main question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                                         m_questionBlockSize - m_responseCountBlockSize :

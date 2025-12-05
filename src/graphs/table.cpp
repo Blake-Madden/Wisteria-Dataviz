@@ -47,11 +47,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     wxString Table::TableCell::GetDisplayValue() const
         {
-        if (const auto* strVal{ std::get_if<wxString>(&m_value) }; strVal != nullptr)
+        if (const auto* const strVal{ std::get_if<wxString>(&m_value) }; strVal != nullptr)
             {
             return *strVal;
             }
-        if (const auto dVal{ std::get_if<double>(&m_value) }; dVal != nullptr)
+        if (const auto* const dVal{ std::get_if<double>(&m_value) }; dVal != nullptr)
             {
             if (std::isnan(*dVal))
                 {
@@ -86,7 +86,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             return wxNumberFormatter::ToString(*dVal, m_precision,
                                                wxNumberFormatter::Style::Style_WithThousandsSep);
             }
-        if (const auto doubleVal{ std::get_if<std::pair<double, double>>(&m_value) };
+        if (const auto* const doubleVal{ std::get_if<std::pair<double, double>>(&m_value) };
             doubleVal != nullptr)
             {
             if (std::isnan(doubleVal->first) || std::isnan(doubleVal->second))
@@ -506,7 +506,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     void Table::InsertRowTotals(const std::optional<wxColour>& bkColor /*= std::nullopt*/)
         {
-        if (GetColumnCount() &&
+        if (GetColumnCount() != 0U &&
             // at least one row of data beneath header(s)
             GetRowCount() > (1 + (m_hasGroupHeader ? 1 : 0)))
             {
@@ -560,7 +560,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                    const std::optional<wxColour>& bkColor /*= std::nullopt*/,
                                    std::optional<std::bitset<4>> borders /*= std::nullopt*/)
         {
-        if (GetColumnCount())
+        if (GetColumnCount() != 0U)
             {
             const auto rIndex = (rowIndex.has_value() ? rowIndex.value() : GetRowCount());
             InsertRow(rIndex);
@@ -662,7 +662,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         const std::optional<wxColour>& bkColor /*= std::nullopt*/,
         const std::optional<std::bitset<4>> borders /*= std::nullopt*/)
         {
-        if (GetColumnCount())
+        if (GetColumnCount() != 0U)
             {
             const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
             InsertColumn(columnIndex);
@@ -1355,7 +1355,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                     {
                     auto remainingColumns = cell.m_columnCount - 1;
                     auto nextColumn = currentColumn + 1;
-                    while (remainingColumns && nextColumn < columnWidths.size())
+                    while (remainingColumns != 0U && nextColumn < columnWidths.size())
                         {
                         currentColumnWidth += columnWidths[nextColumn++];
                         --remainingColumns;
@@ -1367,7 +1367,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                     {
                     auto remainingRows = cell.m_rowCount - 1;
                     auto nextRow = currentRow + 1;
-                    while (remainingRows && nextRow < rowHeights.size())
+                    while (remainingRows != 0U && nextRow < rowHeights.size())
                         {
                         currentColumnHeight += rowHeights[nextRow++];
                         --remainingRows;

@@ -67,7 +67,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             }
 
         // get the score data
-        auto* scoresColumn = GetContinuousColumnRequired(scoreColumnName);
+        const auto* scoresColumn = GetContinuousColumnRequired(scoreColumnName);
 
         AdjustAxes();
 
@@ -266,7 +266,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
-        auto* scoresColumn = GetContinuousColumnRequired(m_scoresColumnName);
+        const auto* scoresColumn = GetContinuousColumnRequired(m_scoresColumnName);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(scoresColumn->GetValue(i)))

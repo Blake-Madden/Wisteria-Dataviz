@@ -9,6 +9,8 @@
 #include "mainframe.h"
 #include "dialogs/radioboxdlg.h"
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-static-cast-downcast)
+
 //----------------------------------------------------------
 wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** templates,
                                                             const int noTemplates,
@@ -207,3 +209,5 @@ bool Wisteria::UI::DropFiles::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_un
 
     return true;
     }
+
+// NOLINTEND(cppcoreguidelines-pro-type-static-cast-downcast)
