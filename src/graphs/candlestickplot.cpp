@@ -78,7 +78,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
                                 highColumn->GetValue(i), lowColumn->GetValue(i),
                                 closeColumn->GetValue(i) });
             }
-        Calculate(data, openColumnName, lowColumnName, highColumnName, closeColumnName);
+        Calculate(data, openColumnName, highColumnName, lowColumnName, closeColumnName);
         }
 
     //----------------------------------------------------------------
