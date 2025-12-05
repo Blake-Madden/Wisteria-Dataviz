@@ -1511,7 +1511,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(mpgData, L"manufacturer");
 
         plot->SetBarEffect(Wisteria::BoxEffect::StippleShape);
-        plot->SetStippleShape(Wisteria::Icons::IconShape::HundredDollarBill);
+        plot->SetStippleShape(Wisteria::Icons::IconShape::Car);
 
         // do this to use an image instead of a built-in vector icon:
         /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir +

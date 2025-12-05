@@ -472,7 +472,7 @@ namespace Wisteria::GraphItems
         void DrawThermometer(wxRect rect, wxDC& dc, Temperature temp) const;
         void DrawApple(wxRect rect, wxDC& dc, const wxColour& color) const;
         void DrawSword(wxRect rect, wxDC& dc, ClippingSection clippingSection) const;
-        static void DrawAsterisk(wxRect rect, wxGraphicsContext* gc);
+        void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
         void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
 
         static void FillCarvedFeature(wxGraphicsContext* gc, const wxGraphicsPath& path,
