@@ -136,7 +136,7 @@ namespace Wisteria::UI
             const auto parenthesisStart = function.find(L'(');
             if (parenthesisStart != wxString::npos)
                 {
-                const auto parenthesisEnd = function.find(L')', true);
+                const auto parenthesisEnd = function.rfind(L')');
                 // if empty parameter list then don't bother splitting this up
                 if (parenthesisEnd == parenthesisStart + 1)
                     {

@@ -537,7 +537,7 @@ wxString ExtractExtensionsFromFileFilter(const wxString& fileFilter)
         {
         retVal.erase(0, index + 1);
         }
-    index = retVal.find(L')', true);
+    index = retVal.rfind(L')');
     if (index != wxString::npos)
         {
         retVal.Truncate(index);
