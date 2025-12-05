@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "rtf_extract_text.h"
+#include <format>
 #include <utility>
 
 namespace lily_of_the_valley
@@ -476,30 +477,24 @@ namespace lily_of_the_valley
                             {
                             break;
                             }
-                        color.red = std::atoi(currentChar + 3);
+                        color.red = static_cast<int>(std::strtol(currentChar + 3, nullptr, 10));
                         // green component
                         currentChar = std::strstr(currentChar, "green");
                         if ((currentChar == nullptr) || currentChar >= colorTableEnd)
                             {
                             break;
                             }
-                        color.green = std::atoi(currentChar + 5);
+                        color.green = static_cast<int>(std::strtol(currentChar + 5, nullptr, 10));
                         // blue component
                         currentChar = std::strstr(currentChar, "blue");
                         if ((currentChar == nullptr) || currentChar >= colorTableEnd)
                             {
                             break;
                             }
-                        color.blue = std::atoi(currentChar + 4);
+                        color.blue = static_cast<int>(std::strtol(currentChar + 4, nullptr, 10));
                         // format the color for the HTML converter
-                        /// @todo Use new format library from C++20 when the time comes
-                        std::wstringstream webColorFormatStream;
-                        webColorFormatStream << std::uppercase << std::setfill(L'0') << std::hex
-                                             << std::setw(2) << color.red << std::uppercase
-                                             << std::setfill(L'0') << std::hex << std::setw(2)
-                                             << color.green << std::uppercase << std::setfill(L'0')
-                                             << std::hex << std::setw(2) << color.blue;
-                        color.web_color = webColorFormatStream.str();
+                        color.web_color =
+                            std::format(L"{:02X}{:02X}{:02X}", color.red, color.green, color.blue);
                         m_color_table.push_back(color);
 
                         currentChar = std::strchr(currentChar, ';');
@@ -528,7 +523,7 @@ namespace lily_of_the_valley
                 textColor = std::strstr(textColor, "\\cf");
                 if ((textColor != nullptr) && (nextSpace != nullptr) && (textColor < nextSpace))
                     {
-                    const int idx = std::atoi(textColor + 3);
+                    const int idx = static_cast<int>(std::strtol(textColor + 3, nullptr, 10));
                     // color table is one-base indexed
                     if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
                         {
@@ -595,8 +590,7 @@ namespace lily_of_the_valley
                         const std::array<char, 3> hexBuffer{ static_cast<char>(ch), m_rtf_text[0],
                                                              0 };
                         // convert the two bytes (hex value) to character
-                        char* dummy{ nullptr };
-                        ch = static_cast<int>(std::strtol(hexBuffer.data(), &dummy, 16));
+                        ch = static_cast<int>(std::strtol(hexBuffer.data(), nullptr, 16));
                         ecParseChar(ch);
                         m_ris = RIS::risNorm;
                         } // end else (m_ris != risNorm)
@@ -720,12 +714,12 @@ namespace lily_of_the_valley
                 *pch++ = static_cast<char>(ch);
                 }
             *pch = 0;
-            param = std::atoi(szParameter.data());
+            param = static_cast<int>(std::strtol(szParameter.data(), nullptr, 10));
             if (fNeg)
                 {
                 param = -param;
                 }
-            m_lParam = std::atol(szParameter.data());
+            m_lParam = static_cast<int>(std::strtol(szParameter.data(), nullptr, 10));
             if (fNeg)
                 {
                 m_lParam = -m_lParam;
