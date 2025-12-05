@@ -10,12 +10,12 @@
 #include "../utfcpp/source/utf8.h"
 #include "html_extract_text.h"
 #include "rtf_extract_text.h"
+#include <cstddef>
 
 namespace lily_of_the_valley
     {
     const std::string word1997_extract_text::file_system_entry::ROOT_ENTRY = "Root Entry";
     const std::string word1997_extract_text::RTF_SIGNATURE = "{\\rtf";
-    const uint8_t word1997_extract_text::UTF8_SIGNATURE[] = { 0xEF, 0xBB, 0xBF };
 
     //----------------------------------------------------
     const wchar_t* word1997_extract_text::operator()(const char* const doc_buffer,
@@ -112,7 +112,7 @@ namespace lily_of_the_valley
             if (firstChar < text_length && doc_buffer[firstChar] == '<')
                 {
                 log_message(L"DOC file appears to be HTML. Parsing file as HTML.");
-                html_extract_text filter_html;
+                html_extract_text filterHtml;
                 // convert from UTF-8
                 if (utf8::is_valid(doc_buffer, doc_buffer + text_length))
                     {
@@ -123,8 +123,8 @@ namespace lily_of_the_valley
                         convertedBuffer += static_cast<wchar_t>(ch);
                         }
                     const wchar_t* const htmText =
-                        filter_html(convertedBuffer.c_str(), convertedBuffer.length(), true, false);
-                    add_characters({ htmText, filter_html.get_filtered_text_length() });
+                        filterHtml(convertedBuffer.c_str(), convertedBuffer.length(), true, false);
+                    add_characters({ htmText, filterHtml.get_filtered_text_length() });
                     }
                 else
                     {
@@ -139,8 +139,8 @@ namespace lily_of_the_valley
                         std::mbstowcs(convertedBuffer.get(), doc_buffer, cvtBufferSize);
 #endif
                     const wchar_t* const htmText =
-                        filter_html(convertedBuffer.get(), cvtSize, true, false);
-                    add_characters({ htmText, filter_html.get_filtered_text_length() });
+                        filterHtml(convertedBuffer.get(), cvtSize, true, false);
+                    add_characters({ htmText, filterHtml.get_filtered_text_length() });
                     }
                 return get_filtered_text();
                 }
@@ -710,7 +710,8 @@ namespace lily_of_the_valley
                         }
                     for (auto i = 0; i < safe_divide(strByteCount, 2); ++i)
                         {
-                        propertyValue += read_short(propBuffer.data() + property.first + 8, i * 2);
+                        propertyValue += static_cast<wchar_t>(
+                            read_short(propBuffer.data() + property.first + 8, i * 2));
                         }
                     }
                 // Set the value to the respective property.
@@ -784,15 +785,15 @@ namespace lily_of_the_valley
         strStart -= offset; // step back into the header
 
         // move the iostream into position
-        char readBuf[2]{ 0 };
+        std::array<char, 2> readBuf{};
         for (size_t i{ 0 }; i < strStart; ++i)
             {
-            read_stream(readBuf, 1, cfbObj);
+            read_stream(readBuf.data(), 1, cfbObj);
             if (cfbObj->eof())
                 {
                 log_message(
                     L"DOC parser: stream ends before the document's body; file is corrupt.");
-                throw msword_corrupted();
+                throw msword_corrupted{};
                 }
             }
 
@@ -905,37 +906,37 @@ namespace lily_of_the_valley
         std::memcpy(tmpBuffer.data(), cfbBuf.data() + 0x4C, DIFAT_SIZE);
         while ((currSector >= 0) && (i < numOfXBATs))
             {
-            tmpBuffer.resize(m_sector_size * (i + 1) + DIFAT_SIZE);
-            str->seek(
-                static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + currSector * m_sector_size),
-                cfb_iostream::cfb_stream_seek_type::seek_beg);
+            tmpBuffer.resize((m_sector_size * (i + 1)) + DIFAT_SIZE);
+            str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
+                                        (currSector * m_sector_size)),
+                      cfb_iostream::cfb_stream_seek_type::seek_beg);
             const auto readSCount =
-                str->read(tmpBuffer.data() + DIFAT_SIZE + (m_sector_size - 4) * i, m_sector_size);
+                str->read(tmpBuffer.data() + DIFAT_SIZE + ((m_sector_size - 4) * i), m_sector_size);
             if (readSCount != m_sector_size)
                 {
                 log_message(L"DOC parser: unable to read Block Allocation Table entry.");
                 throw cfb_bad_bat_entry();
                 }
             ++i;
-            currSector = read_int(tmpBuffer.data(), DIFAT_SIZE + (m_sector_size - 4) * i);
+            currSector = read_int(tmpBuffer.data(), DIFAT_SIZE + ((m_sector_size - 4) * i));
             };
 
         // read in the initial 108 (regular) BATs (Block Allocation Tables)
         size_t currentBATSector{ 0 };
         for (i = 0; i < m_bat_sector_count && i < 109; ++i, ++currentBATSector)
             {
-            auto batSector = read_int(tmpBuffer.data(), 4 * i);
+            const auto batSector = read_int(tmpBuffer.data(), 4 * i);
 
-            if (batSector < 0 || static_cast<size_t>(batSector) >= m_sector_count)
+            if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                 {
                 // bad BAT entry
                 log_message(L"DOC parser: unable to read Block Allocation Table entry.");
                 throw cfb_bad_bat_entry();
                 }
             str->seek(
-                static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + batSector * m_sector_size),
+                static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + (batSector * m_sector_size)),
                 cfb_iostream::cfb_stream_seek_type::seek_beg);
-            if (str->read(m_BAT.data() + currentBATSector * m_sector_size, m_sector_size) !=
+            if (str->read(m_BAT.data() + (currentBATSector * m_sector_size), m_sector_size) !=
                 m_sector_size)
                 {
                 // can't read BAT
@@ -948,11 +949,11 @@ namespace lily_of_the_valley
         if (numOfXBATs > 0)
             {
             // read in the first XBAT
-            char cfbBuffer2[BAT_SECTOR_SIZE]{ 0 };
+            std::array<char, BAT_SECTOR_SIZE> cfbBuffer2{};
             str->seek(
-                static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + XBATstart * m_sector_size),
+                static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + (XBATstart * m_sector_size)),
                 cfb_iostream::cfb_stream_seek_type::seek_beg);
-            if (str->read(cfbBuffer2, BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
+            if (str->read(cfbBuffer2.data(), BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
                 {
                 // Bad XBAT entry
                 log_message(L"DOC parser: unable to read eXtended Block Allocation Table entry.");
@@ -960,7 +961,7 @@ namespace lily_of_the_valley
                 }
             for (size_t k{ 0 }; k < 128 && (k + 109) < m_bat_sector_count; ++k, ++currentBATSector)
                 {
-                auto batSector = read_int(cfbBuffer2, 4 * k);
+                auto batSector = read_int(cfbBuffer2.data(), 4 * k);
 
                 if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                     {
@@ -970,9 +971,9 @@ namespace lily_of_the_valley
                     throw cfb_bad_xbat_entry();
                     }
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
-                                            batSector * m_sector_size),
+                                            (batSector * m_sector_size)),
                           cfb_iostream::cfb_stream_seek_type::seek_beg);
-                if (str->read(m_BAT.data() + currentBATSector * m_sector_size, m_sector_size) !=
+                if (str->read(m_BAT.data() + (currentBATSector * m_sector_size), m_sector_size) !=
                     m_sector_size)
                     {
                     // Can't read XBAT
@@ -987,16 +988,16 @@ namespace lily_of_the_valley
             for (i = 1; i < numOfXBATs; ++i)
                 {
                 // last value in the XBAT tells where the next one is
-                auto batSector = read_int(cfbBuffer2, 127 * 4);
+                auto batSector = read_int(cfbBuffer2.data(), static_cast<size_t>(127 * 4));
                 if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                     {
                     break;
                     }
                 // read in the next (X)BAT, which is always 512
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
-                                            batSector * m_sector_size),
+                                            (batSector * m_sector_size)),
                           cfb_iostream::cfb_stream_seek_type::seek_beg);
-                if (str->read(cfbBuffer2, BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
+                if (str->read(cfbBuffer2.data(), BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
                     {
                     // Bad XBAT entry
                     log_message(
@@ -1007,7 +1008,7 @@ namespace lily_of_the_valley
                 for (size_t k = 0; k < 128 && currentBATSector < m_bat_sector_count;
                      ++k, ++currentBATSector)
                     {
-                    batSector = read_int(cfbBuffer2, 4 * k);
+                    batSector = read_int(cfbBuffer2.data(), 4 * k);
 
                     if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                         {
@@ -1017,10 +1018,10 @@ namespace lily_of_the_valley
                         throw cfb_bad_xbat_entry();
                         }
                     str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
-                                                batSector * m_sector_size),
+                                                (batSector * m_sector_size)),
                               cfb_iostream::cfb_stream_seek_type::seek_beg);
-                    if (str->read(m_BAT.data() + currentBATSector * m_sector_size, m_sector_size) !=
-                        m_sector_size)
+                    if (str->read(m_BAT.data() + (currentBATSector * m_sector_size),
+                                  m_sector_size) != m_sector_size)
                         {
                         // can't read XBAT
                         log_message(
@@ -1050,9 +1051,9 @@ namespace lily_of_the_valley
                     break;
                     }
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
-                                            sbatCurrent * m_sector_size),
+                                            (sbatCurrent * m_sector_size)),
                           cfb_iostream::cfb_stream_seek_type::seek_beg);
-                str->read(m_SBAT.data() + sbatBigSectorsRead * m_sector_size, m_sector_size);
+                str->read(m_SBAT.data() + (sbatBigSectorsRead * m_sector_size), m_sector_size);
                 ++sbatBigSectorsRead;
                 if ((static_cast<size_t>(sbatCurrent) * 4) > (m_bat_sector_count * m_sector_size))
                     {

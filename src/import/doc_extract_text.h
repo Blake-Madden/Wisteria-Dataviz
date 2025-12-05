@@ -14,7 +14,7 @@
 
 #include "extract_text.h"
 #include <array>
-#include <cassert>
+#include <utility>
 #include <vector>
 
 namespace lily_of_the_valley
@@ -223,7 +223,7 @@ namespace lily_of_the_valley
             cfb_iostream& operator=(const cfb_iostream&) = delete;
 
             /// @private
-            virtual ~cfb_iostream() {}
+            virtual ~cfb_iostream() = default;
 
             /// @returns @c true if current position is at the end.
             [[nodiscard]]
@@ -270,7 +270,7 @@ namespace lily_of_the_valley
                         m_current_position = m_start;
                         }
                     // if offset is going too far, then move to the end
-                    else if (static_cast<size_t>(offset) > m_buffer_size)
+                    else if (std::cmp_greater(offset, m_buffer_size))
                         {
                         m_current_position = m_eof;
                         }
@@ -287,7 +287,7 @@ namespace lily_of_the_valley
                         m_current_position = m_eof;
                         }
                     // don't go beyond the start (if going backwards)
-                    else if (static_cast<size_t>(std::abs(offset)) > m_buffer_size)
+                    else if (std::cmp_greater(std::abs(offset), m_buffer_size))
                         {
                         m_current_position = m_start;
                         }
@@ -306,7 +306,7 @@ namespace lily_of_the_valley
                 @note This will move the current position in the stream.*/
             size_t read(void* buffer, const size_t size) noexcept
                 {
-                if (!buffer)
+                if (buffer == nullptr)
                     {
                     return 0;
                     }
@@ -316,7 +316,7 @@ namespace lily_of_the_valley
                     return 0;
                     }
                 // check to see if the requested read size is bigger than the rest of the stream
-                const size_t readSize = static_cast<size_t>(m_eof - m_current_position) >= size ?
+                const size_t readSize = std::cmp_greater_equal(m_eof - m_current_position, size) ?
                                             size :
                                             m_eof - m_current_position;
                 if (readSize == 1)
@@ -523,7 +523,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static /*DWORD*/ uint32_t read_uint(const char* buffer, const size_t offset) noexcept
             {
-            if (!buffer)
+            if (buffer == nullptr)
                 {
                 return 0;
                 }
@@ -537,7 +537,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static /*INT*/ int32_t read_int(const char* buffer, const size_t offset) noexcept
             {
-            if (!buffer)
+            if (buffer == nullptr)
                 {
                 return 0;
                 }
@@ -551,7 +551,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static /*SHORT*/ uint16_t read_short(const char* buffer, const int offset) noexcept
             {
-            if (!buffer)
+            if (buffer == nullptr)
                 {
                 return 0;
                 }
@@ -563,7 +563,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static /*SHORT*/ uint16_t read_short(const unsigned char* buffer, const int offset) noexcept
             {
-            if (!buffer)
+            if (buffer == nullptr)
                 {
                 return 0;
                 }
@@ -646,7 +646,7 @@ namespace lily_of_the_valley
 
         // file signatures
         static const std::string RTF_SIGNATURE;
-        static const uint8_t UTF8_SIGNATURE[];
+        constexpr static std::array<uint8_t, 3> UTF8_SIGNATURE{ 0xEF, 0xBB, 0xBF };
         charset_type m_read_type{ charset_type::utf16 };
 
         size_t m_file_length{ 0 };
