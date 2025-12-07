@@ -8,6 +8,7 @@
 
 #include "mainframe.h"
 #include "dialogs/radioboxdlg.h"
+#include <algorithm>
 
 // NOLINTBEGIN(cppcoreguidelines-pro-type-static-cast-downcast)
 
@@ -28,10 +29,10 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
             }
 
         bool want = true;
-        for (size_t j = 0; j < data.size(); ++j)
+        for (const auto& datum : data)
             {
-            if (templates[i]->GetDocumentName() == data[j]->GetDocumentName() &&
-                templates[i]->GetViewName() == data[j]->GetViewName())
+            if (templates[i]->GetDocumentName() == datum->GetDocumentName() &&
+                templates[i]->GetViewName() == datum->GetViewName())
                 {
                 want = false;
                 break; // stop scanning; we found a duplicate
@@ -46,11 +47,11 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
 
     if (sortDocs && data.size() > 1)
         {
-        std::stable_sort(data.begin(), data.end(),
-                         [](const wxDocTemplate* a, const wxDocTemplate* b)
-                         { return a->GetDescription() < b->GetDescription(); });
+        std::ranges::stable_sort(data, [](const wxDocTemplate* a, const wxDocTemplate* b)
+                                 { return a->GetDescription() < b->GetDescription(); });
         }
 
+    // NOLINTNEXTLINE(misc-const-correctness)
     wxDocTemplate* theTemplate{ nullptr };
 
     switch (data.size())
@@ -67,9 +68,9 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
         {
         wxArrayString docNames;
 
-        for (size_t i = 0; i < data.size(); ++i)
+        for (const auto& datum : data)
             {
-            docNames.Add(data[i]->GetDescription());
+            docNames.Add(datum->GetDescription());
             }
 
         // find a suitable parent window
@@ -169,6 +170,7 @@ Wisteria::UI::BaseMainFrame::BaseMainFrame(wxDocManager* manager, wxFrame* frame
 //-------------------------------------------------------
 wxDocument* Wisteria::UI::BaseMainFrame::OpenFile(const wxString& path)
     {
+    // NOLINTNEXTLINE(misc-const-correctness)
     wxDocument* doc = m_docManager->CreateDocument(path, wxDOC_SILENT);
     if (doc == nullptr)
         {

@@ -12,22 +12,21 @@
      SPDX-License-Identifier: wxWindows
 @{*/
 
-#ifndef __GTK_TEXTVIEW_PANGO_MARKUP__
-#define __GTK_TEXTVIEW_PANGO_MARKUP__
+#ifndef GTK_TEXTVIEW_PANGO_MARKUP
+#define GTK_TEXTVIEW_PANGO_MARKUP
 
 #ifdef __WXGTK__
-#include <cstring>
-#include <gtk/gtk.h>
-#include <gtk/gtktextchild.h>
-#include <gtk/gtktextiter.h>
-#include <gtk/gtktexttag.h>
-#include <string>
-#include <vector>
-#include <wx/gtk/print.h>
-#include <wx/log.h>
-#include <wx/paper.h>
-#include <wx/string.h>
-#include <wx/wx.h>
+
+    #include <cstring>
+    #include <gtk/gtk.h>
+    #include <gtk/gtktexttag.h>
+    #include <string>
+    #include <vector>
+    #include <wx/gtk/print.h>
+    #include <wx/log.h>
+    #include <wx/paper.h>
+    #include <wx/string.h>
+    #include <wx/wx.h>
 
 // clang-format off
 // Printing system for GtkTextView
@@ -36,6 +35,7 @@
 // From wxWidget's gtk/print.cpp:
 // Map wxPaperSize to GtkPaperSize names
 // Ordering must be the same as wxPaperSize enum
+// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 static const char* const gtk_paperList[] =
     {
     nullptr, // wxPAPER_NONE
@@ -158,20 +158,21 @@ static const char* const gtk_paperList[] =
     "iso_a0", // wxPAPER_A0
     "iso_a1"  // wxPAPER_A1
     };
+// NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-struct _GtkPageLines
+struct GtkPageLines
     {
     gint m_page{ 0 };
     GSList* m_linesStart{ nullptr };
     gint m_numberOfLines{ 0 };
     };
 
-struct _GtkPrintData
+struct GtkPrintData
     {
     std::string m_markupContent;
     PangoLayout* m_layout{ nullptr };
     GSList* m_lines{ nullptr };
-    std::vector<_GtkPageLines> m_pageLines;
+    std::vector<GtkPageLines> m_pageLines;
     gint m_headerAreaHeight{ 0 };
     gint m_footerAreaHeight{ 0 };
     wxString m_leftPrintHeader;
@@ -193,10 +194,10 @@ extern "C"
 
 // Based on wxWidget's gtk/print.cpp:
 //-------------------------------------------------
-static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
+static GtkPaperSize* GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
     {
     // if wxPaperSize is valid, get corresponding GtkPaperSize
-    if (paperId > 0 && size_t(paperId) < std::size(gtk_paperList))
+    if (paperId > 0 && static_cast<size_t>(paperId) < std::size(gtk_paperList))
         { return gtk_paper_size_new(gtk_paperList[paperId]); }
 
     // if size is not valid, use a default GtkPaperSize
@@ -210,7 +211,7 @@ static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
     GList* list = gtk_paper_size_get_paper_sizes(TRUE);
     for (GList* p = list; p != nullptr; p = p->next)
         {
-        GtkPaperSize* paperSize2 = static_cast<GtkPaperSize*>(p->data);
+        auto* paperSize2 = static_cast<GtkPaperSize*>(p->data);
         if (paperSize == nullptr &&
             std::fabs(w - gtk_paper_size_get_width(paperSize2, GTK_UNIT_MM)) < 1 &&
             std::fabs(h - gtk_paper_size_get_height(paperSize2, GTK_UNIT_MM)) < 1)
@@ -220,7 +221,7 @@ static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
         }
     g_list_free(list);
 
-    if (paperSize)
+    if (paperSize != nullptr)
         { return paperSize; }
 
     // last resort, use a custom GtkPaperSize
@@ -231,7 +232,7 @@ static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
     }
 
 //-------------------------------------------------
-static void _GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
+static void GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
                                                  GtkPrintSettings* settings,
                                                  wxPrintData* printData)
     {
@@ -242,8 +243,9 @@ static void _GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
     // reflected in the print settings, but must be retrieved from the page
     // setup struct itself separately.
     GtkPageSetup* defPageSetup{ nullptr };
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,bugprone-casting-through-void,cppcoreguidelines-pro-type-cstyle-cast,hicpp-vararg)
     g_object_get(operation, "default-page-setup", &defPageSetup, nullptr);
-    if (defPageSetup)
+    if (defPageSetup != nullptr)
         {
         gtk_print_settings_set_orientation(settings, gtk_page_setup_get_orientation(defPageSetup));
         gtk_print_settings_set_paper_size(settings, gtk_page_setup_get_paper_size(defPageSetup));
@@ -288,9 +290,9 @@ static void _GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
     }
 
 //-------------------------------------------------
-static void _GtkBeginPrint(GtkPrintOperation* operation,
+static void GtkBeginPrint(GtkPrintOperation* operation,
                            GtkPrintContext* context,
-                           _GtkPrintData* printData)
+                           GtkPrintData* printData)
     {
     printData->m_layout = nullptr;
     printData->m_lines = nullptr;
@@ -304,21 +306,21 @@ static void _GtkBeginPrint(GtkPrintOperation* operation,
 
     pango_layout_set_width(printData->m_layout, contextWidth * PANGO_SCALE);
     // measure headers
-    if (printData->m_leftPrintHeader.length())
+    if (!printData->m_leftPrintHeader.empty())
         {
         pango_layout_set_text(printData->m_layout, printData->m_leftPrintHeader, -1);
         pango_layout_get_size(printData->m_layout, nullptr, &printData->m_headerAreaHeight);
         printData->m_headerAreaHeight =
             std::max(40.0, (printData->m_headerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
         }
-    if (printData->m_centerPrintHeader.length())
+    if (!printData->m_centerPrintHeader.empty())
         {
         pango_layout_set_text(printData->m_layout, printData->m_centerPrintHeader, -1);
         pango_layout_get_size(printData->m_layout, nullptr, &printData->m_headerAreaHeight);
         printData->m_headerAreaHeight =
             std::max(40.0, (printData->m_headerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
         }
-    if (printData->m_rightPrintHeader.length())
+    if (!printData->m_rightPrintHeader.empty())
         {
         pango_layout_set_text(printData->m_layout, printData->m_rightPrintHeader, -1);
         pango_layout_get_size(printData->m_layout, nullptr, &printData->m_headerAreaHeight);
@@ -326,21 +328,21 @@ static void _GtkBeginPrint(GtkPrintOperation* operation,
             std::max(40.0, (printData->m_headerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
         }
     // ...and footers
-    if (printData->m_leftPrintFooter.length())
+    if (!printData->m_leftPrintFooter.empty())
         {
         pango_layout_set_text(printData->m_layout, printData->m_leftPrintFooter, -1);
         pango_layout_get_size(printData->m_layout, nullptr, &printData->m_footerAreaHeight);
         printData->m_footerAreaHeight =
             std::max(40.0, (printData->m_footerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
         }
-    if (printData->m_centerPrintFooter.length())
+    if (!printData->m_centerPrintFooter.empty())
         {
         pango_layout_set_text(printData->m_layout, printData->m_centerPrintFooter, -1);
         pango_layout_get_size(printData->m_layout, nullptr, &printData->m_footerAreaHeight);
         printData->m_footerAreaHeight =
             std::max(40.0, (printData->m_footerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
         }
-    if (printData->m_rightPrintFooter.length())
+    if (!printData->m_rightPrintFooter.empty())
         {
         pango_layout_set_text(printData->m_layout, printData->m_rightPrintFooter, -1);
         pango_layout_get_size(printData->m_layout, nullptr, &printData->m_footerAreaHeight);
@@ -356,8 +358,8 @@ static void _GtkBeginPrint(GtkPrintOperation* operation,
     gint layoutHeight{ 0 };
     gint currentPageHeight{ 0 };
     printData->m_lines = pango_layout_get_lines_readonly(printData->m_layout);
-    _GtkPageLines currentPageLines{ 0, printData->m_lines, 0 };
-    for (auto lines = printData->m_lines;
+    GtkPageLines currentPageLines{ 0, printData->m_lines, 0 };
+    for (auto *lines = printData->m_lines;
         lines != nullptr;
         lines = lines->next)
         {
@@ -386,10 +388,10 @@ static void _GtkBeginPrint(GtkPrintOperation* operation,
     }
 
 //-------------------------------------------------
-static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
+static void GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
                          GtkPrintContext* context,
                          gint pageNr,
-                         _GtkPrintData* printData)
+                         GtkPrintData* printData)
     {
     cairo_t* cr = gtk_print_context_get_cairo_context(context);
     const gdouble pageWidth = gtk_print_context_get_width(context);
@@ -403,9 +405,9 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
         };
 
     // Render headers
-    auto layout = gtk_print_context_create_pango_layout(context);
+    auto *layout = gtk_print_context_create_pango_layout(context);
     pango_layout_set_width(layout, -1);
-    if (printData->m_leftPrintHeader.length())
+    if (!printData->m_leftPrintHeader.empty())
         {
         pango_layout_set_text(layout, expandPrinterString(printData->m_leftPrintHeader), -1);
         pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
@@ -413,7 +415,7 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
         cairo_move_to(cr, 0, 0);
         pango_cairo_show_layout(cr, layout);
         }
-    if (printData->m_centerPrintHeader.length())
+    if (!printData->m_centerPrintHeader.empty())
         {
         gint textWidth{ 0 };
         pango_layout_set_text(layout, expandPrinterString(printData->m_centerPrintHeader), -1);
@@ -423,7 +425,7 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
         cairo_move_to(cr, (pageWidth / 2) - ((textWidth / static_cast<gdouble>(PANGO_SCALE)) / 2), 0);
         pango_cairo_show_layout(cr, layout);
         }
-    if (printData->m_rightPrintHeader.length())
+    if (!printData->m_rightPrintHeader.empty())
         {
         gint textWidth{ 0 };
         pango_layout_set_text(layout, expandPrinterString(printData->m_rightPrintHeader), -1);
@@ -433,7 +435,7 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
         cairo_move_to(cr, pageWidth - (textWidth / static_cast<gdouble>(PANGO_SCALE)), 0);
         pango_cairo_show_layout(cr, layout);
         }
-    if (printData->m_leftPrintFooter.length())
+    if (!printData->m_leftPrintFooter.empty())
         {
         gint textWidth{ 0 }, textHeight{ 0 };
         pango_layout_set_text(layout, expandPrinterString(printData->m_leftPrintFooter), -1);
@@ -443,7 +445,7 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
         cairo_move_to(cr, 0, pageHeight - (textHeight / static_cast<gdouble>(PANGO_SCALE)) );
         pango_cairo_show_layout(cr, layout);
         }
-    if (printData->m_centerPrintFooter.length())
+    if (!printData->m_centerPrintFooter.empty())
         {
         gint textWidth{ 0 }, textHeight{ 0 };
         pango_layout_set_text(layout, expandPrinterString(printData->m_centerPrintFooter), -1);
@@ -455,7 +457,7 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
                       pageHeight - (textHeight / static_cast<gdouble>(PANGO_SCALE)) );
         pango_cairo_show_layout(cr, layout);
         }
-    if (printData->m_rightPrintFooter.length())
+    if (!printData->m_rightPrintFooter.empty())
         {
         gint textWidth{ 0 }, textHeight{ 0 };
         pango_layout_set_text(layout, expandPrinterString(printData->m_rightPrintFooter), -1);
@@ -470,7 +472,7 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
 
     // Render the text on the page, line-by-line.
     cairo_move_to(cr, 0, printData->m_headerAreaHeight);
-    auto lines = printData->m_pageLines[pageNr].m_linesStart;
+    auto *lines = printData->m_pageLines[pageNr].m_linesStart;
     gint layoutHeight{ 0 };
     for (gint i = 0;
          i < printData->m_pageLines[pageNr].m_numberOfLines;
@@ -488,10 +490,10 @@ static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
     }
 
 //-------------------------------------------------
-static void _GtkEndPrint(
+static void GtkEndPrint(
                   [[maybe_unused]] GtkPrintOperation* operation,
                   [[maybe_unused]] GtkPrintContext* context,
-                  _GtkPrintData* printData)
+                  GtkPrintData* printData)
     {
     g_object_unref(printData->m_layout);
     printData->m_layout = nullptr;
@@ -507,12 +509,12 @@ static void _GtkEndPrint(
 }
 
 /// @returns A GTK text tag into HTML text.
-wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
+wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
 /// @returns A GTK text tag into RTF text.
-wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
+wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
                              std::vector<wxColour>& colorTable,
                              [[maybe_unused]] std::vector<wxString>& fontTable);
-// clang-format on
+    // clang-format on
 
 #endif // __WXGTK__
-#endif // __GTK_TEXTVIEW_PANGO_MARKUP__
+#endif // GTK_TEXTVIEW_PANGO_MARKUP

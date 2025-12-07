@@ -241,12 +241,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 continue;
                 }
             const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            // NOLINTBEGIN(misc-redundant-expression)
             auto leftRulerAxisPos = is_within<size_t>(std::make_pair(0, 24), currentScore)   ? 25 :
                                     is_within<size_t>(std::make_pair(25, 34), currentScore)  ? 35 :
                                     is_within<size_t>(std::make_pair(35, 44), currentScore)  ? 45 :
                                     is_within<size_t>(std::make_pair(45, 54), currentScore)  ? 55 :
                                     is_within<size_t>(std::make_pair(55, 100), currentScore) ? 65 :
                                                                                                65;
+            // NOLINTEND(misc-redundant-expression)
             activeScoreAreas.push_back(leftRulerAxisPos);
             // labels on the right side of the score
             activeScoreAreas.push_back(leftRulerAxisPos - 5);

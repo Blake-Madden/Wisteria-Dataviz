@@ -1145,12 +1145,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 0;
         // space for connection lines to notes
         widestLeftNote += (widestLeftNote > 0) ?
-                              (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
-                                  ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
+                              (ScaleToScreenAndCanvas(CONNECTION_OVERHANG_WIDTH) * 2) +
+                                  ScaleToScreenAndCanvas(LABEL_SPACING_FROM_LINE) :
                               0;
         widestRightNote += (widestRightNote > 0) ?
-                               (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
-                                   ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
+                               (ScaleToScreenAndCanvas(CONNECTION_OVERHANG_WIDTH) * 2) +
+                                   ScaleToScreenAndCanvas(LABEL_SPACING_FROM_LINE) :
                                0;
 
         CalcMainTableSize(columnWidths, rowHeights, measuringLabel, dc);
@@ -1727,8 +1727,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         const auto leftGutter =
             wxRect(wxPoint(drawArea.GetX(), drawArea.GetY() + verticalAlignmentOffset),
                    wxSize(horizontalAlignmentOffset, drawArea.GetHeight()));
-        const auto connectionOverhangWidth = ScaleToScreenAndCanvas(m_connectionOverhangWidth);
-        const auto labelSpacingFromLine = ScaleToScreenAndCanvas(m_labelSpacingFromLine);
+        const auto connectionOverhangWidth = ScaleToScreenAndCanvas(CONNECTION_OVERHANG_WIDTH);
+        const auto labelSpacingFromLine = ScaleToScreenAndCanvas(LABEL_SPACING_FROM_LINE);
         for (auto& note : m_cellAnnotations)
             {
             // sort by rows, top-to-bottom

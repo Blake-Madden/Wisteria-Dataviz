@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __HTML_TABLE_WINDOW_H__
-#define __HTML_TABLE_WINDOW_H__
+#ifndef HTML_TABLE_WINDOW_H
+#define HTML_TABLE_WINDOW_H
 
 #include "../../base/canvas.h"
 #include "../../util/donttranslate.h"
@@ -144,7 +144,7 @@ namespace Wisteria::UI
 
         void OnSelectAll([[maybe_unused]] wxCommandEvent& event);
 
-        void OnCopy([[maybe_unused]] wxCommandEvent& event);
+        void OnCopyText([[maybe_unused]] wxCommandEvent& event);
 
         void OnFind([[maybe_unused]] wxFindDialogEvent& event);
 
@@ -175,4 +175,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__HTML_TABLE_WINDOW_H__
+#endif // HTML_TABLE_WINDOW_H

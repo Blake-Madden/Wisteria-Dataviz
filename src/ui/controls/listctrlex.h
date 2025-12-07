@@ -15,13 +15,11 @@
 #include <utility>
 #include <wx/busyinfo.h>
 #include <wx/clipbrd.h>
-#include <wx/dataobj.h>
 #include <wx/dcbuffer.h>
 #include <wx/dnd.h>
 #include <wx/fdrepdlg.h>
 #include <wx/file.h>
 #include <wx/html/htmprint.h>
-#include <wx/image.h>
 #include <wx/imaglist.h>
 #include <wx/mimetype.h>
 #include <wx/paper.h>
@@ -66,9 +64,9 @@ namespace Wisteria::UI
         {
       public:
         ListEditComboBox(wxWindow* parent, ListCtrlEx* owner, const wxArrayString& choices,
-                         wxWindowID id = wxID_ANY, const wxString& value = wxString{},
+                         const wxWindowID id = wxID_ANY, const wxString& value = wxString{},
                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                         long style = wxCB_DROPDOWN,
+                         const long style = wxCB_DROPDOWN,
                          const wxValidator& validator = wxDefaultValidator,
                          const wxString& name = L"ListEditComboBox")
             : wxComboBox(parent, id, value, pos, size, choices, style, validator, name),
@@ -77,7 +75,7 @@ namespace Wisteria::UI
             Bind(wxEVT_COMBOBOX, &ListEditComboBox::OnEnter, this);
             Bind(wxEVT_TEXT_ENTER, &ListEditComboBox::OnEnter, this);
             Bind(wxEVT_KILL_FOCUS, &ListEditComboBox::OnKillFocus, this);
-            Bind(wxEVT_CHAR_HOOK, &ListEditComboBox::OnChar, this);
+            Bind(wxEVT_CHAR_HOOK, &ListEditComboBox::OnCharEntered, this);
             }
 
         ListEditComboBox(const ListEditComboBox&) = delete;
@@ -98,7 +96,7 @@ namespace Wisteria::UI
             Hide();
             }
 
-        void OnChar(wxKeyEvent& event)
+        void OnCharEntered(wxKeyEvent& event)
             {
             if (event.GetKeyCode() == WXK_ESCAPE)
                 {
@@ -134,7 +132,7 @@ namespace Wisteria::UI
               m_owner(owner)
             {
             Bind(wxEVT_KILL_FOCUS, &ListEditSpinCtrl::OnEndEditKillFocus, this, wxID_ANY);
-            Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrl::OnChar, this);
+            Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrl::OnCharEntered, this);
             }
 
         void OnEndEditKillFocus(wxFocusEvent& event);
@@ -152,7 +150,7 @@ namespace Wisteria::UI
             }
 
         void Accept();
-        void OnChar(wxKeyEvent& event);
+        void OnCharEntered(wxKeyEvent& event);
 
       private:
         ListCtrlEx* m_owner{ nullptr };
@@ -189,7 +187,7 @@ namespace Wisteria::UI
             }
 
         void Accept();
-        void OnChar(wxKeyEvent& event);
+        void OnCharEntered(wxKeyEvent& event);
 
       private:
         ListCtrlEx* m_owner{ nullptr };
@@ -216,7 +214,7 @@ namespace Wisteria::UI
         void Cancel();
         void Accept(wxDirection direction);
 
-        void OnChar(wxKeyEvent& event);
+        void OnCharEntered(wxKeyEvent& event);
         void OnEnter([[maybe_unused]] wxCommandEvent& event);
         void OnKillFocus([[maybe_unused]] wxFocusEvent& event);
 
@@ -601,7 +599,8 @@ namespace Wisteria::UI
         /// @param path The file path to save the list control's contents.
         /// @param exportOptions The export options (a ListCtrlExportOptions object).
         /// @returns @c true if successful.
-        bool Save(const wxFileName& path, Wisteria::UI::GridExportOptions exportOptions) const;
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        bool Save(const wxFileName& path, GridExportOptions exportOptions) const;
 
         /// @brief Deletes all rows that are selected.
         void DeleteSelectedItems();
@@ -1118,6 +1117,7 @@ namespace Wisteria::UI
         /// @brief Gets a row's colors and font.
         /// @param item The row to retrieve.
         /// @returns The row's attributes.
+        [[nodiscard]]
         wxItemAttr* OnGetItemAttr(long item) const final;
 
       private:
@@ -1128,10 +1128,16 @@ namespace Wisteria::UI
         wxString GetItemTextNonVirtual(long item, long column) const;
 
         /// overloaded functions for virtual mode
+        [[nodiscard]]
         wxString OnGetItemText(long item, long column) const final;
 
-        int OnGetItemImage(long item) const final { return m_virtualData->GetItemImage(item, 0); }
+        [[nodiscard]]
+        int OnGetItemImage(long item) const final
+            {
+            return m_virtualData->GetItemImage(item, 0);
+            }
 
+        [[nodiscard]]
         int OnGetItemColumnImage(long item, long column) const final
             {
             return m_virtualData->GetItemImage(item, column);

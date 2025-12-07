@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __CODE_EDITOR_H__
-#define __CODE_EDITOR_H__
+#ifndef WISTERIA_CODE_EDITOR_H
+#define WISTERIA_CODE_EDITOR_H
 
 #include "../../util/donttranslate.h"
 #include "../../util/string_util.h"
@@ -299,4 +299,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__CODE_EDITOR_H__
+#endif // WISTERIA_CODE_EDITOR_H

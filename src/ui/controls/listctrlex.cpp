@@ -33,7 +33,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         {
         Bind(wxEVT_TEXT_ENTER, &ListEditTextCtrl::OnEnter, this);
         Bind(wxEVT_KILL_FOCUS, &ListEditTextCtrl::OnKillFocus, this);
-        Bind(wxEVT_CHAR_HOOK, &ListEditTextCtrl::OnChar, this);
+        Bind(wxEVT_CHAR_HOOK, &ListEditTextCtrl::OnCharEntered, this);
         }
 
     //------------------------------------------------------
@@ -67,7 +67,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
-    void ListEditTextCtrl::OnChar(wxKeyEvent & event)
+    void ListEditTextCtrl::OnCharEntered(wxKeyEvent & event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             {
@@ -95,7 +95,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
-    void ListEditTextCtrl::Accept(wxDirection direction)
+    void ListEditTextCtrl::Accept(const wxDirection direction)
         {
         Hide();
         if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
@@ -183,7 +183,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
-    void ListEditSpinCtrl::OnChar(wxKeyEvent & event)
+    void ListEditSpinCtrl::OnCharEntered(wxKeyEvent & event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             {
@@ -226,18 +226,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         wxWindow * parent, ListCtrlEx * owner, wxWindowID id /*= wxID_ANY*/,
         const wxString& value /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
         const wxSize& size /*= wxDefaultSize*/, long style /*= wxSP_ARROW_KEYS*/,
-        double Min /* = 1.0*/, double Max /*= 100.0*/, double initial /*= 1.0*/,
+        const double Min /* = 1.0*/, const double Max /*= 100.0*/, double initial /*= 1.0*/,
         const wxString& name /*= L"ListEditSpinCtrlDouble"*/)
         : wxSpinCtrlDouble(parent, id, value, pos, size, style, Min, Max, initial, 1.0, name),
           m_owner(owner)
         {
         SetDigits(1);
         Bind(wxEVT_KILL_FOCUS, &ListEditSpinCtrlDouble::OnEndEditKillFocus, this);
-        Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrlDouble::OnChar, this);
+        Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrlDouble::OnCharEntered, this);
         }
 
     //------------------------------------------------------
-    void ListEditSpinCtrlDouble::OnChar(wxKeyEvent & event)
+    void ListEditSpinCtrlDouble::OnCharEntered(wxKeyEvent & event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             {

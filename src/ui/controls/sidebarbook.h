@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __SIDEBARBOOK_H__
-#define __SIDEBARBOOK_H__
+#ifndef SIDEBARBOOK_H
+#define SIDEBARBOOK_H
 
 #include "sidebar.h"
 #include <wx/bookctrl.h>
@@ -225,7 +225,7 @@ namespace Wisteria::UI
         void OnListSelected([[maybe_unused]] wxCommandEvent& event);
 
       private:
-        SideBarBook() noexcept {}
+        SideBarBook() noexcept = default;
 
         // the array of all pages of this control
         std::vector<wxWindow*> m_pages;
@@ -247,4 +247,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif // __SIDEBARBOOK_H__
+#endif // SIDEBARBOOK_H

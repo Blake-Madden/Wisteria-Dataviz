@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FORMATTEDTEXTCTRL_H__
-#define __FORMATTEDTEXTCTRL_H__
+#ifndef WISTERIA_FORMATTEDTEXTCTRL_H
+#define WISTERIA_FORMATTEDTEXTCTRL_H
 
 #include <wx/wx.h>
 #if defined(__WXMSW__)
@@ -28,14 +28,10 @@
 #include <wx/busyinfo.h>
 #include <wx/clipbrd.h>
 #include <wx/datetime.h>
-#include <wx/dcprint.h>
 #include <wx/dcps.h>
 #include <wx/fdrepdlg.h>
-#include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/html/htmprint.h>
-#include <wx/print.h>
-#include <wx/printdlg.h>
 #include <wx/strconv.h>
 #include <wx/textctrl.h>
 #include <wx/xrc/xmlres.h>
@@ -253,7 +249,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxRect GetPageRect() const
             {
-            // if landscape, then "turn the page on its side" by flipping the page size
+            // if in landscape, then "turn the page on its side" by flipping the page size
             return { wxPoint{ 0, 0 }, (m_printData->GetOrientation() == wxLANDSCAPE) ?
                                           wxSize{ m_paperSize.y, m_paperSize.x } :
                                           m_paperSize };
@@ -486,4 +482,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif // __FORMATTEDTEXTCTRL_H__
+#endif // WISTERIA_FORMATTEDTEXTCTRL_H

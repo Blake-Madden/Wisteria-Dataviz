@@ -29,12 +29,13 @@ namespace Wisteria
                                          size_t length)
         {
         wxLogWarning(L"Possible broken UTF-8 stream encountered.");
-        assert(text && length && dest && destLength);
+        wxASSERT(text && length && dest && destLength);
         if (text == nullptr || dest == nullptr || length == 0 || destLength == 0)
             {
             return false;
             }
         // skip BOM before reading text
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         if (std::memcmp(text, utf8::bom, sizeof(utf8::bom)) == 0)
             {
             text += sizeof(utf8::bom);
@@ -54,8 +55,8 @@ namespace Wisteria
             const size_t copiedSize =
                 wxConvUTF8.ToWChar(dest, destLength, startOfCurrentSequence,
                                    (invalidSequence - startOfCurrentSequence));
-            assert(copiedSize != wxCONV_FAILED);
-            assert(destLength >= copiedSize);
+            wxASSERT(copiedSize != wxCONV_FAILED);
+            wxASSERT(destLength >= copiedSize);
             if (copiedSize == wxCONV_FAILED || copiedSize > destLength)
                 {
                 return false;
@@ -67,8 +68,8 @@ namespace Wisteria
         // copy over last block
         const size_t copiedSize = wxConvUTF8.ToWChar(dest, destLength, startOfCurrentSequence,
                                                      (text + length) - startOfCurrentSequence);
-        assert(copiedSize != wxCONV_FAILED);
-        assert(destLength > copiedSize);
+        wxASSERT(copiedSize != wxCONV_FAILED);
+        wxASSERT(destLength > copiedSize);
         if (copiedSize == wxCONV_FAILED || copiedSize > destLength)
             {
             return false;
@@ -167,6 +168,7 @@ namespace Wisteria
                 // signature in front, then chop off that signature set it to load it
                 // as UTF-8 (or broken UTF-8).
                 if (length > sizeof(utf8::bom) &&
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
                     std::memcmp(text, utf8::bom, sizeof(utf8::bom)) == 0)
                     {
                     conversionResult =
@@ -178,6 +180,7 @@ namespace Wisteria
                         }
                     }
                 // if XML or HTML, then try to read the encoding from the header
+                // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                 else if (!(srcCharSet =
                                lily_of_the_valley::html_extract_text::parse_charset(text, length)
                                    .c_str())
@@ -261,10 +264,10 @@ namespace Wisteria
 
         // length plus null terminator would be enough, but doesn't hurt have a little extra room
         const size_t destLength = (length * 1.5) + 1;
-        auto dest = std::make_unique<wchar_t[]>(destLength);
+        std::vector<wchar_t> dest(destLength, L'\0');
 
-        return (CharStreamToUnicode(dest.get(), destLength, text, length, std::move(srcCharSet))) ?
-                   std::wstring(dest.get()) :
+        return (CharStreamToUnicode(dest.data(), destLength, text, length, std::move(srcCharSet))) ?
+                   std::wstring(dest.data()) :
                    std::wstring{};
         }
 
@@ -293,9 +296,11 @@ namespace Wisteria
                     return false;
                     }
                 const wxFileName fn(filePath);
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
                 wxFileDialog dialog(nullptr, _(L"Select File"), fn.GetPath(), fn.GetName(),
                                     wxFileSelectorDefaultWildcardStr,
                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+                // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
                 if (dialog.ShowModal() != wxID_OK)
                     {
@@ -313,12 +318,13 @@ namespace Wisteria
             {
             MemoryMappedFile file;
             file.MapFile(filePath);
-            textBuffer = TextStream::CharStreamToUnicode(static_cast<const char*>(file.GetStream()),
-                                                         file.GetMapSize(), srcCharSet);
+            textBuffer = CharStreamToUnicode(static_cast<const char*>(file.GetStream()),
+                                             file.GetMapSize(), srcCharSet);
             if (textBuffer.empty())
                 {
                 // uncommon situation, but if file is nothing more than a UTF-8 BOM then it's OK
                 if (file.GetMapSize() == sizeof(utf8::bom) &&
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
                     std::memcmp(file.GetStream(), utf8::bom, sizeof(utf8::bom)) == 0)
                     {
                     return true;
@@ -340,14 +346,15 @@ namespace Wisteria
                 wxMessageBox(_(L"Unable to open file."), _(L"Error"), wxOK | wxICON_EXCLAMATION);
                 return false;
                 }
-            auto fileText = std::make_unique<char[]>(theFile.Length() + 1);
-            if (!theFile.Read(fileText.get(), theFile.Length()))
+            const auto fileLen = theFile.Length();
+            std::vector<char> fileText(fileLen + 1, '\0');
+            const size_t bytesRead = theFile.Read(fileText.data(), fileLen);
+            if (bytesRead == 0)
                 {
                 wxMessageBox(_(L"Unable to read file."), _(L"Error"), wxOK | wxICON_EXCLAMATION);
                 return false;
                 }
-            textBuffer =
-                TextStream::CharStreamToUnicode(fileText.get(), theFile.Length(), srcCharSet);
+            textBuffer = CharStreamToUnicode(fileText.data(), bytesRead, srcCharSet);
             }
         return true;
         }

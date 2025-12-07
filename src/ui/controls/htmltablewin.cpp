@@ -36,13 +36,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(HtmlTableWindow, wxHtmlWindow)
 
     Bind(wxEVT_RIGHT_DOWN, &HtmlTableWindow::OnRightClick, this);
     // standard menu commands
-    Bind(wxEVT_MENU, &HtmlTableWindow::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnCopyText, this, wxID_COPY);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnPreview, this, wxID_PREVIEW);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnPrint, this, wxID_PRINT);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnSave, this, wxID_SAVE);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnSave, this, XRCID("ID_SAVE_ITEM"));
     // button variations of above commands
-    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnCopyText, this, wxID_COPY);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnPreview, this, wxID_PREVIEW);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnPrint, this, wxID_PRINT);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnSave, this, wxID_SAVE);
@@ -257,7 +257,8 @@ void HtmlTableWindow::OnSave([[maybe_unused]] wxCommandEvent& event)
         filePath.SetExt(L"htm");
         }
 
-    Save(filePath);
+    [[maybe_unused]]
+    bool result = Save(filePath);
     }
 
 //------------------------------------------------------
@@ -307,7 +308,7 @@ void HtmlTableWindow::Copy()
 void HtmlTableWindow::OnSelectAll([[maybe_unused]] wxCommandEvent& event) { SelectAll(); }
 
 //------------------------------------------------------
-void HtmlTableWindow::OnCopy([[maybe_unused]] wxCommandEvent& event) { Copy(); }
+void HtmlTableWindow::OnCopyText([[maybe_unused]] wxCommandEvent& event) { Copy(); }
 
 //------------------------------------------------------
 void HtmlTableWindow::OnRightClick([[maybe_unused]] wxMouseEvent& event) { PopupMenu(&m_menu); }

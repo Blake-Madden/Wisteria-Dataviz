@@ -35,7 +35,7 @@ namespace Wisteria::UI
         /// @private
         [[nodiscard]]
         wxDocTemplate* SelectDocumentType(wxDocTemplate** templates, int noTemplates,
-                                          bool sortDocs = false) override;
+                                          bool sortDocs /*= false*/) override;
         };
 
     /// @brief Single-document application parent frame with built-in ribbon,

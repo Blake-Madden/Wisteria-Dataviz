@@ -526,32 +526,26 @@ namespace Wisteria::Graphs
                 {
                 if (IsNumeric())
                     {
-                    if (const auto dVal{ std::get_if<double>(&m_value) })
+                    if (const auto* const dVal{ std::get_if<double>(&m_value) })
                         {
                         return *dVal;
                         }
-                    else
-                        {
-                        return std::numeric_limits<double>::quiet_NaN();
-                        }
+
+                    return std::numeric_limits<double>::quiet_NaN();
                     }
-                else if (IsRatio())
+                if (IsRatio())
                     {
-                    if (const auto rVals{ std::get_if<std::pair<double, double>>(&m_value) })
+                    if (const auto* const rVals{ std::get_if<std::pair<double, double>>(&m_value) })
                         {
                         return (rVals->first >= rVals->second) ?
                                    safe_divide<double>(rVals->first, rVals->second) :
                                    safe_divide<double>(rVals->second, rVals->first);
                         }
-                    else
-                        {
-                        return std::numeric_limits<double>::quiet_NaN();
-                        }
-                    }
-                else
-                    {
+
                     return std::numeric_limits<double>::quiet_NaN();
                     }
+
+                return std::numeric_limits<double>::quiet_NaN();
                 }
 
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
@@ -832,19 +826,17 @@ namespace Wisteria::Graphs
                 {
                 return std::nullopt;
                 }
-            else if (m_currentAggregateRows.empty())
+            if (m_currentAggregateRows.empty())
                 {
                 return GetRowCount() - 1;
                 }
-            else
+
+            int64_t lastRow = GetRowCount() - 1;
+            while (m_currentAggregateRows.contains(lastRow))
                 {
-                int64_t lastRow = GetRowCount() - 1;
-                while (m_currentAggregateRows.contains(lastRow))
-                    {
-                    --lastRow;
-                    }
-                return (lastRow >= 0) ? std::optional<size_t>(lastRow) : std::nullopt;
+                --lastRow;
                 }
+            return (lastRow >= 0) ? std::optional<size_t>(lastRow) : std::nullopt;
             }
 
         /** @brief Inserts a top row filled with the provided group names
@@ -870,7 +862,7 @@ namespace Wisteria::Graphs
         /// @returns @c true if row was inserted.
         bool InsertRow(const size_t rowIndex)
             {
-            if (GetColumnCount())
+            if (GetColumnCount() != 0U)
                 {
                 m_table.insert(m_table.cbegin() +
                                    // clamp indices going beyond the row count to m_table.cend()
@@ -895,7 +887,7 @@ namespace Wisteria::Graphs
         /// @param colIndex Where to insert the column.
         void InsertColumn(const size_t colIndex)
             {
-            if (GetColumnCount())
+            if (GetColumnCount() != 0U)
                 {
                 for (auto& row : m_table)
                     {
@@ -1612,8 +1604,8 @@ namespace Wisteria::Graphs
         std::map<size_t, AggregateType> m_aggregateRows;
 
         // DIPs for annotation connection lines and space between lines
-        constexpr static wxCoord m_labelSpacingFromLine{ 5 };
-        constexpr static wxCoord m_connectionOverhangWidth{ 10 };
+        constexpr static wxCoord LABEL_SPACING_FROM_LINE{ 5 };
+        constexpr static wxCoord CONNECTION_OVERHANG_WIDTH{ 10 };
 
         std::vector<wxString> m_footnotes;
 

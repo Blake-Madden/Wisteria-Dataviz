@@ -17,20 +17,8 @@
 #ifdef __WXGTK__
 
 //-------------------------------------------------
-constexpr wxColourBase::ChannelType FloatingPointChannelToByteChannel(const double val)
+constexpr static wxColourBase::ChannelType FloatingPointChannelToByteChannel(const double val)
     { return static_cast<wxColourBase::ChannelType>(std::floor(val >= 1.0 ? 255 : val * 256.0)); }
-
-//-------------------------------------------------
-constexpr GdkRGBA PangoAttributeToGdkRGBA(const PangoAttribute* attr)
-    {
-    return GdkRGBA
-        {
-        std::clamp(static_cast<double>(((PangoAttrColor*)attr)->color.red) / 65535.0,   0.0, 1.0),
-        std::clamp(static_cast<double>(((PangoAttrColor*)attr)->color.green) / 65535.0, 0.0, 1.0),
-        std::clamp(static_cast<double>(((PangoAttrColor*)attr)->color.blue) / 65535.0,  0.0, 1.0),
-        1.0,
-        };
-    }
 
 //-------------------------------------------------
 wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
@@ -45,10 +33,11 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     GdkRGBA* fgColor{ nullptr };
     gdouble size{ 0 };
     gint weight{ 0 };
-    PangoStyle style;
+    PangoStyle style{ PANGO_STYLE_NORMAL };
     gboolean underline{ 0 }, strikeThrough{ 0 };
     gchar* family{ nullptr };
     gchar* font{ nullptr };
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,bugprone-casting-through-void,cppcoreguidelines-pro-type-cstyle-cast,hicpp-vararg)
     g_object_get(G_OBJECT(tag),
         "background-set", &bkColorSet,
         "foreground-set", &fgColorSet,
@@ -67,14 +56,14 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         "underline", &underline,
         "strikethrough", &strikeThrough,
         nullptr);
-    if (bkColorSet && bkColor)
+    if ((bkColorSet != 0) && (bkColor != nullptr))
         {
         styleParams += wxString::Format(L"background-color: rgb(%u, %u, %u);",
             FloatingPointChannelToByteChannel(bkColor->red),
             FloatingPointChannelToByteChannel(bkColor->green),
             FloatingPointChannelToByteChannel(bkColor->blue));
         }
-    if (fgColorSet && fgColor)
+    if ((fgColorSet != 0) && (fgColor != nullptr))
         {
         styleParams += wxString::Format(L" color: rgb(%u, %u, %u);",
             FloatingPointChannelToByteChannel(fgColor->red),
@@ -83,29 +72,29 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         }
     if (family != nullptr)
         { styleParams += wxString::Format(L" font-family: %s;", wxString(family, wxConvUTF8)); }
-    if (sizeSet && size > 0)
+    if ((sizeSet != 0) && size > 0)
         { styleParams += wxString::Format(L" font-size: %upt;", static_cast<guint>(size)); }
-    if (weightSet &&
+    if ((weightSet != 0) &&
         (weight == PANGO_WEIGHT_BOLD ||
          weight == PANGO_WEIGHT_ULTRABOLD ||
          weight == PANGO_WEIGHT_HEAVY))
         { styleParams += L" font-weight: bold;"; }
-    if (styleSet &&
+    if ((styleSet != 0) &&
         (style == PANGO_STYLE_ITALIC ||
          style == PANGO_STYLE_OBLIQUE))
         { styleParams += L" font-style: italic;"; }
     std::vector<wxString> textDecorations;
-    if (underlineSet && underline)
-        { textDecorations.push_back(L"underline"); }
-    if (strikeThroughSet && strikeThrough)
-        { textDecorations.push_back(L"line-through"); }
-    if (textDecorations.size())
+    if ((underlineSet != 0) && (underline != 0))
+        { textDecorations.emplace_back(L"underline"); }
+    if ((strikeThroughSet != 0) && (strikeThrough != 0))
+        { textDecorations.emplace_back(L"line-through"); }
+    if (!textDecorations.empty())
         {
         styleParams += L" text-decoration: ";
         for (const auto& decor : textDecorations)
             { styleParams += decor + L","; }
-        // replace final , with a ;
-        if (styleParams.length())
+        // replace final , with a ';'
+        if (!styleParams.empty())
             { styleParams[styleParams.length() - 1] = L';'; }
         }
     styleParams += L"\"";
@@ -127,16 +116,17 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
     wxString text{ L" " };
     // indicators whether a tag is set or not
     gboolean bkColorSet{ 0 }, fgColorSet{ 0 }, sizeSet{ 0 },
-        underlineSet{ 0 }, weightSet, styleSet{ 0 }, strikeThroughSet{ 0 };
+        underlineSet{ 0 }, weightSet{ 0 }, styleSet{ 0 }, strikeThroughSet{ 0 };
     // values to write to
     GdkRGBA* bkColor{ nullptr };
     GdkRGBA* fgColor{ nullptr };
     gdouble size{ 0 };
     gint weight{ 0 };
-    PangoStyle style;
+    PangoStyle style{PANGO_STYLE_NORMAL};
     gboolean underline{ 0 }, strikeThrough{ 0 };
     gchar* family{ nullptr };
     gchar* font{ nullptr };
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,bugprone-casting-through-void,cppcoreguidelines-pro-type-cstyle-cast,hicpp-vararg)
     g_object_get(G_OBJECT(tag),
         "background-set", &bkColorSet,
         "foreground-set", &fgColorSet,
@@ -155,13 +145,13 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
         "underline", &underline,
         "strikethrough", &strikeThrough,
         nullptr);
-    if (bkColorSet && bkColor)
+    if ((bkColorSet != 0) && (bkColor != nullptr))
         {
         // search for the color to see if it's already in the color table
-        wxColour backgroundColor(FloatingPointChannelToByteChannel(bkColor->red),
+        const wxColour  backgroundColor(FloatingPointChannelToByteChannel(bkColor->red),
             FloatingPointChannelToByteChannel(bkColor->green),
             FloatingPointChannelToByteChannel(bkColor->blue));
-        auto colorPos = std::find(colorTable.cbegin(), colorTable.cend(), backgroundColor);
+        auto colorPos = std::ranges::find(colorTable, backgroundColor);
         if (colorPos == colorTable.cend())
             {
             colorTable.push_back(backgroundColor);
@@ -172,13 +162,13 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
             text += wxString::Format(L"\\highlight%zu", (colorPos - colorTable.cbegin()) + 1);
             }
         }
-    if (fgColorSet && fgColor)
+    if ((fgColorSet != 0) && (fgColor != nullptr))
         {
         // search for the color to see if it's already in the color table
-        wxColour foregroundColor(FloatingPointChannelToByteChannel(fgColor->red),
+        const wxColour foregroundColor(FloatingPointChannelToByteChannel(fgColor->red),
             FloatingPointChannelToByteChannel(fgColor->green),
             FloatingPointChannelToByteChannel(fgColor->blue));
-        auto colorPos = std::find(colorTable.cbegin(), colorTable.cend(), foregroundColor);
+        auto colorPos = std::ranges::find(colorTable, foregroundColor);
         if (colorPos == colorTable.cend())
             {
             colorTable.push_back(foregroundColor);
@@ -189,20 +179,20 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
             text += wxString::Format(L"\\cf%zu", (colorPos - colorTable.cbegin()) + 1);
             }
         }
-    if (sizeSet && size > 0)
+    if ((sizeSet != 0) && size > 0)
         { text += wxString::Format(L"\\fs%u", static_cast<guint>(size)*2); }
-    if (weightSet &&
+    if ((weightSet != 0) &&
         (weight == PANGO_WEIGHT_BOLD ||
          weight == PANGO_WEIGHT_ULTRABOLD ||
          weight == PANGO_WEIGHT_HEAVY))
         { text += L"\\b"; }
-    if (styleSet &&
+    if ((styleSet != 0) &&
         (style == PANGO_STYLE_ITALIC ||
          style == PANGO_STYLE_OBLIQUE))
         { text += L"\\i"; }
-    if (underlineSet && underline)
+    if ((underlineSet != 0) && (underline != 0))
         { text += L"\\ul"; }
-    if (strikeThroughSet && strikeThrough)
+    if ((strikeThroughSet != 0) && (strikeThrough != 0))
         { text += L"\\strike"; }
 
     text += L" ";

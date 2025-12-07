@@ -619,6 +619,7 @@ namespace Wisteria::UI
 
         /// @returns @c true if an item's icon ID is valid.
         /// @param iconId The icon ID to validate.
+        [[nodiscard]]
         bool IsValidImageId(std::optional<size_t> iconId) const
             {
             return (iconId.has_value() && iconId.value() < GetImageList().size() &&
@@ -637,7 +638,7 @@ namespace Wisteria::UI
         /** @brief Renders a glassy surface across a box.
             @param dc The device context to render on.
             @param rect The box to draw the effect on.
-            @param color The base color to fill the box with.*/
+            @param color The base color to fill the box width.*/
         static void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour& color);
 
         std::vector<wxBitmapBundle> m_imageList;

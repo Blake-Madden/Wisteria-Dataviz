@@ -381,34 +381,34 @@ namespace Wisteria::UI
             mainSizer->Add(m_list, wxSizerFlags{ 1 }.Expand());
             }
 
-        wxSizer* OkCancelSizer = nullptr;
+        wxSizer* okCancelSizer = nullptr;
         if ((m_buttonStyle & LD_OK_CANCEL_BUTTONS) != 0)
             {
-            OkCancelSizer = CreateButtonSizer(wxOK | wxCANCEL);
-            mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
+            okCancelSizer = CreateButtonSizer(wxOK | wxCANCEL);
+            mainSizer->Add(okCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_OK);
             SetEscapeId(wxID_CANCEL);
             }
         else if ((m_buttonStyle & LD_YES_NO_BUTTONS) != 0)
             {
-            OkCancelSizer = CreateButtonSizer(wxYES_NO);
-            mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
+            okCancelSizer = CreateButtonSizer(wxYES_NO);
+            mainSizer->Add(okCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_YES);
             SetEscapeId(wxID_NO);
             }
         else if ((m_buttonStyle & LD_CLOSE_BUTTON) != 0)
             {
-            OkCancelSizer = CreateButtonSizer(wxCLOSE);
-            mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
+            okCancelSizer = CreateButtonSizer(wxCLOSE);
+            mainSizer->Add(okCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_CLOSE);
             }
 
-        if (((m_buttonStyle & LD_DONT_SHOW_AGAIN) != 0) && (OkCancelSizer != nullptr))
+        if (((m_buttonStyle & LD_DONT_SHOW_AGAIN) != 0) && (okCancelSizer != nullptr))
             {
             m_checkBox =
                 new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"), wxDefaultPosition,
                                wxDefaultSize, wxCHK_2STATE, wxGenericValidator(&m_dontShowAgain));
-            OkCancelSizer->Insert(0, m_checkBox, wxSizerFlags{}.Expand().Border());
+            okCancelSizer->Insert(0, m_checkBox, wxSizerFlags{}.Expand().Border());
             }
 
         SetSizerAndFit(mainSizer);
@@ -439,6 +439,7 @@ namespace Wisteria::UI
         {
         // in case the list is being sorted or an item view request was sent,
         // process all that before reloading the list control
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
         wxTheApp->Yield();
         if (m_logFile != nullptr && GetListCtrl() != nullptr)
             {
