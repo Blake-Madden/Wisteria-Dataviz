@@ -237,6 +237,7 @@ namespace lily_of_the_valley
 
     /// Property descriptions.
     /// @private
+    // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
     constexpr propmod RGPROP[static_cast<int>(IPROP::ipropMax)] =
         {
         {ACTN::actnByte,   PROPTYPE::propChp,    offsetof(char_prop, fBold)},       // ipropBold
@@ -265,6 +266,7 @@ namespace lily_of_the_valley
         {ACTN::actnSpec,   PROPTYPE::propChp,    0},                          // ipropPlain
         {ACTN::actnSpec,   PROPTYPE::propSep,    0}                           // ipropSectd
         };
+    // NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
     // clang-format on
     //------------------------------------------------
 
@@ -541,7 +543,7 @@ namespace lily_of_the_valley
         // read the contents from the temporary buffer created
         while ((*m_rtf_text != 0) && m_rtf_text < endSentinel)
             {
-            int ch = *(m_rtf_text);
+            int ch = static_cast<unsigned char>(*(m_rtf_text));
             if (m_cGroup < 0)
                 {
                 throw rtfparse_stack_underflow();
@@ -673,7 +675,7 @@ namespace lily_of_the_valley
             {
             return;
             }
-        int ch = *m_rtf_text;
+        int ch = static_cast<unsigned char>(*m_rtf_text);
 
         if (!is_alpha_7bit(static_cast<wchar_t>(ch))) // a control symbol; no delimiter.
             {
@@ -682,7 +684,8 @@ namespace lily_of_the_valley
             ecTranslateKeyword(szKeyword.data(), 0, fParam);
             return;
             }
-        for (pch = szKeyword.data(); is_alpha_7bit(static_cast<wchar_t>(ch)); ch = *(++m_rtf_text))
+        for (pch = szKeyword.data(); is_alpha_7bit(static_cast<wchar_t>(ch));
+             ch = static_cast<unsigned char>(*(++m_rtf_text)))
             {
             if (*m_rtf_text == 0)
                 {
@@ -695,7 +698,7 @@ namespace lily_of_the_valley
         if (ch == '-')
             {
             fNeg = true;
-            ch = *(++m_rtf_text);
+            ch = static_cast<unsigned char>(*(++m_rtf_text));
             if (*m_rtf_text == 0)
                 {
                 return;
@@ -705,7 +708,7 @@ namespace lily_of_the_valley
             {
             fParam = true; // a digit after the control means we have a parameter
             for (pch = szParameter.data(); is_numeric_7bit(static_cast<wchar_t>(ch));
-                 ch = *(++m_rtf_text))
+                 ch = static_cast<unsigned char>(*(++m_rtf_text)))
                 {
                 if (*m_rtf_text == 0)
                     {

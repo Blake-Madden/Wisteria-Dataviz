@@ -190,6 +190,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
             }
         }
 #else
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
     m_hFile = open(filePath.utf8_str().data(), (readOnly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 
     if (-1 == m_hFile)
@@ -269,7 +270,7 @@ void MemoryMappedFile::UnmapFile()
 #else
     if (m_data != nullptr && m_mapSize > 0)
         {
-        if (munmap(m_data, static_cast<size_t>(m_mapSize)) != 0)
+        if (munmap(m_data, m_mapSize) != 0)
             {
             wxLogWarning(L"munmap() failed for file %s: %s", GetFilePath(),
                          wxString::FromUTF8(strerror(errno)));
@@ -375,6 +376,7 @@ wxULongLong MemoryMappedFile::GetFileSize64(const MemoryMappedFileHandleType hFi
         {
         throw MemoryMappedInvalidFileSize();
         }
+    // NOLINTNEXTLINE(modernize-return-braced-init-list)
     return wxULongLong(size);
 #endif
     }

@@ -242,6 +242,7 @@ namespace Wisteria::GraphItems
 
 // Note that radius pixels are avoided from left, right, top, and bottom edges.
 // Go to the next row of pixels...
+// NOLINTNEXTLINE(openmp-default-none)
 #pragma omp parallel for
         for (int nY = radius; nY < image.GetHeight() - radius; ++nY)
             {
@@ -288,11 +289,11 @@ namespace Wisteria::GraphItems
                         }
                     }
 
-                assert(nMaxIndex >= 0 && nMaxIndex < RGB_BUFFER_SIZE &&
-                       L"Invalid buffer index in oil painting effect!");
-                assert(((nX) * 3 + (nY)*nBytesInARow + 2) <
-                           (image.GetWidth() * image.GetHeight() * 3) &&
-                       L"Invalid image data index in oil painting effect!");
+                wxASSERT_MSG(nMaxIndex >= 0 && nMaxIndex < RGB_BUFFER_SIZE,
+                             L"Invalid buffer index in oil painting effect!");
+                wxASSERT_MSG(((nX) * 3 + (nY)*nBytesInARow + 2) <
+                                 (image.GetWidth() * image.GetHeight() * 3),
+                             L"Invalid image data index in oil painting effect!");
 
                 imgOutData[(nX * 3) + (nY * nBytesInARow)] = nSumR[nMaxIndex] / nCurMax;
                 imgOutData[(nX * 3) + (nY * nBytesInARow) + 1] = nSumG[nMaxIndex] / nCurMax;

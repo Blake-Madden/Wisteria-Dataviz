@@ -92,17 +92,7 @@ class MemoryMappedFile
     {
   public:
     /// @brief Default Constructor.
-    MemoryMappedFile() noexcept
-        :
-#ifdef __WXMSW__
-          m_hFile(INVALID_HANDLE_VALUE), m_hsection(NULL),
-#else
-          m_hFile(-1),
-#endif
-          m_data(nullptr), m_bufferedData(nullptr), m_mapSize(0), m_open(false), m_isReadOnly(true),
-          m_isBuffered(false)
-        {
-        }
+    MemoryMappedFile() noexcept = default;
 
     /** @brief Constructor which will automatically map the file.
 
@@ -121,17 +111,11 @@ class MemoryMappedFile
             as the buffer will be as large as the file.*/
     explicit MemoryMappedFile(const wxString& filePath, bool readOnly = true,
                               const bool autoBufferOnException = false)
-        :
-#ifdef __WXMSW__
-          m_hFile(INVALID_HANDLE_VALUE), m_hsection(NULL),
-#else
-          m_hFile(-1),
-#endif
-          m_data(nullptr), m_bufferedData(nullptr), m_mapSize(0), m_open(false),
-          m_isReadOnly(readOnly), m_isBuffered(false)
+        : m_isReadOnly(readOnly)
         {
         MapFile(filePath, readOnly, autoBufferOnException);
         }
+
     /// @private
     MemoryMappedFile(const MemoryMappedFile&) = delete;
     /// @private

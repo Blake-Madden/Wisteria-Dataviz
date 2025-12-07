@@ -213,6 +213,7 @@ namespace lily_of_the_valley
                     const wchar_t* value =
                         html_extract_text::find_element(worksheet_text, cellEnd, L"v", true);
                     if (value != nullptr &&
+                        // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                         (value = html_extract_text::find_close_tag(value)) != nullptr)
                         {
                         const wchar_t* const valueEnd =
@@ -399,6 +400,7 @@ namespace lily_of_the_valley
                         const wchar_t* isTag =
                             html_extract_text::find_element(html_text, cellEnd, L"is", true);
                         if (isTag != nullptr &&
+                            // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                             (isTag = html_extract_text::find_close_tag(isTag)) != nullptr)
                             {
                             const wchar_t* const isEnd =
@@ -408,6 +410,7 @@ namespace lily_of_the_valley
                                 const wchar_t* tTag =
                                     html_extract_text::find_element(isTag, isEnd, L"t", true);
                                 if (tTag != nullptr &&
+                                    // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                                     (tTag = html_extract_text::find_close_tag(tTag)) != nullptr)
                                     {
                                     const wchar_t* const tEnd =
@@ -431,6 +434,7 @@ namespace lily_of_the_valley
                         const wchar_t* valueTag =
                             html_extract_text::find_element(html_text, cellEnd, L"v", true);
                         if ((valueTag != nullptr) &&
+                            // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                             (valueTag = html_extract_text::find_close_tag(valueTag)) != nullptr)
                             {
                             const wchar_t* const valueEnd =

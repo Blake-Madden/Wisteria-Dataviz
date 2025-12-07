@@ -49,7 +49,7 @@ namespace Wisteria::UI
             }
 
         [[maybe_unused]]
-        constexpr auto wxStringToFsPath = [](const wxString& str)
+        const auto wxStringToFsPath = [](const wxString& str)
         {
 #ifdef _WIN32
             return std::filesystem::path(str.wc_str()); // UTF-16 on Windows

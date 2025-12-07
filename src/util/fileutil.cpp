@@ -575,6 +575,7 @@ wxString JoinWebDirs(const wxArrayString& dirs)
 wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtensions)
     {
     // if using "all files" wildcard then don't bother filtering
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
     if (fileExtensions.Cmp(wxFileSelectorDefaultWildcardStr) == 0)
         {
         return files;

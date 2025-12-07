@@ -204,7 +204,7 @@ wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart, const wchar_
                 {
                 return {};
                 }
-            return wxString(currentPos, (endPos - currentPos));
+            return { currentPos, static_cast<size_t>(endPos - currentPos) };
             }
 
         return {};

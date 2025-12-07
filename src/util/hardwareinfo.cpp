@@ -65,6 +65,7 @@ namespace wxSystemHardwareInfo
         if (getrusage(RUSAGE_SELF, &usage) == 0)
             {
             // ru_maxrss is in kilobytes
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
             return usage.ru_maxrss * 1024;
             }
 #endif

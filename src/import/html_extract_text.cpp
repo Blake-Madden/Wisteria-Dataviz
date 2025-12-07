@@ -418,6 +418,8 @@ namespace lily_of_the_valley
                                     case 0xFB06:
                                         add_characters({ L"st", 2 });
                                         break;
+                                    default:
+                                        break;
                                         };
                                     }
                                 else if (value != 0)
@@ -1626,6 +1628,7 @@ namespace lily_of_the_valley
                     }
                 /* if the < tag that we started from is not terminated then feed that in as
                    text instead of treating it like a valid HTML tag.  Not common, but it happens.*/
+                // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                 if (end[0] == L'<')
                     {
                     /* copy over the text from the unterminated < to the currently found
@@ -1908,7 +1911,7 @@ namespace lily_of_the_valley
                 }
             ++text;
             }
-        return string_util::case_insensitive_wstring_view(start, text - start);
+        return { start, static_cast<size_t>(text - start) };
         }
 
     //------------------------------------------------------------------
@@ -3221,9 +3224,9 @@ namespace html_utilities
             {
             return imageName;
             }
-        auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(), PHP_IMAGE.cend(),
-                                    [](wchar_t lhv, wchar_t rhv)
-                                    { return std::towlower(lhv) == std::towlower(rhv); });
+        const auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(),
+                                          PHP_IMAGE.cend(), [](wchar_t lhv, wchar_t rhv)
+                                          { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + PHP_IMAGE.length());
@@ -3257,9 +3260,9 @@ namespace html_utilities
             }
         // move to after the "www." or (if not there) the start of the url
         // (note that this needs to be case-insensitive, hence the std::search)
-        auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
-                                    [](wchar_t lhv, wchar_t rhv)
-                                    { return std::towlower(lhv) == std::towlower(rhv); });
+        const auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
+                                          [](wchar_t lhv, wchar_t rhv)
+                                          { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + WWW.length());
