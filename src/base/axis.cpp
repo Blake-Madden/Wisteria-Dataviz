@@ -872,9 +872,12 @@ namespace Wisteria::GraphItems
             // tick marks
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
-            for (double i = start; compare_doubles_less_or_equal(i, end);
-                 i += GetTickMarkInterval())
+            const double interval = GetTickMarkInterval();
+            const int steps = static_cast<int>(std::ceil((end - start) / interval));
+            for (int k = 0; k <= steps; ++k)
                 {
+                double i = (start + (static_cast<double>(k) * interval));
+
                 const bool majorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
                             majorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
@@ -897,9 +900,12 @@ namespace Wisteria::GraphItems
             // tick marks
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
-            for (double i = start; compare_doubles_less_or_equal(i, end);
-                 i += GetTickMarkInterval())
+            const double interval = GetTickMarkInterval();
+            const int steps = static_cast<int>(std::ceil((end - start) / interval));
+            for (int k = 0; k <= steps; ++k)
                 {
+                double i = (start + (static_cast<double>(k) * interval));
+
                 const bool majorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
                             majorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
@@ -3368,9 +3374,13 @@ namespace Wisteria::GraphItems
         if (IsReversed())
             {
             double lastValidPoint = rangeEnd;
-            for (double i = rangeEnd; compare_doubles_greater(i, (rangeStart - interval));
-                 i -= interval)
+            // compute number of steps (explicit grouping)
+            const int steps = static_cast<int>(std::ceil((rangeEnd - rangeStart) / interval));
+            for (int k = steps; k >= 0; --k)
                 {
+                // compute floating-point position for this iteration
+                double i = (rangeStart + (static_cast<double>(k) * interval));
+
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1);
                 if (currentDisplayInterval == 1)
@@ -3395,9 +3405,12 @@ namespace Wisteria::GraphItems
                We might step over it a bit (depending on how
                the intervals are set up), so a range like 1-70 might wind up being 1-71*/
             double lastValidPoint = rangeStart;
-            for (double i = rangeStart; compare_doubles_less(i, (rangeEnd + interval));
-                 i += interval)
+            // compute number of steps
+            const int steps = static_cast<int>(std::ceil((rangeEnd - rangeStart) / interval));
+            for (int k = 0; k <= steps; ++k)
                 {
+                const double i = (rangeStart + (static_cast<double>(k) * interval));
+
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1);
                 if (currentDisplayInterval == 1)
