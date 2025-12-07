@@ -17,21 +17,21 @@
 #include <wx/control.h>
 #include <wx/dynarray.h>
 
-/// @cond DOXYGEN_IGNORE
-wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
+namespace Wisteria::UI
+    {
+    /// @cond DOXYGEN_IGNORE
+    wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
 
 #define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn)                                                    \
     wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
 
-wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
+    wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
 
 #define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn)                                                   \
     wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
 
-/// @endcond
+    /// @endcond
 
-namespace Wisteria::UI
-    {
     /// @brief Class for connecting a sidebar's content with a set of dialog pages.
     class SideBarBook final : public wxControl
         {
