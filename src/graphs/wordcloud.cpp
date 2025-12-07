@@ -14,7 +14,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    WordCloud::WordCloud(Wisteria::Canvas * canvas,
+    WordCloud::WordCloud(Canvas * canvas,
                          const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : Graph2D(canvas)
         {

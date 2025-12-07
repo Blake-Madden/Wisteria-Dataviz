@@ -16,8 +16,7 @@
 #include "../data/jitter.h"
 #include "groupgraph2d.h"
 
-namespace Wisteria::Graphs
-    {
+namespace Wisteria::Graphs {
     /** @brief A plot showing Lix (Läsbarhetsindex) readability scores and what they represent.
         @image html LixGauge.svg width=90%
 
@@ -43,12 +42,12 @@ namespace Wisteria::Graphs
             Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research
             Quarterly*, vol. 18, no. 4, 1983, pp. 480-97.
     */
-    class LixGauge final : public GroupGraph2D
-        {
+    class LixGauge final : public GroupGraph2D {
         wxDECLARE_DYNAMIC_CLASS(LixGauge);
+
         LixGauge() = default;
 
-      public:
+    public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.
             @param colors The color scheme to apply to the points.
@@ -56,9 +55,9 @@ namespace Wisteria::Graphs
             @param shapes The shape scheme to use for the points.
                 Leave as @c nullptr to use the standard shapes.*/
         explicit LixGauge(
-            Wisteria::Canvas* canvas,
-            const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
-            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr);
+            Canvas *canvas,
+            const std::shared_ptr<Colors::Schemes::ColorScheme> &colors = nullptr,
+            const std::shared_ptr<Icons::Schemes::IconScheme> &shapes = nullptr);
 
         /** @brief Sets the data.
             @param data The data to use.
@@ -70,17 +69,16 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
-                     const wxString& scoreColumnName,
-                     const std::optional<wxString>& groupColumnName = std::nullopt);
+        void SetData(const std::shared_ptr<const Data::Dataset> &data,
+                     const wxString &scoreColumnName,
+                     const std::optional<wxString> &groupColumnName = std::nullopt);
 
         /// @returns Whether the score is being showcased.
         /// @sa ShowcaseScore().
         [[nodiscard]]
-        bool IsShowcasingScore() const noexcept
-            {
+        bool IsShowcasingScore() const noexcept {
             return m_showcaseScore;
-            }
+        }
 
         /// @brief Makes most areas of the graph translucent, except for where the score is.
         ///     This helps draw attention to the areas of the scales that have scores falling
@@ -90,17 +88,19 @@ namespace Wisteria::Graphs
         ///     will be showcased.
         void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
 
-      private:
-        void RecalcSizes(wxDC& dc) override final;
+    private:
+        void RecalcSizes(wxDC &dc) final;
+
         void AdjustAxes();
+
         void UpdateCustomAxes();
 
-        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
-        Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
+        const Data::Column<double> *m_scoresColumn{nullptr};
+        Data::Jitter m_jitter{Wisteria::AxisType::LeftYAxis};
 
-        bool m_showcaseScore{ false };
-        };
-    } // namespace Wisteria::Graphs
+        bool m_showcaseScore{false};
+    };
+} // namespace Wisteria::Graphs
 
 /** @}*/
 

@@ -14,8 +14,7 @@
 
 #include "roadmap.h"
 
-namespace Wisteria::Graphs
-    {
+namespace Wisteria::Graphs {
     /** @brief Linear Regression %Roadmap, which shows predictors' influence on a dependent variable
             from a multiple linear regression.
         @details This graphic displays a road leading towards a final goal (i.e., the dependent).
@@ -102,15 +101,16 @@ namespace Wisteria::Graphs
             non-statistics audiences.</i> Retrieved May 14, 2022, from
             https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences
     */
-    class LRRoadmap final : public Roadmap
-        {
+    class LRRoadmap final : public Roadmap {
         wxDECLARE_DYNAMIC_CLASS(LRRoadmap);
+
         LRRoadmap() = default;
 
-      public:
+    public:
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/
-        explicit LRRoadmap(Canvas* canvas) : Roadmap(canvas) {}
+        explicit LRRoadmap(Canvas *canvas) : Roadmap(canvas) {
+        }
 
         /** @brief Sets the data.
             @param data The data to use for the graph.
@@ -133,32 +133,30 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to @c
                 wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     const wxString& predictorColumnName, const wxString& coefficientColumnName,
-                     const std::optional<wxString>& pValueColumnName = std::nullopt,
+        void SetData(const std::shared_ptr<const Data::Dataset> &data,
+                     const wxString &predictorColumnName, const wxString &coefficientColumnName,
+                     const std::optional<wxString> &pValueColumnName = std::nullopt,
                      std::optional<double> pLevel = std::nullopt,
                      std::optional<Influence> predictorsToIncludes = std::nullopt,
-                     const std::optional<wxString>& dvName = std::nullopt);
+                     const std::optional<wxString> &dvName = std::nullopt);
 
         /// @brief Adds a caption explaining how to interpret the graph.
-        void AddDefaultCaption() override final;
+        void AddDefaultCaption() final;
 
-      private:
+    private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
-        wxString GetPositiveLegendLabel() const override final
-            {
+        wxString GetPositiveLegendLabel() const final {
             return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel());
-            }
+        }
 
         /// @returns The negative label used for the legend.
         [[nodiscard]]
-        wxString GetNegativeLegendLabel() const override final
-            {
+        wxString GetNegativeLegendLabel() const final {
             return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel());
-            }
-        };
-    } // namespace Wisteria::Graphs
+        }
+    };
+} // namespace Wisteria::Graphs
 
 /** @}*/
 
