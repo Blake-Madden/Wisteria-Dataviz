@@ -21,16 +21,15 @@
 #include <wx/window.h>
 #include <wx/wx.h>
 
-/// @cond DOXYGEN_IGNORE
-wxDECLARE_EVENT(wxEVT_SIDEBAR_CLICK, wxCommandEvent);
+namespace Wisteria::UI
+    {
+    /// @cond DOXYGEN_IGNORE
+    wxDECLARE_EVENT(wxEVT_SIDEBAR_CLICK, wxCommandEvent);
 
 #define EVT_SIDEBAR_CLICK(winid, fn)                                                               \
     wx__DECLARE_EVT1(wxEVT_SIDEBAR_CLICK, winid, wxCommandEventHandler(fn))
+    /// @endcond
 
-/// @endcond
-
-namespace Wisteria::UI
-    {
     /// @brief Visual effect for a sidebar control.
     enum class SidebarStyle
         {

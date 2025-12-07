@@ -1198,6 +1198,8 @@ namespace Wisteria::UI
         std::map<long, ColumnInfo> m_columnInfo;
 
         bool m_hasItemBeenEditedByUser{ false };
+
+        mutable wxItemAttr m_rowScratchAttr;
         };
     } // namespace Wisteria::UI
 

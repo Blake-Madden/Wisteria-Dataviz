@@ -2488,7 +2488,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             return wxListCtrl::OnGetItemAttr(item);
             }
-        return const_cast<wxItemAttr*>(m_virtualData->GetRowAttributes(item));
+        m_rowScratchAttr = *m_virtualData->GetRowAttributes(item);
+        return &m_rowScratchAttr;
         }
 
     //------------------------------------------------------
