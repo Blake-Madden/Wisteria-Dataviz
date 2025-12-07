@@ -1678,6 +1678,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
+    // NOLINTNEXTLINE(readability-make-member-function-const)
     void ListCtrlEx::OnCopyFirstColumn([[maybe_unused]]
                                        wxCommandEvent &
                                        event)
@@ -1703,6 +1704,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
+    // NOLINTNEXTLINE(readability-make-member-function-const)
     void ListCtrlEx::OnCopy([[maybe_unused]]
                             wxCommandEvent &
                             event)
@@ -1711,6 +1713,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
+    // NOLINTNEXTLINE(readability-make-member-function-const)
     void ListCtrlEx::OnCopyWithColumnHeaders([[maybe_unused]]
                                              wxCommandEvent &
                                              event)
@@ -1719,6 +1722,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
+    // NOLINTNEXTLINE(readability-make-member-function-const)
     void ListCtrlEx::OnCopyAll([[maybe_unused]]
                                wxCommandEvent &
                                event)
