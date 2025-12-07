@@ -3335,6 +3335,7 @@ namespace html_utilities
         domain.clear();
         subdomain.clear();
         size_t startIndex = 0;
+        // NOLINTBEGIN(bugprone-branch-clone)
         if (string_util::strnicmp<wchar_t>(url.c_str(), L"http://", 7) == 0)
             {
             startIndex = 7;
@@ -3355,6 +3356,7 @@ namespace html_utilities
             {
             startIndex = 0;
             }
+        // NOLINTEND(bugprone-branch-clone)
         const size_t lastSlash = url.find(L'/', startIndex);
         if (lastSlash == std::wstring::npos)
             {

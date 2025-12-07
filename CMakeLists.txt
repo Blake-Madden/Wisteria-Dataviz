@@ -137,7 +137,7 @@ add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
 if(WIN32 OR APPLE)
     target_link_libraries(${WISTIER_LIB} PUBLIC ${wxWidgets_LIBRARIES})
 elseif(UNIX)
-    # Add OpenMP for mutlithreading
+    # Add OpenMP for multithreading
     find_package(OpenMP)
     find_library(TBB_LIB tbb)
     target_link_libraries(${WISTIER_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})

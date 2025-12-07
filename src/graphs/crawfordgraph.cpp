@@ -10,32 +10,31 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::GroupGraph2D)
 
-    namespace Wisteria::Graphs
-    {
+namespace Wisteria::Graphs {
     ///----------------------------------------------------------------
     CrawfordGraph::CrawfordGraph(
-        Wisteria::Canvas * canvas,
-        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
-        const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
-        : GroupGraph2D(canvas)
-        {
-        SetColorScheme(colors != nullptr ? colors :
-                                           std::make_shared<Colors::Schemes::ColorScheme>(
-                                               Settings::GetDefaultColorScheme()));
-        SetShapeScheme(shapes != nullptr ? shapes :
-                                           std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
-                                               Wisteria::Icons::Schemes::StandardShapes()));
+        Canvas *canvas,
+        const std::shared_ptr<Colors::Schemes::ColorScheme> &colors /*= nullptr*/,
+        const std::shared_ptr<Icons::Schemes::IconScheme> &shapes /*= nullptr*/)
+        : GroupGraph2D(canvas) {
+        SetColorScheme(colors != nullptr
+                           ? colors
+                           : std::make_shared<Colors::Schemes::ColorScheme>(
+                               Settings::GetDefaultColorScheme()));
+        SetShapeScheme(shapes != nullptr
+                           ? shapes
+                           : std::make_shared<Icons::Schemes::IconScheme>(
+                               Icons::Schemes::StandardShapes()));
 
-        if (GetCanvas() != nullptr)
-            {
+        if (GetCanvas() != nullptr) {
             GetCanvas()->SetLabel(_(L"Crawford Graph"));
             GetCanvas()->SetName(_(L"Crawford Graph"));
-            }
+        }
         GetTitle() = GraphItems::Label(
             /* TRANSLATORS: Title is in all CAPS in the original article. */
             GraphItems::GraphItemInfo(_(L"SPANISH READABILITY GRAPH"))
-                .Scaling(GetScaling())
-                .Pen(wxNullPen));
+            .Scaling(GetScaling())
+            .Pen(wxNullPen));
         GetLeftYAxis().GetTitle().SetText(_(L"Number of Syllables per 100 Words"));
         GetBottomXAxis().GetTitle().SetText(_(L"Approximate Grade Level of Reading Difficulty"));
 
@@ -49,75 +48,68 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         GetLeftYAxis().GetGridlinePen() = wxNullPen;
         GetLeftYAxis().ShowOuterLabels(false);
         GetLeftYAxis().EnableAutoStacking(false);
-        }
+    }
 
     //----------------------------------------------------------------
-    void CrawfordGraph::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                                const wxString& scoreColumnName,
-                                const wxString& syllablesPer100WordsColumnName,
-                                const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
-        {
+    void CrawfordGraph::SetData(const std::shared_ptr<const Data::Dataset> &data,
+                                const wxString &scoreColumnName,
+                                const wxString &syllablesPer100WordsColumnName,
+                                const std::optional<wxString> &groupColumnName /*= std::nullopt*/) {
         SetDataset(data);
         ResetGrouping();
         GetSelectedIds().clear();
 
-        if (GetDataset() == nullptr)
-            {
+        if (GetDataset() == nullptr) {
             return;
-            }
+        }
 
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
-        if (IsUsingGrouping())
-            {
+        if (IsUsingGrouping()) {
             BuildGroupIdMap();
-            }
+        }
 
         m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
         m_syllablesPer100WordsColumn = GetContinuousColumnRequired(syllablesPer100WordsColumnName);
-        }
+    }
 
     //----------------------------------------------------------------
-    void CrawfordGraph::RecalcSizes(wxDC & dc)
-        {
+    void CrawfordGraph::RecalcSizes(wxDC &dc) {
         Graph2D::RecalcSizes(dc);
 
         wxPoint pt;
-        if (GetPhysicalCoordinates(2.0, 218, pt))
-            {
+        if (GetPhysicalCoordinates(2.0, 218, pt)) {
             auto sentenceLabel = std::make_unique<GraphItems::Label>(
                 GraphItems::GraphItemInfo(_(L"Number of Sentences\nper 100 Words"))
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .AnchorPoint(pt));
+                .Scaling(GetScaling())
+                .Pen(wxNullPen)
+                .AnchorPoint(pt));
             sentenceLabel->SetTextAlignment(TextAlignment::Centered);
             AddObject(std::move(sentenceLabel));
-            }
+        }
 
         const wxSize commonLabelSize = dc.ToDIP(dc.GetTextExtent(L"99.9"));
 
         const auto addTextPoint = [this, commonLabelSize](const double xValue, const double yValue,
                                                           const double textNumber,
-                                                          const int precision)
-        {
+                                                          const int precision) {
             wxPoint textPt;
-            if (GetPhysicalCoordinates(xValue, yValue, textPt))
-                {
+            if (GetPhysicalCoordinates(xValue, yValue, textPt)) {
                 AddObject(std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo()
-                        .Scaling(GetScaling())
-                        .DPIScaling(GetDPIScaleFactor())
-                        .Pen(wxNullPen)
-                        .Padding(0, 0, 0, 0)
-                        .MinimumUserSizeDIPs(commonLabelSize.GetWidth(), std::nullopt)
-                        .LabelAlignment(TextAlignment::Centered)
-                        .LabelPageHorizontalAlignment(PageHorizontalAlignment::RightAligned)
-                        .FontColor(GetLeftYAxis().GetFontColor())
-                        .Text(wxNumberFormatter::ToString(textNumber, precision,
-                                                          wxNumberFormatter::Style::Style_None))
-                        .AnchorPoint(textPt)));
-                }
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Pen(wxNullPen)
+                    .Padding(0, 0, 0, 0)
+                    .MinimumUserSizeDIPs(commonLabelSize.GetWidth(), std::nullopt)
+                    .LabelAlignment(TextAlignment::Centered)
+                    .LabelPageHorizontalAlignment(PageHorizontalAlignment::RightAligned)
+                    .FontColor(GetLeftYAxis().GetFontColor())
+                    .Text(wxNumberFormatter::ToString(textNumber, precision,
+                                                      wxNumberFormatter::Style::Style_None))
+                    .AnchorPoint(textPt)));
+            }
         };
 
         // 1.0 score
@@ -283,47 +275,43 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         addTextPoint(6.5, 206, 1.0, 1);
 
         if (GetDataset() == nullptr || m_scoresColumn == nullptr ||
-            m_syllablesPer100WordsColumn == nullptr)
-            {
+            m_syllablesPer100WordsColumn == nullptr) {
             return;
-            }
+        }
 
         // plot the data
         auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
-        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
-            {
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i) {
             if (std::isnan(m_scoresColumn->GetValue(i)) ||
-                std::isnan(m_syllablesPer100WordsColumn->GetValue(i)))
-                {
+                std::isnan(m_syllablesPer100WordsColumn->GetValue(i))) {
                 continue;
-                }
+            }
 
             const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), 0.5, 7.0);
             const auto currentSyllableCount =
-                std::clamp<double>(m_syllablesPer100WordsColumn->GetValue(i), 166, 222);
+                    std::clamp<double>(m_syllablesPer100WordsColumn->GetValue(i), 166, 222);
 
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                    IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
 
-            if (GetPhysicalCoordinates(currentScore, currentSyllableCount, pt))
-                {
+            if (GetPhysicalCoordinates(currentScore, currentSyllableCount, pt)) {
                 points->AddPoint(
                     GraphItems::Point2D(
                         GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                            .AnchorPoint(pt)
-                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                GetPlotOrCanvasColor()))
-                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        .AnchorPoint(pt)
+                        .Pen(Colors::ColorContrast::BlackOrWhiteContrast(
+                            GetPlotOrCanvasColor()))
+                        .Brush(GetColorScheme()->GetColor(colorIndex)),
                         Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
-                }
             }
-        AddObject(std::move(points));
         }
-    } // namespace Wisteria::Graphs
+        AddObject(std::move(points));
+    }
+} // namespace Wisteria::Graphs

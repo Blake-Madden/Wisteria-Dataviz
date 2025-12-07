@@ -1,5 +1,27 @@
 ---
-Checks: '-clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-*,cert-*,bugprone-*,misc-*,openmp-*,performance-*,portability-*,hicpp-*,google-*,-readability-function-cognitive-complexity,-bugprone-branch-clone,-hicpp-signed-bitwise,-misc-use-anonymous-namespace,-misc-no-recursion,-modernize-use-trailing-return-type,-misc-include-cleaner,-cppcoreguidelines-owning-memory,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-readability-isolate-declaration,-cppcoreguidelines-pro-bounds-constant-array-index,-readability-avoid-const-params-in-decls,-performance-enum-size,-bugprone-narrowing-conversions,-cppcoreguidelines-narrowing-conversions,-readability-avoid-nested-conditional-operator,-bugprone-suspicious-include,-cppcoreguidelines-special-member-functions,-hicpp-special-member-functions,-readability-identifier-length,-bugprone-unchecked-optional-access,-cppcoreguidelines-narrowing-conversions'
+Checks: '-clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,
+readability-*,cert-*,bugprone-*,misc-*,openmp-*,performance-*,portability-*,hicpp-*,
+google-*,-readability-function-cognitive-complexity,-bugprone-branch-clone,-hicpp-signed-bitwise,
+-misc-use-anonymous-namespace,-misc-no-recursion,-modernize-use-trailing-return-type,-misc-include-cleaner,
+-cppcoreguidelines-owning-memory,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,
+-readability-magic-numbers,-readability-isolate-declaration,-cppcoreguidelines-pro-bounds-constant-array-index,
+-readability-avoid-const-params-in-decls,-performance-enum-size,-bugprone-narrowing-conversions,
+-readability-convert-member-functions-to-static,
+-cppcoreguidelines-narrowing-conversions,-readability-avoid-nested-conditional-operator,-bugprone-suspicious-include,
+-cppcoreguidelines-special-member-functions,-hicpp-special-member-functions,-readability-identifier-length,
+-bugprone-unchecked-optional-access,-cert-err58-cpp,-cppcoreguidelines-avoid-do-while,
+-cppcoreguidelines-pro-bounds-pointer-arithmetic,
+-modernize-use-designated-initializers,
+-misc-non-private-member-variables-in-classes,
+-cppcoreguidelines-non-private-member-variables-in-classes,
+-hicpp-no-assembler,
+-cppcoreguidelines-avoid-const-or-ref-data-members,
+-bugprone-suspicious-stringview-data-usage,
+-readability-redundant-inline-specifier,
+-cppcoreguidelines-pro-type-reinterpret-cast,
+-bugprone-empty-catch,
+-bugprone-lambda-function-name,
+-google-runtime-int'
 HeaderFilterRegex: '^src/'
 FormatStyle: none
 InheritParentConfig: true
