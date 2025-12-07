@@ -17,7 +17,7 @@ PointerAlignment: Left
 QualifierAlignment: Custom
 QualifierOrder: ['inline', 'constexpr', 'static', 'const', 'volatile', 'restrict', 'friend', 'type']
 ReferenceAlignment: Left
-ReflowComments: Always
+ReflowComments: true
 RemoveSemicolon: true
 SeparateDefinitionBlocks: Always
 SpaceBeforeAssignmentOperators: true

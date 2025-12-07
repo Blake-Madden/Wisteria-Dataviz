@@ -14,7 +14,8 @@
 
 #include "groupgraph2d.h"
 
-namespace Wisteria::Graphs {
+namespace Wisteria::Graphs
+    {
     /** @brief %Line plot, which shows a continuous series of X and Y points.
 
         | %Line Plot      | %Line Plot (more customized)      |
@@ -132,15 +133,17 @@ namespace Wisteria::Graphs {
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
     */
-    class LinePlot : public GroupGraph2D {
+    class LinePlot : public GroupGraph2D
+        {
         wxDECLARE_DYNAMIC_CLASS(LinePlot);
 
         LinePlot() = default;
 
-    public:
+      public:
         /// @brief A data series drawn on a line plot.
-        class Line {
-        public:
+        class Line
+            {
+          public:
             /// @name Line Display Functions
             /// @brief Functions relating to the visual display of the line
             ///     connecting the points.
@@ -151,15 +154,17 @@ namespace Wisteria::Graphs {
             /// @note Set this to transparent or @c wxNullPen to turn off the line
             ///     (e.g., if you only want to show the points).
             [[nodiscard]]
-            wxPen &GetPen() noexcept {
+            wxPen& GetPen() noexcept
+                {
                 return m_linePen;
-            }
+                }
 
             /// @returns How the segments between the points on a line are connected.
             [[nodiscard]]
-            LineStyle GetStyle() const noexcept {
+            LineStyle GetStyle() const noexcept
+                {
                 return m_lineStyle;
-            }
+                }
 
             /// @brief How the segments between the points on a line are connected.
             /// @param lineStyle The line style.
@@ -170,15 +175,17 @@ namespace Wisteria::Graphs {
             /// @returns The label for the line.
             /// @note This is only applicable if grouping is being used.
             [[nodiscard]]
-            const wxString &GetText() const noexcept {
+            const wxString& GetText() const noexcept
+                {
                 return m_label;
-            }
+                }
 
             /// @private
             [[nodiscard]]
-            const wxPen &GetPen() const noexcept {
+            const wxPen& GetPen() const noexcept
+                {
                 return m_linePen;
-            }
+                }
 
             /// @brief Sets the grouping information connected to this line.
             /// @param groupColumnName The grouping column to use. This is used for
@@ -187,18 +194,20 @@ namespace Wisteria::Graphs {
             ///     only be used for this line if their group ID is @c groupId.
             /// @param groupName The display name of the group.\n
             ///     This is useful for a client to find a line by name and then customize it.
-            void SetGroupInfo(const std::optional<wxString> &groupColumnName,
-                              const Data::GroupIdType groupId, const wxString &groupName) {
+            void SetGroupInfo(const std::optional<wxString>& groupColumnName,
+                              const Data::GroupIdType groupId, const wxString& groupName)
+                {
                 m_groupColumnName = groupColumnName;
                 m_groupId = groupId;
                 m_label = groupName;
-            }
+                }
 
             /// @returns The shape.
             [[nodiscard]]
-            Icons::IconShape GetShape() const noexcept {
+            Icons::IconShape GetShape() const noexcept
+                {
                 return m_shape;
-            }
+                }
 
             /// @brief Sets the shape.
             /// @param shape The shape.
@@ -206,36 +215,39 @@ namespace Wisteria::Graphs {
 
             /// @returns The shape image.
             [[nodiscard]]
-            const wxBitmapBundle &GetShapeImage() const noexcept {
+            const wxBitmapBundle& GetShapeImage() const noexcept
+                {
                 return m_shapeImg;
-            }
+                }
 
             /// @brief Sets the shape image.
             /// @param shapeImg The shape image.
-            void SetShapeImage(const wxBitmapBundle &shapeImg) { m_shapeImg = shapeImg; }
+            void SetShapeImage(const wxBitmapBundle& shapeImg) { m_shapeImg = shapeImg; }
 
             /// @returns The group ID.
             [[nodiscard]]
-            Data::GroupIdType GetGroupId() const noexcept {
+            Data::GroupIdType GetGroupId() const noexcept
+                {
                 return m_groupId;
-            }
+                }
 
             /// @returns The group column name.
             [[nodiscard]]
-            std::optional<wxString> GetGroupColumnName() const {
+            std::optional<wxString> GetGroupColumnName() const
+                {
                 return m_groupColumnName;
-            }
+                }
 
-        private:
+          private:
             std::optional<wxString> m_groupColumnName;
-            Data::GroupIdType m_groupId{0};
+            Data::GroupIdType m_groupId{ 0 };
             wxString m_label;
 
-            LineStyle m_lineStyle{LineStyle::Lines};
-            Icons::IconShape m_shape{Icons::IconShape::Circle};
+            LineStyle m_lineStyle{ LineStyle::Lines };
+            Icons::IconShape m_shape{ Icons::IconShape::Circle };
             wxBitmapBundle m_shapeImg;
-            wxPen m_linePen{wxPen{Colors::ColorBrewer::GetColor(Colors::Color::Black), 2}};
-        };
+            wxPen m_linePen{ wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 2 } };
+            };
 
         /** @brief Constructor.
             @param canvas The canvas to draw the line plot on.
@@ -266,30 +278,29 @@ namespace Wisteria::Graphs {
                 Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`
                 to not show any lines.*/
         explicit LinePlot(
-            Canvas *canvas, const std::shared_ptr<Colors::Schemes::ColorScheme> &colors = nullptr,
-            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> &shapes = nullptr,
-            const std::shared_ptr<LineStyleScheme> &linePenStyles = nullptr)
+            Canvas* canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,
+            const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr)
             : GroupGraph2D(canvas),
-              m_linePenStyles(linePenStyles != nullptr
-                                  ? linePenStyles
-                                  : std::make_shared<LineStyleScheme>(LineStyleScheme{
-                                      {wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines}
-                                  })) {
-            SetColorScheme(colors != nullptr
-                               ? colors
-                               : std::make_shared<Colors::Schemes::ColorScheme>(
-                                   Settings::GetDefaultColorScheme()));
-            SetShapeScheme(shapes != nullptr
-                               ? shapes
-                               : std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
+              m_linePenStyles(linePenStyles != nullptr ?
+                                  linePenStyles :
+                                  std::make_shared<LineStyleScheme>(LineStyleScheme{
+                                      { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
+            {
+            SetColorScheme(colors != nullptr ? colors :
+                                               std::make_shared<Colors::Schemes::ColorScheme>(
+                                                   Settings::GetDefaultColorScheme()));
+            SetShapeScheme(shapes != nullptr ?
+                               shapes :
+                               std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                    Wisteria::Icons::Schemes::StandardShapes()));
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
             GetLeftYAxis().StartAtZero(true);
-        }
+            }
 
 #if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
         /** @brief Sets the data.
             @details Along with the X and Y points, separate lines can be created based
@@ -315,11 +326,11 @@ namespace Wisteria::Graphs {
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        virtual void SetData(const std::shared_ptr<const Data::Dataset> &data,
-                             const wxString &yColumnName, const wxString &xColumnName,
-                             const std::optional<wxString> &groupColumnName);
+        virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                             const wxString& yColumnName, const wxString& xColumnName,
+                             const std::optional<wxString>& groupColumnName);
 #if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 #endif
 
         /** @brief Sets an additional function to assign a point's color to something different
@@ -341,7 +352,7 @@ namespace Wisteria::Graphs {
                         wxNullColour;
                     });
             @endcode*/
-        void SetPointColorCriteria(const PointColorCriteria &criteria) { m_colorIf = criteria; }
+        void SetPointColorCriteria(const PointColorCriteria& criteria) { m_colorIf = criteria; }
 
         /// @name Line Functions
         /// @brief Functions relating to accessing and customizing the lines.
@@ -353,33 +364,37 @@ namespace Wisteria::Graphs {
             @note This should be called after SetData().
             @sa GetLineCount().*/
         [[nodiscard]]
-        Line &GetLine(const size_t index) noexcept {
+        Line& GetLine(const size_t index) noexcept
+            {
             assert(index < m_lines.size() && L"Invalid index in GetLine()!");
             return m_lines.at(index);
-        }
+            }
 
         /// @brief Gets the lines so that you can iterate through them and make edits
         ///     (e.g., changing the line color based on the label).
         /// @returns Direct access to the lines.
         /// @note This should be called after SetData().
         [[nodiscard]]
-        std::vector<Line> &GetLines() noexcept {
+        std::vector<Line>& GetLines() noexcept
+            {
             return m_lines;
-        }
+            }
 
         /** @brief Gets the number of lines on the plot.
             @returns The number of lines.
             @note This should be called after SetData().*/
         [[nodiscard]]
-        size_t GetLineCount() const noexcept {
+        size_t GetLineCount() const noexcept
+            {
             return m_lines.size();
-        }
+            }
 
         /// @returns @c true if auto splining is enabled.
         [[nodiscard]]
-        bool IsAutoSplining() const noexcept {
+        bool IsAutoSplining() const noexcept
+            {
             return m_autoSpline;
-        }
+            }
 
         /** @brief When lines zigzag (i.e., go back-and-forth along the X axis),
                 setting this to @c true will change the line to be drawn as a spline.\n
@@ -396,13 +411,14 @@ namespace Wisteria::Graphs {
             @warning This will only take effect if called after SetData().\
                 Also, for LinePlot, this will only take effect if grouping is enabled.
             @sa SetGhostOpacity().*/
-        void ShowcaseLines(const std::vector<wxString> &labels) { m_showcasedLines = labels; }
+        void ShowcaseLines(const std::vector<wxString>& labels) { m_showcasedLines = labels; }
 
         /// @returns The opacity level applied if being "ghosted".
         [[nodiscard]]
-        uint8_t GetGhostOpacity() const noexcept {
+        uint8_t GetGhostOpacity() const noexcept
+            {
             return m_ghostOpacity;
-        }
+            }
 
         /** @brief Sets the opacity level for "ghosted" lines/points.\n
                 This is only used if ShowcaseLines() is called; this is the
@@ -418,105 +434,122 @@ namespace Wisteria::Graphs {
             @param options The options for how to build the legend.\n
             @returns The legend for the plot.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions &options) override;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
 
-    protected:
+      protected:
         /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
         /// @param index The row in the X column to review.
         /// @returns @c true if the given row in the X column is valid.
         [[nodiscard]]
-        bool IsXValid(const size_t index) const {
-            if (index >= GetDataset()->GetRowCount()) {
+        bool IsXValid(const size_t index) const
+            {
+            if (index >= GetDataset()->GetRowCount())
+                {
                 return false;
-            }
+                }
             // continuous X
-            if (IsXContinuous()) {
+            if (IsXContinuous())
+                {
                 return !std::isnan(m_xColumnContinuous->GetValue(index));
-            }
+                }
             // categorical X, which in this case anything would be OK (even empty string)
-            if (IsXCategorical()) {
+            if (IsXCategorical())
+                {
                 return true;
-            }
-            if (IsXDates()) {
+                }
+            if (IsXDates())
+                {
                 return GetBottomXAxis()
-                        .FindDatePosition(m_xColumnDate->GetValue(index))
-                        .has_value();
-            }
+                    .FindDatePosition(m_xColumnDate->GetValue(index))
+                    .has_value();
+                }
             return false;
-        }
+            }
 
         /// @brief Returns the value at @c index of the X column.
         /// @param index The row in the X column to retrieve.
         /// @returns The value of the given row in the X column.\n
         ///     Note that this value may be NaN if invalid.
         [[nodiscard]]
-        double GetXValue(const size_t index) const {
-            if (index >= GetDataset()->GetRowCount()) {
+        double GetXValue(const size_t index) const
+            {
+            if (index >= GetDataset()->GetRowCount())
+                {
                 return std::numeric_limits<double>::quiet_NaN();
-            }
+                }
             // continuous X
-            if (IsXContinuous()) {
+            if (IsXContinuous())
+                {
                 return m_xColumnContinuous->GetValue(index);
-            }
+                }
             // categorical X, just want the underlying number code as that is what
             // goes along the X axis
-            if (IsXCategorical()) {
+            if (IsXCategorical())
+                {
                 return static_cast<double>(m_xColumnCategorical->GetValue(index));
-            }
-            if (IsXDates()) {
+                }
+            if (IsXDates())
+                {
                 const auto foundDate =
-                        GetBottomXAxis().FindDatePosition(m_xColumnDate->GetValue(index));
-                return (foundDate.has_value() ? foundDate.value() : std::numeric_limits<double>::quiet_NaN());
-            }
+                    GetBottomXAxis().FindDatePosition(m_xColumnDate->GetValue(index));
+                return (foundDate.has_value() ? foundDate.value() :
+                                                std::numeric_limits<double>::quiet_NaN());
+                }
             return std::numeric_limits<double>::quiet_NaN();
-        }
+            }
 
         /** @brief Gets the min and max values of the X column (if a date axis).
             @returns The X column's min and max dates, which can be
                 @c wxInvalidDateTime if invalid.*/
         [[nodiscard]]
-        std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const {
+        std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
+            {
             wxASSERT_MSG(IsXDates(),
                          L"GetXMinMaxDates() should only be called if X axis is date based!");
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
                 m_xColumnDate->GetValues().cbegin(), m_xColumnDate->GetValues().cend());
             return std::make_pair(*fullXDataMin, *fullXDataMax);
-        }
+            }
 
         /** @brief Gets the min and max values of the X column.
             @returns The X column's min and max values, which can be NaN if invalid.*/
         [[nodiscard]]
-        std::pair<double, double> GetXMinMax() const {
+        std::pair<double, double> GetXMinMax() const
+            {
             wxASSERT_MSG(!IsXDates(), L"GetXMinMaxDates() should be called instead!");
-            if (GetDataset()->GetRowCount() == 0) {
+            if (GetDataset()->GetRowCount() == 0)
+                {
                 return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
                                       std::numeric_limits<double>::quiet_NaN());
-            }
+                }
             // continuous X
-            if (IsXContinuous()) {
+            if (IsXContinuous())
+                {
                 const auto [fullXDataMin, fullXDataMax] =
-                        std::minmax_element(m_xColumnContinuous->GetValues().cbegin(),
-                                            m_xColumnContinuous->GetValues().cend());
+                    std::minmax_element(m_xColumnContinuous->GetValues().cbegin(),
+                                        m_xColumnContinuous->GetValues().cend());
                 return std::make_pair(*fullXDataMin, *fullXDataMax);
-            }
+                }
             // categorical X, just want the underlying numeric code as that is what
             // goes along the X axis
-            if (IsXCategorical()) {
+            if (IsXCategorical())
+                {
                 const auto [fullXDataMin, fullXDataMax] =
-                        std::minmax_element(m_xColumnCategorical->GetValues().cbegin(),
-                                            m_xColumnCategorical->GetValues().cend());
+                    std::minmax_element(m_xColumnCategorical->GetValues().cbegin(),
+                                        m_xColumnCategorical->GetValues().cend());
                 return std::make_pair(static_cast<double>(*fullXDataMin),
                                       static_cast<double>(*fullXDataMax));
-            }
+                }
             return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
                                   std::numeric_limits<double>::quiet_NaN());
-        }
+            }
 
         /// @returns The pen styles used for the line(s).
         [[nodiscard]]
-        const std::shared_ptr<LineStyleScheme> &GetPenStyleScheme() const noexcept {
+        const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
+            {
             return m_linePenStyles;
-        }
+            }
 
         /// @brief Returns whether the X column data is ordered ascendingly.
         /// @param data The dataset to review.
@@ -524,26 +557,29 @@ namespace Wisteria::Graphs {
         /// @returns @c true if X data is ordered (i.e., not weaving back-and-forth).
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]]
-        bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset> &data,
+        bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
                                    Data::GroupIdType group) const;
 
         /// @returns Whether X was loaded from a continuous column.
         [[nodiscard]]
-        bool IsXContinuous() const noexcept {
+        bool IsXContinuous() const noexcept
+            {
             return (m_xColumnContinuous != GetDataset()->GetContinuousColumns().cend());
-        }
+            }
 
         /// @returns Whether X was loaded from a categorical column.
         [[nodiscard]]
-        bool IsXCategorical() const noexcept {
+        bool IsXCategorical() const noexcept
+            {
             return (m_xColumnCategorical != GetDataset()->GetCategoricalColumns().cend());
-        }
+            }
 
         /// @returns Whether X was loaded from a date column.
         [[nodiscard]]
-        bool IsXDates() const noexcept {
+        bool IsXDates() const noexcept
+            {
             return (m_xColumnDate != GetDataset()->GetDateColumns().cend());
-        }
+            }
 
         /** @brief Returns a color that is ghosted if ghosting is enabled.
             @param color The base color.
@@ -551,55 +587,60 @@ namespace Wisteria::Graphs {
             @returns The (possibly) ghosted color.
          */
         [[nodiscard]]
-        wxColour GetMaybeGhostedColor(const wxColour &color, const bool isGhosted) const {
-            return isGhosted && color.IsOk()
-                       ? Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity())
-                       : color;
-        }
+        wxColour GetMaybeGhostedColor(const wxColour& color, const bool isGhosted) const
+            {
+            return isGhosted && color.IsOk() ?
+                       Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
+                       color;
+            }
 
         /// @returns The showcased lines' names.
         [[nodiscard]]
-        const std::vector<wxString> &GetShowcasedLines() const noexcept {
+        const std::vector<wxString>& GetShowcasedLines() const noexcept
+            {
             return m_showcasedLines;
-        }
+            }
 
         /// @returns The functor for determining how to color a point.
         [[nodiscard]]
-        PointColorCriteria GetColorIf() const {
+        PointColorCriteria GetColorIf() const
+            {
             return m_colorIf;
-        }
+            }
 
         /// @brief Sets the X column from the dataset.
         /// @param xColumnName The X column from the dataset to use.
         ///     Can be continuous, categorical, or a data column.
         /// @details This will set the iterator to the proper column.
         /// @warning This must be called after setting the dataset.
-        void SetXColumn(const wxString &xColumnName);
+        void SetXColumn(const wxString& xColumnName);
 
         /// @returns The iterator to the categorical column.
         /// @details This would usually be used to gather axis labels
         ///     from the categorical column's string table.
         /// @warning Call IsXCategorical() first to ensure that this iterator is valid.
         [[nodiscard]]
-        Data::CategoricalColumnConstIterator GetXCategoricalColumnIterator() {
+        Data::CategoricalColumnConstIterator GetXCategoricalColumnIterator()
+            {
             return m_xColumnCategorical;
-        }
+            }
 
-    private:
+      private:
         /// @brief Resets the X column iterators.
         /// @warning This must be called after setting the dataset.
-        void ResetXColumns() {
+        void ResetXColumns()
+            {
             m_xColumnContinuous = GetDataset()->GetContinuousColumns().cend();
             m_xColumnCategorical = GetDataset()->GetCategoricalColumns().cend();
             m_xColumnDate = GetDataset()->GetDateColumns().cend();
-        }
+            }
 
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
-        void AddLine(const Line &line);
+        void AddLine(const Line& line);
 
         /// @brief Recalculates the size of embedded objects on the plot.
-        void RecalcSizes(wxDC &dc) override;
+        void RecalcSizes(wxDC& dc) override;
 
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
@@ -608,18 +649,18 @@ namespace Wisteria::Graphs {
         wxString m_yColumnName;
 
         std::vector<Line> m_lines;
-        bool m_autoSpline{true};
+        bool m_autoSpline{ true };
 
-        std::shared_ptr<LineStyleScheme> m_linePenStyles{nullptr};
+        std::shared_ptr<LineStyleScheme> m_linePenStyles{ nullptr };
 
         PointColorCriteria m_colorIf;
 
         std::vector<wxString> m_showcasedLines;
         // the default ghost effect is OK for bars, but for thin lines it needs to be a
         // bit more opaque to be able to see anything
-        uint8_t m_ghostOpacity{std::max<uint8_t>(75, Wisteria::Settings::GHOST_OPACITY)};
-    };
-} // namespace Wisteria::Graphs
+        uint8_t m_ghostOpacity{ std::max<uint8_t>(75, Wisteria::Settings::GHOST_OPACITY) };
+        };
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
