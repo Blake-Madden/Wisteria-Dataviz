@@ -98,7 +98,7 @@ namespace Wisteria::Graphs
 
          ganttChart->SetCanvasMargins(5, 5, 5, 5);
          canvas->SetFixedObject(0, 0, ganttChart);
-         // Add a legend, showing whom is assigned to which tasks.
+         // Add a legend, showing who is assigned to which tasks.
          // (If not using a grouping column, then adding a legend will be unnecessary.)
          canvas->SetFixedObject(0, 1,
             ganttChart->CreateLegend(
