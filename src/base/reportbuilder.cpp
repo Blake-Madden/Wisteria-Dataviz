@@ -4039,276 +4039,22 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadTable(const wxSimpleJSON::Ptr_t& graphNode,
-                                                              Canvas* canvas, size_t& currentRow,
-                                                              size_t& currentColumn)
+    void ReportBuilder::LoadTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
+                                               const wxSimpleJSON::Ptr_t& tableNode)
         {
-        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
-        const auto foundPos = m_datasets.find(dsName);
-        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for table."), dsName).ToUTF8());
-            }
-
-        std::vector<wxString> variables;
-        const auto variablesNode = graphNode->GetProperty(L"variables");
-        if (variablesNode->IsOk() && variablesNode->IsValueString())
-            {
-            auto convertedVars =
-                ExpandColumnSelections(variablesNode->AsString(), foundPos->second);
-            if (convertedVars)
-                {
-                variables.insert(variables.cend(), convertedVars.value().cbegin(),
-                                 convertedVars.value().cend());
-                }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"%s: unknown variable selection formula for table."),
-                                     variablesNode->AsString())
-                        .ToUTF8());
-                }
-            }
-        else if (variablesNode->IsOk() && variablesNode->IsValueArray())
-            {
-            const auto readVariables = variablesNode->AsStrings();
-            for (const auto& readVar : readVariables)
-                {
-                if (auto convertedVars = ExpandColumnSelections(readVar, foundPos->second))
-                    {
-                    variables.insert(variables.cend(), convertedVars.value().cbegin(),
-                                     convertedVars.value().cend());
-                    }
-                else
-                    {
-                    variables.push_back(readVar);
-                    }
-                }
-            }
-
-        auto table = std::make_shared<Graphs::Table>(canvas);
-
-        // load table defaults
-        // change columns' borders
-        const auto borderDefaults = graphNode->GetProperty(L"default-borders")->AsBools();
-        table->SetDefaultBorders((!borderDefaults.empty() ? borderDefaults[0] : true),
-                                 (borderDefaults.size() > 1 ? borderDefaults[1] : true),
-                                 (borderDefaults.size() > 2 ? borderDefaults[2] : true),
-                                 (borderDefaults.size() > 3 ? borderDefaults[3] : true));
-
-        table->SetData(foundPos->second, variables, graphNode->GetProperty(L"transpose")->AsBool());
-
-        // sorting
-        const auto sortNode = graphNode->GetProperty(L"row-sort");
-        if (sortNode->IsOk())
-            {
-            const auto sortDirection =
-                sortNode->GetProperty(L"direction")->AsString().CmpNoCase(_DT(L"descending")) == 0 ?
-                    SortDirection::SortDescending :
-                    SortDirection::SortAscending;
-            const std::optional<size_t> sortColumn =
-                LoadTablePosition(sortNode->GetProperty(L"column"), table);
-
-            // if sorting by a list of labels with a custom order
-            if (sortColumn)
-                {
-                if (const auto labelsNode = sortNode->GetProperty(L"labels");
-                    labelsNode->IsOk() && labelsNode->IsValueArray())
-                    {
-                    table->Sort(sortColumn.value(), labelsNode->AsStrings(), sortDirection);
-                    }
-                else
-                    {
-                    table->Sort(sortColumn.value(), sortDirection);
-                    }
-                }
-            }
-
-        if (graphNode->HasProperty(L"link-id"))
-            {
-            if (const auto linkId = ConvertNumber(graphNode->GetProperty(L"link-id")))
-                {
-                auto foundPosTLink = std::ranges::find_if(
-                    m_tableLinks, [&linkId](const auto& tLink)
-                    { return tLink.GetId() == static_cast<size_t>(linkId.value()); });
-                if (foundPosTLink != m_tableLinks.end())
-                    {
-                    foundPosTLink->AddTable(table);
-                    }
-                else
-                    {
-                    TableLink tLink{ static_cast<size_t>(linkId.value()) };
-                    tLink.AddTable(table);
-                    m_tableLinks.push_back(std::move(tLink));
-                    }
-                }
-            }
-
-        table->ClearTrailingRowFormatting(
-            graphNode->GetProperty(L"clear-trailing-row-formatting")->AsBool());
-
-        const auto minWidthProp = graphNode->GetProperty(L"min-width-proportion");
-        if (minWidthProp->IsOk())
-            {
-            table->SetMinWidthProportion(minWidthProp->AsDouble());
-            }
-        const auto minHeightProp = graphNode->GetProperty(L"min-height-proportion");
-        if (minHeightProp->IsOk())
-            {
-            table->SetMinHeightProportion(minHeightProp->AsDouble());
-            }
-
-        LoadPen(graphNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
-
-        // reads a single position and range of positions (start and end)
-        const auto readPositions = [&table](const wxSimpleJSON::Ptr_t& theNode)
-        {
-            const std::optional<size_t> position =
-                LoadTablePosition(theNode->GetProperty(L"position"), table);
-            const std::optional<size_t> startPosition =
-                LoadTablePosition(theNode->GetProperty(L"start"), table);
-            const std::optional<size_t> endPosition =
-                LoadTablePosition(theNode->GetProperty(L"end"), table);
-            return std::tuple(position, startPosition, endPosition);
-        };
-
-        // loads the positions from a row or column stops array
-        const auto loadStops = [&table](const auto& stopsNode)
-        {
-            std::set<size_t> rowOrColumnStops;
-            const auto stops = stopsNode->AsNodes();
-            if (stops.size())
-                {
-                for (const auto& stop : stops)
-                    {
-                    const std::optional<size_t> stopPosition =
-                        LoadTablePosition(stop->GetProperty(L"position"), table);
-                    if (stopPosition.has_value())
-                        {
-                        rowOrColumnStops.insert(stopPosition.value());
-                        }
-                    }
-                }
-            return rowOrColumnStops;
-        };
-
-        if (graphNode->HasProperty(L"insert-group-header"))
-            {
-            table->InsertGroupHeader(graphNode->GetProperty(L"insert-group-header")->AsStrings());
-            }
-
-        // group the rows
-        const auto rowGroupings = graphNode->GetProperty(L"row-group")->AsDoubles();
-        for (const auto& rowGrouping : rowGroupings)
-            {
-            table->GroupRow(rowGrouping);
-            }
-
-        // group the columns
-        const auto columnGroupings = graphNode->GetProperty(L"column-group")->AsDoubles();
-        for (const auto& columnGrouping : columnGroupings)
-            {
-            table->GroupColumn(columnGrouping);
-            }
-
-        // apply zebra stripes to loaded data before we start adding custom rows/columns, manually
-        // changing row/column colors, etc.
-        if (graphNode->HasProperty(L"alternate-row-color"))
-            {
-            const auto altRowColorNode = graphNode->GetProperty(L"alternate-row-color");
-            const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"), table);
-            const std::set<size_t> colStops = loadStops(altRowColorNode->GetProperty(L"stops"));
-            auto rowColor{ ConvertColor(altRowColorNode->GetProperty(L"color")) };
-            if (!rowColor.IsOk())
-                {
-                rowColor = Colors::ColorBrewer::GetColor(Colors::Color::White);
-                }
-            table->ApplyAlternateRowColors(rowColor, startRow.value_or(0), colStops);
-            }
-
-        // add rows
-        auto rowAddCommands = graphNode->GetProperty(L"row-add")->AsNodes();
-        if (!rowAddCommands.empty())
-            {
-            for (const auto& rowAddCommand : rowAddCommands)
-                {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowAddCommand->GetProperty(L"position"), table);
-                if (!position.has_value())
-                    {
-                    continue;
-                    }
-                table->InsertRow(position.value());
-                // fill the values across the row
-                const auto values = rowAddCommand->GetProperty(L"values")->AsStrings();
-                for (size_t i = 0; i < values.size(); ++i)
-                    {
-                    table->GetCell(position.value(), i).SetValue(values[i]);
-                    }
-                const wxColour bgcolor(ConvertColor(rowAddCommand->GetProperty(L"background")));
-                if (bgcolor.IsOk())
-                    {
-                    table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt);
-                    }
-                }
-            }
-
-        // change the rows' suppression
-        const auto rowSuppressionCommands = graphNode->GetProperty(L"row-suppression")->AsNodes();
-        if (!rowSuppressionCommands.empty())
-            {
-            for (const auto& rowSuppressionCommand : rowSuppressionCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    readPositions(rowSuppressionCommand);
-                const auto threshold =
-                    ConvertNumber(rowSuppressionCommand->GetProperty(L"threshold"));
-                const auto suppressionLabel =
-                    ExpandConstants(rowSuppressionCommand->GetProperty(L"label")->AsString());
-
-                const std::set<size_t> colStops =
-                    loadStops(rowSuppressionCommand->GetProperty(L"stops"));
-                if (threshold.has_value())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetRowSuppression(position.value(), threshold,
-                                                 !suppressionLabel.empty() ?
-                                                     std::optional<wxString>(suppressionLabel) :
-                                                     std::nullopt,
-                                                 colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowSuppression(i, threshold,
-                                                     !suppressionLabel.empty() ?
-                                                         std::optional<wxString>(suppressionLabel) :
-                                                         std::nullopt,
-                                                     colStops);
-                            }
-                        }
-                    }
-                }
-            }
-
         // change the rows' formatting
-        const auto rowFormattingCommands = graphNode->GetProperty(L"row-formatting")->AsNodes();
+        const auto rowFormattingCommands = tableNode->GetProperty(L"row-formatting")->AsNodes();
         if (!rowFormattingCommands.empty())
             {
             for (const auto& rowFormattingCommand : rowFormattingCommands)
                 {
                 const auto [position, startPosition, endPosition] =
-                    readPositions(rowFormattingCommand);
+                    ReadPositions(table, rowFormattingCommand);
                 const auto formatValue = ReportEnumConvert::ConvertTableCellFormat(
                     rowFormattingCommand->GetProperty(L"format")->AsString());
 
                 const std::set<size_t> colStops =
-                    loadStops(rowFormattingCommand->GetProperty(L"stops"));
+                    LoadTableStops(table, rowFormattingCommand->GetProperty(L"stops"));
                 if (formatValue.has_value())
                     {
                     // single column
@@ -4329,14 +4075,16 @@ namespace Wisteria
             }
 
         // color the rows
-        const auto rowColorCommands = graphNode->GetProperty(L"row-color")->AsNodes();
+        const auto rowColorCommands = tableNode->GetProperty(L"row-color")->AsNodes();
         if (!rowColorCommands.empty())
             {
             for (const auto& rowColorCommand : rowColorCommands)
                 {
-                const auto [position, startPosition, endPosition] = readPositions(rowColorCommand);
+                const auto [position, startPosition, endPosition] =
+                    ReadPositions(table, rowColorCommand);
                 const wxColour bgcolor(ConvertColor(rowColorCommand->GetProperty(L"background")));
-                const std::set<size_t> colStops = loadStops(rowColorCommand->GetProperty(L"stops"));
+                const std::set<size_t> colStops =
+                    LoadTableStops(table, rowColorCommand->GetProperty(L"stops"));
                 if (bgcolor.IsOk())
                     {
                     // single column
@@ -4357,13 +4105,15 @@ namespace Wisteria
             }
 
         // bold the rows
-        const auto rowBoldCommands = graphNode->GetProperty(L"row-bold")->AsNodes();
+        const auto rowBoldCommands = tableNode->GetProperty(L"row-bold")->AsNodes();
         if (!rowBoldCommands.empty())
             {
             for (const auto& rowBoldCommand : rowBoldCommands)
                 {
-                const auto [position, startPosition, endPosition] = readPositions(rowBoldCommand);
-                const std::set<size_t> colStops = loadStops(rowBoldCommand->GetProperty(L"stops"));
+                const auto [position, startPosition, endPosition] =
+                    ReadPositions(table, rowBoldCommand);
+                const std::set<size_t> colStops =
+                    LoadTableStops(table, rowBoldCommand->GetProperty(L"stops"));
                 if (position.has_value())
                     {
                     table->BoldRow(position.value(), colStops);
@@ -4380,17 +4130,17 @@ namespace Wisteria
             }
 
         // change rows' borders
-        const auto rowBordersCommands = graphNode->GetProperty(L"row-borders")->AsNodes();
+        const auto rowBordersCommands = tableNode->GetProperty(L"row-borders")->AsNodes();
         if (!rowBordersCommands.empty())
             {
             for (const auto& rowBordersCommand : rowBordersCommands)
                 {
                 const auto [position, startPosition, endPosition] =
-                    readPositions(rowBordersCommand);
+                    ReadPositions(table, rowBordersCommand);
                 const auto borderFlags = rowBordersCommand->GetProperty(L"borders")->AsBools();
 
                 const std::set<size_t> rowStops =
-                    loadStops(rowBordersCommand->GetProperty(L"stops"));
+                    LoadTableStops(table, rowBordersCommand->GetProperty(L"stops"));
                 if (!borderFlags.empty())
                     {
                     if (position.has_value())
@@ -4517,17 +4267,17 @@ namespace Wisteria
             }
 
         // change rows' content alignment
-        const auto rowContentCommands = graphNode->GetProperty(L"row-content-align")->AsNodes();
+        const auto rowContentCommands = tableNode->GetProperty(L"row-content-align")->AsNodes();
         if (!rowContentCommands.empty())
             {
             for (const auto& rowContentCommand : rowContentCommands)
                 {
                 const auto [position, startPosition, endPosition] =
-                    readPositions(rowContentCommand);
+                    ReadPositions(table, rowContentCommand);
                 const auto hPageAlignment =
                     rowContentCommand->GetProperty(L"horizontal-page-alignment")->AsString();
                 const std::set<size_t> colStops =
-                    loadStops(rowContentCommand->GetProperty(L"stops"));
+                    LoadTableStops(table, rowContentCommand->GetProperty(L"stops"));
                 if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
                     {
                     if (position.has_value())
@@ -4581,65 +4331,26 @@ namespace Wisteria
                     }
                 }
             }
+        }
 
-        // change the columns' suppression
-        const auto columnSuppressionCommands =
-            graphNode->GetProperty(L"column-suppression")->AsNodes();
-        if (!columnSuppressionCommands.empty())
-            {
-            for (const auto& columnSuppressionCommand : columnSuppressionCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    readPositions(columnSuppressionCommand);
-                const auto threshold =
-                    ConvertNumber(columnSuppressionCommand->GetProperty(L"threshold"));
-                const auto suppressionLabel =
-                    ExpandConstants(columnSuppressionCommand->GetProperty(L"label")->AsString());
-
-                const std::set<size_t> rowStops =
-                    loadStops(columnSuppressionCommand->GetProperty(L"stops"));
-                if (threshold.has_value())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetColumnSuppression(position.value(), threshold,
-                                                    !suppressionLabel.empty() ?
-                                                        std::optional<wxString>(suppressionLabel) :
-                                                        std::nullopt,
-                                                    rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnSuppression(
-                                i, threshold,
-                                !suppressionLabel.empty() ?
-                                    std::optional<wxString>(suppressionLabel) :
-                                    std::nullopt,
-                                rowStops);
-                            }
-                        }
-                    }
-                }
-            }
-
+    //---------------------------------------------------
+    void ReportBuilder::LoadTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
+                                                  const wxSimpleJSON::Ptr_t& tableNode)
+        {
         // change columns' cell formatting
         const auto columnFormattingCommands =
-            graphNode->GetProperty(L"column-formatting")->AsNodes();
+            tableNode->GetProperty(L"column-formatting")->AsNodes();
         if (!columnFormattingCommands.empty())
             {
             for (const auto& columnFormattingCommand : columnFormattingCommands)
                 {
                 const auto [position, startPosition, endPosition] =
-                    readPositions(columnFormattingCommand);
+                    ReadPositions(table, columnFormattingCommand);
                 const auto formatValue = ReportEnumConvert::ConvertTableCellFormat(
                     columnFormattingCommand->GetProperty(L"format")->AsString());
 
                 const std::set<size_t> rowStops =
-                    loadStops(columnFormattingCommand->GetProperty(L"stops"));
+                    LoadTableStops(table, columnFormattingCommand->GetProperty(L"stops"));
                 if (formatValue.has_value())
                     {
                     // single column
@@ -4660,14 +4371,16 @@ namespace Wisteria
             }
 
         // color the columns
-        const auto colColorCommands = graphNode->GetProperty(L"column-color")->AsNodes();
+        const auto colColorCommands = tableNode->GetProperty(L"column-color")->AsNodes();
         if (!colColorCommands.empty())
             {
             for (const auto& colColorCommand : colColorCommands)
                 {
-                const auto [position, startPosition, endPosition] = readPositions(colColorCommand);
+                const auto [position, startPosition, endPosition] =
+                    ReadPositions(table, colColorCommand);
                 const wxColour bgcolor(ConvertColor(colColorCommand->GetProperty(L"background")));
-                const std::set<size_t> rowStops = loadStops(colColorCommand->GetProperty(L"stops"));
+                const std::set<size_t> rowStops =
+                    LoadTableStops(table, colColorCommand->GetProperty(L"stops"));
                 if (bgcolor.IsOk())
                     {
                     if (position.has_value())
@@ -4687,13 +4400,15 @@ namespace Wisteria
             }
 
         // bold the columns
-        const auto colBoldCommands = graphNode->GetProperty(L"column-bold")->AsNodes();
+        const auto colBoldCommands = tableNode->GetProperty(L"column-bold")->AsNodes();
         if (!colBoldCommands.empty())
             {
             for (const auto& colBoldCommand : colBoldCommands)
                 {
-                const auto [position, startPosition, endPosition] = readPositions(colBoldCommand);
-                const std::set<size_t> rowStops = loadStops(colBoldCommand->GetProperty(L"stops"));
+                const auto [position, startPosition, endPosition] =
+                    ReadPositions(table, colBoldCommand);
+                const std::set<size_t> rowStops =
+                    LoadTableStops(table, colBoldCommand->GetProperty(L"stops"));
                 if (position.has_value())
                     {
                     table->BoldColumn(position.value(), rowStops);
@@ -4710,17 +4425,17 @@ namespace Wisteria
             }
 
         // change columns' borders
-        const auto columnBordersCommands = graphNode->GetProperty(L"column-borders")->AsNodes();
+        const auto columnBordersCommands = tableNode->GetProperty(L"column-borders")->AsNodes();
         if (!columnBordersCommands.empty())
             {
             for (const auto& columnBordersCommand : columnBordersCommands)
                 {
                 const auto [position, startPosition, endPosition] =
-                    readPositions(columnBordersCommand);
+                    ReadPositions(table, columnBordersCommand);
                 const auto borderFlags = columnBordersCommand->GetProperty(L"borders")->AsBools();
 
                 const std::set<size_t> rowStops =
-                    loadStops(columnBordersCommand->GetProperty(L"stops"));
+                    LoadTableStops(table, columnBordersCommand->GetProperty(L"stops"));
                 if (!borderFlags.empty())
                     {
                     if (position.has_value())
@@ -4848,19 +4563,295 @@ namespace Wisteria
                     }
                 }
             }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadTable(const wxSimpleJSON::Ptr_t& tableNode,
+                                                              Canvas* canvas, size_t& currentRow,
+                                                              size_t& currentColumn)
+        {
+        const wxString dsName = tableNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for table."), dsName).ToUTF8());
+            }
+
+        std::vector<wxString> variables;
+        const auto variablesNode = tableNode->GetProperty(L"variables");
+        if (variablesNode->IsOk() && variablesNode->IsValueString())
+            {
+            auto convertedVars =
+                ExpandColumnSelections(variablesNode->AsString(), foundPos->second);
+            if (convertedVars)
+                {
+                variables.insert(variables.cend(), convertedVars.value().cbegin(),
+                                 convertedVars.value().cend());
+                }
+            else
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: unknown variable selection formula for table."),
+                                     variablesNode->AsString())
+                        .ToUTF8());
+                }
+            }
+        else if (variablesNode->IsOk() && variablesNode->IsValueArray())
+            {
+            const auto readVariables = variablesNode->AsStrings();
+            for (const auto& readVar : readVariables)
+                {
+                if (auto convertedVars = ExpandColumnSelections(readVar, foundPos->second))
+                    {
+                    variables.insert(variables.cend(), convertedVars.value().cbegin(),
+                                     convertedVars.value().cend());
+                    }
+                else
+                    {
+                    variables.push_back(readVar);
+                    }
+                }
+            }
+
+        auto table = std::make_shared<Graphs::Table>(canvas);
+
+        // load table defaults
+        // change columns' borders
+        const auto borderDefaults = tableNode->GetProperty(L"default-borders")->AsBools();
+        table->SetDefaultBorders((!borderDefaults.empty() ? borderDefaults[0] : true),
+                                 (borderDefaults.size() > 1 ? borderDefaults[1] : true),
+                                 (borderDefaults.size() > 2 ? borderDefaults[2] : true),
+                                 (borderDefaults.size() > 3 ? borderDefaults[3] : true));
+
+        table->SetData(foundPos->second, variables, tableNode->GetProperty(L"transpose")->AsBool());
+
+        // sorting
+        const auto sortNode = tableNode->GetProperty(L"row-sort");
+        if (sortNode->IsOk())
+            {
+            const auto sortDirection =
+                sortNode->GetProperty(L"direction")->AsString().CmpNoCase(_DT(L"descending")) == 0 ?
+                    SortDirection::SortDescending :
+                    SortDirection::SortAscending;
+            const std::optional<size_t> sortColumn =
+                LoadTablePosition(sortNode->GetProperty(L"column"), table);
+
+            // if sorting by a list of labels with a custom order
+            if (sortColumn)
+                {
+                if (const auto labelsNode = sortNode->GetProperty(L"labels");
+                    labelsNode->IsOk() && labelsNode->IsValueArray())
+                    {
+                    table->Sort(sortColumn.value(), labelsNode->AsStrings(), sortDirection);
+                    }
+                else
+                    {
+                    table->Sort(sortColumn.value(), sortDirection);
+                    }
+                }
+            }
+
+        if (tableNode->HasProperty(L"link-id"))
+            {
+            if (const auto linkId = ConvertNumber(tableNode->GetProperty(L"link-id")))
+                {
+                auto foundPosTLink = std::ranges::find_if(
+                    m_tableLinks, [&linkId](const auto& tLink)
+                    { return tLink.GetId() == static_cast<size_t>(linkId.value()); });
+                if (foundPosTLink != m_tableLinks.end())
+                    {
+                    foundPosTLink->AddTable(table);
+                    }
+                else
+                    {
+                    TableLink tLink{ static_cast<size_t>(linkId.value()) };
+                    tLink.AddTable(table);
+                    m_tableLinks.push_back(std::move(tLink));
+                    }
+                }
+            }
+
+        table->ClearTrailingRowFormatting(
+            tableNode->GetProperty(L"clear-trailing-row-formatting")->AsBool());
+
+        const auto minWidthProp = tableNode->GetProperty(L"min-width-proportion");
+        if (minWidthProp->IsOk())
+            {
+            table->SetMinWidthProportion(minWidthProp->AsDouble());
+            }
+        const auto minHeightProp = tableNode->GetProperty(L"min-height-proportion");
+        if (minHeightProp->IsOk())
+            {
+            table->SetMinHeightProportion(minHeightProp->AsDouble());
+            }
+
+        LoadPen(tableNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
+
+        if (tableNode->HasProperty(L"insert-group-header"))
+            {
+            table->InsertGroupHeader(tableNode->GetProperty(L"insert-group-header")->AsStrings());
+            }
+
+        // group the rows
+        const auto rowGroupings = tableNode->GetProperty(L"row-group")->AsDoubles();
+        for (const auto& rowGrouping : rowGroupings)
+            {
+            table->GroupRow(rowGrouping);
+            }
+
+        // group the columns
+        const auto columnGroupings = tableNode->GetProperty(L"column-group")->AsDoubles();
+        for (const auto& columnGrouping : columnGroupings)
+            {
+            table->GroupColumn(columnGrouping);
+            }
+
+        // apply zebra stripes to loaded data before we start adding custom rows/columns, manually
+        // changing row/column colors, etc.
+        if (tableNode->HasProperty(L"alternate-row-color"))
+            {
+            const auto altRowColorNode = tableNode->GetProperty(L"alternate-row-color");
+            const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"), table);
+            const std::set<size_t> colStops =
+                LoadTableStops(table, altRowColorNode->GetProperty(L"stops"));
+            auto rowColor{ ConvertColor(altRowColorNode->GetProperty(L"color")) };
+            if (!rowColor.IsOk())
+                {
+                rowColor = Colors::ColorBrewer::GetColor(Colors::Color::White);
+                }
+            table->ApplyAlternateRowColors(rowColor, startRow.value_or(0), colStops);
+            }
+
+        // add rows
+        auto rowAddCommands = tableNode->GetProperty(L"row-add")->AsNodes();
+        if (!rowAddCommands.empty())
+            {
+            for (const auto& rowAddCommand : rowAddCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(rowAddCommand->GetProperty(L"position"), table);
+                if (!position.has_value())
+                    {
+                    continue;
+                    }
+                table->InsertRow(position.value());
+                // fill the values across the row
+                const auto values = rowAddCommand->GetProperty(L"values")->AsStrings();
+                for (size_t i = 0; i < values.size(); ++i)
+                    {
+                    table->GetCell(position.value(), i).SetValue(values[i]);
+                    }
+                const wxColour bgcolor(ConvertColor(rowAddCommand->GetProperty(L"background")));
+                if (bgcolor.IsOk())
+                    {
+                    table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt);
+                    }
+                }
+            }
+
+        // change the rows' suppression
+        const auto rowSuppressionCommands = tableNode->GetProperty(L"row-suppression")->AsNodes();
+        if (!rowSuppressionCommands.empty())
+            {
+            for (const auto& rowSuppressionCommand : rowSuppressionCommands)
+                {
+                const auto [position, startPosition, endPosition] =
+                    ReadPositions(table, rowSuppressionCommand);
+                const auto threshold =
+                    ConvertNumber(rowSuppressionCommand->GetProperty(L"threshold"));
+                const auto suppressionLabel =
+                    ExpandConstants(rowSuppressionCommand->GetProperty(L"label")->AsString());
+
+                const std::set<size_t> colStops =
+                    LoadTableStops(table, rowSuppressionCommand->GetProperty(L"stops"));
+                if (threshold.has_value())
+                    {
+                    // single column
+                    if (position.has_value())
+                        {
+                        table->SetRowSuppression(position.value(), threshold,
+                                                 !suppressionLabel.empty() ?
+                                                     std::optional<wxString>(suppressionLabel) :
+                                                     std::nullopt,
+                                                 colStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowSuppression(i, threshold,
+                                                     !suppressionLabel.empty() ?
+                                                         std::optional<wxString>(suppressionLabel) :
+                                                         std::nullopt,
+                                                     colStops);
+                            }
+                        }
+                    }
+                }
+            }
+
+        LoadTableRowFormatting(table, tableNode);
+
+        // change the columns' suppression
+        const auto columnSuppressionCommands =
+            tableNode->GetProperty(L"column-suppression")->AsNodes();
+        if (!columnSuppressionCommands.empty())
+            {
+            for (const auto& columnSuppressionCommand : columnSuppressionCommands)
+                {
+                const auto [position, startPosition, endPosition] =
+                    ReadPositions(table, columnSuppressionCommand);
+                const auto threshold =
+                    ConvertNumber(columnSuppressionCommand->GetProperty(L"threshold"));
+                const auto suppressionLabel =
+                    ExpandConstants(columnSuppressionCommand->GetProperty(L"label")->AsString());
+
+                const std::set<size_t> rowStops =
+                    LoadTableStops(table, columnSuppressionCommand->GetProperty(L"stops"));
+                if (threshold.has_value())
+                    {
+                    // single column
+                    if (position.has_value())
+                        {
+                        table->SetColumnSuppression(position.value(), threshold,
+                                                    !suppressionLabel.empty() ?
+                                                        std::optional<wxString>(suppressionLabel) :
+                                                        std::nullopt,
+                                                    rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnSuppression(
+                                i, threshold,
+                                !suppressionLabel.empty() ?
+                                    std::optional<wxString>(suppressionLabel) :
+                                    std::nullopt,
+                                rowStops);
+                            }
+                        }
+                    }
+                }
+            }
+
+        LoadTableColumnFormatting(table, tableNode);
 
         // highlight cells down a column
         const auto columnHighlightsCommands =
-            graphNode->GetProperty(L"column-highlight")->AsNodes();
+            tableNode->GetProperty(L"column-highlight")->AsNodes();
         if (!columnHighlightsCommands.empty())
             {
             for (const auto& columnHighlightsCommand : columnHighlightsCommands)
                 {
                 const auto [position, startPosition, endPosition] =
-                    readPositions(columnHighlightsCommand);
+                    ReadPositions(table, columnHighlightsCommand);
 
                 std::set<size_t> rowStops =
-                    loadStops(columnHighlightsCommand->GetProperty(L"stops"));
+                    LoadTableStops(table, columnHighlightsCommand->GetProperty(L"stops"));
                 if (position.has_value())
                     {
                     table->HighlightColumn(position.value(), rowStops);
@@ -4877,7 +4868,7 @@ namespace Wisteria
             }
 
         // column/row aggregates
-        const auto columnRowAggregates = graphNode->GetProperty(L"aggregates")->AsNodes();
+        const auto columnRowAggregates = tableNode->GetProperty(L"aggregates")->AsNodes();
         if (!columnRowAggregates.empty())
             {
             for (const auto& columnRowAggregate : columnRowAggregates)
@@ -4962,7 +4953,7 @@ namespace Wisteria
             }
 
         // row totals
-        const auto rowTotals = graphNode->GetProperty(L"row-totals");
+        const auto rowTotals = tableNode->GetProperty(L"row-totals");
         if (rowTotals->IsOk())
             {
             const wxColour bkColor(ConvertColor(rowTotals->GetProperty(L"background")));
@@ -4971,7 +4962,7 @@ namespace Wisteria
             }
 
         // cell updating
-        const auto cellUpdates = graphNode->GetProperty(L"cell-update")->AsNodes();
+        const auto cellUpdates = tableNode->GetProperty(L"cell-update")->AsNodes();
         if (!cellUpdates.empty())
             {
             for (const auto& cellUpdate : cellUpdates)
@@ -5138,7 +5129,7 @@ namespace Wisteria
                 }
             }
 
-        const auto annotationsNode = graphNode->GetProperty(L"cell-annotations")->AsNodes();
+        const auto annotationsNode = tableNode->GetProperty(L"cell-annotations")->AsNodes();
         if (!annotationsNode.empty())
             {
             for (const auto& annotation : annotationsNode)
@@ -5203,7 +5194,7 @@ namespace Wisteria
             }
 
         // assign footnotes after all cells have been updated
-        const auto footnotesNode = graphNode->GetProperty(L"footnotes")->AsNodes();
+        const auto footnotesNode = tableNode->GetProperty(L"footnotes")->AsNodes();
         if (!footnotesNode.empty())
             {
             for (const auto& ftNode : footnotesNode)
@@ -5213,7 +5204,7 @@ namespace Wisteria
                 }
             }
 
-        LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
+        LoadGraph(tableNode, canvas, currentRow, currentColumn, table);
         return table;
         }
 

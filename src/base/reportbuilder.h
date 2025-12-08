@@ -298,12 +298,12 @@ namespace Wisteria
                                                      Canvas* canvas, size_t& currentRow,
                                                      size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
-        /// @param graphNode The table node to parse.
+        /// @param tableNode The table node to parse.
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the table will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the table will be placed.
         /// @returns The table that was added to the canvas, or null upon failure.
-        std::shared_ptr<Graphs::Graph2D> LoadTable(const wxSimpleJSON::Ptr_t& graphNode,
+        std::shared_ptr<Graphs::Graph2D> LoadTable(const wxSimpleJSON::Ptr_t& tableNode,
                                                    Canvas* canvas, size_t& currentRow,
                                                    size_t& currentColumn);
 
@@ -418,12 +418,54 @@ namespace Wisteria
         [[nodiscard]]
         wxString NormalizeFilePath(const wxString& path) const;
 
+        /// @brief Loads the positions from a row or column stops array.
+        [[nodiscard]]
+        auto LoadTableStops(std::shared_ptr<Graphs::Table>& table, const auto& stopsNode)
+            {
+            std::set<size_t> rowOrColumnStops;
+            const auto stops = stopsNode->AsNodes();
+            if (stops.size())
+                {
+                for (const auto& stop : stops)
+                    {
+                    const std::optional<size_t> stopPosition =
+                        LoadTablePosition(stop->GetProperty(L"position"), table);
+                    if (stopPosition.has_value())
+                        {
+                        rowOrColumnStops.insert(stopPosition.value());
+                        }
+                    }
+                }
+            return rowOrColumnStops;
+            }
+
+        /// @brief Reads a single position and range of positions (start and end).
+        [[nodiscard]]
+        auto ReadPositions(std::shared_ptr<Graphs::Table>& table,
+                           const wxSimpleJSON::Ptr_t& theNode)
+            {
+            const std::optional<size_t> position =
+                LoadTablePosition(theNode->GetProperty(L"position"), table);
+            const std::optional<size_t> startPosition =
+                LoadTablePosition(theNode->GetProperty(L"start"), table);
+            const std::optional<size_t> endPosition =
+                LoadTablePosition(theNode->GetProperty(L"end"), table);
+            return std::tuple(position, startPosition, endPosition);
+            }
+
+        void LoadTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
+                                    const wxSimpleJSON::Ptr_t& tableNode);
+
+        void LoadTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
+                                       const wxSimpleJSON::Ptr_t& tableNode);
+
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and convert into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]]
         wxColour ConvertColor(wxString colorStr) const;
+
         /// @brief Loads a color from a string.
         /// @param colorNode A color node to parse.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
