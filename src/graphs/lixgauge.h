@@ -46,6 +46,7 @@ namespace Wisteria::Graphs
     class LixGauge final : public GroupGraph2D
         {
         wxDECLARE_DYNAMIC_CLASS(LixGauge);
+
         LixGauge() = default;
 
       public:
@@ -55,10 +56,9 @@ namespace Wisteria::Graphs
                 Leave as @c nullptr to use the default theme.
             @param shapes The shape scheme to use for the points.
                 Leave as @c nullptr to use the standard shapes.*/
-        explicit LixGauge(
-            Wisteria::Canvas* canvas,
-            const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
-            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr);
+        explicit LixGauge(Canvas* canvas,
+                          const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+                          const std::shared_ptr<Icons::Schemes::IconScheme>& shapes = nullptr);
 
         /** @brief Sets the data.
             @param data The data to use.
@@ -70,7 +70,7 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& scoreColumnName,
                      const std::optional<wxString>& groupColumnName = std::nullopt);
 
@@ -91,12 +91,14 @@ namespace Wisteria::Graphs
         void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
 
       private:
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
+
         void AdjustAxes();
+
         void UpdateCustomAxes();
 
-        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
-        Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
+        const Data::Column<double>* m_scoresColumn{ nullptr };
+        Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
 
         bool m_showcaseScore{ false };
         };

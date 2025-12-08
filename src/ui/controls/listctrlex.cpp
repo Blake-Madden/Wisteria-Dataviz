@@ -835,7 +835,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                     const wxItemAttr* const virtualAttrib =
                                         m_list->OnGetItemAttr(i);
                                     const wxItemAttr rowAttributes =
-                                        (m_list->IsVirtual() && virtualAttrib) ?
+                                        (m_list->IsVirtual() && virtualAttrib != nullptr) ?
                                             *virtualAttrib :
                                             wxItemAttr(m_list->GetItemTextColour(i),
                                                        m_list->GetItemBackgroundColour(i),
@@ -909,7 +909,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                                        m_list->GetDPIScaleFactor() /*border*/);
 
                                         // draw cell icon (if there is one)
-                                        if (m_list->GetImageList(wxIMAGE_LIST_SMALL))
+                                        if (m_list->GetImageList(wxIMAGE_LIST_SMALL) != nullptr)
                                             {
                                             wxListItem item;
                                             item.SetMask(wxLIST_MASK_IMAGE);
@@ -940,7 +940,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                         const wxItemAttr* const virtualAttrib =
                                             m_list->OnGetItemAttr(i);
                                         const wxItemAttr rowAttributes =
-                                            (m_list->IsVirtual() && virtualAttrib) ?
+                                            (m_list->IsVirtual() && virtualAttrib != nullptr) ?
                                                 *virtualAttrib :
                                                 wxItemAttr(m_list->GetItemTextColour(i),
                                                            m_list->GetItemBackgroundColour(i),
@@ -2488,7 +2488,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             return wxListCtrl::OnGetItemAttr(item);
             }
-        // NOLINTNEXTLINE(ppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         return const_cast<wxItemAttr*>(m_virtualData->GetRowAttributes(item));
         }
 
@@ -2888,7 +2888,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             // get the row formatting
             const wxItemAttr* const virtualAttrib = OnGetItemAttr(i);
             const wxItemAttr rowAttributes =
-                (IsVirtual() && virtualAttrib) ?
+                (IsVirtual() && virtualAttrib != nullptr) ?
                     *virtualAttrib :
                     wxItemAttr(GetItemTextColour(i), GetItemBackgroundColour(i), GetItemFont(i));
             wxString rowStyle =

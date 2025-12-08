@@ -242,7 +242,7 @@ namespace Wisteria::GraphItems
 
 // Note that radius pixels are avoided from left, right, top, and bottom edges.
 // Go to the next row of pixels...
-// NOLINTNEXTLINE(openmp-default-none)
+// NOLINTBEGIN(openmp-default-none)
 #pragma omp parallel for
         for (int nY = radius; nY < image.GetHeight() - radius; ++nY)
             {
@@ -300,6 +300,7 @@ namespace Wisteria::GraphItems
                 imgOutData[(nX * 3) + (nY * nBytesInARow) + 2] = nSumB[nMaxIndex] / nCurMax;
                 }
             }
+        // NOLINTEND(openmp-default-none)
 
         return outImg;
         }

@@ -876,7 +876,7 @@ namespace Wisteria::GraphItems
             const int steps = static_cast<int>(std::ceil((end - start) / interval));
             for (int k = 0; k <= steps; ++k)
                 {
-                double i = (start + (static_cast<double>(k) * interval));
+                const double i = (start + (static_cast<double>(k) * interval));
 
                 const bool majorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
@@ -904,7 +904,7 @@ namespace Wisteria::GraphItems
             const int steps = static_cast<int>(std::ceil((end - start) / interval));
             for (int k = 0; k <= steps; ++k)
                 {
-                double i = (start + (static_cast<double>(k) * interval));
+                const double i = (start + (static_cast<double>(k) * interval));
 
                 const bool majorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
@@ -3379,7 +3379,7 @@ namespace Wisteria::GraphItems
             for (int k = steps; k >= 0; --k)
                 {
                 // compute floating-point position for this iteration
-                double i = (rangeStart + (static_cast<double>(k) * interval));
+                const double i = (rangeStart + (static_cast<double>(k) * interval));
 
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1);

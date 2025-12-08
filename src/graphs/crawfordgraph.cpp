@@ -14,17 +14,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
     {
     ///----------------------------------------------------------------
     CrawfordGraph::CrawfordGraph(
-        Wisteria::Canvas * canvas,
-        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
-        const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
+        Canvas * canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
+        const std::shared_ptr<Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
         SetColorScheme(colors != nullptr ? colors :
                                            std::make_shared<Colors::Schemes::ColorScheme>(
                                                Settings::GetDefaultColorScheme()));
         SetShapeScheme(shapes != nullptr ? shapes :
-                                           std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
-                                               Wisteria::Icons::Schemes::StandardShapes()));
+                                           std::make_shared<Icons::Schemes::IconScheme>(
+                                               Icons::Schemes::StandardShapes()));
 
         if (GetCanvas() != nullptr)
             {
@@ -317,8 +316,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
                     GraphItems::Point2D(
                         GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
                             .AnchorPoint(pt)
-                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                GetPlotOrCanvasColor()))
+                            .Pen(
+                                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                             .Brush(GetColorScheme()->GetColor(colorIndex)),
                         Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);

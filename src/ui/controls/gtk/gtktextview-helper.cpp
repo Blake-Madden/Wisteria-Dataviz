@@ -109,7 +109,7 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     }
 
 //-------------------------------------------------
-wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
+wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
                             std::vector<wxColour>& colorTable,
                             [[maybe_unused]] std::vector<wxString>& fontTable)
     {

@@ -136,6 +136,7 @@ namespace Wisteria::Graphs
     class LinePlot : public GroupGraph2D
         {
         wxDECLARE_DYNAMIC_CLASS(LinePlot);
+
         LinePlot() = default;
 
       public:
@@ -444,7 +445,7 @@ namespace Wisteria::Graphs
             {
             if (index >= GetDataset()->GetRowCount())
                 {
-                return std::numeric_limits<double>::quiet_NaN();
+                return false;
                 }
             // continuous X
             if (IsXContinuous())
@@ -452,20 +453,17 @@ namespace Wisteria::Graphs
                 return !std::isnan(m_xColumnContinuous->GetValue(index));
                 }
             // categorical X, which in this case anything would be OK (even empty string)
-            else if (IsXCategorical())
+            if (IsXCategorical())
                 {
                 return true;
                 }
-            else if (IsXDates())
+            if (IsXDates())
                 {
                 return GetBottomXAxis()
                     .FindDatePosition(m_xColumnDate->GetValue(index))
                     .has_value();
                 }
-            else
-                {
-                return false;
-                }
+            return false;
             }
 
         /// @brief Returns the value at @c index of the X column.
@@ -486,21 +484,18 @@ namespace Wisteria::Graphs
                 }
             // categorical X, just want the underlying number code as that is what
             // goes along the X axis
-            else if (IsXCategorical())
+            if (IsXCategorical())
                 {
                 return static_cast<double>(m_xColumnCategorical->GetValue(index));
                 }
-            else if (IsXDates())
+            if (IsXDates())
                 {
                 const auto foundDate =
                     GetBottomXAxis().FindDatePosition(m_xColumnDate->GetValue(index));
                 return (foundDate.has_value() ? foundDate.value() :
                                                 std::numeric_limits<double>::quiet_NaN());
                 }
-            else
-                {
-                return std::numeric_limits<double>::quiet_NaN();
-                }
+            return std::numeric_limits<double>::quiet_NaN();
             }
 
         /** @brief Gets the min and max values of the X column (if a date axis).
@@ -509,8 +504,8 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
             {
-            assert(IsXDates() &&
-                   L"GetXMinMaxDates() should only be called if X axis is date based!");
+            wxASSERT_MSG(IsXDates(),
+                         L"GetXMinMaxDates() should only be called if X axis is date based!");
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
                 m_xColumnDate->GetValues().cbegin(), m_xColumnDate->GetValues().cend());
             return std::make_pair(*fullXDataMin, *fullXDataMax);
@@ -521,7 +516,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::pair<double, double> GetXMinMax() const
             {
-            assert(!IsXDates() && L"GetXMinMaxDates() should be called instead!");
+            wxASSERT_MSG(!IsXDates(), L"GetXMinMaxDates() should be called instead!");
             if (GetDataset()->GetRowCount() == 0)
                 {
                 return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
@@ -537,7 +532,7 @@ namespace Wisteria::Graphs
                 }
             // categorical X, just want the underlying numeric code as that is what
             // goes along the X axis
-            else if (IsXCategorical())
+            if (IsXCategorical())
                 {
                 const auto [fullXDataMin, fullXDataMax] =
                     std::minmax_element(m_xColumnCategorical->GetValues().cbegin(),
@@ -545,11 +540,8 @@ namespace Wisteria::Graphs
                 return std::make_pair(static_cast<double>(*fullXDataMin),
                                       static_cast<double>(*fullXDataMax));
                 }
-            else
-                {
-                return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
-                                      std::numeric_limits<double>::quiet_NaN());
-                }
+            return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
+                                  std::numeric_limits<double>::quiet_NaN());
             }
 
         /// @returns The pen styles used for the line(s).
@@ -597,7 +589,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxColour GetMaybeGhostedColor(const wxColour& color, const bool isGhosted) const
             {
-            return (isGhosted && color.IsOk()) ?
+            return isGhosted && color.IsOk() ?
                        Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
                        color;
             }

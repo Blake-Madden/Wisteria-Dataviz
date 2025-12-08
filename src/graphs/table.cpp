@@ -1439,12 +1439,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                     const wxString prefix =
                         ((cell.m_valueFormat == TableCellFormat::PercentChange ||
                           cell.m_valueFormat == TableCellFormat::GeneralChange)) ?
-                            // down and up arrow emojis
-                            wxString((std::isnan(cell.GetDoubleValue()) ? L" " :
-                                      (cell.GetDoubleValue() == 0)      ? L"\u2014" :
-                                      cell.GetDoubleValue() < 0         ? L"\u25BC" :
-                                                                          L"\u25B2")) :
+                            wxString::FromUTF8(std::isnan(cell.GetDoubleValue()) ? " " :
+                                               (cell.GetDoubleValue() == 0)      ? "\u2014" :
+                                               (cell.GetDoubleValue() < 0)       ? "\u25BC" :
+                                                                                   "\u25B2") :
                             cell.GetPrefix();
+
                     const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor :
                                                                     Colors::ColorBrewer::GetColor(
                                                                         Colors::Color::White) };

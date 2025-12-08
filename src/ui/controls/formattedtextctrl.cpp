@@ -456,7 +456,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             gtk_print_settings_set_n_copies(settings, m_printData->GetNoCopies());
 
             GtkPaperSize* paperSize =
-                _GtkGetPaperSize(m_printData->GetPaperId(), m_printData->GetPaperSize());
+                GtkGetPaperSize(m_printData->GetPaperId(), m_printData->GetPaperSize());
             gtk_print_settings_set_paper_size(settings, paperSize);
             gtk_paper_size_free(paperSize);
             }
@@ -476,7 +476,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         gtk_print_operation_set_embed_page_setup(operation, TRUE);
         g_object_unref(pgSetup);
 
-        _GtkPrintData printData;
+        GtkPrintData printData;
         printData.m_markupContent = GetUnthemedFormattedText().utf8_string();
 
         printData.m_leftPrintHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
@@ -487,11 +487,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         printData.m_rightPrintFooter = ExpandUnixPrintString(GetRightPrinterFooter());
 
         // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-vararg,bugprone-casting-through-void,modernize-type-traits)
-        g_signal_connect(G_OBJECT(operation), "begin-print", G_CALLBACK(_GtkBeginPrint),
+        g_signal_connect(G_OBJECT(operation), "begin-print", G_CALLBACK(GtkBeginPrint),
                          static_cast<gpointer>(&printData));
-        g_signal_connect(G_OBJECT(operation), "draw-page", G_CALLBACK(_GtkDrawPage),
+        g_signal_connect(G_OBJECT(operation), "draw-page", G_CALLBACK(GtkDrawPage),
                          static_cast<gpointer>(&printData));
-        g_signal_connect(G_OBJECT(operation), "end-print", G_CALLBACK(_GtkEndPrint),
+        g_signal_connect(G_OBJECT(operation), "end-print", G_CALLBACK(GtkEndPrint),
                          static_cast<gpointer>(&printData));
 
         GError* error{ nullptr };
@@ -507,7 +507,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                 }
             settings = g_object_ref(gtk_print_operation_get_print_settings(operation));
 
-            _GtkUpdatePrintSettingsFromPageSetup(operation, settings, m_printData);
+            GtkUpdatePrintSettingsFromPageSetup(operation, settings, m_printData);
             }
         else if (error != nullptr)
             {
@@ -1182,13 +1182,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             wxString firstTag;
             if (format == GtkFormat::HtmlFormat)
                 {
-                firstTag = _GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data));
+                // NOLINTNEXTLINE(bugprone-casting-through-void)
+                firstTag = GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data));
                 }
             else
                 {
-                firstTag = _GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
+                firstTag = GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
                 // just get the font family. The face name in Pango includes other
                 // descriptive strings that we don't use here
+                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 g_object_get(G_OBJECT(tags->data), "size-points", &defaultFontSize, "family",
                              &family, nullptr);
                 }
@@ -1214,6 +1216,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             // go through each of the tags on the iterator
             for (tagp = tags; tagp != nullptr; tagp = tagp->next)
                 {
+                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 GtkTextTag* tag = GTK_TEXT_TAG(tagp->data);
                 // any tags at the current iterator that might start a new formatting block
                 // (there might be more than one, though unlikely)
@@ -1221,11 +1224,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                     {
                     if (format == GtkFormat::HtmlFormat)
                         {
-                        currentTagText += _GtkTextTagToHtmlSpanTag(tag);
+                        currentTagText += GtkTextTagToHtmlSpanTag(tag);
                         }
                     else
                         {
-                        currentTagText += _GtkTextTagToRtfTag(tag, colorTable, fontTable);
+                        currentTagText += GtkTextTagToRtfTag(tag, colorTable, fontTable);
                         }
                     }
                 // any tags at the current iterator that might end a formatting block
@@ -1321,4 +1324,4 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
 
         SetInsertionPoint(0);
         }
-    }
+    } // namespace Wisteria::UI

@@ -105,6 +105,7 @@ namespace Wisteria::Graphs
     class LRRoadmap final : public Roadmap
         {
         wxDECLARE_DYNAMIC_CLASS(LRRoadmap);
+
         LRRoadmap() = default;
 
       public:
@@ -141,19 +142,19 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& dvName = std::nullopt);
 
         /// @brief Adds a caption explaining how to interpret the graph.
-        void AddDefaultCaption() override final;
+        void AddDefaultCaption() final;
 
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
-        wxString GetPositiveLegendLabel() const override final
+        wxString GetPositiveLegendLabel() const final
             {
             return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel());
             }
 
         /// @returns The negative label used for the legend.
         [[nodiscard]]
-        wxString GetNegativeLegendLabel() const override final
+        wxString GetNegativeLegendLabel() const final
             {
             return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel());
             }
