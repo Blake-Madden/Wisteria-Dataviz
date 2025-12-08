@@ -21,7 +21,7 @@ constexpr static wxColourBase::ChannelType FloatingPointChannelToByteChannel(con
     { return static_cast<wxColourBase::ChannelType>(std::floor(val >= 1.0 ? 255 : val * 256.0)); }
 
 //-------------------------------------------------
-wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
+wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     {
     wxString text{ L"<span" };
     wxString styleParams{ L" style=\"" };
