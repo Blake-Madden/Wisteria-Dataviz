@@ -1705,8 +1705,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             }
 
         Bar questionBar(
-            safe_divide<double>(question.m_fivePointCategories.size(), 2) + GetBarSlotCount() +
-                0.5,
+            safe_divide<double>(question.m_fivePointCategories.size(), 2) + GetBarSlotCount() + 0.5,
             { // main question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                                         m_questionBlockSize - m_responseCountBlockSize :
