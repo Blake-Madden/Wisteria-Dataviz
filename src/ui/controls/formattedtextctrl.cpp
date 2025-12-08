@@ -1182,6 +1182,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             wxString firstTag;
             if (format == GtkFormat::HtmlFormat)
                 {
+                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 firstTag = GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data));
                 }
             else
@@ -1189,6 +1190,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                 firstTag = GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
                 // just get the font family. The face name in Pango includes other
                 // descriptive strings that we don't use here
+                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 g_object_get(G_OBJECT(tags->data), "size-points", &defaultFontSize, "family",
                              &family, nullptr);
                 }
@@ -1214,6 +1216,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             // go through each of the tags on the iterator
             for (tagp = tags; tagp != nullptr; tagp = tagp->next)
                 {
+                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 GtkTextTag* tag = GTK_TEXT_TAG(tagp->data);
                 // any tags at the current iterator that might start a new formatting block
                 // (there might be more than one, though unlikely)
@@ -1321,4 +1324,4 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
 
         SetInsertionPoint(0);
         }
-    }
+    } // namespace Wisteria::UI

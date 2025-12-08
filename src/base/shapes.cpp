@@ -1416,11 +1416,13 @@ namespace Wisteria::GraphItems
         };
 
         // back ring first (backgroundColor), tips clamped to match front tips
+        // NOLINTNEXTLINE(readability-suspicious-call-argument)
         drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor),
                       PETAL_COUNT, outerWid, outerLen, outerCtr, 0.0,
                       rect.GetWidth() > ScaleToScreenAndCanvas(18));
 
         // front ring (alternate foregroundColor / warm-foregroundColor), staggered half-step
+        // NOLINTNEXTLINE(readability-suspicious-call-argument)
         drawPetalRing([&](int i) { return ((i & 1) != 0) ? foregroundColorWarm : foregroundColor; },
                       outlineFrom(foregroundColor), PETAL_COUNT, innerWid, innerLen, innerCtr,
                       safe_divide(180, PETAL_COUNT), rect.GetWidth() > ScaleToScreenAndCanvas(18));

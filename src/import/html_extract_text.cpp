@@ -1621,6 +1621,7 @@ namespace lily_of_the_valley
                 if (end == nullptr)
                     {
                     // no close tag? read to the next open tag then and read this section in below
+                    // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                     if ((end = std::wcschr(start + 1, L'<')) == nullptr)
                         {
                         break;
@@ -3224,6 +3225,7 @@ namespace html_utilities
             {
             return imageName;
             }
+        // NOLINTNEXTLINE(readability-qualified-auto)
         const auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(),
                                           PHP_IMAGE.cend(), [](wchar_t lhv, wchar_t rhv)
                                           { return std::towlower(lhv) == std::towlower(rhv); });
@@ -3260,6 +3262,7 @@ namespace html_utilities
             }
         // move to after the "www." or (if not there) the start of the url
         // (note that this needs to be case-insensitive, hence the std::search)
+        // NOLINTNEXTLINE(readability-qualified-auto)
         const auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
                                           [](wchar_t lhv, wchar_t rhv)
                                           { return std::towlower(lhv) == std::towlower(rhv); });

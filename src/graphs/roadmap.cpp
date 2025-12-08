@@ -60,7 +60,7 @@ namespace Wisteria::Graphs
         // the scale for the location markers (in DIPs);
         // 4 is probably the best looking small points, and 20 is a large enough
         // while still being reasonable
-        constexpr std::pair<double, double> pointSizesRange = { 4, 20 };
+        constexpr std::pair<double, double> POINT_SIZE_RANGE = { 4, 20 };
 
         wxCoord xPt{ 0 }, yPt{ 0 };
         std::vector<wxPoint> pts;
@@ -99,7 +99,7 @@ namespace Wisteria::Graphs
                     .Scaling(GetScaling())
                     .AnchorPoint({ xPt, yPt }),
                 scale_within(std::abs(GetRoadStops()[i].GetValue()),
-                             std::make_pair(0.0, GetMagnitude()), pointSizesRange),
+                             std::make_pair(0.0, GetMagnitude()), POINT_SIZE_RANGE),
                 (GetRoadStops()[i].GetValue() >= 0 ? GetPositiveIcon().first :
                                                      GetNegativeIcon().first));
 
