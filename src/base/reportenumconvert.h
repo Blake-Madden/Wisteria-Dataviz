@@ -565,6 +565,20 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<PieStyle> ConvertPieStyle(const wxString& value)
+            {
+            static const std::map<std::wstring_view, PieStyle> sliceEffects = {
+                { L"none", PieStyle::None }, { L"clockface", PieStyle::Clockface }
+            };
+
+            const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());
+            return ((foundValue != sliceEffects.cend()) ?
+                        std::optional<PieStyle>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Perimeter> ConvertPerimeter(const wxString& value)
             {
             static const std::map<std::wstring_view, Perimeter> peris = {

@@ -4,6 +4,7 @@
 
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
 - Add feature to waffle chart to override the number of rows in the waffle
+- Add styling option to pie charts to make them look like clock faces
 
 ## 1.0.6 Release
 

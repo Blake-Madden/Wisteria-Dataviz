@@ -519,6 +519,17 @@ namespace Wisteria::Graphs
                 color schemes.
             @sa SetImageScheme().*/
         void SetPieSliceEffect(const PieSliceEffect effect) noexcept { m_sliceEffect = effect; }
+        
+        /// @returns The visual style to apply to the pie chart.
+        [[nodiscard]]
+        PieStyle GetPieStyle() const noexcept
+            {
+            return m_pieStyle;
+            }
+
+        /** @brief Sets the visual style to apply to the pie chart.
+            @param style The style to use.*/
+        void SetPieStyle(const PieStyle style) noexcept { m_pieStyle = style; }
 
         /// @returns The opacity level applied to "ghosted" slices.
         [[nodiscard]]
@@ -1061,9 +1072,32 @@ namespace Wisteria::Graphs
             }
 
       private:
+        using LabelLinePair = std::vector<std::pair<std::unique_ptr<GraphItems::Label>,
+                                                    std::unique_ptr<GraphItems::Points2D>>>;
+        struct GutterLabels
+            {
+            LabelLinePair m_outerTopLeftLabelAndLines;
+            LabelLinePair m_outerBottomLeftLabelAndLines;
+            LabelLinePair m_outerTopRightLabelAndLines;
+            LabelLinePair m_outerBottomRightLabelAndLines;
+            };
+        struct DrawAreas
+            {
+            wxRect m_fullDrawArea;
+            wxRect m_outerPieDrawArea;
+            wxRect m_pieDrawArea;
+            };
         /// @returns The indices along the outer pie of the provided slices.
         std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
         void RecalcSizes(wxDC& dc) final;
+        void CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas, auto& pSlice,
+               double& smallestOuterLabelFontSize,
+               bool isInnerSlice);
+        void DrawOuterPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas, double& smallestOuterLabelFontSize, std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
+        void DrawInnerPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas, double& smallestOuterLabelFontSize, std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
+
+        void AddClockTicks(const DrawAreas& drawAreas);
+        void AddClockHands(const DrawAreas& drawAreas);
 
         PieInfo m_innerPie;
         PieInfo m_outerPie;
@@ -1083,6 +1117,7 @@ namespace Wisteria::Graphs
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
         PieSliceEffect m_sliceEffect{ PieSliceEffect::Solid };
+        PieStyle m_pieStyle{ PieStyle::None };
 
         bool m_useColorLabels{ false };
 

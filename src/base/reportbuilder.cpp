@@ -3959,6 +3959,13 @@ namespace Wisteria
                 pieChart->SetPieSliceEffect(pieEffect.value());
                 }
 
+            if (const auto pieStyle = ReportEnumConvert::ConvertPieStyle(
+                    graphNode->GetProperty(L"pie-style")->AsString());
+                pieStyle.has_value())
+                {
+                pieChart->SetPieStyle(pieStyle.value());
+                }
+
             pieChart->SetDynamicMargins(graphNode->GetProperty(L"dynamic-margins")->AsBool());
 
             // showcase the slices

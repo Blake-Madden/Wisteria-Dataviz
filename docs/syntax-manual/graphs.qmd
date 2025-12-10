@@ -221,6 +221,10 @@ Properties for `"pie-chart"` nodes:
   Available options are:
   - `"image"` (This will require an `"image-scheme"` to be defined.)
   - `"solid"` (the default)
+- `"pie-style"`: A string specifying the visual style for the pie chart. \
+  Available options are:
+  - `"none"` (the default)
+  - `"clockface"`
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"` (the default)

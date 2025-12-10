@@ -433,6 +433,16 @@ namespace Wisteria
         Image
         };
 
+    /// @brief Styling to apply to a pie chart.
+    enum class PieStyle
+        {
+        /// @brief No style.
+        None,
+        /// @brief A clockface, where an hour, minute, and seconds (if necessary) are drawn
+        ///     to separate the slices.
+        Clockface
+        };
+
     /// @brief Effects that could be applied to an image.
     enum class ImageEffect
         {
