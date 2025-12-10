@@ -1180,9 +1180,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             {
             GSList* tags = gtk_text_iter_get_toggled_tags(&start, 1);
             wxString firstTag;
+            // NOLINTBEGIN(bugprone-casting-through-void)
             if (format == GtkFormat::HtmlFormat)
                 {
-                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 firstTag = GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data));
                 }
             else
@@ -1190,10 +1190,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                 firstTag = GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
                 // just get the font family. The face name in Pango includes other
                 // descriptive strings that we don't use here
-                // NOLINTNEXTLINE(bugprone-casting-through-void)
                 g_object_get(G_OBJECT(tags->data), "size-points", &defaultFontSize, "family",
                              &family, nullptr);
                 }
+            // NOLINTEND(bugprone-casting-through-void)
             text = firstTag;
             previousStart = gtk_text_iter_get_offset(&start);
             g_slist_free(tags);

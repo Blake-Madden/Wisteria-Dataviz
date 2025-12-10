@@ -236,6 +236,11 @@ static void GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
                                                  GtkPrintSettings* settings,
                                                  wxPrintData* printData)
     {
+    if (printData == nullptr)
+        {
+        return;
+        }
+
     // From wxWidget's gtk/print.cpp:
     // 
     // When embedding the page setup tab into the dialog, as we do, changes to

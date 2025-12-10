@@ -1436,6 +1436,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
                 if (!cell.GetPrefix().empty() && isPrefixSeparateLabel)
                     {
+                    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
                     const wxString prefix =
                         ((cell.m_valueFormat == TableCellFormat::PercentChange ||
                           cell.m_valueFormat == TableCellFormat::GeneralChange)) ?
@@ -1444,7 +1445,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                                (cell.GetDoubleValue() < 0)       ? "\u25BC" :
                                                                                    "\u25B2") :
                             cell.GetPrefix();
-
+                    // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
                     const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor :
                                                                     Colors::ColorBrewer::GetColor(
                                                                         Colors::Color::White) };

@@ -122,7 +122,8 @@ namespace Wisteria::UI
         GetData()->SetValues(values);
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
-        wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(600, 250)));
+        // NOLINTNEXTLINE(bugprone-parent-virtual-call)
+        SetMinSize(FromDIP(wxSiz{ 600, 250 }));
 
         wxNonOwnedWindow::SetBackgroundColour(bkColor);
         wxWindow::SetForegroundColour(foreColor);
@@ -145,7 +146,8 @@ namespace Wisteria::UI
         {
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
-        wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(600, 250)));
+        // NOLINTNEXTLINE(bugprone-parent-virtual-call)
+        SetMinSize(FromDIP(wxSize{ 600, 250 }));
 
         wxNonOwnedWindow::SetBackgroundColour(bkColor);
         wxWindow::SetForegroundColour(foreColor);
