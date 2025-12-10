@@ -1090,11 +1090,16 @@ namespace Wisteria::Graphs
         /// @returns The indices along the outer pie of the provided slices.
         std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
         void RecalcSizes(wxDC& dc) final;
-        void CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas, auto& pSlice,
-               double& smallestOuterLabelFontSize,
-               bool isInnerSlice);
-        void DrawOuterPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas, double& smallestOuterLabelFontSize, std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
-        void DrawInnerPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas, double& smallestOuterLabelFontSize, std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
+        void CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels,
+                DrawAreas drawAreas, auto& pSlice,
+                double& smallestOuterLabelFontSize,
+                bool isInnerSlice);
+        void DrawOuterPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
+                          double& smallestOuterLabelFontSize,
+                          std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
+        void DrawInnerPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
+                          double& smallestOuterLabelFontSize,
+                          std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
 
         void AddClockTicks(const DrawAreas& drawAreas);
         void AddClockHands(const DrawAreas& drawAreas);
