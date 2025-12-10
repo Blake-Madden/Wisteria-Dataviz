@@ -4611,48 +4611,52 @@ namespace Wisteria::GraphItems
             gc->SetPen(outlinePen);
             gc->SetBrush(bodyBrush);
             // body of car
-            wxRect bodyRect{ dcRect };
+            wxRect2DDouble bodyRect{ dcRect };
             bodyRect.Deflate(ScaleToScreenAndCanvas(1));
             bodyRect.SetHeight(bodyRect.GetHeight() * 0.35);
             bodyRect.Offset(0, dcRect.GetHeight() - (bodyRect.GetHeight() * 1.5));
             // lower half (bumper area)
-            wxRect lowerBodyRect{ bodyRect };
-            lowerBodyRect.SetTop(lowerBodyRect.GetTop() + (lowerBodyRect.GetHeight() / 2));
+            wxRect2DDouble lowerBodyRect{ bodyRect };
+            lowerBodyRect.MoveTopTo(lowerBodyRect.GetTop() + (lowerBodyRect.GetHeight() / 2));
             lowerBodyRect.SetHeight(lowerBodyRect.GetHeight() / 2);
 
             // upper half (headlights area)
             // (this is drawn later, after the top area of the car so that it
             //  covers up any seams)
             const double backBumperOffset = bodyRect.GetWidth() * 0.025;
-            wxRect upperBodyRect{ bodyRect };
+            wxRect2DDouble upperBodyRect{ bodyRect };
             upperBodyRect.SetWidth(upperBodyRect.GetWidth() * 0.95);
-            upperBodyRect.Offset(wxPoint(backBumperOffset, 0));
+            upperBodyRect.Offset(wxPoint2DDouble(backBumperOffset, 0));
 
             // top of car
-            wxRect carTopRect{ bodyRect };
+            wxRect2DDouble carTopRect{ bodyRect };
             carTopRect.SetWidth(carTopRect.GetWidth() * 0.65);
-            carTopRect.SetTop(bodyRect.GetTop() - carTopRect.GetHeight() +
-                              ScaleToScreenAndCanvas(2));
+            carTopRect.MoveTopTo(bodyRect.GetTop() - carTopRect.GetHeight() +
+                                 ScaleToScreenAndCanvas(2));
             carTopRect.SetHeight(carTopRect.GetHeight() + ScaleToScreenAndCanvas(2));
-            carTopRect.Offset(wxPoint(backBumperOffset, 0));
+            carTopRect.Offset(wxPoint2DDouble(backBumperOffset, 0));
             gc->DrawRoundedRectangle(carTopRect.GetX(), carTopRect.GetY(), carTopRect.GetWidth(),
                                      carTopRect.GetHeight(), ScaleToScreenAndCanvas(2));
 
             // windshield
             std::array<wxPoint2DDouble, 4> windshieldSection = {
-                carTopRect.GetTopRight(),
-                wxPoint(carTopRect.GetRight() +
-                            ((bodyRect.GetWidth() - carTopRect.GetWidth()) * math_constants::third),
-                        carTopRect.GetBottom()),
-                wxPoint(carTopRect.GetBottomRight().x - (carTopRect.GetWidth() / 4),
-                        carTopRect.GetBottomRight().y),
-                wxPoint(carTopRect.GetTopRight().x - (carTopRect.GetWidth() / 4),
-                        carTopRect.GetTopRight().y)
+                carTopRect.GetRightTop(),
+                wxPoint2DDouble(
+                    carTopRect.GetRight() +
+                        ((bodyRect.GetWidth() - carTopRect.GetWidth()) * math_constants::third),
+                    carTopRect.GetBottom()),
+                wxPoint2DDouble(carTopRect.GetRightBottom().m_x -
+                                    (carTopRect.GetWidth() * math_constants::quarter),
+                                carTopRect.GetRightBottom().m_y),
+                wxPoint2DDouble(carTopRect.GetRightTop().m_x -
+                                    (carTopRect.GetWidth() * math_constants::quarter),
+                                carTopRect.GetRightTop().m_y)
             };
-            std::array<wxPoint2DDouble, 2> windshield = { wxPoint(windshieldSection[0].m_x,
-                                                                  windshieldSection[0].m_y +
-                                                                      ScaleToScreenAndCanvas(1)),
-                                                          windshieldSection[1] };
+            std::array<wxPoint2DDouble, 2> windshield = {
+                wxPoint2DDouble(windshieldSection[0].m_x,
+                                windshieldSection[0].m_y + ScaleToScreenAndCanvas(1)),
+                windshieldSection[1]
+            };
             auto windshieldAreaPath = gc->CreatePath();
             windshieldAreaPath.MoveToPoint(windshieldSection[0]);
             windshieldAreaPath.AddLineToPoint(windshieldSection[1]);
@@ -4701,11 +4705,11 @@ namespace Wisteria::GraphItems
                                      ScaleToScreenAndCanvas(2))
                            .Cap(wxCAP_BUTT));
             gc->SetBrush(wxColour{ 0, 0, 0, 0 });
-            auto windowRect{ carTopRect };
+            wxRect2DDouble windowRect{ carTopRect };
             windowRect.SetWidth(windowRect.GetWidth() * 0.4);
-            windowRect.SetHeight(windowRect.GetHeight() - ScaleToScreenAndCanvas(2));
-            windowRect.Offset(
-                wxPoint(carTopRect.GetWidth() * math_constants::fifth, ScaleToScreenAndCanvas(2)));
+            windowRect.SetHeight(windowRect.GetHeight() * 0.9);
+            windowRect.Offset(wxPoint2DDouble(carTopRect.GetWidth() * math_constants::fifth,
+                                              windowRect.GetHeight() * 0.1));
             gc->StrokeLine(windowRect.GetX(), windowRect.GetY(), windowRect.GetX(),
                            windowRect.GetY() + windowRect.GetHeight());
             gc->StrokeLine(windowRect.GetX() + windowRect.GetWidth(), windowRect.GetY(),
@@ -4720,7 +4724,7 @@ namespace Wisteria::GraphItems
                                      ScaleToScreenAndCanvas(2));
 
             // headlights
-            auto headlightsRect{ upperBodyRect };
+            wxRect2DDouble headlightsRect{ upperBodyRect };
             headlightsRect.SetWidth(headlightsRect.GetWidth() * 0.05);
             headlightsRect.SetHeight(headlightsRect.GetHeight() * math_constants::quarter);
             headlightsRect.Offset(upperBodyRect.GetWidth() - headlightsRect.GetWidth(),
@@ -4986,32 +4990,30 @@ namespace Wisteria::GraphItems
                 gc->SetPen(scaledPen);
                 }
 
-            const auto centerPt =
-                rect.GetTopLeft() + wxSize{ rect.GetWidth() / 2, rect.GetHeight() / 2 };
-
-            // a line going from the middle of the left side to the middle of the right
-            const std::array<wxPoint2DDouble, 2> points = {
-                wxPoint{ rect.GetLeft(), rect.GetTop() + (rect.GetHeight() / 2) },
-                wxPoint{ rect.GetRight(), rect.GetTop() + (rect.GetHeight() / 2) }
+            const wxPoint2DDouble centerPt{
+                rect.GetLeft() + (rect.GetWidth() * math_constants::half),
+                rect.GetTop() + (rect.GetHeight() * math_constants::half)
             };
-            // save current transform matrix state
+
             gc->PushState();
-            // move matrix to center of drawing area
-            gc->Translate(centerPt.x, centerPt.y);
-            // draw the lines, which will be the horizontal line going across the middle,
-            // but rotated 45 degrees around the center
-            double angle{ 0.0 };
-            while (angle < 180)
+            gc->Translate(centerPt.m_x, centerPt.m_y);
+
+            const double halfWidth = rect.GetWidth() * math_constants::half;
+
+            // centered line in local coordinates
+            const wxPoint2DDouble p1{ -halfWidth, 0 };
+            const wxPoint2DDouble p2{ halfWidth, 0 };
+
+            for (int deg = 0; deg < 180; deg += 45)
                 {
-                gc->Rotate(geometry::degrees_to_radians(angle));
-                // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over from
-                // the translated origin
-                gc->StrokeLine(points[0].m_x - centerPt.x, points[0].m_y - centerPt.y,
-                               points[1].m_x - centerPt.x, points[1].m_y - centerPt.y);
-                angle += 45;
+                const double angleRad = geometry::degrees_to_radians(static_cast<double>(deg));
+
+                gc->PushState();
+                gc->Rotate(angleRad);
+                gc->StrokeLine(p1.m_x, p1.m_y, p2.m_x, p2.m_y);
+                gc->PopState();
                 }
-            // restore transform matrix
+
             gc->PopState();
             }
         }
