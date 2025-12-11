@@ -110,7 +110,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         auto scaledPieLabel = fitLabelToSlice(pieLabel);
         // if it doesn't fit, try to split it into smaller lines
         // and possibly abbreviate it, then try again
-        if (scaledPieLabel == nullptr)
+        if (scaledPieLabel == nullptr && pieLabel != nullptr)
             {
             pieLabel->GetFont().SetFractionalPointSize(originalFontSize);
             pieLabel->SetText(originalText);
@@ -1259,9 +1259,6 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::AddClockTicks(const DrawAreas& drawAreas)
         {
-        const wxColour longColor = Colors::ColorBrewer::GetColor(Colors::Color::Black, 75);
-        const wxColour shortColor = Colors::ColorBrewer::GetColor(Colors::Color::Black, 75);
-
         const double diameter =
             std::min(drawAreas.m_pieDrawArea.GetWidth(), drawAreas.m_pieDrawArea.GetHeight());
         const double radius = diameter * math_constants::half;
@@ -1368,7 +1365,7 @@ namespace Wisteria::Graphs
 
         const wxPoint pieCenterPoint{ static_cast<int>(pieCenterX), static_cast<int>(pieCenterY) };
 
-        const auto computeBoundaryPoint = [this, &drawAreas](const double angleDegrees)
+        const auto computeBoundaryPoint = [&drawAreas](const double angleDegrees)
         {
             const auto pt = geometry::arc_vertex(
                 { drawAreas.m_pieDrawArea.GetWidth(), drawAreas.m_pieDrawArea.GetHeight() },
@@ -1555,22 +1552,22 @@ namespace Wisteria::Graphs
 
             // center hub
             {
-            AddObject(std::move(std::make_unique<GraphItems::Point2D>(
-                GraphItems::GraphItemInfo()
-                    .AnchorPoint(pieCenterPoint)
-                    .Brush(*wxBLACK_BRUSH)
-                    .DPIScaling(GetDPIScaleFactor())
-                    .Pen(*wxBLACK_PEN)
-                    .Scaling(GetScaling()),
-                ScaleToScreenAndCanvas(6), Icons::IconShape::Circle)));
-            AddObject(std::move(std::make_unique<GraphItems::Point2D>(
-                GraphItems::GraphItemInfo()
-                    .AnchorPoint(pieCenterPoint)
-                    .DPIScaling(GetDPIScaleFactor())
-                    .Brush(*wxWHITE_BRUSH)
-                    .Pen(*wxWHITE_PEN)
-                    .Scaling(GetScaling()),
-                ScaleToScreenAndCanvas(3), Icons::IconShape::Circle)));
+            AddObject(std::make_unique<GraphItems::Point2D>(GraphItems::GraphItemInfo()
+                                                                .AnchorPoint(pieCenterPoint)
+                                                                .Brush(*wxBLACK_BRUSH)
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Pen(*wxBLACK_PEN)
+                                                                .Scaling(GetScaling()),
+                                                            ScaleToScreenAndCanvas(6),
+                                                            Icons::IconShape::Circle));
+            AddObject(std::make_unique<GraphItems::Point2D>(GraphItems::GraphItemInfo()
+                                                                .AnchorPoint(pieCenterPoint)
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Brush(*wxWHITE_BRUSH)
+                                                                .Pen(*wxWHITE_PEN)
+                                                                .Scaling(GetScaling()),
+                                                            ScaleToScreenAndCanvas(3),
+                                                            Icons::IconShape::Circle));
             }
         }
 
@@ -1721,8 +1718,8 @@ namespace Wisteria::Graphs
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
                             middleLabel->GetFontColor(), GetGhostOpacity()));
                         }
+                    middleLabels.push_back(std::move(middleLabel));
                     }
-                middleLabels.push_back(std::move(middleLabel));
                 }
 
             queueObjectForOffsetting(std::move(pSlice));
@@ -1852,8 +1849,8 @@ namespace Wisteria::Graphs
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
                             middleLabel->GetFontColor(), GetGhostOpacity()));
                         }
+                    middleLabels.push_back(std::move(middleLabel));
                     }
-                middleLabels.push_back(std::move(middleLabel));
                 }
 
             queueObjectForOffsetting(std::move(pSlice));
