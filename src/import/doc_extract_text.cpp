@@ -129,17 +129,27 @@ namespace lily_of_the_valley
                 else
                     {
                     const size_t cvtBufferSize = text_length * 2;
-                    const auto convertedBuffer = std::make_unique<wchar_t[]>(cvtBufferSize + 1);
+                    std::vector<wchar_t> convertedBuffer(cvtBufferSize + 1, L'\0');
 #ifdef _MSC_VER
                     size_t cvtSize{ 0 };
-                    mbstowcs_s(&cvtSize, convertedBuffer.get(),
-                               static_cast<size_t>(cvtBufferSize) + 1, doc_buffer, cvtBufferSize);
+                    const errno_t cvtErr = mbstowcs_s(&cvtSize, convertedBuffer.data(),
+                                                      static_cast<size_t>(cvtBufferSize) + 1,
+                                                      doc_buffer, cvtBufferSize);
+                    if (cvtErr != 0)
+                        {
+                        cvtSize = 0;
+                        }
 #else
-                    const size_t cvtSize =
-                        std::mbstowcs(convertedBuffer.get(), doc_buffer, cvtBufferSize);
+                    size_t cvtSize =
+                        std::mbstowcs(convertedBuffer.data(), doc_buffer, cvtBufferSize);
+                    if (cvtSize == static_cast<size_t>(-1))
+                        {
+                        convertedBuffer[0] = L'\0';
+                        cvtSize = 0;
+                        }
 #endif
                     const wchar_t* const htmText =
-                        filterHtml(convertedBuffer.get(), cvtSize, true, false);
+                        filterHtml(convertedBuffer.data(), cvtSize, true, false);
                     add_characters({ htmText, filterHtml.get_filtered_text_length() });
                     }
                 return get_filtered_text();
