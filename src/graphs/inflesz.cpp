@@ -63,7 +63,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
         AddScale(
             std::vector<BarChart::BarBlock>{
                 BarChart::BarBlock{
-                    Wisteria::Graphs::BarChart::BarBlockInfo(39)
+                    Wisteria::Graphs::BarChart::BarBlockInfo(40)
                         .Brush(wxColour{ L"#CBE9E3" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY DIFÍCIL") }
                                                      .LabelFitting(LabelFit::DisplayAsIs))) },
@@ -83,7 +83,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"BASTANTE FÁCIL") }
                                                      .LabelFitting(LabelFit::DisplayAsIs))) },
                 BarChart::BarBlock{
-                    Wisteria::Graphs::BarChart::BarBlockInfo(21)
+                    Wisteria::Graphs::BarChart::BarBlockInfo(20)
                         .Brush(wxColour{ L"#67C7C0" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
                                                      .LabelFitting(LabelFit::DisplayAsIs))) } },
