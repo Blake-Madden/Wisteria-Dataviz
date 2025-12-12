@@ -201,11 +201,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         {
         BarChart::RecalcSizes(dc);
 
-        if (GetDataset() == nullptr)
-            {
-            return;
-            }
-
         // draw the numeric points along the scale section
         const auto commonLabelSizeIterator = std::ranges::max_element(
             std::as_const(m_scaleValues),
@@ -253,6 +248,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
 
         std::ranges::for_each(std::as_const(m_scaleValues), [&addTextPoint, this](const auto& val)
                               { addTextPoint(1, val, val, m_precision); });
+
+        if (GetDataset() == nullptr)
+            {
+            return;
+            }
 
         // start plotting the scores
         const auto [yStart, yEnd] = GetScalingAxis().GetRange();
