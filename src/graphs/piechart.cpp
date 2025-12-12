@@ -107,10 +107,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
             return middleLabelIsTooSmall ? nullptr : std::move(pieSliceLabel);
         };
 
+        // If scaledPieLabel is null, then pieLabel wasn't moved.
+        // Suppress false positive warnings.
+        // NOLINTBEGIN(clang-analyzer-cplusplus.Move)
         auto scaledPieLabel = fitLabelToSlice(pieLabel);
         // if it doesn't fit, try to split it into smaller lines
         // and possibly abbreviate it, then try again
-        if (scaledPieLabel == nullptr && pieLabel != nullptr)
+        if (scaledPieLabel == nullptr)
             {
             pieLabel->GetFont().SetFractionalPointSize(originalFontSize);
             pieLabel->SetText(originalText);
@@ -137,6 +140,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                 }
             return scaledPieLabel;
             }
+        // NOLINTEND(clang-analyzer-cplusplus.Move)
         return scaledPieLabel;
         }
 
