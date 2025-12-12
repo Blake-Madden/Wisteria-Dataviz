@@ -1118,7 +1118,7 @@ namespace Wisteria::Graphs
 
         wxPen m_connectionLinePen{ wxPen(
             wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey),
-                      ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
+                      1, wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
         PieSliceEffect m_sliceEffect{ PieSliceEffect::Solid };

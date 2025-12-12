@@ -1944,6 +1944,7 @@ namespace Wisteria::Graphs
                 connectionLine =
                     std::make_unique<GraphItems::Points2D>(GetInnerPieConnectionLinePen());
                 connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
+                connectionLine->SetScaling(GetScaling());
                 connectionLine->SetSelectable(false);
                 connectionLine->AddPoint(
                     GraphItems::Point2D(GraphItems::GraphItemInfo()
@@ -1986,6 +1987,7 @@ namespace Wisteria::Graphs
                     connectionLine =
                         std::make_unique<GraphItems::Points2D>(GetInnerPieConnectionLinePen());
                     connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
+                    connectionLine->SetScaling(GetScaling());
                     connectionLine->SetSelectable(false);
                     connectionLine->AddPoint(
                         GraphItems::Point2D(
