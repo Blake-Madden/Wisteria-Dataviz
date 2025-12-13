@@ -273,6 +273,7 @@ bool lily_of_the_valley::markdown_extract_text::parse_code_block(const bool isEs
             }
         return true;
         }
+    return true;
     }
 
 //--------------------------------------------
