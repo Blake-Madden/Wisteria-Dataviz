@@ -125,6 +125,39 @@ bool lily_of_the_valley::markdown_extract_text::parse_html_block(const std::wstr
     }
 
 //--------------------------------------------
+const wchar_t* lily_of_the_valley::markdown_extract_text::find_metadata_section_end(
+    const wchar_t* md_text) noexcept
+    {
+    if (md_text == nullptr)
+        {
+        return nullptr;
+        }
+    // step over first line
+    const wchar_t* eol = string_util::strcspn_pointer(md_text, L"\r\n", 2);
+    if (eol == nullptr)
+        {
+        return md_text;
+        }
+    // ...and find the terminating --- line
+    const wchar_t* endOfYaml = std::wcsstr(eol, L"\n---");
+    if (endOfYaml == nullptr)
+        {
+        return md_text;
+        }
+    endOfYaml = string_util::strcspn_pointer(endOfYaml + 4, L"\r\n", 2);
+    if (endOfYaml == nullptr)
+        {
+        return md_text;
+        }
+    while (*endOfYaml == L'\r' || *endOfYaml == L'\n')
+        {
+        ++endOfYaml;
+        }
+
+    return endOfYaml;
+    }
+
+//--------------------------------------------
 const wchar_t*
 lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md_text)
     {

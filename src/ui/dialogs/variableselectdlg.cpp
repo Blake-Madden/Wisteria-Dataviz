@@ -313,17 +313,18 @@ namespace Wisteria::UI
     bool VariableSelectDlg::Validate()
         {
         // make sure any variable lists set to required have something selected
-        for (const auto& varList : m_varLists)
+        if (!std::ranges::all_of(m_varLists,
+                                 [](const auto& varList)
+                                 {
+                                     return !varList.m_required || varList.m_list == nullptr ||
+                                            varList.m_list->GetItemCount() > 0;
+                                 }))
             {
-            if (varList.m_required && varList.m_list != nullptr &&
-                varList.m_list->GetItemCount() == 0)
-                {
-                wxMessageBox(wxString::Format(_(L"Variables must be selected for the '%s' list."),
-                                              varList.m_label),
-                             _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
-                return false;
-                }
+            wxMessageBox(_(L"Variables must be selected for the required lists."),
+                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
+            return false;
             }
+
         return true;
         }
     } // namespace Wisteria::UI

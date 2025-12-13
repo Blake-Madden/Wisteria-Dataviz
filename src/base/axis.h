@@ -2019,6 +2019,12 @@ namespace Wisteria::GraphItems
         /// @returns The bounding box that the axis was drawn in.
         [[nodiscard]]
         wxRect Draw(wxDC& dc) const final;
+        /// @brief Draws the brackets.
+        void DrawBrackets(wxDC& dc, wxRect axisRect) const;
+        /// @brief Draws the Y-axis labels.
+        void DrawYLabels(wxDC& dc, wxRect axisRect, const Label& titleLabel) const;
+        /// @brief Draws the X-axis labels.
+        void DrawXLabels(wxDC& dc, wxRect axisRect, const Label& titleLabel) const;
         /** @returns The rectangle that the axis would fit in.
             @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with

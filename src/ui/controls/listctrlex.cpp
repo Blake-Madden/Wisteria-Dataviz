@@ -575,12 +575,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             std::vector<std::pair<wxString, Wisteria::SortDirection>> columnsInfo =
                 dlg.GetColumnsInfo();
             std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
-            for (size_t i = 0; i < columnsInfo.size(); ++i)
+            for (const auto& colInfo : columnsInfo)
                 {
-                const long index = FindColumn(columnsInfo[i].first);
+                const long index = FindColumn(colInfo.first);
                 if (index != wxNOT_FOUND)
                     {
-                    columns.emplace_back(index, columnsInfo[i].second);
+                    columns.emplace_back(index, colInfo.second);
                     }
                 }
             SortColumns(columns);

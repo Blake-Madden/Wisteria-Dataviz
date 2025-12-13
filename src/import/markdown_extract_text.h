@@ -47,36 +47,7 @@ namespace lily_of_the_valley
             @returns The start of the document's body.
             @sa has_metadata_section().*/
         [[nodiscard]]
-        static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept
-            {
-            if (md_text == nullptr)
-                {
-                return nullptr;
-                }
-            // step over first line
-            const wchar_t* eol = string_util::strcspn_pointer(md_text, L"\r\n", 2);
-            if (eol == nullptr)
-                {
-                return md_text;
-                }
-            // ...and find the terminating --- line
-            const wchar_t* endOfYaml = std::wcsstr(eol, L"\n---");
-            if (endOfYaml == nullptr)
-                {
-                return md_text;
-                }
-            endOfYaml = string_util::strcspn_pointer(endOfYaml + 4, L"\r\n", 2);
-            if (endOfYaml == nullptr)
-                {
-                return md_text;
-                }
-            while (*endOfYaml == L'\r' || *endOfYaml == L'\n')
-                {
-                ++endOfYaml;
-                }
-
-            return endOfYaml;
-            }
+        static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept;
 
         std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
         const wchar_t* m_currentStart{ nullptr };

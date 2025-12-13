@@ -1428,6 +1428,695 @@ namespace Wisteria::GraphItems
             }
 
         // draw the brackets
+        DrawBrackets(dc, axisRect);
+
+        // draw the Y axis labels
+        if (IsVertical() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
+            {
+            DrawYLabels(dc, axisRect, titleLabel);
+            }
+        // draw the X axis labels
+        else if (IsHorizontal() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
+            {
+            DrawXLabels(dc, axisRect, titleLabel);
+            }
+
+        // if axis is light, then it is probably being contrasted against a dark background,
+        // so make the outline white in that case (black, otherwise)
+        const bool penIsLight{ (
+            GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour().IsOk() &&
+            Wisteria::Colors::ColorContrast::IsLight(GetAxisLinePen().GetColour())) };
+        // draw the selection outline
+        if (IsSelected())
+            {
+            const wxDCPenChanger pc(
+                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            std::array<wxPoint, 5> pts;
+            GraphItems::Polygon::GetRectPoints(axisRect, pts);
+            dc.DrawLines(pts.size(), pts.data());
+            }
+
+        if (GetOutlineSize().IsFullySpecified())
+            {
+            const wxDCPenChanger pc(
+                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                          ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
+            std::array<wxPoint, 5> pts;
+            // area rect was already inflated from GetBoundingBox()
+            GraphItems::Polygon::GetRectPoints(axisRect, pts);
+            dc.DrawLines(pts.size(), pts.data());
+            }
+
+        // highlight the selected protruding bounding box in debug mode
+        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+            {
+            if (IsSelected())
+                {
+                std::array<wxPoint, 5> debugOutline;
+                GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
+                const wxDCPenChanger pcDebug{
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                              ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH)
+                };
+                dc.DrawLines(debugOutline.size(), debugOutline.data());
+                }
+            }
+        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+            {
+            if (IsSelected())
+                {
+                const auto bBox = GetBoundingBox(dc);
+                const auto bracketWidth{ CalcBracketsSpaceRequired(dc) };
+                Label infoLabel(
+                    GraphItemInfo(
+                        wxString::Format(
+                            _DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                                "Bracket Width: %d\n"
+                                "Axis Line Points: (%d, %d), (%d, %d)\n"
+                                "Scaling: %s\n"
+                                "Axis Label Scaling: %s\n"
+                                "Bracket Label Scaling: %s"),
+                            bBox.x, bBox.y, bBox.width, bBox.height, bracketWidth,
+                            GetBottomPoint().x, GetBottomPoint().y, GetTopPoint().x,
+                            GetTopPoint().y,
+                            wxNumberFormatter::ToString(
+                                GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(
+                                GetAxisLabelScaling(), 1,
+                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(
+                                !GetBrackets().empty() ?
+                                    GetBrackets().front().GetLabel().GetScaling() :
+                                    0.0,
+                                1, wxNumberFormatter::Style::Style_NoTrailingZeroes)))
+                        .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + (bBox.GetWidth() / 2),
+                                             bBox.GetBottomRight().y))
+                        .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Red))
+                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
+                        .DPIScaling(GetDPIScaleFactor())
+                        .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
+                        .Padding(2, 2, 2, 2));
+                if (GetAxisType() == AxisType::LeftYAxis)
+                    {
+                    infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner);
+                    }
+                else
+                    {
+                    infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomRightCorner);
+                    }
+                infoLabel.Draw(dc);
+                }
+            }
+
+        return axisRect;
+        }
+
+    //--------------------------------------
+    void Axis::DrawXLabels(wxDC& dc, wxRect axisRect, const Label& titleLabel) const
+        {
+        bool drawingInnerLabel{ true };
+        for (auto axisPtIter = GetAxisPoints().cbegin(); axisPtIter != GetAxisPoints().cend();
+             ++axisPtIter)
+            {
+            if (IsPointDisplayingLabel(*axisPtIter))
+                {
+                Label axisLabel(GetDisplayableValue(*axisPtIter));
+                axisLabel.GetPen() = wxNullPen;
+                if constexpr (Settings::IsDebugFlagEnabled(
+                                  DebugSettings::DrawBoundingBoxesOnSelection))
+                    {
+                    if (IsSelected())
+                        {
+                        axisLabel.GetPen() = wxPen(
+                            Colors::ColorBrewer::GetColor(Colors::Color::Red), 2, wxPENSTYLE_DOT);
+                        }
+                    }
+                axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+                axisLabel.SetScaling(GetAxisLabelScaling());
+                if (axisPtIter->IsGhosted())
+                    {
+                    axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                        axisLabel.GetFontColor(), GetGhostOpacity()));
+                    }
+                else
+                    {
+                    axisLabel.SetFontColor(GetFontColor());
+                    }
+                axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
+                axisLabel.GetFont() = GetFont();
+                axisLabel.SetTextAlignment(GetTextAlignment());
+                axisLabel.SetPadding(GetTopPadding(), GetRightPadding(), GetBottomPadding(),
+                                     GetLeftPadding());
+                // outer labels hanging entirely off the plot should just be drawn
+                // with the standard padding
+                if (!(axisPtIter == GetAxisPoints().cbegin() &&
+                      GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
+                    !(axisPtIter == GetAxisPoints().cend() - 1 &&
+                      GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+                    }
+                else
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
+                    }
+
+                if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
+                    {
+                    const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
+                    const wxCoord axisTextHeight = labelSize.GetHeight();
+                    const wxCoord x = axisPtIter->GetPhysicalCoordinate();
+                    wxCoord y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) +
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                CalcTickMarkOuterWidth();
+                    if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
+                        {
+                        axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
+                        }
+                    else if (GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
+                        {
+                        axisLabel.SetAnchoring(Anchoring::TopRightCorner);
+                        }
+                    else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                        {
+                        y += (axisTextHeight / 2);
+                        axisLabel.SetAnchoring(Anchoring::Center);
+                        }
+                    if (IsStackingLabels())
+                        {
+                        y += drawingInnerLabel ? 0 : axisTextHeight;
+                        }
+                    if (GetAxisType() == AxisType::BottomXAxis)
+                        {
+                        axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels())
+                            {
+                            y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) -
+                                (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                 CalcTickMarkInnerWidth());
+                            if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft ||
+                                GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
+                                {
+                                y -= axisTextHeight;
+                                }
+                            else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                                {
+                                y -= (axisTextHeight / 2);
+                                }
+                            if (IsStackingLabels())
+                                {
+                                y -= drawingInnerLabel ? 0 : axisTextHeight;
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    else if (GetAxisType() == AxisType::TopXAxis)
+                        {
+                        y = GetTopPoint().y -
+                            ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
+                            CalcTickMarkOuterWidth();
+                        if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft ||
+                            GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
+                            {
+                            y -= axisTextHeight;
+                            }
+                        else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                            {
+                            y -= (axisTextHeight / 2);
+                            }
+                        if (IsStackingLabels())
+                            {
+                            y -= drawingInnerLabel ? 0 : axisTextHeight;
+                            }
+                        axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels())
+                            {
+                            y = GetTopPoint().y +
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                CalcTickMarkInnerWidth();
+                            if (IsStackingLabels())
+                                {
+                                y += drawingInnerLabel ? 0 : axisTextHeight;
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    drawingInnerLabel = !drawingInnerLabel;
+                    }
+                else if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
+                    {
+                    axisLabel.SetTextOrientation(Orientation::Vertical);
+
+                    const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
+                    const wxCoord axisTextWidth = labelSize.GetHeight();
+                    const wxCoord axisTextHeight = labelSize.GetWidth();
+
+                    wxCoord x{ 0 }, y{ 0 };
+                    if (GetPerpendicularLabelAxisAlignment() ==
+                            AxisLabelAlignment::AlignWithBoundary &&
+                        !IsStackingLabels())
+                        {
+                        x = axisPtIter->GetPhysicalCoordinate() - safe_divide(axisTextHeight, 2);
+                        y = axisRect.GetBottom();
+                        if (!GetBrackets().empty())
+                            {
+                            y -= CalcBracketsSpaceRequired(dc) +
+                                 ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                            }
+                        if (titleLabel.IsShown() && !titleLabel.GetText().empty())
+                            {
+                            y -= titleLabel.GetBoundingBox(dc).GetHeight();
+                            }
+                        axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                        axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                        }
+                    else // AnchorWithLine
+                        {
+                        x = axisPtIter->GetPhysicalCoordinate();
+                        y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) +
+                            ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                            safe_divide(axisTextWidth, 2) + CalcTickMarkOuterWidth();
+                        axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                        }
+                    if (GetAxisType() == AxisType::BottomXAxis)
+                        {
+                        axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels())
+                            {
+                            if (GetPerpendicularLabelAxisAlignment() ==
+                                    AxisLabelAlignment::AlignWithBoundary &&
+                                !IsStackingLabels())
+                                {
+                                y = axisRect.GetTop();
+                                if (!GetBrackets().empty())
+                                    {
+                                    y += CalcBracketsSpaceRequired(dc) +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                    }
+                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                                axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                                }
+                            else // AnchorWithLine
+                                {
+                                axisLabel.SetAnchorPoint(wxPoint(
+                                    x,
+                                    GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) -
+                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                         (axisTextWidth * math_constants::half) +
+                                         CalcTickMarkInnerWidth())));
+                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                                }
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    else if (GetAxisType() == AxisType::TopXAxis)
+                        {
+                        if (GetPerpendicularLabelAxisAlignment() ==
+                                AxisLabelAlignment::AlignWithBoundary &&
+                            !IsStackingLabels())
+                            {
+                            y = axisRect.GetTop();
+                            if (!GetBrackets().empty())
+                                {
+                                y += CalcBracketsSpaceRequired(dc) +
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                }
+                            if (titleLabel.IsShown() && !titleLabel.GetText().empty())
+                                {
+                                y += titleLabel.GetBoundingBox(dc).GetHeight();
+                                }
+                            axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                            axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                            }
+                        else // AnchorWithLine
+                            {
+                            y = GetTopPoint().y -
+                                (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                 CalcTickMarkOuterWidth() + safe_divide(axisTextWidth, 2));
+                            axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                            }
+                        axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels())
+                            {
+                            if (GetPerpendicularLabelAxisAlignment() ==
+                                    AxisLabelAlignment::AlignWithBoundary &&
+                                !IsStackingLabels())
+                                {
+                                y = axisRect.GetBottom();
+                                if (!GetBrackets().empty())
+                                    {
+                                    y -= CalcBracketsSpaceRequired(dc) +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                    }
+                                axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                                }
+                            else // AnchorWithLine
+                                {
+                                y = GetTopPoint().y +
+                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                    safe_divide(axisTextWidth, 2) + CalcTickMarkInnerWidth();
+                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    //--------------------------------------
+    void Axis::DrawYLabels(wxDC& dc, wxRect axisRect, const Label& titleLabel) const
+        {
+        bool drawingInnerLabel{ true };
+        for (auto axisPtIter = GetAxisPoints().cbegin(); axisPtIter != GetAxisPoints().cend();
+             ++axisPtIter)
+            {
+            if (IsPointDisplayingLabel(*axisPtIter))
+                {
+                Label axisLabel(GetDisplayableValue(*axisPtIter));
+                axisLabel.GetPen() = wxNullPen; // don't draw box around axis labels
+                if constexpr (Settings::IsDebugFlagEnabled(
+                                  DebugSettings::DrawBoundingBoxesOnSelection))
+                    {
+                    if (IsSelected())
+                        {
+                        axisLabel.GetPen() = wxPen(
+                            Colors::ColorBrewer::GetColor(Colors::Color::Red), 2, wxPENSTYLE_DOT);
+                        }
+                    }
+                axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+                axisLabel.SetScaling(GetAxisLabelScaling());
+                if (axisPtIter->IsGhosted())
+                    {
+                    axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                        axisLabel.GetFontColor(), GetGhostOpacity()));
+                    }
+                else
+                    {
+                    axisLabel.SetFontColor(GetFontColor());
+                    }
+                axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
+                axisLabel.GetFont() = GetFont();
+                axisLabel.SetTextAlignment(GetTextAlignment());
+                axisLabel.SetPadding(GetTopPadding(), GetRightPadding(), GetBottomPadding(),
+                                     GetLeftPadding());
+                // outer labels hanging entirely off the plot should just be drawn
+                // with the standard padding
+                if (!(axisPtIter == GetAxisPoints().cbegin() &&
+                      GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
+                    !(axisPtIter == GetAxisPoints().cend() - 1 &&
+                      GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+                    }
+                else
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
+                    }
+
+                if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
+                    {
+                    const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
+                    const wxCoord axisTextWidth = labelSize.GetWidth();
+                    const wxCoord axisTextHeight = labelSize.GetHeight();
+                    wxCoord x{ 0 }, y{ 0 };
+                    // y will be the same for left and right Y axes
+                    y = (GetPerpendicularLabelAxisAlignment() ==
+                             AxisLabelAlignment::AlignWithBoundary &&
+                         !IsStackingLabels()) ?
+                            static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate()) -
+                                safe_divide(axisTextHeight, 2) :
+                            static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
+
+                    if (GetAxisType() == AxisType::LeftYAxis)
+                        {
+                        if (GetPerpendicularLabelAxisAlignment() ==
+                                AxisLabelAlignment::AlignWithBoundary &&
+                            !IsStackingLabels())
+                            {
+                            x = axisRect.GetLeft();
+                            if (!GetBrackets().empty())
+                                {
+                                x += CalcBracketsSpaceRequired(dc) +
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                }
+                            if (titleLabel.IsShown() && !titleLabel.GetText().empty())
+                                {
+                                x += titleLabel.GetBoundingBox(dc).GetWidth();
+                                }
+                            axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
+                            axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                            }
+                        else if (GetPerpendicularLabelAxisAlignment() ==
+                                 AxisLabelAlignment::CenterOnAxisLine)
+                            {
+                            x = axisRect.GetLeft() + (axisRect.GetWidth() / 2);
+                            axisLabel.SetAnchoring(Anchoring::Center);
+                            axisLabel.SetTextAlignment(TextAlignment::Centered);
+                            }
+                        else // AnchorWithLine
+                            {
+                            x = GetTopPoint().x -
+                                (safe_divide(axisTextWidth, 2) +
+                                 ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
+                                CalcTickMarkOuterWidth();
+                            if (IsStackingLabels())
+                                {
+                                x -= drawingInnerLabel ? 0 : axisTextWidth;
+                                }
+                            axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                            }
+                        axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels() &&
+                            // doesn't make sense to draw labels on top of each other
+                            GetPerpendicularLabelAxisAlignment() !=
+                                AxisLabelAlignment::CenterOnAxisLine)
+                            {
+                            if (GetPerpendicularLabelAxisAlignment() ==
+                                    AxisLabelAlignment::AlignWithBoundary &&
+                                !IsStackingLabels())
+                                {
+                                x = axisRect.GetRight();
+                                if (!GetBrackets().empty())
+                                    {
+                                    x -= CalcBracketsSpaceRequired(dc) +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                    }
+                                axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
+                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                                }
+                            else // AnchorWithLine
+                                {
+                                x = GetTopPoint().x + safe_divide(axisTextWidth, 2) +
+                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                    CalcTickMarkInnerWidth();
+                                if (IsStackingLabels())
+                                    {
+                                    x += drawingInnerLabel ? 0 : axisTextWidth;
+                                    }
+                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    else if (GetAxisType() == AxisType::RightYAxis)
+                        {
+                        if (GetPerpendicularLabelAxisAlignment() ==
+                                AxisLabelAlignment::AlignWithBoundary &&
+                            !IsStackingLabels())
+                            {
+                            x = axisRect.GetRight();
+                            if (!GetBrackets().empty())
+                                {
+                                x -= CalcBracketsSpaceRequired(dc) +
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                }
+                            if (titleLabel.IsShown() && !titleLabel.GetText().empty())
+                                {
+                                x -= titleLabel.GetBoundingBox(dc).GetWidth();
+                                }
+                            axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
+                            axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                            }
+                        else if (GetPerpendicularLabelAxisAlignment() ==
+                                 AxisLabelAlignment::CenterOnAxisLine)
+                            {
+                            x = axisRect.GetLeft() + (axisRect.GetWidth() / 2);
+                            axisLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                            axisLabel.SetTextAlignment(TextAlignment::Centered);
+                            }
+                        else // AnchorWithLine
+                            {
+                            x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
+                                safe_divide(axisTextWidth, 2) +
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                CalcTickMarkOuterWidth();
+                            if (IsStackingLabels())
+                                {
+                                x += drawingInnerLabel ? 0 : axisTextWidth;
+                                }
+                            axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                            }
+                        axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels() && GetPerpendicularLabelAxisAlignment() !=
+                                                              AxisLabelAlignment::CenterOnAxisLine)
+                            {
+                            if (GetPerpendicularLabelAxisAlignment() ==
+                                    AxisLabelAlignment::AlignWithBoundary &&
+                                !IsStackingLabels())
+                                {
+                                x = axisRect.GetLeft();
+                                if (!GetBrackets().empty())
+                                    {
+                                    x += CalcBracketsSpaceRequired(dc) +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                    }
+                                axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
+                                }
+                            else // AnchorWithLine
+                                {
+                                x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
+                                    (safe_divide(axisTextWidth, 2) +
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                     CalcTickMarkInnerWidth());
+                                if (IsStackingLabels())
+                                    {
+                                    x -= drawingInnerLabel ? 0 : axisTextWidth;
+                                    }
+                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    drawingInnerLabel = !drawingInnerLabel;
+                    }
+                else if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
+                    {
+                    axisLabel.SetTextOrientation(Orientation::Vertical);
+
+                    const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
+                    const wxCoord axisTextHeight = labelSize.GetWidth();
+
+                    const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
+                    if (GetAxisType() == AxisType::LeftYAxis)
+                        {
+                        wxCoord xCoord = GetTopPoint().x -
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
+                                         CalcTickMarkOuterWidth();
+                        if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
+                            {
+                            axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
+                            }
+                        else if (GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
+                            {
+                            axisLabel.SetAnchoring(Anchoring::BottomRightCorner);
+                            }
+                        else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                            {
+                            xCoord -= (axisTextHeight / 2);
+                            axisLabel.SetAnchoring(Anchoring::Center);
+                            }
+                        if (IsStackingLabels())
+                            {
+                            xCoord -= drawingInnerLabel ? 0 : axisTextHeight;
+                            }
+                        axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels())
+                            {
+                            xCoord = GetTopPoint().x +
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                     CalcTickMarkInnerWidth();
+                            if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
+                                GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
+                                {
+                                xCoord += axisTextHeight;
+                                }
+                            else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                                {
+                                xCoord += (axisTextHeight / 2);
+                                }
+                            if (IsStackingLabels())
+                                {
+                                xCoord += drawingInnerLabel ? 0 : axisTextHeight;
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    else if (GetAxisType() == AxisType::RightYAxis)
+                        {
+                        wxCoord xCoord = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                         CalcTickMarkOuterWidth();
+                        if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
+                            {
+                            axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
+                            }
+                        else if (GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
+                            {
+                            axisLabel.SetAnchoring(Anchoring::TopRightCorner);
+                            }
+                        else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                            {
+                            xCoord += (axisTextHeight / 2);
+                            axisLabel.SetAnchoring(Anchoring::Center);
+                            }
+                        if (IsStackingLabels())
+                            {
+                            xCoord += drawingInnerLabel ? 0 : axisTextHeight;
+                            }
+                        axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
+                        axisLabel.Draw(dc);
+                        if (HasDoubleSidedAxisLabels())
+                            {
+                            xCoord = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
+                                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                      CalcTickMarkInnerWidth());
+                            if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
+                                GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
+                                {
+                                xCoord -= axisTextHeight;
+                                }
+                            else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
+                                {
+                                xCoord -= (axisTextHeight / 2);
+                                }
+                            if (IsStackingLabels())
+                                {
+                                xCoord -= drawingInnerLabel ? 0 : axisTextHeight;
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
+                            axisLabel.Draw(dc);
+                            }
+                        }
+                    drawingInnerLabel = !drawingInnerLabel;
+                    }
+                }
+            }
+        }
+
+    //--------------------------------------
+    void Axis::DrawBrackets(wxDC& dc, const wxRect axisRect) const
+        {
         for (const auto& bracket : GetBrackets())
             {
             wxPen scaledPen = bracket.GetLinePen();
@@ -2073,688 +2762,6 @@ namespace Wisteria::GraphItems
                     }
                 }
             }
-
-        // draw the Y axis labels
-        if (IsVertical() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
-            {
-            bool drawingInnerLabel{ true };
-            for (auto axisPtIter = GetAxisPoints().cbegin(); axisPtIter != GetAxisPoints().cend();
-                 ++axisPtIter)
-                {
-                if (IsPointDisplayingLabel(*axisPtIter))
-                    {
-                    Label axisLabel(GetDisplayableValue(*axisPtIter));
-                    axisLabel.GetPen() = wxNullPen; // don't draw box around axis labels
-                    if constexpr (Settings::IsDebugFlagEnabled(
-                                      DebugSettings::DrawBoundingBoxesOnSelection))
-                        {
-                        if (IsSelected())
-                            {
-                            axisLabel.GetPen() =
-                                wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red), 2,
-                                      wxPENSTYLE_DOT);
-                            }
-                        }
-                    axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
-                    axisLabel.SetScaling(GetAxisLabelScaling());
-                    if (axisPtIter->IsGhosted())
-                        {
-                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
-                            axisLabel.GetFontColor(), GetGhostOpacity()));
-                        }
-                    else
-                        {
-                        axisLabel.SetFontColor(GetFontColor());
-                        }
-                    axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
-                    axisLabel.GetFont() = GetFont();
-                    axisLabel.SetTextAlignment(GetTextAlignment());
-                    axisLabel.SetPadding(GetTopPadding(), GetRightPadding(), GetBottomPadding(),
-                                         GetLeftPadding());
-                    // outer labels hanging entirely off the plot should just be drawn
-                    // with the standard padding
-                    if (!(axisPtIter == GetAxisPoints().cbegin() &&
-                          GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
-                        !(axisPtIter == GetAxisPoints().cend() - 1 &&
-                          GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                        {
-                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
-                        }
-                    else
-                        {
-                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
-                        }
-
-                    if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
-                        {
-                        const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
-                        const wxCoord axisTextWidth = labelSize.GetWidth();
-                        const wxCoord axisTextHeight = labelSize.GetHeight();
-                        wxCoord x{ 0 }, y{ 0 };
-                        // y will be the same for left and right Y axes
-                        y = (GetPerpendicularLabelAxisAlignment() ==
-                                 AxisLabelAlignment::AlignWithBoundary &&
-                             !IsStackingLabels()) ?
-                                static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate()) -
-                                    safe_divide(axisTextHeight, 2) :
-                                static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
-
-                        if (GetAxisType() == AxisType::LeftYAxis)
-                            {
-                            if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary &&
-                                !IsStackingLabels())
-                                {
-                                x = axisRect.GetLeft();
-                                if (!GetBrackets().empty())
-                                    {
-                                    x += CalcBracketsSpaceRequired(dc) +
-                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                                    }
-                                if (titleLabel.IsShown() && !titleLabel.GetText().empty())
-                                    {
-                                    x += titleLabel.GetBoundingBox(dc).GetWidth();
-                                    }
-                                axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
-                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                }
-                            else if (GetPerpendicularLabelAxisAlignment() ==
-                                     AxisLabelAlignment::CenterOnAxisLine)
-                                {
-                                x = axisRect.GetLeft() + (axisRect.GetWidth() / 2);
-                                axisLabel.SetAnchoring(Anchoring::Center);
-                                axisLabel.SetTextAlignment(TextAlignment::Centered);
-                                }
-                            else // AnchorWithLine
-                                {
-                                x = GetTopPoint().x -
-                                    (safe_divide(axisTextWidth, 2) +
-                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
-                                    CalcTickMarkOuterWidth();
-                                if (IsStackingLabels())
-                                    {
-                                    x -= drawingInnerLabel ? 0 : axisTextWidth;
-                                    }
-                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                }
-                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels() &&
-                                // doesn't make sense to draw labels on top of each other
-                                GetPerpendicularLabelAxisAlignment() !=
-                                    AxisLabelAlignment::CenterOnAxisLine)
-                                {
-                                if (GetPerpendicularLabelAxisAlignment() ==
-                                        AxisLabelAlignment::AlignWithBoundary &&
-                                    !IsStackingLabels())
-                                    {
-                                    x = axisRect.GetRight();
-                                    if (!GetBrackets().empty())
-                                        {
-                                        x -= CalcBracketsSpaceRequired(dc) +
-                                             ScaleToScreenAndCanvas(
-                                                 GetSpacingBetweenLabelsAndLine());
-                                        }
-                                    axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                    }
-                                else // AnchorWithLine
-                                    {
-                                    x = GetTopPoint().x + safe_divide(axisTextWidth, 2) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                        CalcTickMarkInnerWidth();
-                                    if (IsStackingLabels())
-                                        {
-                                        x += drawingInnerLabel ? 0 : axisTextWidth;
-                                        }
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        else if (GetAxisType() == AxisType::RightYAxis)
-                            {
-                            if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary &&
-                                !IsStackingLabels())
-                                {
-                                x = axisRect.GetRight();
-                                if (!GetBrackets().empty())
-                                    {
-                                    x -= CalcBracketsSpaceRequired(dc) +
-                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                                    }
-                                if (titleLabel.IsShown() && !titleLabel.GetText().empty())
-                                    {
-                                    x -= titleLabel.GetBoundingBox(dc).GetWidth();
-                                    }
-                                axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
-                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                }
-                            else if (GetPerpendicularLabelAxisAlignment() ==
-                                     AxisLabelAlignment::CenterOnAxisLine)
-                                {
-                                x = axisRect.GetLeft() + (axisRect.GetWidth() / 2);
-                                axisLabel.SetAnchoring(Wisteria::Anchoring::Center);
-                                axisLabel.SetTextAlignment(TextAlignment::Centered);
-                                }
-                            else // AnchorWithLine
-                                {
-                                x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
-                                    safe_divide(axisTextWidth, 2) +
-                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                    CalcTickMarkOuterWidth();
-                                if (IsStackingLabels())
-                                    {
-                                    x += drawingInnerLabel ? 0 : axisTextWidth;
-                                    }
-                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                }
-                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels() &&
-                                GetPerpendicularLabelAxisAlignment() !=
-                                    AxisLabelAlignment::CenterOnAxisLine)
-                                {
-                                if (GetPerpendicularLabelAxisAlignment() ==
-                                        AxisLabelAlignment::AlignWithBoundary &&
-                                    !IsStackingLabels())
-                                    {
-                                    x = axisRect.GetLeft();
-                                    if (!GetBrackets().empty())
-                                        {
-                                        x += CalcBracketsSpaceRequired(dc) +
-                                             ScaleToScreenAndCanvas(
-                                                 GetSpacingBetweenLabelsAndLine());
-                                        }
-                                    axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                    }
-                                else // AnchorWithLine
-                                    {
-                                    x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
-                                        (safe_divide(axisTextWidth, 2) +
-                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                         CalcTickMarkInnerWidth());
-                                    if (IsStackingLabels())
-                                        {
-                                        x -= drawingInnerLabel ? 0 : axisTextWidth;
-                                        }
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        drawingInnerLabel = !drawingInnerLabel;
-                        }
-                    else if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
-                        {
-                        axisLabel.SetTextOrientation(Orientation::Vertical);
-
-                        const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
-                        const wxCoord axisTextHeight = labelSize.GetWidth();
-
-                        const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
-                        if (GetAxisType() == AxisType::LeftYAxis)
-                            {
-                            wxCoord xCoord =
-                                GetTopPoint().x -
-                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
-                                CalcTickMarkOuterWidth();
-                            if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
-                                {
-                                axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
-                                }
-                            else if (GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                                {
-                                axisLabel.SetAnchoring(Anchoring::BottomRightCorner);
-                                }
-                            else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                {
-                                xCoord -= (axisTextHeight / 2);
-                                axisLabel.SetAnchoring(Anchoring::Center);
-                                }
-                            if (IsStackingLabels())
-                                {
-                                xCoord -= drawingInnerLabel ? 0 : axisTextHeight;
-                                }
-                            axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels())
-                                {
-                                xCoord = GetTopPoint().x +
-                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                         CalcTickMarkInnerWidth();
-                                if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
-                                    GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                                    {
-                                    xCoord += axisTextHeight;
-                                    }
-                                else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                    {
-                                    xCoord += (axisTextHeight / 2);
-                                    }
-                                if (IsStackingLabels())
-                                    {
-                                    xCoord += drawingInnerLabel ? 0 : axisTextHeight;
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        else if (GetAxisType() == AxisType::RightYAxis)
-                            {
-                            wxCoord xCoord =
-                                GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
-                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                CalcTickMarkOuterWidth();
-                            if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
-                                {
-                                axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
-                                }
-                            else if (GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                                {
-                                axisLabel.SetAnchoring(Anchoring::TopRightCorner);
-                                }
-                            else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                {
-                                xCoord += (axisTextHeight / 2);
-                                axisLabel.SetAnchoring(Anchoring::Center);
-                                }
-                            if (IsStackingLabels())
-                                {
-                                xCoord += drawingInnerLabel ? 0 : axisTextHeight;
-                                }
-                            axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels())
-                                {
-                                xCoord = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
-                                         (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                          CalcTickMarkInnerWidth());
-                                if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
-                                    GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                                    {
-                                    xCoord -= axisTextHeight;
-                                    }
-                                else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                    {
-                                    xCoord -= (axisTextHeight / 2);
-                                    }
-                                if (IsStackingLabels())
-                                    {
-                                    xCoord -= drawingInnerLabel ? 0 : axisTextHeight;
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        drawingInnerLabel = !drawingInnerLabel;
-                        }
-                    }
-                }
-            }
-        // draw the X axis labels
-        else if (IsHorizontal() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
-            {
-            bool drawingInnerLabel{ true };
-            for (auto axisPtIter = GetAxisPoints().cbegin(); axisPtIter != GetAxisPoints().cend();
-                 ++axisPtIter)
-                {
-                if (IsPointDisplayingLabel(*axisPtIter))
-                    {
-                    Label axisLabel(GetDisplayableValue(*axisPtIter));
-                    axisLabel.GetPen() = wxNullPen;
-                    if constexpr (Settings::IsDebugFlagEnabled(
-                                      DebugSettings::DrawBoundingBoxesOnSelection))
-                        {
-                        if (IsSelected())
-                            {
-                            axisLabel.GetPen() =
-                                wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red), 2,
-                                      wxPENSTYLE_DOT);
-                            }
-                        }
-                    axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
-                    axisLabel.SetScaling(GetAxisLabelScaling());
-                    if (axisPtIter->IsGhosted())
-                        {
-                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
-                            axisLabel.GetFontColor(), GetGhostOpacity()));
-                        }
-                    else
-                        {
-                        axisLabel.SetFontColor(GetFontColor());
-                        }
-                    axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
-                    axisLabel.GetFont() = GetFont();
-                    axisLabel.SetTextAlignment(GetTextAlignment());
-                    axisLabel.SetPadding(GetTopPadding(), GetRightPadding(), GetBottomPadding(),
-                                         GetLeftPadding());
-                    // outer labels hanging entirely off the plot should just be drawn
-                    // with the standard padding
-                    if (!(axisPtIter == GetAxisPoints().cbegin() &&
-                          GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
-                        !(axisPtIter == GetAxisPoints().cend() - 1 &&
-                          GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                        {
-                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
-                        }
-                    else
-                        {
-                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
-                        }
-
-                    if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
-                        {
-                        const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
-                        const wxCoord axisTextHeight = labelSize.GetHeight();
-                        const wxCoord x = axisPtIter->GetPhysicalCoordinate();
-                        wxCoord y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) +
-                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                    CalcTickMarkOuterWidth();
-                        if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
-                            {
-                            axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
-                            }
-                        else if (GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                            {
-                            axisLabel.SetAnchoring(Anchoring::TopRightCorner);
-                            }
-                        else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                            {
-                            y += (axisTextHeight / 2);
-                            axisLabel.SetAnchoring(Anchoring::Center);
-                            }
-                        if (IsStackingLabels())
-                            {
-                            y += drawingInnerLabel ? 0 : axisTextHeight;
-                            }
-                        if (GetAxisType() == AxisType::BottomXAxis)
-                            {
-                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels())
-                                {
-                                y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) -
-                                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                     CalcTickMarkInnerWidth());
-                                if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft ||
-                                    GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                                    {
-                                    y -= axisTextHeight;
-                                    }
-                                else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                    {
-                                    y -= (axisTextHeight / 2);
-                                    }
-                                if (IsStackingLabels())
-                                    {
-                                    y -= drawingInnerLabel ? 0 : axisTextHeight;
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        else if (GetAxisType() == AxisType::TopXAxis)
-                            {
-                            y = GetTopPoint().y -
-                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
-                                CalcTickMarkOuterWidth();
-                            if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft ||
-                                GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                                {
-                                y -= axisTextHeight;
-                                }
-                            else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                {
-                                y -= (axisTextHeight / 2);
-                                }
-                            if (IsStackingLabels())
-                                {
-                                y -= drawingInnerLabel ? 0 : axisTextHeight;
-                                }
-                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels())
-                                {
-                                y = GetTopPoint().y +
-                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                    CalcTickMarkInnerWidth();
-                                if (IsStackingLabels())
-                                    {
-                                    y += drawingInnerLabel ? 0 : axisTextHeight;
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        drawingInnerLabel = !drawingInnerLabel;
-                        }
-                    else if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
-                        {
-                        axisLabel.SetTextOrientation(Orientation::Vertical);
-
-                        const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
-                        const wxCoord axisTextWidth = labelSize.GetHeight();
-                        const wxCoord axisTextHeight = labelSize.GetWidth();
-
-                        wxCoord x{ 0 }, y{ 0 };
-                        if (GetPerpendicularLabelAxisAlignment() ==
-                                AxisLabelAlignment::AlignWithBoundary &&
-                            !IsStackingLabels())
-                            {
-                            x = axisPtIter->GetPhysicalCoordinate() -
-                                safe_divide(axisTextHeight, 2);
-                            y = axisRect.GetBottom();
-                            if (!GetBrackets().empty())
-                                {
-                                y -= CalcBracketsSpaceRequired(dc) +
-                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                                }
-                            if (titleLabel.IsShown() && !titleLabel.GetText().empty())
-                                {
-                                y -= titleLabel.GetBoundingBox(dc).GetHeight();
-                                }
-                            axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                            axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                            }
-                        else // AnchorWithLine
-                            {
-                            x = axisPtIter->GetPhysicalCoordinate();
-                            y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) +
-                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                safe_divide(axisTextWidth, 2) + CalcTickMarkOuterWidth();
-                            axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                            }
-                        if (GetAxisType() == AxisType::BottomXAxis)
-                            {
-                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels())
-                                {
-                                if (GetPerpendicularLabelAxisAlignment() ==
-                                        AxisLabelAlignment::AlignWithBoundary &&
-                                    !IsStackingLabels())
-                                    {
-                                    y = axisRect.GetTop();
-                                    if (!GetBrackets().empty())
-                                        {
-                                        y += CalcBracketsSpaceRequired(dc) +
-                                             ScaleToScreenAndCanvas(
-                                                 GetSpacingBetweenLabelsAndLine());
-                                        }
-                                    axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                                    axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                    }
-                                else // AnchorWithLine
-                                    {
-                                    axisLabel.SetAnchorPoint(
-                                        wxPoint(x, GetTopPoint().y +
-                                                       (GetBottomPoint().y - GetTopPoint().y) -
-                                                       (ScaleToScreenAndCanvas(
-                                                            GetSpacingBetweenLabelsAndLine()) +
-                                                        (axisTextWidth * math_constants::half) +
-                                                        CalcTickMarkInnerWidth())));
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                    }
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        else if (GetAxisType() == AxisType::TopXAxis)
-                            {
-                            if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary &&
-                                !IsStackingLabels())
-                                {
-                                y = axisRect.GetTop();
-                                if (!GetBrackets().empty())
-                                    {
-                                    y += CalcBracketsSpaceRequired(dc) +
-                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                                    }
-                                if (titleLabel.IsShown() && !titleLabel.GetText().empty())
-                                    {
-                                    y += titleLabel.GetBoundingBox(dc).GetHeight();
-                                    }
-                                axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                                axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                }
-                            else // AnchorWithLine
-                                {
-                                y = GetTopPoint().y -
-                                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                     CalcTickMarkOuterWidth() + safe_divide(axisTextWidth, 2));
-                                axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                }
-                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                            axisLabel.Draw(dc);
-                            if (HasDoubleSidedAxisLabels())
-                                {
-                                if (GetPerpendicularLabelAxisAlignment() ==
-                                        AxisLabelAlignment::AlignWithBoundary &&
-                                    !IsStackingLabels())
-                                    {
-                                    y = axisRect.GetBottom();
-                                    if (!GetBrackets().empty())
-                                        {
-                                        y -= CalcBracketsSpaceRequired(dc) +
-                                             ScaleToScreenAndCanvas(
-                                                 GetSpacingBetweenLabelsAndLine());
-                                        }
-                                    axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
-                                    }
-                                else // AnchorWithLine
-                                    {
-                                    y = GetTopPoint().y +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                        safe_divide(axisTextWidth, 2) + CalcTickMarkInnerWidth();
-                                    axisLabel.SetTextAlignment(TextAlignment::FlushRight);
-                                    }
-                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
-                                axisLabel.Draw(dc);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        // if axis is light, then it is probably being contrasted against a dark background,
-        // so make the outline white in that case (black, otherwise)
-        const bool penIsLight{ (
-            GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour().IsOk() &&
-            Wisteria::Colors::ColorContrast::IsLight(GetAxisLinePen().GetColour())) };
-        // draw the selection outline
-        if (IsSelected())
-            {
-            const wxDCPenChanger pc(
-                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-            std::array<wxPoint, 5> pts;
-            GraphItems::Polygon::GetRectPoints(axisRect, pts);
-            dc.DrawLines(pts.size(), pts.data());
-            }
-
-        if (GetOutlineSize().IsFullySpecified())
-            {
-            const wxDCPenChanger pc(
-                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                          ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
-            std::array<wxPoint, 5> pts;
-            // area rect was already inflated from GetBoundingBox()
-            GraphItems::Polygon::GetRectPoints(axisRect, pts);
-            dc.DrawLines(pts.size(), pts.data());
-            }
-
-        // highlight the selected protruding bounding box in debug mode
-        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
-            {
-            if (IsSelected())
-                {
-                std::array<wxPoint, 5> debugOutline;
-                GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
-                const wxDCPenChanger pcDebug{
-                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
-                              ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH)
-                };
-                dc.DrawLines(debugOutline.size(), debugOutline.data());
-                }
-            }
-        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
-            {
-            if (IsSelected())
-                {
-                const auto bBox = GetBoundingBox(dc);
-                const auto bracketWidth{ CalcBracketsSpaceRequired(dc) };
-                Label infoLabel(
-                    GraphItemInfo(
-                        wxString::Format(
-                            _DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
-                                "Bracket Width: %d\n"
-                                "Axis Line Points: (%d, %d), (%d, %d)\n"
-                                "Scaling: %s\n"
-                                "Axis Label Scaling: %s\n"
-                                "Bracket Label Scaling: %s"),
-                            bBox.x, bBox.y, bBox.width, bBox.height, bracketWidth,
-                            GetBottomPoint().x, GetBottomPoint().y, GetTopPoint().x,
-                            GetTopPoint().y,
-                            wxNumberFormatter::ToString(
-                                GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                            wxNumberFormatter::ToString(
-                                GetAxisLabelScaling(), 1,
-                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                            wxNumberFormatter::ToString(
-                                !GetBrackets().empty() ?
-                                    GetBrackets().front().GetLabel().GetScaling() :
-                                    0.0,
-                                1, wxNumberFormatter::Style::Style_NoTrailingZeroes)))
-                        .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + (bBox.GetWidth() / 2),
-                                             bBox.GetBottomRight().y))
-                        .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Red))
-                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
-                        .DPIScaling(GetDPIScaleFactor())
-                        .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
-                        .Padding(2, 2, 2, 2));
-                if (GetAxisType() == AxisType::LeftYAxis)
-                    {
-                    infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner);
-                    }
-                else
-                    {
-                    infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomRightCorner);
-                    }
-                infoLabel.Draw(dc);
-                }
-            }
-
-        return axisRect;
         }
 
     //--------------------------------------

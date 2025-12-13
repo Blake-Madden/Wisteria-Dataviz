@@ -544,6 +544,7 @@ wxString ExtractExtensionsFromFileFilter(const wxString& fileFilter)
         }
     if (retVal == L"*.*")
         {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         retVal = wxFileSelectorDefaultWildcardStr;
         }
     return retVal;

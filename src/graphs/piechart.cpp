@@ -1309,12 +1309,12 @@ namespace Wisteria::Graphs
             const wxPoint2DDouble perp(dir.m_y, -dir.m_x);
 
             // build 4 corners of the pill rectangle
-            wxPoint p1(inner.x + perp.m_x * halfWidth, inner.y + perp.m_y * halfWidth);
-            wxPoint p2(inner.x - perp.m_x * halfWidth, inner.y - perp.m_y * halfWidth);
-            wxPoint p3(outer.x - perp.m_x * halfWidth, outer.y - perp.m_y * halfWidth);
-            wxPoint p4(outer.x + perp.m_x * halfWidth, outer.y + perp.m_y * halfWidth);
+            const wxPoint p1(inner.x + perp.m_x * halfWidth, inner.y + perp.m_y * halfWidth);
+            const wxPoint p2(inner.x - perp.m_x * halfWidth, inner.y - perp.m_y * halfWidth);
+            const wxPoint p3(outer.x - perp.m_x * halfWidth, outer.y - perp.m_y * halfWidth);
+            const wxPoint p4(outer.x + perp.m_x * halfWidth, outer.y + perp.m_y * halfWidth);
 
-            std::array<wxPoint, 4> pts{ p1, p2, p3, p4 };
+            const std::array<wxPoint, 4> pts{ p1, p2, p3, p4 };
 
             auto tickPoly = std::make_unique<GraphItems::Polygon>(
                 GraphItems::GraphItemInfo()
@@ -1328,13 +1328,13 @@ namespace Wisteria::Graphs
         };
 
         // long ticks: 12, 3, 6, 9
-        for (double deg : { 0.0, 90.0, 180.0, 270.0 })
+        for (const double deg : { 0.0, 90.0, 180.0, 270.0 })
             {
             addTick(deg, true);
             }
 
         // short ticks: 5-min increments
-        for (int m : { 5, 10, 20, 25, 35, 40, 50, 55 })
+        for (const int m : { 5, 10, 20, 25, 35, 40, 50, 55 })
             {
             addTick(m * 6.0, false);
             }
@@ -1420,7 +1420,7 @@ namespace Wisteria::Graphs
             const double px{ ny };
             const double py{ -nx };
 
-            std::array<int, 3> alphaLevels{ 120, 75, 30 };
+            const std::array<int, 3> alphaLevels{ 120, 75, 30 };
             for (const auto alpha : alphaLevels)
                 {
                 const wxPoint offsetBack{ static_cast<int>(backPoint.x + px * highlightOffset),
@@ -1473,18 +1473,18 @@ namespace Wisteria::Graphs
             const double tipHalf{ tipWidth * math_constants::half };
             const double baseHalf{ baseWidth * math_constants::half };
 
-            std::array<wxPoint, 6> pts{ wxPoint{ static_cast<int>(tip.x + px * tipHalf),
-                                                 static_cast<int>(tip.y + py * tipHalf) },
-                                        wxPoint{ static_cast<int>(base.x + px * baseHalf),
-                                                 static_cast<int>(base.y + py * baseHalf) },
-                                        wxPoint{ static_cast<int>(back.x + px * baseHalf),
-                                                 static_cast<int>(back.y + py * baseHalf) },
-                                        wxPoint{ static_cast<int>(back.x - px * baseHalf),
-                                                 static_cast<int>(back.y - py * baseHalf) },
-                                        wxPoint{ static_cast<int>(base.x - px * baseHalf),
-                                                 static_cast<int>(base.y - py * baseHalf) },
-                                        wxPoint{ static_cast<int>(tip.x - px * tipHalf),
-                                                 static_cast<int>(tip.y - py * tipHalf) } };
+            const std::array<wxPoint, 6> pts{ wxPoint{ static_cast<int>(tip.x + px * tipHalf),
+                                                       static_cast<int>(tip.y + py * tipHalf) },
+                                              wxPoint{ static_cast<int>(base.x + px * baseHalf),
+                                                       static_cast<int>(base.y + py * baseHalf) },
+                                              wxPoint{ static_cast<int>(back.x + px * baseHalf),
+                                                       static_cast<int>(back.y + py * baseHalf) },
+                                              wxPoint{ static_cast<int>(back.x - px * baseHalf),
+                                                       static_cast<int>(back.y - py * baseHalf) },
+                                              wxPoint{ static_cast<int>(base.x - px * baseHalf),
+                                                       static_cast<int>(base.y - py * baseHalf) },
+                                              wxPoint{ static_cast<int>(tip.x - px * tipHalf),
+                                                       static_cast<int>(tip.y - py * tipHalf) } };
 
             auto poly = std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
                                                                   .Brush(color)

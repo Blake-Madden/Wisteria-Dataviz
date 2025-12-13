@@ -577,7 +577,7 @@ namespace lily_of_the_valley
     //----------------------------------------------------
     void word1997_extract_text::load_summary_information(file_system_entry* cfbObj)
         {
-        std::vector<char> propBuffer(4096, 0);
+        std::vector<char> propBuffer(4096, '\0');
         // read the header
         auto readBytes = read_stream(propBuffer.data(), 28, cfbObj);
         const auto headerSignature = read_short(propBuffer.data(), 0);
@@ -693,22 +693,30 @@ namespace lily_of_the_valley
                     // or current code page
                     else
                         {
-                        auto wideBuff =
-                            std::make_unique<wchar_t[]>(static_cast<size_t>(strByteCount) + 1);
+                        std::vector<wchar_t> wideBuff(strByteCount + 1, L'\0');
 #ifdef _MSC_VER
-                        size_t convertedAmt{ 0 };
-                        mbstowcs_s(&convertedAmt, wideBuff.get(),
-                                   static_cast<size_t>(strByteCount) + 1,
-                                   propBuffer.data() + property.first + 8, strByteCount);
+                        size_t cvtSize{ 0 };
+                        const errno_t cvtErr =
+                            mbstowcs_s(&cvtSize, wideBuff.data(), wideBuff.size(),
+                                       propBuffer.data() + property.first + 8, strByteCount);
+                        if (cvtErr != 0 || cvtSize == 0)
+                            {
+                            continue;
+                            }
+                        propertyValue.assign(wideBuff.data(), wideBuff.data() + cvtSize - 1);
 #else
-                        std::mbstowcs(wideBuff.get(), propBuffer.data() + property.first + 8,
-                                      strByteCount);
+                        size_t cvtSize = std::mbstowcs(
+                            wideBuff.data(), propBuffer.data() + property.first + 8, strByteCount);
+                        if (cvtSize == static_cast<size_t>(-1))
+                            {
+                            continue;
+                            }
+                        propertyValue.assign(wideBuff.data(), wideBuff.data() + cvtSize);
 #endif
-                        propertyValue = wideBuff.get();
                         }
                     }
                 // UTF-16 string
-                if (dataType == static_cast<int32_t>(property_data_type::vt_lpwstr))
+                else if (dataType == static_cast<int32_t>(property_data_type::vt_lpwstr))
                     {
                     const auto strByteCount =
                         read_int(propBuffer.data(), static_cast<size_t>(property.first) + 4);
@@ -718,7 +726,8 @@ namespace lily_of_the_valley
                             L"DOC parser: error in property WCS value. File may be corrupt.");
                         break;
                         }
-                    for (auto i = 0; i < safe_divide(strByteCount, 2); ++i)
+                    for (std::remove_cvref_t<decltype(strByteCount)> i = 0;
+                         i < safe_divide(strByteCount, 2); ++i)
                         {
                         propertyValue += static_cast<wchar_t>(
                             read_short(propBuffer.data() + property.first + 8, i * 2));
@@ -726,7 +735,7 @@ namespace lily_of_the_valley
                     }
                 // Set the value to the respective property.
                 // Note that there may be embedded nulls in the string if the input was trash,
-                // so copy it in as a wchar_t* buffer so that it stops on the null terminator.
+                // so normalize to a std::wstring; invalid input may truncate at the first null.
                 if (property.second == static_cast<int32_t>(property_format_id::pid_title))
                     {
                     m_title.assign(propertyValue);
