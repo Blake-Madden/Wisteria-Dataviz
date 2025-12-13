@@ -43,7 +43,7 @@ namespace lily_of_the_valley
         /// @returns number of characters consumed on success, or std::wstring_view::npos on failure
         [[nodiscard]]
         size_t parse_html_block(std::wstring_view input, std::wstring_view tag,
-                              std::wstring_view endTag);
+                                std::wstring_view endTag);
 
         bool parse_code_block(const bool isEscaping, const wchar_t* currentEndSentinel,
                               const wchar_t*& currentStart, wchar_t& previousChar,
