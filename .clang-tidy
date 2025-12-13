@@ -22,7 +22,7 @@ google-*,-readability-function-cognitive-complexity,-bugprone-branch-clone,-hicp
 -bugprone-empty-catch,
 -bugprone-lambda-function-name,
 -google-runtime-int'
-HeaderFilterRegex: '^src/'
+HeaderFilterRegex: '(^|/)Wisteria-Dataviz/src/'
 FormatStyle: none
 InheritParentConfig: true
 IgnoreClassesWithAllMemberVariablesBeingPublic: true
