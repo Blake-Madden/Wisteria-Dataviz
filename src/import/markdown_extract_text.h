@@ -37,21 +37,26 @@ namespace lily_of_the_valley
             return md_text.starts_with(L"---");
             }
 
-        bool parse_styled_text(wchar_t& previousChar, wchar_t tag);
+        /// @returns number of characters consumed, or npos on failure
+        size_t parse_styled_text(std::wstring_view input, wchar_t& previousChar, wchar_t tag);
 
+        /// @returns number of characters consumed on success, or std::wstring_view::npos on failure
         [[nodiscard]]
-        bool parse_html_block(std::wstring_view tag, std::wstring_view endTag);
+        size_t parse_html_block(std::wstring_view input, std::wstring_view tag,
+                              std::wstring_view endTag);
+
+        bool parse_code_block(const bool isEscaping, const wchar_t* currentEndSentinel,
+                              const wchar_t*& currentStart, wchar_t& previousChar,
+                              bool& headerMode);
 
         /** @brief Metadata sections end on the first blank like, so moves to that.
             @param md_text The Markdown text, starting anywhere in the metadata section.
             @returns The start of the document's body.
             @sa has_metadata_section().*/
         [[nodiscard]]
-        static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept;
+        static size_t find_metadata_section_end(std::wstring_view mdText);
 
         std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
-        const wchar_t* m_currentStart{ nullptr };
-        const wchar_t* m_currentEndSentinel{ nullptr };
         };
     } // namespace lily_of_the_valley
 

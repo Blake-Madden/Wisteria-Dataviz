@@ -307,7 +307,6 @@ TEST_CASE("Markdown Parser Header", "[md import]")
         {
         lily_of_the_valley::markdown_extract_text md;
         CHECK_FALSE(md.has_metadata_section({L""}));
-        CHECK(md.find_metadata_section_end(nullptr) == nullptr);
         CHECK(md({ L"some MD text", 0 }) == nullptr);
         }
 
