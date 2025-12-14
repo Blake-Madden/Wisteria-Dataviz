@@ -96,7 +96,7 @@ Properties for `"heatmap"` nodes:
   - `"continuous"`: The value column (each value will have its own cell).
   - `"group"`: The grouping column (this is optional).
 - `"group-column-count"`: If a grouping column is provided, then this specifies how many columns to split the groups (rows) into. \
-  (This should be between 1-5.)
+  (This should be between 1–5.)
 - `"show-group-header"`: If a grouping column is provided, `true` shows a header above each column.
 - `"group-header-prefix"`: If group columns are being shown, this will be the string used as a prefix for each column.
 :::
