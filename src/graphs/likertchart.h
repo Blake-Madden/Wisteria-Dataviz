@@ -232,8 +232,8 @@ namespace Wisteria::Graphs
             wxString m_question;
             size_t m_responses{ 0 };
             double m_negativeRate{ 0 };
-            double m_positiveRate{ 0 };
             double m_neutralRate{ 0 };
+            double m_positiveRate{ 0 };
             double m_naRate{ 0 };
             };
 
@@ -323,10 +323,10 @@ namespace Wisteria::Graphs
             size_t m_responses{ 0 };
             double m_negative1Rate{ 0 };
             double m_negative2Rate{ 0 };
-            double m_naRate{ 0 };
+            double m_neutralRate{ 0 };
             double m_positive1Rate{ 0 };
             double m_positive2Rate{ 0 };
-            double m_neutralRate{ 0 };
+            double m_naRate{ 0 };
             };
 
         /** @brief A five-point (e.g., strongly disagree, disagree, neutral, agree, strongly agree)
