@@ -35,6 +35,10 @@ objets = "objets"
 sur = "sur"
 Hel = "Hel"
 caf = "caf"
+som = "som"
+Som = "Som"
+mor = "mor"
+WORL = "WORL"
 
 [type.svg]
 extend-glob = ["*.svg"]
