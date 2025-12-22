@@ -47,10 +47,10 @@ namespace Wisteria::Graphs
          Anales del sistema sanitario de Navarra vol. 31,2 (2008): 135-52. doi:10.4321/s1137-66272008000300004*/
     // clang-format on
 
-    class InfleszChart final : public Wisteria::Graphs::ScaleChart
+    class InfleszScale final : public Wisteria::Graphs::ScaleChart
         {
-        wxDECLARE_DYNAMIC_CLASS(InfleszChart);
-        InfleszChart() = default;
+        wxDECLARE_DYNAMIC_CLASS(InfleszScale);
+        InfleszScale() = default;
 
       public:
         /** @brief Constructor.
@@ -63,7 +63,7 @@ namespace Wisteria::Graphs
                 scale for comparison.
             @param includeFlesch Whether to include the FRE scale
                 for comparison.*/
-        explicit InfleszChart(
+        explicit InfleszScale(
             Wisteria::Canvas* canvas,
             const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
             const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,

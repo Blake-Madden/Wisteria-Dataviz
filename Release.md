@@ -69,7 +69,7 @@
 **NOTE**: wxWidgets 3.3.1 is required now
 
 - New graph type: Scale Chart
-- New graph type: Inflesz Chart
+- New graph type: INFLESZ Scale
 - Added WebP image support
 - DPI resolution for saving images is now customizable
 - Added support for adding PNG description when exporting images

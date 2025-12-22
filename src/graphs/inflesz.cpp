@@ -8,11 +8,11 @@
 
 #include "inflesz.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::ScaleChart)
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszScale, Wisteria::Graphs::ScaleChart)
 
     namespace Wisteria::Graphs
     {
-    InfleszChart::InfleszChart(
+    InfleszScale::InfleszScale(
         Wisteria::Canvas * canvas,
         const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
         const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/,
