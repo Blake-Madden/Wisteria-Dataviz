@@ -209,14 +209,14 @@ namespace Wisteria::Graphs
             LikertThreePointSurveyQuestion(wxString question, const size_t negativeCount,
                                            const size_t neutralCount, const size_t positiveCount,
                                            const size_t naCount = 0)
-                : m_question(std::move(question))
+                : m_question(std::move(question)),
+                  m_responses(negativeCount + positiveCount + neutralCount + naCount),
+                  m_negativeRate(round(safe_divide<double>(negativeCount, m_responses) * 100)),
+                  m_neutralRate(round(safe_divide<double>(neutralCount, m_responses) * 100)),
+                  m_positiveRate(round(safe_divide<double>(positiveCount, m_responses) * 100)),
+                  // those who left the question blank
+                  m_naRate(round(safe_divide<double>(naCount, m_responses) * 100))
                 {
-                m_responses = negativeCount + positiveCount + neutralCount + naCount;
-                m_negativeRate = round(safe_divide<double>(negativeCount, m_responses) * 100);
-                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses) * 100);
-                m_positiveRate = round(safe_divide<double>(positiveCount, m_responses) * 100);
-                // those who left the question blank
-                m_naRate = round(safe_divide<double>(naCount, m_responses) * 100);
                 }
 
             /// @private
@@ -297,17 +297,17 @@ namespace Wisteria::Graphs
                                           const size_t negative2Count, const size_t neutralCount,
                                           const size_t positive1Count, const size_t positive2Count,
                                           const size_t naCount = 0)
-                : m_question(std::move(question))
+                : m_question(std::move(question)),
+                  m_responses(negative1Count + negative2Count + positive1Count + positive2Count +
+                              neutralCount + naCount),
+                  m_negative1Rate(round(safe_divide<double>(negative1Count, m_responses) * 100)),
+                  m_negative2Rate(round(safe_divide<double>(negative2Count, m_responses) * 100)),
+                  m_neutralRate(round(safe_divide<double>(neutralCount, m_responses) * 100)),
+                  m_positive1Rate(round(safe_divide<double>(positive1Count, m_responses) * 100)),
+                  m_positive2Rate(round(safe_divide<double>(positive2Count, m_responses) * 100)),
+                  // those who left the question blank
+                  m_naRate(round(safe_divide<double>(naCount, m_responses) * 100))
                 {
-                m_responses = negative1Count + negative2Count + positive1Count + positive2Count +
-                              neutralCount + naCount;
-                m_negative1Rate = round(safe_divide<double>(negative1Count, m_responses) * 100);
-                m_negative2Rate = round(safe_divide<double>(negative2Count, m_responses) * 100);
-                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses) * 100);
-                m_positive1Rate = round(safe_divide<double>(positive1Count, m_responses) * 100);
-                m_positive2Rate = round(safe_divide<double>(positive2Count, m_responses) * 100);
-                // those who left the question blank
-                m_naRate = round(safe_divide<double>(naCount, m_responses) * 100);
                 }
 
             /// @private
@@ -323,10 +323,10 @@ namespace Wisteria::Graphs
             size_t m_responses{ 0 };
             double m_negative1Rate{ 0 };
             double m_negative2Rate{ 0 };
+            double m_naRate{ 0 };
             double m_positive1Rate{ 0 };
             double m_positive2Rate{ 0 };
             double m_neutralRate{ 0 };
-            double m_naRate{ 0 };
             };
 
         /** @brief A five-point (e.g., strongly disagree, disagree, neutral, agree, strongly agree)
@@ -391,19 +391,19 @@ namespace Wisteria::Graphs
                                            const size_t neutralCount, const size_t positive1Count,
                                            const size_t positive2Count, const size_t positive3Count,
                                            const size_t naCount = 0)
-                : m_question(std::move(question))
+                : m_question(std::move(question)),
+                  m_responses(negative1Count + negative2Count + negative3Count + positive1Count +
+                              positive2Count + positive3Count + neutralCount + naCount),
+                  m_negative1Rate(round(safe_divide<double>(negative1Count, m_responses) * 100)),
+                  m_negative2Rate(round(safe_divide<double>(negative2Count, m_responses) * 100)),
+                  m_negative3Rate(round(safe_divide<double>(negative3Count, m_responses) * 100)),
+                  m_neutralRate(round(safe_divide<double>(neutralCount, m_responses) * 100)),
+                  m_positive1Rate(round(safe_divide<double>(positive1Count, m_responses) * 100)),
+                  m_positive2Rate(round(safe_divide<double>(positive2Count, m_responses) * 100)),
+                  m_positive3Rate(round(safe_divide<double>(positive3Count, m_responses) * 100)),
+                  // those who left the question blank
+                  m_naRate(round(safe_divide<double>(naCount, m_responses) * 100))
                 {
-                m_responses = negative1Count + negative2Count + negative3Count + positive1Count +
-                              positive2Count + positive3Count + neutralCount + naCount;
-                m_negative1Rate = round(safe_divide<double>(negative1Count, m_responses) * 100);
-                m_negative2Rate = round(safe_divide<double>(negative2Count, m_responses) * 100);
-                m_negative3Rate = round(safe_divide<double>(negative3Count, m_responses) * 100);
-                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses) * 100);
-                m_positive1Rate = round(safe_divide<double>(positive1Count, m_responses) * 100);
-                m_positive2Rate = round(safe_divide<double>(positive2Count, m_responses) * 100);
-                m_positive3Rate = round(safe_divide<double>(positive3Count, m_responses) * 100);
-                // those who left the question blank
-                m_naRate = round(safe_divide<double>(naCount, m_responses) * 100);
                 }
 
             /// @private
@@ -420,10 +420,10 @@ namespace Wisteria::Graphs
             double m_negative1Rate{ 0 };
             double m_negative2Rate{ 0 };
             double m_negative3Rate{ 0 };
+            double m_neutralRate{ 0 };
             double m_positive1Rate{ 0 };
             double m_positive2Rate{ 0 };
             double m_positive3Rate{ 0 };
-            double m_neutralRate{ 0 };
             double m_naRate{ 0 };
             };
 
@@ -657,6 +657,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         size_t GetLevelCount() const noexcept
             {
+            // NOLINTBEGIN(misc-redundant-expression)
             return (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
                     GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized) ?
                        2 :
@@ -677,6 +678,7 @@ namespace Wisteria::Graphs
                     GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized) ?
                        7 :
                        7;
+            // NOLINTEND(misc-redundant-expression)
             }
 
         /// @brief Gets whether the chart type is categorized

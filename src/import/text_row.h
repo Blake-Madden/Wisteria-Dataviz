@@ -172,7 +172,7 @@ namespace lily_of_the_valley
                 return nullptr;
                 }
             cell_trim trim;
-            cell_collapse_quotes<string_typeT> cellQuoteCollapse;
+            const cell_collapse_quotes<string_typeT> cellQuoteCollapse;
             const wchar_t* previousPosition{ text };
             const wchar_t* currentPosition{ text };
             size_t currentColumnIndex{ 0 };

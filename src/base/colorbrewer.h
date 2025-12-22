@@ -92,6 +92,7 @@ namespace Wisteria::Colors
         /// constexpr long red = ColorBrewer::CSS_HEX_TO_LONG("#FF0000"); // OK
         /// constexpr long bad = ColorBrewer::CSS_HEX_TO_LONG("#123");    // Compile error
         /// @endcode
+        // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         template<CssChar charT, std::size_t N>
         constexpr static long CSS_HEX_TO_LONG(const charT (&css)[N])
             {
@@ -122,22 +123,24 @@ namespace Wisteria::Colors
                 return -1;
             };
 
-            int r1 = hexDigit(css[1]), r2 = hexDigit(css[2]);
-            int g1 = hexDigit(css[3]), g2 = hexDigit(css[4]);
-            int b1 = hexDigit(css[5]), b2 = hexDigit(css[6]);
+            const int r1 = hexDigit(css[1]), r2 = hexDigit(css[2]);
+            const int g1 = hexDigit(css[3]), g2 = hexDigit(css[4]);
+            const int b1 = hexDigit(css[5]), b2 = hexDigit(css[6]);
 
             if (r1 < 0 || r2 < 0 || g1 < 0 || g2 < 0 || b1 < 0 || b2 < 0)
                 {
                 return -1;
                 }
 
-            int r = r1 * 16 + r2;
-            int g = g1 * 16 + g2;
-            int b = b1 * 16 + b2;
+            const int r = r1 * 16 + r2;
+            const int g = g1 * 16 + g2;
+            const int b = b1 * 16 + b2;
 
             return (static_cast<long>(b) << 16) | (static_cast<long>(g) << 8) |
                    static_cast<long>(r);
             }
+
+        // NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
         /** @brief Creates a color from a Colors::Color value.
             @returns A color from a list of known colors.
@@ -270,7 +273,7 @@ namespace Wisteria::Colors
         /// @param color The base color to contrast other colors against.
         explicit ColorContrast(wxColour color) : m_baseColor(std::move(color))
             {
-            assert(m_baseColor.IsOk() && L"Invalid base color passed to ColorContrast.");
+            wxASSERT_MSG(m_baseColor.IsOk(), L"Invalid base color passed to ColorContrast.");
             }
 
         /// @returns A variation of @c color that is adjusted to contrast against the base color
@@ -285,7 +288,7 @@ namespace Wisteria::Colors
         [[nodiscard]]
         static wxColour ChangeOpacity(const wxColour& color, const uint8_t opacity)
             {
-            assert(color.IsOk() && L"Invalid color passed to ChangeOpacity().");
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to ChangeOpacity().");
             return (color.IsOk() ? wxColor(color.Red(), color.Green(), color.Blue(), opacity) :
                                    color);
             }
@@ -301,7 +304,7 @@ namespace Wisteria::Colors
         [[nodiscard]]
         static bool IsDark(const wxColour& color)
             {
-            assert(color.IsOk() && L"Invalid color passed to IsDark().");
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark().");
             return (color.IsOk() && color.Alpha() > 32 &&
                     color.GetLuminance() < math_constants::half);
             }
@@ -323,7 +326,7 @@ namespace Wisteria::Colors
         [[nodiscard]]
         static wxColour Shade(wxColour color, double minimumLuminance = math_constants::half)
             {
-            assert(color.IsOk() && L"Invalid color passed to Shade().");
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Shade().");
             minimumLuminance =
                 std::clamp(minimumLuminance, math_constants::empty, math_constants::full);
             int darkenValue{ 100 };
@@ -342,7 +345,7 @@ namespace Wisteria::Colors
         static wxColour Tint(wxColour color,
                              double maximumLuminance = math_constants::three_quarters)
             {
-            assert(color.IsOk() && L"Invalid color passed to Shade().");
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Shade().");
             maximumLuminance =
                 std::clamp(maximumLuminance, math_constants::empty, math_constants::half);
             int lightenValue{ 100 };
@@ -393,7 +396,8 @@ namespace Wisteria::Colors
         static bool AreColorsClose(const wxColour& color1, const wxColour& color2,
                                    const double delta = math_constants::tenth)
             {
-            assert(color1.IsOk() && color2.IsOk() && L"Invalid color passed to AreColorsClose().");
+            wxASSERT_MSG(color1.IsOk() && color2.IsOk(),
+                         L"Invalid color passed to AreColorsClose().");
             return (color1.IsOk() && color2.IsOk() &&
                     (std::abs(color1.GetLuminance() - color2.GetLuminance())) <=
                         std::clamp(delta, math_constants::empty, math_constants::full));

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __XML_FORMAT_H__
-#define __XML_FORMAT_H__
+#ifndef XML_FORMAT_H
+#define XML_FORMAT_H
 
 #include "../import/html_encode.h"
 #include "../math/mathematics.h"
@@ -207,4 +207,4 @@ class XmlFormat
 
     /** @}*/
 
-#endif //__XML_FORMAT_H__
+#endif // XML_FORMAT_H

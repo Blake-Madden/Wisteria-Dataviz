@@ -136,18 +136,18 @@ This is an important distinction from other profiling systems.
 
 #ifdef ENABLE_PROFILING
     #define PROFILE() \
-        const __debug::__profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
+        const debug_profile::__profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
     #define PROFILE_WITH_INFO(info) \
-        const __debug::__profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
+        const debug_profile::__profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
     #define PROFILE_SECTION_START(section_name) \
-        { const __debug::__profiler __debug_profiled_section__(section_name)
+        { const debug_profile::__profiler __debug_profiled_section__(section_name)
     #define PROFILE_SECTION_WITH_INFO_START(section_name, info) \
-        { const __debug::__profiler __debug_profiled_function__info__(section_name, (info))
+        { const debug_profile::__profiler __debug_profiled_function__info__(section_name, (info))
     #define PROFILE_SECTION_END() }
     #define SET_PROFILER_REPORT_PATH(path) \
-                    __debug::__profile_reporter::set_output_path((path))
+                    debug_profile::debug_profile_reporter::set_output_path((path))
     #define DUMP_PROFILER_REPORT() \
-                    __debug::__profile_reporter::dump_results()
+                    debug_profile::debug_profile_reporter::dump_results()
 #else
     #define PROFILE() ((void)0)
     #define PROFILE_WITH_INFO(info) ((void)0)
@@ -161,7 +161,7 @@ This is an important distinction from other profiling systems.
 #ifdef ENABLE_PROFILING
 //-----------------------------------------------------------------------
 // profiler definition
-namespace __debug
+namespace debug_profile
     {
     //-------------------------------------
     class __profile_info
@@ -242,15 +242,15 @@ namespace __debug
         };
 
     //-------------------------------------
-    class __profile_reporter
+    class debug_profile_reporter
         {
       public:
-        __profile_reporter() noexcept {}
+        debug_profile_reporter() noexcept = default;
 
-        __profile_reporter(const __profile_reporter& that) = delete;
-        __profile_reporter& operator=(const __profile_reporter& that) = delete;
+        debug_profile_reporter(const debug_profile_reporter& that) = delete;
+        debug_profile_reporter& operator=(const debug_profile_reporter& that) = delete;
 
-        ~__profile_reporter() { dump_results(); }
+        ~debug_profile_reporter() { dump_results(); }
 
         static void set_output_path(const std::filesystem::path& path) { m_outputPath = path; }
 
@@ -259,7 +259,7 @@ namespace __debug
         static std::set<__profile_info> m_profiles;
         static std::vector<__profiler*> m_profilers;
         };
-    }
+    } // namespace debug_profile
 #endif
 
 #endif // DEBUG_PROFILE_H

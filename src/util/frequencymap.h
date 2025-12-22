@@ -400,21 +400,9 @@ class multi_value_aggregate_map
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
     [[nodiscard]]
-    std::pair<const_iterator, bool> insert(const value_type& value)
+    std::pair<const_iterator, bool> insert(value_type value)
         {
-        return m_table.try_emplace(value);
-        }
-
-    /** @brief Insert an already constructed item with its values and counts loaded.
-        @details This would normally be used if needing to update an item,
-            where you would have to copy, edit, delete, and then insert the copy back in.
-        @param value The value to insert.
-        @returns A (const) iterator and flag indicating whether the value was inserted
-            (will be @c false if value was already in the map).*/
-    [[nodiscard]]
-    std::pair<const_iterator, bool> insert(value_type&& value)
-        {
-        return m_table.try_emplace(value);
+        return m_table.try_emplace(std::move(value));
         }
 
     /// @returns The map of pairs and their respective frequency counts.
@@ -538,21 +526,9 @@ class multi_value_frequency_aggregate_map
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
     [[nodiscard]]
-    std::pair<const_iterator, bool> insert(const value_type& value)
+    std::pair<const_iterator, bool> insert(value_type value)
         {
-        return m_table.try_emplace(value);
-        }
-
-    /** @brief Insert an already constructed item with its values and counts loaded.
-        @details This would normally be used if needing to update an item,
-            where you would have to copy, edit, delete, and then insert the copy back in.
-        @param value The value to insert.
-        @returns A (const) iterator and flag indicating whether the value was inserted
-            (will be @c false if value was already in the map).*/
-    [[nodiscard]]
-    std::pair<const_iterator, bool> insert(value_type&& value)
-        {
-        return m_table.try_emplace(value);
+        return m_table.try_emplace(std::move(value));
         }
 
     /// @returns The map of pairs and their respective frequency counts.
@@ -609,34 +585,7 @@ class multi_value_frequency_double_aggregate_map
             If a key is already in the map, then that key's count is incremented.\n
             If the second value isn't in the key's current values,
             then that value is added to the list of values connected to that key.*/
-    const_iterator insert(const T1& value1, const T2& value2, const double aggregateValue1 = 1,
-                          const double aggregateValue2 = 1)
-        {
-        auto [index_iter, inserted] = m_table.try_emplace(
-            value1, values_and_aggregate_pair_type(values_set({ value2, aggregateValue2 }),
-                                                   aggregateValue1));
-        // if it was already there, then just update it
-        if (!inserted)
-            {
-            index_iter->second.first.insert(value2, aggregateValue2);
-            index_iter->second.second += aggregateValue1;
-            }
-        return index_iter;
-        }
-
-    /** @brief Inserts a pair of items into the map.
-        @param value1 The first value of the pair.
-        @param value2 The second value of the pair.
-        @param aggregateValue1 The amount to increase the aggregated value for the key.\n
-            Would normally be @c 1.
-        @param aggregateValue2 The amount to increase the aggregated value for the subitem.\n
-            Would normally be @c 1.
-        @returns An iterator to the inserted or updated item.
-        @note The first value is what makes the item unique.\n
-            If a key is already in the map, then that key's count is incremented.\n
-            If the second value isn't in the key's current values,
-            then that value is added to the list of values connected to that key.*/
-    const_iterator insert(T1&& value1, T2&& value2, const double aggregateValue1 = 1,
+    const_iterator insert(T1 value1, T2 value2, const double aggregateValue1 = 1,
                           const double aggregateValue2 = 1)
         {
         auto [index_iter, inserted] = m_table.try_emplace(
@@ -658,21 +607,9 @@ class multi_value_frequency_double_aggregate_map
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
     [[nodiscard]]
-    std::pair<const_iterator, bool> insert(const value_type& value)
+    std::pair<const_iterator, bool> insert(value_type value)
         {
-        return m_table.try_emplace(value);
-        }
-
-    /** @brief Insert an already constructed item with its values and counts loaded.
-        @details This would normally be used if needing to update an item,
-            where you would have to copy, edit, delete, and then insert the copy back in.
-        @param value The value to insert.
-        @returns A (const) iterator and flag indicating whether the value was inserted
-            (will be @c false if value was already in the map).*/
-    [[nodiscard]]
-    std::pair<const_iterator, bool> insert(value_type&& value)
-        {
-        return m_table.try_emplace(value);
+        return m_table.try_emplace(std::move(value));
         }
 
     /// @returns The map of pairs and their respective frequency counts.

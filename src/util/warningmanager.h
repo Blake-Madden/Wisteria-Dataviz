@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WARNING_MANAGER_H__
-#define __WARNING_MANAGER_H__
+#ifndef WARNING_MANAGER_H
+#define WARNING_MANAGER_H
 
 #include <algorithm>
 #include <vector>
@@ -238,4 +238,4 @@ class WarningManager
 
     /** @}*/
 
-#endif //__WARNING_MANAGER_H__
+#endif // WARNING_MANAGER_H

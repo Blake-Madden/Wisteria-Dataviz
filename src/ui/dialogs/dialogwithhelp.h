@@ -86,14 +86,15 @@ namespace Wisteria::UI
             @return A wxBitmap suitable for use in @c wxStaticBitmap.
                     Returns @c wxNullBitmap if size is invalid.
         */
+        [[nodiscard]]
         wxBitmap FixStaticBitmapImage(const wxBitmapBundle& bundle, wxSize size) const
             {
             wxASSERT_MSG(size.GetWidth() > 0 && size.GetHeight() > 0,
-                         "FixStaticBitmapImage requires positive, fully-specified size!");
+                         L"FixStaticBitmapImage requires positive, fully-specified size!");
 
             if (size.GetWidth() <= 0 || size.GetHeight() <= 0)
                 {
-                wxLogError("FixStaticBitmapImage called with invalid size: %dx%d", size.GetWidth(),
+                wxLogError(L"FixStaticBitmapImage called with invalid size: %dx%d", size.GetWidth(),
                            size.GetHeight());
                 return wxNullBitmap;
                 }

@@ -705,7 +705,7 @@ namespace lily_of_the_valley
                             }
                         propertyValue.assign(wideBuff.data(), wideBuff.data() + cvtSize - 1);
 #else
-                        size_t cvtSize = std::mbstowcs(
+                        const size_t cvtSize = std::mbstowcs(
                             wideBuff.data(), propBuffer.data() + property.first + 8, strByteCount);
                         if (cvtSize == static_cast<size_t>(-1))
                             {

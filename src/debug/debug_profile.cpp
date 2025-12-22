@@ -12,11 +12,11 @@
 
 #ifdef ENABLE_PROFILING
 
-namespace __debug
+namespace debug_profile
     {
-    std::filesystem::path __profile_reporter::m_outputPath = "profile.csv";
-    std::set<__profile_info> __profile_reporter::m_profiles;
-    std::vector<__profiler*> __profile_reporter::m_profilers;
+    std::filesystem::path debug_profile_reporter::m_outputPath = "profile.csv";
+    std::set<__profile_info> debug_profile_reporter::m_profiles;
+    std::vector<__profiler*> debug_profile_reporter::m_profilers;
 
     void __profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time,
                                            const char* extra_info)
@@ -55,37 +55,37 @@ namespace __debug
         m_endtime = std::chrono::high_resolution_clock::now();
         const auto totalTime = (m_endtime - m_starttime) - m_total_pause_duration;
 
-        const auto [iterator, inserted] = __debug::__profile_reporter::m_profiles.emplace(
+        const auto [iterator, inserted] = debug_profile::debug_profile_reporter::m_profiles.emplace(
             m_block_name.c_str(), totalTime, m_extra_info.c_str());
         // if it was already in the table, then add the current duration time to it
         if (!inserted)
             {
-            auto node = __debug::__profile_reporter::m_profiles.extract(iterator);
+            auto node = debug_profile::debug_profile_reporter::m_profiles.extract(iterator);
             node.value().add_duration_time(totalTime, m_extra_info.c_str());
-            __debug::__profile_reporter::m_profiles.insert(std::move(node));
+            debug_profile::debug_profile_reporter::m_profiles.insert(std::move(node));
             }
         pop_profiler();
         }
 
     void __profiler::push_profiler(__profiler* profiler)
         {
-        if (!__debug::__profile_reporter::m_profilers.empty())
+        if (!debug_profile::debug_profile_reporter::m_profilers.empty())
             {
-            ((__debug::__profile_reporter::m_profilers.back()))->pause();
+            ((debug_profile::debug_profile_reporter::m_profilers.back()))->pause();
             }
-        __debug::__profile_reporter::m_profilers.push_back(profiler);
+        debug_profile::debug_profile_reporter::m_profilers.push_back(profiler);
         }
 
     void __profiler::pop_profiler()
         {
-        __debug::__profile_reporter::m_profilers.pop_back();
-        if (!__debug::__profile_reporter::m_profilers.empty())
+        debug_profile::debug_profile_reporter::m_profilers.pop_back();
+        if (!debug_profile::debug_profile_reporter::m_profilers.empty())
             {
-            ((__debug::__profile_reporter::m_profilers.back()))->unpause();
+            ((debug_profile::debug_profile_reporter::m_profilers.back()))->unpause();
             }
         }
 
-    void __profile_reporter::dump_results()
+    void debug_profile_reporter::dump_results()
         {
         std::ofstream output;
         if (!m_outputPath.empty())
@@ -164,6 +164,6 @@ namespace __debug
                 }
             }
         }
-    } // namespace __debug
+    } // namespace debug_profile
 
 #endif

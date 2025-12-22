@@ -685,10 +685,7 @@ namespace Wisteria::Graphs
                 {
                 return GetImageScheme()->GetImage(0);
                 }
-            else
-                {
-                return m_emptyImage;
-                }
+            return m_emptyImage;
             }
 
         /// @returns The color used to outline images used for bars/boxes.

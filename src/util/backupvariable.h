@@ -25,7 +25,11 @@ class BackupVariable
     BackupVariable() = delete;
 
     /// @private
-    void operator=(const T& value) noexcept { m_value = value; }
+    BackupVariable& operator=(const T& value) noexcept
+        {
+        m_value = value;
+        return *this;
+        }
 
     /// @private
     [[nodiscard]]

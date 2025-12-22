@@ -547,7 +547,7 @@ namespace Wisteria::Colors
         /// @private
         COLOR_COUNT
         };
-    }
+    } // namespace Wisteria::Colors
 
 // clang-format on
 

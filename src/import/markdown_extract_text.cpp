@@ -395,7 +395,7 @@ size_t lily_of_the_valley::markdown_extract_text::parse_html_block(std::wstring_
         return std::wstring_view::npos;
         }
 
-    std::wstring_view searchView = input.substr(tag.length() + 1); // step over '<' + tag
+    const std::wstring_view searchView = input.substr(tag.length() + 1); // step over '<' + tag
 
     const wchar_t* endOfTag = string_util::find_matching_close_tag(searchView, tag, endTag);
 
@@ -415,7 +415,7 @@ size_t lily_of_the_valley::markdown_extract_text::parse_html_block(std::wstring_
         return std::wstring_view::npos;
         }
 
-    const size_t consumed = static_cast<size_t>(std::distance(input.data(), endOfTag));
+    const auto consumed = static_cast<size_t>(std::distance(input.data(), endOfTag));
 
     html_extract_text htmlExtract;
     htmlExtract(input.data(), consumed, false, false);
@@ -891,18 +891,15 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
                     TABLE.length() + 1 &&
                 std::wcsncmp(std::next(currentStart), TABLE.data(), TABLE.length()) == 0)
                 {
-                if (const size_t consumed = parse_html_block(
-                        std::wstring_view{ currentStart,
-                                           static_cast<size_t>(currentEndSentinel - currentStart) },
-                        TABLE, TABLE_END);
-                    consumed == std::wstring_view::npos)
+                const size_t consumed = parse_html_block(
+                    std::wstring_view{ currentStart,
+                                       static_cast<size_t>(currentEndSentinel - currentStart) },
+                    TABLE, TABLE_END);
+                if (consumed == std::wstring_view::npos)
                     {
                     break;
                     }
-                else
-                    {
-                    std::advance(currentStart, consumed);
-                    }
+                std::advance(currentStart, consumed);
                 }
             else if (!isEscaping &&
                      static_cast<size_t>(std::distance(currentStart, currentEndSentinel)) >=
@@ -910,18 +907,15 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
                      std::wcsncmp(std::next(currentStart), UNORDERED_LIST.data(),
                                   UNORDERED_LIST.length()) == 0)
                 {
-                if (const size_t consumed = parse_html_block(
-                        std::wstring_view{ currentStart,
-                                           static_cast<size_t>(currentEndSentinel - currentStart) },
-                        UNORDERED_LIST, UNORDERED_LIST_END);
-                    consumed == std::wstring_view::npos)
+                const size_t consumed = parse_html_block(
+                    std::wstring_view{ currentStart,
+                                       static_cast<size_t>(currentEndSentinel - currentStart) },
+                    UNORDERED_LIST, UNORDERED_LIST_END);
+                if (consumed == std::wstring_view::npos)
                     {
                     break;
                     }
-                else
-                    {
-                    std::advance(currentStart, consumed);
-                    }
+                std::advance(currentStart, consumed);
                 }
             else if (!isEscaping &&
                      static_cast<size_t>(std::distance(currentStart, currentEndSentinel)) >=
@@ -929,36 +923,30 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
                      std::wcsncmp(std::next(currentStart), ORDERED_LIST.data(),
                                   ORDERED_LIST.length()) == 0)
                 {
-                if (const size_t consumed = parse_html_block(
-                        std::wstring_view{ currentStart,
-                                           static_cast<size_t>(currentEndSentinel - currentStart) },
-                        ORDERED_LIST, ORDERED_LIST_END);
-                    consumed == std::wstring_view::npos)
+                const size_t consumed = parse_html_block(
+                    std::wstring_view{ currentStart,
+                                       static_cast<size_t>(currentEndSentinel - currentStart) },
+                    ORDERED_LIST, ORDERED_LIST_END);
+                if (consumed == std::wstring_view::npos)
                     {
                     break;
                     }
-                else
-                    {
-                    std::advance(currentStart, consumed);
-                    }
+                std::advance(currentStart, consumed);
                 }
             else if (!isEscaping &&
                      static_cast<size_t>(std::distance(currentStart, currentEndSentinel)) >=
                          SUP.length() + 1 &&
                      std::wcsncmp(std::next(currentStart), SUP.data(), SUP.length()) == 0)
                 {
-                if (const size_t consumed = parse_html_block(
-                        std::wstring_view{ currentStart,
-                                           static_cast<size_t>(currentEndSentinel - currentStart) },
-                        SUP, SUP_END);
-                    consumed == std::wstring_view::npos)
+                const size_t consumed = parse_html_block(
+                    std::wstring_view{ currentStart,
+                                       static_cast<size_t>(currentEndSentinel - currentStart) },
+                    SUP, SUP_END);
+                if (consumed == std::wstring_view::npos)
                     {
                     break;
                     }
-                else
-                    {
-                    std::advance(currentStart, consumed);
-                    }
+                std::advance(currentStart, consumed);
                 }
             else if (!isEscaping && std::next(currentStart) < currentEndSentinel &&
                      (*std::next(currentStart) == L'/' || *std::next(currentStart) == L'p' ||

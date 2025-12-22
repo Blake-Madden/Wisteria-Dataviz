@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WX_CLIPBOARD_RTF_H__
-#define __WX_CLIPBOARD_RTF_H__
+#ifndef WX_CLIPBOARD_RTF_H
+#define WX_CLIPBOARD_RTF_H
 
 #include <cstring>
 #include <memory>
@@ -120,4 +120,4 @@ class wxRtfDataObject : public wxDataObjectSimple
 
     /** @}*/
 
-#endif //__WX_CLIPBOARD_RTF_H__
+#endif // WX_CLIPBOARD_RTF_H

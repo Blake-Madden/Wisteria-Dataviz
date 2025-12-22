@@ -87,7 +87,7 @@ namespace Wisteria::Colors
     enum class Color
         {\n[strrep(' ',8)]",
   str_flatten(colorData$Enum, "\n[strrep(' ',8)]"),
-  "\n[strrep(' ',8)]/// @private\n[strrep(' ',8)]COLOR_COUNT\n[strrep(' ',8)]};\n[strrep(' ',4)]}
+  "\n[strrep(' ',8)]/// @private\n[strrep(' ',8)]COLOR_COUNT\n[strrep(' ',8)]};\n[strrep(' ',4)]} // namespace Wisteria::Colors
 
 // clang-format on
 

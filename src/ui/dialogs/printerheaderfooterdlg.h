@@ -78,21 +78,27 @@ namespace Wisteria::UI
         PrinterHeaderFooterDlg& operator=(const PrinterHeaderFooterDlg&) = delete;
 
         /// @returns The left header.
+        [[nodiscard]]
         const wxString& GetLeftPrinterHeader() const noexcept { return m_leftPrinterHeader; }
 
         /// @returns The center header.
+        [[nodiscard]]
         const wxString& GetCenterPrinterHeader() const noexcept { return m_centerPrinterHeader; }
 
         /// @returns The right header.
+        [[nodiscard]]
         const wxString& GetRightPrinterHeader() const noexcept { return m_rightPrinterHeader; }
 
         /// @returns The left footer.
+        [[nodiscard]]
         const wxString& GetLeftPrinterFooter() const noexcept { return m_leftPrinterFooter; }
 
         /// @returns The center footer.
+        [[nodiscard]]
         const wxString& GetCenterPrinterFooter() const noexcept { return m_centerPrinterFooter; }
 
         /// @returns The right footer.
+        [[nodiscard]]
         const wxString& GetRightPrinterFooter() const noexcept { return m_rightPrinterFooter; }
 
       private:

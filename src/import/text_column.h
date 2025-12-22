@@ -261,9 +261,9 @@ namespace lily_of_the_valley
         /// @param parser The parser to use to determine how to read a column.
         /// @param repeatCount The number of times this column type should be read consecutively.
         ///     Set to `std::nullopt` to repeat the column until the end of line is reached.
-        explicit text_column(const Tparser& parser,
+        explicit text_column(Tparser parser,
                              std::optional<size_t> repeatCount = std::nullopt) noexcept
-            : m_parser(parser), m_repeat_count(repeatCount)
+            : m_parser(std::move(parser)), m_repeat_count(repeatCount)
             {
             }
 

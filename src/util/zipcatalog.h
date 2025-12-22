@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WXZIPHELPER_H__
-#define __WXZIPHELPER_H__
+#ifndef WXZIPHELPER_H
+#define WXZIPHELPER_H
 
 #include "memorymappedfile.h"
 #include "textstream.h"
@@ -151,4 +151,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WXZIPHELPER_H__
+#endif // WXZIPHELPER_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXTREPLACE_H__
-#define __TEXTREPLACE_H__
+#ifndef WISTERIA_TEXTREPLACE_H
+#define WISTERIA_TEXTREPLACE_H
 
 #include <memory>
 #include <vector>
@@ -87,4 +87,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__TEXTREPLACE_H__
+#endif // WISTERIA_TEXTREPLACE_H

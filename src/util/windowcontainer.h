@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WINDOW_CONTAINER_H__
-#define __WINDOW_CONTAINER_H__
+#ifndef WINDOW_CONTAINER_H
+#define WINDOW_CONTAINER_H
 
 #include <vector>
 #include <wx/wx.h>
@@ -252,4 +252,4 @@ class WindowContainer
 
     /** @}*/
 
-#endif //__WINDOW_CONTAINER_H__
+#endif // WINDOW_CONTAINER_H

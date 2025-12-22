@@ -15,8 +15,8 @@
     @brief Utility classes.
 @{*/
 
-#ifndef __STRING_UTIL_H__
-#define __STRING_UTIL_H__
+#ifndef WISTERIA_STRING_UTIL_H
+#define WISTERIA_STRING_UTIL_H
 
 #include <array>
 #include <cassert>
@@ -97,7 +97,7 @@ namespace string_util
     [[nodiscard]]
     constexpr static bool is_numeric_8bit(const wchar_t ch) noexcept
         {
-        return (ch >= L'0' && ch <= L'9') ? true : false;
+        return ch >= L'0' && ch <= L'9';
         }
 
     /// @returns @c true if @c ch is a subscript number.
@@ -356,7 +356,7 @@ namespace string_util
     [[nodiscard]]
     inline double wcstod_thousands_separator(const wchar_t* buffer, wchar_t** endPtr)
         {
-        if (!buffer)
+        if (buffer == nullptr)
             {
             return 0;
             }
@@ -381,8 +381,8 @@ namespace string_util
             *(end + 1) != 0 && is_numeric_8bit(*(end + 1)))
             {
             const auto thousandsSep = *end;
-            auto realNumberStart = buffer;
-            auto realNumberEnd = buffer;
+            const auto* realNumberStart = buffer;
+            const auto* realNumberEnd = buffer;
             // scan past any numbers, +/-, and thousands & radix separators
             while (*realNumberEnd != 0 &&
                    (is_numeric_8bit(*realNumberEnd) || is_either(*realNumberEnd, L',', L'.') ||
@@ -407,7 +407,7 @@ namespace string_util
             value = std::wcstod(realNumberStr, nullptr);
             }
         // set the end to where we read, if caller asked for it
-        if (endPtr)
+        if (endPtr != nullptr)
             {
             *endPtr = end;
             }
@@ -431,9 +431,10 @@ namespace string_util
             {
             return 0;
             }
-        size_t i;
+        size_t i{ 0 };
         for (i = 0; i < maxlen && str[i]; ++i)
-            ;
+            {
+            }
         return i;
         }
 
@@ -576,11 +577,11 @@ namespace string_util
             {
             return 0;
             }
-        else if (!first && second)
+        if (!first && second)
             {
             return -1;
             }
-        else if (first && !second)
+        if (first && !second)
             {
             return 1;
             }
@@ -664,32 +665,30 @@ namespace string_util
                         }
                     /* the first string is done, but there is more to the second string
                        after the number, so first is smaller*/
-                    else if (*firstEnd == 0)
+                    if (*firstEnd == 0)
                         {
                         return -1;
                         }
                     /* the second string is done, but there is more to the first string
                        after the number, so first is bigger*/
-                    else if (*secondEnd == 0)
+                    if (*secondEnd == 0)
                         {
                         return 1;
                         }
                     // there is more to both of them, so move the counter and move on
-                    else
+
+                    // if wcstod_thousands_separator() didn't move the pointers,
+                    // then we are stuck, so return that they are equal
+                    if (static_cast<decltype(first_string_index)>(firstEnd - first_string) ==
+                            first_string_index &&
+                        static_cast<decltype(second_string_index)>(secondEnd - second_string) ==
+                            second_string_index)
                         {
-                        // if wcstod_thousands_separator() didn't move the pointers,
-                        // then we are stuck, so return that they are equal
-                        if (static_cast<decltype(first_string_index)>(firstEnd - first_string) ==
-                                first_string_index &&
-                            static_cast<decltype(second_string_index)>(secondEnd - second_string) ==
-                                second_string_index)
-                            {
-                            return 0;
-                            }
-                        first_string_index = (firstEnd - first_string);
-                        second_string_index = (secondEnd - second_string);
-                        continue;
+                        return 0;
                         }
+                    first_string_index = (firstEnd - first_string);
+                    second_string_index = (secondEnd - second_string);
+                    continue;
                     }
                 }
 
@@ -709,7 +708,7 @@ namespace string_util
                 {
                 return -1;
                 }
-            else if (ch1 > ch2)
+            if (ch1 > ch2)
                 {
                 return 1;
                 }
@@ -939,20 +938,20 @@ namespace string_util
         int64_t numberOfCharacters) noexcept
         {
         assert(openSymbol != closeSymbol);
-        if (!stringToSearch || openSymbol == closeSymbol)
+        if ((stringToSearch == nullptr) || openSymbol == closeSymbol)
             {
             return nullptr;
             }
         const wchar_t* const originalStart = stringToSearch;
         long open_stack = 0;
-        while (*stringToSearch && numberOfCharacters > 0)
+        while ((*stringToSearch != 0) && numberOfCharacters > 0)
             {
             if (stringToSearch[0] == L'\n' || stringToSearch[0] == L'\r')
                 {
                 return nullptr;
                 }
-            else if (stringToSearch[0] == openSymbol &&
-                     ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
+            if (stringToSearch[0] == openSymbol &&
+                ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
                 {
                 ++open_stack;
                 }
@@ -1059,7 +1058,7 @@ namespace string_util
                 return nullptr;
                 }
             // if on an escape character, then step over that
-            else if (*stringToSearch == L'\\')
+            if (*stringToSearch == L'\\')
                 {
                 ++stringToSearch;
                 --numberOfCharacters;
@@ -1174,7 +1173,7 @@ namespace string_util
                 return T::npos;
                 }
             // if at start of haystack
-            else if (start == 0)
+            if (start == 0)
                 {
                 if (needle.length() == haystack.length())
                     {
@@ -1185,11 +1184,8 @@ namespace string_util
                     {
                     return start;
                     }
-                else
-                    {
-                    ++start;
-                    continue;
-                    }
+                ++start;
+                continue;
                 }
             // at end of haystack
             else if ((start + needle.length()) == haystack.length())
@@ -1202,11 +1198,8 @@ namespace string_util
                     {
                     return start;
                     }
-                else
-                    {
-                    ++start;
-                    continue;
-                    }
+                ++start;
+                continue;
                 }
             // inside haystack
             else
@@ -1221,11 +1214,8 @@ namespace string_util
                     {
                     return start;
                     }
-                else
-                    {
-                    ++start;
-                    continue;
-                    }
+                ++start;
+                continue;
                 }
             }
         return T::npos;
@@ -1312,7 +1302,7 @@ namespace string_util
                 {
                 return false;
                 }
-            else if (std::isspace(static_cast<unsigned char>(buffer[i])))
+            if (std::isspace(static_cast<unsigned char>(buffer[i])) != 0)
                 {
                 ++spaceCount;
                 }
@@ -1378,8 +1368,9 @@ namespace string_util
                 }
             }
         auto right = str.cend() - 1;
-        for (; right > left && std::iswspace(*right); --right)
-            ;
+        for (; right > left && std::iswspace(*right) != 0; --right)
+            {
+            }
         return str.substr(std::distance(str.cbegin(), left), std::distance(left, right) + 1);
         }
 
@@ -1443,18 +1434,21 @@ namespace string_util
     class string_tokenize
         {
       public:
+        string_tokenize() = delete;
+        string_tokenize(const string_tokenize&) = delete;
+
         /// @brief Constructor which takes the string to parse and the delimiters to use.
         /// @param val The string to parse.
         /// @param delims The set of delimiters to separate the string.
-        /// @param skipEmptyTokens @c true to skip empty tokens (i.e., ignoring consecutive
-        /// delimiters).
+        /// @param skipEmptyTokens @c true to skip empty tokens
+        ///     (i.e., ignoring consecutive delimiters).
         string_tokenize(const T& val, std::wstring delims, const bool skipEmptyTokens) noexcept
-            : m_value(val), m_delims(std::move(delims)), m_skip_empty_tokens(skipEmptyTokens)
+            : m_value(val), m_delims(std::move(delims)), m_skip_empty_tokens(skipEmptyTokens),
+              m_has_more_tokens(!val.empty())
             {
             m_start = m_value.c_str();
             m_next_delim =
                 string_util::strcspn_pointer(m_start, m_delims.c_str(), m_delims.length());
-            m_has_more_tokens = val.length();
             }
 
         /// @param val The string to tokenize.
@@ -1474,10 +1468,7 @@ namespace string_util
                             {
                             continue;
                             }
-                        else
-                            {
-                            ++tokenCount;
-                            }
+                        ++tokenCount;
                         }
                     else
                         {
@@ -1510,7 +1501,7 @@ namespace string_util
         [[nodiscard]]
         T get_next_token()
             {
-            if (m_next_delim)
+            if (m_next_delim != nullptr)
                 {
                 const wchar_t* current_start = m_start;
                 const wchar_t* current_next_delim = m_next_delim;
@@ -1522,13 +1513,10 @@ namespace string_util
                     {
                     return get_next_token();
                     }
-                else
-                    {
-                    return T(current_start, current_next_delim - current_start);
-                    }
+                return T(current_start, current_next_delim - current_start);
                 }
             // no more delims means that we are on the last token
-            else if (m_start)
+            else if (m_start != nullptr)
                 {
                 m_has_more_tokens = false;
                 const wchar_t* current_start = m_start;
@@ -1539,14 +1527,11 @@ namespace string_util
             else
                 {
                 m_has_more_tokens = false;
-                return T();
+                return T{};
                 }
             }
 
       private:
-        string_tokenize() = delete;
-        string_tokenize(const string_tokenize&) = delete;
-
         T m_value;
         const wchar_t* m_start{ nullptr };
         const wchar_t* m_next_delim{ nullptr };
@@ -1806,22 +1791,20 @@ namespace string_util
         if (nptr == nullptr)
             {
             *endptr = nullptr;
-            return 0.0f;
+            return 0.0;
             }
         constexpr wchar_t sepStr[3] = { 0x2D, 0x3A, 0 };
-        const Tchar_type* separator = string_util::strcspn_pointer<Tchar_type>(nptr, sepStr, 2);
+        const auto* separator = string_util::strcspn_pointer<Tchar_type>(nptr, sepStr, 2);
         // if there is no hyphen or there is one, but it is at the end, then just call strtod
         if (separator == nullptr || *(separator + 1) == 0)
             {
             return std::wcstod(nptr, endptr);
             }
-        else
-            {
-            const double d1 = std::wcstod(nptr, endptr);
-            std::advance(separator, 1);
-            const double d2 = std::wcstod(separator, endptr);
-            return (d1 + d2) / static_cast<double>(2);
-            }
+
+        const double d1 = std::wcstod(nptr, endptr);
+        std::advance(separator, 1);
+        const double d2 = std::wcstod(separator, endptr);
+        return (d1 + d2) / static_cast<double>(2);
         }
 
     /** @brief Converts a full-width number/English letter/various symbols
@@ -1854,4 +1837,4 @@ namespace string_util
 
 /** @}*/
 
-#endif //__STRING_UTIL_H__
+#endif // WISTERIA_STRING_UTIL_H

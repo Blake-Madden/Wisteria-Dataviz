@@ -292,7 +292,7 @@ namespace lily_of_the_valley
         /// @brief Sets the values to treat as missing data (e.g., "NULL," "NA," etc.).
         /// @param mdCodes The values to treat as missing data.
         void
-        set_missing_data_codes(const std::optional<std::vector<string_typeT>>& mdCodes) noexcept
+        set_missing_data_codes(const std::optional<std::vector<string_typeT>>& mdCodes)
             {
             m_mdVals = mdCodes;
             }

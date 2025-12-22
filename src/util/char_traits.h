@@ -15,8 +15,8 @@
     @brief Utility classes.
 @{*/
 
-#ifndef __INSENSITIVE_STRING_H__
-#define __INSENSITIVE_STRING_H__
+#ifndef INSENSITIVE_STRING_H
+#define INSENSITIVE_STRING_H
 
 #include <cassert>
 #include <cstdio>
@@ -171,4 +171,4 @@ namespace string_util
 
 /** @}*/
 
-#endif //__INSENSITIVE_STRING_H__
+#endif // INSENSITIVE_STRING_H

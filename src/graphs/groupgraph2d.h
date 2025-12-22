@@ -97,10 +97,7 @@ namespace Wisteria::Graphs
                     wxString::Format(_(L"%zu: code not found in categorical data."), identifier)
                         .ToUTF8());
                 }
-            else
-                {
-                return 0;
-                }
+            return 0;
             }
 
         /// @private

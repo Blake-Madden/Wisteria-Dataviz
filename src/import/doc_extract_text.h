@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __DOC_EXTRACTOR_H__
-#define __DOC_EXTRACTOR_H__
+#ifndef DOC_EXTRACTOR_H
+#define DOC_EXTRACTOR_H
 
 #include "extract_text.h"
 #include <array>
@@ -213,11 +213,7 @@ namespace lily_of_the_valley
             cfb_iostream() = delete;
 
             /// @private
-            cfb_iostream(const cfb_iostream& that) noexcept
-                : m_start(that.m_start), m_current_position(that.m_current_position),
-                  m_buffer_size(that.m_buffer_size), m_eof(that.m_eof)
-                {
-                }
+            cfb_iostream(const cfb_iostream&) noexcept = default;
 
             /// @private
             cfb_iostream& operator=(const cfb_iostream&) = delete;
@@ -686,4 +682,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__DOC_EXTRACTOR_H__
+#endif // DOC_EXTRACTOR_H

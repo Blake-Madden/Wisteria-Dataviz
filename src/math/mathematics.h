@@ -29,7 +29,7 @@
 namespace math_constants
     {
     /// @brief The golden ratio.
-    constexpr double golden_ratio = 1.618;
+    constexpr double golden_ratio = std::numbers::phi;
 
     /// @brief Empty (i.e., 0%).
     constexpr double empty = 0.0;
@@ -142,22 +142,15 @@ class comparable_first_pair
     /** @brief Constructor that takes to separate values.
         @param t1 The first of the pair.
         @param t2 The second of the pair.*/
-    comparable_first_pair(const T1& t1, const T2& t2) noexcept : first(t1), second(t2) {}
+    comparable_first_pair(T1 t1, T2 t2) noexcept : first(std::move(t1)), second(std::move(t2)) {}
 
     /** @brief Constructor that assigns a standard pair to this one.
         @param that The standard pair to assign from.*/
-    comparable_first_pair(const comparable_first_pair<T1, T2>& that)
-        : first(that.first), second(that.second)
-        {
-        }
+    comparable_first_pair(const comparable_first_pair&) = default;
 
     /** @brief Assigns a pair to this one.
         @param that The standard pair to assign from.*/
-    void operator=(const comparable_first_pair<T1, T2>& that)
-        {
-        first = that.first;
-        second = that.second;
-        }
+    comparable_first_pair& operator=(const comparable_first_pair&) = default;
 
     /** @returns @c true if this is less than another pair.
         @param that The other pair to compare against.
@@ -450,9 +443,9 @@ class floor_value
 
 /// @returns Whether a number is even.
 /// @param value The number to review.
-template<typename T>
+template<std::integral T>
 [[nodiscard]]
-inline constexpr bool is_even(const T value) noexcept
+inline constexpr bool is_even(T value) noexcept
     {
     return (value % 2) == 0;
     }
@@ -461,31 +454,27 @@ inline constexpr bool is_even(const T value) noexcept
 ///     types that need to be "floored" first.
 /// @param value The number to review.
 /// @returns Whether @c value is even.
+template<std::floating_point T>
 [[nodiscard]]
-inline bool is_even(const double value) noexcept
+inline bool is_even(T value)
     {
-    return (static_cast<long>(std::floor(std::abs(value))) % 2) == 0;
-    }
-
-/// @brief Specialized version of is_even() for floating point value types
-///     that need to be "floored" first.
-/// @param value The number to review.
-/// @returns Whether @c value is even.
-[[nodiscard]]
-inline bool is_even(const float value) noexcept
-    {
-    return (static_cast<long>(std::floor(std::abs(value))) % 2) == 0;
+    if (!std::isfinite(value))
+        {
+        return false;
+        }
+    return (static_cast<std::int64_t>(std::floor(std::abs(value))) % 2) == 0;
     }
 
 /// @brief Determines if a number is even.
 template<typename T>
+    requires requires(T v) { is_even(v); }
 class even
     {
   public:
     /// @returns Whether @c val is even.
     /// @param val The value to analyze.
     [[nodiscard]]
-    inline bool operator()(const T& val) const noexcept
+    bool operator()(T val) const
         {
         return is_even(val);
         }
@@ -610,16 +599,8 @@ namespace geometry
             p1 = p2;
             }
 
-        // EVEN
-        if (crossPointsCount % 2 == 0)
-            {
-            return false;
-            }
-        // ODD
-        else
-            {
-            return true;
-            }
+        // EVEN or ODD
+        return !is_even(crossPointsCount);
         }
 
     /** @returns The widest area of the polygon.
@@ -697,9 +678,9 @@ namespace geometry
         @param radius The radius of the circle.
         @returns The width of the largest rectangle that can fit inside the circle.*/
     [[nodiscard]]
-    inline double radius_to_inner_rect_width(const double radius) noexcept
+    inline constexpr double radius_to_inner_rect_width(const double radius) noexcept
         {
-        return radius * std::sqrt(2);
+        return radius * std::numbers::sqrt2;
         }
 
     /** @brief Converts circumference to radius.
@@ -1038,19 +1019,19 @@ namespace geometry
             return size;
             }
         // original height is larger, so scale down by height
-        else if (size.first <= boundingSize.first && size.second > boundingSize.second)
+        if (size.first <= boundingSize.first && size.second > boundingSize.second)
             {
             return std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
             }
         // original width is larger, so scale down by width
-        else if (size.first > boundingSize.first && size.second <= boundingSize.second)
+        if (size.first > boundingSize.first && size.second <= boundingSize.second)
             {
             return std::make_pair(boundingSize.first, rescaled_height(size, boundingSize.first));
             }
         // original width and height are both larger,
         // but width is more proportionally larger, so scale down by that
-        else if (size.first > boundingSize.first && size.second > boundingSize.second &&
-                 (size.first - boundingSize.first) > (size.second - boundingSize.second))
+        if (size.first > boundingSize.first && size.second > boundingSize.second &&
+            (size.first - boundingSize.first) > (size.second - boundingSize.second))
             {
             // shrink the width to the bounding box and scale down
             //  the height maintaining the aspect ratio
@@ -1061,12 +1042,9 @@ namespace geometry
             }
         // otherwise, original width and height are both larger,
         // but height is more proportionally larger, so scale down by that
-        else
-            {
-            const auto adjustedSize =
-                std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
-            return downscaled_size(adjustedSize, boundingSize);
-            }
+        const auto adjustedSize =
+            std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
+        return downscaled_size(adjustedSize, boundingSize);
         }
 
     /** @brief Takes a size (width x height) and fits it into a larger bounding box.
@@ -1096,19 +1074,19 @@ namespace geometry
             return size;
             }
         // original height is smaller, so scale up by height
-        else if (size.first >= boundingSize.first && size.second < boundingSize.second)
+        if (size.first >= boundingSize.first && size.second < boundingSize.second)
             {
             return std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
             }
         // original width is smaller, so scale up by width
-        else if (size.first < boundingSize.first && size.second >= boundingSize.second)
+        if (size.first < boundingSize.first && size.second >= boundingSize.second)
             {
             return std::make_pair(boundingSize.first, rescaled_height(size, boundingSize.first));
             }
         // original width and height are both smaller,
         // but width is more proportionally smaller, so scale up by that
-        else if (size.first < boundingSize.first && size.second < boundingSize.second &&
-                 (size.first - boundingSize.first) < (size.second - boundingSize.second))
+        if (size.first < boundingSize.first && size.second < boundingSize.second &&
+            (size.first - boundingSize.first) < (size.second - boundingSize.second))
             {
             // grow the width to the bounding box and scale up the height maintaining the aspect
             // ratio
@@ -1119,12 +1097,9 @@ namespace geometry
             }
         // otherwise, original width and height are both smaller,
         // but height is more proportionally smaller, so scale up by that
-        else
-            {
-            const auto adjustedSize =
-                std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
-            return downscaled_size(adjustedSize, boundingSize);
-            }
+        const auto adjustedSize =
+            std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
+        return downscaled_size(adjustedSize, boundingSize);
         }
     } // namespace geometry
 

@@ -67,12 +67,14 @@ namespace Wisteria
         /// @param value The string to reformat.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
+        [[nodiscard]]
         virtual stringT GetFormattedValue(const stringT& value,
                                           const NumberFormatInfo& format) const = 0;
         /// @brief Formats a number into a string.
         /// @param value The number to format.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
+        [[nodiscard]]
         virtual stringT GetFormattedValue(double value, const NumberFormatInfo& format) const = 0;
         };
     } // namespace Wisteria
