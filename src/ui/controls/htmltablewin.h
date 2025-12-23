@@ -134,6 +134,7 @@ namespace Wisteria::UI
         /// @brief Saving the contents of the window to HTML.
         /// @param path The path to save to.
         /// @returns @c true upon success.
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
         bool Save(const wxFileName& path) const;
 
         /// @brief Copies all the HTML tables to the clipboard.

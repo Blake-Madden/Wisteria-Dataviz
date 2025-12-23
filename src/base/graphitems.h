@@ -1909,7 +1909,7 @@ namespace Wisteria
             ///     because DPI scaling is handled by the OS for those.
             ///     Instead, font sizes should only be scaled to the canvas's scaling.
             [[nodiscard]]
-            double ScaleToScreenAndCanvas(const double value) const noexcept
+            double ScaleToScreenAndCanvas(const double value) const
                 {
                 return value * GetScaling() * GetDPIScaleFactor();
                 }
@@ -1918,7 +1918,7 @@ namespace Wisteria
             /// @param sz The size to be scaled.
             /// @returns The scaled size.
             [[nodiscard]]
-            wxSize ScaleToScreenAndCanvas(const wxSize sz) const noexcept
+            wxSize ScaleToScreenAndCanvas(const wxSize sz) const
                 {
                 return sz * GetScaling() * GetDPIScaleFactor();
                 }
@@ -1928,7 +1928,7 @@ namespace Wisteria
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The downscaled value.
             [[nodiscard]]
-            double DownscaleFromScreenAndCanvas(const double value) const noexcept
+            double DownscaleFromScreenAndCanvas(const double value) const
                 {
                 return safe_divide(value, (GetScaling() * GetDPIScaleFactor()));
                 }

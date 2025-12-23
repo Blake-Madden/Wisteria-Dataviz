@@ -32,7 +32,7 @@ namespace lily_of_the_valley
             @note YAML sections are supported.
             @warning @c md_text must be the start of the Markdown document.*/
         [[nodiscard]]
-        static bool has_metadata_section(const std::wstring_view md_text)
+        static bool has_metadata_section(const std::wstring_view md_text) noexcept
             {
             return md_text.starts_with(L"---");
             }

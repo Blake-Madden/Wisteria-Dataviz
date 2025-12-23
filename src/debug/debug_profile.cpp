@@ -15,10 +15,10 @@
 namespace debug_profile
     {
     std::filesystem::path debug_profile_reporter::m_outputPath = "profile.csv";
-    std::set<__profile_info> debug_profile_reporter::m_profiles;
-    std::vector<__profiler*> debug_profile_reporter::m_profilers;
+    std::set<debug_profile_info> debug_profile_reporter::m_profiles;
+    std::vector<debug_profiler*> debug_profile_reporter::m_profilers;
 
-    void __profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time,
+    void debug_profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time,
                                            const char* extra_info)
         {
         ++m_called_count;
@@ -37,20 +37,20 @@ namespace debug_profile
         m_duration_times.push_back(duration_time);
         }
 
-    __profiler::__profiler(const char* name)
+    debug_profiler::debug_profiler(const char* name)
         : m_starttime(std::chrono::high_resolution_clock::now()), m_block_name(name)
         {
         push_profiler(this);
         }
 
-    __profiler::__profiler(const char* name, const char* extra_info)
+    debug_profiler::debug_profiler(const char* name, const char* extra_info)
         : m_starttime(std::chrono::high_resolution_clock::now()), m_block_name(name),
           m_extra_info(extra_info)
         {
         push_profiler(this);
         }
 
-    __profiler::~__profiler()
+    debug_profiler::~debug_profiler()
         {
         m_endtime = std::chrono::high_resolution_clock::now();
         const auto totalTime = (m_endtime - m_starttime) - m_total_pause_duration;
@@ -67,7 +67,7 @@ namespace debug_profile
         pop_profiler();
         }
 
-    void __profiler::push_profiler(__profiler* profiler)
+    void debug_profiler::push_profiler(debug_profiler* profiler)
         {
         if (!debug_profile::debug_profile_reporter::m_profilers.empty())
             {
@@ -76,7 +76,7 @@ namespace debug_profile
         debug_profile::debug_profile_reporter::m_profilers.push_back(profiler);
         }
 
-    void __profiler::pop_profiler()
+    void debug_profiler::pop_profiler()
         {
         debug_profile::debug_profile_reporter::m_profilers.pop_back();
         if (!debug_profile::debug_profile_reporter::m_profilers.empty())

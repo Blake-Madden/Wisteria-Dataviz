@@ -116,6 +116,7 @@ namespace Wisteria::UI
         ///     order), then `1` will return the variables in the grouping list.
         /// @param listIndex The index of the client-defined variable list.
         /// @returns A list of the variable names that the user has selected for a given list.
+        [[nodiscard]]
         std::vector<wxString> GetSelectedVariables(size_t listIndex) const;
 
       private:

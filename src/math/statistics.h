@@ -185,10 +185,7 @@ namespace statistics
             return (*(begin + lowerMidPoint) + *(begin + lowerMidPoint + 1)) /
                    static_cast<double>(2);
             }
-        else
-            {
-            return *(begin + lowerMidPoint + 1);
-            }
+        return *(begin + lowerMidPoint + 1);
         }
 
     /** @returns The median value from the specified range (assumes data is already sorted).
@@ -567,7 +564,7 @@ namespace statistics
         const long long n0_dot = n01 + n00;
         [[maybe_unused]]
         const long long n = n1_dot + n0_dot;
-        const double pc = safe_divide<double>((n11 * n00) - (n10 * n01),
+        const auto pc = safe_divide<double>((n11 * n00) - (n10 * n01),
                                               std::sqrt(n1_dot * n0_dot * n_dot_0 * n_dot_1));
         assert(is_within<double>(pc, -1, 1) &&
                "Error in phi coefficient calculation. Value should be -1 >= and <= 1.");

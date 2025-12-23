@@ -527,11 +527,11 @@ namespace string_util
             {
             return 0;
             }
-        else if (!first && second)
+        if (!first && second)
             {
             return -1;
             }
-        else if (first && !second)
+        if (first && !second)
             {
             return 1;
             }
@@ -612,11 +612,11 @@ namespace string_util
             {
             return 0;
             }
-        else if (!first_string && second_string)
+        if (!first_string && second_string)
             {
             return -1;
             }
-        else if (first_string && !second_string)
+        if (first_string && !second_string)
             {
             return 1;
             }
@@ -652,44 +652,43 @@ namespace string_util
                     {
                     return -1;
                     }
-                else if (firstDouble > secondDouble)
+                if (firstDouble > secondDouble)
                     {
                     return 1;
                     }
-                else // numbers are equal
-                    {
-                    // if this was the end of both strings then they are equal
-                    if (*firstEnd == 0 && *secondEnd == 0)
-                        {
-                        return 0;
-                        }
-                    /* the first string is done, but there is more to the second string
-                       after the number, so first is smaller*/
-                    if (*firstEnd == 0)
-                        {
-                        return -1;
-                        }
-                    /* the second string is done, but there is more to the first string
-                       after the number, so first is bigger*/
-                    if (*secondEnd == 0)
-                        {
-                        return 1;
-                        }
-                    // there is more to both of them, so move the counter and move on
+                // numbers are equal
 
-                    // if wcstod_thousands_separator() didn't move the pointers,
-                    // then we are stuck, so return that they are equal
-                    if (static_cast<decltype(first_string_index)>(firstEnd - first_string) ==
-                            first_string_index &&
-                        static_cast<decltype(second_string_index)>(secondEnd - second_string) ==
-                            second_string_index)
-                        {
-                        return 0;
-                        }
-                    first_string_index = (firstEnd - first_string);
-                    second_string_index = (secondEnd - second_string);
-                    continue;
+                // if this was the end of both strings then they are equal
+                if (*firstEnd == 0 && *secondEnd == 0)
+                    {
+                    return 0;
                     }
+                /* the first string is done, but there is more to the second string
+                   after the number, so first is smaller*/
+                if (*firstEnd == 0)
+                    {
+                    return -1;
+                    }
+                /* the second string is done, but there is more to the first string
+                   after the number, so first is bigger*/
+                if (*secondEnd == 0)
+                    {
+                    return 1;
+                    }
+                // there is more to both of them, so move the counter and move on
+
+                // if wcstod_thousands_separator() didn't move the pointers,
+                // then we are stuck, so return that they are equal
+                if (static_cast<decltype(first_string_index)>(firstEnd - first_string) ==
+                        first_string_index &&
+                    static_cast<decltype(second_string_index)>(secondEnd - second_string) ==
+                        second_string_index)
+                    {
+                    return 0;
+                    }
+                first_string_index = (firstEnd - first_string);
+                second_string_index = (secondEnd - second_string);
+                continue;
                 }
 
             // if we are at the end of the strings then they are the same
@@ -863,8 +862,8 @@ namespace string_util
                 ++stringToSearch;
                 continue;
                 }
-            else if (stringToSearch[0] == closeSymbol &&
-                     ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
+            if (stringToSearch[0] == closeSymbol &&
+                ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
                 {
                 if (open_stack == 0)
                     {
@@ -903,15 +902,15 @@ namespace string_util
                 {
                 return nullptr;
                 }
-            else if (stringToSearch[0] == openSymbol &&
-                     ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
+            if (stringToSearch[0] == openSymbol &&
+                ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
                 {
                 ++open_stack;
                 ++stringToSearch;
                 continue;
                 }
-            else if (stringToSearch[0] == closeSymbol &&
-                     ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
+            if (stringToSearch[0] == closeSymbol &&
+                ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
                 {
                 if (open_stack == 0)
                     {
@@ -1188,7 +1187,7 @@ namespace string_util
                 continue;
                 }
             // at end of haystack
-            else if ((start + needle.length()) == haystack.length())
+            if ((start + needle.length()) == haystack.length())
                 {
                 if (needle.length() == haystack.length())
                     {
@@ -1202,21 +1201,18 @@ namespace string_util
                 continue;
                 }
             // inside haystack
-            else
+            if (needle.length() == haystack.length())
                 {
-                if (needle.length() == haystack.length())
-                    {
-                    return start;
-                    }
-                if ((std::iswspace(haystack[start + needle.length()]) ||
-                     std::iswpunct(haystack[start + needle.length()])) &&
-                    (std::iswspace(haystack[start - 1]) || std::iswpunct(haystack[start - 1])))
-                    {
-                    return start;
-                    }
-                ++start;
-                continue;
+                return start;
                 }
+            if ((std::iswspace(haystack[start + needle.length()]) ||
+                 std::iswpunct(haystack[start + needle.length()])) &&
+                (std::iswspace(haystack[start - 1]) || std::iswpunct(haystack[start - 1])))
+                {
+                return start;
+                }
+            ++start;
+            continue;
             }
         return T::npos;
         }
@@ -1516,7 +1512,7 @@ namespace string_util
                 return T(current_start, current_next_delim - current_start);
                 }
             // no more delims means that we are on the last token
-            else if (m_start != nullptr)
+            if (m_start != nullptr)
                 {
                 m_has_more_tokens = false;
                 const wchar_t* current_start = m_start;
@@ -1524,11 +1520,8 @@ namespace string_util
                 return T(current_start);
                 }
             // if called when there are no more tokens, then return an empty string
-            else
-                {
-                m_has_more_tokens = false;
-                return T{};
-                }
+            m_has_more_tokens = false;
+            return T{};
             }
 
       private:

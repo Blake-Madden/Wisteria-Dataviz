@@ -136,13 +136,13 @@ This is an important distinction from other profiling systems.
 
 #ifdef ENABLE_PROFILING
     #define PROFILE() \
-        const debug_profile::__profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
+        const debug_profile::debug_profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
     #define PROFILE_WITH_INFO(info) \
-        const debug_profile::__profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
+        const debug_profile::debug_profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
     #define PROFILE_SECTION_START(section_name) \
-        { const debug_profile::__profiler __debug_profiled_section__(section_name)
+        { const debug_profile::debug_profiler __debug_profiled_section__(section_name)
     #define PROFILE_SECTION_WITH_INFO_START(section_name, info) \
-        { const debug_profile::__profiler __debug_profiled_function__info__(section_name, (info))
+        { const debug_profile::debug_profiler __debug_profiled_function__info__(section_name, (info))
     #define PROFILE_SECTION_END() }
     #define SET_PROFILER_REPORT_PATH(path) \
                     debug_profile::debug_profile_reporter::set_output_path((path))
@@ -164,17 +164,17 @@ This is an important distinction from other profiling systems.
 namespace debug_profile
     {
     //-------------------------------------
-    class __profile_info
+    class debug_profile_info
         {
       public:
-        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time)
+        debug_profile_info(const char* name, const std::chrono::nanoseconds& duration_time)
             : m_name(name), m_called_count(1), m_lowest_duration_time(duration_time),
               m_highest_duration_time(duration_time), m_total_duration_time(duration_time),
               m_average_duration_time(duration_time)
             {
             }
 
-        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time,
+        debug_profile_info(const char* name, const std::chrono::nanoseconds& duration_time,
                        const char* extra_info)
             : m_name(name), m_extra_info(extra_info), m_called_count(1),
               m_lowest_duration_time(duration_time), m_highest_duration_time(duration_time),
@@ -183,13 +183,13 @@ namespace debug_profile
             }
 
         [[nodiscard]]
-        inline bool operator<(const __profile_info& that) const noexcept
+        inline bool operator<(const debug_profile_info& that) const noexcept
             {
             return m_name < that.m_name;
             }
 
         [[nodiscard]]
-        inline bool operator==(const __profile_info& that) const noexcept
+        inline bool operator==(const debug_profile_info& that) const noexcept
             {
             return m_name == that.m_name;
             }
@@ -208,16 +208,16 @@ namespace debug_profile
         };
 
     //-------------------------------------
-    class __profiler
+    class debug_profiler
         {
       public:
-        explicit __profiler(const char* name);
-        __profiler(const char* name, const char* extra_info);
-        __profiler(const __profiler& that) = delete;
-        __profiler& operator=(const __profiler&) = delete;
-        ~__profiler();
+        explicit debug_profiler(const char* name);
+        debug_profiler(const char* name, const char* extra_info);
+        debug_profiler(const debug_profiler& that) = delete;
+        debug_profiler& operator=(const debug_profiler&) = delete;
+        ~debug_profiler();
 
-        inline static void push_profiler(__profiler* profiler);
+        inline static void push_profiler(debug_profiler* profiler);
         inline static void pop_profiler();
 
         inline void pause() noexcept
@@ -256,8 +256,8 @@ namespace debug_profile
 
         static void dump_results();
         static std::filesystem::path m_outputPath;
-        static std::set<__profile_info> m_profiles;
-        static std::vector<__profiler*> m_profilers;
+        static std::set<debug_profile_info> m_profiles;
+        static std::vector<debug_profiler*> m_profilers;
         };
     } // namespace debug_profile
 #endif

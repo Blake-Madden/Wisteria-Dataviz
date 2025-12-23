@@ -271,7 +271,7 @@ namespace Wisteria::Colors
       public:
         /// @brief Constructor.
         /// @param color The base color to contrast other colors against.
-        explicit ColorContrast(wxColour color) : m_baseColor(std::move(color))
+        explicit ColorContrast(const wxColour& color) : m_baseColor(color)
             {
             wxASSERT_MSG(m_baseColor.IsOk(), L"Invalid base color passed to ColorContrast.");
             }

@@ -47,21 +47,6 @@ class frequency_set
         return index_iter;
         }
 
-    /** @brief Inserts an item into the set.
-        @param value The value to insert.
-        @returns An iterator to the inserted or updated item.
-        @note If a value is already in the set, then that value's count is incremented.*/
-    const_iterator insert(T&& value)
-        {
-        auto [index_iter, inserted] = m_table.try_emplace(value, 1);
-        // if it was already there, then just update its counter
-        if (!inserted)
-            {
-            ++(index_iter->second);
-            }
-        return index_iter;
-        }
-
     /// @brief Clears the contents of the set.
     void clear() noexcept { m_table.clear(); }
 
@@ -93,26 +78,6 @@ class double_frequency_set
         @returns An iterator to the inserted or updated item.
         @note If a value is already in the set, then that value's count is incremented.*/
     const_iterator insert(const T& value, const bool incrementSecondFrequency)
-        {
-        const size_t secondFrequency = incrementSecondFrequency ? 1 : 0;
-        auto [index_iter, inserted] =
-            m_table.try_emplace(value, std::make_pair(1 /*raw frequency count*/,
-                                                      secondFrequency /*custom frequency count*/));
-        // if it was already there, so just update it.
-        if (!inserted)
-            {
-            ++(index_iter->second.first);
-            index_iter->second.second += secondFrequency;
-            }
-        return index_iter;
-        }
-
-    /** @brief Inserts an item into the set.
-        @param value The value to insert.
-        @param incrementSecondFrequency Whether to increment the custom counter.
-        @returns An iterator to the inserted or updated item.
-        @note If a value is already in the set, then that value's count is incremented.*/
-    const_iterator insert(T&& value, const bool incrementSecondFrequency)
         {
         const size_t secondFrequency = incrementSecondFrequency ? 1 : 0;
         auto [index_iter, inserted] =
@@ -222,23 +187,6 @@ class aggregate_frequency_set
         return index_iter;
         }
 
-    /** @brief Inserts an item into the set.
-        @param value The value to insert.
-        @param aggregateValue The value to add to running total.
-        @returns An iterator to the inserted or updated item.
-        @note If a value is already in the set, then that value's count is incremented.*/
-    const_iterator insert(T&& value, double aggregateValue)
-        {
-        auto [index_iter, inserted] = m_table.try_emplace(value, std::make_pair(1, aggregateValue));
-        // if it was already there, then just update its counter
-        if (!inserted)
-            {
-            ++(index_iter->second.first);
-            (index_iter->second.second) += aggregateValue;
-            }
-        return index_iter;
-        }
-
     /// @brief Clears the contents of the set.
     void clear() noexcept { m_table.clear(); }
 
@@ -278,23 +226,6 @@ class frequency_map
         @note If the key is already in the map, then that key's count is incremented;
             however, @c value2 will be ignored.*/
     const_iterator insert(const T1& value1, const T2& value2)
-        {
-        auto [index_iter, inserted] = m_table.try_emplace(value1, std::make_pair(value2, 1));
-        // if it was already there, so just update it.
-        if (!inserted)
-            {
-            ++(index_iter->second.second);
-            }
-        return index_iter;
-        }
-
-    /** @brief Inserts a pair of items into the map.
-        @param value1 The key.
-        @param value2 The value associated with the key.
-        @returns An iterator to the inserted or updated item.
-        @note If the key is already in the map, then that key's count is incremented;
-            however, @c value2 will be ignored.*/
-    const_iterator insert(T1&& value1, T2&& value2)
         {
         auto [index_iter, inserted] = m_table.try_emplace(value1, std::make_pair(value2, 1));
         // if it was already there, so just update it.
@@ -350,33 +281,6 @@ class multi_value_aggregate_map
             If the second value isn't in the key's current values,
             then that value is added to the list of values connected to that key.*/
     const_iterator insert(const T1& value1, const T2& value2, const double aggregateValue = 1)
-        {
-        auto [index_iter, inserted] = m_table.try_emplace(
-            value1, values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
-        // if it was already there, then just update it
-        if (!inserted)
-            {
-            if (m_secondaryValuesMax == static_cast<size_t>(-1) ||
-                index_iter->second.first.size() < m_secondaryValuesMax)
-                {
-                index_iter->second.first.insert(value2);
-                }
-            index_iter->second.second += aggregateValue;
-            }
-        return index_iter;
-        }
-
-    /** @brief Inserts a pair of items into the map.
-        @param value1 The first value of the pair.
-        @param value2 The second value of the pair.
-        @param aggregateValue the amount to increase the aggregated value for the item.
-            Would normally be @c 1.
-        @returns An iterator to the inserted or updated item.
-        @note The first value is what makes the item unique.
-            If a key is already in the map, then that key's count is incremented.
-            If the second value isn't in the key's current values,
-            then that value is added to the list of values connected to that key.*/
-    const_iterator insert(T1&& value1, T2&& value2, const double aggregateValue = 1)
         {
         auto [index_iter, inserted] = m_table.try_emplace(
             value1, values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
@@ -484,29 +388,6 @@ class multi_value_frequency_aggregate_map
             If the second value isn't in the key's current values,
             then that value is added to the list of values connected to that key.*/
     const_iterator insert(const T1& value1, const T2& value2, const double aggregateValue = 1)
-        {
-        auto [index_iter, inserted] = m_table.try_emplace(
-            value1, values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
-        // if it was already there, then just update it
-        if (!inserted)
-            {
-            index_iter->second.first.insert(value2);
-            index_iter->second.second += aggregateValue;
-            }
-        return index_iter;
-        }
-
-    /** @brief Inserts a pair of items into the map.
-        @param value1 The first value of the pair.
-        @param value2 The second value of the pair.
-        @param aggregateValue the amount to increase the aggregated value for the item.
-            Would normally be @c 1.
-        @returns An iterator to the inserted or updated item.
-        @note The first value is what makes the item unique.
-            If a key is already in the map, then that key's count is incremented.
-            If the second value isn't in the key's current values,
-            then that value is added to the list of values connected to that key.*/
-    const_iterator insert(T1&& value1, T2&& value2, const double aggregateValue = 1)
         {
         auto [index_iter, inserted] = m_table.try_emplace(
             value1, values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));

@@ -318,7 +318,7 @@ namespace Wisteria::GraphItems
                                 ((pt.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
 
                             // overlies on a ray
-                            if (constexpr double DOUBLE_EPSILON{ .01f };
+                            if (constexpr double DOUBLE_EPSILON{ .01 };
                                 std::fabs(pt.x - xinters) < DOUBLE_EPSILON)
                                 {
                                 return BOUND;
