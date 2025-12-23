@@ -565,7 +565,7 @@ namespace statistics
         [[maybe_unused]]
         const long long n = n1_dot + n0_dot;
         const auto pc = safe_divide<double>((n11 * n00) - (n10 * n01),
-                                              std::sqrt(n1_dot * n0_dot * n_dot_0 * n_dot_1));
+                                            std::sqrt(n1_dot * n0_dot * n_dot_0 * n_dot_1));
         assert(is_within<double>(pc, -1, 1) &&
                "Error in phi coefficient calculation. Value should be -1 >= and <= 1.");
         return pc;

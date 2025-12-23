@@ -175,7 +175,7 @@ namespace debug_profile
             }
 
         debug_profile_info(const char* name, const std::chrono::nanoseconds& duration_time,
-                       const char* extra_info)
+                           const char* extra_info)
             : m_name(name), m_extra_info(extra_info), m_called_count(1),
               m_lowest_duration_time(duration_time), m_highest_duration_time(duration_time),
               m_total_duration_time(duration_time), m_average_duration_time(duration_time)

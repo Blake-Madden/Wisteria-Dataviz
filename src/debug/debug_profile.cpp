@@ -19,7 +19,7 @@ namespace debug_profile
     std::vector<debug_profiler*> debug_profile_reporter::m_profilers;
 
     void debug_profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time,
-                                           const char* extra_info)
+                                               const char* extra_info)
         {
         ++m_called_count;
         m_total_duration_time += duration_time;
