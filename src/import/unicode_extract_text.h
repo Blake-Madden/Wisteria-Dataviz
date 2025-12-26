@@ -125,14 +125,14 @@ namespace lily_of_the_valley
             /* If Unicode stream is the native endian format,
                then just copy it over into the wide buffer.*/
             if (std::memcmp(systemIsLittleEndian ? get_bom_utf16le() : get_bom_utf16be(),
-                             unicodeText, 2) == 0)
+                            unicodeText, 2) == 0)
                 {
                 // note that we skip the BoM
                 convert_unicode_char_stream(outBuffer.data(), unicodeText + 2, length - 2);
                 }
             // ...otherwise, start flipping the bytes around to make it the native endian type
             else if (std::memcmp(systemIsLittleEndian ? get_bom_utf16be() : get_bom_utf16le(),
-                                  unicodeText, 2) == 0)
+                                 unicodeText, 2) == 0)
                 {
                 get_flipped_buffer(outBuffer.data(), unicodeText + 2, length - 2);
                 }
