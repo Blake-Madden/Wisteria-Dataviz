@@ -357,13 +357,7 @@ namespace Wisteria::GraphItems
                 p1 = p2;
                 }
 
-            // EVEN
-            if (crossPointsCount % 2 == 0)
-                {
-                return false;
-                }
-            // ODD
-            return true;
+            return !is_even(crossPointsCount);
             }
 
         /** @brief Determines if a rectangle is inside a polygon.

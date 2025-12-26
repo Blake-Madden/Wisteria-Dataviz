@@ -785,11 +785,8 @@ namespace Wisteria::UI
             @param sortableValue An underlying value that can be assigned to the cell
                 for when it is compared to other cells during a sort operation.*/
         void SetItemText(const size_t row, const size_t column, const wxString& text,
-                         const Wisteria::NumberFormatInfo format =
-                             NumberFormatInfo{
-                                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
-                         [[maybe_unused]] const double sortableValue =
-                             std::numeric_limits<double>::quiet_NaN() /*Not used here*/) final
+                         const NumberFormatInfo format,
+                         [[maybe_unused]] const double sortableValue /*Not used here*/) final
             {
             assert(std::isnan(sortableValue) &&
                    L"Numeric sortable value not supported by ListCtrlExDataProvider, "
@@ -964,7 +961,10 @@ namespace Wisteria::UI
             SetSize(arr.GetCount());
             for (size_t i = 0; i < arr.GetCount(); ++i)
                 {
-                SetItemText(i, 0, arr.Item(i));
+                SetItemText(
+                    i, 0, arr.Item(i),
+                    NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+                    std::numeric_limits<double>::quiet_NaN());
                 }
             }
 
@@ -1216,11 +1216,8 @@ namespace Wisteria::UI
             @param format The number format used to display the value
             @param sortableValue An underlying value that can be assigned to the cell for when
                 it is compared to other cells during a sort operation.*/
-        void
-        SetItemText(const size_t row, const size_t column, const wxString& text,
-                    const NumberFormatInfo format =
-                        NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
-                    const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
+        void SetItemText(const size_t row, const size_t column, const wxString& text,
+                         const NumberFormatInfo format, const double sortableValue) final
             {
             DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
             cell.m_numericValue = sortableValue;

@@ -53,12 +53,12 @@ namespace Wisteria
                 }
             }
 #else
-        char formattedBuffer[1024]{ 0 };
+        std::array<char, 1024> formattedBuffer{};
         /// @todo strfmon_l is preferred for later if we can ever get the locale_t object
         ///     from `wxUILocale::GetCurrent()`.
-        if (strfmon(formattedBuffer, std::size(formattedBuffer), "%n", money) != -1)
+        if (strfmon(formattedBuffer.data(), formattedBuffer.size(), "%n", money) != -1)
             {
-            wxString formattedMoney{ formattedBuffer };
+            wxString formattedMoney{ formattedBuffer.data() };
             if (noTrailingZeroes)
                 {
                 wxNumberFormatter::RemoveTrailingZeroes(formattedMoney);

@@ -5,6 +5,7 @@
 
 using namespace Catch::Matchers;
 using namespace Wisteria::UI;
+using namespace Wisteria;
 
 TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
     {
@@ -32,11 +33,20 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         dataProvider.SetNumberFormatter(&numForm);
         dataProvider.SetSize(5, 2);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(0, 1, L"first");
+        dataProvider.SetItemText(
+            0, 1, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(1, 0, 2);
-        dataProvider.SetItemText(1, 1, L"second");
+        dataProvider.SetItemText(
+            1, 1, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(2, 0, 3);
-        dataProvider.SetItemText(2, 1, L"third");
+        dataProvider.SetItemText(
+            2, 1, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(
             3, 0, 76,
             Wisteria::NumberFormatInfo(
@@ -60,11 +70,20 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         {
         dataProvider.SetSize(3, 2);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(0, 1, L"first");
+        dataProvider.SetItemText(
+            0, 1, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(1, 0, 2);
-        dataProvider.SetItemText(1, 1, L"second");
+        dataProvider.SetItemText(
+            1, 1, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(2, 0, 3);
-        dataProvider.SetItemText(2, 1, L"third");
+        dataProvider.SetItemText(
+            2, 1, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.DeleteItem(1);
         CHECK(dataProvider.GetItemText(0, 0) == L"1");
         CHECK(dataProvider.GetItemText(0, 1) == L"first");
@@ -79,11 +98,17 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         {
         dataProvider.SetSize(3, 2);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(0, 1, L"a");
+        dataProvider.SetItemText(
+            0, 1, L"a", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(1, 0, 2);
-        dataProvider.SetItemText(1, 1, L"c");
+        dataProvider.SetItemText(
+            1, 1, L"c", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(2, 0, 3);
-        dataProvider.SetItemText(2, 1, L"b");
+        dataProvider.SetItemText(
+            2, 1, L"b", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.Sort(1, Wisteria::SortDirection::SortDescending, 0, (size_t)-1);
         CHECK(dataProvider.GetItemText(0, 0) == L"2");
         CHECK(dataProvider.GetItemText(0, 1) == L"c");
@@ -119,14 +144,24 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         {
         dataProvider.SetSize(10, 1);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(1, 0, L"a");
+        dataProvider.SetItemText(
+            1, 0, L"a", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(2, 0, 2);
-        dataProvider.SetItemText(3, 0, L"c");
+        dataProvider.SetItemText(
+            3, 0, L"c", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(4, 0, 11);
-        dataProvider.SetItemText(5, 0, L"");
+        dataProvider.SetItemText(
+            5, 0, L"", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(6, 0, 2);
-        dataProvider.SetItemText(7, 0, L"a");
-        dataProvider.SetItemText(8, 0, L"B");
+        dataProvider.SetItemText(
+            7, 0, L"a", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            8, 0, L"B", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemText(
             9, 0, L"Z",
             Wisteria::NumberFormatInfo{
@@ -159,13 +194,25 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         {
         dataProvider.SetSize(4, 2);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(0, 1, L"first");
+        dataProvider.SetItemText(
+            0, 1, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(1, 0, 2);
-        dataProvider.SetItemText(1, 1, L"second");
+        dataProvider.SetItemText(
+            1, 1, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(2, 0, 1);
-        dataProvider.SetItemText(2, 1, L"third");
+        dataProvider.SetItemText(
+            2, 1, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(3, 0, 2);
-        dataProvider.SetItemText(3, 1, L"fourth");
+        dataProvider.SetItemText(
+            3, 1, L"fourth",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
@@ -205,15 +252,30 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         {
         dataProvider.SetSize(5, 2);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(0, 1, L"text");
+        dataProvider.SetItemText(
+            0, 1, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(1, 0, 2);
-        dataProvider.SetItemText(1, 1, L"text2");
+        dataProvider.SetItemText(
+            1, 1, L"text2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(2, 0, 3);
-        dataProvider.SetItemText(2, 1, L"text");
+        dataProvider.SetItemText(
+            2, 1, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(3, 0, 4);
-        dataProvider.SetItemText(3, 1, L"text2");
+        dataProvider.SetItemText(
+            3, 1, L"text2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.SetItemValue(4, 0, 5);
-        dataProvider.SetItemText(4, 1, L"text");
+        dataProvider.SetItemText(
+            4, 1, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(1, Wisteria::SortDirection::SortAscending));
@@ -317,11 +379,26 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         {
         dataProvider.SetSize(3, 2);
         dataProvider.SetItemValue(0, 0, 1);
-        dataProvider.SetItemText(0, 1, L"first2");
-        dataProvider.SetItemText(1, 0, L"second");
-        dataProvider.SetItemText(1, 1, L"second2");
-        dataProvider.SetItemText(2, 0, L"third");
-        dataProvider.SetItemText(2, 1, L"third2");
+        dataProvider.SetItemText(
+            0, 1, L"first2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"second2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"third2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         CHECK(dataProvider.Find(L"second", 0) == 1);
         }
     }
@@ -333,12 +410,30 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Set items")
         {
         dataProvider.SetSize(3, 2);
-        dataProvider.SetItemText(0, 0, L"first");
-        dataProvider.SetItemText(0, 1, L"first2");
-        dataProvider.SetItemText(1, 0, L"second");
-        dataProvider.SetItemText(1, 1, L"second2");
-        dataProvider.SetItemText(2, 0, L"third");
-        dataProvider.SetItemText(2, 1, L"third2");
+        dataProvider.SetItemText(
+            0, 0, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"first2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"second2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"third2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         CHECK(dataProvider.GetItemText(0, 0) == L"first");
         CHECK(dataProvider.GetItemText(0, 1) == L"first2");
         CHECK(dataProvider.GetItemText(1, 0) == L"second");
@@ -351,12 +446,30 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Delete items")
         {
         dataProvider.SetSize(3, 2);
-        dataProvider.SetItemText(0, 0, L"first");
-        dataProvider.SetItemText(0, 1, L"first2");
-        dataProvider.SetItemText(1, 0, L"second");
-        dataProvider.SetItemText(1, 1, L"second2");
-        dataProvider.SetItemText(2, 0, L"third");
-        dataProvider.SetItemText(2, 1, L"third2");
+        dataProvider.SetItemText(
+            0, 0, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"first2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"second2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"third2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.DeleteItem(1);
         CHECK(dataProvider.GetItemText(0, 0) == L"first");
         CHECK(dataProvider.GetItemText(0, 1) == L"first2");
@@ -370,12 +483,27 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items")
         {
         dataProvider.SetSize(3, 2);
-        dataProvider.SetItemText(0, 0, L"1");
-        dataProvider.SetItemText(0, 1, L"first2");
-        dataProvider.SetItemText(1, 0, L"2");
-        dataProvider.SetItemText(1, 1, L"second2");
-        dataProvider.SetItemText(2, 0, L"11");
-        dataProvider.SetItemText(2, 1, L"third2");
+        dataProvider.SetItemText(
+            0, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"first2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"second2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"11", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"third2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         dataProvider.Sort(0, Wisteria::SortDirection::SortDescending, 0, (size_t)-1);
         CHECK(dataProvider.GetItemText(0, 0) == L"11");
         CHECK(dataProvider.GetItemText(0, 1) == L"third2");
@@ -410,14 +538,34 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items multicolumn nothing to sort second column descending")
         {
         dataProvider.SetSize(4, 2);
-        dataProvider.SetItemText(0, 0, L"2");
-        dataProvider.SetItemText(0, 1, L"two");
-        dataProvider.SetItemText(1, 0, L"2");
-        dataProvider.SetItemText(1, 1, L"zzz");
-        dataProvider.SetItemText(2, 0, L"2");
-        dataProvider.SetItemText(2, 1, L"two");
-        dataProvider.SetItemText(3, 0, L"2");
-        dataProvider.SetItemText(3, 1, L"two");
+        dataProvider.SetItemText(
+            0, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"two",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"zzz",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"two",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 1, L"two",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
@@ -446,14 +594,34 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items multicolumn nothing to sort second column ascending")
         {
         dataProvider.SetSize(4, 2);
-        dataProvider.SetItemText(0, 0, L"2");
-        dataProvider.SetItemText(0, 1, L"two");
-        dataProvider.SetItemText(1, 0, L"2");
-        dataProvider.SetItemText(1, 1, L"zzz");
-        dataProvider.SetItemText(2, 0, L"2");
-        dataProvider.SetItemText(2, 1, L"two");
-        dataProvider.SetItemText(3, 0, L"2");
-        dataProvider.SetItemText(3, 1, L"two");
+        dataProvider.SetItemText(
+            0, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"two",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"zzz",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"two",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 1, L"two",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(0, Wisteria::SortDirection::SortAscending));
@@ -482,14 +650,34 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items multicolumn first")
         {
         dataProvider.SetSize(4, 2);
-        dataProvider.SetItemText(0, 0, L"1");
-        dataProvider.SetItemText(0, 1, L"first");
-        dataProvider.SetItemText(1, 0, L"2");
-        dataProvider.SetItemText(1, 1, L"second");
-        dataProvider.SetItemText(2, 0, L"1");
-        dataProvider.SetItemText(2, 1, L"third");
-        dataProvider.SetItemText(3, 0, L"2");
-        dataProvider.SetItemText(3, 1, L"fourth");
+        dataProvider.SetItemText(
+            0, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 1, L"fourth",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
@@ -528,16 +716,41 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items multicolumn second")
         {
         dataProvider.SetSize(5, 2);
-        dataProvider.SetItemText(0, 0, L"1");
-        dataProvider.SetItemText(0, 1, L"text");
-        dataProvider.SetItemText(1, 0, L"2");
-        dataProvider.SetItemText(1, 1, L"text2");
-        dataProvider.SetItemText(2, 0, L"3");
-        dataProvider.SetItemText(2, 1, L"text");
-        dataProvider.SetItemText(3, 0, L"4");
-        dataProvider.SetItemText(3, 1, L"text2");
-        dataProvider.SetItemText(4, 0, L"5");
-        dataProvider.SetItemText(4, 1, L"text");
+        dataProvider.SetItemText(
+            0, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"2", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"text2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"3", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 0, L"4", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            3, 1, L"text2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            4, 0, L"5", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            4, 1, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(1, Wisteria::SortDirection::SortAscending));
@@ -580,12 +793,27 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items multicolumn mixed")
         {
         dataProvider.SetSize(3, 2);
-        dataProvider.SetItemText(0, 0, L"1");
-        dataProvider.SetItemText(0, 1, L"text333");
-        dataProvider.SetItemText(1, 0, L"1");
-        dataProvider.SetItemText(1, 1, L"text33");
-        dataProvider.SetItemText(2, 0, L"1");
-        dataProvider.SetItemText(2, 1, L"text3");
+        dataProvider.SetItemText(
+            0, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"text333",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"text33",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"text3",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
@@ -602,12 +830,27 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Sort items multicolumn mixed numeric")
         {
         dataProvider.SetSize(3, 2);
-        dataProvider.SetItemText(0, 0, L"1");
-        dataProvider.SetItemText(0, 1, L"text333");
-        dataProvider.SetItemText(1, 0, L"1");
-        dataProvider.SetItemText(1, 1, L"text33");
-        dataProvider.SetItemText(2, 0, L"1");
-        dataProvider.SetItemText(2, 1, L"text3");
+        dataProvider.SetItemText(
+            0, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"text333",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"text33",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"1", NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"text3",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
         columns.push_back(
             std::pair<size_t, Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
@@ -624,12 +867,30 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
     SECTION("Find item")
         {
         dataProvider.SetSize(3, 2);
-        dataProvider.SetItemText(0, 0, L"first");
-        dataProvider.SetItemText(0, 1, L"first2");
-        dataProvider.SetItemText(1, 0, L"second");
-        dataProvider.SetItemText(1, 1, L"second2");
-        dataProvider.SetItemText(2, 0, L"third");
-        dataProvider.SetItemText(2, 1, L"third2");
+        dataProvider.SetItemText(
+            0, 0, L"first",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            0, 1, L"first2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 0, L"second",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            1, 1, L"second2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 0, L"third",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        dataProvider.SetItemText(
+            2, 1, L"third2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         CHECK(dataProvider.Find(L"second", 0) == 1);
         }
     }
@@ -644,19 +905,49 @@ TEST_CASE("ListCtrlEx to LaTeX", "[listctrlex]")
     const auto Reset2Columns = [&m_dataProvider, &m_list]()
     {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 0, L"Text");
-        m_dataProvider->SetItemText(1, 0, L"tExt2");
-        m_dataProvider->SetItemText(2, 0, L"text");
-        m_dataProvider->SetItemText(3, 0, L"teXt2");
-        m_dataProvider->SetItemText(4, 0, L"text");
+        m_dataProvider->SetItemText(
+            0, 0, L"Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 0, L"tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 0, L"teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 0, 72);
         m_dataProvider->SetItemValue(6, 0, 7);
         // other column
-        m_dataProvider->SetItemText(0, 1, L"Sext");
-        m_dataProvider->SetItemText(1, 1, L"sExt2");
-        m_dataProvider->SetItemText(2, 1, L"sext");
-        m_dataProvider->SetItemText(3, 1, L"seXt2");
-        m_dataProvider->SetItemText(4, 1, L"sext");
+        m_dataProvider->SetItemText(
+            0, 1, L"Sext",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"sExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"sext",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"seXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"sext",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 82);
         m_dataProvider->SetItemValue(6, 1, 8);
         m_list->SetVirtualDataProvider(m_dataProvider);
@@ -760,11 +1051,26 @@ text \\
     SECTION("Format to LaTeX custom column range")
         {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 1, L"2Text");
-        m_dataProvider->SetItemText(1, 1, L"2tExt2");
-        m_dataProvider->SetItemText(2, 1, L"2text");
-        m_dataProvider->SetItemText(3, 1, L"2teXt2");
-        m_dataProvider->SetItemText(4, 1, L"2text");
+        m_dataProvider->SetItemText(
+            0, 1, L"2Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"2tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"2teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 272);
         m_dataProvider->SetItemValue(6, 1, 27);
         m_list->SetVirtualDataSize(7, 2);
@@ -883,11 +1189,26 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
     const auto Reset = [&m_dataProvider, &m_list]()
     {
         m_dataProvider->SetSize(7, 1);
-        m_dataProvider->SetItemText(0, 0, L"Text");
-        m_dataProvider->SetItemText(1, 0, L"tExt2");
-        m_dataProvider->SetItemText(2, 0, L"text");
-        m_dataProvider->SetItemText(3, 0, L"teXt2");
-        m_dataProvider->SetItemText(4, 0, L"text");
+        m_dataProvider->SetItemText(
+            0, 0, L"Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 0, L"tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 0, L"teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 0, 72);
         m_dataProvider->SetItemValue(6, 0, 7);
         m_list->SetVirtualDataProvider(m_dataProvider);
@@ -983,11 +1304,26 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
     SECTION("Format to html custom column range")
         {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 1, L"2Text");
-        m_dataProvider->SetItemText(1, 1, L"2tExt2");
-        m_dataProvider->SetItemText(2, 1, L"2text");
-        m_dataProvider->SetItemText(3, 1, L"2teXt2");
-        m_dataProvider->SetItemText(4, 1, L"2text");
+        m_dataProvider->SetItemText(
+            0, 1, L"2Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"2tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"2teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 272);
         m_dataProvider->SetItemValue(6, 1, 27);
         m_list->SetVirtualDataSize(7, 2);
@@ -1039,11 +1375,26 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
     SECTION("Format to html custom column range bad")
         {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 1, L"2Text");
-        m_dataProvider->SetItemText(1, 1, L"2tExt2");
-        m_dataProvider->SetItemText(2, 1, L"2text");
-        m_dataProvider->SetItemText(3, 1, L"2teXt2");
-        m_dataProvider->SetItemText(4, 1, L"2text");
+        m_dataProvider->SetItemText(
+            0, 1, L"2Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"2tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"2teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 272);
         m_dataProvider->SetItemValue(6, 1, 27);
         m_list->SetVirtualDataSize(7, 2);
@@ -1143,11 +1494,26 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
     SECTION("Format to text custom column range")
         {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 1, L"2Text");
-        m_dataProvider->SetItemText(1, 1, L"2tExt2");
-        m_dataProvider->SetItemText(2, 1, L"2text");
-        m_dataProvider->SetItemText(3, 1, L"2teXt2");
-        m_dataProvider->SetItemText(4, 1, L"2text");
+        m_dataProvider->SetItemText(
+            0, 1, L"2Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"2tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"2teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 272);
         m_dataProvider->SetItemValue(6, 1, 27);
         m_list->SetVirtualDataSize(7, 2);
@@ -1170,11 +1536,26 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
     SECTION("Format to text custom column range bad")
         {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 1, L"2Text");
-        m_dataProvider->SetItemText(1, 1, L"2tExt2");
-        m_dataProvider->SetItemText(2, 1, L"2text");
-        m_dataProvider->SetItemText(3, 1, L"2teXt2");
-        m_dataProvider->SetItemText(4, 1, L"2text");
+        m_dataProvider->SetItemText(
+            0, 1, L"2Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"2tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"2teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"2text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 272);
         m_dataProvider->SetItemValue(6, 1, 27);
         m_list->SetVirtualDataSize(7, 2);
@@ -1213,11 +1594,26 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
     const auto Reset = [&m_dataProvider, &m_list]()
     {
         m_dataProvider->SetSize(7, 1);
-        m_dataProvider->SetItemText(0, 0, L"Text");
-        m_dataProvider->SetItemText(1, 0, L"tExt2");
-        m_dataProvider->SetItemText(2, 0, L"text");
-        m_dataProvider->SetItemText(3, 0, L"teXt2");
-        m_dataProvider->SetItemText(4, 0, L"text");
+        m_dataProvider->SetItemText(
+            0, 0, L"Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 0, L"tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 0, L"teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 0, 72);
         m_dataProvider->SetItemValue(6, 0, 7);
         m_list->SetVirtualDataProvider(m_dataProvider);
@@ -1227,19 +1623,49 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
     const auto Reset2Columns = [&m_dataProvider, &m_list]()
     {
         m_dataProvider->SetSize(7, 2);
-        m_dataProvider->SetItemText(0, 0, L"Text");
-        m_dataProvider->SetItemText(1, 0, L"tExt2");
-        m_dataProvider->SetItemText(2, 0, L"text");
-        m_dataProvider->SetItemText(3, 0, L"teXt2");
-        m_dataProvider->SetItemText(4, 0, L"text");
+        m_dataProvider->SetItemText(
+            0, 0, L"Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 0, L"tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 0, L"teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 0, 72);
         m_dataProvider->SetItemValue(6, 0, 7);
         // other column
-        m_dataProvider->SetItemText(0, 1, L"Sext");
-        m_dataProvider->SetItemText(1, 1, L"sExt2");
-        m_dataProvider->SetItemText(2, 1, L"sext");
-        m_dataProvider->SetItemText(3, 1, L"seXt2");
-        m_dataProvider->SetItemText(4, 1, L"sext");
+        m_dataProvider->SetItemText(
+            0, 1, L"Sext",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 1, L"sExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 1, L"sext",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 1, L"seXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 1, L"sext",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 1, 82);
         m_dataProvider->SetItemValue(6, 1, 8);
         m_list->SetVirtualDataProvider(m_dataProvider);
@@ -1490,11 +1916,26 @@ TEST_CASE("ListCtrlEx Find", "[listctrlex]")
     const auto Reset = [&m_dataProvider, &m_list]()
     {
         m_dataProvider->SetSize(7, 1);
-        m_dataProvider->SetItemText(0, 0, L"Text");
-        m_dataProvider->SetItemText(1, 0, L"tExt2");
-        m_dataProvider->SetItemText(2, 0, L"text");
-        m_dataProvider->SetItemText(3, 0, L"teXt2");
-        m_dataProvider->SetItemText(4, 0, L"text");
+        m_dataProvider->SetItemText(
+            0, 0, L"Text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            1, 0, L"tExt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            2, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            3, 0, L"teXt2",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
+        m_dataProvider->SetItemText(
+            4, 0, L"text",
+            NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
+            std::numeric_limits<double>::quiet_NaN());
         m_dataProvider->SetItemValue(5, 0, 72);
         m_dataProvider->SetItemValue(6, 0, 7);
         m_list->SetVirtualDataProvider(m_dataProvider);

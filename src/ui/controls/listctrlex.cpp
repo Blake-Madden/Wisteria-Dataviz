@@ -572,7 +572,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         dlg.SetHelpTopic(m_helpProjectPath, m_sortHelpTopic);
         if (dlg.ShowModal() == wxID_OK)
             {
-            std::vector<std::pair<wxString, Wisteria::SortDirection>> columnsInfo =
+            const std::vector<std::pair<wxString, Wisteria::SortDirection>> columnsInfo =
                 dlg.GetColumnsInfo();
             std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
             for (const auto& colInfo : columnsInfo)

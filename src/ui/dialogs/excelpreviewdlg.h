@@ -136,17 +136,14 @@ namespace Wisteria::UI
                 return true;
                 }
 
-            for (const auto& selBlocks : m_selectedBlocks)
-                {
-                if (cell.GetRow() >= selBlocks.first.GetRow() &&
-                    cell.GetRow() <= selBlocks.second.GetRow() &&
-                    cell.GetCol() >= selBlocks.first.GetCol() &&
-                    cell.GetCol() <= selBlocks.second.GetCol())
-                    {
-                    return true;
-                    }
-                }
-            return false;
+            return std::ranges::any_of(m_selectedBlocks,
+                                       [&](const auto& selBlocks)
+                                       {
+                                           return cell.GetRow() >= selBlocks.first.GetRow() &&
+                                                  cell.GetRow() <= selBlocks.second.GetRow() &&
+                                                  cell.GetCol() >= selBlocks.first.GetCol() &&
+                                                  cell.GetCol() <= selBlocks.second.GetCol();
+                                       });
             }
 
         /// @returns Whether importing only the selected cells was specified.

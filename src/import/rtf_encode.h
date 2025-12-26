@@ -36,7 +36,6 @@ namespace lily_of_the_valley
                 return encoded_text;
                 }
             encoded_text.reserve(text.length() * 2);
-            std::array<wchar_t, 256> formatBuffer{ 0 };
             for (size_t i = 0; i < text.length(); ++i)
                 {
                 // insert a '\' in front of RTF escape characters
@@ -48,23 +47,13 @@ namespace lily_of_the_valley
                 // extended ASCII and Unicode have to be encoded differently due to RTF quirkiness
                 else if (text[i] >= 127 && text[i] <= 255)
                     {
-                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(),
-                                                     L"\\\'%02X", text[i]);
-                    assert(retVal != -1);
-                    if (retVal != -1)
-                        {
-                        encoded_text.append(formatBuffer.data(), retVal);
-                        }
+                    encoded_text.append(
+                        std::format(L"\\'{:02X}", static_cast<unsigned int>(text[i])));
                     }
                 else if (text[i] > 255)
                     {
-                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(),
-                                                     L"\\u%04d?", static_cast<int>(text[i]));
-                    assert(retVal != -1);
-                    if (retVal != -1)
-                        {
-                        encoded_text.append(formatBuffer.data(), retVal);
-                        }
+                    const auto formatted = std::format(L"\\u{:04d}?", static_cast<int>(text[i]));
+                    encoded_text.append(formatted);
                     }
                 // encode tabs
                 else if (text[i] == 9)
@@ -100,14 +89,14 @@ namespace lily_of_the_valley
             @param text The text to review.
             @returns @c true if text should be encoded.*/
         [[nodiscard]]
-        bool needs_to_be_encoded(const std::wstring_view text) const
+        bool needs_to_be_encoded(std::wstring_view text) const
             {
             if (text.empty())
                 {
                 return false;
                 }
-            const auto foundPos = std::ranges::find_if(
-                text, [](const auto& ch) noexcept
+            auto foundPos = std::ranges::find_if(
+                text, [](const auto ch) noexcept
                 { return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t")); });
             return (foundPos != text.cend());
             }

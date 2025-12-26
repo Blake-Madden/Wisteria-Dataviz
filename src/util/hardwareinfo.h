@@ -7,8 +7,8 @@
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WX_SYSTEMHWINFO_H_
-#define _WX_SYSTEMHWINFO_H_
+#ifndef WX_SYSTEMHWINFO_
+#define WX_SYSTEMHWINFO_
 
 #include "wx/power.h"
 #include "wx/string.h"
@@ -39,4 +39,4 @@ namespace wxSystemHardwareInfo
     inline wxMemorySize GetFreeMemory() { return wxGetFreeMemory(); }
     } // namespace wxSystemHardwareInfo
 
-#endif // _WX_SYSTEMHWINFO_H_
+#endif // WX_SYSTEMHWINFO_

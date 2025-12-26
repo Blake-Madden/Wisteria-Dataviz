@@ -27,6 +27,7 @@
 #include <cstring>
 #include <cwchar>
 #include <cwctype>
+#include <format>
 #include <functional>
 #include <memory>
 #include <regex>
@@ -768,7 +769,7 @@ namespace string_util
             return nullptr;
             }
         long open_stack = 0;
-        while (*stringToSearch)
+        while (*stringToSearch != 0)
             {
             if (stringToSearch[0] == openSymbol)
                 {
@@ -1212,7 +1213,6 @@ namespace string_util
                 return start;
                 }
             ++start;
-            continue;
             }
         return T::npos;
         }
@@ -1356,14 +1356,14 @@ namespace string_util
             {
             if (left == str.cend())
                 {
-                return std::wstring_view{};
+                return {};
                 }
-            if (!std::iswspace(*left))
+            if (std::iswspace(*left) == 0)
                 {
                 break;
                 }
             }
-        auto right = str.cend() - 1;
+        auto right = std::prev(str.cend());
         for (; right > left && std::iswspace(*right) != 0; --right)
             {
             }

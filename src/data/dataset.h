@@ -1029,14 +1029,9 @@ namespace Wisteria::Data
                 std::ranges::remove_if(colNames,
                                        [&](const auto& colName)
                                        {
-                                           for (const auto& removeName : colsToRemove)
-                                               {
-                                               if (colName.CmpNoCase(removeName) == 0)
-                                                   {
-                                                   return true;
-                                                   }
-                                               }
-                                           return false;
+                                           return std::ranges::any_of(
+                                               colsToRemove, [&](const auto& removeName)
+                                               { return colName.CmpNoCase(removeName) == 0; });
                                        })
                     .begin();
             colNames.erase(endOfColumns, colNames.end());

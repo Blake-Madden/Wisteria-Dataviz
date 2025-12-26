@@ -119,30 +119,29 @@ namespace lily_of_the_valley
                 }
             // prepare the wide buffer
             const size_t outSize{ (length / 2) + 1 /*Null terminator*/ };
-            auto outBuffer = std::make_unique<wchar_t[]>(outSize);
-            std::wmemset(outBuffer.get(), 0, outSize);
+            std::vector<wchar_t> outBuffer(outSize);
             allocate_text_buffer(outSize);
 
             /* If Unicode stream is the native endian format,
                then just copy it over into the wide buffer.*/
-            if (std::strncmp(systemIsLittleEndian ? get_bom_utf16le() : get_bom_utf16be(),
+            if (std::memcmp(systemIsLittleEndian ? get_bom_utf16le() : get_bom_utf16be(),
                              unicodeText, 2) == 0)
                 {
                 // note that we skip the BoM
-                convert_unicode_char_stream(outBuffer.get(), unicodeText + 2, length - 2);
+                convert_unicode_char_stream(outBuffer.data(), unicodeText + 2, length - 2);
                 }
             // ...otherwise, start flipping the bytes around to make it the native endian type
-            else if (std::strncmp(systemIsLittleEndian ? get_bom_utf16be() : get_bom_utf16le(),
+            else if (std::memcmp(systemIsLittleEndian ? get_bom_utf16be() : get_bom_utf16le(),
                                   unicodeText, 2) == 0)
                 {
-                get_flipped_buffer(outBuffer.get(), unicodeText + 2, length - 2);
+                get_flipped_buffer(outBuffer.data(), unicodeText + 2, length - 2);
                 }
             else
                 {
                 return nullptr;
                 }
 
-            add_characters(outBuffer.get());
+            add_characters(outBuffer.data());
 
             return get_filtered_text();
             }

@@ -1384,16 +1384,15 @@ namespace Wisteria
             [[nodiscard]]
             bool HasLegendIcons() const noexcept
                 {
-                for (const auto& icon : GetLegendIcons())
+                return std::ranges::any_of(
+                    GetLegendIcons(),
+                    [](const auto& icon)
                     {
-                    if (icon.m_shape != Wisteria::Icons::IconShape::Blank &&
-                        icon.m_shape != Wisteria::Icons::IconShape::HorizontalSeparator &&
-                        icon.m_shape != Wisteria::Icons::IconShape::HorizontalArrowRightSeparator)
-                        {
-                        return true;
-                        }
-                    }
-                return false;
+                        return icon.m_shape != Wisteria::Icons::IconShape::Blank &&
+                               icon.m_shape != Wisteria::Icons::IconShape::HorizontalSeparator &&
+                               icon.m_shape !=
+                                   Wisteria::Icons::IconShape::HorizontalArrowRightSeparator;
+                    });
                 }
 
             /** @brief Gets the minimum width for the item's bounding box that the client

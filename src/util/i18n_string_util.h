@@ -70,8 +70,7 @@ namespace i18n_string_util
             true : (ch == 146) ?    // apostrophe
             true : (ch == 180) ?    // apostrophe
             true : (ch == 0xFF07) ? // full-width apostrophe
-            true : (ch == 0x2019) ? // right single apostrophe
-            true : false;
+            true : (ch == 0x2019);  // right single apostrophe
         // clang-format on
         }
 
@@ -88,8 +87,7 @@ namespace i18n_string_util
             true : (ch == 0xFF0E) ? // fullwidth full stop
             true : (ch == 0xFE12) ? // vertical full stop
             true : (ch == 0x06D4) ? // Arabic full stop
-            true : (ch == 0x2026) ? // ellipsis
-            true : false;
+            true : (ch == 0x2026);  // ellipsis
         // clang-format on
         }
 
@@ -105,8 +103,7 @@ namespace i18n_string_util
             true : (ch == 0x00A1) ? // inverted
             true : (ch == 0xFF01) ? // fullwidth
             true : (ch == 0xFE57) ? // small
-            true : (ch == 0xFE15) ? // presentation
-            true : false;
+            true : (ch == 0xFE15);  // presentation
         // clang-format on
         }
 
@@ -118,8 +115,7 @@ namespace i18n_string_util
         // clang-format off
         return (ch == L'?') ?       // !
             true : (ch == 0x061F) ? // Arabic
-            true : (ch == 0xFF1F) ? // fullwidth
-            true : false;
+            true : (ch == 0xFF1F);  // fullwidth
         // clang-format on
         }
 
@@ -130,8 +126,7 @@ namespace i18n_string_util
         {
         // clang-format off
         return (ch == L':') ?       // !
-            true : (ch == 0xFF1A) ? // fullwidth
-            true : false;
+            true : (ch == 0xFF1A);  // fullwidth
         // clang-format on
         }
 
@@ -142,8 +137,7 @@ namespace i18n_string_util
         {
         // clang-format off
         return (ch == L')') ?       // )
-            true : (ch == 0xFF09) ? // fullwidth
-            true : false;
+            true : (ch == 0xFF09);  // fullwidth
         // clang-format on
         }
 

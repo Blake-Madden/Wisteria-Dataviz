@@ -12,6 +12,7 @@
 #ifndef WINDOW_CONTAINER_H
 #define WINDOW_CONTAINER_H
 
+#include <ranges>
 #include <vector>
 #include <wx/wx.h>
 
@@ -30,9 +31,9 @@ class WindowContainer
             {
             return;
             }
-        for (auto pos = m_windows.cbegin(); pos != m_windows.cend(); ++pos)
+        for (const auto* currentWindow : m_windows)
             {
-            if (*pos == window)
+            if (currentWindow == window)
                 {
                 return;
                 }
@@ -50,15 +51,15 @@ class WindowContainer
             {
             return;
             }
-        for (auto pos = m_windows.cbegin(); pos != m_windows.cend(); ++pos)
+        for (const auto* currentWindow : m_windows)
             {
-            if (*pos == window)
+            if (currentWindow == window)
                 {
                 return;
                 }
             }
-        assert(static_cast<size_t>(position) <= GetWindowCount() &&
-               L"InsertWindow: position is larger than container.");
+        wxASSERT_MSG(static_cast<size_t>(position) <= GetWindowCount(),
+                     L"InsertWindow: position is larger than container.");
         // shouldn't happen, but work around a bad insert
         if (static_cast<size_t>(position) > GetWindowCount())
             {
@@ -120,11 +121,11 @@ class WindowContainer
     [[nodiscard]]
     wxWindow* FindWindowById(const wxWindowID id)
         {
-        for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
+        for (auto* currentWindow : m_windows)
             {
-            if ((*pos != nullptr) && (*pos)->GetId() == id)
+            if ((currentWindow != nullptr) && currentWindow->GetId() == id)
                 {
-                return *pos;
+                return currentWindow;
                 }
             }
         return nullptr;
@@ -137,12 +138,13 @@ class WindowContainer
     [[nodiscard]]
     wxWindow* FindWindowById(const wxWindowID id, const wxClassInfo* classInfo)
         {
-        assert(classInfo);
-        for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
+        wxASSERT(classInfo);
+        for (auto* currentWindow : m_windows)
             {
-            if ((*pos != nullptr) && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
+            if ((currentWindow != nullptr) && (currentWindow->GetId() == id) &&
+                currentWindow->IsKindOf(classInfo))
                 {
-                return *pos;
+                return currentWindow;
                 }
             }
         return nullptr;
@@ -154,12 +156,12 @@ class WindowContainer
     [[nodiscard]]
     wxWindow* FindWindowByIdAndLabel(const wxWindowID id, const wxString& label)
         {
-        for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
+        for (auto* currentWindow : m_windows)
             {
-            if ((*pos != nullptr) && ((*pos)->GetId() == id) &&
-                (*pos)->GetName().CmpNoCase(label) == 0)
+            if ((currentWindow != nullptr) && (currentWindow->GetId() == id) &&
+                currentWindow->GetName().CmpNoCase(label) == 0)
                 {
-                return *pos;
+                return currentWindow;
                 }
             }
         return nullptr;
@@ -170,13 +172,13 @@ class WindowContainer
     [[nodiscard]]
     wxWindow* FindWindowByType(const wxClassInfo* classInfo)
         {
-        assert(classInfo);
-        for (auto* win : m_windows)
+        wxASSERT(classInfo);
+        for (auto* currentWindow : m_windows)
             {
-            assert(win && "NULL window in window container!");
-            if ((win != nullptr) && win->IsKindOf(classInfo))
+            wxASSERT_MSG(currentWindow, L"NULL window in window container!");
+            if ((currentWindow != nullptr) && currentWindow->IsKindOf(classInfo))
                 {
-                return win;
+                return currentWindow;
                 }
             }
         return nullptr;
@@ -187,13 +189,13 @@ class WindowContainer
     [[nodiscard]]
     wxWindow* RFindWindowByType(const wxClassInfo* classInfo)
         {
-        assert(classInfo);
-        for (auto win = m_windows.crbegin(); win != m_windows.crend(); ++win)
+        wxASSERT(classInfo);
+        for (auto* currentWindow : m_windows | std::views::reverse)
             {
-            assert(*win && "NULL window in window container!");
-            if ((*win != nullptr) && (*win)->IsKindOf(classInfo))
+            wxASSERT_MSG(currentWindow, L"NULL window in window container!");
+            if (currentWindow && currentWindow->IsKindOf(classInfo))
                 {
-                return *win;
+                return currentWindow;
                 }
             }
         return nullptr;
@@ -204,11 +206,11 @@ class WindowContainer
     [[nodiscard]]
     int FindWindowPositionById(const wxWindowID id)
         {
-        for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
+        for (auto pos = m_windows.cbegin(); pos != m_windows.cend(); ++pos)
             {
             if ((*pos != nullptr) && (*pos)->GetId() == id)
                 {
-                return (pos - m_windows.begin());
+                return (pos - m_windows.cbegin());
                 }
             }
         return wxNOT_FOUND;
@@ -221,12 +223,12 @@ class WindowContainer
     [[nodiscard]]
     int FindWindowPositionById(const wxWindowID id, const wxClassInfo* classInfo)
         {
-        assert(classInfo);
-        for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
+        wxASSERT(classInfo);
+        for (auto pos = m_windows.cbegin(); pos != m_windows.cend(); ++pos)
             {
             if ((*pos != nullptr) && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
                 {
-                return (pos - m_windows.begin());
+                return (pos - m_windows.cbegin());
                 }
             }
         return wxNOT_FOUND;

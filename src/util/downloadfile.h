@@ -211,7 +211,7 @@ class QueueDownload
     /// @private
     constexpr static size_t KILOBYTE = 1024;
     /// @private
-    constexpr static size_t MEGABYTE = 1024 * 1024;
+    constexpr static size_t MEGABYTE = KILOBYTE * 1024;
 
   private:
     wxString GetLocalPath(int ID) const;
@@ -219,7 +219,7 @@ class QueueDownload
     wxEvtHandler* m_handler{ nullptr };
     mutable std::mutex m_mutex;
     std::map<int, wxString> m_downloads;
-    std::vector<wxWebRequest> m_requests;
+    std::vector<wxWebRequest> m_requests{};
     wxString m_userAgent;
     int m_currentId{ 0 };
     bool m_disablePeerVerify{ false };
