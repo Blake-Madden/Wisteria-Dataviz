@@ -599,7 +599,7 @@ namespace string_util
             or @c 0 if the strings are equal.*/
     [[nodiscard]]
     inline int strnatordcmp(const wchar_t* first_string, const wchar_t* second_string,
-                     bool case_insensitive = false)
+                            bool case_insensitive = false)
         {
         // first check if either of the strings are null
         if (first_string == nullptr && second_string == nullptr)
