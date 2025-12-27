@@ -13,6 +13,7 @@
 #define RTF_ENCODE_H
 
 #include "../util/string_util.h"
+#include <ranges>
 
 namespace lily_of_the_valley
     {

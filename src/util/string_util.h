@@ -721,26 +721,6 @@ namespace string_util
         return strnatordcmp(a, b, true);
         }
 
-    /// Indicates whether a larger strings ends with the specified suffix. Lengths are provided
-    /// by the caller for efficiency. This function is case sensitive.
-    /// @param text The text to review.
-    /// @param text_length The text's length.
-    /// @param suffix The suffix to check for.
-    /// @param suffix_length The length of @c suffix.
-    /// @returns @c true if text contains the provided suffix.
-    template<typename T>
-    [[nodiscard]]
-    bool has_suffix(const T* text, const size_t text_length, const T* suffix,
-                    const size_t suffix_length) noexcept
-        {
-        if (text == nullptr || suffix == nullptr || text_length <= suffix_length)
-            {
-            return false;
-            }
-        return (string_util::strnicmp(text + (text_length - suffix_length), suffix,
-                                      suffix_length) == 0);
-        }
-
     /** @brief Searches for a matching tag, skipping an extra open/close pairs
             of symbols in between.
         @param stringToSearch The string to search in.

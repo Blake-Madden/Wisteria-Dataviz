@@ -614,27 +614,6 @@ TEST_CASE("StrNICmp", "[stringutil][StrNICmp]")
         }
     }
 
-TEST_CASE("HasSuffix", "[stringutil][HasSuffix]")
-    {
-    SECTION("Nulls")
-        {
-        CHECK(string_util::has_suffix<wchar_t>(nullptr, 5, L"es", 2) == false);
-        CHECK(string_util::has_suffix<wchar_t>(L"hunted", 6, nullptr, 2) == false);
-        CHECK(string_util::has_suffix<wchar_t>(L"e", 1, L"es", 2) == false);
-        }
-    SECTION("HasSuffix")
-        {
-        CHECK(string_util::has_suffix<wchar_t>(L"hunted", 6, L"ed", 2));
-        CHECK(string_util::has_suffix<wchar_t>(L"ted", 3, L"ed", 2));
-        }
-    SECTION("NotHasSuffix")
-        {
-        CHECK(string_util::has_suffix<wchar_t>(L"hunted", 6, L"es", 2) == false);
-        // text must be longer than suffix for it to have the suffix
-        CHECK(string_util::has_suffix<wchar_t>(L"ed", 2, L"ed", 2) == false);
-        }
-    }
-
 TEST_CASE("StrCSpnPointer", "[stringutil][StrCSpnPointer]")
     {
     SECTION("TestNulls")

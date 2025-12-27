@@ -9,10 +9,56 @@ import re, sys, html, argparse, pathlib, os, json
 from string import Template
 from collections import defaultdict, Counter
 
+def is_header(path: str) -> bool:
+    return path.endswith(('.h', '.hpp', '.hh', '.hxx'))
+
+from pathlib import Path
+
+def load_excluded_prefixes():
+    raw = os.environ.get("EXCLUDE_DIRS", "")
+    prefixes = []
+
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # normalize to repo-relative, slash-terminated
+        p = line.rstrip("/") + "/"
+        prefixes.append(p)
+
+    return tuple(prefixes)
+
+EXCLUDED_PATH_PREFIXES = load_excluded_prefixes()
+
+def load_excluded_files():
+    raw = os.environ.get("EXCLUDE_FILES", "")
+    return {
+        line.strip()
+        for line in raw.splitlines()
+        if line.strip()
+    }
+
+EXCLUDED_FILES = load_excluded_files()
+
+def is_excluded_path(path: str) -> bool:
+    return (
+        path in EXCLUDED_FILES or
+        any(path.startswith(p) for p in EXCLUDED_PATH_PREFIXES)
+    )
+
+REPO_ROOT = Path(os.environ.get("GITHUB_WORKSPACE", ".")).resolve()
+
+def normalize_path(p: str) -> str:
+    try:
+        return str(Path(p).resolve().relative_to(REPO_ROOT))
+    except Exception:
+        return os.path.normpath(p)
+
 # ---------- configurable suppression ----------
 # Hide diagnostics whose check name exactly matches any of these:
 SUPPRESS_CHECKS = {
     "IgnoreClassesWithAllMemberVariablesBeingPublic",
+    "openmp-use-default-none",
     "clang-diagnostic-error",
     "clang-analyzer-optin.cplusplus.VirtualCall",
 }
@@ -23,11 +69,30 @@ SUPPRESS_MSG_SUBSTR = {
     "file not found",
     "unknown type name",
     "no matching function for call to",
+    "boolean expression can be simplified by DeMorgan's theorem",
 }
 # Optional env overrides (comma-separated lists)
 SUPPRESS_CHECKS |= {s.strip() for s in os.getenv("CT_SUPPRESS_CHECKS", "").split(",") if s.strip()}
 SUPPRESS_MSG_SUBSTR |= {s.strip() for s in os.getenv("CT_SUPPRESS_MSG_SUBSTR", "").split(",") if s.strip()}
 # ------------------------------------------------
+
+# Warnings in headers that you do NOT care about
+SUPPRESS_CHECKS_IN_HEADERS = {
+    "readability-magic-numbers",
+    "cppcoreguidelines-avoid-magic-numbers",
+    "modernize-use-trailing-return-type",
+    "cppcoreguidelines-macro-usage",
+    "cppcoreguidelines-macro-to-enum",
+    "modernize-macro-to-enum",
+    "cert-oop54-cpp",
+    "openmp-use-default-none",
+    "readability-identifier-naming",
+}
+
+# Ignore all notes in headers
+SUPPRESS_SEVERITY_IN_HEADERS = {
+    "note",
+}
 
 ROW_RE = re.compile(
     r'^(?P<file>[^:\n]+):(?P<line>\d+):(?P<col>\d+):\s+'
@@ -142,6 +207,8 @@ HTML = Template("""<!doctype html>
 
 def parse_logs(paths):
     entries=[]
+    seen=set()
+
     for p in paths:
         try:
             text=pathlib.Path(p).read_text(encoding='utf-8', errors='replace').splitlines()
@@ -152,14 +219,46 @@ def parse_logs(paths):
             if not m:
                 continue
             d=m.groupdict()
+
+            file = normalize_path(d['file'])
+            
+            if is_excluded_path(file):
+                continue
+
+            # header-specific suppression
+            if is_header(file):
+                check = d.get('check') or ''
+                sev = d['sev']
+
+                # ignore all specified categories (e.g., notes)
+                if check in SUPPRESS_CHECKS_IN_HEADERS:
+                    continue
+
+                # suppress specific warnings
+                if sev == 'warning' and check in SUPPRESS_CHECKS_IN_HEADERS:
+                    continue
+
+            key = (
+                file,
+                int(d['line']),
+                int(d['col']),
+                d.get('check') or '',
+                d['msg'],
+            )
+
+            if key in seen:
+                continue
+            seen.add(key)
+
             entries.append({
-                'file': d['file'],
+                'file': file,
                 'line': int(d['line']),
                 'col': int(d['col']),
                 'sev': d['sev'],
                 'msg': d['msg'],
                 'check': d.get('check') or '',
             })
+
     return entries
 
 def main():
