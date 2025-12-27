@@ -1,10 +1,10 @@
 #############################################################################
-# Name:       CMakeLists.txt
-# Purpose:    Unit test runner for Wisteria DV
-# Author:      Blake Madden
-# Created:     2022-10-31
-# Copyright: (c) 2022 Blake Madden
-# License:     3-Clause BSD license
+# Name:      CMakeLists.txt
+# Purpose:   Unit test runner for Wisteria DV
+# Author:    Blake Madden
+# Created:   2022-10-31
+# Copyright: (c) 2026 Blake Madden
+# License:   3-Clause BSD license
 #############################################################################
 
 cmake_minimum_required(VERSION 3.25)

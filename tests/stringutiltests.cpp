@@ -59,7 +59,7 @@ TEST_CASE("find_unescaped_char_same_line_n", "[stringutil][search]")
         st = LR"(Hello there#world#)";
         CHECK(find_unescaped_char_same_line_n(st.data(), L'#', st.size()) == st.data() + 11);
         st = L"Hello there\n\n#world#";
-        CHECK(nullptr == find_unescaped_char_same_line_n(st.data(), L'#', st.size()) );
+        CHECK(nullptr == find_unescaped_char_same_line_n(st.data(), L'#', st.size()));
         }
     SECTION("Partial scan")
         {
@@ -119,9 +119,9 @@ TEST_CASE("find_unescaped_char_n", "[stringutil][search]")
     }
 
 TEST_CASE("full_width_to_narrow", "[stringutil][fullwidth]")
-	{
-	SECTION("Punctuation")
-		{
+    {
+    SECTION("Punctuation")
+        {
         CHECK(L'!' == full_width_to_narrow(L'!'));
         CHECK(L'!' == full_width_to_narrow(L'！'));
         CHECK(L'"' == full_width_to_narrow(L'＂'));
@@ -161,144 +161,144 @@ TEST_CASE("full_width_to_narrow", "[stringutil][fullwidth]")
         CHECK(L'¬' == full_width_to_narrow(L'￢'));
         CHECK(L'¯' == full_width_to_narrow(L'￣'));
         CHECK(L'¦' == full_width_to_narrow(L'￤'));
-		}
+        }
     SECTION("Numbers")
         {
-        CHECK(L'0'==full_width_to_narrow(L'０'));
-        CHECK(L'1'==full_width_to_narrow(L'１'));
-        CHECK(L'2'==full_width_to_narrow(L'２'));
-        CHECK(L'3'==full_width_to_narrow(L'３'));
-        CHECK(L'4'==full_width_to_narrow(L'４'));
-        CHECK(L'5'==full_width_to_narrow(L'５'));
-        CHECK(L'6'==full_width_to_narrow(L'６'));
-        CHECK(L'7'==full_width_to_narrow(L'７'));
-        CHECK(L'8'==full_width_to_narrow(L'８'));
-        CHECK(L'9'==full_width_to_narrow(L'９'));
+        CHECK(L'0' == full_width_to_narrow(L'０'));
+        CHECK(L'1' == full_width_to_narrow(L'１'));
+        CHECK(L'2' == full_width_to_narrow(L'２'));
+        CHECK(L'3' == full_width_to_narrow(L'３'));
+        CHECK(L'4' == full_width_to_narrow(L'４'));
+        CHECK(L'5' == full_width_to_narrow(L'５'));
+        CHECK(L'6' == full_width_to_narrow(L'６'));
+        CHECK(L'7' == full_width_to_narrow(L'７'));
+        CHECK(L'8' == full_width_to_narrow(L'８'));
+        CHECK(L'9' == full_width_to_narrow(L'９'));
 
-        CHECK(L'0'==full_width_to_narrow(L'0'));
-        CHECK(L'1'==full_width_to_narrow(L'1'));
-        CHECK(L'2'==full_width_to_narrow(L'2'));
-        CHECK(L'3'==full_width_to_narrow(L'3'));
-        CHECK(L'4'==full_width_to_narrow(L'4'));
-        CHECK(L'5'==full_width_to_narrow(L'5'));
-        CHECK(L'6'==full_width_to_narrow(L'6'));
-        CHECK(L'7'==full_width_to_narrow(L'7'));
-        CHECK(L'8'==full_width_to_narrow(L'8'));
-        CHECK(L'9'==full_width_to_narrow(L'9'));
+        CHECK(L'0' == full_width_to_narrow(L'0'));
+        CHECK(L'1' == full_width_to_narrow(L'1'));
+        CHECK(L'2' == full_width_to_narrow(L'2'));
+        CHECK(L'3' == full_width_to_narrow(L'3'));
+        CHECK(L'4' == full_width_to_narrow(L'4'));
+        CHECK(L'5' == full_width_to_narrow(L'5'));
+        CHECK(L'6' == full_width_to_narrow(L'6'));
+        CHECK(L'7' == full_width_to_narrow(L'7'));
+        CHECK(L'8' == full_width_to_narrow(L'8'));
+        CHECK(L'9' == full_width_to_narrow(L'9'));
         }
     SECTION("Letters")
         {
-        CHECK(L'a'==full_width_to_narrow(L'a'));
-        CHECK(L'b'==full_width_to_narrow(L'b'));
-        CHECK(L'c'==full_width_to_narrow(L'c'));
-        CHECK(L'd'==full_width_to_narrow(L'd'));
-        CHECK(L'e'==full_width_to_narrow(L'e'));
-        CHECK(L'f'==full_width_to_narrow(L'f'));
-        CHECK(L'g'==full_width_to_narrow(L'g'));
-        CHECK(L'h'==full_width_to_narrow(L'h'));
-        CHECK(L'i'==full_width_to_narrow(L'i'));
-        CHECK(L'j'==full_width_to_narrow(L'j'));
-        CHECK(L'k'==full_width_to_narrow(L'k'));
-        CHECK(L'l'==full_width_to_narrow(L'l'));
-        CHECK(L'm'==full_width_to_narrow(L'm'));
-        CHECK(L'n'==full_width_to_narrow(L'n'));
-        CHECK(L'o'==full_width_to_narrow(L'o'));
-        CHECK(L'p'==full_width_to_narrow(L'p'));
-        CHECK(L'q'==full_width_to_narrow(L'q'));
-        CHECK(L'r'==full_width_to_narrow(L'r'));
-        CHECK(L's'==full_width_to_narrow(L's'));
-        CHECK(L't'==full_width_to_narrow(L't'));
-        CHECK(L'u'==full_width_to_narrow(L'u'));
-        CHECK(L'v'==full_width_to_narrow(L'v'));
-        CHECK(L'w'==full_width_to_narrow(L'w'));
-        CHECK(L'x'==full_width_to_narrow(L'x'));
-        CHECK(L'y'==full_width_to_narrow(L'y'));
-        CHECK(L'z'==full_width_to_narrow(L'z'));
+        CHECK(L'a' == full_width_to_narrow(L'a'));
+        CHECK(L'b' == full_width_to_narrow(L'b'));
+        CHECK(L'c' == full_width_to_narrow(L'c'));
+        CHECK(L'd' == full_width_to_narrow(L'd'));
+        CHECK(L'e' == full_width_to_narrow(L'e'));
+        CHECK(L'f' == full_width_to_narrow(L'f'));
+        CHECK(L'g' == full_width_to_narrow(L'g'));
+        CHECK(L'h' == full_width_to_narrow(L'h'));
+        CHECK(L'i' == full_width_to_narrow(L'i'));
+        CHECK(L'j' == full_width_to_narrow(L'j'));
+        CHECK(L'k' == full_width_to_narrow(L'k'));
+        CHECK(L'l' == full_width_to_narrow(L'l'));
+        CHECK(L'm' == full_width_to_narrow(L'm'));
+        CHECK(L'n' == full_width_to_narrow(L'n'));
+        CHECK(L'o' == full_width_to_narrow(L'o'));
+        CHECK(L'p' == full_width_to_narrow(L'p'));
+        CHECK(L'q' == full_width_to_narrow(L'q'));
+        CHECK(L'r' == full_width_to_narrow(L'r'));
+        CHECK(L's' == full_width_to_narrow(L's'));
+        CHECK(L't' == full_width_to_narrow(L't'));
+        CHECK(L'u' == full_width_to_narrow(L'u'));
+        CHECK(L'v' == full_width_to_narrow(L'v'));
+        CHECK(L'w' == full_width_to_narrow(L'w'));
+        CHECK(L'x' == full_width_to_narrow(L'x'));
+        CHECK(L'y' == full_width_to_narrow(L'y'));
+        CHECK(L'z' == full_width_to_narrow(L'z'));
 
-        CHECK(L'A'==full_width_to_narrow(L'A'));
-        CHECK(L'B'==full_width_to_narrow(L'B'));
-        CHECK(L'C'==full_width_to_narrow(L'C'));
-        CHECK(L'D'==full_width_to_narrow(L'D'));
-        CHECK(L'E'==full_width_to_narrow(L'E'));
-        CHECK(L'F'==full_width_to_narrow(L'F'));
-        CHECK(L'G'==full_width_to_narrow(L'G'));
-        CHECK(L'H'==full_width_to_narrow(L'H'));
-        CHECK(L'I'==full_width_to_narrow(L'I'));
-        CHECK(L'J'==full_width_to_narrow(L'J'));
-        CHECK(L'K'==full_width_to_narrow(L'K'));
-        CHECK(L'L'==full_width_to_narrow(L'L'));
-        CHECK(L'M'==full_width_to_narrow(L'M'));
-        CHECK(L'N'==full_width_to_narrow(L'N'));
-        CHECK(L'O'==full_width_to_narrow(L'O'));
-        CHECK(L'P'==full_width_to_narrow(L'P'));
-        CHECK(L'Q'==full_width_to_narrow(L'Q'));
-        CHECK(L'R'==full_width_to_narrow(L'R'));
-        CHECK(L'S'==full_width_to_narrow(L'S'));
-        CHECK(L'T'==full_width_to_narrow(L'T'));
-        CHECK(L'U'==full_width_to_narrow(L'U'));
-        CHECK(L'V'==full_width_to_narrow(L'V'));
-        CHECK(L'W'==full_width_to_narrow(L'W'));
-        CHECK(L'X'==full_width_to_narrow(L'X'));
-        CHECK(L'Y'==full_width_to_narrow(L'Y'));
-        CHECK(L'Z'==full_width_to_narrow(L'Z'));
+        CHECK(L'A' == full_width_to_narrow(L'A'));
+        CHECK(L'B' == full_width_to_narrow(L'B'));
+        CHECK(L'C' == full_width_to_narrow(L'C'));
+        CHECK(L'D' == full_width_to_narrow(L'D'));
+        CHECK(L'E' == full_width_to_narrow(L'E'));
+        CHECK(L'F' == full_width_to_narrow(L'F'));
+        CHECK(L'G' == full_width_to_narrow(L'G'));
+        CHECK(L'H' == full_width_to_narrow(L'H'));
+        CHECK(L'I' == full_width_to_narrow(L'I'));
+        CHECK(L'J' == full_width_to_narrow(L'J'));
+        CHECK(L'K' == full_width_to_narrow(L'K'));
+        CHECK(L'L' == full_width_to_narrow(L'L'));
+        CHECK(L'M' == full_width_to_narrow(L'M'));
+        CHECK(L'N' == full_width_to_narrow(L'N'));
+        CHECK(L'O' == full_width_to_narrow(L'O'));
+        CHECK(L'P' == full_width_to_narrow(L'P'));
+        CHECK(L'Q' == full_width_to_narrow(L'Q'));
+        CHECK(L'R' == full_width_to_narrow(L'R'));
+        CHECK(L'S' == full_width_to_narrow(L'S'));
+        CHECK(L'T' == full_width_to_narrow(L'T'));
+        CHECK(L'U' == full_width_to_narrow(L'U'));
+        CHECK(L'V' == full_width_to_narrow(L'V'));
+        CHECK(L'W' == full_width_to_narrow(L'W'));
+        CHECK(L'X' == full_width_to_narrow(L'X'));
+        CHECK(L'Y' == full_width_to_narrow(L'Y'));
+        CHECK(L'Z' == full_width_to_narrow(L'Z'));
 
-        CHECK(L'œ'==full_width_to_narrow(L'œ'));
+        CHECK(L'œ' == full_width_to_narrow(L'œ'));
 
-        CHECK(L'a'==full_width_to_narrow(L'ａ'));
-        CHECK(L'b'==full_width_to_narrow(L'ｂ'));
-        CHECK(L'c'==full_width_to_narrow(L'ｃ'));
-        CHECK(L'd'==full_width_to_narrow(L'ｄ'));
-        CHECK(L'e'==full_width_to_narrow(L'ｅ'));
-        CHECK(L'f'==full_width_to_narrow(L'ｆ'));
-        CHECK(L'g'==full_width_to_narrow(L'ｇ'));
-        CHECK(L'h'==full_width_to_narrow(L'ｈ'));
-        CHECK(L'i'==full_width_to_narrow(L'ｉ'));
-        CHECK(L'j'==full_width_to_narrow(L'ｊ'));
-        CHECK(L'k'==full_width_to_narrow(L'ｋ'));
-        CHECK(L'l'==full_width_to_narrow(L'ｌ'));
-        CHECK(L'm'==full_width_to_narrow(L'ｍ'));
-        CHECK(L'n'==full_width_to_narrow(L'ｎ'));
-        CHECK(L'o'==full_width_to_narrow(L'ｏ'));
-        CHECK(L'p'==full_width_to_narrow(L'ｐ'));
-        CHECK(L'q'==full_width_to_narrow(L'ｑ'));
-        CHECK(L'r'==full_width_to_narrow(L'ｒ'));
-        CHECK(L's'==full_width_to_narrow(L'ｓ'));
-        CHECK(L't'==full_width_to_narrow(L'ｔ'));
-        CHECK(L'u'==full_width_to_narrow(L'ｕ'));
-        CHECK(L'v'==full_width_to_narrow(L'ｖ'));
-        CHECK(L'w'==full_width_to_narrow(L'ｗ'));
-        CHECK(L'x'==full_width_to_narrow(L'ｘ'));
-        CHECK(L'y'==full_width_to_narrow(L'ｙ'));
-        CHECK(L'z'==full_width_to_narrow(L'ｚ'));
+        CHECK(L'a' == full_width_to_narrow(L'ａ'));
+        CHECK(L'b' == full_width_to_narrow(L'ｂ'));
+        CHECK(L'c' == full_width_to_narrow(L'ｃ'));
+        CHECK(L'd' == full_width_to_narrow(L'ｄ'));
+        CHECK(L'e' == full_width_to_narrow(L'ｅ'));
+        CHECK(L'f' == full_width_to_narrow(L'ｆ'));
+        CHECK(L'g' == full_width_to_narrow(L'ｇ'));
+        CHECK(L'h' == full_width_to_narrow(L'ｈ'));
+        CHECK(L'i' == full_width_to_narrow(L'ｉ'));
+        CHECK(L'j' == full_width_to_narrow(L'ｊ'));
+        CHECK(L'k' == full_width_to_narrow(L'ｋ'));
+        CHECK(L'l' == full_width_to_narrow(L'ｌ'));
+        CHECK(L'm' == full_width_to_narrow(L'ｍ'));
+        CHECK(L'n' == full_width_to_narrow(L'ｎ'));
+        CHECK(L'o' == full_width_to_narrow(L'ｏ'));
+        CHECK(L'p' == full_width_to_narrow(L'ｐ'));
+        CHECK(L'q' == full_width_to_narrow(L'ｑ'));
+        CHECK(L'r' == full_width_to_narrow(L'ｒ'));
+        CHECK(L's' == full_width_to_narrow(L'ｓ'));
+        CHECK(L't' == full_width_to_narrow(L'ｔ'));
+        CHECK(L'u' == full_width_to_narrow(L'ｕ'));
+        CHECK(L'v' == full_width_to_narrow(L'ｖ'));
+        CHECK(L'w' == full_width_to_narrow(L'ｗ'));
+        CHECK(L'x' == full_width_to_narrow(L'ｘ'));
+        CHECK(L'y' == full_width_to_narrow(L'ｙ'));
+        CHECK(L'z' == full_width_to_narrow(L'ｚ'));
 
-        CHECK(L'A'==full_width_to_narrow(L'Ａ'));
-        CHECK(L'B'==full_width_to_narrow(L'Ｂ'));
-        CHECK(L'C'==full_width_to_narrow(L'Ｃ'));
-        CHECK(L'D'==full_width_to_narrow(L'Ｄ'));
-        CHECK(L'E'==full_width_to_narrow(L'Ｅ'));
-        CHECK(L'F'==full_width_to_narrow(L'Ｆ'));
-        CHECK(L'G'==full_width_to_narrow(L'Ｇ'));
-        CHECK(L'H'==full_width_to_narrow(L'Ｈ'));
-        CHECK(L'I'==full_width_to_narrow(L'Ｉ'));
-        CHECK(L'J'==full_width_to_narrow(L'Ｊ'));
-        CHECK(L'K'==full_width_to_narrow(L'Ｋ'));
-        CHECK(L'L'==full_width_to_narrow(L'Ｌ'));
-        CHECK(L'M'==full_width_to_narrow(L'Ｍ'));
-        CHECK(L'N'==full_width_to_narrow(L'Ｎ'));
-        CHECK(L'O'==full_width_to_narrow(L'Ｏ'));
-        CHECK(L'P'==full_width_to_narrow(L'Ｐ'));
-        CHECK(L'Q'==full_width_to_narrow(L'Ｑ'));
-        CHECK(L'R'==full_width_to_narrow(L'Ｒ'));
-        CHECK(L'S'==full_width_to_narrow(L'Ｓ'));
-        CHECK(L'T'==full_width_to_narrow(L'Ｔ'));
-        CHECK(L'U'==full_width_to_narrow(L'Ｕ'));
-        CHECK(L'V'==full_width_to_narrow(L'Ｖ'));
-        CHECK(L'W'==full_width_to_narrow(L'Ｗ'));
-        CHECK(L'X'==full_width_to_narrow(L'Ｘ'));
-        CHECK(L'Y'==full_width_to_narrow(L'Ｙ'));
-        CHECK(L'Z'==full_width_to_narrow(L'Ｚ'));
+        CHECK(L'A' == full_width_to_narrow(L'Ａ'));
+        CHECK(L'B' == full_width_to_narrow(L'Ｂ'));
+        CHECK(L'C' == full_width_to_narrow(L'Ｃ'));
+        CHECK(L'D' == full_width_to_narrow(L'Ｄ'));
+        CHECK(L'E' == full_width_to_narrow(L'Ｅ'));
+        CHECK(L'F' == full_width_to_narrow(L'Ｆ'));
+        CHECK(L'G' == full_width_to_narrow(L'Ｇ'));
+        CHECK(L'H' == full_width_to_narrow(L'Ｈ'));
+        CHECK(L'I' == full_width_to_narrow(L'Ｉ'));
+        CHECK(L'J' == full_width_to_narrow(L'Ｊ'));
+        CHECK(L'K' == full_width_to_narrow(L'Ｋ'));
+        CHECK(L'L' == full_width_to_narrow(L'Ｌ'));
+        CHECK(L'M' == full_width_to_narrow(L'Ｍ'));
+        CHECK(L'N' == full_width_to_narrow(L'Ｎ'));
+        CHECK(L'O' == full_width_to_narrow(L'Ｏ'));
+        CHECK(L'P' == full_width_to_narrow(L'Ｐ'));
+        CHECK(L'Q' == full_width_to_narrow(L'Ｑ'));
+        CHECK(L'R' == full_width_to_narrow(L'Ｒ'));
+        CHECK(L'S' == full_width_to_narrow(L'Ｓ'));
+        CHECK(L'T' == full_width_to_narrow(L'Ｔ'));
+        CHECK(L'U' == full_width_to_narrow(L'Ｕ'));
+        CHECK(L'V' == full_width_to_narrow(L'Ｖ'));
+        CHECK(L'W' == full_width_to_narrow(L'Ｗ'));
+        CHECK(L'X' == full_width_to_narrow(L'Ｘ'));
+        CHECK(L'Y' == full_width_to_narrow(L'Ｙ'));
+        CHECK(L'Z' == full_width_to_narrow(L'Ｚ'));
         }
-	}
+    }
 
 TEST_CASE("replace_all", "[stringutil][replace_all]")
     {
@@ -338,7 +338,7 @@ TEST_CASE("replace_all", "[stringutil][replace_all]")
     }
 
 TEST_CASE("Hex Strings", "[stringutil][hex]")
-	{
+    {
     SECTION("IsHex")
         {
         CHECK(string_util::is_hex_digit(L'0'));
@@ -366,7 +366,7 @@ TEST_CASE("Hex Strings", "[stringutil][hex]")
         CHECK_FALSE(string_util::is_hex_digit(L'g'));
         CHECK_FALSE(string_util::is_hex_digit(L'.'));
         }
-	}
+    }
 
 TEST_CASE("Trim", "[stringutil][trim]")
     {
@@ -548,15 +548,8 @@ TEST_CASE("Natural Order Cmp", "[stringutil][natural order]")
 
 TEST_CASE("string_no_case_less", "[stringutil][string_no_case_less]")
     {
-    std::set<std::wstring, string_no_case_less> strMap =
-        {
-        L"ERNIE",
-        L"BERT",
-        L"Ernie",
-        L"Gordan",
-        L"Maria",
-        L"bert"
-        };
+    std::set<std::wstring, string_no_case_less> strMap = { L"ERNIE",  L"BERT",  L"Ernie",
+                                                           L"Gordan", L"Maria", L"bert" };
     CHECK(strMap.size() == 4);
     CHECK(strMap.find(L"BeRt") != strMap.cend());
     CHECK(strMap.find(L"Ernie") != strMap.cend());
@@ -616,10 +609,7 @@ TEST_CASE("StrNICmp", "[stringutil][StrNICmp]")
 
 TEST_CASE("StrCSpnPointer", "[stringutil][StrCSpnPointer]")
     {
-    SECTION("TestNulls")
-        {
-        CHECK(string_util::strcspn_pointer<char>(nullptr, "hello") == nullptr);
-        }
+    SECTION("TestNulls") { CHECK(string_util::strcspn_pointer<char>(nullptr, "hello") == nullptr); }
     SECTION("FindFirst")
         {
         const char* buffer = "<blah blah>";
@@ -630,16 +620,16 @@ TEST_CASE("StrCSpnPointer", "[stringutil][StrCSpnPointer]")
     SECTION("FindMiddle")
         {
         const char* buffer = "blah <blah";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+5);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer + 5);
         buffer = "blah >blah";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+5);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer + 5);
         }
     SECTION("FindLast")
         {
         const char* buffer = "blah blah<";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+9);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer + 9);
         buffer = "blah blah>";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+9);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer + 9);
         }
     SECTION("NotFind")
         {
@@ -656,35 +646,37 @@ TEST_CASE("Find Matching Tag", "[stringutil][find_matching_close_tag]")
     SECTION("Closing With Open Tags Strings")
         {
         const wchar_t* buffer = L"[[img [[]]]hello]]], world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L"[[", L"]]]") == buffer+16);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L"[[", L"]]]") == buffer + 16);
         }
     SECTION("Closing With Open Tags Strings2")
         {
         const wchar_t* buffer = L"[[img [[]]]h[[e]]]llo]]], world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L"[[", L"]]]") == buffer+21);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L"[[", L"]]]") == buffer + 21);
         }
     SECTION("Closing With Open Tags Strings Start With Same Char")
         {
         const wchar_t* buffer = L"[[img [[[]]hello[]], world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L"[[", L"[]]") == buffer+16);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L"[[", L"[]]") == buffer + 16);
         }
     SECTION("Test Nulls Strings")
         {
         CHECK(string_util::find_matching_close_tag(L"", L"[[", L"[]]") == nullptr);
         CHECK(string_util::find_matching_close_tag(L"text", L"", L"[]]") == nullptr);
         CHECK(string_util::find_matching_close_tag(L"text", L"[]]", L"") == nullptr);
-        CHECK(string_util::find_matching_close_tag(L"[[img [[[]]hello[]], world", L"", L"[]]") == nullptr);
-        CHECK(string_util::find_matching_close_tag(L"[[img [[[]]hello[]], world", L"[[", L"") == nullptr);
+        CHECK(string_util::find_matching_close_tag(L"[[img [[[]]hello[]], world", L"", L"[]]") ==
+              nullptr);
+        CHECK(string_util::find_matching_close_tag(L"[[img [[[]]hello[]], world", L"[[", L"") ==
+              nullptr);
         }
     SECTION("No Closing Tags Strings")
         {
         const wchar_t* buffer = L"[[img hello, world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L"[[", L"[]]") == nullptr);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L"[[", L"[]]") == nullptr);
         }
     SECTION("Closing With Trailing Open Tag Strings")
         {
         const wchar_t* buffer = L"[[img [[ihello[]], world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L"[[", L"[]]") == nullptr);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L"[[", L"[]]") == nullptr);
         }
     // single characters
     SECTION(" Nulls")
@@ -694,22 +686,22 @@ TEST_CASE("Find Matching Tag", "[stringutil][find_matching_close_tag]")
     SECTION("No Closing Tags")
         {
         const wchar_t* buffer = L"<img hello, world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L'<', L'>', false) == nullptr);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L'<', L'>', false) == nullptr);
         }
     SECTION("Closing Tags")
         {
         const wchar_t* buffer = L"<img hello>, world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L'<', L'>', false) == buffer+10);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L'<', L'>', false) == buffer + 10);
         }
     SECTION("Closing With Open Tags")
         {
         const wchar_t* buffer = L"<img <i>hello</i>>, world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L'<', L'>', false) == buffer+17);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L'<', L'>', false) == buffer + 17);
         }
     SECTION("Closing With Trailing Open Tag")
         {
         const wchar_t* buffer = L"<img <ihello>, world";
-        CHECK(string_util::find_matching_close_tag(buffer+1, L'<', L'>', false) == nullptr);
+        CHECK(string_util::find_matching_close_tag(buffer + 1, L'<', L'>', false) == nullptr);
         }
     }
 
@@ -718,159 +710,191 @@ TEST_CASE("Find Matching Tag Unescaped", "[stringutil][find_unescaped_matching_c
     SECTION("No Closing Tags Strings")
         {
         const wchar_t* buffer = L"[img hello, world";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'[', L']') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'[', L']') ==
+              nullptr);
         }
     SECTION("Closing With Trailing Open Tag Strings")
         {
         const wchar_t* buffer = L"[img [ihello[], world";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'[', L']') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'[', L']') ==
+              nullptr);
         }
     SECTION("Nulls")
         {
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(nullptr, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(nullptr, L'<', L'>') ==
+              nullptr);
         }
     SECTION("No Closing Tags")
         {
         const wchar_t* buffer = L"<img hello, world";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              nullptr);
         }
     SECTION("No Closing Tags Escaped")
         {
         const wchar_t* buffer = LR"(<img hello, world\>)";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              nullptr);
         }
     SECTION("Closing Tags")
         {
         const wchar_t* buffer = L"<\n\nimg hello>, world";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == buffer+12);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              buffer + 12);
         }
     SECTION("Closing Tags Escaped")
         {
         const wchar_t* buffer = LR"(<img \>hello>, world)";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == buffer+12);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              buffer + 12);
         }
     SECTION("Closing With Open Tags")
         {
         const wchar_t* buffer = L"<img \n<i>hello</i>>, world";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == buffer+18);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              buffer + 18);
         }
     SECTION("Closing With Open Tags Escaped")
         {
         const wchar_t* buffer = LR"(<img \<<i>hello</i>>, world)";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == buffer+19);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              buffer + 19);
         }
     SECTION("Closing With Trailing Open Tag")
         {
         const wchar_t* buffer = L"<img <ihello>, world";
-        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag<wchar_t>(buffer + 1, L'<', L'>') ==
+              nullptr);
         }
     }
 
-TEST_CASE("Find Matching Tag Unescaped", "[stringutil][find_unescaped_matching_close_tag_same_line]")
+TEST_CASE("Find Matching Tag Unescaped",
+          "[stringutil][find_unescaped_matching_close_tag_same_line]")
     {
     SECTION("No Closing Tags Strings")
         {
         const wchar_t* buffer = L"[img hello, world";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'[', L']') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'[',
+                                                                                L']') == nullptr);
         }
     SECTION("Closing With Trailing Open Tag Strings")
         {
         const wchar_t* buffer = L"[img [ihello[], world";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'[', L']') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'[',
+                                                                                L']') == nullptr);
         }
     SECTION("Nulls")
         {
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(nullptr, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(nullptr, L'<',
+                                                                                L'>') == nullptr);
         }
     SECTION("No Closing Tags")
         {
         const wchar_t* buffer = L"<img hello, world";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'<',
+                                                                                L'>') == nullptr);
         }
     SECTION("No Closing Tags Escaped")
         {
         const wchar_t* buffer = LR"(<img hello, world\>)";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'<',
+                                                                                L'>') == nullptr);
         }
     SECTION("Closing Tags")
         {
         const wchar_t* buffer = L"<\n\nimg hello>, world";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'<',
+                                                                                L'>') == nullptr);
         }
     SECTION("Closing Tags Escaped")
         {
         const wchar_t* buffer = LR"(<img \>hello>, world)";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == buffer+12);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(
+                  buffer + 1, L'<', L'>') == buffer + 12);
         }
     SECTION("Closing With Open Tags")
         {
         const wchar_t* buffer = L"<img \n<i>hello</i>>, world";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'<',
+                                                                                L'>') == nullptr);
         }
     SECTION("Closing With Open Tags Escaped")
         {
         const wchar_t* buffer = LR"(<img \<<i>hello</i>>, world)";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == buffer+19);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(
+                  buffer + 1, L'<', L'>') == buffer + 19);
         }
     SECTION("Closing With Trailing Open Tag")
         {
         const wchar_t* buffer = L"<img <ihello>, world";
-        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        CHECK(string_util::find_unescaped_matching_close_tag_same_line<wchar_t>(buffer + 1, L'<',
+                                                                                L'>') == nullptr);
         }
     }
 
-TEST_CASE("Find Matching Tag Unescaped", "[stringutil][find_unescaped_matching_close_tag_same_line_n]")
+TEST_CASE("Find Matching Tag Unescaped",
+          "[stringutil][find_unescaped_matching_close_tag_same_line_n]")
     {
     SECTION("Full scan")
         {
         SECTION("No Closing Tags Strings")
             {
             const wchar_t* buffer = L"[img hello, world";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'[', L']', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'[', L']', std::wcslen(buffer)) == nullptr);
             }
         SECTION("Closing With Trailing Open Tag Strings")
             {
             const wchar_t* buffer = L"[img [ihello[], world";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'[', L']', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'[', L']', std::wcslen(buffer)) == nullptr);
             }
         SECTION("Nulls")
             {
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(nullptr, L'<', L'>', 0) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(nullptr, L'<', L'>',
+                                                                             0) == nullptr);
             }
         SECTION("No Closing Tags")
             {
             const wchar_t* buffer = L"<img hello, world";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == nullptr);
             }
         SECTION("No Closing Tags Escaped")
             {
             const wchar_t* buffer = LR"(<img hello, world\>)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == nullptr);
             }
         SECTION("Closing Tags")
             {
             const wchar_t* buffer = L"<\n\nimg hello>, world";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == nullptr);
             }
         SECTION("Closing Tags Escaped")
             {
             const wchar_t* buffer = LR"(<img \>hello>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == buffer+12);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == buffer + 12);
             }
         SECTION("Closing With Open Tags")
             {
             const wchar_t* buffer = L"<img \n<i>hello</i>>, world";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == nullptr);
             }
         SECTION("Closing With Open Tags Escaped")
             {
             const wchar_t* buffer = LR"(<img \<<i>hello</i>>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == buffer+19);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == buffer + 19);
             }
         SECTION("Closing With Trailing Open Tag")
             {
             const wchar_t* buffer = L"<img <ihello>, world";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', std::wcslen(buffer)) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(
+                      buffer + 1, L'<', L'>', std::wcslen(buffer)) == nullptr);
             }
         }
     SECTION("Partial scan")
@@ -878,373 +902,405 @@ TEST_CASE("Find Matching Tag Unescaped", "[stringutil][find_unescaped_matching_c
         SECTION("Closing Tags Escaped")
             {
             const wchar_t* buffer = LR"(<img \>hello>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', 4) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>',
+                                                                             4) == nullptr);
             buffer = LR"(<img \>hello>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>', 0) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>',
+                                                                             0) == nullptr);
             }
         SECTION("Closing With Open Tags Escaped")
             {
             const wchar_t* buffer = LR"(<img \<<i>hello</i>>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', 4) == nullptr);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>',
+                                                                             4) == nullptr);
             }
         SECTION("Too far")
             {
             const wchar_t* buffer = LR"(<img \<<i>hello</i>>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer+1, L'<', L'>', 89) == buffer + 19);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>',
+                                                                             89) == buffer + 19);
 
             buffer = LR"(<img \<<i>hello</i>>, world)";
-            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>', 89) == buffer + 19);
+            CHECK(string_util::find_unescaped_matching_close_tag_same_line_n(buffer + 1, L'<', L'>',
+                                                                             89) == buffer + 19);
             }
         }
     }
 
-TEST_CASE("RemoveSpaces", "[stringutil][RemoveSpaces]")
-    {
-    SECTION("RemoveBlankLinesEmpty")
-        {
-        std::wstring text(L"");
-        CHECK(string_util::remove_blank_lines(text) == 0);
-        CHECK(text == L"");
-        }
-    SECTION("RemoveBlankLines")
-        {
-        std::wstring text(L"Blah\n\nLine2");
-        CHECK(string_util::remove_blank_lines(text) == 1);
-        CHECK(text == L"Blah\nLine2");
-        }
-    SECTION("RemoveBlankLines2")
-        {
-        std::wstring text(L"Blah\n\nLine2\n\n");
-        CHECK(string_util::remove_blank_lines(text) == 2);
-        CHECK(text == L"Blah\nLine2\n");
-        }
-    SECTION("RemoveBlankLines3")
-        {
-        std::wstring text(L"Blah\r\n\r\nLine2\n\n");
-        CHECK(string_util::remove_blank_lines(text) == 3);
-        CHECK(text == L"Blah\r\nLine2\n");
-        }
-    SECTION("RemoveSpacesEmpty")
-        {
-        std::wstring text(L"");
-        CHECK(string_util::remove_extra_spaces(text) == 0);
-        CHECK(text == L"");
-        }
-    SECTION("RemoveNoSpaces")
-        {
-        std::wstring text(L"hellothereworld!newline");
-        CHECK(string_util::remove_extra_spaces(text) == 0);
-        CHECK(text == L"hellothereworld!newline");
-        }
-    SECTION("RemoveSpaces")
-        {
-        std::wstring text(L"hello  there    \t \r\n world !\r\nnew line");
-        CHECK(string_util::remove_extra_spaces(text) == 9);
-        CHECK(text == L"hello there world !\r\nnew line");
-        }
-    SECTION("RemoveSpacesNoExtraSpaces")
-        {
-        std::wstring text(L"hello there\tworld!\r\nnew line");
-        CHECK(string_util::remove_extra_spaces(text) == 0);
-        CHECK(text == L"hello there\tworld!\r\nnew line");
-        }
-    };
+TEST_CASE("RemoveSpaces",
+          "[stringutil][RemoveSpaces]"){ SECTION("RemoveBlankLinesEmpty"){ std::wstring text(L"");
+CHECK(string_util::remove_blank_lines(text) == 0);
+CHECK(text == L"");
+}
 
-TEST_CASE("StrIStr", "[stringutil][StrIStr]")
+SECTION("RemoveBlankLines")
     {
-    SECTION("TestNulls")
-        {
-        CHECK(string_util::stristr<char>(nullptr, "HelLo") == nullptr);
-        CHECK(string_util::stristr<char>("HelLo", nullptr) == nullptr);
-        }
-    SECTION("FindFirstItem")
-        {
-        char buffer[] = "hello, world";
-        // should find at the beginning
-        CHECK(string_util::stristr(buffer, "HelLo") == buffer);
-        }
-    SECTION("LastItemInSequenceString")
-        {
-        char buffer[] = "hello, world";
-        // should find last item in sequence
-        CHECK(string_util::stristr(buffer, "WORLD") == buffer+7);
-        }
-    SECTION("MiddleItemInSequenceString")
-        {
-        char buffer[] = "hello, world!!! Goodbye, cruel world!";
-        // should find last item in sequence
-        CHECK(string_util::stristr(buffer, "WORLD") == buffer+7);
-        }
-    SECTION("FindNothing")
-        {
-        char buffer[] = "hello, world";
-        // should find nothing and return nullptr
-        CHECK(string_util::stristr(buffer, "Help") == nullptr);
-        }
-    SECTION("FindNothingEmptySearchString")
-        {
-        char buffer[] = "hello, world";
-        // should find nothing and return nullptr
-        CHECK(string_util::stristr(buffer, "") == nullptr);
-        }
-    SECTION("EmptyString")
-        {
-        // should find nothing and return nullptr
-        CHECK(string_util::stristr("", "Hello") == nullptr);
-        }
-    SECTION("SubStringTooBig")
-        {
-        CHECK(string_util::stristr("Hello", "Hello World") == nullptr);
-        CHECK(string_util::stristr("Hello", "StringLongerThanMainString") == nullptr);
-        }
-    };
+    std::wstring text(L"Blah\n\nLine2");
+    CHECK(string_util::remove_blank_lines(text) == 1);
+    CHECK(text == L"Blah\nLine2");
+    }
 
-TEST_CASE("StrNChr", "[stringutil][StrNChr]")
+SECTION("RemoveBlankLines2")
     {
-    SECTION("Null")
-        {
-        CHECK(string_util::strnchr<char>(nullptr, ',', 5) == nullptr);
-        }
-    SECTION("NotSearchFarEnough")
-        {
-        char buffer[] = "hello, world";
-        // should only search "hello" and not find ,
-        CHECK(string_util::strnchr(buffer, ',', 5) == nullptr);
-        }
-    SECTION("FindFirstItem")
-        {
-        char buffer[] = "hello, world";
-        // should find first ,
-        CHECK(string_util::strnchr(buffer, ',', 6) == buffer+5);
-        }
-    SECTION("LastItemInSequenceString")
-        {
-        char buffer[] = "hello, world";
-        // should find last item in sequence
-        CHECK(string_util::strnchr(buffer, 'd', 12) == buffer+11);
-        }
-    SECTION("Find nothing")
-        {
-        char buffer[] = "hello, world";
-        // should find nothing and return size argument
-        CHECK(string_util::strnchr(buffer, 'z', 12) == nullptr);
-        }
-    SECTION("Empty string")
-        {
-        // should find nothing and nullptr
-        CHECK(string_util::strnchr("", 'z', 0) == nullptr);
-        }
-    SECTION("Boundary error")
-        {
-        wchar_t text[10];
-        std::wmemset(text, 0, 10);
-        text[0] = L'a';
-        text[1] = L'b';
-        text[2] = L'c';
-        // will really only scan first three letter, see the embedded NULLs, and return
-        // what the caller thought was the length of the string to know that it failed.
-        CHECK(string_util::strnchr<wchar_t>(text, L'x', 100) == nullptr);
-        }
-    };
+    std::wstring text(L"Blah\n\nLine2\n\n");
+    CHECK(string_util::remove_blank_lines(text) == 2);
+    CHECK(text == L"Blah\nLine2\n");
+    }
 
-TEST_CASE("StrtodEx", "[stringutil][StrtodEx]")
+SECTION("RemoveBlankLines3")
     {
-    SECTION("Null")
-        {
-        wchar_t* end;
-        CHECK(string_util::strtod_ex<wchar_t>(nullptr, &end) == 0);
-        CHECK(end == nullptr);
-        }
-    // make sure your system's region is set to English or won't work
-    // (this test case assumes US English decimal)
-    SECTION("Double")
-        {
-        wchar_t* end;
-        const wchar_t* value = L"5.27";
-        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.27);
-        // end should point to the value's null terminator
-        CHECK(end == (value+4));
-        CHECK(*end == 0);
-        }
-    SECTION("EndingHyphen")
-        {
-        wchar_t* end;
-        const wchar_t* value = L"5.27-";
-        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.27);
-        // end should point to the dash at the end
-        CHECK(end == (value+4));
-        CHECK(*end == L'-');
-        }
-    SECTION("Hyphen")
-        {
-        wchar_t* end;
-        const wchar_t* value = L"5.5-6";
-        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.75);
-        // end should point to the value's null terminator
-        CHECK(end == (value+5));
-        CHECK(*end == 0);
-        }
-    SECTION("Colon")
-        {
-        wchar_t* end;
-        const wchar_t* value = L"5.5:6";
-        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.75);
-        // end should point to the value's null terminator
-        CHECK(end == (value+5));
-        CHECK(*end == 0);
-        }
-    SECTION("NonDoubles")
-        {
-        wchar_t* end;
-        const wchar_t* value = L"5:8";
-        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 6.5);
-        // end should point to the value's null terminator
-        CHECK(end == (value+3));
-        CHECK(*end == 0);
-        }
-    SECTION("Zeros")
-        {
-        wchar_t* end;
-        const wchar_t* value = L"0:0.0";
-        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 0);
-        // end should point to the value's null terminator
-        CHECK(end == (value+5));
-        CHECK(*end == 0);
-        }
-    };
+    std::wstring text(L"Blah\r\n\r\nLine2\n\n");
+    CHECK(string_util::remove_blank_lines(text) == 3);
+    CHECK(text == L"Blah\r\nLine2\n");
+    }
 
-TEST_CASE("RemoveAllWhitespace", "[stringutil][RemoveAllWhitespace]")
+SECTION("RemoveSpacesEmpty")
     {
-    SECTION("HasWhitespaces")
-        {
-        std::wstring theWord = L"\nWords\rMore\n\rEnd.\n";
-        theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
-        CHECK(theWord == L"WordsMoreEnd.");
-        }
-    SECTION("AllWhitespaces")
-        {
-        std::wstring theWord = L"\n\r\n\r\n";
-        theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
-        CHECK(theWord == L"");
-        }
-    SECTION("HasNoWhitespaces")
-        {
-        std::wstring theWord = L"WordsMoreEnd.";
-        theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
-        CHECK(theWord == L"WordsMoreEnd.");
-        }
-    };
+    std::wstring text(L"");
+    CHECK(string_util::remove_extra_spaces(text) == 0);
+    CHECK(text == L"");
+    }
 
-TEST_CASE("Strnlen", "[stringutil][Strnlen]")
+SECTION("RemoveNoSpaces")
     {
-    SECTION("Nulls")
-        {
-        CHECK(string_util::strnlen<wchar_t>(nullptr, 5) == 0);
-        }
-    SECTION("Normal")
-        {
-        CHECK(string_util::strnlen(L"hello", 5) == 5);
-        CHECK(string_util::strnlen(L"longer string here. ", 20) == 20);
-        }
-    SECTION("NotScanningWholeText")
-        {
-        CHECK(string_util::strnlen(L"hello", 3) == 3);
-        CHECK(string_util::strnlen(L"longer string here. ", 15) == 15);
-        }
-    SECTION("MaxValueTooBig")
-        {
-        CHECK(string_util::strnlen(L"hello", 10) == 5);
-        CHECK(string_util::strnlen(L"longer string here. ", 999) == 20);
-        }
-    SECTION("BadString")
-        {
-        const wchar_t text[5] = { L'h', L'e', L'l', L'l', L'o' }; // no nullptr terminator
-        CHECK(string_util::strnlen(text, 5) == 5);
-        }
-    };
+    std::wstring text(L"hellothereworld!newline");
+    CHECK(string_util::remove_extra_spaces(text) == 0);
+    CHECK(text == L"hellothereworld!newline");
+    }
 
-TEST_CASE("StrNIStr", "[stringutil][StrNIStr]")
+SECTION("RemoveSpaces")
     {
-    SECTION("NotSearchFarEnough")
-        {
-        char buffer[] = "hello, world";
-        // should only search "hell" and not find "hello"
-        CHECK(string_util::strnistr(buffer, "HeLlO", 4) == nullptr);
-        }
-    SECTION("FindItemBufferAndSearchAreTheSame")
-        {
-        char buffer[] = "hello";
-        // should find first ,
-        CHECK(string_util::strnistr(buffer, "HelLo", std::strlen(buffer)) == buffer);
-        }
-    SECTION("FindFirstItem")
-        {
-        char buffer[] = "hello, world";
-        // should find first ,
-        CHECK(string_util::strnistr(buffer, "HelLo", 5) == buffer);
-        }
-    SECTION("FindItemInMiddle")
-        {
-        char buffer[] = "hello, there world";
-        // should find first ,
-        CHECK(string_util::strnistr(buffer, "THErE", std::strlen(buffer)) == buffer+7);
-        }
-    SECTION("LastItemInSequenceString")
-        {
-        char buffer[] = "hello, world";
-        // should find last item in sequence
-        CHECK(string_util::strnistr(buffer, "WORLD", std::strlen(buffer) ) == buffer+7);
-        }
-    SECTION("LastItemInSequenceStringCharacter")
-        {
-        char buffer[] = "hello, world";
-        //should find last item in sequence
-        CHECK(string_util::strnistr(buffer, "d", std::strlen(buffer) ) == buffer+11);
-        }
-    SECTION("FindNothing")
-        {
-        char buffer[] = "hello, world";
-        // should find nothing and return nullptr
-        CHECK(string_util::strnistr(buffer, "Help", std::strlen(buffer)) == nullptr);
-        }
-    SECTION("FindNothingPartialMatchAtEnd")
-        {
-        char buffer[] = "hello, world";
-        // should find nothing and return nullptr
-        CHECK(string_util::strnistr(buffer, "WORLDs", std::strlen(buffer)) == nullptr);
-        }
-    SECTION("FindNothingNonTerminatedBuffer")
-        {
-        char buffer[] = { 'h', 'e', 'l', 'l', 'o' };
-        // should find nothing and return nullptr
-        CHECK(string_util::strnistr(buffer, "hello there", 5) == nullptr);
-        }
-    SECTION("FindNothingEmptyString")
-        {
-        char buffer[] = "hello, world";
-        // should find nothing and return nullptr
-        CHECK(string_util::strnistr(buffer, "", std::strlen(buffer)) == nullptr);
-        }
-    SECTION("EmptyString")
-        {
-        // should find nothing and nullptr
-        CHECK(string_util::strnistr("", "Hello", 0) == nullptr);
-        }
-    SECTION("BoundaryError")
-        {
-        // pass in buffersize that is incorrect
-        CHECK(string_util::strnistr("", "Hello", 5) == nullptr);
-        }
-    SECTION("BoundaryError2")
-        {
-        // pass in buffersize that is incorrect
-        CHECK(string_util::strnistr("Hell", "Hello", 5) == nullptr);
-        }
-    SECTION("SubStringTooBig")
-        {
-        CHECK(string_util::strnistr("Hello", "Hello World", 11) == nullptr);
-        }
-    };
+    std::wstring text(L"hello  there    \t \r\n world !\r\nnew line");
+    CHECK(string_util::remove_extra_spaces(text) == 9);
+    CHECK(text == L"hello there world !\r\nnew line");
+    }
+
+SECTION("RemoveSpacesNoExtraSpaces")
+    {
+    std::wstring text(L"hello there\tworld!\r\nnew line");
+    CHECK(string_util::remove_extra_spaces(text) == 0);
+    CHECK(text == L"hello there\tworld!\r\nnew line");
+    }
+}
+;
+
+TEST_CASE("StrIStr", "[stringutil][StrIStr]"){
+    SECTION("TestNulls"){ CHECK(string_util::stristr<char>(nullptr, "HelLo") == nullptr);
+CHECK(string_util::stristr<char>("HelLo", nullptr) == nullptr);
+}
+
+SECTION("FindFirstItem")
+    {
+    char buffer[] = "hello, world";
+    // should find at the beginning
+    CHECK(string_util::stristr(buffer, "HelLo") == buffer);
+    }
+
+SECTION("LastItemInSequenceString")
+    {
+    char buffer[] = "hello, world";
+    // should find last item in sequence
+    CHECK(string_util::stristr(buffer, "WORLD") == buffer + 7);
+    }
+
+SECTION("MiddleItemInSequenceString")
+    {
+    char buffer[] = "hello, world!!! Goodbye, cruel world!";
+    // should find last item in sequence
+    CHECK(string_util::stristr(buffer, "WORLD") == buffer + 7);
+    }
+
+SECTION("FindNothing")
+    {
+    char buffer[] = "hello, world";
+    // should find nothing and return nullptr
+    CHECK(string_util::stristr(buffer, "Help") == nullptr);
+    }
+
+SECTION("FindNothingEmptySearchString")
+    {
+    char buffer[] = "hello, world";
+    // should find nothing and return nullptr
+    CHECK(string_util::stristr(buffer, "") == nullptr);
+    }
+
+SECTION("EmptyString")
+    {
+    // should find nothing and return nullptr
+    CHECK(string_util::stristr("", "Hello") == nullptr);
+    }
+
+SECTION("SubStringTooBig")
+    {
+    CHECK(string_util::stristr("Hello", "Hello World") == nullptr);
+    CHECK(string_util::stristr("Hello", "StringLongerThanMainString") == nullptr);
+    }
+}
+;
+
+TEST_CASE("StrNChr", "[stringutil][StrNChr]"){
+    SECTION("Null"){ CHECK(string_util::strnchr<char>(nullptr, ',', 5) == nullptr);
+}
+
+SECTION("NotSearchFarEnough")
+    {
+    char buffer[] = "hello, world";
+    // should only search "hello" and not find ,
+    CHECK(string_util::strnchr(buffer, ',', 5) == nullptr);
+    }
+
+SECTION("FindFirstItem")
+    {
+    char buffer[] = "hello, world";
+    // should find first ,
+    CHECK(string_util::strnchr(buffer, ',', 6) == buffer + 5);
+    }
+
+SECTION("LastItemInSequenceString")
+    {
+    char buffer[] = "hello, world";
+    // should find last item in sequence
+    CHECK(string_util::strnchr(buffer, 'd', 12) == buffer + 11);
+    }
+
+SECTION("Find nothing")
+    {
+    char buffer[] = "hello, world";
+    // should find nothing and return size argument
+    CHECK(string_util::strnchr(buffer, 'z', 12) == nullptr);
+    }
+
+SECTION("Empty string")
+    {
+    // should find nothing and nullptr
+    CHECK(string_util::strnchr("", 'z', 0) == nullptr);
+    }
+
+SECTION("Boundary error")
+    {
+    wchar_t text[10];
+    std::wmemset(text, 0, 10);
+    text[0] = L'a';
+    text[1] = L'b';
+    text[2] = L'c';
+    // will really only scan first three letter, see the embedded NULLs, and return
+    // what the caller thought was the length of the string to know that it failed.
+    CHECK(string_util::strnchr<wchar_t>(text, L'x', 100) == nullptr);
+    }
+}
+;
+
+TEST_CASE("StrtodEx", "[stringutil][StrtodEx]"){ SECTION("Null"){ wchar_t * end;
+CHECK(string_util::strtod_ex<wchar_t>(nullptr, &end) == 0);
+CHECK(end == nullptr);
+}
+
+// make sure your system's region is set to English or won't work
+// (this test case assumes US English decimal)
+SECTION("Double")
+    {
+    wchar_t* end;
+    const wchar_t* value = L"5.27";
+    CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.27);
+    // end should point to the value's null terminator
+    CHECK(end == (value + 4));
+    CHECK(*end == 0);
+    }
+
+SECTION("EndingHyphen")
+    {
+    wchar_t* end;
+    const wchar_t* value = L"5.27-";
+    CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.27);
+    // end should point to the dash at the end
+    CHECK(end == (value + 4));
+    CHECK(*end == L'-');
+    }
+
+SECTION("Hyphen")
+    {
+    wchar_t* end;
+    const wchar_t* value = L"5.5-6";
+    CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.75);
+    // end should point to the value's null terminator
+    CHECK(end == (value + 5));
+    CHECK(*end == 0);
+    }
+
+SECTION("Colon")
+    {
+    wchar_t* end;
+    const wchar_t* value = L"5.5:6";
+    CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.75);
+    // end should point to the value's null terminator
+    CHECK(end == (value + 5));
+    CHECK(*end == 0);
+    }
+
+SECTION("NonDoubles")
+    {
+    wchar_t* end;
+    const wchar_t* value = L"5:8";
+    CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 6.5);
+    // end should point to the value's null terminator
+    CHECK(end == (value + 3));
+    CHECK(*end == 0);
+    }
+
+SECTION("Zeros")
+    {
+    wchar_t* end;
+    const wchar_t* value = L"0:0.0";
+    CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 0);
+    // end should point to the value's null terminator
+    CHECK(end == (value + 5));
+    CHECK(*end == 0);
+    }
+}
+;
+
+TEST_CASE("RemoveAllWhitespace", "[stringutil][RemoveAllWhitespace]"){
+    SECTION("HasWhitespaces"){ std::wstring theWord = L"\nWords\rMore\n\rEnd.\n";
+theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+CHECK(theWord == L"WordsMoreEnd.");
+}
+
+SECTION("AllWhitespaces")
+    {
+    std::wstring theWord = L"\n\r\n\r\n";
+    theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+    CHECK(theWord == L"");
+    }
+
+SECTION("HasNoWhitespaces")
+    {
+    std::wstring theWord = L"WordsMoreEnd.";
+    theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+    CHECK(theWord == L"WordsMoreEnd.");
+    }
+}
+;
+
+TEST_CASE("Strnlen", "[stringutil][Strnlen]"){
+    SECTION("Nulls"){ CHECK(string_util::strnlen<wchar_t>(nullptr, 5) == 0);
+}
+
+SECTION("Normal")
+    {
+    CHECK(string_util::strnlen(L"hello", 5) == 5);
+    CHECK(string_util::strnlen(L"longer string here. ", 20) == 20);
+    }
+
+SECTION("NotScanningWholeText")
+    {
+    CHECK(string_util::strnlen(L"hello", 3) == 3);
+    CHECK(string_util::strnlen(L"longer string here. ", 15) == 15);
+    }
+
+SECTION("MaxValueTooBig")
+    {
+    CHECK(string_util::strnlen(L"hello", 10) == 5);
+    CHECK(string_util::strnlen(L"longer string here. ", 999) == 20);
+    }
+
+SECTION("BadString")
+    {
+    const wchar_t text[5] = { L'h', L'e', L'l', L'l', L'o' }; // no nullptr terminator
+    CHECK(string_util::strnlen(text, 5) == 5);
+    }
+}
+;
+
+TEST_CASE("StrNIStr",
+          "[stringutil][StrNIStr]"){ SECTION("NotSearchFarEnough"){ char buffer[] = "hello, world";
+// should only search "hell" and not find "hello"
+CHECK(string_util::strnistr(buffer, "HeLlO", 4) == nullptr);
+}
+
+SECTION("FindItemBufferAndSearchAreTheSame")
+    {
+    char buffer[] = "hello";
+    // should find first ,
+    CHECK(string_util::strnistr(buffer, "HelLo", std::strlen(buffer)) == buffer);
+    }
+
+SECTION("FindFirstItem")
+    {
+    char buffer[] = "hello, world";
+    // should find first ,
+    CHECK(string_util::strnistr(buffer, "HelLo", 5) == buffer);
+    }
+
+SECTION("FindItemInMiddle")
+    {
+    char buffer[] = "hello, there world";
+    // should find first ,
+    CHECK(string_util::strnistr(buffer, "THErE", std::strlen(buffer)) == buffer + 7);
+    }
+
+SECTION("LastItemInSequenceString")
+    {
+    char buffer[] = "hello, world";
+    // should find last item in sequence
+    CHECK(string_util::strnistr(buffer, "WORLD", std::strlen(buffer)) == buffer + 7);
+    }
+
+SECTION("LastItemInSequenceStringCharacter")
+    {
+    char buffer[] = "hello, world";
+    // should find last item in sequence
+    CHECK(string_util::strnistr(buffer, "d", std::strlen(buffer)) == buffer + 11);
+    }
+
+SECTION("FindNothing")
+    {
+    char buffer[] = "hello, world";
+    // should find nothing and return nullptr
+    CHECK(string_util::strnistr(buffer, "Help", std::strlen(buffer)) == nullptr);
+    }
+
+SECTION("FindNothingPartialMatchAtEnd")
+    {
+    char buffer[] = "hello, world";
+    // should find nothing and return nullptr
+    CHECK(string_util::strnistr(buffer, "WORLDs", std::strlen(buffer)) == nullptr);
+    }
+
+SECTION("FindNothingNonTerminatedBuffer")
+    {
+    char buffer[] = { 'h', 'e', 'l', 'l', 'o' };
+    // should find nothing and return nullptr
+    CHECK(string_util::strnistr(buffer, "hello there", 5) == nullptr);
+    }
+
+SECTION("FindNothingEmptyString")
+    {
+    char buffer[] = "hello, world";
+    // should find nothing and return nullptr
+    CHECK(string_util::strnistr(buffer, "", std::strlen(buffer)) == nullptr);
+    }
+
+SECTION("EmptyString")
+    {
+    // should find nothing and nullptr
+    CHECK(string_util::strnistr("", "Hello", 0) == nullptr);
+    }
+
+SECTION("BoundaryError")
+    {
+    // pass in buffersize that is incorrect
+    CHECK(string_util::strnistr("", "Hello", 5) == nullptr);
+    }
+
+SECTION("BoundaryError2")
+    {
+    // pass in buffersize that is incorrect
+    CHECK(string_util::strnistr("Hell", "Hello", 5) == nullptr);
+    }
+
+SECTION("SubStringTooBig") { CHECK(string_util::strnistr("Hello", "Hello World", 11) == nullptr); }
+}
+;
 
 TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator]")
     {
@@ -1252,43 +1308,54 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
 
     SECTION("Null")
         {
-        CHECK(0 == wcstod_thousands_separator(nullptr, nullptr));
+        auto [value, end] = wcstod_thousands_separator(nullptr);
+        CHECK(value == 0.0);
+        CHECK(end == nullptr);
         }
 
     SECTION("Skip Spaces")
         {
         setlocale(LC_NUMERIC, "de-DE");
-	    const wchar_t* buffer = L"    8.080.287.890,47 ml";
-	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"    8.080.287.890,47 ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(8080287890.47, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
     SECTION("Plus")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer = L"+8,080,287,890.47 ml";
-	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"+8,080,287,890.47 ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(8080287890.47, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
     SECTION("Minus")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer = L"-8,080,287,890.47 ml";
-	    wchar_t* end;
-	    CHECK_THAT(-8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"-8,080,287,890.47 ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(-8080287890.47, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
-
+    
     SECTION("Long Number")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer =
-            L"-8,080,287,890.457425548545785245742554854578524574255485457852457425548545785245742554854578524574255485457852";
-	    wchar_t* end;
-	    CHECK_THAT(-8080287890.45743, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"-8,080,287,890."
+                                L"45742554854578524574255485457852457425548545785245742554854578524"
+                                L"5742554854578524574255485457852";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(-8080287890.45743, WithinRel(value, 1e-4));
         // some of the ridiculously long number string will not be read and converted
         CHECK(0 == wcsncmp(end, L"425548545785245742554854578524574255485457852", 45));
         }
@@ -1296,44 +1363,56 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
     SECTION("Short Number")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer = L"-8ml";
-	    wchar_t* end;
-	    CHECK_THAT(-8, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"-8ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(-8.0, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L"ml", 2));
         }
 
     SECTION("Not A Number")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer = L",ml";
-	    wchar_t* end;
-	    CHECK_THAT(0, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L",ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(0.0, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L",ml", 3));
         }
 
     SECTION("German")
         {
         setlocale(LC_NUMERIC, "de-DE");
-	    const wchar_t* buffer = L"8.080.287.890,47 ml";
-	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"8.080.287.890,47 ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(8080287890.47, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
     SECTION("English")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer = L"8,080,287,890.47 ml";
-	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        const wchar_t* buffer = L"8,080,287,890.47 ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(8080287890.47, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
     SECTION("Ignore End")
         {
         setlocale(LC_NUMERIC, "en-US");
-	    const wchar_t* buffer = L"8,080,287,890.47 ml";
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, nullptr), 1e-4));
+        const wchar_t* buffer = L"8,080,287,890.47 ml";
+
+        auto [value, end] = wcstod_thousands_separator(buffer);
+
+        CHECK_THAT(8080287890.47, WithinRel(value, 1e-4));
+        // end intentionally ignored
         }
 
     setlocale(LC_NUMERIC, "");
@@ -1394,7 +1473,7 @@ TEST_CASE("Superscript/Subscrpt", "[stringutil][superscript][subscript]")
         CHECK(L'⁷' == string_util::to_superscript(L'７'));
         CHECK(L'⁸' == string_util::to_superscript(L'８'));
         CHECK(L'⁹' == string_util::to_superscript(L'９'));
-        CHECK(L'*' == string_util::to_superscript(L'*'));                            
+        CHECK(L'*' == string_util::to_superscript(L'*'));
 
         CHECK(string_util::is_superscript_number(L'⁰'));
         CHECK(string_util::is_superscript_number(L'¹'));
@@ -1477,9 +1556,11 @@ TEST_CASE("Find Whole Word", "[stringutil][whole word]")
     {
     SECTION("Find")
         {
-        std::wstring needle{L"needle"};
-        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                "knitting-needle? Anyway, just find needle" };
+        std::wstring needle{ L"needle" };
+        std::wstring haystack{
+            L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+            "knitting-needle? Anyway, just find needle"
+        };
         CHECK(0 == string_util::find_whole_word(haystack, needle));
         CHECK(94 == string_util::find_whole_word(haystack, needle, 1));
         CHECK(94 == string_util::find_whole_word(haystack, needle, 94));
@@ -1490,9 +1571,11 @@ TEST_CASE("Find Whole Word", "[stringutil][whole word]")
 
     SECTION("Find with newlines")
         {
-        std::wstring needle{L"needle"};
-        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                "knitting\nneedle? Anyway, just find\nneedle" };
+        std::wstring needle{ L"needle" };
+        std::wstring haystack{
+            L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+            "knitting\nneedle? Anyway, just find\nneedle"
+        };
         CHECK(0 == string_util::find_whole_word(haystack, needle));
         CHECK(94 == string_util::find_whole_word(haystack, needle, 1));
         CHECK(94 == string_util::find_whole_word(haystack, needle, 94));
@@ -1502,9 +1585,11 @@ TEST_CASE("Find Whole Word", "[stringutil][whole word]")
 
     SECTION("No Find")
         {
-        std::wstring needle{L"pin"};
-        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                 "knitting-needle? Anyway, just find needle" };
+        std::wstring needle{ L"pin" };
+        std::wstring haystack{
+            L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+            "knitting-needle? Anyway, just find needle"
+        };
         CHECK(-1 == string_util::find_whole_word(haystack, needle));
         CHECK(-1 == string_util::find_whole_word(haystack, needle, 500));
         CHECK(-1 == string_util::find_whole_word(haystack, std::wstring(L"")));
@@ -1513,9 +1598,9 @@ TEST_CASE("Find Whole Word", "[stringutil][whole word]")
     }
 
 TEST_CASE("Tokenize", "[stringutil][tokenize]")
-	{
-	SECTION("DelimAtFrontWord")
-		{
+    {
+    SECTION("DelimAtFrontWord")
+        {
         string_util::string_tokenize<std::wstring> tok(L"-vanilla", L"-", false);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1525,9 +1610,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
-		}
+        }
     SECTION("DelimAtEndWord")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-", L"-", true);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1537,9 +1622,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.get_next_token() == L"");
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
-		}
+        }
     SECTION("HyphenWord")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"-", L"-", false);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1549,18 +1634,18 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.get_next_token() == L"");
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
-		}
+        }
     SECTION("BlankWord")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"", L"-", true);
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"");
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
-		}
+        }
     SECTION("TwoDelims")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-cake/frosting", L"-/", true);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1574,9 +1659,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"");
-		}
+        }
     SECTION("SkipEmptyTokens")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"the--end", L"-", true);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1586,9 +1671,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.get_next_token() == L"end");
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
-		}
+        }
     SECTION("RepeatedDelimns")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"the--end", L"-", false);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1601,9 +1686,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.get_next_token() == L"end");
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
-		}
+        }
     SECTION("HyphenTriWord")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-cake-frosting", L"-", true);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1617,9 +1702,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"");
-		}
+        }
     SECTION("HyphenatedWord")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-cake", L"-", true);
         CHECK(tok.has_more_tokens());
         CHECK(tok.has_more_delimiters());
@@ -1630,9 +1715,9 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"");
-		}
+        }
     SECTION("NoDelimiters")
-		{
+        {
         string_util::string_tokenize<std::wstring> tok(L"vanilla", L"-", true);
         CHECK(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
@@ -1640,17 +1725,95 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK_FALSE(tok.has_more_tokens());
         CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"");
-		}
+        }
+    SECTION("OnlyDelimitersSkipEmpty")
+        {
+        string_util::string_tokenize<std::wstring> tok(L"--", L"-", true);
+
+        CHECK(tok.has_more_tokens());     // input exists
+        CHECK(tok.has_more_delimiters()); // yes, it's delimiters
+
+        CHECK(tok.get_next_token() == L""); // nothing to return
+
+        CHECK_FALSE(tok.has_more_tokens());     // now exhausted
+        CHECK_FALSE(tok.has_more_delimiters()); // no more scanning
+
+        CHECK(tok.get_next_token() == L""); // stable after exhaustion
+        }
+    SECTION("TrailingRepeatedDelims")
+        {
+        string_util::string_tokenize<std::wstring> tok(L"a--", L"-", true);
+
+        CHECK(tok.has_more_tokens());
+        CHECK(tok.get_next_token() == L"a");
+
+        // still scanning input, even though no non-empty tokens remain
+        CHECK(tok.has_more_tokens());
+
+        // consume the remainder
+        CHECK(tok.get_next_token() == L"");
+
+        CHECK_FALSE(tok.has_more_tokens());
+        }
+    SECTION("LeadingRepeatedDelims")
+        {
+        string_util::string_tokenize<std::wstring> tok(L"--a", L"-", true);
+        CHECK(tok.get_next_token() == L"a");
+        CHECK_FALSE(tok.has_more_tokens());
+        }
+    SECTION("AdjacentMixedDelimiters")
+        {
+        string_util::string_tokenize<std::wstring> tok(L"a-/-b", L"-/", true);
+        CHECK(tok.get_next_token() == L"a");
+        CHECK(tok.get_next_token() == L"b");
+        CHECK_FALSE(tok.has_more_tokens());
+        }
+    SECTION("RepeatedCallsAfterExhaustion")
+        {
+        string_util::string_tokenize<std::wstring> tok(L"a-b", L"-", true);
+        CHECK(tok.get_next_token() == L"a");
+        CHECK(tok.get_next_token() == L"b");
+        CHECK_FALSE(tok.has_more_tokens());
+        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token() == L"");
+        }
+    SECTION("UnicodeDelimiter")
+        {
+        string_util::string_tokenize<std::wstring> tok(L"foo—bar", L"—", true);
+        CHECK(tok.get_next_token() == L"foo");
+        CHECK(tok.get_next_token() == L"bar");
+        CHECK_FALSE(tok.has_more_tokens());
+        }
+    SECTION("CountTokensMatchesIteration")
+        {
+        std::wstring text = L"a--b-c";
+        string_util::string_tokenize<std::wstring> tok(text, L"-", true);
+
+        size_t count = tok.count_tokens(text);
+        size_t iterCount = 0;
+
+        while (tok.has_more_tokens())
+            {
+            [[maybe_unused]] auto retVal = tok.get_next_token();
+            ++iterCount;
+            }
+
+        CHECK(count == iterCount);
+        }
     }
 
 TEST_CASE("String Equal Functors", "[stringutil][equal]")
     {
     SECTION("NoCaseStringMap")
         {
-        CHECK_FALSE((equal_basic_string_i_compare_map<std::wstring,size_t>(L"bob").operator()(std::make_pair(L"Fred",2))));
-        CHECK((equal_basic_string_i_compare_map<std::wstring,size_t>(L"fred").operator()(std::make_pair(L"Fred",2))));
-        CHECK((equal_basic_string_i_compare_map<std::wstring,size_t>(L"bob").operator()(std::make_pair(L"bob",2))));
-        CHECK_FALSE((equal_basic_string_i_compare_map<std::wstring,size_t>(L"bob").operator()(std::make_pair(L"bobby",2))));
+        CHECK_FALSE((equal_basic_string_i_compare_map<std::wstring, size_t>(L"bob").operator()(
+            std::make_pair(L"Fred", 2))));
+        CHECK((equal_basic_string_i_compare_map<std::wstring, size_t>(L"fred").operator()(
+            std::make_pair(L"Fred", 2))));
+        CHECK((equal_basic_string_i_compare_map<std::wstring, size_t>(L"bob").operator()(
+            std::make_pair(L"bob", 2))));
+        CHECK_FALSE((equal_basic_string_i_compare_map<std::wstring, size_t>(L"bob").operator()(
+            std::make_pair(L"bobby", 2))));
         }
     SECTION("StringCompare")
         {
@@ -1724,25 +1887,32 @@ TEST_CASE("Replace whole word", "[stringutil][whole word]")
     {
     SECTION("Find")
         {
-        std::wstring needle{L"needle"};
-        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                 "knitting-needle? Anyway, just find needle" };
+        std::wstring needle{ L"needle" };
+        std::wstring haystack{
+            L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+            "knitting-needle? Anyway, just find needle"
+        };
         string_util::replace_all_whole_word<std::wstring>(haystack, needle, L"pin");
-        CHECK(std::wstring(L"pin in the haystack. There are needles in the haystack, including knittingneedles."
-                               "knitting-pin? Anyway, just find pin") == haystack);
+        CHECK(std::wstring(L"pin in the haystack. There are needles in the haystack, including "
+                           L"knittingneedles."
+                           "knitting-pin? Anyway, just find pin") == haystack);
         string_util::replace_all_whole_word<std::wstring>(haystack, L"pin", L"needle");
-        CHECK(std::wstring(L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                 "knitting-needle? Anyway, just find needle") == haystack);
+        CHECK(std::wstring(L"needle in the haystack. There are needles in the haystack, including "
+                           L"knittingneedles."
+                           "knitting-needle? Anyway, just find needle") == haystack);
         }
 
     SECTION("No Find")
         {
-        std::wstring needle{L"pin"};
-        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                 "knitting-needle? Anyway, just find needle" };
+        std::wstring needle{ L"pin" };
+        std::wstring haystack{
+            L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+            "knitting-needle? Anyway, just find needle"
+        };
         string_util::replace_all_whole_word<std::wstring>(haystack, needle, L"pin");
-        CHECK(std::wstring(L"needle in the haystack. There are needles in the haystack, including knittingneedles."
-                                 "knitting-needle? Anyway, just find needle") == haystack);
+        CHECK(std::wstring(L"needle in the haystack. There are needles in the haystack, including "
+                           L"knittingneedles."
+                           "knitting-needle? Anyway, just find needle") == haystack);
         }
     }
 
@@ -1756,13 +1926,15 @@ TEST_CASE("Is neither", "[isneither]")
 
         CHECK(is_either(5.1, 5.12, 0.9) == false);
         CHECK(is_either(L'a', L'b', L'z') == false);
-        CHECK(is_either(std::wstring(L"the"), std::wstring(L"there"), std::wstring(L"The")) == false);
+        CHECK(is_either(std::wstring(L"the"), std::wstring(L"there"), std::wstring(L"The")) ==
+              false);
         }
     SECTION("Is Neither")
         {
         CHECK(is_neither(5.1, 5.1, 0.9) == false);
         CHECK(is_neither(L'a', L'a', L'z') == false);
-        CHECK(is_neither(std::wstring(L"the"), std::wstring(L"there"), std::wstring(L"the")) == false);
+        CHECK(is_neither(std::wstring(L"the"), std::wstring(L"there"), std::wstring(L"the")) ==
+              false);
 
         CHECK(is_neither(5.1, 5.12, 0.9));
         CHECK(is_neither(L'a', L'b', L'z'));

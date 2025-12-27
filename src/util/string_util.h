@@ -345,19 +345,21 @@ namespace string_util
         @param buffer The string buffer to read a number from.
         @param[out] endPtr The (optional) pointer in the buffer where the number text ends.
             (Will be the null terminator if the entire string is a number.)
-        @returns The string's value converted to a number. (Will be zero if conversion failed.)
-        @todo Need to support 0x (hex) strings.*/
+        @returns A tuple containing the converted numeric value and the end position.
+            The numeric value will be zero and the end pointer will be
+            @c nullptr if conversion failed.*/
     [[nodiscard]]
-    inline double wcstod_thousands_separator(const wchar_t* buffer, wchar_t** endPtr)
+    inline std::tuple<double, const wchar_t*> wcstod_thousands_separator(const wchar_t* buffer)
         {
         if (buffer == nullptr)
             {
-            return 0;
+            return { 0.0, nullptr };
             }
 
         // vanilla version of reading as a number
-        wchar_t* end(nullptr);
-        auto value = std::wcstod(buffer, &end);
+        wchar_t* wcstodEnd = nullptr;
+        double value = std::wcstod(buffer, &wcstodEnd);
+        const wchar_t* end = wcstodEnd;
 
         // step over any space like wcstod would have done
         while (buffer < end && std::iswspace(*buffer) != 0)
@@ -367,16 +369,13 @@ namespace string_util
 
         // if wcstod ran into what appears to be a thousands separator,
         // then weed those out and try wcstod again
-        if ( // wcstod actually read a little bit at least
-            end > buffer &&
-            // but stopped on a thousands separator
-            (*end == ',' || *end == '.') &&
-            // and what's after the thousands separator is a number
-            *(end + 1) != 0 && is_numeric_8bit(*(end + 1)))
+        if (end > buffer && (*end == L',' || *end == L'.') && *(end + 1) != 0 &&
+            is_numeric_8bit(*(end + 1)))
             {
-            const auto thousandsSep = *end;
-            const auto* realNumberStart = buffer;
-            const auto* realNumberEnd = buffer;
+            const wchar_t thousandsSep{ *end };
+            const wchar_t* realNumberStart{ buffer };
+            const wchar_t* realNumberEnd{ buffer };
+
             // scan past any numbers, +/-, and thousands & radix separators
             while (*realNumberEnd != 0 &&
                    (is_numeric_8bit(*realNumberEnd) || is_either(*realNumberEnd, L',', L'.') ||
@@ -384,11 +383,13 @@ namespace string_util
                 {
                 ++realNumberEnd;
                 }
-            // copy over the number text from the buffer, but skipping over the thousands separators
-            constexpr std::size_t bufferSize = 64;
-            std::array<wchar_t, bufferSize> realNumberStr{};
-            size_t newNumBufferCounter{ 0 };
-            while (realNumberStart < realNumberEnd && newNumBufferCounter + 1 < bufferSize)
+
+            // copy over the number text from the buffer, skipping thousands separators
+            constexpr std::size_t BUFFER_SIZE{ 64 };
+            std::array<wchar_t, BUFFER_SIZE> realNumberStr{};
+            std::size_t newNumBufferCounter{ 0 };
+
+            while (realNumberStart < realNumberEnd && newNumBufferCounter + 1 < BUFFER_SIZE)
                 {
                 if (*realNumberStart != thousandsSep)
                     {
@@ -396,17 +397,12 @@ namespace string_util
                     }
                 ++realNumberStart;
                 }
-            end = const_cast<wchar_t*>(realNumberStart);
-            // try wcstod again
+
+            end = realNumberStart;
             value = std::wcstod(realNumberStr.data(), nullptr);
             }
-        // set the end to where we read, if caller asked for it
-        if (endPtr != nullptr)
-            {
-            *endPtr = end;
-            }
 
-        return value;
+        return { value, end };
         }
 
     /** Returns the number of characters in the string pointed to by @c str, not including the
@@ -486,7 +482,7 @@ namespace string_util
         for (size_t i = 0; i < charCount; ++i)
             {
             // compare the characters one at a time
-            size_t j = 0;
+            size_t j{ 0 };
             for (j = 0; strSearch[j] != 0; ++j)
                 {
                 if ((i + j) >= charCount || string[i + j] == 0)
@@ -535,12 +531,14 @@ namespace string_util
         if (charCount > 0)
             {
             int f{ 0 }, l{ 0 };
+            // NOLINTBEGIN(bugprone-signed-char-misuse,cert-str34-c) custom tolower handles cast
             do
                 {
                 f = string_util::tolower(*(first++));
                 l = string_util::tolower(*(second++));
                 } while ((--charCount) && f && (f == l));
             result = (f - l);
+            // NOLINTEND(bugprone-signed-char-misuse,cert-str34-c)
             }
         return result;
         }
@@ -581,11 +579,13 @@ namespace string_util
             }
 
         int f{ 0 }, l{ 0 };
+        // NOLINTBEGIN(bugprone-signed-char-misuse,cert-str34-c) custom tolower handles cast
         do
             {
             f = string_util::tolower(*(first++));
             l = string_util::tolower(*(second++));
             } while (f != 0 && (f == l));
+        // NOLINTEND(bugprone-signed-char-misuse,cert-str34-c)
 
         return (f - l);
         }
@@ -636,11 +636,10 @@ namespace string_util
             // process run of digits
             if (is_numeric_8bit(ch1) && is_numeric_8bit(ch2))
                 {
-                wchar_t *firstEnd{ nullptr }, *secondEnd{ nullptr };
-                const double firstDouble =
-                    wcstod_thousands_separator(first_string + first_string_index, &firstEnd);
-                const double secondDouble =
-                    wcstod_thousands_separator(second_string + second_string_index, &secondEnd);
+                const auto [firstDouble, firstEnd] =
+                    wcstod_thousands_separator(first_string + first_string_index);
+                const auto [secondDouble, secondEnd] =
+                    wcstod_thousands_separator(second_string + second_string_index);
 
                 if (firstDouble < secondDouble)
                     {
@@ -1396,105 +1395,119 @@ namespace string_util
     class string_tokenize
         {
       public:
+        using char_type = typename T::value_type;
+        using string_view = std::basic_string_view<char_type>;
+
         string_tokenize() = delete;
         string_tokenize(const string_tokenize&) = delete;
 
-        /// @brief Constructor which takes the string to parse and the delimiters to use.
-        /// @param val The string to parse.
-        /// @param delims The set of delimiters to separate the string.
-        /// @param skipEmptyTokens @c true to skip empty tokens
-        ///     (i.e., ignoring consecutive delimiters).
-        string_tokenize(const T& val, std::wstring delims, const bool skipEmptyTokens) noexcept
-            : m_value(val), m_delims(std::move(delims)), m_skip_empty_tokens(skipEmptyTokens),
-              m_has_more_tokens(!val.empty())
+        /** @brief Initializes the tokenizer with a string and delimiters.
+            @param val The string to tokenize.
+            @param delims The set of delimiter characters used to separate tokens.
+            @param skipEmptyTokens @c true to skip empty tokens
+                (i.e., ignoring consecutive delimiters or leading/trailing delimiters).
+        */
+        string_tokenize(T val, std::wstring delims, bool skipEmptyTokens) noexcept
+            : m_value(std::move(val)), m_delims(std::move(delims)),
+              m_skip_empty_tokens(skipEmptyTokens), m_has_more_tokens(!m_value.empty()),
+              m_view(m_value)
             {
-            m_start = m_value.c_str();
-            m_next_delim = string_util::strcspn_pointer(m_start, std::wstring_view{ m_delims });
             }
 
-        /// @param val The string to tokenize.
-        /// @returns The number of tokens in a provided string.
         [[nodiscard]]
         size_t count_tokens(const T& val)
             {
-            size_t tokenCount{ 0 };
-            for (size_t i = 0; i < val.length(); ++i)
+            if (val.empty())
                 {
-                if (is_one_of<wchar_t>(val[i], m_delims.c_str()))
+                return 0;
+                }
+
+            size_t count{ 0 };
+            bool in_token{ false };
+
+            for (char_type ch : val)
+                {
+                if (m_delims.find(ch) != std::wstring::npos)
                     {
-                    if (m_skip_empty_tokens)
+                    if (!m_skip_empty_tokens || in_token)
                         {
-                        if (i + 1 < val.length() &&
-                            is_one_of<wchar_t>(val[i + 1], m_delims.c_str()))
-                            {
-                            continue;
-                            }
-                        ++tokenCount;
+                        ++count;
                         }
-                    else
-                        {
-                        ++tokenCount;
-                        }
+                    in_token = false;
+                    }
+                else
+                    {
+                    in_token = true;
                     }
                 }
-            return tokenCount + 1;
+
+            return count + (in_token ? 1 : 0);
             }
 
-        /// @returns Whether or not there are more tokens in the string.
         [[nodiscard]]
         bool has_more_tokens() const noexcept
             {
             return m_has_more_tokens;
             }
 
-        /// @returns Whether or not there are more delimiters in the string.\n
-        ///     This is useful for seeing if there are any delimiters at all when
-        ///     first loading the string.
         [[nodiscard]]
         bool has_more_delimiters() const noexcept
             {
-            return (m_next_delim != nullptr);
+            return m_view.find_first_of(m_delims, m_pos) != string_view::npos;
             }
 
-        /// @returns The next token from the original string as a string object
-        /// @note Empty tokens can be returned if there is proceeding or trailing
-        ///     delimiters in the string, or if there are repeated delimiters next to each other.
         [[nodiscard]]
         T get_next_token()
             {
-            if (m_next_delim != nullptr)
+            if (!m_has_more_tokens)
                 {
-                const wchar_t* current_start = m_start;
-                const wchar_t* current_next_delim = m_next_delim;
-                // move the pointers to the next token
-                m_start = ++m_next_delim;
-                m_next_delim = string_util::strcspn_pointer(m_start, std::wstring_view{ m_delims });
-                if ((current_next_delim - current_start) == 0 && m_skip_empty_tokens)
+                return T{};
+                }
+
+            while (true)
+                {
+                const std::size_t delim_pos = m_view.find_first_of(m_delims, m_pos);
+
+                if (delim_pos != string_view::npos)
                     {
-                    return get_next_token();
+                    const std::size_t len = delim_pos - m_pos;
+
+                    const std::size_t token_start = m_pos;
+                    m_pos = delim_pos + 1;
+
+                    if (len == 0 && m_skip_empty_tokens)
+                        {
+                        continue;
+                        }
+
+                    return T{ m_view.substr(token_start, len) };
                     }
-                return T(current_start, current_next_delim - current_start);
+                else
+                    {
+                    // last token
+                    m_has_more_tokens = false;
+
+                    const std::size_t token_start = m_pos;
+                    m_pos = m_view.size();
+
+                    if (token_start == m_view.size() && m_skip_empty_tokens)
+                        {
+                        return T{};
+                        }
+
+                    return T{ m_view.substr(token_start) };
+                    }
                 }
-            // no more delims means that we are on the last token
-            if (m_start != nullptr)
-                {
-                m_has_more_tokens = false;
-                const wchar_t* current_start = m_start;
-                m_start = nullptr;
-                return T(current_start);
-                }
-            // if called when there are no more tokens, then return an empty string
-            m_has_more_tokens = false;
-            return T{};
             }
 
       private:
         T m_value;
-        const wchar_t* m_start{ nullptr };
-        const wchar_t* m_next_delim{ nullptr };
         std::wstring m_delims;
         bool m_skip_empty_tokens{ true };
         bool m_has_more_tokens{ false };
+
+        string_view m_view;
+        std::size_t m_pos{ 0 };
         };
 
     /// @brief Removes all whitespace from a string
