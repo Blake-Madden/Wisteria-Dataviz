@@ -45,13 +45,6 @@ namespace string_util
     /// @private
     inline wchar_t tolower(wchar_t c) { return std::towlower(c); }
 
-    // strlen
-    /// @private
-    inline size_t strlen(const char* text) { return std::strlen(text); }
-
-    /// @private
-    inline size_t strlen(const wchar_t* text) { return std::wcslen(text); }
-
     /// @brief Determines if a given value is either of two other given values.
     /// @param value The value to compare with.
     /// @param first The first value to compare against.
@@ -367,7 +360,7 @@ namespace string_util
         auto value = std::wcstod(buffer, &end);
 
         // step over any space like wcstod would have done
-        while (buffer < end && std::iswspace(*buffer))
+        while (buffer < end && std::iswspace(*buffer) != 0)
             {
             ++buffer;
             }
@@ -392,8 +385,8 @@ namespace string_util
                 ++realNumberEnd;
                 }
             // copy over the number text from the buffer, but skipping over the thousands separators
-            constexpr size_t bufferSize{ 64 };
-            wchar_t realNumberStr[bufferSize]{ 0 };
+            constexpr std::size_t bufferSize = 64;
+            std::array<wchar_t, bufferSize> realNumberStr{};
             size_t newNumBufferCounter{ 0 };
             while (realNumberStart < realNumberEnd && newNumBufferCounter + 1 < bufferSize)
                 {
@@ -405,7 +398,7 @@ namespace string_util
                 }
             end = const_cast<wchar_t*>(realNumberStart);
             // try wcstod again
-            value = std::wcstod(realNumberStr, nullptr);
+            value = std::wcstod(realNumberStr.data(), nullptr);
             }
         // set the end to where we read, if caller asked for it
         if (endPtr != nullptr)
@@ -428,7 +421,7 @@ namespace string_util
     [[nodiscard]]
     size_t strnlen(const T* str, const size_t maxlen) noexcept
         {
-        if (!str || maxlen == 0)
+        if (str == nullptr || maxlen == 0)
             {
             return 0;
             }
@@ -447,7 +440,7 @@ namespace string_util
     [[nodiscard]]
     const T* stristr(const T* string, const T* strSearch) noexcept
         {
-        if (!string || !strSearch || *strSearch == 0)
+        if (string == nullptr || strSearch == nullptr || *strSearch == 0)
             {
             return nullptr;
             }
@@ -486,7 +479,7 @@ namespace string_util
     [[nodiscard]]
     const T* strnistr(const T* string, const T* strSearch, const size_t charCount) noexcept
         {
-        if (!string || !strSearch || charCount == 0 || *strSearch == 0)
+        if (string == nullptr || strSearch == nullptr || charCount == 0 || *strSearch == 0)
             {
             return nullptr;
             }
@@ -524,15 +517,15 @@ namespace string_util
     int strnicmp(const T* first, const T* second, size_t charCount) noexcept
         {
         // first check if either of the strings are null
-        if (!first && !second)
+        if (first == nullptr && second == nullptr)
             {
             return 0;
             }
-        if (!first && second)
+        if (first == nullptr && second != nullptr)
             {
             return -1;
             }
-        if (first && !second)
+        if (first != nullptr && second == nullptr)
             {
             return 1;
             }
@@ -547,7 +540,7 @@ namespace string_util
                 f = string_util::tolower(*(first++));
                 l = string_util::tolower(*(second++));
                 } while ((--charCount) && f && (f == l));
-            result = static_cast<int>(f - l);
+            result = (f - l);
             }
         return result;
         }
@@ -574,15 +567,15 @@ namespace string_util
     int stricmp(const T* first, const T* second) noexcept
         {
         // first check if either of the strings are null
-        if (!first && !second)
+        if (first == nullptr && second == nullptr)
             {
             return 0;
             }
-        if (!first && second)
+        if (first == nullptr && second != nullptr)
             {
             return -1;
             }
-        if (first && !second)
+        if (first != nullptr && second == nullptr)
             {
             return 1;
             }
@@ -592,9 +585,9 @@ namespace string_util
             {
             f = string_util::tolower(*(first++));
             l = string_util::tolower(*(second++));
-            } while (f && (f == l));
+            } while (f != 0 && (f == l));
 
-        return static_cast<int>(f - l);
+        return (f - l);
         }
 
     /** @brief Natural order comparison (recognizes numeric strings).
@@ -604,38 +597,38 @@ namespace string_util
         @param case_insensitive Whether the comparison should be case insensitive.
         @returns @c -1 if the first string is less, 1 if the first string is greater,
             or @c 0 if the strings are equal.*/
-    template<typename T>
     [[nodiscard]]
-    int strnatordcmp(const T* first_string, const T* second_string, bool case_insensitive = false)
+    inline int strnatordcmp(const wchar_t* first_string, const wchar_t* second_string,
+                     bool case_insensitive = false)
         {
         // first check if either of the strings are null
-        if (!first_string && !second_string)
+        if (first_string == nullptr && second_string == nullptr)
             {
             return 0;
             }
-        if (!first_string && second_string)
+        if (first_string == nullptr && second_string != nullptr)
             {
             return -1;
             }
-        if (first_string && !second_string)
+        if (first_string != nullptr && second_string == nullptr)
             {
             return 1;
             }
 
-        size_t first_string_index = 0, second_string_index = 0;
+        size_t first_string_index{ 0 }, second_string_index{ 0 };
 
         while (true)
             {
-            T ch1 = first_string[first_string_index];
-            T ch2 = second_string[second_string_index];
+            wchar_t ch1 = first_string[first_string_index];
+            wchar_t ch2 = second_string[second_string_index];
 
             // skip leading spaces
-            while (std::iswspace(ch1))
+            while (std::iswspace(ch1) != 0)
                 {
                 ch1 = first_string[++first_string_index];
                 }
 
-            while (std::iswspace(ch2))
+            while (std::iswspace(ch2) != 0)
                 {
                 ch2 = second_string[++second_string_index];
                 }
@@ -643,7 +636,7 @@ namespace string_util
             // process run of digits
             if (is_numeric_8bit(ch1) && is_numeric_8bit(ch2))
                 {
-                T *firstEnd(nullptr), *secondEnd(nullptr);
+                wchar_t *firstEnd{ nullptr }, *secondEnd{ nullptr };
                 const double firstDouble =
                     wcstod_thousands_separator(first_string + first_string_index, &firstEnd);
                 const double secondDouble =
@@ -722,9 +715,8 @@ namespace string_util
     /// @param a The first string to compare.
     /// @param b The second string to compare.
     /// @returns The comparison result.
-    template<typename T>
     [[nodiscard]]
-    int strnatordncasecmp(const T* a, const T* b)
+    inline int strnatordncasecmp(const wchar_t* a, const wchar_t* b)
         {
         return strnatordcmp(a, b, true);
         }
@@ -764,11 +756,11 @@ namespace string_util
                             const wchar_t closeSymbol,
                             const bool fail_on_overlapping_open_symbol) noexcept
         {
-        if (!stringToSearch)
+        if (stringToSearch == nullptr)
             {
             return nullptr;
             }
-        long open_stack = 0;
+        long open_stack{ 0 };
         while (*stringToSearch != 0)
             {
             if (stringToSearch[0] == openSymbol)
@@ -854,7 +846,7 @@ namespace string_util
             }
         const T* const originalStart = stringToSearch;
         long open_stack = 0;
-        while (*stringToSearch)
+        while (*stringToSearch != 0)
             {
             if (stringToSearch[0] == openSymbol &&
                 ((stringToSearch == originalStart) || stringToSearch[-1] != L'\\'))
@@ -897,7 +889,7 @@ namespace string_util
             }
         const T* const originalStart = stringToSearch;
         long open_stack = 0;
-        while (*stringToSearch)
+        while (*stringToSearch != 0)
             {
             if (stringToSearch[0] == L'\n' || stringToSearch[0] == L'\r')
                 {
@@ -983,7 +975,7 @@ namespace string_util
             {
             return nullptr;
             }
-        while (*stringToSearch)
+        while (*stringToSearch != 0)
             {
             // if on an escape character, then step over that and whatever it's escaping
             if (*stringToSearch == L'\\')
@@ -1014,7 +1006,7 @@ namespace string_util
             {
             return nullptr;
             }
-        while (*stringToSearch && numberOfCharacters > 0)
+        while (*stringToSearch != 0 && numberOfCharacters > 0)
             {
             // if on an escape character, then step over that
             if (*stringToSearch == L'\\')
@@ -1051,7 +1043,7 @@ namespace string_util
             {
             return nullptr;
             }
-        while (*stringToSearch && numberOfCharacters > 0)
+        while (*stringToSearch != 0 && numberOfCharacters > 0)
             {
             if (stringToSearch[0] == L'\n' || stringToSearch[0] == L'\r')
                 {
@@ -1116,28 +1108,22 @@ namespace string_util
         @param searchSequence The sequence of characters to search for.
             If any character in this sequence is found in @c stringToSearch,
             then its position will be returned.
-        @param searchSeqLength The length of the search sequence.
         @returns A pointer to where the character was found, or @c nullptr if not found.*/
     template<typename T>
     [[nodiscard]]
-    const T* strcspn_pointer(const T* stringToSearch, const T* searchSequence,
-                             const size_t searchSeqLength) noexcept
+    const T* strcspn_pointer(const T* stringToSearch,
+                             std::basic_string_view<T> searchSequence) noexcept
         {
-        if (!stringToSearch || !searchSequence || searchSeqLength == 0)
+        if (stringToSearch == nullptr || searchSequence.empty())
             {
             return nullptr;
             }
-        assert((string_util::strlen(searchSequence) == searchSeqLength) &&
-               "Invalid length passed to strcspn_pointer().");
-        while (stringToSearch)
+
+        while (*stringToSearch != 0)
             {
-            if (stringToSearch[0] == 0)
+            for (T chr : searchSequence)
                 {
-                return nullptr;
-                }
-            for (size_t i = 0; i < searchSeqLength; ++i)
-                {
-                if (stringToSearch[0] == searchSequence[i])
+                if (*stringToSearch == chr)
                     {
                     return stringToSearch;
                     }
@@ -1351,7 +1337,7 @@ namespace string_util
             {
             return str;
             }
-        auto left = str.cbegin();
+        std::wstring_view::const_iterator left = str.cbegin();
         for (;; ++left)
             {
             if (left == str.cend())
@@ -1363,7 +1349,7 @@ namespace string_util
                 break;
                 }
             }
-        auto right = std::prev(str.cend());
+        std::wstring_view::const_iterator right = std::prev(str.cend());
         for (; right > left && std::iswspace(*right) != 0; --right)
             {
             }
@@ -1443,8 +1429,7 @@ namespace string_util
               m_has_more_tokens(!val.empty())
             {
             m_start = m_value.c_str();
-            m_next_delim =
-                string_util::strcspn_pointer(m_start, m_delims.c_str(), m_delims.length());
+            m_next_delim = string_util::strcspn_pointer(m_start, std::wstring_view{ m_delims });
             }
 
         /// @param val The string to tokenize.
@@ -1503,8 +1488,7 @@ namespace string_util
                 const wchar_t* current_next_delim = m_next_delim;
                 // move the pointers to the next token
                 m_start = ++m_next_delim;
-                m_next_delim =
-                    string_util::strcspn_pointer(m_start, m_delims.c_str(), m_delims.length());
+                m_next_delim = string_util::strcspn_pointer(m_start, std::wstring_view{ m_delims });
                 if ((current_next_delim - current_start) == 0 && m_skip_empty_tokens)
                     {
                     return get_next_token();
@@ -1786,8 +1770,7 @@ namespace string_util
             *endptr = nullptr;
             return 0.0;
             }
-        constexpr wchar_t sepStr[3] = { 0x2D, 0x3A, 0 };
-        const auto* separator = string_util::strcspn_pointer<Tchar_type>(nptr, sepStr, 2);
+        const auto* separator = string_util::strcspn_pointer<wchar_t>(nptr, L"-:");
         // if there is no hyphen or there is one, but it is at the end, then just call strtod
         if (separator == nullptr || *(separator + 1) == 0)
             {

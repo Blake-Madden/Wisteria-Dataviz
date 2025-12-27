@@ -41,7 +41,8 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         const char* const creator = std::strstr(ps_buffer, "%%Creator:");
         if (creator != nullptr && creator < endSentinel)
             {
-            const char* const endOfCreator = string_util::strcspn_pointer(creator + 10, "\r\n", 2);
+            const char* const endOfCreator =
+                string_util::strcspn_pointer<char>(creator + 10, "\r\n");
             if (endOfCreator != nullptr && endOfCreator < endSentinel)
                 {
                 if ((string_util::strnistr(creator, "dvips", (endOfCreator - creator)) !=
@@ -61,7 +62,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         if (title != nullptr && title + 8 < endSentinel)
             {
             title += 8;
-            const char* const endOfTitle = string_util::strcspn_pointer(title, "\r\n", 2);
+            const char* const endOfTitle = string_util::strcspn_pointer<char>(title, "\r\n");
             if (endOfTitle != nullptr && endOfTitle < endSentinel)
                 {
                 m_title.assign(title, endOfTitle - title);

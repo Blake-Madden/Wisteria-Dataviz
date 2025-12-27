@@ -303,7 +303,6 @@ namespace lily_of_the_valley
                 {
                 if (m_matrix)
                     {
-#pragma omp parallel for
                     for (int64_t row = 0; row < static_cast<int64_t>(m_matrix->size()); ++row)
                         {
                         for (auto& cell : (*m_matrix)[static_cast<size_t>(row)])

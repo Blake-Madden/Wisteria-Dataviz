@@ -265,7 +265,7 @@ namespace lily_of_the_valley
                     }
                 /* find the matching >, but watch out for an errant < also in case
                    the previous < wasn't terminated properly*/
-                end = string_util::strcspn_pointer<wchar_t>(start + 1, L"<>", 2);
+                end = string_util::strcspn_pointer<wchar_t>(start + 1, L"<>");
                 if (end == nullptr)
                     {
                     break;

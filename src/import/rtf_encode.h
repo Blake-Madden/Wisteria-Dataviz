@@ -9,15 +9,14 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __RTF_ENCODE_H__
-#define __RTF_ENCODE_H__
+#ifndef RTF_ENCODE_H
+#define RTF_ENCODE_H
 
 #include "../util/string_util.h"
 
 namespace lily_of_the_valley
     {
     /// @brief Class to format text into RTF.
-    /// @date 2010
     class rtf_encode_text
         {
       public:
@@ -91,18 +90,13 @@ namespace lily_of_the_valley
         [[nodiscard]]
         bool needs_to_be_encoded(std::wstring_view text) const
             {
-            if (text.empty())
-                {
-                return false;
-                }
-            auto foundPos = std::ranges::find_if(
-                text, [](const auto ch) noexcept
-                { return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t")); });
-            return (foundPos != text.cend());
+            return std::ranges::any_of(
+                text, [](wchar_t ch) noexcept
+                { return ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t"); });
             }
         };
     } // namespace lily_of_the_valley
 
 /** @} */
 
-#endif //__RTF_ENCODE_H__
+#endif // RTF_ENCODE_H

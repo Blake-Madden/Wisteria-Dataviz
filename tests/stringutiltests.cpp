@@ -494,12 +494,12 @@ TEST_CASE("Natural Order Cmp", "[stringutil][natural order]")
     SECTION("Nulls")
         {
         CHECK(string_util::strnatordcmp(L"", L"", true) == 0);
-        CHECK(string_util::strnatordcmp<wchar_t>(nullptr, nullptr, true) == 0);
-        CHECK(string_util::strnatordcmp<wchar_t>(nullptr, nullptr, false) == 0);
-        CHECK(string_util::strnatordcmp<wchar_t>(nullptr, L"word", true) < 0);
-        CHECK(string_util::strnatordcmp<wchar_t>(nullptr, L"word", false) < 0);
-        CHECK(string_util::strnatordcmp<wchar_t>(L"word", nullptr, true) > 0);
-        CHECK(string_util::strnatordcmp<wchar_t>(L"word", nullptr, false) > 0);
+        CHECK(string_util::strnatordcmp(nullptr, nullptr, true) == 0);
+        CHECK(string_util::strnatordcmp(nullptr, nullptr, false) == 0);
+        CHECK(string_util::strnatordcmp(nullptr, L"word", true) < 0);
+        CHECK(string_util::strnatordcmp(nullptr, L"word", false) < 0);
+        CHECK(string_util::strnatordcmp(L"word", nullptr, true) > 0);
+        CHECK(string_util::strnatordcmp(L"word", nullptr, false) > 0);
         }
 
     SECTION("SuperScript")
@@ -639,38 +639,36 @@ TEST_CASE("StrCSpnPointer", "[stringutil][StrCSpnPointer]")
     {
     SECTION("TestNulls")
         {
-        CHECK(string_util::strcspn_pointer<char>(nullptr, "hello", 5) == nullptr);
-        CHECK(string_util::strcspn_pointer<char>("HelLo", nullptr, 0) == nullptr);
-        CHECK(string_util::strcspn_pointer<char>(nullptr, nullptr, 0) == nullptr);
+        CHECK(string_util::strcspn_pointer<char>(nullptr, "hello") == nullptr);
         }
     SECTION("FindFirst")
         {
         const char* buffer = "<blah blah>";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer);
         buffer = ">blah blah>";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer);
         }
     SECTION("FindMiddle")
         {
         const char* buffer = "blah <blah";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+5);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+5);
         buffer = "blah >blah";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+5);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+5);
         }
     SECTION("FindLast")
         {
         const char* buffer = "blah blah<";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+9);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+9);
         buffer = "blah blah>";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+9);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == buffer+9);
         }
     SECTION("NotFind")
         {
         const char* buffer = "blah blah";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == nullptr);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == nullptr);
         buffer = "blah blah";
-        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == nullptr);
-        CHECK(string_util::strcspn_pointer<char>("", "<>", 2) == nullptr);
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>") == nullptr);
+        CHECK(string_util::strcspn_pointer<char>("", "<>") == nullptr);
         }
     }
 

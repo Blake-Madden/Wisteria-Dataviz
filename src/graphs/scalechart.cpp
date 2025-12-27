@@ -278,8 +278,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             const auto currentScore = std::clamp<double>(scoresColumn->GetValue(i), yStart, yEnd);
 
             wxCoord yPt{ 0 };
-            assert(GetScalingAxis().GetPhysicalCoordinate(currentScore, yPt) &&
-                   L"Unable to find point on scale chart!");
+            wxASSERT_MSG(GetScalingAxis().GetPhysicalCoordinate(currentScore, yPt),
+                         L"Unable to find point on scale chart!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.

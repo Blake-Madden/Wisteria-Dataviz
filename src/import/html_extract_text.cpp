@@ -342,8 +342,8 @@ namespace lily_of_the_valley
                     index += currentStartPosition;
                     if (text[index] == L'&')
                         {
-                        const auto* semicolon = string_util::strcspn_pointer<wchar_t>(
-                            text + index + 1, L";< \t\n\r", 6);
+                        const auto* semicolon =
+                            string_util::strcspn_pointer<wchar_t>(text + index + 1, L";< \t\n\r");
                         /* this should not happen in valid HTML, but in case there is an
                            orphan '&' then skip it and look for the next item.*/
                         if (semicolon == nullptr || (semicolon > text + textSize))
@@ -937,14 +937,15 @@ namespace lily_of_the_valley
                 return std::make_pair(nullptr, 0);
                 }
 
-            const wchar_t* end =
-                (allowQuotedTags && allowSpacesInValue) ?
-                    string_util::strcspn_pointer(foundTag, L"\"'>;", 4) :
-                allowQuotedTags    ? string_util::strcspn_pointer(foundTag, L" \"'>;", 5) :
-                allowSpacesInValue ? string_util::strcspn_pointer(foundTag, L"\"'>", 3) :
+            const std::wstring_view terminators =
+                (allowQuotedTags && allowSpacesInValue) ? L"\"'>;" :
+                allowQuotedTags                         ? L" \"'>;" :
+                allowSpacesInValue                      ? L"\"'>" :
                                      // not allowing spaces and the tag is not inside quotes
                                      // (like a style section)
-                                     string_util::strcspn_pointer(foundTag, L" \"'>", 4);
+                                     L" \"'>";
+
+            const wchar_t* end = string_util::strcspn_pointer(foundTag, terminators);
             if ((end != nullptr) && (end <= elementEnd))
                 {
                 // If at the end of the element, trim off any trailing spaces or a terminating '/'.
@@ -2797,13 +2798,13 @@ namespace html_utilities
         const wchar_t* endQuote = nullptr;
         if (firstLinkChar == L'"' || firstLinkChar == L'\'')
             {
-            endQuote = string_util::strcspn_pointer<wchar_t>(base, L"\"\'", 2);
+            endQuote = string_util::strcspn_pointer<wchar_t>(base, L"\"\'");
             }
         // if hack author forgot to quote the link, then look for matching space
         else
             {
             --base;
-            endQuote = string_util::strcspn_pointer<wchar_t>(base, L" \r\n\t>", 5);
+            endQuote = string_util::strcspn_pointer<wchar_t>(base, L" \r\n\t>");
             }
 
         // if src is malformed, then go to next one
@@ -2975,7 +2976,7 @@ namespace html_utilities
                                 return nullptr;
                                 }
                             const auto* endOfTag =
-                                string_util::strcspn_pointer<wchar_t>(m_html_text, L"'\">", 3);
+                                string_util::strcspn_pointer<wchar_t>(m_html_text, L"'\">");
                             // if link is malformed then go to next one
                             if (endOfTag == nullptr || (endOfTag > m_html_text_end))
                                 {

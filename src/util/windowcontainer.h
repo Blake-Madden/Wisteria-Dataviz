@@ -193,7 +193,7 @@ class WindowContainer
         for (auto* currentWindow : m_windows | std::views::reverse)
             {
             wxASSERT_MSG(currentWindow, L"NULL window in window container!");
-            if (currentWindow && currentWindow->IsKindOf(classInfo))
+            if (currentWindow != nullptr && currentWindow->IsKindOf(classInfo))
                 {
                 return currentWindow;
                 }

@@ -155,14 +155,14 @@ namespace lily_of_the_valley
         static void get_flipped_buffer(wchar_t* destination, const char* unicodeText,
                                        const size_t length)
             {
-            auto flippedBuffer = std::make_unique<char[]>(length + 1);
+            std::vector<char> flippedBuffer(length + 1, '\0'); // fully zeroed
             // copy over the words (two byte pair), but flip the bytes around
             for (size_t i = 0; i < length; i += 2)
                 {
                 flippedBuffer[i] = unicodeText[i + 1];
                 flippedBuffer[i + 1] = unicodeText[i];
                 }
-            convert_unicode_char_stream(destination, flippedBuffer.get(), length);
+            convert_unicode_char_stream(destination, flippedBuffer.data(), length);
             }
 
         /** @brief Copies the bytes of unicodeText into destination.

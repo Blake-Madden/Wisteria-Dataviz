@@ -271,11 +271,12 @@ namespace Wisteria::UI
             @param format The number format used to display the value
             @param sortableValue An underlying value that can be assigned to the cell
                 for when it is compared to other cells during a sort operation.*/
-        virtual void
-        SetItemText(size_t row, size_t column, const wxString& text,
-                    NumberFormatInfo format =
-                        NumberFormatInfo{ NumberFormatInfo::NumberFormatType::StandardFormatting },
-                    double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
+        virtual void SetItemText(
+            size_t row, size_t column, const wxString& text,
+            NumberFormatInfo format /*NumberFormatInfo{
+                                       NumberFormatInfo::NumberFormatType::StandardFormatting }*/
+            ,
+            double sortableValue /* std::numeric_limits<double>::quiet_NaN()*/) = 0;
         /// @returns The row's attributes (visual look).
         /// @param row The row to return.
         [[nodiscard]]
