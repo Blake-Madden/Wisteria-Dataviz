@@ -11,7 +11,6 @@
 using namespace string_util;
 using namespace Catch::Matchers;
 
-// clang-format off
 TEST_CASE("find_unescaped_char", "[stringutil][search]")
     {
     std::wstring_view st{ L"Hello there!" };
@@ -386,7 +385,7 @@ TEST_CASE("Trim", "[stringutil][trim]")
 
         str = L"";
         ltrim(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
         }
 
     SECTION("RightTrim")
@@ -405,7 +404,7 @@ TEST_CASE("Trim", "[stringutil][trim]")
 
         str = L"";
         rtrim(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
         }
 
     SECTION("Trim")
@@ -424,7 +423,7 @@ TEST_CASE("Trim", "[stringutil][trim]")
 
         str = L"";
         trim(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
         }
 
     SECTION("LeftTrimPunct")
@@ -443,7 +442,7 @@ TEST_CASE("Trim", "[stringutil][trim]")
 
         str = L"";
         ltrim_punct(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
         }
 
     SECTION("RightTrimPunct")
@@ -462,7 +461,7 @@ TEST_CASE("Trim", "[stringutil][trim]")
 
         str = L"";
         rtrim_punct(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
         }
 
     SECTION("TrimPunct")
@@ -481,11 +480,11 @@ TEST_CASE("Trim", "[stringutil][trim]")
 
         str = L"";
         trim_punct(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
 
         str = L"::{.!@#$";
         trim_punct(str);
-        CHECK(str == L"");
+        CHECK(str.empty());
         }
     }
 
@@ -930,7 +929,7 @@ TEST_CASE("Find Matching Tag Unescaped",
 TEST_CASE("RemoveSpaces",
           "[stringutil][RemoveSpaces]"){ SECTION("RemoveBlankLinesEmpty"){ std::wstring text(L"");
 CHECK(string_util::remove_blank_lines(text) == 0);
-CHECK(text == L"");
+CHECK(text.empty());
 }
 
 SECTION("RemoveBlankLines")
@@ -958,7 +957,7 @@ SECTION("RemoveSpacesEmpty")
     {
     std::wstring text(L"");
     CHECK(string_util::remove_extra_spaces(text) == 0);
-    CHECK(text == L"");
+    CHECK(text.empty());
     }
 
 SECTION("RemoveNoSpaces")
@@ -1169,7 +1168,7 @@ SECTION("AllWhitespaces")
     {
     std::wstring theWord = L"\n\r\n\r\n";
     theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
-    CHECK(theWord == L"");
+    CHECK(theWord.empty());
     }
 
 SECTION("HasNoWhitespaces")
@@ -1345,7 +1344,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         CHECK_THAT(-8080287890.47, WithinRel(value, 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
-    
+
     SECTION("Long Number")
         {
         setlocale(LC_NUMERIC, "en-US");
@@ -1356,8 +1355,6 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         auto [value, end] = wcstod_thousands_separator(buffer);
 
         CHECK_THAT(-8080287890.45743, WithinRel(value, 1e-4));
-        // some of the ridiculously long number string will not be read and converted
-        CHECK(0 == wcsncmp(end, L"425548545785245742554854578524574255485457852", 45));
         }
 
     SECTION("Short Number")
@@ -1416,6 +1413,58 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         }
 
     setlocale(LC_NUMERIC, "");
+    }
+
+TEST_CASE("is_extended_ascii basic argument validation", "[is_extended_ascii]")
+    {
+    CHECK_FALSE(string_util::is_extended_ascii<char>(nullptr, 10));
+    CHECK_FALSE(string_util::is_extended_ascii<char>("abc", 0));
+    }
+
+TEST_CASE("is_extended_ascii detects embedded null followed by non-null", "[is_extended_ascii]")
+    {
+    const char buffer[] = { 'A', 'B', '\0', 'C', 'D' };
+
+    CHECK_FALSE(string_util::is_extended_ascii(buffer, sizeof(buffer)));
+    }
+
+TEST_CASE("is_extended_ascii allows small buffers without spaces", "[is_extended_ascii]")
+    {
+    const char buffer[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    REQUIRE(sizeof(buffer) <= 128);
+    CHECK(string_util::is_extended_ascii(buffer, sizeof(buffer)));
+    }
+
+TEST_CASE("is_extended_ascii allows small buffers with high-bit bytes", "[is_extended_ascii]")
+    {
+    const unsigned char buffer[] = { 0xC3, 0xA9, 0xC3, 0xB1, 0xC3, 0xB6 };
+
+    REQUIRE(sizeof(buffer) <= 128);
+    CHECK(string_util::is_extended_ascii(buffer, sizeof(buffer)));
+    }
+
+TEST_CASE("is_extended_ascii large buffer with whitespace returns true", "[is_extended_ascii]")
+    {
+    std::string buffer(200, 'A');
+    buffer[100] = ' '; // introduce ASCII whitespace
+
+    CHECK(string_util::is_extended_ascii(buffer.data(), buffer.size()));
+    }
+
+TEST_CASE("is_extended_ascii large buffer without whitespace returns false", "[is_extended_ascii]")
+    {
+    std::string buffer(200, 'A');
+
+    CHECK_FALSE(string_util::is_extended_ascii(buffer.data(), buffer.size()));
+    }
+
+TEST_CASE("is_extended_ascii unsigned char behaves same as char", "[is_extended_ascii]")
+    {
+    std::vector<unsigned char> buffer(200, static_cast<unsigned char>('A'));
+    buffer[50] = static_cast<unsigned char>(' ');
+
+    CHECK(string_util::is_extended_ascii(buffer.data(), buffer.size()));
     }
 
 TEST_CASE("Superscript/Subscrpt", "[stringutil][superscript][subscript]")
@@ -1603,142 +1652,120 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         {
         string_util::string_tokenize<std::wstring> tok(L"-vanilla", L"-", false);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.has_delimiters());
+        CHECK(tok.get_next_token().empty());
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         }
     SECTION("DelimAtEndWord")
         {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-", L"-", true);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
+        CHECK(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         }
     SECTION("HyphenWord")
         {
         string_util::string_tokenize<std::wstring> tok(L"-", L"-", false);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.has_delimiters());
+        CHECK(tok.get_next_token().empty());
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         }
     SECTION("BlankWord")
         {
         string_util::string_tokenize<std::wstring> tok(L"", L"-", true);
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK_FALSE(tok.has_delimiters());
+        CHECK(tok.get_next_token().empty());
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         }
     SECTION("TwoDelims")
         {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-cake/frosting", L"-/", true);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
+        CHECK(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"cake");
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"frosting");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         }
     SECTION("SkipEmptyTokens")
         {
         string_util::string_tokenize<std::wstring> tok(L"the--end", L"-", true);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
+        CHECK(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"the");
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"end");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         }
     SECTION("RepeatedDelimns")
         {
         string_util::string_tokenize<std::wstring> tok(L"the--end", L"-", false);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
+        CHECK(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"the");
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"end");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         }
     SECTION("HyphenTriWord")
         {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-cake-frosting", L"-", true);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
+        CHECK(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"cake");
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"frosting");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         }
     SECTION("HyphenatedWord")
         {
         string_util::string_tokenize<std::wstring> tok(L"vanilla-cake", L"-", true);
         CHECK(tok.has_more_tokens());
-        CHECK(tok.has_more_delimiters());
+        CHECK(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
         CHECK(tok.get_next_token() == L"cake");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         }
     SECTION("NoDelimiters")
         {
         string_util::string_tokenize<std::wstring> tok(L"vanilla", L"-", true);
         CHECK(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
+        CHECK_FALSE(tok.has_delimiters());
         CHECK(tok.get_next_token() == L"vanilla");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK_FALSE(tok.has_more_delimiters());
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
         }
     SECTION("OnlyDelimitersSkipEmpty")
         {
         string_util::string_tokenize<std::wstring> tok(L"--", L"-", true);
 
-        CHECK(tok.has_more_tokens());     // input exists
-        CHECK(tok.has_more_delimiters()); // yes, it's delimiters
+        CHECK(tok.has_more_tokens()); // input exists
+        CHECK(tok.has_delimiters()); // yes, it's delimiters
 
-        CHECK(tok.get_next_token() == L""); // nothing to return
+        CHECK(tok.get_next_token().empty()); // nothing to return
 
-        CHECK_FALSE(tok.has_more_tokens());     // now exhausted
-        CHECK_FALSE(tok.has_more_delimiters()); // no more scanning
+        CHECK_FALSE(tok.has_more_tokens()); // now exhausted
 
-        CHECK(tok.get_next_token() == L""); // stable after exhaustion
+        CHECK(tok.get_next_token().empty()); // stable after exhaustion
         }
     SECTION("TrailingRepeatedDelims")
         {
@@ -1751,7 +1778,7 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.has_more_tokens());
 
         // consume the remainder
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
 
         CHECK_FALSE(tok.has_more_tokens());
         }
@@ -1774,8 +1801,8 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         CHECK(tok.get_next_token() == L"a");
         CHECK(tok.get_next_token() == L"b");
         CHECK_FALSE(tok.has_more_tokens());
-        CHECK(tok.get_next_token() == L"");
-        CHECK(tok.get_next_token() == L"");
+        CHECK(tok.get_next_token().empty());
+        CHECK(tok.get_next_token().empty());
         }
     SECTION("UnicodeDelimiter")
         {
@@ -1794,7 +1821,8 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
 
         while (tok.has_more_tokens())
             {
-            [[maybe_unused]] auto retVal = tok.get_next_token();
+            [[maybe_unused]]
+            auto retVal = tok.get_next_token();
             ++iterCount;
             }
 
@@ -1962,4 +1990,3 @@ TEST_CASE("Is trademark", "[trademark]")
     }
 
 // NOLINTEND
-// clang-format on

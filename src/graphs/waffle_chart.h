@@ -35,7 +35,9 @@ namespace Wisteria::Graphs
         ///     to ensure that the waffle has a minimum number of cells.
         struct GridRounding
             {
+            /// @brief The minimum number of cells for the final grid/waffle.
             size_t m_numberOfCells{ 100 };
+            /// @brief Which shape to use if extra cells must be added.
             size_t m_shapesIndex{ 0 };
             };
 

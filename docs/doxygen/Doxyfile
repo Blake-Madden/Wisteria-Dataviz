@@ -1073,6 +1073,10 @@ EXCLUDE                = ../../src/easyexif \
                          ../../src/graphs/candlestickplot.cpp \
                          ../../src/graphs/boxplot.cpp \
                          ../../src/data/dataset.cpp \
+                         ../../src/ui/controls/sidebar.cpp \
+                         ../../src/ui/controls/sidebarbook.cpp \
+                         ../../src/ui/controls/codeeditor.cpp \
+                         ../../src/ui/controls/htmltablewin.cpp \
                          ../../wxWidgets_lib \
                          ../../tests \
                          ../../cmake-build-debug \

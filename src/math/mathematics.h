@@ -136,7 +136,6 @@ template<typename T1, typename T2>
 class comparable_first_pair
     {
   public:
-    /// @brief Default constructor.
     comparable_first_pair() = default;
 
     /** @brief Constructor that takes to separate values.
@@ -144,12 +143,9 @@ class comparable_first_pair
         @param t2 The second of the pair.*/
     comparable_first_pair(T1 t1, T2 t2) noexcept : first(std::move(t1)), second(std::move(t2)) {}
 
-    /** @brief Constructor that assigns a standard pair to this one.
-        @param that The standard pair to assign from.*/
     comparable_first_pair(const comparable_first_pair&) = default;
 
-    /** @brief Assigns a pair to this one.
-        @param that The standard pair to assign from.*/
+    /// @private
     comparable_first_pair& operator=(const comparable_first_pair&) = default;
 
     /** @returns @c true if this is less than another pair.
