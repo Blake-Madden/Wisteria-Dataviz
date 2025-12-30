@@ -14,6 +14,7 @@
 
 #include "../import/xlsx_extract_text.h"
 #include "../util/zipcatalog.h"
+#include <ranges>
 #include <variant>
 #include <wx/string.h>
 
@@ -37,7 +38,7 @@ namespace Wisteria::Data
 
         /** @returns The list of worksheet names in the Excel file.*/
         [[nodiscard]]
-        const std::vector<std::wstring>& GetWorksheetNames() const noexcept
+        std::vector<std::wstring> GetWorksheetNames() const
             {
             return m_xlsxTextExtractor.get_worksheet_names();
             }

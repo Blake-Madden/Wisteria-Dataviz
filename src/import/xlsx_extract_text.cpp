@@ -760,7 +760,7 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void xlsx_extract_text::read_worksheet_names(const wchar_t* text, const size_t text_length)
         {
-        m_worksheet_names.clear();
+        m_worksheet_names_and_ids.clear();
         if (text == nullptr || text_length == 0)
             {
             return;
@@ -773,22 +773,77 @@ namespace lily_of_the_valley
             return;
             }
         const wchar_t* const sheetsEnd =
-            html_extract_text::find_closing_element(text + 6, textEnd, L"sheets");
+            html_extract_text::find_closing_element(std::next(text, 6), textEnd, L"sheets");
         if (sheetsEnd != nullptr)
             {
+            constexpr std::wstring_view SHEET{ L"sheet" };
             // go through all the worksheet names
-            while ((text = html_extract_text::find_element(text, textEnd, L"sheet", true)) !=
+            while ((text = html_extract_text::find_element(text, textEnd, SHEET.data(), true)) !=
                    nullptr)
                 {
                 // read in the name of the current worksheet
                 std::wstring worksheetName =
                     html_extract_text::read_attribute_as_string(text, L"name", false, true);
-                if (!worksheetName.empty())
+                std::wstring worksheetRelativeId =
+                    html_extract_text::read_attribute_as_string(text, L"r:id", false, true);
+                if (!worksheetName.empty() && !worksheetRelativeId.empty())
                     {
-                    m_worksheet_names.push_back(std::move(worksheetName));
+                    m_worksheet_names_and_ids.emplace_back(std::move(worksheetName),
+                                                   std::move(worksheetRelativeId));
                     }
-                text += 5;
+                std::advance(text, SHEET.length());
                 }
+            }
+        }
+
+    //------------------------------------------------------------------
+    void xlsx_extract_text::read_relative_paths(const wchar_t* xml, const size_t length)
+        {
+        m_relative_paths.clear();
+
+        if (xml == nullptr || length == 0)
+            {
+            return;
+            }
+
+        const wchar_t* const textEnd = xml + length;
+        const wchar_t* text = xml;
+        constexpr std::wstring_view RELATIONSHIP{ L"Relationship" };
+
+        while ((text = html_extract_text::find_element(text, textEnd, RELATIONSHIP.data(), true)) !=
+               nullptr)
+            {
+            std::wstring id = html_extract_text::read_attribute_as_string(text, L"Id", false, true);
+            std::wstring target =
+                html_extract_text::read_attribute_as_string(text, L"Target", false, true);
+
+            if (!id.empty() && !target.empty())
+                {
+                m_relative_paths.emplace(std::move(id), std::move(target));
+                }
+            std::advance(text, RELATIONSHIP.length());
+            }
+        }
+
+    //------------------------------------------------------------------
+    void xlsx_extract_text::xlsx_extract_text::map_workbook_paths()
+        {
+        m_worksheet_paths.clear();
+
+        for (const auto& [sheetName, relId] : m_worksheet_names_and_ids)
+            {
+            const auto relIt = m_relative_paths.find(relId);
+            if (relIt == m_relative_paths.end())
+                {
+                log_message(sheetName +
+                            L": worksheet relationship ID not found in workbook.xml.rels");
+                }
+
+            // targets in workbook.xml.rels are relative to xl/
+            std::wstring fullPath = L"xl/";
+            fullPath += relIt->second;
+
+            m_worksheet_paths.emplace_back(sheetName, std::move(fullPath));
             }
         }
 

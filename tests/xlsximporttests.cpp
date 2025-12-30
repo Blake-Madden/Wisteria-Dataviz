@@ -1,12 +1,180 @@
 // NOLINTBEGIN
-// clang-format off
 
+#include "../src/import/xlsx_extract_text.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../src/import/xlsx_extract_text.h"
 
 using namespace Catch::Matchers;
 using namespace lily_of_the_valley;
+
+TEST_CASE("get_worksheet_names returns names parsed from workbook.xml", "[xlsx][workbook][names]")
+    {
+    const wchar_t workbook_xml[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Overview" sheetId="5" r:id="rId12"/>
+    <sheet name="Metrics"  sheetId="1" r:id="rId3"/>
+    <sheet name="RawData"  sheetId="9" r:id="rId20"/>
+  </sheets>
+</workbook>)";
+
+    const wchar_t workbook_rels[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId12"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet2.xml"/>
+  <Relationship Id="rId3"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet7.xml"/>
+  <Relationship Id="rId20"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet15.xml"/>
+</Relationships>)";
+
+    xlsx_extract_text extractor{ true };
+
+    REQUIRE_NOTHROW(extractor.read_worksheet_names(workbook_xml, std::wcslen(workbook_xml)));
+
+    REQUIRE_NOTHROW(extractor.read_relative_paths(workbook_rels, std::wcslen(workbook_rels)));
+
+    REQUIRE_NOTHROW(extractor.map_workbook_paths());
+
+    const auto names = extractor.get_worksheet_names();
+
+    REQUIRE(names.size() == 3);
+
+    REQUIRE(names[0] == L"Overview");
+    REQUIRE(names[1] == L"Metrics");
+    REQUIRE(names[2] == L"RawData");
+    }
+
+TEST_CASE("XLSX worksheet names, relationships, and paths are mapped correctly",
+          "[xlsx][workbook][integration]")
+    {
+    // workbook.xml (order + r:id)
+    const wchar_t workbook_xml[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Overview" sheetId="5" r:id="rId12"/>
+    <sheet name="Metrics"  sheetId="1" r:id="rId3"/>
+    <sheet name="RawData"  sheetId="9" r:id="rId20"/>
+  </sheets>
+</workbook>)";
+
+    // workbook.xml.rels (r:id → Target)
+    const wchar_t rels_xml[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId3"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet7.xml"/>
+  <Relationship Id="rId12"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet2.xml"/>
+  <Relationship Id="rId20"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet15.xml"/>
+</Relationships>)";
+
+    xlsx_extract_text extractor{ true };
+
+    REQUIRE_NOTHROW(extractor.read_worksheet_names(workbook_xml, std::wcslen(workbook_xml)));
+
+    REQUIRE_NOTHROW(extractor.read_relative_paths(rels_xml, std::wcslen(rels_xml)));
+
+    REQUIRE_NOTHROW(extractor.map_workbook_paths());
+
+    const auto& worksheetPaths = extractor.get_worksheet_paths();
+
+    REQUIRE(worksheetPaths.size() == 3);
+
+    SECTION("Worksheet order matches workbook.xml")
+        {
+        REQUIRE(worksheetPaths[0].first == L"Overview");
+        REQUIRE(worksheetPaths[1].first == L"Metrics");
+        REQUIRE(worksheetPaths[2].first == L"RawData");
+        }
+
+    SECTION("Worksheet XML paths are resolved correctly")
+        {
+        REQUIRE(worksheetPaths[0].second == L"xl/worksheets/sheet2.xml");
+        REQUIRE(worksheetPaths[1].second == L"xl/worksheets/sheet7.xml");
+        REQUIRE(worksheetPaths[2].second == L"xl/worksheets/sheet15.xml");
+        }
+    }
+
+TEST_CASE("XLSX workbook.xml.rels relationship Id to Target mapping", "[xlsx][rels][relationships]")
+    {
+    const wchar_t rels_xml[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId7"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet4.xml"/>
+  <Relationship Id="rId9"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet12.xml"/>
+</Relationships>)";
+
+    xlsx_extract_text extractor{ true };
+
+    REQUIRE_NOTHROW(extractor.read_relative_paths(rels_xml, std::wcslen(rels_xml)));
+
+    const auto& rels = extractor.get_relative_paths();
+
+    REQUIRE(rels.size() == 3);
+
+    SECTION("Relationship Ids resolve to correct worksheet targets")
+        {
+        REQUIRE(rels.contains(L"rId7"));
+        REQUIRE(rels.contains(L"rId2"));
+        REQUIRE(rels.contains(L"rId9"));
+
+        REQUIRE(rels.at(L"rId7") == L"worksheets/sheet1.xml");
+        REQUIRE(rels.at(L"rId2") == L"worksheets/sheet4.xml");
+        REQUIRE(rels.at(L"rId9") == L"worksheets/sheet12.xml");
+        }
+    }
+
+TEST_CASE("XLSX workbook.xml worksheet names preserve order and r:Id",
+          "[xlsx][workbook][worksheets]")
+    {
+    // Minimal but realistic workbook.xml
+    const wchar_t workbook_xml[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Summary" sheetId="3" r:id="rId7"/>
+    <sheet name="Data"    sheetId="1" r:id="rId2"/>
+    <sheet name="Charts"  sheetId="2" r:id="rId9"/>
+  </sheets>
+</workbook>)";
+
+    xlsx_extract_text extractor{ true };
+
+    REQUIRE_NOTHROW(extractor.read_worksheet_names(workbook_xml, std::wcslen(workbook_xml)));
+
+    const auto& sheets = extractor.get_worksheet_names_and_ids();
+
+    REQUIRE(sheets.size() == 3);
+
+    SECTION("Worksheet order matches workbook.xml")
+        {
+        REQUIRE(sheets[0].first == L"Summary");
+        REQUIRE(sheets[1].first == L"Data");
+        REQUIRE(sheets[2].first == L"Charts");
+        }
+
+    SECTION("Worksheet r:Id values are parsed correctly")
+        {
+        REQUIRE(sheets[0].second == L"rId7");
+        REQUIRE(sheets[1].second == L"rId2");
+        REQUIRE(sheets[2].second == L"rId9");
+        }
+    }
 
 TEST_CASE("xlsx_extract_text::dmy_to_excel_serial_date", "[excel_serial]")
     {
@@ -165,13 +333,250 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
+              L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+              L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -189,7 +594,8 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
         CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
         CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
         CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B1", wrk) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
         CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
         CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
@@ -256,22 +662,32 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -279,128 +695,513 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
     SECTION("Read Sheet By Cell")
         {
         xlsx_extract_text ext{ true };
-        const wchar_t* sharedText = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
-        CHECK(ext.get_cell_text(L"A13", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A1", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A17", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"M14", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"D2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L19", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"N4", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O4", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O6", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O7", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O10", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O11", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O15", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O16", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"L12", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"O17", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"");
-        CHECK(ext.get_cell_text(L"O18", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", sharedText, std::wcslen(sharedText), sheettext.c_str(), sheettext.length()) == L"Azriel a des griffes très pointues. Très difficile.");
+        const wchar_t* sharedText =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        CHECK(ext.get_cell_text(L"A13", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Angel");
+        CHECK(ext.get_cell_text(L"A14", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chester");
+        CHECK(ext.get_cell_text(L"A15", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Bigglesworth");
+        CHECK(ext.get_cell_text(L"A16", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Napoleon");
+        CHECK(ext.get_cell_text(L"A1", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
+              L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+              L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A3", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Tori");
+        CHECK(ext.get_cell_text(L"A4", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chesire");
+        CHECK(ext.get_cell_text(L"A5", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Fluffy");
+        CHECK(ext.get_cell_text(L"A6", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Cotton");
+        CHECK(ext.get_cell_text(L"A7", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Ms. Isabelle");
+        CHECK(ext.get_cell_text(L"A8", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Salem");
+        CHECK(ext.get_cell_text(L"A9", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Muffin");
+        CHECK(ext.get_cell_text(L"A10", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Hobbes");
+        CHECK(ext.get_cell_text(L"A11", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Sylvester");
+        CHECK(ext.get_cell_text(L"A12", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Emma Lu");
+        CHECK(ext.get_cell_text(L"A17", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Angel");
+        CHECK(ext.get_cell_text(L"A18", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Mr. Magoo");
+        CHECK(ext.get_cell_text(L"A19", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Azriel");
+        CHECK(ext.get_cell_text(L"B1", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"ID Patient");
+        CHECK(ext.get_cell_text(L"C2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Age (1998)");
+        CHECK(ext.get_cell_text(L"M14", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M15", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M16", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M17", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M18", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M19", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"N3", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Rex du Devon");
+        CHECK(ext.get_cell_text(L"D2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Poids (1998)");
+        CHECK(ext.get_cell_text(L"E2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Taille Corps (1998)");
+        CHECK(ext.get_cell_text(L"F2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Age (1999)");
+        CHECK(ext.get_cell_text(L"G2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Poids (1999)");
+        CHECK(ext.get_cell_text(L"H2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Taille Corps (1999)");
+        CHECK(ext.get_cell_text(L"I2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Age (2000)");
+        CHECK(ext.get_cell_text(L"J2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Poids (2000)");
+        CHECK(ext.get_cell_text(L"K2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Taille Corps (2000)");
+        CHECK(ext.get_cell_text(L"L2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Robe");
+        CHECK(ext.get_cell_text(L"M2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Sexe");
+        CHECK(ext.get_cell_text(L"N2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Race");
+        CHECK(ext.get_cell_text(L"O2", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Commentaires");
+        CHECK(ext.get_cell_text(L"L3", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Blanc et gris");
+        CHECK(ext.get_cell_text(L"L4", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Calico");
+        CHECK(ext.get_cell_text(L"L5", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Blanc et roux");
+        CHECK(ext.get_cell_text(L"L6", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Blanc");
+        CHECK(ext.get_cell_text(L"L7", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Noir et blanc");
+        CHECK(ext.get_cell_text(L"L8", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Noir");
+        CHECK(ext.get_cell_text(L"L9", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Bleu (gris foncé)");
+        CHECK(ext.get_cell_text(L"L10", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Roux et noir");
+        CHECK(ext.get_cell_text(L"L11", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Noir et blanc");
+        CHECK(ext.get_cell_text(L"L19", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Roux");
+        CHECK(ext.get_cell_text(L"M3", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M4", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M5", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M6", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M7", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M8", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M9", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M10", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M11", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"MALE");
+        CHECK(ext.get_cell_text(L"M12", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"M13", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"FEMELLE");
+        CHECK(ext.get_cell_text(L"N4", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Persan");
+        CHECK(ext.get_cell_text(L"N5", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Himalayen");
+        CHECK(ext.get_cell_text(L"N6", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Siamois");
+        CHECK(ext.get_cell_text(L"N7", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Américan à Poil Court");
+        CHECK(ext.get_cell_text(L"N8", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Américan à Poil Court");
+        CHECK(ext.get_cell_text(L"N9", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Bleu de Russie");
+        CHECK(ext.get_cell_text(L"N10", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chat de Goutière");
+        CHECK(ext.get_cell_text(L"N11", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chat de Goutière");
+        CHECK(ext.get_cell_text(L"N12", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Terrier Jack Russell");
+        CHECK(ext.get_cell_text(L"N13", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chat de Goutière");
+        CHECK(ext.get_cell_text(L"N14", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Bobtail Japonais");
+        CHECK(ext.get_cell_text(L"N15", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Sphnyx");
+        CHECK(ext.get_cell_text(L"N16", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chartreux");
+        CHECK(ext.get_cell_text(L"N17", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chat du Maine");
+        CHECK(ext.get_cell_text(L"N18", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(ext.get_cell_text(L"N19", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Chat de Goutière");
+        CHECK(ext.get_cell_text(L"O3", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O4", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les "
+              L"boules de poils.");
+        CHECK(ext.get_cell_text(L"O5", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O6", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O7", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au "
+              L"sol.");
+        CHECK(ext.get_cell_text(L"O8", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O9", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O10", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O11", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
+        CHECK(ext.get_cell_text(L"O14", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O15", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O16", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Chat très difficile --manier avec prudence.");
+        CHECK(ext.get_cell_text(L"L12", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Noir et blanc");
+        CHECK(ext.get_cell_text(L"L13", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Blanc");
+        CHECK(ext.get_cell_text(L"L14", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Blanc et roux (tâches noires)");
+        CHECK(ext.get_cell_text(L"L15", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Sans poils");
+        CHECK(ext.get_cell_text(L"L16", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Bleu (gris foncé)");
+        CHECK(ext.get_cell_text(L"L17", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Blanc et noir");
+        CHECK(ext.get_cell_text(L"L18", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Ecailles de tortue");
+        CHECK(ext.get_cell_text(L"O17", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"");
+        CHECK(ext.get_cell_text(L"O18", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(ext.get_cell_text(L"O19", sharedText, std::wcslen(sharedText), sheettext.c_str(),
+                                sheettext.length()) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         }
     SECTION("Read Worksheet Names")
         {
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mx=\"http://schemas.microsoft.com/office/mac/excel/2008/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xm=\"http://schemas.microsoft.com/office/excel/2006/main\"><workbookPr/><sheets><sheet sheetId=\"1\" name=\"FirstSheet - Table 1\" state=\"visible\" r:id=\"rId3\"/><sheet sheetId=\"2\" name=\"SecondSheet - Table 1\" state=\"visible\" r:id=\"rId4\"/><sheet sheetId=\"3\" name=\"ThirdSheet - Table 1\" state=\"visible\" r:id=\"rId5\"/></sheets><definedNames/><calcPr/></workbook>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+            L"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
+            L"xmlns:mx=\"http://schemas.microsoft.com/office/mac/excel/2008/main\" "
+            L"xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" "
+            L"xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" "
+            L"xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" "
+            L"xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" "
+            L"xmlns:xm=\"http://schemas.microsoft.com/office/excel/2006/main\"><workbookPr/"
+            L"><sheets><sheet sheetId=\"1\" name=\"FirstSheet - Table 1\" state=\"visible\" "
+            L"r:id=\"rId3\"/><sheet sheetId=\"2\" name=\"SecondSheet - Table 1\" state=\"visible\" "
+            L"r:id=\"rId4\"/><sheet sheetId=\"3\" name=\"ThirdSheet - Table 1\" state=\"visible\" "
+            L"r:id=\"rId5\"/></sheets><definedNames/><calcPr/></workbook>";
         ext.read_worksheet_names(text, std::wcslen(text));
-        CHECK(ext.get_worksheet_names().size() == 3);
-        CHECK(ext.get_worksheet_names().at(0) == L"FirstSheet - Table 1");
-        CHECK(ext.get_worksheet_names().at(1) == L"SecondSheet - Table 1");
-        CHECK(ext.get_worksheet_names().at(2) == L"ThirdSheet - Table 1");
-        const wchar_t* badtext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mx=\"http://schemas.microsoft.com/office/mac/excel/2008/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xm=\"http://schemas.microsoft.com/office/excel/2006/main\"><workbookPr/><sheets></sheets><definedNames/><calcPr/></workbook>";
+        CHECK(ext.get_worksheet_names_and_ids().size() == 3);
+        CHECK(ext.get_worksheet_names_and_ids().at(0).first == L"FirstSheet - Table 1");
+        CHECK(ext.get_worksheet_names_and_ids().at(1).first == L"SecondSheet - Table 1");
+        CHECK(ext.get_worksheet_names_and_ids().at(2).first == L"ThirdSheet - Table 1");
+        const wchar_t* badtext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+            L"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
+            L"xmlns:mx=\"http://schemas.microsoft.com/office/mac/excel/2008/main\" "
+            L"xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" "
+            L"xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" "
+            L"xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" "
+            L"xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" "
+            L"xmlns:xm=\"http://schemas.microsoft.com/office/excel/2006/main\"><workbookPr/"
+            L"><sheets></sheets><definedNames/><calcPr/></workbook>";
         ext.read_worksheet_names(badtext, std::wcslen(badtext));
-        CHECK(ext.get_worksheet_names().size() == 0);
-        const wchar_t* badtext2 = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mx=\"http://schemas.microsoft.com/office/mac/excel/2008/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xm=\"http://schemas.microsoft.com/office/excel/2006/main\"><workbookPr/><definedNames/><calcPr/></workbook>";
+        CHECK(ext.get_worksheet_names_and_ids().size() == 0);
+        const wchar_t* badtext2 =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+            L"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
+            L"xmlns:mx=\"http://schemas.microsoft.com/office/mac/excel/2008/main\" "
+            L"xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" "
+            L"xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" "
+            L"xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" "
+            L"xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" "
+            L"xmlns:xm=\"http://schemas.microsoft.com/office/excel/2006/main\"><workbookPr/"
+            L"><definedNames/><calcPr/></workbook>";
         ext.read_worksheet_names(badtext2, std::wcslen(badtext2));
-        CHECK(ext.get_worksheet_names().size() == 0);
+        CHECK(ext.get_worksheet_names_and_ids().size() == 0);
         ext.read_worksheet_names(nullptr, std::wcslen(badtext2));
-        CHECK(ext.get_worksheet_names().size() == 0);
+        CHECK(ext.get_worksheet_names_and_ids().size() == 0);
         }
     }
 
@@ -410,12 +1211,248 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"A1\" s=\"23\" "
+            L"t=\"s\"><v>92</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" "
+            L"t=\"s\"><v>27</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
+              L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+              L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -433,7 +1470,8 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
         CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
         CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B1", wrk) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
         CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
         CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
@@ -500,22 +1538,32 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -523,13 +1571,249 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" "
+            L"standalone=\"yes\"?><worksheet><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"A1\" s=\"23\" "
+            L"t=\"s\"><v>92</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" "
+            L"t=\"s\"><v>27</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
+              L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+              L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -547,7 +1831,8 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
         CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
         CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B1", wrk) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
         CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
         CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
@@ -614,22 +1899,32 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -641,12 +1936,249 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:B7\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:B7\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
+              L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+              L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -664,7 +2196,8 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
         CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
         CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B1", wrk) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
         CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
         CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
@@ -731,22 +2264,32 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -755,13 +2298,240 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" "
+            L"standalone=\"yes\"?><worksheet><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique "
+                                               L"vétérinaire fictive spécialisée dans les félins");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -779,7 +2549,8 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
         CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
         CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B1", wrk) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
         CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
         CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
@@ -846,22 +2617,32 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         }
     }
 
@@ -871,10 +2652,241 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si <t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si <t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
         CHECK(ext.get_cell_text(L"A1", wrk) == L"");
@@ -962,16 +2974,25 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
@@ -985,13 +3006,249 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t Données fictives visant à illustrer le processus d'empilage.</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t><t>Roux2</si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t Données fictives visant à illustrer le processus "
+            L"d'empilage.</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t><t>Roux2</si><si><t>MALE</"
+            L"t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
+              L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+              L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -1077,22 +3334,32 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -1104,12 +3371,246 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text), true);
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive...");
+        CHECK(ext.get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+              L"spécialisée dans les félins Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive...");
         CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -1127,7 +3628,8 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
         CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
         CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
         CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_cell_text(L"B1", wrk) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
         CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
         CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
@@ -1194,22 +3696,32 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
         CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
         CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+                                               L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_cell_text(L"O5", wrk) == L"");
         CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+                                               L"aimer faire tomber les objets au sol.");
+        CHECK(ext.get_cell_text(L"O8", wrk) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_cell_text(L"O9", wrk) == L"");
         CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_cell_text(L"O11", wrk) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
+        CHECK(ext.get_cell_text(L"O12", wrk) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
+        CHECK(ext.get_cell_text(L"O13", wrk) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_cell_text(L"O14", wrk) == L"");
         CHECK(ext.get_cell_text(L"O15", wrk) == L"");
         CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
         CHECK(ext.get_cell_text(L"O17", wrk) == L"");
         CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_cell_text(L"O19", wrk) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -1217,25 +3729,402 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins Enregistrement des patients "
+            L"dans une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
+            L"patients dans une clinique vétérinaire fictive spécialisée dans les félins "
+            L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+            L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
+            L"spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"$0",wrk) == L"");
-        CHECK(ext.get_cell_text(L"A0",wrk) == L"");
-        CHECK(ext.get_cell_text(L"A",wrk) == L"");
-        CHECK(ext.get_cell_text(L"Z2",wrk) == L"");
-        CHECK(ext.get_cell_text(L"B999",wrk) == L"");
+        CHECK(ext.get_cell_text(L"$0", wrk) == L"");
+        CHECK(ext.get_cell_text(L"A0", wrk) == L"");
+        CHECK(ext.get_cell_text(L"A", wrk) == L"");
+        CHECK(ext.get_cell_text(L"Z2", wrk) == L"");
+        CHECK(ext.get_cell_text(L"B999", wrk) == L"");
         }
     SECTION("Read Sheet Missing String Table")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
         ext.read_shared_strings(nullptr, 5);
-        std::wstring sheettext = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
-        sheettext += L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
+        std::wstring sheettext =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" "
+            L"workbookViewId=\"0\"></sheetView></sheetViews><sheetFormatPr /><sheetData><row "
+            L"r=\"1\"><c r=\"A1\" s=\"23\" t=\"s\"><v>92</v></c><c r=\"B1\" s=\"19\" "
+            L"t=\"s\"><v>0</v></c><c r=\"C1\" s=\"20\"/><c r=\"D1\" s=\"20\"/><c r=\"E1\" "
+            L"s=\"20\"/><c r=\"F1\" s=\"20\"/><c r=\"G1\" s=\"20\"/><c r=\"H1\" s=\"20\"/><c "
+            L"r=\"I1\" s=\"20\"/><c r=\"J1\" s=\"20\"/><c r=\"K1\" s=\"20\"/><c r=\"L1\" "
+            L"s=\"20\"/><c r=\"M1\" s=\"20\"/><c r=\"N1\" s=\"20\"/><c r=\"O1\" "
+            L"s=\"21\"/></row><row r=\"2\" ht=\"25.5\"><c r=\"A2\" s=\"22\"/><c r=\"B2\" s=\"15\" "
+            L"t=\"s\"><v>1</v></c><c r=\"C2\" s=\"15\" t=\"s\"><v>2</v></c><c r=\"D2\" s=\"15\" "
+            L"t=\"s\"><v>3</v></c><c r=\"E2\" s=\"15\" t=\"s\"><v>4</v></c><c r=\"F2\" s=\"15\" "
+            L"t=\"s\"><v>5</v></c><c r=\"G2\" s=\"15\" t=\"s\"><v>6</v></c><c r=\"H2\" s=\"15\" "
+            L"t=\"s\"><v>7</v></c><c r=\"I2\" s=\"15\" t=\"s\"><v>8</v></c><c r=\"J2\" s=\"15\" "
+            L"t=\"s\"><v>9</v></c><c r=\"K2\" s=\"15\" t=\"s\"><v>10</v></c><c r=\"L2\" s=\"15\" "
+            L"t=\"s\"><v>11</v></c><c r=\"M2\" s=\"15\" t=\"s\"><v>12</v></c><c r=\"N2\" s=\"15\" "
+            L"t=\"s\"><v>13</v></c><c r=\"O2\" s=\"15\" t=\"s\"><v>14</v></c></row><row r=\"3\"><c "
+            L"r=\"A3\" s=\"16\" t=\"s\"><v>15</v></c><c r=\"B3\" s=\"17\"><v>601</v></c><c "
+            L"r=\"C3\" s=\"17\"><v>1</v></c><c r=\"D3\" s=\"17\"><v>5.8</v></c><c r=\"E3\" "
+            L"s=\"17\"><v>6.8</v></c><c r=\"F3\" s=\"17\"><v>2</v></c><c r=\"G3\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"H3\" s=\"17\"><v>8.63</v></c><c r=\"I3\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J3\" s=\"17\"><v>8.52</v></c><c r=\"K3\" "
+            L"s=\"17\"><v>9.3000000000000007</v></c><c r=\"L3\" s=\"17\" t=\"s\"><v>16</v></c><c "
+            L"r=\"M3\" s=\"18\" t=\"s\"><v>17</v></c><c r=\"N3\" s=\"17\" t=\"s\"><v>18</v></c><c "
+            L"r=\"O3\" s=\"17\"/></row><row r=\"4\"><c r=\"A4\" s=\"16\" t=\"s\"><v>19</v></c><c "
+            L"r=\"B4\" s=\"17\"><v>602</v></c><c r=\"C4\" s=\"17\"><v>2</v></c><c r=\"D4\" "
+            L"s=\"17\"><v>8.6</v></c><c r=\"E4\" s=\"17\"><v>15.2</v></c><c r=\"F4\" "
+            L"s=\"17\"><v>3</v></c><c r=\"G4\" s=\"17\"><v>9.57</v></c><c r=\"H4\" "
+            L"s=\"17\"><v>17.8</v></c><c r=\"I4\" s=\"17\"><v>4</v></c><c r=\"J4\" "
+            L"s=\"17\"><v>9.23</v></c><c r=\"K4\" s=\"17\"><v>19.5</v></c><c r=\"L4\" s=\"17\" "
+            L"t=\"s\"><v>20</v></c><c r=\"M4\" s=\"17\" t=\"s\"><v>21</v></c><c r=\"N4\" s=\"17\" "
+            L"t=\"s\"><v>22</v></c><c r=\"O4\" s=\"17\" t=\"s\"><v>23</v></c></row><row r=\"5\"><c "
+            L"r=\"A5\" s=\"16\" t=\"s\"><v>24</v></c><c r=\"B5\" s=\"17\"><v>603</v></c><c "
+            L"r=\"C5\" s=\"17\"><v>3</v></c><c r=\"D5\" s=\"17\"><v>6.1</v></c><c r=\"E5\" "
+            L"s=\"17\"><v>13.9</v></c><c r=\"F5\" s=\"17\"><v>4</v></c><c r=\"G5\" "
+            L"s=\"17\"><v>6.2</v></c><c r=\"H5\" s=\"17\"><v>15.6</v></c><c r=\"I5\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J5\" s=\"17\"><v>6.97</v></c><c r=\"K5\" "
+            L"s=\"17\"><v>16.2</v></c><c r=\"L5\" s=\"17\" t=\"s\"><v>25</v></c><c r=\"M5\" "
+            L"s=\"17\" t=\"s\"><v>26</v></c><c r=\"N5\" s=\"17\" t=\"s\"><v>27</v></c><c r=\"O5\" "
+            L"s=\"17\"/></row><row r=\"6\"><c r=\"A6\" s=\"16\" t=\"s\"><v>28</v></c><c r=\"B6\" "
+            L"s=\"17\"><v>604</v></c><c r=\"C6\" s=\"17\"><v>1</v></c><c r=\"D6\" "
+            L"s=\"17\"><v>7.2</v></c><c r=\"E6\" s=\"17\"><v>8.13</v></c><c r=\"F6\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G6\" s=\"17\"><v>8.63</v></c><c r=\"H6\" "
+            L"s=\"17\"><v>12</v></c><c r=\"I6\" s=\"17\"><v>3</v></c><c r=\"J6\" "
+            L"s=\"17\"><v>8.5</v></c><c r=\"K6\" s=\"17\"><v>14</v></c><c r=\"L6\" s=\"17\" "
+            L"t=\"s\"><v>29</v></c><c r=\"M6\" s=\"17\" t=\"s\"><v>30</v></c><c r=\"N6\" s=\"17\" "
+            L"t=\"s\"><v>31</v></c><c r=\"O6\" s=\"17\"/></row><row r=\"7\" customHeight=\"1\"><c "
+            L"r=\"A7\" s=\"16\" t=\"s\"><v>32</v></c><c r=\"B7\" s=\"17\"><v>605</v></c><c "
+            L"r=\"C7\" s=\"17\"><v>3</v></c><c r=\"D7\" s=\"17\"><v>12.9</v></c><c r=\"E7\" "
+            L"s=\"17\"><v>15.7</v></c><c r=\"F7\" s=\"17\"><v>4</v></c><c r=\"G7\" "
+            L"s=\"17\"><v>13.2</v></c><c r=\"H7\" s=\"17\"><v>15.75</v></c><c r=\"I7\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J7\" s=\"17\"><v>13.5</v></c><c r=\"K7\" "
+            L"s=\"17\"><v>16.25</v></c><c r=\"L7\" s=\"17\" t=\"s\"><v>33</v></c><c r=\"M7\" "
+            L"s=\"17\" t=\"s\"><v>34</v></c><c r=\"N7\" s=\"17\" t=\"s\"><v>35</v></c><c r=\"O7\" "
+            L"s=\"17\" t=\"s\"><v>36</v></c></row><row r=\"8\"><c r=\"A8\" s=\"17\" "
+            L"t=\"s\"><v>37</v></c><c r=\"B8\" s=\"17\"><v>606</v></c><c r=\"C8\" "
+            L"s=\"17\"><v>3</v></c><c r=\"D8\" s=\"17\"><v>9.1</v></c><c r=\"E8\" "
+            L"s=\"17\"><v>15.8</v></c><c r=\"F8\" s=\"17\"><v>4</v></c><c r=\"G8\" "
+            L"s=\"17\"><v>9.69</v></c><c r=\"H8\" s=\"17\"><v>16</v></c><c r=\"I8\" "
+            L"s=\"17\"><v>5</v></c><c r=\"J8\" s=\"17\"><v>10.3</v></c><c r=\"K8\" "
+            L"s=\"17\"><v>17.10</v></c><c r=\"L8\" s=\"17\" t=\"s\"><v>38</v></c><c r=\"M8\" "
+            L"s=\"17\" t=\"s\"><v>39</v></c><c r=\"N8\" s=\"17\" t=\"s\"><v>40</v></c><c r=\"O8\" "
+            L"s=\"17\" t=\"s\"><v>41</v></c></row><row r=\"9\"><c r=\"A9\" s=\"17\" "
+            L"t=\"s\"><v>42</v></c><c r=\"B9\" s=\"17\"><v>607</v></c><c r=\"C9\" s=\"17\"/><c "
+            L"r=\"D9\" s=\"17\"/><c r=\"E9\" s=\"17\"/><c r=\"F9\" s=\"17\"><v>1</v></c><c "
+            L"r=\"G9\" s=\"17\"><v>10.1</v></c><c r=\"H9\" s=\"17\"><v>15.1</v></c><c r=\"I9\" "
+            L"s=\"17\"><v>2</v></c><c r=\"J9\" s=\"17\"><v>10.1</v></c><c r=\"K9\" "
+            L"s=\"17\"><v>17.5</v></c><c r=\"L9\" s=\"17\" t=\"s\"><v>43</v></c><c r=\"M9\" "
+            L"s=\"17\" t=\"s\"><v>44</v></c><c r=\"N9\" s=\"17\" t=\"s\"><v>45</v></c><c r=\"O9\" "
+            L"s=\"17\"/></row><row r=\"10\"><c r=\"A10\" s=\"17\" t=\"s\"><v>46</v></c><c "
+            L"r=\"B10\" s=\"17\"><v>608</v></c><c r=\"C10\" s=\"17\"><v>6</v></c><c r=\"D10\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"E10\" s=\"17\"><v>16.3</v></c><c r=\"F10\" "
+            L"s=\"17\"><v>7</v></c><c r=\"G10\" s=\"17\"><v>8.3</v></c><c r=\"H10\" "
+            L"s=\"17\"><v>16.5</v></c><c r=\"I10\" s=\"17\"><v>8</v></c><c r=\"J10\" "
+            L"s=\"17\"><v>8.4</v></c><c r=\"K10\" s=\"17\"><v>16.6</v></c><c r=\"L10\" s=\"17\"";
+        sheettext +=
+            L" t=\"s\"><v>47</v></c><c r=\"M10\" s=\"17\" t=\"s\"><v>48</v></c><c r=\"N10\" "
+            L"s=\"17\" t=\"s\"><v>49</v></c><c r=\"O10\" s=\"17\"/></row><row r=\"11\"><c "
+            L"r=\"A11\" s=\"17\" t=\"s\"><v>50</v></c><c r=\"B11\" s=\"17\"><v>609</v></c><c "
+            L"r=\"C11\" s=\"17\"><v>5</v></c><c r=\"D11\" s=\"17\"><v>6.3</v></c><c r=\"E11\" "
+            L"s=\"17\"><v>18.3</v></c><c r=\"F11\" s=\"17\"><v>6</v></c><c r=\"G11\" "
+            L"s=\"17\"><v>6.7</v></c><c r=\"H11\" s=\"17\"><v>18.3</v></c><c r=\"I11\" "
+            L"s=\"17\"><v>7</v></c><c r=\"J11\" s=\"17\"><v>6.75</v></c><c r=\"K11\" "
+            L"s=\"17\"><v>18.6</v></c><c r=\"L11\" s=\"17\" t=\"s\"><v>51</v></c><c r=\"M11\" "
+            L"s=\"17\" t=\"s\"><v>52</v></c><c r=\"N11\" s=\"17\" t=\"s\"><v>53</v></c><c "
+            L"r=\"O11\" s=\"17\" t=\"s\"><v>54</v></c></row><row r=\"12\"><c r=\"A12\" s=\"17\" "
+            L"t=\"s\"><v>55</v></c><c r=\"B12\" s=\"17\"><v>610</v></c><c r=\"C12\" s=\"17\"/><c "
+            L"r=\"D12\" s=\"17\"/><c r=\"E12\" s=\"17\"/><c r=\"F12\" s=\"17\"/><c r=\"G12\" "
+            L"s=\"17\"/><c r=\"H12\" s=\"17\"/><c r=\"I12\" s=\"17\"><v>1</v></c><c r=\"J12\" "
+            L"s=\"17\"><v>22</v></c><c r=\"K12\" s=\"17\"><v>30.3</v></c><c r=\"L12\" s=\"17\" "
+            L"t=\"s\"><v>56</v></c><c r=\"M12\" s=\"17\" t=\"s\"><v>57</v></c><c r=\"N12\" "
+            L"s=\"17\" t=\"s\"><v>58</v></c><c r=\"O12\" s=\"17\" t=\"s\"><v>59</v></c></row><row "
+            L"r=\"13\"><c r=\"A13\" s=\"17\" t=\"s\"><v>60</v></c><c r=\"B13\" "
+            L"s=\"17\"><v>611</v></c><c r=\"C13\" s=\"17\"><v>4</v></c><c r=\"D13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"E13\" s=\"17\"><v>15</v></c><c r=\"F13\" "
+            L"s=\"17\"><v>5</v></c><c r=\"G13\" s=\"17\"><v>5.06</v></c><c r=\"H13\" "
+            L"s=\"17\"><v>15.02</v></c><c r=\"I13\" s=\"17\"><v>6</v></c><c r=\"J13\" "
+            L"s=\"17\"><v>5.2</v></c><c r=\"K13\" s=\"17\"><v>15.51</v></c><c r=\"L13\" s=\"17\" "
+            L"t=\"s\"><v>61</v></c><c r=\"M13\" s=\"17\" t=\"s\"><v>62</v></c><c r=\"N13\" "
+            L"s=\"17\" t=\"s\"><v>63</v></c><c r=\"O13\" s=\"17\" t=\"s\"><v>64</v></c></row><row "
+            L"r=\"14\"><c r=\"A14\" s=\"17\" t=\"s\"><v>65</v></c><c r=\"B14\" "
+            L"s=\"17\"><v>612</v></c><c r=\"C14\" s=\"17\"><v>1</v></c><c r=\"D14\" "
+            L"s=\"17\"><v>3.5</v></c><c r=\"E14\" s=\"17\"><v>8.5</v></c><c r=\"F14\" "
+            L"s=\"17\"><v>2</v></c><c r=\"G14\" s=\"17\"><v>4.56</v></c><c r=\"H14\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"I14\" s=\"17\"><v>3</v></c><c r=\"J14\" "
+            L"s=\"17\"><v>5.06</v></c><c r=\"K14\" s=\"17\"><v>12.1</v></c><c r=\"L14\" s=\"17\" "
+            L"t=\"s\"><v>66</v></c><c r=\"M14\" s=\"17\" t=\"s\"><v>67</v></c><c r=\"N14\" "
+            L"s=\"17\" t=\"s\"><v>68</v></c><c r=\"O14\" s=\"17\"/></row><row r=\"15\"><c "
+            L"r=\"A15\" s=\"17\" t=\"s\"><v>69</v></c><c r=\"B15\" s=\"17\"><v>613</v></c><c "
+            L"r=\"C15\" s=\"17\"><v>2</v></c><c r=\"D15\" s=\"17\"><v>3.7</v></c><c r=\"E15\" "
+            L"s=\"17\"><v>7.3</v></c><c r=\"F15\" s=\"17\"><v>3</v></c><c r=\"G15\" "
+            L"s=\"17\"><v>3.9</v></c><c r=\"H15\" s=\"17\"><v>7.8</v></c><c r=\"I15\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J15\" s=\"17\"><v>4.5</v></c><c r=\"K15\" "
+            L"s=\"17\"><v>9.13</v></c><c r=\"L15\" s=\"17\" t=\"s\"><v>70</v></c><c r=\"M15\" "
+            L"s=\"17\" t=\"s\"><v>71</v></c><c r=\"N15\" s=\"17\" t=\"s\"><v>72</v></c><c "
+            L"r=\"O15\" s=\"17\"/></row><row r=\"16\"><c r=\"A16\" s=\"17\" "
+            L"t=\"s\"><v>73</v></c><c r=\"B16\" s=\"17\"><v>614</v></c><c r=\"C16\" "
+            L"s=\"17\"><v>4</v></c><c r=\"D16\" s=\"17\"><v>9.6</v></c><c r=\"E16\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"F16\" s=\"17\"><v>5</v></c><c r=\"G16\" "
+            L"s=\"17\"><v>10.7</v></c><c r=\"H16\" s=\"17\"><v>15.1</v></c><c r=\"I16\" "
+            L"s=\"17\"><v>6</v></c><c r=\"J16\" s=\"17\"><v>10.9</v></c><c r=\"K16\" "
+            L"s=\"17\"><v>15.3</v></c><c r=\"L16\" s=\"17\" t=\"s\"><v>74</v></c><c r=\"M16\" "
+            L"s=\"17\" t=\"s\"><v>75</v></c><c r=\"N16\" s=\"17\" t=\"s\"><v>76</v></c><c "
+            L"r=\"O16\" s=\"17\" t=\"s\"><v>77</v></c></row><row r=\"17\"><c r=\"A17\" s=\"17\" "
+            L"t=\"s\"><v>78</v></c><c r=\"B17\" s=\"17\"><v>615</v></c><c r=\"C17\" "
+            L"s=\"17\"><v>2</v></c><c r=\"D17\" s=\"17\"><v>3.8</v></c><c r=\"E17\" "
+            L"s=\"17\"><v>9.8000000000000007</v></c><c r=\"F17\" s=\"17\"><v>3</v></c><c r=\"G17\" "
+            L"s=\"17\"><v>4.06</v></c><c r=\"H17\" s=\"17\"><v>12.1</v></c><c r=\"I17\" "
+            L"s=\"17\"><v>4</v></c><c r=\"J17\" s=\"17\"><v>4.06</v></c><c r=\"K17\" "
+            L"s=\"17\"><v>14.5</v></c><c r=\"L17\" s=\"17\" t=\"s\"><v>79</v></c><c r=\"M17\" "
+            L"s=\"17\" t=\"s\"><v>80</v></c><c r=\"N17\" s=\"17\" t=\"s\"><v>81</v></c><c "
+            L"r=\"O17\" s=\"17\"/></row><row r=\"18\"><c r=\"A18\" s=\"17\" "
+            L"t=\"s\"><v>82</v></c><c r=\"B18\" s=\"17\"><v>616</v></c><c r=\"C18\" "
+            L"s=\"17\"><v>1</v></c><c r=\"D18\" s=\"17\"><v>7.8</v></c><c r=\"E18\" "
+            L"s=\"17\"><v>10.1</v></c><c r=\"F18\" s=\"17\"><v>2</v></c><c r=\"G18\" "
+            L"s=\"17\"><v>8.1</v></c><c r=\"H18\" s=\"17\"><v>12.9</v></c><c r=\"I18\" "
+            L"s=\"17\"><v>3</v></c><c r=\"J18\" s=\"17\"><v>7.9</v></c><c r=\"K18\" "
+            L"s=\"17\"><v>13.7</v></c><c r=\"L18\" s=\"17\" t=\"s\"><v>83</v></c><c r=\"M18\" "
+            L"s=\"17\" t=\"s\"><v>84</v></c><c r=\"N18\" s=\"17\" t=\"s\"><v>85</v></c><c "
+            L"r=\"O18\" s=\"17\" t=\"s\"><v>86</v></c></row><row r=\"19\"><c r=\"A19\" s=\"17\" "
+            L"t=\"s\"><v>87</v></c><c r=\"B19\" s=\"17\"><v>617</v></c><c r=\"C19\" "
+            L"s=\"17\"><v>6</v></c><c r=\"D19\" s=\"17\"><v>9.4</v></c><c r=\"E19\" "
+            L"s=\"17\"><v>14</v></c><c r=\"F19\" s=\"17\"><v>7</v></c><c r=\"G19\" "
+            L"s=\"17\"><v>9.5</v></c><c r=\"H19\" s=\"17\"><v>14</v></c><c r=\"I19\" "
+            L"s=\"17\"><v>8</v></c><c r=\"J19\" s=\"17\"><v>9.4</v></c><c r=\"K19\" "
+            L"s=\"17\"><v>14.1</v></c><c r=\"L19\" s=\"17\" t=\"s\"><v>88</v></c><c r=\"M19\" "
+            L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
+            L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
         CHECK(ext.get_cell_text(L"A1", wrk) == L"");
@@ -1247,11 +4136,20 @@ TEST_CASE("XLSX import", "[xlsx]")
     SECTION("Share Strings")
         {
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"109\" uniqueCount=\"52\"><si><t>Readability Study</t></si><si><t>Possibly &amp; look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. </t></si><si><t>Attending</t></si><si><t>Specialty </t></si><si><t>F-K</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"109\" "
+            L"uniqueCount=\"52\"><si><t>Readability Study</t></si><si><t>Possibly &amp; look at "
+            L"number of impressions, seriousness of the impressions, seriousness of the "
+            L"differentials, number of differentials, incidental findings. "
+            L"</t></si><si><t>Attending</t></si><si><t>Specialty "
+            L"</t></si><si><t>F-K</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
         CHECK(ext.get_shared_strings().size() == 5);
         CHECK(ext.get_shared_strings().at(0) == L"Readability Study");
-        CHECK(ext.get_shared_strings().at(1) == L"Possibly & look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. ");
+        CHECK(ext.get_shared_strings().at(1) ==
+              L"Possibly & look at number of impressions, seriousness of the impressions, "
+              L"seriousness of the differentials, number of differentials, incidental findings. ");
         CHECK(ext.get_shared_strings().at(2) == L"Attending");
         CHECK(ext.get_shared_strings().at(3) == L"Specialty ");
         CHECK(ext.get_shared_strings().at(4) == L"F-K");
@@ -1261,10 +4159,91 @@ TEST_CASE("XLSX import", "[xlsx]")
     SECTION("Share Strings Split")
         {
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids (2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches noires)</t></si><si><t>MALE</t></si><si><t>Bobtail Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></si><si><t>Bleu (gris foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de \"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"93\" "
+            L"uniqueCount=\"93\"><si><t><![CDATA[Données fictives visant à illustrer le processus "
+            L"d'empilage.]]></t></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>ID "
+            L"Patient</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Poids "
+            L"(1998)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (1998)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Age "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Poids (1999)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Taille Corps "
+            L"(1999)</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Age (2000)</t></r></si><si><t>Poids "
+            L"(2000)</t></si><si><r><rPr><b/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Taille Corps (2000)</t></r></si><si><r><rPr><b/><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Robe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Sexe</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Race</t></r></si><si><r><rPr><b/><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Commentaires</t></r></si><si><t>Tori</t></si><si><t>Blanc et "
+            L"gris</t></si><si><t>FEMELLE</t></si><si><t>Rex du "
+            L"Devon</t></si><si><t>Chesire</t></si><si><t>Calico</t></si><si><t>MALE</t></"
+            L"si><si><t>Persan</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>A recommandé au propriétaire de brosser Chesire plus souvent "
+            L"pour éviter les boules de poils.</t></r></si><si><t>Fluffy</t></si><si><t>Blanc et "
+            L"roux</t></si><si><t>MALE</t></si><si><t>Himalayen</t></si><si><t>Cotton</t></"
+            L"si><si><t>Blanc</t></si><si><t>FEMELLE</t></si><si><t>Siamois</t></si><si><t>Ms. "
+            L"Isabelle</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Américan "
+            L"à Poil Court</t></si><si><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t xml:space=\"preserve\">Nécessite surveillance lors de la "
+            L"visite. </t></r><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Semble aimer faire tomber les objets au "
+            L"sol.</t></r></si><si><t>Salem</t></si><si><t>Noir</t></si><si><t>FEMELLE</t></"
+            L"si><si><t>Américan à Poil Court</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Très nerveuse. Essayer de la calmer "
+            L"avec un jouet avant l'examen.</t></r></si><si><t>Muffin</t></si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>FEMELLE</t></si><si><t>Bleu de "
+            L"Russie</t></si><si><t>Hobbes</t></si><si><t>Roux et "
+            L"noir</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><t>Sylvester</t></si><si><t>Noir et "
+            L"blanc</t></si><si><t>MALE</t></si><si><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat de "
+            L"Goutière</t></r></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>La propriétaire se plaint que Sylvester fait ses griffes sur "
+            L"ses meubles. Suggère l'achat d'un griffoir.</t></r></si><si><t>Emma "
+            L"Lu</t></si><si><t>Noir et blanc</t></si><si><t>FEMELLE</t></si><si><t>Terrier Jack "
+            L"Russell</t></si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Emma est en réalité un chien qui a été apporté pour un "
+            L"contrôle en même temps que ses soeurs "
+            L"félines.</t></r></si><si><t>Angel</t></si><si><t>Blanc</t></si><si><t>FEMELLE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Angel semble "
+            L"très maigre, je recommande une marque spéciale de croquettes au thon pour son "
+            L"régime.</t></r></si><si><t>Chester</t></si><si><t>Blanc et roux (tâches "
+            L"noires)</t></si><si><t>MALE</t></si><si><t>Bobtail "
+            L"Japonais</t></si><si><t>Bigglesworth</t></si><si><t>Sans "
+            L"poils</t></si><si><t>MALE</t></si><si><t>Sphnyx</t></si><si><t>Napoleon</t></"
+            L"si><si><t>Bleu (gris "
+            L"foncé)</t></si><si><t>MALE</t></si><si><t>Chartreux</t></si><si><r><rPr><sz "
+            L"val=\"10\"/><color rgb=\"FF000000\"/><rFont val=\"Arial\"/></rPr><t>Chat très "
+            L"difficile --</t></r><r><rPr><i/><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>manier avec prudence</t></r><r><rPr><sz val=\"10\"/><color "
+            L"rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>.</t></r></si><si><t>Angel</t></si><si><t>Blanc et "
+            L"noir</t></si><si><t>FEMELLE</t></si><si><t>Chat du Maine</t></si><si><t>Mr. "
+            L"Magoo</t></si><si><t>Ecailles de tortue</t></si><si><t>MALE</t></si><si><t>Chat de "
+            L"Goputière Angoraic Longhair</t></si><si><t>Semble répondre au nom de "
+            L"\"Goober\".</t></si><si><t>Azriel</t></si><si><t>Roux</t></si><si><t>MALE</t></"
+            L"si><si><r><rPr><sz val=\"10\"/><color rgb=\"FF000000\"/><rFont "
+            L"val=\"Arial\"/></rPr><t>Chat de Goutière</t></r></si><si><t>Azriel a des griffes "
+            L"très pointues. Très difficile.</t></si><si><t>Enregistrement des patients dans une "
+            L"clinique vétérinaire fictive spécialisée dans les félins</t></si></sst>";
         ext.read_shared_strings(text, std::wcslen(text));
         CHECK(ext.get_shared_strings().size() == 93);
-        CHECK(ext.get_shared_strings().at(0) == L"Données fictives visant à illustrer le processus d'empilage.");
+        CHECK(ext.get_shared_strings().at(0) ==
+              L"Données fictives visant à illustrer le processus d'empilage.");
         CHECK(ext.get_shared_strings().at(1) == L"ID Patient");
         CHECK(ext.get_shared_strings().at(2) == L"Age (1998)");
         CHECK(ext.get_shared_strings().at(3) == L"Poids (1998)");
@@ -1287,7 +4266,8 @@ TEST_CASE("XLSX import", "[xlsx]")
         CHECK(ext.get_shared_strings().at(20) == L"Calico");
         CHECK(ext.get_shared_strings().at(21) == L"MALE");
         CHECK(ext.get_shared_strings().at(22) == L"Persan");
-        CHECK(ext.get_shared_strings().at(23) == L"A recommandé au propriétaire de brosser Chesire plus souvent pour éviter les boules de poils.");
+        CHECK(ext.get_shared_strings().at(23) == L"A recommandé au propriétaire de brosser Chesire "
+                                                 L"plus souvent pour éviter les boules de poils.");
         CHECK(ext.get_shared_strings().at(24) == L"Fluffy");
         CHECK(ext.get_shared_strings().at(25) == L"Blanc et roux");
         CHECK(ext.get_shared_strings().at(26) == L"MALE");
@@ -1300,12 +4280,15 @@ TEST_CASE("XLSX import", "[xlsx]")
         CHECK(ext.get_shared_strings().at(33) == L"Noir et blanc");
         CHECK(ext.get_shared_strings().at(34) == L"FEMELLE");
         CHECK(ext.get_shared_strings().at(35) == L"Américan à Poil Court");
-        CHECK(ext.get_shared_strings().at(36) == L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au sol.");//multiple <t> tags
+        CHECK(ext.get_shared_strings().at(36) ==
+              L"Nécessite surveillance lors de la visite. Semble aimer faire tomber les objets au "
+              L"sol."); // multiple <t> tags
         CHECK(ext.get_shared_strings().at(37) == L"Salem");
         CHECK(ext.get_shared_strings().at(38) == L"Noir");
         CHECK(ext.get_shared_strings().at(39) == L"FEMELLE");
         CHECK(ext.get_shared_strings().at(40) == L"Américan à Poil Court");
-        CHECK(ext.get_shared_strings().at(41) == L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
+        CHECK(ext.get_shared_strings().at(41) ==
+              L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(ext.get_shared_strings().at(42) == L"Muffin");
         CHECK(ext.get_shared_strings().at(43) == L"Bleu (gris foncé)");
         CHECK(ext.get_shared_strings().at(44) == L"FEMELLE");
@@ -1318,17 +4301,23 @@ TEST_CASE("XLSX import", "[xlsx]")
         CHECK(ext.get_shared_strings().at(51) == L"Noir et blanc");
         CHECK(ext.get_shared_strings().at(52) == L"MALE");
         CHECK(ext.get_shared_strings().at(53) == L"Chat de Goutière");
-        CHECK(ext.get_shared_strings().at(54) == L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère l'achat d'un griffoir.");
+        CHECK(ext.get_shared_strings().at(54) ==
+              L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
+              L"l'achat d'un griffoir.");
         CHECK(ext.get_shared_strings().at(55) == L"Emma Lu");
         CHECK(ext.get_shared_strings().at(56) == L"Noir et blanc");
         CHECK(ext.get_shared_strings().at(57) == L"FEMELLE");
         CHECK(ext.get_shared_strings().at(58) == L"Terrier Jack Russell");
-        CHECK(ext.get_shared_strings().at(59) == L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que ses soeurs félines.");
+        CHECK(ext.get_shared_strings().at(59) ==
+              L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
+              L"ses soeurs félines.");
         CHECK(ext.get_shared_strings().at(60) == L"Angel");
         CHECK(ext.get_shared_strings().at(61) == L"Blanc");
         CHECK(ext.get_shared_strings().at(62) == L"FEMELLE");
         CHECK(ext.get_shared_strings().at(63) == L"Chat de Goutière");
-        CHECK(ext.get_shared_strings().at(64) == L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon pour son régime.");
+        CHECK(ext.get_shared_strings().at(64) ==
+              L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
+              L"pour son régime.");
         CHECK(ext.get_shared_strings().at(65) == L"Chester");
         CHECK(ext.get_shared_strings().at(66) == L"Blanc et roux (tâches noires)");
         CHECK(ext.get_shared_strings().at(67) == L"MALE");
@@ -1356,17 +4345,29 @@ TEST_CASE("XLSX import", "[xlsx]")
         CHECK(ext.get_shared_strings().at(88) == L"Roux");
         CHECK(ext.get_shared_strings().at(89) == L"MALE");
         CHECK(ext.get_shared_strings().at(90) == L"Chat de Goutière");
-        CHECK(ext.get_shared_strings().at(91) == L"Azriel a des griffes très pointues. Très difficile.");
-        CHECK(ext.get_shared_strings().at(92) == L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans les félins");
+        CHECK(ext.get_shared_strings().at(91) ==
+              L"Azriel a des griffes très pointues. Très difficile.");
+        CHECK(ext.get_shared_strings().at(92) ==
+              L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
+              L"les félins");
         ext.read_shared_strings(nullptr, std::wcslen(text));
         CHECK(ext.get_shared_strings().size() == 0);
         }
     SECTION("Get String")
         {
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"109\" uniqueCount=\"52\"><si><t>Readability Study</t></si><si><t>Possibly &amp; look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. </t></si><si><t>Attending</t></si><si><t>Specialty </t></si><si><t>F-K</t></si></sst>";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst "
+            L"xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"109\" "
+            L"uniqueCount=\"52\"><si><t>Readability Study</t></si><si><t>Possibly &amp; look at "
+            L"number of impressions, seriousness of the impressions, seriousness of the "
+            L"differentials, number of differentials, incidental findings. "
+            L"</t></si><si><t>Attending</t></si><si><t>Specialty "
+            L"</t></si><si><t>F-K</t></si></sst>";
         CHECK(ext.get_shared_string(0, text, std::wcslen(text)) == L"Readability Study");
-        CHECK(ext.get_shared_string(1, text, std::wcslen(text)) == L"Possibly & look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. ");
+        CHECK(ext.get_shared_string(1, text, std::wcslen(text)) ==
+              L"Possibly & look at number of impressions, seriousness of the impressions, "
+              L"seriousness of the differentials, number of differentials, incidental findings. ");
         CHECK(ext.get_shared_string(2, text, std::wcslen(text)) == L"Attending");
         CHECK(ext.get_shared_string(3, text, std::wcslen(text)) == L"Specialty ");
         CHECK(ext.get_shared_string(4, text, std::wcslen(text)) == L"F-K");
@@ -1402,7 +4403,9 @@ TEST_CASE("XLSX shared strings", "[xlsx]")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><dimension ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\">";
+        const wchar_t* text =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><dimension "
+            L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\">";
         ext(text, std::wcslen(text), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
         CHECK(wrk.size() == 19);
@@ -1411,57 +4414,73 @@ TEST_CASE("XLSX shared strings", "[xlsx]")
             CHECK(wrk[i].size() == 15);
             auto pos = wrk[i].begin();
             std::wstringstream cellName;
-            cellName << L"A" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"A" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"B" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"B" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"C" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"C" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"D" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"D" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"E" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"E" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"F" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"F" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"G" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"G" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"H" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"H" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"I" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"I" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"J" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"J" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"K" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"K" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"L" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"L" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"M" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"M" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"N" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"N" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             cellName.str(L"");
-            cellName << L"O" << i+1;
-            CHECK(pos->get_name() == cellName.str());++pos;
+            cellName << L"O" << i + 1;
+            CHECK(pos->get_name() == cellName.str());
+            ++pos;
             }
         }
     SECTION("Get ColumnRow Info")
         {
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
-        std::pair<xlsx_extract_text::column_info,size_t> info = ext.get_column_and_row_info(L"A23");
+        std::pair<xlsx_extract_text::column_info, size_t> info =
+            ext.get_column_and_row_info(L"A23");
         CHECK(xlsx_extract_text::column_index_to_column_name(info.first.m_position) == L"A");
         CHECK(info.first.m_position == 1);
         CHECK(info.second == 23);
@@ -1496,4 +4515,3 @@ TEST_CASE("XLSX shared strings", "[xlsx]")
     }
 
 // NOLINTEND
-// clang-format on

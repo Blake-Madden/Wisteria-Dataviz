@@ -13,6 +13,7 @@
 #define XLSX_TEXT_EXTRACT_H
 
 #include "html_extract_text.h"
+#include <ranges>
 #include <sstream>
 #include <vector>
 
@@ -301,12 +302,62 @@ namespace lily_of_the_valley
             @param text_length The length of the text.*/
         void read_worksheet_names(const wchar_t* text, size_t text_length);
 
+        /** @brief Parses the workbook relationships file for worksheet target paths.
+            @details Reads the contents of `xl/_rels/workbook.xml.rels` and extracts the
+                relationship ID and target path pairs defined by each
+                @c <Relationship> element. The parsed results are stored internally
+                and can be accessed via @c get_relative_paths().
+            @param xml A pointer to the XML text to parse.
+            @param length The length of the XML text, in characters.
+            @note Call this after read_worksheet_names() and then call map_workbook_paths().*/
+        void read_relative_paths(const wchar_t* xml, const size_t length);
+
+        /** @brief Resolves worksheet names to their XML file paths.
+            @details Merges worksheet name and relationship information parsed from
+                `workbook.xml` and `workbook.xml.rels` to produce an ordered list
+                of worksheet XML paths relative to the `xl/` directory.
+            @note Call this after read_worksheet_names() and read_relative_paths().*/
+        void map_workbook_paths();
+
+        /** @returns The list of worksheet names and respective relative ID in the Excel file.
+            @note You must call read_worksheet_names() first to load these names.*/
+        [[nodiscard]]
+        const std::vector<std::pair<std::wstring, std::wstring>>&
+        get_worksheet_names_and_ids() const noexcept
+            {
+            return m_worksheet_names_and_ids;
+            }
+
         /** @returns The list of worksheet names in the Excel file.
             @note You must call read_worksheet_names() first to load these names.*/
         [[nodiscard]]
-        const std::vector<std::wstring>& get_worksheet_names() const noexcept
+        std::vector<std::wstring> get_worksheet_names() const
             {
-            return m_worksheet_names;
+            const auto names = m_worksheet_paths |
+                               std::views::transform([](const auto& ws) { return ws.first; });
+
+            return { names.begin(), names.end() };
+            }
+
+        /** @brief Gets the relative path mappings defined in the workbook relationships file.
+            @details Returns the mapping of relationship IDs to their corresponding target
+                paths as defined in `xl/_rels/workbook.xml.rels`. These paths are
+                relative to the `xl/` directory in the XLSX archive.
+            @returns A map of relationship IDs to their relative target paths.*/
+        [[nodiscard]]
+        const std::unordered_map<std::wstring, std::wstring>& get_relative_paths() const noexcept
+            {
+            return m_relative_paths;
+            }
+
+        /** @brief Gets the resolved worksheet names and their file paths within the archive.
+            @returns An ordered list of worksheet names paired with their
+                corresponding XML file paths. The order of the entries matches the
+                worksheet order defined in `workbook.xml`.*/
+        const std::vector<std::pair<std::wstring, std::wstring>>&
+        get_worksheet_paths() const noexcept
+            {
+            return m_worksheet_paths;
             }
 
         /** @brief Converts an Excel serial date to day, month, and year values.
@@ -341,9 +392,36 @@ namespace lily_of_the_valley
                 the first cell that was missing or out of order.*/
         [[nodiscard]]
         static std::pair<bool, std::wstring> verify_sheet(const worksheet& data);
+
+        /** @brief Sets the string used to separate the messages in the log report.
+            @details By default, messages are separated by newlines, so call this to separate them
+                by something like commas (if you are needing a single-line report).
+            @param separator The separator character to use.*/
+        void set_log_message_separator(const std::wstring& separator)
+            {
+            m_log_message_separator = separator;
+            }
+
+        /// @brief Empties the log of any previous parsing issues.
+        void clear_log() const { m_log.clear(); }
+
 #ifndef __UNITTEST
       private:
 #endif
+        /** @brief Adds a message to the report logging system.
+            @param message The message to log.*/
+        void log_message(const std::wstring& message) const
+            {
+            if (m_log.empty())
+                {
+                m_log.append(message);
+                } // first message won't need a separator in front of it
+            else
+                {
+                m_log.append(m_log_message_separator + message);
+                }
+            }
+
         /** @returns The string from the specified index.
             @warning This assumes that the string table has already been
                 loaded via read_shared_strings().
@@ -403,12 +481,20 @@ namespace lily_of_the_valley
             return m_shared_strings;
             }
 
-        std::vector<std::wstring> m_worksheet_names;
+        // name & relative ID (workbook.xml)
+        std::vector<std::pair<std::wstring, std::wstring>> m_worksheet_names_and_ids;
+        // relative ID & its path (workbook.xml.rels)
+        std::unordered_map<std::wstring, std::wstring> m_relative_paths;
+        // name & path
+        std::vector<std::pair<std::wstring, std::wstring>> m_worksheet_paths;
         // style indices that use a date format
         std::set<size_t> m_date_format_indices;
         string_table m_shared_strings;
 
         bool m_removeNewlinesAndTabs{ true };
+
+        mutable std::wstring m_log;
+        std::wstring m_log_message_separator{ L"\n" };
         };
     } // namespace lily_of_the_valley
 

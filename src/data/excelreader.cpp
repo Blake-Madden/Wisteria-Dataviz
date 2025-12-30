@@ -22,12 +22,25 @@ namespace Wisteria::Data
         std::wstring zipFileText = archive.ReadTextFile(L"xl/workbook.xml");
         m_xlsxTextExtractor.read_worksheet_names(zipFileText.c_str(), zipFileText.length());
 
+        // load workbook relationships
+        zipFileText = archive.ReadTextFile(L"xl/_rels/workbook.xml.rels");
+        m_xlsxTextExtractor.read_relative_paths(zipFileText.c_str(), zipFileText.length());
+
+        // resolve worksheet names to their XML paths
+        m_xlsxTextExtractor.map_workbook_paths();
+
         // load the string table
         zipFileText = archive.ReadTextFile(L"xl/sharedStrings.xml");
-        m_xlsxTextExtractor.read_shared_strings(zipFileText.c_str(), zipFileText.length());
+        if (!zipFileText.empty())
+            {
+            m_xlsxTextExtractor.read_shared_strings(zipFileText.c_str(), zipFileText.length());
+            }
 
         // load the styles
-        zipFileText = archive.ReadTextFile(L"xl/styles.xml");
+        if (!zipFileText.empty())
+            {
+            zipFileText = archive.ReadTextFile(L"xl/styles.xml");
+            }
         m_xlsxTextExtractor.read_styles(zipFileText.c_str(), zipFileText.length());
         }
 
@@ -43,13 +56,15 @@ namespace Wisteria::Data
         if (const auto* const worksheetName{ std::get_if<wxString>(&worksheet) };
             worksheetName != nullptr)
             {
-            const auto sheetPos = std::ranges::find(m_xlsxTextExtractor.get_worksheet_names(),
-                                                    worksheetName->wc_str());
-            if (sheetPos != m_xlsxTextExtractor.get_worksheet_names().cend())
+            const auto& worksheetPaths = m_xlsxTextExtractor.get_worksheet_paths();
+
+            const auto sheetPos =
+                std::ranges::find_if(worksheetPaths, [&](const auto& wsPath)
+                                     { return wsPath.first == worksheetName->wc_str(); });
+
+            if (sheetPos != worksheetPaths.cend())
                 {
-                const std::wstring sheetFile = archive.ReadTextFile(wxString::Format(
-                    L"xl/worksheets/sheet%zu.xml",
-                    (sheetPos - m_xlsxTextExtractor.get_worksheet_names().cbegin()) + 1));
+                const std::wstring sheetFile = archive.ReadTextFile(sheetPos->second);
 
                 lily_of_the_valley::xlsx_extract_text::worksheet wkData;
 
@@ -65,11 +80,12 @@ namespace Wisteria::Data
         if (const auto* const worksheetIndex{ std::get_if<size_t>(&worksheet) };
             worksheetIndex != nullptr)
             {
-            if (*worksheetIndex > 0 &&
-                *worksheetIndex <= m_xlsxTextExtractor.get_worksheet_names().size())
+            const auto& worksheetPaths = m_xlsxTextExtractor.get_worksheet_paths();
+
+            if (*worksheetIndex > 0 && *worksheetIndex <= worksheetPaths.size())
                 {
-                const std::wstring sheetFile = archive.ReadTextFile(
-                    wxString::Format(L"xl/worksheets/sheet%zu.xml", *worksheetIndex));
+                const std::wstring sheetFile =
+                    archive.ReadTextFile(worksheetPaths[*worksheetIndex - 1].second);
 
                 lily_of_the_valley::xlsx_extract_text::worksheet wkData;
 
