@@ -1477,7 +1477,7 @@ namespace string_util
             size_t count{ 0 };
             bool inToken{ false };
 
-            for (char_type ch : val)
+            for (const char_type ch : val)
                 {
                 if (m_delims.find(ch) != std::wstring::npos)
                     {
@@ -1539,21 +1539,18 @@ namespace string_util
 
                     return T{ m_view.data() + tokenStart, len };
                     }
-                else
+                // last token
+                m_has_more_tokens = false;
+
+                const std::size_t tokenStart = m_pos;
+                m_pos = m_view.size();
+
+                if (tokenStart == m_view.size() && m_skip_empty_tokens)
                     {
-                    // last token
-                    m_has_more_tokens = false;
-
-                    const std::size_t tokenStart = m_pos;
-                    m_pos = m_view.size();
-
-                    if (tokenStart == m_view.size() && m_skip_empty_tokens)
-                        {
-                        return T{};
-                        }
-
-                    return T{ m_view.data() + tokenStart, m_view.size() - tokenStart };
+                    return T{};
                     }
+
+                return T{ m_view.data() + tokenStart, m_view.size() - tokenStart };
                 }
             }
 

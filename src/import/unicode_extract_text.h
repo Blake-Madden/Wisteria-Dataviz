@@ -94,13 +94,14 @@ namespace lily_of_the_valley
             return (std::strncmp(get_bom_utf16be(), text, 2) == 0);
             }
 
-        /** @brief Main interface for taking a Unicode (char*) stream and converting
+        /** @brief Main interface for taking a Unicode (`char*`) stream and converting
                 it into a wide Unicode stream.
             @param unicodeText The char* (raw) stream of test.
             @param length: The length of the raw string.
             @param systemIsLittleEndian Whether the current system is little endian.
                 This is used to determine whether the bits need to be flipped or not.
-            @returns A wchar_t* pointer of the raw (char*) stream converted into a wchar_t buffer.
+            @returns A wchar_t* pointer of the raw (char*) stream converted into a
+                @c wchar_t buffer.
                 Call get_filtered_text_length() to get the length of this buffer.*/
         const wchar_t* operator()(const char* unicodeText, const size_t length,
                                   const bool systemIsLittleEndian = true)
