@@ -789,7 +789,7 @@ namespace lily_of_the_valley
                 if (!worksheetName.empty() && !worksheetRelativeId.empty())
                     {
                     m_worksheet_names_and_ids.emplace_back(std::move(worksheetName),
-                                                   std::move(worksheetRelativeId));
+                                                           std::move(worksheetRelativeId));
                     }
                 std::advance(text, SHEET.length());
                 }

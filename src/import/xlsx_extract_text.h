@@ -333,8 +333,8 @@ namespace lily_of_the_valley
         [[nodiscard]]
         std::vector<std::wstring> get_worksheet_names() const
             {
-            const auto names = m_worksheet_paths |
-                               std::views::transform([](const auto& ws) { return ws.first; });
+            const auto names =
+                m_worksheet_paths | std::views::transform([](const auto& ws) { return ws.first; });
 
             return { names.begin(), names.end() };
             }
