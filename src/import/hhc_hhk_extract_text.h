@@ -1,4 +1,4 @@
-﻿/** @addtogroup Importing
+/** @addtogroup Importing
     @brief Classes for importing data.
     @date 2005-2025
     @copyright Blake Madden
