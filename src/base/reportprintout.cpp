@@ -41,7 +41,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         // add space for the headers and footers (if being used)
         // measure a standard line of text
         // (and add 50% for padding)
-        const auto textHeight = dc->GetTextExtent(L"Aq").GetHeight();
+        const auto textHeight = dc->GetTextExtent(_DT(L"Aq")).GetHeight();
         long headerFooterUsedHeight{ 0 };
         if (!canvas->GetLeftPrinterHeader().empty() || !canvas->GetCenterPrinterHeader().empty() ||
             !canvas->GetRightPrinterHeader().empty())

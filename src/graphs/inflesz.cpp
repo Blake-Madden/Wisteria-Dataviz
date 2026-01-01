@@ -87,7 +87,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszScale, Wisteria::Graphs::Scal
                         .Brush(wxColour{ L"#67C7C0" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
                                                      .LabelFitting(LabelFit::DisplayAsIs))) } },
-            0, L"INFLESZ");
+            0, _DT(L"INFLESZ"));
 
         // SZIGRISZT scale
         if (includeSzigriszt)
@@ -130,7 +130,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszScale, Wisteria::Graphs::Scal
                             .Brush(wxColour{ L"#67C7C0" })
                             .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
                                                          .LabelFitting(LabelFit::DisplayAsIs))) } },
-                0, L"SZIGRISZT");
+                0, _DT(L"SZIGRISZT", DTExplanation::ProperNoun));
             }
 
         // FLESCH scale
@@ -174,7 +174,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszScale, Wisteria::Graphs::Scal
                             .Brush(wxColour{ L"#67C7C0" })
                             .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
                                                          .LabelFitting(LabelFit::DisplayAsIs))) } },
-                0, L"FLESCH");
+                0, _DT(L"FLESCH", DTExplanation::ProperNoun));
             }
 
         wxString caption =

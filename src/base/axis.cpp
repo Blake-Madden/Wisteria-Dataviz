@@ -3085,9 +3085,10 @@ namespace Wisteria::GraphItems
         // can't do much with this range if invalid, so have to ignore it
         if (!startDate.IsValid() || !endDate.IsValid() || startDate > endDate)
             {
-            wxLogWarning(L"Axis::SetDateRange(): invalid date range (%s – %s); ignoring.",
-                         startDate.IsValid() ? startDate.FormatISODate() : wxString{ L"(invalid)" },
-                         endDate.IsValid() ? endDate.FormatISODate() : wxString{ L"(invalid)" });
+            wxLogWarning(
+                L"Axis::SetDateRange(): invalid date range (%s – %s); ignoring.",
+                startDate.IsValid() ? startDate.FormatISODate() : wxString{ _DT(L"(invalid)") },
+                endDate.IsValid() ? endDate.FormatISODate() : wxString{ _DT(L"(invalid)") });
             return;
             }
 

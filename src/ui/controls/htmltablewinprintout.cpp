@@ -193,7 +193,7 @@ void HtmlTablePrintout::OnPreparePrinting()
 
         // Measure a standard line of text
         wxCoord textWidth{ 0 }, textHeight{ 0 };
-        dc->GetTextExtent(L"AQ", &textWidth, &textHeight);
+        dc->GetTextExtent(_DT(L"AQ"), &textWidth, &textHeight);
 
         // Remove the margins from the drawing area size
         wxCoord heightMargin = GetMarginPadding() * 2;

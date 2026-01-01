@@ -514,9 +514,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(subframe->m_canvas);
 
-        plot->SetData(mpgData, L"hwy",
+        plot->SetData(mpgData, _DT(L"hwy"),
                       // leave this as std::nullopt to not create grouped boxes
-                      L"class");
+                      _DT(L"class"));
 
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
@@ -586,7 +586,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                         .Decal(Wisteria::GraphItems::Label(
                             Wisteria::GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
                                 Wisteria::LabelFit::DisplayAsIs))) } },
-            std::nullopt, L"Grades");
+            std::nullopt, _(L"Grades"));
         plot->AddScale(
             std::vector<Wisteria::Graphs::BarChart::BarBlock>{
                 Wisteria::Graphs::BarChart::BarBlock{
@@ -681,9 +681,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                             Wisteria::GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
                                 Wisteria::LabelFit::DisplayAsIs))) },
             },
-            std::nullopt, L"Grades");
+            std::nullopt, _(L"Grades"));
         plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0);
-        plot->SetData(testScoresData, L"TEST_SCORE", L"NAME");
+        plot->SetData(testScoresData, L"TEST_SCORE", _DT(L"NAME"));
         plot->SetDataColumnHeader(_(L"Test Scores"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -776,7 +776,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             .Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).MakeLarger());
 
         // use group and put all the students' heatmaps into one column
-        plot->SetData(testScoresData, L"TEST_SCORE", L"Name", 1);
+        plot->SetData(testScoresData, L"TEST_SCORE", _DT(L"Name"), 1);
         // say "Students" at the top instead of "Groups"
         plot->SetGroupHeaderPrefix(_(L"Students"));
 
@@ -864,7 +864,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
 
-        plot->SetData(mpgData, L"cyl", std::nullopt,
+        plot->SetData(mpgData, _DT(L"cyl"), std::nullopt,
                       // don't create range-based bins;
                       // instead, create one for each unique value.
                       Wisteria::Graphs::Histogram::BinningMethod::BinUniqueValues,
@@ -925,7 +925,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // Set the data and use the grouping column from the dataset to create separate lines.
         // Also, use a categorical column for the X axis.
-        linePlot->SetData(linePlotData, L"AVG_GRADE", L"WEEK_NAME", L"Gender");
+        linePlot->SetData(linePlotData, L"AVG_GRADE", L"WEEK_NAME", _DT(L"Gender"));
 
         // add some titles
         linePlot->GetTitle().SetText(_(L"Average Grades"));
@@ -1009,14 +1009,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // Set the data and use the grouping column from the dataset to create separate lines.
         // Also, use a continuous column for the X axis, where we will set the labels
         // ourselves later.
-        linePlot->SetData(linePlotData, L"AVG_GRADE", L"WeeK", L"Gender");
+        linePlot->SetData(linePlotData, _DT(L"AVG_GRADE"), _DT(L"WeeK"), _DT(L"Gender"));
         // after setting the data, customize the appearance of one of the lines by index
         linePlot->GetLine(1).GetPen().SetStyle(wxPenStyle::wxPENSTYLE_DOT_DASH);
         // iterate through the lines and change their color based on their names
         // (which will override the color scheme)
         for (auto& line : linePlot->GetLines())
             {
-            if (line.GetText().CmpNoCase(L"Male") == 0)
+            if (line.GetText().CmpNoCase(_DT(L"Male")) == 0)
                 {
                 line.GetPen().SetColour(Wisteria::Colors::ColorBrewer::GetColor(
                     Wisteria::Colors::Color::CelestialBlue));
@@ -1139,10 +1139,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             // use a different color scheme where the colors
             // stand out more from each other
             std::make_shared<Wisteria::Colors::Schemes::Decade1920s>());
-        ganttChart->SetData(companyAcquisitionData, Wisteria::DateInterval::FiscalQuarterly,
-                            Wisteria::FiscalYear::USBusiness, L"Task", L"Start", "End",
-                            // these columns are optional
-                            L"Resource", L"Description", L"Completion", L"Resource");
+        ganttChart->SetData(
+            companyAcquisitionData, Wisteria::DateInterval::FiscalQuarterly,
+            Wisteria::FiscalYear::USBusiness, _DT(L"Task"), _DT(L"Start"), _DT("End"),
+            // these columns are optional
+            _DT(L"Resource"), _DT(L"Description"), _DT(L"Completion"), _DT(L"Resource"));
 
         // add deadlines
         auto releaseDate =
@@ -1214,7 +1215,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // candlestickPlot->SetPointsPerDefaultCanvasSize(365);
 
         candlestickPlot->SetData(
-            silverFuturesData, L"Date", L"Open", L"High", L"Low",
+            silverFuturesData, _DT(L"Date"), _DT(L"Open"), _DT(L"High"), _DT(L"Low"),
             _DT(L"Close/Last", DTExplanation::Syntax, L"Name of variable from dataset"));
 
         candlestickPlot->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
@@ -1267,7 +1268,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // only show the labels on the axis
         plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
 
-        plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(L"ISSUES");
+        plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(
+            // TRANSLATORS: Uppercasing is optional.
+            _(L"ISSUES"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
@@ -1333,7 +1336,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->GetBarAxis()
             .GetTitle()
             .GetGraphItemInfo()
-            .Text(L"ISSUES")
+            .Text(/* TRANSLATORS: Uppercasing is optional. */ _(L"ISSUES"))
             .Orient(Wisteria::Orientation::Horizontal)
             .Padding(5, 10, 0, 0)
             .LabelAlignment(Wisteria::TextAlignment::Centered);
@@ -1410,7 +1413,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
         plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1);
 
-        plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(L"ISSUES").Padding(5, 10, 0, 0);
+        plot->GetBarAxis()
+            .GetTitle()
+            .GetGraphItemInfo()
+            .Text(
+                // TRANSLATORS: Uppercasing is optional.
+                _(L"ISSUES"))
+            .Padding(5, 10, 0, 0);
 
         // align the axis labels over to the left
         plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
@@ -1445,7 +1454,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
 
-        plot->SetData(mpgData, L"manufacturer");
+        plot->SetData(mpgData, _DT(L"manufacturer"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
@@ -1475,7 +1484,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
 
-        plot->SetData(mpgData, L"manufacturer", std::nullopt, L"class");
+        plot->SetData(mpgData, _DT(L"manufacturer"), std::nullopt, _DT(L"class"));
         plot->SetBarOpacity(220);
         plot->SetBarEffect(Wisteria::BoxEffect::Glassy);
 
@@ -1496,7 +1505,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
                                Wisteria::Data::ImportInfo().CategoricalColumns(
-                                   { { L"manufacturer",
+                                   { { _DT(L"manufacturer"),
                                        Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
@@ -1508,7 +1517,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(subframe->m_canvas);
 
-        plot->SetData(mpgData, L"manufacturer");
+        plot->SetData(mpgData, _DT(L"manufacturer"));
 
         plot->SetBarEffect(Wisteria::BoxEffect::StippleShape);
         plot->SetStippleShape(Wisteria::Icons::IconShape::Car);
@@ -1546,11 +1555,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
-        plot->SetData(pieData, L"Enrollment", L"COLLEGE");
+        plot->SetData(pieData, _DT(L"Enrollment"), _DT(L"COLLEGE"));
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::ranges::find(plot->GetOuterPie(),
-                                            Wisteria::Graphs::PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(
+            plot->GetOuterPie(), Wisteria::Graphs::PieChart::SliceInfo{ _DT(L"English") });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1585,11 +1594,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
-        plot->SetData(pieData, L"Enrollment", L"COLLEGE");
+        plot->SetData(pieData, _DT(L"Enrollment"), _DT(L"COLLEGE"));
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::ranges::find(plot->GetOuterPie(),
-                                            Wisteria::Graphs::PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(
+            plot->GetOuterPie(), Wisteria::Graphs::PieChart::SliceInfo{ _DT(L"English") });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1628,11 +1637,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
-        plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
+        plot->SetData(pieData, _DT(L"Enrollment"), _DT(L"COLLEGE"), _DT(L"Course"));
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::ranges::find(plot->GetOuterPie(),
-                                            Wisteria::Graphs::PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(
+            plot->GetOuterPie(), Wisteria::Graphs::PieChart::SliceInfo{ _DT(L"English") });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1677,7 +1686,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
-        plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
+        plot->SetData(pieData, _DT(L"Enrollment"), _DT(L"COLLEGE"), _DT(L"Course"));
 
         // hide all outer labels for the main (i.e., outer) ring
         plot->ShowOuterPieLabels(false);
@@ -1737,7 +1746,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto sankey = std::make_shared<Wisteria::Graphs::SankeyDiagram>(subframe->m_canvas);
-        sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt, std::nullopt, std::nullopt);
+        sankey->SetData(sankeyData, _DT(L"Sex"), _DT(L"Survived"), std::nullopt, std::nullopt,
+                        std::nullopt);
         sankey->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, sankey);
@@ -1771,7 +1781,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         sankey->SetData(
             sankeyData,
             _DT(L"High School", DTExplanation::Syntax, L"Name of variable from dataset"),
-            L"University", L"Graduated", L"Enrolled", L"County");
+            _DT(L"University"), _DT(L"Graduated"), _DT(L"Enrolled"), _DT(L"County"));
         sankey->SetGroupLabelDisplay(Wisteria::BinLabelDisplay::BinNameAndValue);
         sankey->SetColumnHeaderDisplay(Wisteria::GraphColumnHeader::AsHeader);
         sankey->SetColumnHeaders({ _(L"Of @COUNT@ High School Graduates"),
@@ -1806,7 +1816,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto wordCloud = std::make_shared<Wisteria::Graphs::WordCloud>(subframe->m_canvas);
         // remove the low-frequency words, and also the extreme high frequency
         // ones to remove the main characters
-        wordCloud->SetData(friendsData, L"Word", L"Frequency", 2, 100, 25);
+        wordCloud->SetData(friendsData, _DT(L"Word"), _DT(L"Frequency"), 2, 100, 25);
         wordCloud->GetTitle()
             .GetGraphItemInfo()
             .Padding(5, 5, 25, 5)
@@ -1847,7 +1857,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto roadmap = std::make_shared<Wisteria::Graphs::LRRoadmap>(subframe->m_canvas);
-        roadmap->SetData(roadmapData, L"factor", L"coefficient", std::nullopt, std::nullopt,
+        roadmap->SetData(roadmapData, _DT(L"factor"), _DT(L"coefficient"), std::nullopt,
+                         std::nullopt,
                          std::nullopt, // TRANSLATORS: Grade Point Average
                          _(L"GPA"));
         roadmap->SetCanvasMargins(5, 5, 5, 5);
@@ -1899,7 +1910,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // strengths and weaknesses
         auto swRoadmap = std::make_shared<Wisteria::Graphs::ProConRoadmap>(subframe->m_canvas);
-        swRoadmap->SetData(swData, L"Strength", std::nullopt, L"Weakness", std::nullopt, 2);
+        swRoadmap->SetData(swData, _DT(L"Strength"), std::nullopt, _DT(L"Weakness"), std::nullopt,
+                           2);
         swRoadmap->SetCanvasMargins(5, 5, 0, 5);
         swRoadmap->GetLeftYAxis().GetTitle().SetText(_(L"Strengths & Weaknesses"));
         swRoadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
@@ -1912,7 +1924,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // opportunities and threats
         auto optThreatRoadmap =
             std::make_shared<Wisteria::Graphs::ProConRoadmap>(subframe->m_canvas);
-        optThreatRoadmap->SetData(swData, L"Opportunity", std::nullopt, L"Threat", std::nullopt,
+        optThreatRoadmap->SetData(swData, _DT(L"Opportunity"), std::nullopt, _DT(L"Threat"),
+                                  std::nullopt,
                                   // ignore items that are only mentioned once
                                   2);
         optThreatRoadmap->SetCanvasMargins(0, 5, 5, 5);
@@ -1994,7 +2007,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         wCurve->SetCanvasMargins(5, 5, 5, 5);
 
         // set the data and use the grouping column from the dataset to create separate lines
-        wCurve->SetData(wcurveData, L"Belong", L"Year", L"Name");
+        wCurve->SetData(wcurveData, _DT(L"Belong"), _DT(L"Year"), _DT(L"Name"));
         wCurve->GetTopXAxis().GetTitle().SetText(
             _(L"THE TRANSITION OF FOUR STUDENTS USING THE W-CURVE"));
         wCurve->GetTopXAxis().GetTitle().SetBottomPadding(5);
@@ -2093,7 +2106,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         likertChart->SetData(
             surveyData, categoricalNames,
             // passing in a grouping column will change it from ThreePoint -> ThreePointCategorized
-            L"Gender");
+            _DT(L"Gender"));
 
         // groups with lower responses will have narrower bars
         likertChart->SetBarSizesToRespondentSize(true);
@@ -2189,7 +2202,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
         auto donutChart = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
-        donutChart->SetData(pieData, L"Enrollment", L"COLLEGE");
+        donutChart->SetData(pieData, _DT(L"Enrollment"), _DT(L"COLLEGE"));
 
         // apply the slice's colors to its respective outside label
         donutChart->UseColorLabels(true);
@@ -2202,7 +2215,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a pie chart on the side, that will fill up the whole right side
         auto groupedPieChart = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
-        groupedPieChart->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
+        groupedPieChart->SetData(pieData, _DT(L"Enrollment"), _DT(L"COLLEGE"), _DT(L"Course"));
 
         groupedPieChart->SetOuterPieMidPointLabelDisplay(Wisteria::BinLabelDisplay::BinName);
 
@@ -2282,7 +2295,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                                                       Wisteria::Icons::IconShape::Hexagon }));
 
         // set the data and use the grouping column from the dataset to create separate lines
-        linePlot->SetData(spellingData, L"AVG_GRADE", L"WeeK", L"Gender");
+        linePlot->SetData(spellingData, L"AVG_GRADE", _DT(L"Week"), _DT(L"Gender"));
 
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
@@ -2359,7 +2372,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto tableGraph = std::make_shared<Wisteria::Graphs::Table>(subframe->m_canvas);
-        tableGraph->SetData(juniorSeniorMajors, { L"Division", L"Department", L"Female", L"Male" });
+        tableGraph->SetData(juniorSeniorMajors,
+                            { _DT(L"Division"), _DT(L"Department"), _DT(L"Female"), _DT(L"Male") });
         // group the schools together in the first row
         tableGraph->GroupColumn(0);
 

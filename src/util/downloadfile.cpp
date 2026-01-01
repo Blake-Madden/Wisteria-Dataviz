@@ -276,7 +276,7 @@ void FileDownload::RequestResponse(const wxString& url)
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
     if (!GetCookies().empty())
         {
-        request.SetHeader(L"Cookie", GetCookies());
+        request.SetHeader(_DT(L"Cookie"), GetCookies());
         }
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     if (request.IsOk())
@@ -368,7 +368,7 @@ bool FileDownload::Read(const wxString& url)
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
     if (!GetCookies().empty())
         {
-        request.SetHeader(L"Cookie", GetCookies());
+        request.SetHeader(_DT(L"Cookie"), GetCookies());
         }
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     if (request.IsOk())

@@ -1,4 +1,4 @@
-﻿/** @addtogroup Exporting
+/** @addtogroup Exporting
     @brief Classes for formatting and exporting text.
     @date 2005-2025
     @copyright Blake Madden
