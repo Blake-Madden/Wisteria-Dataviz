@@ -924,7 +924,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
         // Set the data and use the grouping column from the dataset to create separate lines.
-        // Also, use a categorical column for the X axis.
+        // Also, use a categorical column for the x-axis.
         linePlot->SetData(linePlotData, L"AVG_GRADE", L"WEEK_NAME", _DT(L"Gender"));
 
         // add some titles
@@ -1007,7 +1007,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
         // Set the data and use the grouping column from the dataset to create separate lines.
-        // Also, use a continuous column for the X axis, where we will set the labels
+        // Also, use a continuous column for the x-axis, where we will set the labels
         // ourselves later.
         linePlot->SetData(linePlotData, _DT(L"AVG_GRADE"), _DT(L"WeeK"), _DT(L"Gender"));
         // after setting the data, customize the appearance of one of the lines by index
@@ -1059,7 +1059,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         linePlot->GetBottomXAxis().GetTitle().SetText(L"");
         linePlot->GetLeftYAxis().GetTitle().SetText(L"");
 
-        // customize the X axis labels
+        // customize the x-axis labels
         for (int i = 1; i < 6; ++i)
             {
             linePlot->GetBottomXAxis().SetCustomLabel(
