@@ -130,7 +130,7 @@
 - Added ability to stretch content to fit the entire page when printing
 - Simplified layout of canvas rows when they are fitting their content (see @c Wisteria::Canvas::CalcRowDimensions())
 - Added common axis builder helper class
-- Line plots can now use categorical or continuous columns for X axis values
+- Line plots can now use categorical or continuous columns for x-axis values
 - Added support for aligning pie chart labels flush left or right against the plotting area
 - Fixed pie charts being drawn outside of their plot area under certain circumstances
 - Setting background color of canvas titles now stretches them across the canvas,

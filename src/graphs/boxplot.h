@@ -255,7 +255,7 @@ namespace Wisteria::Graphs
             /// @brief Functions relating to connecting the box to the parent plot.
             /// @{
 
-            /// @returns The position on the X axis (on the parent plot) that the box
+            /// @returns The position on the x-axis (on the parent plot) that the box
             ///      is aligned with.
             [[nodiscard]]
             double GetXAxisPosition() const noexcept
@@ -263,8 +263,8 @@ namespace Wisteria::Graphs
                 return m_xAxisPosition;
                 }
 
-            /** @brief Sets where the box should be aligned on the X axis.
-                @param position The position on the X axis to place the box.
+            /** @brief Sets where the box should be aligned on the x-axis.
+                @param position The position on the x-axis to place the box.
                 @note The parent box plot will manage this value, you do not need to call
                     them when creating a box.*/
             void SetXAxisPosition(const double position) noexcept { m_xAxisPosition = position; }
@@ -540,7 +540,7 @@ namespace Wisteria::Graphs
       private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.
-            @note If only one box is on the plot, then no labels will be shown on the bottom X axis
+            @note If only one box is on the plot, then no labels will be shown on the bottom x-axis
                 (even if a custom label is provided for where the box is). To override this,
                 call `GetBottomXAxis().SetLabelDisplay(...)` after adding the box and
                 its custom label.*/

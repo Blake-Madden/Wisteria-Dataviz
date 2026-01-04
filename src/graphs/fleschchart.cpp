@@ -33,14 +33,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             }
         GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo(_(L"How Easy?")).Pen(wxNullPen));
 
-        // Set up the X axis
+        // Set up the x-axis
         GetBottomXAxis().SetRange(0, 4, 0, 1, 1);
         GetBottomXAxis().ShowOuterLabels(false);
         GetBottomXAxis().GetGridlinePen() = wxNullPen;
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
 
-        // set up the Y axis
+        // set up the y-axis
         GetLeftYAxis().SetRange(0, 110, 0, 10, 1);
         GetLeftYAxis().GetGridlinePen() = wxNullPen;
         GetLeftYAxis().Show(false);

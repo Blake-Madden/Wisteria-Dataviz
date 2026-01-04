@@ -26,11 +26,11 @@ namespace Wisteria::Data
             like this and jitters them across both sides of the axis inside a provided area.
 
             This applies to plots where the position of a point only relates to one axis.
-            As an example, a vertical box plot, where the Y axis shows a datum's value,
-            and shifting the datum along the X axis (but still inside the box) will not affect
+            As an example, a vertical box plot, where the y-axis shows a datum's value,
+            and shifting the datum along the x-axis (but still inside the box) will not affect
             the meaning of its value.
 
-            Likewise, jittering does not make sense for plots where both the X and Y axis values
+            Likewise, jittering does not make sense for plots where both the x- and y-axis values
             for a datum are meaningful (e.g., a scatterplots).
         @note This is a low-level class that is usually handled by plots.
             Client code should not need to use this.
@@ -77,7 +77,7 @@ namespace Wisteria::Data
                 you can jitter points out to.
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
-                For example, LeftYAxis will cause jittering along the X axis.*/
+                For example, LeftYAxis will cause jittering along the x-axis.*/
         Jitter(const size_t jitterWidth, const AxisType dominantAxis)
             : m_jitterSideWidth(safe_divide<size_t>(jitterWidth, 2)), m_dominantAxis(dominantAxis)
             {
@@ -86,7 +86,7 @@ namespace Wisteria::Data
         /** @brief Constructor.
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
-                For example, LeftYAxis will cause jittering along the X axis.*/
+                For example, LeftYAxis will cause jittering along the x-axis.*/
         explicit Jitter(const AxisType dominantAxis) : m_dominantAxis(dominantAxis) {}
 
         /// @private

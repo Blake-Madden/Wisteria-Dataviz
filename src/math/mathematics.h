@@ -482,7 +482,7 @@ namespace geometry
     /** @brief Alexander Motrichuk's implementation of determining if a point is
             inside a polygon.
         @details Tests if a point is within a polygon (or on an edge or vertex)
-            by shooting a ray along the X axis.
+            by shooting a ray along the x-axis.
         @param pt The point.
         @param polygon The polygon.
         @returns Whether the point is inside the polygon.*/

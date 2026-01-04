@@ -726,14 +726,14 @@ namespace Wisteria::GraphItems
             return m_type;
             }
 
-        /// @returns @c true if a left or right Y axis.
+        /// @returns @c true if a left or right y-axis.
         [[nodiscard]]
         bool IsVertical() const noexcept
             {
             return (GetAxisType() == AxisType::LeftYAxis || GetAxisType() == AxisType::RightYAxis);
             }
 
-        /// @returns @c true if a bottom or top X axis.
+        /// @returns @c true if a bottom or top x-axis.
         [[nodiscard]]
         bool IsHorizontal() const noexcept
             {
@@ -1623,7 +1623,7 @@ namespace Wisteria::GraphItems
 
         /** @name Custom Axis Functions
             @brief Functions related to positioning this axis as a custom axis
-                (i.e., an axis branching off of the traditional X or Y axes).*/
+                (i.e., an axis branching off of the traditional x- or y-axes).*/
         /// @{
 
         /// @returns The custom position (in respect to the main x axes);
@@ -1638,9 +1638,9 @@ namespace Wisteria::GraphItems
         /** @brief Sets the custom position (in respect to the main axes);
                 these only relate to custom axes.
             @param xPos The custom (parent) x-axis position to connect this axis to.
-            @note For horizontal axes, this should be the right-most point of the X axis.
-                In other words, the max value of the X axis, unless it is reversed
-                (then use the min of the X axis). For vertical axes, this is where the axis should
+            @note For horizontal axes, this should be the right-most point of the x-axis.
+                In other words, the max value of the x-axis, unless it is reversed
+                (then use the min of the x-axis). For vertical axes, this is where the axis should
                 be placed on the bottom axis.*/
         void SetCustomXPosition(const double xPos) noexcept { m_customXPosition = xPos; }
 
@@ -1656,8 +1656,8 @@ namespace Wisteria::GraphItems
         /** @brief Sets the custom position (in respect to the main axes);
                 these only relate to custom axes.
             @param yPos The custom (parent) x-axis position to connect this axis to.
-            @note For vertical axes, this should be the top-most point of the Y axis.
-                In other words, the max value of the Y axis, unless Y is reversed
+            @note For vertical axes, this should be the top-most point of the y-axis.
+                In other words, the max value of the y-axis, unless Y is reversed
                 (then it should be its min value).\n
                 For horizontal axes, this is where the axis should be placed on the left axis.*/
         void SetCustomYPosition(const double yPos) noexcept { m_customYPosition = yPos; }

@@ -49,7 +49,7 @@ namespace Wisteria::Graphs
 namespace Wisteria
     {
     /// @brief Lambda to return a color if a point's
-    ///     X and/or Y values meet a certain set of criteria.
+    ///     x and/or y values meet a certain set of criteria.
     /// @details Should return an invalid color if values do not meet the criteria.
     using PointColorCriteria = std::function<wxColour(double x, double y)>;
 

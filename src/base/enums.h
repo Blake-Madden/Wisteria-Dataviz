@@ -313,10 +313,10 @@ namespace Wisteria
     /// @brief The type of axis.
     enum class AxisType
         {
-        BottomXAxis, /*!< The bottom X axis.*/
-        TopXAxis,    /*!< The top X axis.*/
-        LeftYAxis,   /*!< The left Y axis.*/
-        RightYAxis   /*!< The right Y axis.*/
+        BottomXAxis, /*!< The bottom x-axis.*/
+        TopXAxis,    /*!< The top x-axis.*/
+        LeftYAxis,   /*!< The left y-axis.*/
+        RightYAxis   /*!< The right y-axis.*/
         };
 
     /// @brief How to draw the labels in relation to their parent axis.
@@ -342,12 +342,12 @@ namespace Wisteria
     enum class AxisLabelAlignment
         {
         AlignWithAxisLine, /*!< The labels will be flush with the axis line.\n
-                                For example, for a left Y axis, the labels will appear
+                                For example, for a left y-axis, the labels will appear
                                 flush right (ragged left).*/
         AlignWithBoundary, /*!< If the labels are perpendicular against the axis and some are wider
                                 than others, then align the labels against the outer parameter of
                                 the axis area.\n
-                                For example, for a left Y axis, the labels will appear
+                                For example, for a left y-axis, the labels will appear
                                 flush left (ragged right).
                                 @note Has no effect with parallel axes.*/
         CenterOnAxisLine   /*!< The labels will be centered on the axis line.

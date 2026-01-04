@@ -34,13 +34,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             if (yColumn == GetDataset()->GetContinuousColumns().cend())
                 {
                 throw std::runtime_error(
-                    wxString::Format(_(L"'%s': Y column not found for multi-series line plot."),
+                    wxString::Format(_(L"'%s': y column not found for multi-series line plot."),
                                      yColumnName)
                         .ToUTF8());
                 }
             m_yColumns.push_back(yColumn);
             }
-        // set the X column, which will be access through various GetX functions later
+        // set the x column, which will be access through various GetX functions later
         // (do not reference these iterators after setting them here)
         SetXColumn(xColumnName);
         GetLines().clear();
@@ -114,7 +114,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                                 ((get_mantissa(yStart) == 0 && get_mantissa(yEnd) == 0) ? 0 : 1),
                                 false);
 
-        // X axis
+        // x-axis
         //-------
 
         if (IsXDates())
@@ -134,12 +134,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                 (GetLineCount() > 1 ? std::max(maxXValue, xEndCurrent) : maxXValue),
                 ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1), false);
 
-            // if we have a string table to work with, use that for the X axis labels
+            // if we have a string table to work with, use that for the x-axis labels
             if (IsXCategorical() && !GetXCategoricalColumnIterator()->GetStringTable().empty())
                 {
                 GetBottomXAxis().ClearCustomLabels();
                 GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
-                // customize the X axis labels
+                // customize the x-axis labels
                 for (const auto& label : GetXCategoricalColumnIterator()->GetStringTable())
                     {
                     GetBottomXAxis().SetCustomLabel(label.first, GraphItems::Label(label.second));

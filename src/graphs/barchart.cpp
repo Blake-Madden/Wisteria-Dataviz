@@ -742,7 +742,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         };
 
         // Reorder the provided labels (if necessary) to match the sorting direction
-        // along the Y axis. The Y axis origin is at the bottom and goes upwards,
+        // along the y-axis. The y-axis origin is at the bottom and goes upwards,
         // making it necessary to reverse the order of the labels to match that.
         if ((direction == SortDirection::SortDescending &&
              GetBarOrientation() == Orientation::Vertical) ||

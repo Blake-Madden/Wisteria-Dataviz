@@ -865,7 +865,7 @@ namespace Wisteria::Graphs
             AddObject(std::move(img));
             }
 
-        // draw the X axis grid lines
+        // draw the x-axis grid lines
         if (GetBottomXAxis().IsShown() && GetBottomXAxis().GetGridlinePen().IsOk() &&
             GetBottomXAxis().GetAxisPointsCount() > 2)
             {
@@ -883,7 +883,7 @@ namespace Wisteria::Graphs
             AddObject(std::move(xAxisLines));
             }
 
-        // draw the Y axis grid lines
+        // draw the y-axis grid lines
         if (GetLeftYAxis().IsShown() && GetLeftYAxis().GetGridlinePen().IsOk() &&
             GetLeftYAxis().GetAxisPointsCount() > 2)
             {

@@ -1430,12 +1430,12 @@ namespace Wisteria::GraphItems
         // draw the brackets
         DrawBrackets(dc, axisRect);
 
-        // draw the Y axis labels
+        // draw the y-axis labels
         if (IsVertical() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
             {
             DrawYLabels(dc, axisRect, titleLabel);
             }
-        // draw the X axis labels
+        // draw the x-axis labels
         else if (IsHorizontal() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
             {
             DrawXLabels(dc, axisRect, titleLabel);
@@ -2958,10 +2958,10 @@ namespace Wisteria::GraphItems
 
         // If any label is bigger than the width of the graph divided by the number of
         // displayed labels then stack them account for a little extra padding around
-        // the labels if the labels are going across (e.g., parallel along the X axis);
+        // the labels if the labels are going across (e.g., parallel along the x-axis);
         // Otherwise, don't expect padding if they are on top of each other
-        // aggressively (e.g., perpendicular, going down the Y axis). This way, you
-        // won't cause Y axis label to be stacked, which can look odd--
+        // aggressively (e.g., perpendicular, going down the y-axis). This way, you
+        // won't cause y-axis label to be stacked, which can look odd--
         // only resort to that is they really are overlapping.
         const auto maxTextSize = safe_divide<int64_t>(axisWidth, displayedLabelsCount) -
                                  (isMeasuringByHeight ? (2 * GetScaling()) : 0);
@@ -4308,7 +4308,7 @@ namespace Wisteria::GraphItems
         theLabel.SetFont(parentAxis.GetFont());
         const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
         wxCoord size = GetLineSpacing() * parentAxis.GetScaling() * parentAxis.GetDPIScaleFactor();
-        // If axis is vertical (e.g., a left Y axis), then the width of the bracket's text is what
+        // If axis is vertical (e.g., a left y-axis), then the width of the bracket's text is what
         // we are measuring since the bracket is to the left or right of the vertical axis. For a
         // horizontal (e.g., bottom X) axis, then the bracket is underneath or above it, so the
         // text's height is what we want.

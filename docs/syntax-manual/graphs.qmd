@@ -7,7 +7,7 @@ Properties for `"box-plot"` nodes:
 
 - `"variables"`: An item containing the following properties:
   - `"aggregate"`: The column containing the data.
-  - `"group-1"`: An (optional) grouping column to divide the boxes into (along the X axis).
+  - `"group-1"`: An (optional) grouping column to divide the boxes into (along the x-axis).
 - `"box-effect"`: A string specifying the effects for the boxes. \
   Available options are:
   - `"common-image"` (This will require an `"image-scheme"` to be defined.)

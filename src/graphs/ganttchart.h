@@ -232,7 +232,7 @@ namespace Wisteria::Graphs
                 return *this;
                 }
 
-            /// @brief Sets the name, which will appear on the Y axis.
+            /// @brief Sets the name, which will appear on the y-axis.
             /// @param name The name of the task.
             /// @returns A self reference.
             TaskInfo& Name(const wxString& name)

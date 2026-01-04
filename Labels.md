@@ -68,7 +68,7 @@ There are functions available for splitting text to control how it is displayed.
     E
     S
 
-This can be useful for Y axis titles, as demonstrated below:
+This can be useful for y-axis titles, as demonstrated below:
 
 ```cpp
 // set the left title of a plot to be written downward, letter-by-letter
@@ -185,7 +185,7 @@ Adding an Annotation
 A label can be added to a plot to act as an annotation. This can be done via `Graph2D::AddAnnotation()`, where
 the label will be anchored by the provided data point. (The label's anchoring value will determine how the anchor
 point is used). In the following example, a note will be added at the
-intersection of 3 (the X axis value) and 59 (the Y axis values):
+intersection of 3 (the x-axis value) and 59 (the y-axis values):
 
 ```cpp
 auto note = std::make_unique<Label>(

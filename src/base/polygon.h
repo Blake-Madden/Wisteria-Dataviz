@@ -362,7 +362,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Determines if a rectangle is inside a polygon.
             @details Tests if all four corners of a rectangle are within a polygon
-                (or on an edge or vertex) by shooting a ray along the X axis.
+                (or on an edge or vertex) by shooting a ray along the x-axis.
             @param rect The rectangle to review against the polygon.
             @param polygon The polygon to perform collision detection within.
             @returns Whether the point is inside the polygon.*/

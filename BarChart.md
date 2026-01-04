@@ -161,7 +161,7 @@ Custom Starting Point
 
 By default, bars will start from the axis they are connected to. This can be overridden
 (via `Bar::SetCustomScalingAxisStartPosition()`) to instead have a bar start further out
-from the rest of the bars. As shown below, the last bar starts around 1.5 along the Y axis
+from the rest of the bars. As shown below, the last bar starts around 1.5 along the y-axis
 (instead of 0):
 
     3 |

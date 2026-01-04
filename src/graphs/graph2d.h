@@ -114,8 +114,8 @@ namespace Wisteria::Graphs
 
         /** @brief Embeds an annotation object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
-            @param pt The X and Y coordinates of the object.\n
-                These coordinates are relative to the plot's X and Y axes,
+            @param pt The x and y coordinates of the object.\n
+                These coordinates are relative to the plot's x and y axes,
                 not physical coordinates on the canvas.\n
                 Note that if one (or both) of the axes are date-based, you can call
                 GraphItems::Axis::FindDatePosition() to find its point to use here.\n
@@ -123,7 +123,7 @@ namespace Wisteria::Graphs
            either axis using a label.
             @param interestPts An optional collection of points on the plot to draw a line from
                 this object's anchor point to.\n
-                These coordinates are relative to the plot's X and Y axes,
+                These coordinates are relative to the plot's x and y axes,
                 not physical coordinates on the canvas.\n
                 For example, this can draw a line from a data point to an annotation.
             @note This is intended as a way for the client to add a custom object on
@@ -187,28 +187,28 @@ namespace Wisteria::Graphs
             @brief Functions related to the axes.*/
         /// @{
 
-        /// @returns The bottom X axis.
+        /// @returns The bottom x-axis.
         [[nodiscard]]
         Wisteria::GraphItems::Axis& GetBottomXAxis() noexcept
             {
             return m_bottomXAxis;
             }
 
-        /// @returns The top X axis.
+        /// @returns The top x-axis.
         [[nodiscard]]
         Wisteria::GraphItems::Axis& GetTopXAxis() noexcept
             {
             return m_topXAxis;
             }
 
-        /// @returns The left Y axis.
+        /// @returns The left y-axis.
         [[nodiscard]]
         Wisteria::GraphItems::Axis& GetLeftYAxis() noexcept
             {
             return m_leftYAxis;
             }
 
-        /// @returns The right Y axis.
+        /// @returns The right y-axis.
         [[nodiscard]]
         Wisteria::GraphItems::Axis& GetRightYAxis() noexcept
             {
@@ -258,7 +258,7 @@ namespace Wisteria::Graphs
             return m_referenceAreas;
             }
 
-        /// @returns @c true if a copy of the bottom X axis is being displayed on the
+        /// @returns @c true if a copy of the bottom x-axis is being displayed on the
         ///     top of the graph.
         [[nodiscard]]
         bool IsXAxisMirrored() const noexcept
@@ -266,11 +266,11 @@ namespace Wisteria::Graphs
             return m_mirrorXAxis;
             }
 
-        /** @brief Sets whether to display a copy of the bottom X axis on the top of the graph.
+        /** @brief Sets whether to display a copy of the bottom x-axis on the top of the graph.
             @param mirror Whether to display the mirrored axis.*/
         void MirrorXAxis(const bool mirror) noexcept { m_mirrorXAxis = mirror; }
 
-        /// @returns @c true if a copy of the left Y axis is being displayed on the right
+        /// @returns @c true if a copy of the left y-axis is being displayed on the right
         ///     side of the graph.
         [[nodiscard]]
         bool IsYAxisMirrored() const noexcept
@@ -278,11 +278,11 @@ namespace Wisteria::Graphs
             return m_mirrorYAxis;
             }
 
-        /** @brief Sets whether to display a copy of the left Y axis on the right side of the graph.
+        /** @brief Sets whether to display a copy of the left y-axis on the right side of the graph.
             @param mirror Whether to display the mirrored axis.*/
         void MirrorYAxis(const bool mirror) noexcept { m_mirrorYAxis = mirror; }
 
-        /** @brief Adds a custom axis that would be in addition to the regular X and Y
+        /** @brief Adds a custom axis that would be in addition to the regular x and y
                 axes around the graph.
             @param axis The custom axis to add.*/
         void AddCustomAxis(Wisteria::GraphItems::Axis axis)
@@ -365,7 +365,7 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The background color of the plotting area
-        ///     (i.e., the area inside the X and Y axes).
+        ///     (i.e., the area inside the x and y axes).
         /// @note By default, this color is transparent, which will allow the parent
         ///     canvas's background to show through.\n
         ///     Prefer using GetPlotOrCanvasColor() instead to see which color is actually being

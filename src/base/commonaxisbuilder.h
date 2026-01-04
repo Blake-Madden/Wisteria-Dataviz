@@ -37,7 +37,7 @@ namespace Wisteria
                 Note that The graphs connected to the axis should also be on this canvas,
                 and also be in the same row of the canvas.
             @param graphs The graphs that will be connected to the common axis.\n
-                Note that these graphs' left Y axis will have their labels turned off after
+                Note that these graphs' left y-axis will have their labels turned off after
                 calling this function.
             @param axisType The axis type to create; AxisType::LeftYAxis or AxisType::RightYAxis.
             @returns The common axis for the graphs, which should be added to the canvas
@@ -61,7 +61,7 @@ namespace Wisteria
                    AxisType axisType);
         /** @brief Builds a common axis for graphs along a column.
             @details This function will perform the following:
-            - A new axis will be copied from the widest (i.e., highest X value) graph's bottom axis
+            - A new axis will be copied from the widest (i.e., highest x value) graph's bottom axis
             - The widest graph's bottom axis settings and scale will be applied to the
                 other graphs in the list
             - The graphs will then have their bottom axes' labels turned off
@@ -75,11 +75,11 @@ namespace Wisteria
                 Note that The graphs connected to the axis should also be on this canvas,
                 and also be in the same column of the canvas.
             @param graphs The graphs that will be connected to the common axis.\n
-                Note that these graphs' bottom X axis will have their labels turned off after
+                Note that these graphs' bottom x-axis will have their labels turned off after
                 calling this function.
             @param axisType The axis type to create; AxisType::BottomXAxis or AxisType::TopXAxis.
-            @param useCommonLeftAxis If @c true, gets the min and max of the graphs' left Y
-                axes and sets all the graphs to use that range.\n
+            @param useCommonLeftAxis If @c true, gets the min and max of the graphs' left y-axes
+                and sets all the graphs to use that range.\n
                 This is useful for further homogenizing the graphs.
             @returns The common axis for the graphs, which should be added to the canvas
                 (below or above the graphs).

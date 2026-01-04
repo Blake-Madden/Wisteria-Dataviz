@@ -31,16 +31,16 @@ Properties common to all graphs:
   - `"label"`: The label for the note, which contains [label](#label-properties) properties.
   - `"interest-points"`: The points that the note will point at. \
     This is an array of items which contain the following properties:
-    - `"x"`: The X axis position of the point.
-    - `"y"`: The Y axis position of the point. \
+    - `"x"`: The x-axis position of the point.
+    - `"y"`: The y-axis position of the point. \
       Note that either position can be a number, an axis label, or a date (depending on the axis type).
   - `"anchor"`: The point to anchor the label. \
      Note that the `label`'s `"anchoring"` property will control which part of the label that the
      anchoring point refers to. \
      If not specified, the graph will attempt to place it at the best location. \
      This contains the following properties:
-     - `"x"`: The X axis position of the point.
-     - `"y"`: The Y axis position of the point. \
+     - `"x"`: The x-axis position of the point.
+     - `"y"`: The y-axis position of the point. \
       Note that either position can be a number, an axis label, or a date (depending on the axis type).
 - `"reference-lines"`: An array of reference line definitions, which contain the following properties:
   - `"axis-type"`: The axis to add the reference line to. \

@@ -26,7 +26,7 @@ namespace Wisteria::Graphs
         @par Missing Data:
               - If either the X or Y value is missing data, then a gap in a line will be shown
               at where the observation appeared in the series. Because the points are drawn
-              along the X axis as they appear in the data, a missing data value will not be included
+              along the x-axis as they appear in the data, a missing data value will not be included
               in the line, but will break the line. The following valid point in the series will
               restart the line.\n
               For example, if five points are being plotted and the third item contains missing
@@ -92,12 +92,12 @@ namespace Wisteria::Graphs
     #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
         /** @brief Sets the data.
-            @details Separate lines are created for each Y column of data provided.
+            @details Separate lines are created for each y column of data provided.
             @param data The data to use for the line plot.
-            @param yColumnNames The Y columns (must be continuous columns).
-            @param xColumnName The X column data (a continuous, categorical, or date column).\n
-                If a categorical column, the columns labels will be assigned to the X axis.
-                Also, the categories will be placed along the X axis in the order of their
+            @param yColumnNames The y columns (must be continuous columns).
+            @param xColumnName The x column data (a continuous, categorical, or date column).\n
+                If a categorical column, the columns labels will be assigned to the x-axis.
+                Also, the categories will be placed along the x-axis in the order of their
                 underlying numeric values (usually the order that they were read from a file).
             @note To add missing points to the data so that a gap in the line will appear,
                 set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).\n

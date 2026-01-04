@@ -32,10 +32,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         if (m_yColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': Y column not found for line plot."), yColumnName)
+                wxString::Format(_(L"'%s': y column not found for line plot."), yColumnName)
                     .ToUTF8());
             }
-        // set the X column, which will be accessed through various GetX functions later
+        // set the x column, which will be accessed through various GetX functions later
         // (do not reference these iterators after setting them here)
         SetXColumn(xColumnName);
         GetLines().clear();
@@ -156,7 +156,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                                 ((get_mantissa(yStart) == 0 && get_mantissa(yEnd) == 0) ? 0 : 1),
                                 false);
 
-        // X axis
+        // x-axis
         //-------
 
         if (IsXDates())
@@ -176,12 +176,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 (GetLineCount() > 1 ? std::max(maxXValue, xEndCurrent) : maxXValue),
                 ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1), false);
 
-            // if we have a string table to work with, use that for the X axis labels
+            // if we have a string table to work with, use that for the x-axis labels
             if (IsXCategorical() && !GetXCategoricalColumnIterator()->GetStringTable().empty())
                 {
                 GetBottomXAxis().ClearCustomLabels();
                 GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
-                // customize the X axis labels
+                // customize the x-axis labels
                 for (const auto& label : GetXCategoricalColumnIterator()->GetStringTable())
                     {
                     GetBottomXAxis().SetCustomLabel(label.first, GraphItems::Label(label.second));
@@ -335,7 +335,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 if (m_xColumnDate == GetDataset()->GetDateColumns().cend())
                     {
                     throw std::runtime_error(
-                        wxString::Format(_(L"'%s': X column not found for line plot."), xColumnName)
+                        wxString::Format(_(L"'%s': x column not found for line plot."), xColumnName)
                             .ToUTF8());
                     }
                 }

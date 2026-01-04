@@ -48,7 +48,7 @@ namespace Wisteria::Graphs
 
          ...
 
-         Regarding the X column, the values should start at 1 and usually go up
+         Regarding the x column, the values should start at 1 and usually go up
          to 4 (going up to 12 is supported). This represents the semester/year/period that the
          measurement was recorded for the observation.
 
@@ -135,12 +135,12 @@ namespace Wisteria::Graphs
                             const std::shared_ptr<Icons::Schemes::IconScheme>& shapes = nullptr,
                             const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr);
         /** @brief Sets the data.
-            @details Along with the X and Y points, separate lines will be created based on
+            @details Along with the x and y points, separate lines will be created based on
                 the grouping column in the data. The group ID assigned to each line will also
                 select which color, marker shape, and line style to use.
             @param data The data to use for the plot.
-            @param yColumnName The Y column data, which represents the sentiment values.
-            @param xColumnName The X column data, which represents the time interval value
+            @param yColumnName The y column data, which represents the sentiment values.
+            @param xColumnName The x column data, which represents the time interval value
                 (e.g., which semester the score was recorded).
             @param groupColumnName The grouping column to use.
                 This is required and cannot be @c std::nullopt.

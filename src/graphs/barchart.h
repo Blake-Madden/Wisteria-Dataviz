@@ -1142,8 +1142,8 @@ namespace Wisteria::Graphs
         /// @note All axis brackets will be removed when changing bar orientation, so all bracket
         ///     operations should be called after calling this.
         /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).\n
-        ///     Also, if aligning with a common X axis, then set this to @c Vertical.
-        ///     (Set to @c Horizontal if aligning with a common Y axis.)
+        ///     Also, if aligning with a common x-axis, then set this to @c Vertical.
+        ///     (Set to @c Horizontal if aligning with a common y-axis.)
         void SetBarOrientation(Orientation orient);
         /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
             @param firstBarBlock The tag of the bar block of the first bar where the

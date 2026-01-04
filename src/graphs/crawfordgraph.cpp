@@ -38,12 +38,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         GetLeftYAxis().GetTitle().SetText(_(L"Number of Syllables per 100 Words"));
         GetBottomXAxis().GetTitle().SetText(_(L"Approximate Grade Level of Reading Difficulty"));
 
-        // set up the X axis
+        // set up the x-axis
         GetBottomXAxis().SetRange(0.5, 7.0, 1, 0.5, 1);
         GetBottomXAxis().GetGridlinePen() = wxNullPen;
         GetBottomXAxis().ShowOuterLabels(false);
 
-        // set up the Y axis
+        // set up the y-axis
         GetLeftYAxis().SetRange(166, 222, 0, 2, 1);
         GetLeftYAxis().GetGridlinePen() = wxNullPen;
         GetLeftYAxis().ShowOuterLabels(false);

@@ -16,7 +16,7 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief %Line plot, which shows a continuous series of X and Y points.
+    /** @brief %Line plot, which shows a continuous series of x and y points.
 
         | %Line Plot      | %Line Plot (more customized)      |
         | :-------------- | :-------------------------------- |
@@ -24,7 +24,7 @@ namespace Wisteria::Graphs
 
         @par %Data:
             This plot accepts a Data::Dataset, where a continuous column is the Y values
-            (i.e., the dependent measurements) and another column is the X values.
+            (i.e., the dependent measurements) and another column is the x values.
             (X can either be a continuous or categorical column.)
             A grouping column can optionally be used to create separate lines for different groups
             in the data.
@@ -33,7 +33,7 @@ namespace Wisteria::Graphs
             - Missing data in the group column will be shown as an empty legend label.
             - If either the X or Y value is missing data, then a gap in the line will be shown
               at where the observation appeared in the series. Because the points are drawn
-              along the X axis as they appear in the data, a missing data value will not be included
+              along the x-axis as they appear in the data, a missing data value will not be included
               in the line, but will break the line. The following valid point in the series will
               restart the line.\n
               For example, if five points are being plotted and the third item contains missing
@@ -303,15 +303,15 @@ namespace Wisteria::Graphs
     #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
         /** @brief Sets the data.
-            @details Along with the X and Y points, separate lines can be created based
+            @details Along with the x and y points, separate lines can be created based
                 on the (optional) grouping column in the data.
                 The group ID assigned to each line will select which color, marker shape,
                 and line style to use.
             @param data The data to use for the line plot.
-            @param yColumnName The Y column data (a continuous column).
-            @param xColumnName The X column data (a continuous, categorical, or date column).\n
-                If a categorical column, the columns labels will be assigned to the X axis.
-                Also, the categories will be placed along the X axis in the order of their
+            @param yColumnName The y column data (a continuous column).
+            @param xColumnName The x column data (a continuous, categorical, or date column).\n
+                If a categorical column, the columns labels will be assigned to the x-axis.
+                Also, the categories will be placed along the x-axis in the order of their
                 underlying numeric values (usually the order that they were read from a file).
             @param groupColumnName The (optional) categorical column to use for grouping.
                 This will split the data into separate lines based on this grouping column.
@@ -336,8 +336,8 @@ namespace Wisteria::Graphs
         /** @brief Sets an additional function to assign a point's color to something different
                 from the rest of its group based on a set of criteria.
             @details This will be any @c std::function
-                (or lambda) that takes two doubles (the X and Y values) and returns a color if the
-                X and/or Y values meet a certain criteria. If the values don't meet the criteria,
+                (or lambda) that takes two doubles (the x and y values) and returns a color if the
+                x and/or y values meet a certain criteria. If the values don't meet the criteria,
                 then an uninitialized @c wxColour should be returned. If the function
                 returns an invalid @c wxColour (implying that the point didn't meet the criteria),
                 then the parent line's color will be used.
@@ -396,7 +396,7 @@ namespace Wisteria::Graphs
             return m_autoSpline;
             }
 
-        /** @brief When lines zigzag (i.e., go back-and-forth along the X axis),
+        /** @brief When lines zigzag (i.e., go back-and-forth along the x-axis),
                 setting this to @c true will change the line to be drawn as a spline.\n
                 This is useful when plotting a line that shows a downward spiral
                 (refer to WCurvePlot as an example).
@@ -437,9 +437,9 @@ namespace Wisteria::Graphs
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
 
       protected:
-        /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
-        /// @param index The row in the X column to review.
-        /// @returns @c true if the given row in the X column is valid.
+        /// @brief Returns true if the value at @c index in the x column is valid (i.e., not NaN).
+        /// @param index The row in the x column to review.
+        /// @returns @c true if the given row in the x column is valid.
         [[nodiscard]]
         bool IsXValid(const size_t index) const
             {
@@ -447,12 +447,12 @@ namespace Wisteria::Graphs
                 {
                 return false;
                 }
-            // continuous X
+            // continuous x
             if (IsXContinuous())
                 {
                 return !std::isnan(m_xColumnContinuous->GetValue(index));
                 }
-            // categorical X, which in this case anything would be OK (even empty string)
+            // categorical x, which in this case anything would be OK (even empty string)
             if (IsXCategorical())
                 {
                 return true;
@@ -466,9 +466,9 @@ namespace Wisteria::Graphs
             return false;
             }
 
-        /// @brief Returns the value at @c index of the X column.
-        /// @param index The row in the X column to retrieve.
-        /// @returns The value of the given row in the X column.\n
+        /// @brief Returns the value at @c index of the x column.
+        /// @param index The row in the x column to retrieve.
+        /// @returns The value of the given row in the x column.\n
         ///     Note that this value may be NaN if invalid.
         [[nodiscard]]
         double GetXValue(const size_t index) const
@@ -477,13 +477,13 @@ namespace Wisteria::Graphs
                 {
                 return std::numeric_limits<double>::quiet_NaN();
                 }
-            // continuous X
+            // continuous x
             if (IsXContinuous())
                 {
                 return m_xColumnContinuous->GetValue(index);
                 }
-            // categorical X, just want the underlying number code as that is what
-            // goes along the X axis
+            // categorical x, just want the underlying number code as that is what
+            // goes along the x-axis
             if (IsXCategorical())
                 {
                 return static_cast<double>(m_xColumnCategorical->GetValue(index));
@@ -498,21 +498,21 @@ namespace Wisteria::Graphs
             return std::numeric_limits<double>::quiet_NaN();
             }
 
-        /** @brief Gets the min and max values of the X column (if a date axis).
-            @returns The X column's min and max dates, which can be
+        /** @brief Gets the min and max values of the x column (if a date axis).
+            @returns The x column's min and max dates, which can be
                 @c wxInvalidDateTime if invalid.*/
         [[nodiscard]]
         std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
             {
             wxASSERT_MSG(IsXDates(),
-                         L"GetXMinMaxDates() should only be called if X axis is date based!");
+                         L"GetXMinMaxDates() should only be called if x-axis is date based!");
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
                 m_xColumnDate->GetValues().cbegin(), m_xColumnDate->GetValues().cend());
             return std::make_pair(*fullXDataMin, *fullXDataMax);
             }
 
-        /** @brief Gets the min and max values of the X column.
-            @returns The X column's min and max values, which can be NaN if invalid.*/
+        /** @brief Gets the min and max values of the x column.
+            @returns The x column's min and max values, which can be NaN if invalid.*/
         [[nodiscard]]
         std::pair<double, double> GetXMinMax() const
             {
@@ -522,7 +522,7 @@ namespace Wisteria::Graphs
                 return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
                                       std::numeric_limits<double>::quiet_NaN());
                 }
-            // continuous X
+            // continuous x
             if (IsXContinuous())
                 {
                 const auto [fullXDataMin, fullXDataMax] =
@@ -530,8 +530,8 @@ namespace Wisteria::Graphs
                                         m_xColumnContinuous->GetValues().cend());
                 return std::make_pair(*fullXDataMin, *fullXDataMax);
                 }
-            // categorical X, just want the underlying numeric code as that is what
-            // goes along the X axis
+            // categorical x, just want the underlying numeric code as that is what
+            // goes along the x-axis
             if (IsXCategorical())
                 {
                 const auto [fullXDataMin, fullXDataMax] =
@@ -551,7 +551,7 @@ namespace Wisteria::Graphs
             return m_linePenStyles;
             }
 
-        /// @brief Returns whether the X column data is ordered ascendingly.
+        /// @brief Returns whether the x column data is ordered ascendingly.
         /// @param data The dataset to review.
         /// @param group The group ID to use while stepping through the data.
         /// @returns @c true if X data is ordered (i.e., not weaving back-and-forth).
@@ -608,8 +608,8 @@ namespace Wisteria::Graphs
             return m_colorIf;
             }
 
-        /// @brief Sets the X column from the dataset.
-        /// @param xColumnName The X column from the dataset to use.
+        /// @brief Sets the x column from the dataset.
+        /// @param xColumnName The x column from the dataset to use.
         ///     Can be continuous, categorical, or a data column.
         /// @details This will set the iterator to the proper column.
         /// @warning This must be called after setting the dataset.
@@ -626,7 +626,7 @@ namespace Wisteria::Graphs
             }
 
       private:
-        /// @brief Resets the X column iterators.
+        /// @brief Resets the x column iterators.
         /// @warning This must be called after setting the dataset.
         void ResetXColumns()
             {
