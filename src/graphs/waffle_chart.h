@@ -45,11 +45,13 @@ namespace Wisteria::Graphs
             @param canvas The canvas that the plot is plotted on.
             @param shapes The list of shapes (and respective repeat counts) to draw across
                 the waffle chart.
-            @param gridRound Ensures that a minimum number of cells are drawn. If the total
+            @param gridRound Ensures that a specified number of cells are drawn. If the total
                 number of cells from the shapes' repeat counts is less than this, then extra
-                cells will be added to the specified shape (by index). This is useful for
-                when a cell represents percentages and the cells don't add to 100 because of
-                rounding issues.
+                cells will be added to the specified shape (by index). Likewise, if the total
+                number of cells from the shapes' repeat counts is more than this, then cells will be
+                removed to the specified shape (by index).\n
+                This is useful for when a cell represents percentages and the cells don't add to 100
+                because of rounding issues.
             @param rowCount The number of rows to split the shapes into. This is optional,
                 and by default the grid will have an equal number of rows and columns.
             @par Example:

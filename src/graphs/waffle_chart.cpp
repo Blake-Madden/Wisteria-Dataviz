@@ -42,6 +42,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         size_t numberOfShapes =
             std::accumulate(shapes.begin(), shapes.end(), 0, [](const auto val, const auto& shp)
                             { return shp.GetRepeatCount() + val; });
+        // not enough cells
         if (gridRound && numberOfShapes < gridRound.value().m_numberOfCells &&
             gridRound.value().m_shapesIndex < shapes.size())
             {
@@ -49,6 +50,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 shapes[gridRound.value().m_shapesIndex].GetRepeatCount() +
                 (gridRound.value().m_numberOfCells - numberOfShapes));
             numberOfShapes = gridRound.value().m_numberOfCells;
+            }
+        // ...or too many
+        else if (gridRound && numberOfShapes > gridRound.value().m_numberOfCells &&
+                 gridRound.value().m_shapesIndex < shapes.size())
+            {
+            const auto cellCountTooRemove = numberOfShapes - gridRound.value().m_numberOfCells;
+            // ...and only if we have enough to remove
+            if (cellCountTooRemove <= shapes[gridRound.value().m_shapesIndex].GetRepeatCount())
+                {
+                shapes[gridRound.value().m_shapesIndex].Repeat(
+                    shapes[gridRound.value().m_shapesIndex].GetRepeatCount() - cellCountTooRemove);
+                numberOfShapes = gridRound.value().m_numberOfCells;
+                }
             }
 
         const auto numOfRows =
