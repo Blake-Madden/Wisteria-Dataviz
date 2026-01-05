@@ -672,6 +672,10 @@ namespace lily_of_the_valley
                     {
                     const auto strByteCount =
                         read_int(propBuffer.data(), static_cast<size_t>(property.first) + 4);
+                    if (strByteCount <= 0)
+                        {
+                        continue;
+                        }
                     if ((static_cast<size_t>(property.first) + 8 + strByteCount) > sectionSize)
                         {
                         log_message(
