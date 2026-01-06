@@ -1674,7 +1674,8 @@ namespace Wisteria
                     return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
                     }
                 wxLogWarning(L"'%s' column not found in call to MIN or MAX. "
-                             "A continuous or categorical column was expected.");
+                             "A continuous or categorical column was expected.",
+                             columnName);
                 }
             // dataset or column name missing
             else
@@ -1724,9 +1725,15 @@ namespace Wisteria
                         {
                         return {};
                         }
+                    const auto endOfNumber =
+                        firstValue.find_first_not_of(L"0123456789.", firstNumber);
                     const wxString prefix = firstValue.substr(0, firstNumber);
                     double firstDouble{ 0 };
-                    if (firstValue.substr(firstNumber).ToCDouble(&firstDouble))
+                    if (firstValue
+                            .substr(firstNumber, endOfNumber == wxString::npos ?
+                                                     wxString::npos :
+                                                     endOfNumber - firstNumber)
+                            .ToCDouble(&firstDouble))
                         {
                         return prefix + wxNumberFormatter::ToString(
                                             (firstDouble + secondDouble), 2,
