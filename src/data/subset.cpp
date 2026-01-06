@@ -14,7 +14,7 @@ namespace Wisteria::Data
     ColumnFilter::ColumnFilter(const std::shared_ptr<const Dataset>& fromDataset,
                                const ColumnFilterInfo& subsetCriterion)
         {
-        assert(fromDataset && L"Invalid dataset passed to column filter.");
+        wxASSERT_MSG(fromDataset, L"Invalid dataset passed to column filter.");
         // reset everything
         m_idColumn = nullptr;
         m_continuousColumn = fromDataset->GetContinuousColumns().cend();
@@ -390,6 +390,8 @@ namespace Wisteria::Data
                 }
             }
 
+        // after subsetting, update the string tables in case any labels are no longer in use
+        GetClone()->RemoveUnusedStringTableEntries();
         return GetClone();
         }
 
@@ -442,6 +444,7 @@ namespace Wisteria::Data
                 }
             }
 
+        GetClone()->RemoveUnusedStringTableEntries();
         return GetClone();
         }
 
@@ -495,6 +498,7 @@ namespace Wisteria::Data
                 }
             }
 
+        GetClone()->RemoveUnusedStringTableEntries();
         return GetClone();
         }
 
@@ -577,6 +581,7 @@ namespace Wisteria::Data
                 }
             }
 
+        GetClone()->RemoveUnusedStringTableEntries();
         return GetClone();
         }
     } // namespace Wisteria::Data

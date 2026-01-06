@@ -493,6 +493,9 @@ namespace Wisteria::Data
             return !GetStringTable().empty() && !GetStringTable().cbegin()->second.empty();
             }
 
+        /// @brief Removes string-table entries whose IDs do not appear in the data.
+        void RemoveUnusedStringTableEntries();
+
       private:
         /// @brief Combines duplicate values in the string table and recodes
         ///     the numeric values down the column.
@@ -1497,8 +1500,9 @@ namespace Wisteria::Data
             @code
              // this will rename "Four Year Graduation Rate Numerator - Class of 2021"
              // to "GRAD YEAR 2021"
-             dataset->RenameColumnRE("Four Year Graduation Rate Numerator \\- Class of
-           ([[:digit:]]{4})", "GRAD YEAR \\1");
+             dataset->RenameColumnRE(
+                L"Four Year Graduation Rate Numerator \\- "
+                 "Class of ([[:digit:]]{4})", "GRAD YEAR \\1");
             @endcode
             @throws std::runtime_error If column not found or regex pattern is invalid, throws an
            exception.*/
@@ -1554,6 +1558,11 @@ namespace Wisteria::Data
         void MutateCategoricalColumn(const wxString& srcColumnName,
                                      const wxString& targetColumnName,
                                      const RegExMap& replacementMap);
+
+        /// @brief Removes unused string-table entries in categorical columns.
+        /// @details An unused entry is one whose GroupId does not appear
+        ///     anywhere in the column's data.
+        void RemoveUnusedStringTableEntries();
 
         /// @}
 

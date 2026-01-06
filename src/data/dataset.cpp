@@ -13,6 +13,36 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------
+    void ColumnWithStringTable::RemoveUnusedStringTableEntries()
+        {
+        if (GetStringTable().empty() || GetValues().empty())
+            {
+            return;
+            }
+
+        // collect all IDs that actually appear in the data
+        std::set<GroupIdType> usedIds;
+        usedIds.insert(GetValues().cbegin(), GetValues().cend());
+
+        const auto mdCode = FindMissingDataCode();
+
+        // erase unused string-table entries (except for MD code, good to preserve that)
+        for (auto it = m_stringTable.begin(); it != m_stringTable.end(); /* handled in loop */)
+            {
+            const bool isMissingData = mdCode.has_value() && it->first == mdCode.value();
+
+            if (!isMissingData && !usedIds.contains(it->first))
+                {
+                it = m_stringTable.erase(it);
+                }
+            else
+                {
+                ++it;
+                }
+            }
+        }
+
+    //----------------------------------------------
     void ColumnWithStringTable::FillWithMissingData()
         {
         auto mdCode = FindMissingDataCode();
@@ -66,6 +96,15 @@ namespace Wisteria::Data
             return false;
             }
         return GetValue(index) == mdCode.value();
+        }
+
+    //----------------------------------------------
+    void Dataset::RemoveUnusedStringTableEntries()
+        {
+        for (auto& catCol : GetCategoricalColumns())
+            {
+            catCol.RemoveUnusedStringTableEntries();
+            }
         }
 
     //----------------------------------------------
