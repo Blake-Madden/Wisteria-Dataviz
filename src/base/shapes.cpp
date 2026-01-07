@@ -3020,9 +3020,9 @@ namespace Wisteria::GraphItems
                 }
 
             // face
-            gc->SetPen((GetGraphItemInfo().GetBrush().GetColour().GetAlpha() < wxALPHA_OPAQUE) ?
-                           Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) :
-                           wxColour{ L"#3E3E3C" });
+            gc->SetPen(
+                wxPenInfo{ Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) }.Width(
+                    std::max<int>(1, ScaleToScreenAndCanvas(math_constants::tenth))));
             gc->SetBrush(Colors::ColorContrast::Tint(wxColour{ L"#BCC5D3" }));
             gc->DrawEllipse(faceRect);
 
