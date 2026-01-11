@@ -36,9 +36,10 @@ class frequency_set
         @param value The value to insert.
         @returns An iterator to the inserted or updated item.
         @note If a value is already in the set, then that value's count is incremented.*/
-    const_iterator insert(const T& value)
+    template<typename U>
+    const_iterator insert(U&& value)
         {
-        auto [index_iter, inserted] = m_table.try_emplace(value, 1);
+        auto [index_iter, inserted] = m_table.try_emplace(std::forward<U>(value), 1);
         // if it was already there, then just update its counter
         if (!inserted)
             {
@@ -77,12 +78,13 @@ class double_frequency_set
         @param incrementSecondFrequency Whether to increment the custom counter.
         @returns An iterator to the inserted or updated item.
         @note If a value is already in the set, then that value's count is incremented.*/
-    const_iterator insert(const T& value, const bool incrementSecondFrequency)
+    template<typename U>
+    const_iterator insert(U&& value, const bool incrementSecondFrequency)
         {
         const size_t secondFrequency = incrementSecondFrequency ? 1 : 0;
-        auto [index_iter, inserted] =
-            m_table.try_emplace(value, std::make_pair(1 /*raw frequency count*/,
-                                                      secondFrequency /*custom frequency count*/));
+        auto [index_iter, inserted] = m_table.try_emplace(
+            std::forward<U>(value),
+            std::make_pair(1 /*raw frequency count*/, secondFrequency /*custom frequency count*/));
         // if it was already there, so just update it.
         if (!inserted)
             {
@@ -175,9 +177,11 @@ class aggregate_frequency_set
         @param aggregateValue The value to add to running total.
         @returns An iterator to the inserted or updated item.
         @note If a value is already in the set, then that value's count is incremented.*/
-    const_iterator insert(const T& value, double aggregateValue)
+    template<typename U>
+    const_iterator insert(U&& value, double aggregateValue)
         {
-        auto [index_iter, inserted] = m_table.try_emplace(value, std::make_pair(1, aggregateValue));
+        auto [index_iter, inserted] =
+            m_table.try_emplace(std::forward<U>(value), std::make_pair(1, aggregateValue));
         // if it was already there, then just update its counter
         if (!inserted)
             {
@@ -225,9 +229,11 @@ class frequency_map
         @returns An iterator to the inserted or updated item.
         @note If the key is already in the map, then that key's count is incremented;
             however, @c value2 will be ignored.*/
-    const_iterator insert(const T1& value1, const T2& value2)
+    template<typename U>
+    const_iterator insert(U&& value1, const T2& value2)
         {
-        auto [index_iter, inserted] = m_table.try_emplace(value1, std::make_pair(value2, 1));
+        auto [index_iter, inserted] =
+            m_table.try_emplace(std::forward<U>(value1), std::make_pair(value2, 1));
         // if it was already there, so just update it.
         if (!inserted)
             {
@@ -280,10 +286,12 @@ class multi_value_aggregate_map
             If a key is already in the map, then that key's count is incremented.
             If the second value isn't in the key's current values,
             then that value is added to the list of values connected to that key.*/
-    const_iterator insert(const T1& value1, const T2& value2, const double aggregateValue = 1)
+    template<typename U>
+    const_iterator insert(U&& value1, const T2& value2, const double aggregateValue = 1)
         {
         auto [index_iter, inserted] = m_table.try_emplace(
-            value1, values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
+            std::forward<U>(value1),
+            values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
         // if it was already there, then just update it
         if (!inserted)
             {
@@ -387,10 +395,12 @@ class multi_value_frequency_aggregate_map
             If a key is already in the map, then that key's count is incremented.
             If the second value isn't in the key's current values,
             then that value is added to the list of values connected to that key.*/
-    const_iterator insert(const T1& value1, const T2& value2, const double aggregateValue = 1)
+    template<typename U>
+    const_iterator insert(U&& value1, const T2& value2, const double aggregateValue = 1)
         {
         auto [index_iter, inserted] = m_table.try_emplace(
-            value1, values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
+            std::forward<U>(value1),
+            values_and_aggregate_pair_type(values_set({ value2 }), aggregateValue));
         // if it was already there, then just update it
         if (!inserted)
             {
@@ -466,12 +476,13 @@ class multi_value_frequency_double_aggregate_map
             If a key is already in the map, then that key's count is incremented.\n
             If the second value isn't in the key's current values,
             then that value is added to the list of values connected to that key.*/
-    const_iterator insert(T1 value1, T2 value2, const double aggregateValue1 = 1,
+    template<typename U>
+    const_iterator insert(U&& value1, const T2& value2, const double aggregateValue1 = 1,
                           const double aggregateValue2 = 1)
         {
         auto [index_iter, inserted] = m_table.try_emplace(
-            value1, values_and_aggregate_pair_type(values_set({ value2, aggregateValue2 }),
-                                                   aggregateValue1));
+            std::forward<U>(value1), values_and_aggregate_pair_type(
+                                         values_set({ value2, aggregateValue2 }), aggregateValue1));
         // if it was already there, then just update it
         if (!inserted)
             {

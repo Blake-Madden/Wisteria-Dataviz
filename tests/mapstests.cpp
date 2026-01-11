@@ -72,9 +72,10 @@ TEST_CASE("Frequency sets", "[frequencymaps]")
         theSet.insert(L"Bees");
         theSet.insert(L"Wasps");
         theSet.insert(L"Bees");
-        theSet.insert(L"Bees");
-        theSet.insert(L"Wasps");
-        theSet.insert(L"Wasps");
+        // just force temp construction
+        theSet.insert(std::wstring{ L"Bees"} );
+        theSet.insert(std::wstring{ L"Wasps" });
+        theSet.insert(std::wstring{ L"Wasps" });
         CHECK(2 == theSet.get_data().size());
         CHECK(theSet.get_data().find(L"Bees")->second == 3);
         CHECK(theSet.get_data().find(L"Wasps")->second == 4);
@@ -117,20 +118,21 @@ TEST_CASE("Frequency sets", "[frequencymaps]")
     SECTION("Double frequency set insert")
         {
         double_frequency_set<std::wstring> theSet;
-        theSet.insert(L"Wasps", false);
+        // override SSO, test move semantics with perfect forwarding
+        theSet.insert(std::wstring{ L"Wasps with paper nests" }, false);
         theSet.insert(L"Bees", true);
-        theSet.insert(L"Wasps", true);
+        theSet.insert(L"Wasps with paper nests", true);
         theSet.insert(L"Bees", true);
         theSet.insert(L"Bees", false);
-        theSet.insert(L"Wasps", true);
-        theSet.insert(L"Wasps", true);
+        theSet.insert(L"Wasps with paper nests", true);
+        theSet.insert(L"Wasps with paper nests", true);
         CHECK(2 == theSet.get_data().size());
         CHECK(theSet.get_data().find(L"Bees")->second.first == 3);
-        CHECK(theSet.get_data().find(L"Wasps")->second.first == 4);
+        CHECK(theSet.get_data().find(L"Wasps with paper nests")->second.first == 4);
         CHECK(theSet.get_data().find(L"Bees")->second.second == 2);
-        CHECK(theSet.get_data().find(L"Wasps")->second.second == 3);
+        CHECK(theSet.get_data().find(L"Wasps with paper nests")->second.second == 3);
         CHECK(theSet.get_data().find(L"Bees") != theSet.get_data().end());
-        CHECK(theSet.get_data().find(L"Wasps") != theSet.get_data().end());
+        CHECK(theSet.get_data().find(L"Wasps with paper nests") != theSet.get_data().end());
         CHECK(theSet.get_data().find(L"Yellow jacket") == theSet.get_data().end());
 
         double_frequency_set<std::wstring> otherSet;
@@ -140,11 +142,11 @@ TEST_CASE("Frequency sets", "[frequencymaps]")
         otherSet.insert(L"Bees", true);
         otherSet += theSet;
         CHECK(6 == otherSet.get_data().find(L"Bees")->second.first);
-        CHECK(otherSet.get_data().find(L"Wasps")->second.first == 4);
+        CHECK(otherSet.get_data().find(L"Wasps with paper nests")->second.first == 4);
         CHECK(otherSet.get_data().find(L"Bees")->second.second == 4);
-        CHECK(otherSet.get_data().find(L"Wasps")->second.second == 3);
+        CHECK(otherSet.get_data().find(L"Wasps with paper nests")->second.second == 3);
         CHECK(otherSet.get_data().find(L"Bees") != otherSet.get_data().end());
-        CHECK(otherSet.get_data().find(L"Wasps") != otherSet.get_data().end());
+        CHECK(otherSet.get_data().find(L"Wasps with paper nests") != otherSet.get_data().end());
         CHECK(otherSet.get_data().find(L"Yellow jacket")->second.first == 1);
         }
     SECTION("Double frequency set insert custom increment")
