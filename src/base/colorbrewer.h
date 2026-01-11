@@ -259,6 +259,48 @@ namespace Wisteria::Colors
         [[nodiscard]]
         wxColour BrewColor(double value) const;
 
+        /// @returns The official shade of navy blue for Eclipse branding.
+        [[nodiscard]]
+        static wxColour GetEclipseNavyBlue()
+            {
+            return wxColour{ Wisteria::Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#000966") };
+            }
+
+        /// @returns The official shade of royal blue for Eclipse branding.
+        [[nodiscard]]
+        static wxColour GetEclipseRoyalBlue()
+            {
+            return wxColour{ Wisteria::Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#2C1CD8") };
+            }
+
+        /// @returns The official shade of light blue for Eclipse branding.
+        [[nodiscard]]
+        static wxColour GetEclipseLightBlue()
+            {
+            return wxColour{ Wisteria::Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#E2F4FF") };
+            }
+
+        /// @returns The official shade of mint for Eclipse branding.
+        [[nodiscard]]
+        static wxColour GetEclipseMint()
+            {
+            return wxColour{ Wisteria::Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#54FFD4") };
+            }
+
+        /// @returns The official shade of orange for Eclipse branding.
+        [[nodiscard]]
+        static wxColour GetEclipseOrange()
+            {
+            return wxColour{ Wisteria::Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#F06C02") };
+            }
+
+        /// @returns The official shade of black for Eclipse branding.
+        [[nodiscard]]
+        static wxColour GetEclipseBlack()
+            {
+            return wxColour{ Wisteria::Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#000000") };
+            }
+
       private:
         std::pair<double, double> m_range{ 0, 0 };
         std::vector<wxColour> m_colorSpectrum;

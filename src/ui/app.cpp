@@ -225,7 +225,8 @@ namespace Wisteria::UI
         const auto backscreenHeight = bitmap.GetLogicalHeight() * math_constants::fifth;
 
         const wxString theFontName{ Wisteria::GraphItems::Label::GetFirstAvailableFont(
-            { DONTTRANSLATE(L"Roboto"), DONTTRANSLATE(L"Orbitron"), DONTTRANSLATE(L"Georgia") }) };
+            { DONTTRANSLATE(L"Inter"), DONTTRANSLATE(L"Roboto"), DONTTRANSLATE(L"Orbitron"),
+              DONTTRANSLATE(L"Georgia") }) };
 
         wxBitmap canvasBmp(bitmap);
         wxMemoryDC memDC(canvasBmp);
@@ -284,7 +285,9 @@ namespace Wisteria::UI
             boundingBox = appLabel.GetBoundingBox(gcdc);
             appLabel.Draw(gcdc);
 
-            appLabel.GetGraphItemInfo().FontColor(wxColour{ L"#F89522" }).Padding(4, 4, 4, 2);
+            appLabel.GetGraphItemInfo()
+                .FontColor(Wisteria::Colors::ColorBrewer::GetEclipseOrange())
+                .Padding(4, 4, 4, 2);
             appLabel.Offset(boundingBox.GetWidth(), 0);
             appLabel.SetText(appSubName);
             appLabel.Draw(gcdc);
@@ -297,7 +300,7 @@ namespace Wisteria::UI
             buildDate.ParseDate(__DATE__);
 
             GraphItems::Label copyrightInfo(
-                GraphItems::GraphItemInfo(wxString::Format(L"%s\u00A9%d %s. %s", copyrightPrefix,
+                GraphItems::GraphItemInfo(wxString::Format(L"%s©%d %s. %s", copyrightPrefix,
                                                            buildDate.GetYear(), vendorName,
                                                            _(L"All rights reserved.")))
                     .Pen(wxNullPen)
