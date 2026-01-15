@@ -28,7 +28,7 @@ This is an important distinction from other profiling systems.
 
     Hjelstrom, Greg, and Byon Garrabrant. "Real-Time Hierarchical Profiling."
     *Game Programming Gems 3*, Charles River Media, 2002, pp 146-152.
-   @date 2005-2025
+   @date 2005-2026
    @copyright Blake Madden
    @author Blake Madden
    @par Example

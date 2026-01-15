@@ -1,6 +1,6 @@
 /** @addtogroup UI
     @brief Utility classes.
-    @date 2005-2025
+    @date 2005-2026
     @copyright Blake Madden
     @author Blake Madden
         Anthony Bretaudeau (portions of wxWidgets printing code)

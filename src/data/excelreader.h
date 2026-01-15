@@ -1,6 +1,6 @@
 /** @addtogroup Data
     @brief Data management classes for graphs.
-    @date 2005-2025
+    @date 2005-2026
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
