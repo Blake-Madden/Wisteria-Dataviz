@@ -588,11 +588,17 @@ namespace Wisteria::UI
                         std::clamp<size_t>(firstSubitemInFirstDrawnFolderToDraw.value(), 0,
                                            m_folders[i].m_subItems.size() - 1) :
                         0;
-                const size_t endSubitem =
-                    (lastFolderToDraw.value() == i && lastSubitemInLastDrawnFolderToDraw) ?
-                        std::clamp<size_t>(lastSubitemInLastDrawnFolderToDraw.value(), 0,
-                                           m_folders[i].m_subItems.size() - 1) :
-                        m_folders[i].m_subItems.size() - 1;
+                const size_t endSubitem = [&]() -> size_t
+                {
+                    if (lastFolderToDraw && *lastFolderToDraw == i &&
+                        lastSubitemInLastDrawnFolderToDraw)
+                        {
+                        return std::clamp<size_t>(*lastSubitemInLastDrawnFolderToDraw, 0,
+                                                  m_folders[i].m_subItems.size() - 1);
+                        }
+                    return m_folders[i].m_subItems.size() - 1;
+                }();
+
                 for (size_t j = startSubitem; j <= endSubitem; ++j)
                     {
                     const bool subitemIsSelected =
@@ -1105,41 +1111,54 @@ namespace Wisteria::UI
                                     const bool setFocus /*= true*/, const bool sendEvent /*= true*/)
         {
         // convert the ID of the subitem to an index relative to its folder
-        std::optional<size_t> folderIndex{ std::nullopt };
-        for (size_t i = 0; i < m_folders.size(); ++i)
-            {
-            if (m_folders[i].m_id == folderId)
+        const auto [found, folderIndex] = [&]() -> std::pair<bool, size_t>
+        {
+            for (size_t i = 0; i < m_folders.size(); ++i)
                 {
-                folderIndex = i;
-                break;
+                if (m_folders[i].m_id == folderId)
+                    {
+                    return { true, i };
+                    }
                 }
-            }
-        if (!folderIndex)
+            return { false, 0 };
+        }();
+
+        if (!found)
             {
             return false;
             }
 
         // convert the ID of the subitem to an index relative to its folder
-        std::optional<size_t> subItemIndex{ std::nullopt };
-        for (size_t i = 0; i < m_folders[folderIndex.value()].GetSubItemCount(); ++i)
-            {
-            if (m_folders[folderIndex.value()].m_subItems[i].m_id == subItemId)
+        const auto [foundSubItem, subItemIndex] = [&]() -> std::pair<bool, size_t>
+        {
+            const size_t subItemCount = m_folders[folderIndex].GetSubItemCount();
+
+            for (size_t i = 0; i < subItemCount; ++i)
                 {
-                subItemIndex = i;
-                break;
+                if (m_folders[folderIndex].m_subItems[i].m_id == subItemId)
+                    {
+                    return { true, i };
+                    }
                 }
-            }
+
+            return { false, 0 };
+        }();
 
         // if bogus subitem, then just select the parent folder
-        if (!subItemIndex)
+        if (!foundSubItem)
             {
-            SelectFolder(folderIndex.value(), setFocus, sendEvent);
+            SelectFolder(folderIndex, setFocus, sendEvent);
             return true;
             }
-        const auto previouslySelectedFolder =
-            (m_selectedFolder.has_value() && m_selectedFolder.value() < m_folders.size()) ?
-                m_selectedFolder.value_or(folderIndex.value()) :
-                folderIndex.value();
+        const size_t previouslySelectedFolder = [&]() -> size_t
+        {
+            if (m_selectedFolder && *m_selectedFolder < m_folders.size())
+                {
+                return *m_selectedFolder;
+                }
+            return folderIndex;
+        }();
+
         const auto previouslySelectedSubItem =
             m_folders[previouslySelectedFolder].m_selectedItem ?
                 m_folders[previouslySelectedFolder].m_selectedItem :
@@ -1158,14 +1177,20 @@ namespace Wisteria::UI
         RecalcSizes();
 
         // get the rects of the selected (prior and current) selected items
-        const auto previouslySelectedRect = previouslySelectedSubItem ?
-                                                m_folders[previouslySelectedFolder]
-                                                    .m_subItems[previouslySelectedSubItem.value()]
-                                                    .m_Rect :
-                                                m_folders[previouslySelectedFolder].m_Rect;
+        const auto previouslySelectedRect = [&]()
+        {
+            if (previouslySelectedSubItem)
+                {
+                return m_folders[previouslySelectedFolder]
+                    .m_subItems[*previouslySelectedSubItem]
+                    .m_Rect;
+                }
+
+            return m_folders[previouslySelectedFolder].m_Rect;
+        }();
 
         const auto currentlySelectedRect =
-            m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex.value()].m_Rect;
+            m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex].m_Rect;
 
         int x{ 0 }, y{ 0 };
         CalcUnscrolledPosition(0, 0, &x, &y);
@@ -1185,10 +1210,9 @@ namespace Wisteria::UI
             {
             wxCommandEvent event(wxEVT_SIDEBAR_CLICK, GetId());
             event.SetString(
-                m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex.value()].m_label);
+                m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex].m_label);
             event.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
-            event.SetInt(
-                m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex.value()].m_id);
+            event.SetInt(m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex].m_id);
             event.SetEventObject(this);
             GetEventHandler()->ProcessEvent(event);
             }
@@ -1209,10 +1233,15 @@ namespace Wisteria::UI
             SelectFolder(item, setFocus, sendEvent);
             return true;
             }
-        const auto previouslySelectedFolder =
-            (m_selectedFolder.has_value() && m_selectedFolder.value() < m_folders.size()) ?
-                m_selectedFolder.value_or(item) :
-                item;
+        const size_t previouslySelectedFolder = [&]() -> size_t
+        {
+            if (m_selectedFolder && *m_selectedFolder < m_folders.size())
+                {
+                return *m_selectedFolder;
+                }
+            return item;
+        }();
+
         const auto previouslySelectedSubItem =
             m_folders[previouslySelectedFolder].m_selectedItem ?
                 m_folders[previouslySelectedFolder].m_selectedItem :
@@ -1228,11 +1257,10 @@ namespace Wisteria::UI
         RecalcSizes();
 
         // get the rects of the selected (prior and current) selected items
-        const auto previouslySelectedRect = previouslySelectedSubItem ?
-                                                m_folders[previouslySelectedFolder]
-                                                    .m_subItems[previouslySelectedSubItem.value()]
-                                                    .m_Rect :
-                                                m_folders[previouslySelectedFolder].m_Rect;
+        const auto previouslySelectedRect =
+            previouslySelectedSubItem ?
+                m_folders[previouslySelectedFolder].m_subItems[*previouslySelectedSubItem].m_Rect :
+                m_folders[previouslySelectedFolder].m_Rect;
 
         const auto currentlySelectedRect =
             m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_Rect;
