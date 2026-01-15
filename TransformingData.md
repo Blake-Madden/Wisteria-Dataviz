@@ -77,7 +77,7 @@ const auto subset =
 Pivoting Longer
 =============================
 
-For situations where a multiple continuous columns need to be combined into one, you can pivot (i.e., stack or cast) the dataset.
+For situations where multiple continuous columns need to be combined into one, you can pivot (i.e., stack or cast) the dataset.
 For example, if you have data like this:
 
 | X   |  Y1   |  Y2 |

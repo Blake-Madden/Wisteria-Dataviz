@@ -24,7 +24,7 @@ When accessing the axes, prefer using `GetScalingAxis()` and `GetBarAxis()` inst
 Also, when adding a bar to the chart, both the bar and scaling axes will be widened to accommodate it. If you wish to control
 the scaling axis manually, then pass `false` as the second argument to `AddBar()`.
 
-Finally, if the number of bars added to the chart read a certain limit, the parent canvas will be enlarged to better display them.
+Finally, if the number of bars added to the chart reaches a certain limit, the parent canvas will be enlarged to better display them.
 This value is controlled via `SetBarsPerDefaultCanvasSize()` and should be called from your derived class's constructor to
 a suitable value.
 

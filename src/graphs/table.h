@@ -188,7 +188,7 @@ namespace Wisteria::Graphs
          // add the table to the canvas
          canvas->SetFixedObject(0, 0, tableGraph);
 
-         // make the canvas tall since we it's a long table, but not very wide
+         // make the canvas tall since it's a long table, but not very wide
          canvas->SetCanvasMinHeightDIPs(
             canvas->GetDefaultCanvasWidthDIPs());
          canvas->SetCanvasMinWidthDIPs(

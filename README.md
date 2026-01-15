@@ -173,7 +173,7 @@ Next, download and build *Wisteria*:
 
 - Open *Visual Studio* and select *Clone a Repository*
   - Enter [https://github.com/Blake-Madden/Wisteria-Dataviz.git](https://github.com/Blake-Madden/Wisteria-Dataviz.git) and clone it.
-    Note that this project's folder should be at the save level as the *wxWidgets* folder.
+    Note that this project's folder should be at the same level as the *wxWidgets* folder.
 - Open this project's *CMake* file in *Visual Studio*:
   - Open **Project** > **CMake Settings for Wisteria**
     - Set the configuration type to "Release" (or create a new release configuration)

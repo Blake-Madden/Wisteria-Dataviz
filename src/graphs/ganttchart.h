@@ -119,7 +119,7 @@ namespace Wisteria::Graphs
             {
             Resource,                   /*!< Display the name of the task.*/
             Description,                /*!< Display the description of the task.*/
-            ResourceAndDescription,     /*!< Display the name description of the task.*/
+            ResourceAndDescription,     /*!< Display the name and description of the task.*/
             Days,                       /*!< Display the number of days in the task.*/
             ResourceAndDays,            /*!< Display the name of the task and number
                                              of days in it.*/

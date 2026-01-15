@@ -389,7 +389,7 @@ If pivoting wider, the following options are available:
   join the label from `"names-from-column"` and the value column name.
 - `"names-prefix"`: A string to prepend to newly created pivot columns.
 - `"fill-value"`: A numeric value to assign to missing data.
-  The default it to leave it as missing data.
+  The default is to leave it as missing data.
 
 If pivoting longer, the following options are available:
 

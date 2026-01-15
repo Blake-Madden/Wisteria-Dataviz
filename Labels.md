@@ -102,7 +102,7 @@ theChart->GetCaption().SplitTextToFitLength(20);
 If using a minimum user-defined size (see "Uniform Widths" below), then the vertical
 alignment of a Label can also be controlled via `Label::GetGraphItemInfo().SetPageVerticalAlignment()`
 and `Label::GetGraphItemInfo().SetPageHorizontalAlignment()`
-(or the `LabelPageVerticalAlignment` and `LabelPageVerticalAlignment` properties when being constructed).
+(or the `LabelPageVerticalAlignment` and `LabelPageHorizontalAlignment` properties when being constructed).
 
 ```cpp
 Label groupHeader(

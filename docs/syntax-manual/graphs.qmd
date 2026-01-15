@@ -659,8 +659,8 @@ The remaining properties are executed in the following order:
     - `"centered"`
   - `"text-alignment"`: How to align the cell's text (if multi-line). \
     Available options are:
-    - `"flush-left"`or `"ragged-right"`
-    - `"flush-right"`or `"ragged-left"`
+    - `"flush-left"` or `"ragged-right"`
+    - `"flush-right"` or `"ragged-left"`
     - `"centered"`
     - `"justified"`
 - `"cell-annotations"`: An array of cell annotation specifications, which each contain the following properties:
@@ -681,7 +681,7 @@ The remaining properties are executed in the following order:
     Can include [constants](#constants-properties).
 
 ::: {.minipage data-latex="{\textwidth}"}
-## Win/Loss Sparkline {#waffle-chart-properties .unnumbered}
+## Waffle Chart {#waffle-chart-properties .unnumbered}
 
 Properties for `"waffle-chart"` nodes:
 

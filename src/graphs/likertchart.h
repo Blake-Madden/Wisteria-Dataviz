@@ -18,7 +18,7 @@ namespace Wisteria::Graphs
     {
     /** @brief A chart which shows the breakdown of Likert-scale survey responses.
         @details Questions' responses can either be plotted as a single bar or
-         split into grouped bar.
+         split into grouped bars.
          Also, multiple levels of Likert scales are supported.
 
          | 3-Point Scale   | 7-Point Scale |

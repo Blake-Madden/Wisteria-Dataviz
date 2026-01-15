@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
            @c minFreq are included.
             @param maxWords The maximum number of words to show
                 (going from the highest-to-lowest frequently occurring words).\n
-                This is performed after the words not meeting the min and min frequency criteria
+                This is performed after the words not meeting the min and max frequency criteria
                 has been removed (if applicable).
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.

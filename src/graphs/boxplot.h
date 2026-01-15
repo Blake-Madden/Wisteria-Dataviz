@@ -59,7 +59,7 @@ namespace Wisteria::Graphs
 
          // Show all points (not just outliers).
          // The points within the boxes and whiskers will be
-         // bee swarm jittering to visualize the distribution.
+         // bee swarm jittered to visualize the distribution.
          plot->ShowAllPoints(true);
 
          canvas->SetFixedObject(0, 0, plot);

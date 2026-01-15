@@ -312,7 +312,7 @@ Note that instead of properties, a single string can be specified indicating a f
 - `"label-length-auto"`: If `true`, an attempt will be made to split longer axis labels based on
      various separators in them (e.g., parentheses, commas, conjunctions).
 
-- `"brackets"`: Adds brackets to the axis,which can be an array of bracket definitions or single set of properties
+- `"brackets"`: Adds brackets to the axis, which can be an array of bracket definitions or single set of properties
   using a dataset. \
   Available options for either method are:
   - `"simplify"`: A boolean value indicating whether to simplify the bracket's labels.
