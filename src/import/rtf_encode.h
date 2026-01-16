@@ -26,8 +26,7 @@ namespace lily_of_the_valley
             @details This includes escaping '\', '{', and '}' symbols,
                 and encoding tabs, newlines, and Unicode values.
             @param text The text to encode.
-            @returns A string encoded to RTF.
-            @todo Replace @c swprintf() code with `std::format()` when upgrading to C++20.*/
+            @returns A string encoded to RTF.*/
         [[nodiscard]]
         std::wstring operator()(const std::wstring_view text) const
             {

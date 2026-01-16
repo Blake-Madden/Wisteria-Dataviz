@@ -105,7 +105,7 @@ namespace Wisteria
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+            wxMessageBox(wxString::FromUTF8(err.what()),
                          _(L"Constants Section Error"), wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }

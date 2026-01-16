@@ -25,9 +25,9 @@ namespace Wisteria::Colors
     //-------------------------------------------
     wxColour ColorBrewer::BrewColor(const double value) const
         {
-        assert((std::isnan(value) || (value >= m_range.first && value <= m_range.second)) &&
-               L"Value passed to BrewColor() should be within established data range "
-               "from previous call to BrewColors()!");
+        wxASSERT_MSG((std::isnan(value) || (value >= m_range.first && value <= m_range.second)),
+                     L"Value passed to BrewColor() should be within established data range "
+                     "from previous call to BrewColors()!");
         // return invalid color or NaN
         if (std::isnan(value))
             {
@@ -81,7 +81,7 @@ namespace Wisteria::Colors
     //-------------------------------------------
     wxColour ColorContrast::Contrast(const wxColour& color) const
         {
-        assert(color.IsOk() && L"Invalid color passed to Contrast().");
+        wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Contrast().");
         const auto bgLuminance = m_baseColor.GetLuminance();
         const auto colorLuminance = color.GetLuminance();
         const auto luminanceDifference = std::abs(bgLuminance - colorLuminance);
