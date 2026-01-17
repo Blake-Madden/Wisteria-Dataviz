@@ -441,7 +441,10 @@ namespace Wisteria::UI
         std::optional<size_t> firstFolderToDraw{ std::nullopt };
         std::optional<size_t> lastFolderToDraw{ std::nullopt };
         std::optional<size_t> firstSubitemInFirstDrawnFolderToDraw{ std::nullopt };
-        std::optional<size_t> lastSubitemInLastDrawnFolderToDraw{ std::nullopt };
+        // GCC struggles with analyzing this as an optional and produces false positive warnings,
+        // so keep track of this the manual way
+        size_t lastSubitemInLastDrawnFolderToDraw{ 0 };
+        bool hasLastSubitemInLastDrawnFolderToDraw{ false };
         for (size_t i = 0; i < m_folders.size(); ++i)
             {
             if (rectUpdate.Intersects(m_folders[i].m_Rect))
@@ -451,7 +454,7 @@ namespace Wisteria::UI
                     firstFolderToDraw = i;
                     }
                 lastFolderToDraw = i;
-                lastSubitemInLastDrawnFolderToDraw.reset();
+                hasLastSubitemInLastDrawnFolderToDraw = false;
                 }
             for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
                 {
@@ -591,10 +594,10 @@ namespace Wisteria::UI
                 const size_t endSubitem = [&]() -> size_t
                 {
                     if (lastFolderToDraw && *lastFolderToDraw == i &&
-                        lastSubitemInLastDrawnFolderToDraw)
+                        hasLastSubitemInLastDrawnFolderToDraw)
                         {
-                        const size_t last = lastSubitemInLastDrawnFolderToDraw.value();
-                        return std::min(last, m_folders[i].m_subItems.size() - 1);
+                        return std::min(lastSubitemInLastDrawnFolderToDraw,
+                                        m_folders[i].m_subItems.size() - 1);
                         }
                     return m_folders[i].m_subItems.size() - 1;
                 }();
