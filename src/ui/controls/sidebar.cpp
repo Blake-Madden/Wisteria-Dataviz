@@ -593,8 +593,8 @@ namespace Wisteria::UI
                     if (lastFolderToDraw && *lastFolderToDraw == i &&
                         lastSubitemInLastDrawnFolderToDraw)
                         {
-                        return std::clamp<size_t>(*lastSubitemInLastDrawnFolderToDraw, 0,
-                                                  m_folders[i].m_subItems.size() - 1);
+                        const size_t last = lastSubitemInLastDrawnFolderToDraw.value();
+                        return std::min(last, m_folders[i].m_subItems.size() - 1);
                         }
                     return m_folders[i].m_subItems.size() - 1;
                 }();
@@ -1159,10 +1159,7 @@ namespace Wisteria::UI
             return folderIndex;
         }();
 
-        const auto previouslySelectedSubItem =
-            m_folders[previouslySelectedFolder].m_selectedItem ?
-                m_folders[previouslySelectedFolder].m_selectedItem :
-                std::nullopt;
+        const auto previouslySelectedSubItem{ m_folders[previouslySelectedFolder].m_selectedItem };
 
         m_selectedFolder = folderIndex;
         if (m_selectedFolder)
@@ -1242,10 +1239,7 @@ namespace Wisteria::UI
             return item;
         }();
 
-        const auto previouslySelectedSubItem =
-            m_folders[previouslySelectedFolder].m_selectedItem ?
-                m_folders[previouslySelectedFolder].m_selectedItem :
-                std::nullopt;
+        const auto previouslySelectedSubItem{ m_folders[previouslySelectedFolder].m_selectedItem };
 
         m_selectedFolder = item;
         ActivateFolder(item);
