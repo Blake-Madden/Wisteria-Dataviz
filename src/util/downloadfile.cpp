@@ -537,7 +537,16 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
         // otherwise, it was requested to be read into a buffer
         else if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_Memory)
             {
-            m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
+            const auto responseSize = evt.GetResponse().GetStream()->GetSize();
+            if (responseSize > GetMaxResponseSize())
+                {
+                wxLogWarning(L"Response size (%zu bytes) exceeds maximum allowed (%zu bytes), skipping: %s",
+                             static_cast<size_t>(responseSize), GetMaxResponseSize(),
+                             evt.GetRequest().GetResponse().GetURL());
+                m_downloadSuccessful = false;
+                break;
+                }
+            m_buffer.resize(responseSize + 1, 0);
             if (m_buffer.size() > 1)
                 {
                 evt.GetResponse().GetStream()->ReadAll(m_buffer.data(), m_buffer.size() - 1);

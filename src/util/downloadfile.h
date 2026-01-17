@@ -343,6 +343,15 @@ class FileDownload
         m_minFileDownloadSizeKilobytes = size;
         }
 
+    /// @brief Sets the maximum response size allowed when reading into memory.
+    /// @details Downloads exceeding this size will be skipped and a warning logged.
+    /// @param maxSize The maximum size in bytes. Default is 100 MB.
+    void SetMaxResponseSize(const size_t maxSize) noexcept { m_maxResponseSize = maxSize; }
+
+    /// @returns The maximum response size allowed when reading into memory.
+    [[nodiscard]]
+    size_t GetMaxResponseSize() const noexcept { return m_maxResponseSize; }
+
     /// @brief Sets the number of seconds before a request, read, or download will quit
     ///     due to inactivity.
     /// @param timeout The number of seconds to wait before timing out.
@@ -520,6 +529,7 @@ class FileDownload
     wxString m_userAgent;
     wxString m_cookies;
     std::optional<uint32_t> m_minFileDownloadSizeKilobytes{ std::nullopt };
+    size_t m_maxResponseSize{ 100 * 1024 * 1024 }; // 100 MB default
 
     int m_timeoutSeconds{ 30 };
     int m_lastStatus{ 404 };
