@@ -540,9 +540,10 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
             const auto responseSize = evt.GetResponse().GetStream()->GetSize();
             if (responseSize > GetMaxResponseSize())
                 {
-                wxLogWarning(L"Response size (%zu bytes) exceeds maximum allowed (%zu bytes), skipping: %s",
-                             static_cast<size_t>(responseSize), GetMaxResponseSize(),
-                             evt.GetRequest().GetResponse().GetURL());
+                wxLogWarning(
+                    L"Response size (%zu bytes) exceeds maximum allowed (%zu bytes), skipping: %s",
+                    static_cast<size_t>(responseSize), GetMaxResponseSize(),
+                    evt.GetRequest().GetResponse().GetURL());
                 m_downloadSuccessful = false;
                 break;
                 }

@@ -350,7 +350,10 @@ class FileDownload
 
     /// @returns The maximum response size allowed when reading into memory.
     [[nodiscard]]
-    size_t GetMaxResponseSize() const noexcept { return m_maxResponseSize; }
+    size_t GetMaxResponseSize() const noexcept
+        {
+        return m_maxResponseSize;
+        }
 
     /// @brief Sets the number of seconds before a request, read, or download will quit
     ///     due to inactivity.
