@@ -475,7 +475,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     long ListCtrlEx::FindEx(const wchar_t* textToFind, const long startIndex /*= 0*/)
         {
-        if (IsVirtual() && m_virtualData != nullptr)
+        if (IsVirtual() && m_virtualData != nullptr) [[likely]]
             {
             return m_virtualData->Find(textToFind, startIndex);
             }
@@ -720,7 +720,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         bool HasPage(int pageNum) final
             {
-            return (pageNum >= 1 && std::cmp_less_equal(pageNum, m_pageStarts.size()));
+            return (pageNum >= 1 && std::cmp_less_equal(pageNum, m_pageStarts.size())) [[likely]];
             }
 
         void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom, int* selPageTo) final
@@ -737,7 +737,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 m_currentPage = page;
                 wxDC* dc = GetDC();
-                if (dc != nullptr)
+                if (dc != nullptr) [[likely]]
                     {
                     dc->SetFont(m_list->GetFont());
 
@@ -1171,7 +1171,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         m_columnWidths[columnCounter].m_included = false;
                         continue;
                         }
-                    long longestCellText = 0;
+                    long longestCellText{ 0 };
                     for (long rowCounter = GetFirstRow(); rowCounter <= GetLastRow(); ++rowCounter)
                         {
                         const wxString cellText =
@@ -1689,7 +1689,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         wxString selectedText;
         FormatToText(selectedText, ExportRowSelection::ExportSelected, 0, -1, 0, 0, false);
-        if (wxTheClipboard->Open())
+        if (wxTheClipboard->Open()) [[likely]]
             {
             if (!selectedText.empty())
                 {
@@ -1837,7 +1837,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         const long currentlyFocusedItem = (GetFocusedItem() == -1) ? 0 : GetFocusedItem();
 
-        if (type == wxEVT_COMMAND_FIND || type == wxEVT_COMMAND_FIND_NEXT)
+        if (type == wxEVT_COMMAND_FIND || type == wxEVT_COMMAND_FIND_NEXT) [[likely]]
             {
             bool matchCase = false;
             bool matchWholeWord = false;
@@ -2014,7 +2014,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::OnColClick(const wxListEvent& event)
         {
-        if (!IsSortable())
+        if (!IsSortable()) [[unlikely]]
             {
             return;
             }
@@ -2053,7 +2053,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         const wxWindowUpdateLocker noUpdates(this);
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
-        if (IsVirtual() && m_virtualData != nullptr)
+        if (IsVirtual() && m_virtualData != nullptr) [[likely]]
             {
             m_virtualData->Sort(nCol, direction, m_sortableRange.first, m_sortableRange.second);
             }
@@ -2103,12 +2103,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns)
         {
         PROFILE();
-        if (columns.empty() || !IsSortable())
+        if (columns.empty() || !IsSortable()) [[unlikely]]
             {
             return;
             }
 
-        if (!IsVirtual())
+        if (!IsVirtual()) [[unlikely]]
             {
             if (columns.size() == 1)
                 {
@@ -2480,7 +2480,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     wxItemAttr* ListCtrlEx::OnGetItemAttr(long item) const
         {
-        if (!IsVirtual() || m_virtualData == nullptr)
+        if (!IsVirtual() || m_virtualData == nullptr) [[unlikely]]
             {
             return nullptr;
             }
@@ -2509,7 +2509,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::SetItemColumnImageEx(const long row, const long column, const int image)
         {
-        if (!IsVirtual())
+        if (!IsVirtual()) [[unlikely]]
             {
             SetItemColumnImage(row, column, image);
             }
@@ -2524,7 +2524,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         {
         if ((GetWindowStyle() & wxLC_REPORT) != 0)
             {
-            if (IsVirtual() && m_virtualData != nullptr)
+            if (IsVirtual() && m_virtualData != nullptr) [[likely]]
                 {
                 wxString retVal = m_virtualData->GetItemTextFormatted(item, column);
                 if (GetColumnFilePathTruncationMode(column) ==
@@ -2648,6 +2648,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         outputText.clear();
 
         if (rowSelection == ExportRowSelection::ExportSelected && GetSelectedItemCount() == 0)
+            [[unlikely]]
             {
             return;
             }
@@ -3088,7 +3089,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         // validate the input
         if (rowSelection == ExportRowSelection::ExportSelected && GetSelectedItemCount() == 0)
             {
-            return wxString{};
+            return {};
             }
         // if saving only selected items, then go through the full range
         // (selected items will be distinguished as we go through everything)
@@ -3125,7 +3126,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         firstRow = std::max<long>(firstRow, 0);
         if (firstRow >= GetItemCount() || firstRow > lastRow)
             {
-            return wxString{};
+            return {};
             }
 
         // allocate buffer to fit the cells that we are writing into it
