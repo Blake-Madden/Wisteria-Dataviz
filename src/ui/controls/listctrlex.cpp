@@ -720,7 +720,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         bool HasPage(int pageNum) final
             {
-            return (pageNum >= 1 && std::cmp_less_equal(pageNum, m_pageStarts.size())) [[likely]];
+            return (pageNum >= 1 && std::cmp_less_equal(pageNum, m_pageStarts.size()));
             }
 
         void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom, int* selPageTo) final
