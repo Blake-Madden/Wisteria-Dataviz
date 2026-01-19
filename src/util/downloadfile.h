@@ -532,7 +532,7 @@ class FileDownload
     wxString m_userAgent;
     wxString m_cookies;
     std::optional<uint32_t> m_minFileDownloadSizeKilobytes{ std::nullopt };
-    size_t m_maxResponseSize{ 100 * 1024 * 1024 }; // 100 MB default
+    size_t m_maxResponseSize{ static_cast<size_t>(100) * 1024 * 1024 }; // 100 MB default
 
     int m_timeoutSeconds{ 30 };
     int m_lastStatus{ 404 };

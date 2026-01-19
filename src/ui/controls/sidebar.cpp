@@ -1153,6 +1153,7 @@ namespace Wisteria::UI
             SelectFolder(folderIndex, setFocus, sendEvent);
             return true;
             }
+        // NOLINTNEXTLINE(cppcoreguidelines-init-variables) false positive
         const size_t previouslySelectedFolder = [&]() -> size_t
         {
             if (m_selectedFolder && *m_selectedFolder < m_folders.size())
