@@ -1108,12 +1108,24 @@ namespace Wisteria::Graphs
         void AddCrustRing(const DrawAreas& drawAreas);
         void AddToastedCheeseSpots(const DrawAreas& drawAreas);
         void AddPepperoni(const DrawAreas& drawAreas);
+        // coffee styling
+        void AddCoffeeInnerStains(const DrawAreas& drawAreas);
+
+        void DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed,
+                                   const wxColour& color, double sizeScale);
 
         /// @returns Mozzarella.
         [[nodiscard]]
         static wxColour GetCheeseColor()
             {
             return wxColour(255, 235, 190);
+            }
+        
+        /// @returns A light coffee stain.
+        [[nodiscard]]
+        static wxColour GetCoffeeStainColor()
+            {
+            return wxColour{ 235, 224, 200, 150 };;
             }
 
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.

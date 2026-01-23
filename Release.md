@@ -6,6 +6,7 @@
     - Clock faces
     - Cheese pizzas
     - Pepperoni pizzas
+    - Coffee ring
 - Add feature to waffle chart to override the number of rows in the waffle
 - Grid rounding in waffle chart can now round down also
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`

@@ -1269,6 +1269,93 @@ namespace Wisteria::Graphs
             AddToastedCheeseSpots(drawAreas);
             AddPepperoni(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::CoffeeRing)
+            {
+            AddCrustRing(drawAreas);
+            AddCoffeeInnerStains(drawAreas);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddCoffeeInnerStains(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        constexpr uint32_t coffeeSeed{ 0xC0FFEE77 };
+        constexpr int stainCount{ 3 };
+
+        // very light, translucent coffee pigment
+        const wxColour coffeeStainLight{ 210, 195, 170, 45 };
+        const wxColour coffeeStainDark{ 195, 175, 145, 75 };
+
+        const auto mixSeed = [](uint32_t x) -> uint32_t
+        {
+            x ^= x >> 16;
+            x *= 0x7feb352d;
+            x ^= x >> 15;
+            x *= 0x846ca68b;
+            x ^= x >> 16;
+            return x;
+        };
+
+        for (int i = 0; i < stainCount; ++i)
+            {
+            DrawSingleCoffeeStain(pieRect, mixSeed(coffeeSeed + i), coffeeStainLight, 1.0);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed,
+                                         const wxColour& color, double sizeScale)
+        {
+        constexpr int stainSamples{ 36 };
+
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+
+        const double minRadius = ScaleToScreenAndCanvas(32);
+        const double maxRadius = ScaleToScreenAndCanvas(85);
+
+        const double distance = pieRadius * (0.6 + 0.6 * HashToUnitInterval(seed ^ 0x1111U));
+
+        const double angle = HashToUnitInterval(seed ^ 0x2222U) * 360.0;
+
+        const wxPoint stainCenter(
+            wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+            wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+        const double baseRadius =
+            (minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius)) * sizeScale;
+
+        std::vector<wxPoint> points;
+        points.reserve(stainSamples);
+
+        for (int sample = 0; sample < stainSamples; ++sample)
+            {
+            const double angleDeg = 360.0 * sample / stainSamples;
+
+            const double wobble =
+                0.80 + 0.30 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 137));
+
+            const double gravity =
+                1.0 + 0.25 * std::sin(geometry::degrees_to_radians(angleDeg - angle));
+
+            const double radius = baseRadius * wobble * gravity;
+
+            points.emplace_back(
+                wxRound(stainCenter.x + std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                wxRound(stainCenter.y + std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
+            }
+
+        AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                            .Brush(wxBrush(color))
+                                                            .Pen(wxNullPen)
+                                                            .Scaling(GetScaling())
+                                                            .DPIScaling(GetDPIScaleFactor())
+                                                            .Selectable(false),
+                                                        points));
         }
 
     //----------------------------------------------------------------
@@ -2134,6 +2221,11 @@ namespace Wisteria::Graphs
                 sliceBrushToUse.SetColour(GetCheeseColor());
                 sliceOutlinePen.SetColour(*wxBLACK);
                 }
+            else if (GetPieStyle() == PieStyle::CoffeeRing)
+                {
+                sliceBrushToUse.SetColour(*wxWHITE);
+                sliceOutlinePen.SetColour(*wxBLACK);
+                }
 
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
 
@@ -2261,6 +2353,11 @@ namespace Wisteria::Graphs
                 GetPieStyle() == PieStyle::PepperoniCheezePizza)
                 {
                 sliceBrush.SetColour(GetCheeseColor());
+                sliceOutlinePen.SetColour(*wxBLACK);
+                }
+            else if (GetPieStyle() == PieStyle::CoffeeRing)
+                {
+                sliceBrush.SetColour(*wxWHITE);
                 sliceOutlinePen.SetColour(*wxBLACK);
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(

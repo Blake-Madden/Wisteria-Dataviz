@@ -447,7 +447,10 @@ namespace Wisteria
         /// @warning The pepperonis are placed on top of the pie, so labels on the pie slices
         ///     will be obscured. If using this style, it is recommended to display labels
         ///     outside of the pie.
-        PepperoniCheezePizza
+        PepperoniCheezePizza,
+        /// @brief A coffee cup ring, with a light coffee stain in the middle and small
+        ///     splatter off to the side.
+        CoffeeRing
         };
 
     /// @brief Effects that could be applied to an image.
