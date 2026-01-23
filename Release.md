@@ -3,8 +3,9 @@
 ## 1.0.7 Release
 
 - Add styling options to pie charts to make them look like:
-    - clock faces
-    - cheese pizzas
+    - Clock faces
+    - Cheese pizzas
+    - Pepperoni pizzas
 - Add feature to waffle chart to override the number of rows in the waffle
 - Grid rounding in waffle chart can now round down also
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`

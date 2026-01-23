@@ -442,7 +442,12 @@ namespace Wisteria
         ///     to separate the slices.
         Clockface,
         /// @brief A cheese pizza (slice colors will be overridden).
-        CheezePizza
+        CheezePizza,
+        /// @brief A pepperoni pizza (slice colors will be overridden).
+        /// @warning The pepperonis are placed on top of the pie, so labels on the pie slices
+        ///     will be obscured. If using this style, it is recommended to display labels
+        ///     outside of the pie.
+        PepperoniCheezePizza
         };
 
     /// @brief Effects that could be applied to an image.

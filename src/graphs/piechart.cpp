@@ -1263,6 +1263,12 @@ namespace Wisteria::Graphs
             AddCrustRing(drawAreas);
             AddToastedCheeseSpots(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::PepperoniCheezePizza)
+            {
+            AddCrustRing(drawAreas);
+            AddToastedCheeseSpots(drawAreas);
+            AddPepperoni(drawAreas);
+            }
         }
 
     //----------------------------------------------------------------
@@ -1342,6 +1348,222 @@ namespace Wisteria::Graphs
         for (const int m : { 5, 10, 20, 25, 35, 40, 50, 55 })
             {
             addTick(m * 6.0, false);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddPepperoni(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        constexpr int targetPepperoniCount{ 32 };
+        constexpr uint32_t pepperoniSeed{ 0xBEEF1234 };
+
+        const double minRadius = ScaleToScreenAndCanvas(14);
+        const double maxRadius = ScaleToScreenAndCanvas(22);
+
+        const double minSpacing = ScaleToScreenAndCanvas(38);
+
+        const wxColour pepperoniFillBase(170, 45, 45);
+        const wxColour pepperoniEdgeBase(110, 20, 20);
+        const wxColour pepperoniBlisterColor(120, 35, 25, 90);
+
+        const wxPoint pieCenter(pieRect.GetX() + pieRect.GetWidth() / 2,
+                                pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double crustMargin = maxRadius + ScaleToScreenAndCanvas(14);
+
+        const double maxDistance =
+            (std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0) - crustMargin;
+
+        std::vector<wxPoint> acceptedCenters;
+        acceptedCenters.reserve(targetPepperoniCount);
+
+        const double angleStepDegrees = safe_divide<double>(360.0, targetPepperoniCount);
+
+        for (int slotIndex = 0; slotIndex < targetPepperoniCount; ++slotIndex)
+            {
+            const uint32_t seed = pepperoniSeed + static_cast<uint32_t>(slotIndex * 911);
+
+            // stratified angle with jitter
+            const double baseAngleDegrees = slotIndex * angleStepDegrees;
+
+            const double angleJitterDegrees =
+                (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStepDegrees * 0.8;
+
+            const double angleDegrees = baseAngleDegrees + angleJitterDegrees;
+
+            const double radialUnit = std::sqrt(HashToUnitInterval(seed ^ 0x2222U));
+
+            const double distance = radialUnit * maxDistance;
+
+            acceptedCenters.emplace_back(
+                wxRound(pieCenter.x +
+                        std::cos(geometry::degrees_to_radians(angleDegrees)) * distance),
+                wxRound(pieCenter.y +
+                        std::sin(geometry::degrees_to_radians(angleDegrees)) * distance));
+            }
+
+        // pepperoni discs
+        for (size_t index = 0; index < acceptedCenters.size(); ++index)
+            {
+            const uint32_t seed = pepperoniSeed + static_cast<uint32_t>(index * 733);
+
+            const double radius =
+                minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius);
+
+            const int discSamples{ 28 };
+
+            std::vector<wxPoint> discPoints;
+            discPoints.reserve(discSamples);
+
+            for (int sample = 0; sample < discSamples; ++sample)
+                {
+                const double angleDegrees = safe_divide<double>(360.0 * sample, discSamples);
+
+                const double wobble =
+                    0.95 + 0.1 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 97));
+
+                const double adjustedRadius = radius * wobble;
+
+                discPoints.emplace_back(
+                    wxRound(acceptedCenters[index].x +
+                            std::cos(geometry::degrees_to_radians(angleDegrees)) * adjustedRadius),
+                    wxRound(acceptedCenters[index].y +
+                            std::sin(geometry::degrees_to_radians(angleDegrees)) * adjustedRadius));
+                }
+
+            const double shade = 0.9 + 0.15 * HashToUnitInterval(seed ^ 0x4444U);
+
+            const wxColour fillColor(static_cast<unsigned char>(pepperoniFillBase.Red() * shade),
+                                     static_cast<unsigned char>(pepperoniFillBase.Green() * shade),
+                                     static_cast<unsigned char>(pepperoniFillBase.Blue() * shade),
+                                     pepperoniFillBase.Alpha());
+
+            const wxColour edgeColor(static_cast<unsigned char>(pepperoniEdgeBase.Red() * shade),
+                                     static_cast<unsigned char>(pepperoniEdgeBase.Green() * shade),
+                                     static_cast<unsigned char>(pepperoniEdgeBase.Blue() * shade),
+                                     pepperoniEdgeBase.Alpha());
+
+            auto pepperoni = std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo()
+                    .Brush(wxBrush(fillColor))
+                    .Pen(wxPen(edgeColor, ScaleToScreenAndCanvas(1)))
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                discPoints);
+
+            AddObject(std::move(pepperoni));
+
+            constexpr int blisterCount{ 3 };
+            constexpr int blisterSamples{ 16 };
+
+            // pepperoni browned blisters
+            for (int blisterIndex = 0; blisterIndex < blisterCount; ++blisterIndex)
+                {
+                const uint32_t blisterSeed =
+                    seed ^ static_cast<uint32_t>(0x9000 + blisterIndex * 131);
+
+                const double blisterRadius =
+                    radius * (0.18 + 0.12 * HashToUnitInterval(blisterSeed ^ 0xAAAAU));
+
+                const double angleStepDegrees = safe_divide<double>(360.0, blisterCount);
+
+                const double baseAngleDegrees = blisterIndex * angleStepDegrees;
+
+                const double angleJitterDegrees =
+                    (HashToUnitInterval(blisterSeed ^ 0xBBBBU) - 0.5) * angleStepDegrees * 0.6;
+
+                const double angleDegrees = baseAngleDegrees + angleJitterDegrees;
+
+                const double blisterBandMin{ 0.15 };
+                const double blisterBandMax{ 0.70 };
+
+                const double bandStep =
+                    safe_divide<double>(blisterBandMax - blisterBandMin, blisterCount);
+
+                const double bandCenter = blisterBandMin + (blisterIndex + 0.5) * bandStep;
+
+                const double bandJitter =
+                    (HashToUnitInterval(blisterSeed ^ 0xCCCCU) - 0.5) * bandStep * 0.6;
+
+                const double offsetDistance =
+                    radius * std::clamp(bandCenter + bandJitter, blisterBandMin, blisterBandMax);
+
+                const wxPoint blisterCenter(
+                    wxRound(acceptedCenters[index].x +
+                            std::cos(geometry::degrees_to_radians(angleDegrees)) * offsetDistance),
+                    wxRound(acceptedCenters[index].y +
+                            std::sin(geometry::degrees_to_radians(angleDegrees)) * offsetDistance));
+
+                std::vector<wxPoint> blisterPoints;
+                blisterPoints.reserve(blisterSamples);
+
+                for (int sample = 0; sample < blisterSamples; ++sample)
+                    {
+                    const double sampleAngle = safe_divide<double>(360.0 * sample, blisterSamples);
+
+                    const double wobble =
+                        0.8 +
+                        0.4 * HashToUnitInterval(blisterSeed ^ static_cast<uint32_t>(sample * 17));
+
+                    blisterPoints.emplace_back(
+                        wxRound(blisterCenter.x +
+                                std::cos(geometry::degrees_to_radians(sampleAngle)) *
+                                    blisterRadius * wobble),
+                        wxRound(blisterCenter.y +
+                                std::sin(geometry::degrees_to_radians(sampleAngle)) *
+                                    blisterRadius * wobble));
+                    }
+
+                AddObject(
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                              .Brush(wxBrush(pepperoniBlisterColor))
+                                                              .Pen(wxNullPen)
+                                                              .Scaling(GetScaling())
+                                                              .DPIScaling(GetDPIScaleFactor())
+                                                              .Selectable(false),
+                                                          blisterPoints));
+                }
+
+            const wxColour oreganoColor(80, 95, 60, 110);
+            constexpr int seasoningCount{ 20 };
+            const double seasoningRadius = ScaleToScreenAndCanvas(1.3);
+            // Oregano specks
+            for (int seasoningIndex = 0; seasoningIndex < seasoningCount; ++seasoningIndex)
+                {
+                const uint32_t spiceSeed =
+                    seed ^ static_cast<uint32_t>(0x7000 + seasoningIndex * 47);
+
+                const double angleDegrees = HashToUnitInterval(spiceSeed ^ 0x1111U) * 360.0;
+
+                const double distance = radius * std::sqrt(HashToUnitInterval(spiceSeed ^ 0x2222U));
+
+                const wxPoint spiceCenter(
+                    wxRound(acceptedCenters[index].x +
+                            std::cos(geometry::degrees_to_radians(angleDegrees)) * distance),
+                    wxRound(acceptedCenters[index].y +
+                            std::sin(geometry::degrees_to_radians(angleDegrees)) * distance));
+
+                wxRect spiceRect(spiceCenter.x - seasoningRadius, spiceCenter.y - seasoningRadius,
+                                 seasoningRadius * 2, seasoningRadius * 2);
+
+                std::array<wxPoint, 8> spicePoints;
+                for (int sample = 0; std::cmp_less(sample, spicePoints.size()); ++sample)
+                    {
+                    spicePoints[sample] = GetEllipsePointFromRect(
+                        spiceRect, safe_divide<double>(360.0 * sample, spicePoints.size()));
+                    }
+
+                AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                                    .Brush(wxBrush(oreganoColor))
+                                                                    .Pen(wxNullPen)
+                                                                    .Scaling(GetScaling())
+                                                                    .DPIScaling(GetDPIScaleFactor())
+                                                                    .Selectable(false),
+                                                                spicePoints));
+                }
             }
         }
 
@@ -1906,7 +2128,8 @@ namespace Wisteria::Graphs
                                                          GetGhostOpacity() / 2) :
                     sliceBrush.GetColour());
 
-            if (GetPieStyle() == PieStyle::CheezePizza)
+            if (GetPieStyle() == PieStyle::CheezePizza ||
+                GetPieStyle() == PieStyle::PepperoniCheezePizza)
                 {
                 sliceBrushToUse.SetColour(GetCheeseColor());
                 sliceOutlinePen.SetColour(*wxBLACK);
@@ -2034,7 +2257,8 @@ namespace Wisteria::Graphs
                     Colors::ColorContrast::ChangeOpacity(GetBrushScheme()->GetBrush(i).GetColour(),
                                                          GetGhostOpacity()) :
                     GetBrushScheme()->GetBrush(i).GetColour());
-            if (GetPieStyle() == PieStyle::CheezePizza)
+            if (GetPieStyle() == PieStyle::CheezePizza ||
+                GetPieStyle() == PieStyle::PepperoniCheezePizza)
                 {
                 sliceBrush.SetColour(GetCheeseColor());
                 sliceOutlinePen.SetColour(*wxBLACK);

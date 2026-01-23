@@ -1107,10 +1107,11 @@ namespace Wisteria::Graphs
         // pizza styling
         void AddCrustRing(const DrawAreas& drawAreas);
         void AddToastedCheeseSpots(const DrawAreas& drawAreas);
+        void AddPepperoni(const DrawAreas& drawAreas);
 
         /// @returns Mozzarella.
         [[nodiscard]]
-        wxColour GetCheeseColor()
+        static wxColour GetCheeseColor()
             {
             return wxColour(255, 235, 190);
             }
