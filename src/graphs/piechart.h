@@ -1101,8 +1101,80 @@ namespace Wisteria::Graphs
                           double& smallestOuterLabelFontSize,
                           std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
 
+        // clockface styling
         void AddClockTicks(const DrawAreas& drawAreas);
         void AddClockHands(const DrawAreas& drawAreas);
+        // pizza styling
+        void AddCrustRing(const DrawAreas& drawAreas);
+        void AddToastedCheeseSpots(const DrawAreas& drawAreas);
+
+        /// @returns Mozzarella.
+        [[nodiscard]]
+        wxColour GetCheeseColor()
+            {
+            return wxColour(255, 235, 190);
+            }
+
+        /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
+
+            @details Given a bounding rectangle, treats the rectangle as the axis-aligned
+                bounding box of an ellipse and returns the Cartesian point located at the
+                specified angular position along that ellipse.
+
+                The angle is measured in degrees, where:
+                - 0° lies on the positive X axis (to the right of the center),
+                - angles increase clockwise (to match wxWidgets drawing conventions),
+                - 90° is at the bottom,
+                - 180° is to the left,
+                - 270° is at the top.
+
+            @param rect The axis-aligned bounding rectangle of the ellipse.
+            @param angleDegrees The angular position along the ellipse, in degrees.
+            @return A wxPoint representing the position on the ellipse perimeter
+                corresponding to the specified angle.*/
+        static wxPoint GetEllipsePointFromRect(const wxRect& rect, const double angleDegrees)
+            {
+            const double angleRadians = geometry::degrees_to_radians(angleDegrees);
+
+            const double centerX = rect.GetLeft() + rect.GetWidth() * math_constants::half;
+            const double centerY = rect.GetTop() + rect.GetHeight() * math_constants::half;
+
+            const double radiusX = rect.GetWidth() * math_constants::half;
+            const double radiusY = rect.GetHeight() * math_constants::half;
+
+            return wxPoint{ wxRound(centerX + radiusX * std::cos(angleRadians)),
+                            wxRound(centerY + radiusY * std::sin(angleRadians)) };
+            }
+
+         static double HashToUnitInterval(const uint32_t hashValue) noexcept
+            {
+            uint32_t value = hashValue;
+            value ^= value << 13;
+            value ^= value >> 17;
+            value ^= value << 5;
+            return safe_divide<double>(value & 0x00FFFFFF, 0x01000000);
+            }
+
+        static double RingIrregularity(const double angleDegrees, const uint32_t noiseSeed) noexcept
+            {
+            const double angleRadians = geometry::degrees_to_radians(angleDegrees);
+
+            const double lowFrequencyWave =
+                std::sin(angleRadians * 2.0 + static_cast<double>(noiseSeed % 100) * 0.01);
+
+            const double midFrequencyWave =
+                std::sin(angleRadians * 5.0 + static_cast<double>(noiseSeed % 200) * 0.02);
+
+            const double combinedWave = (lowFrequencyWave * 0.65) + (midFrequencyWave * 0.35);
+
+            const uint32_t jitterHash =
+                static_cast<uint32_t>(angleDegrees * 10.0) ^ (noiseSeed * 2654435761u);
+
+            const double jitter = (HashToUnitInterval(jitterHash) - math_constants::half) *
+                                  math_constants::quarter;
+
+            return combinedWave + jitter;
+            }
 
         PieInfo m_innerPie;
         PieInfo m_outerPie;

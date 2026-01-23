@@ -2,10 +2,12 @@
 
 ## 1.0.7 Release
 
-- Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
+- Add styling options to pie charts to make them look like:
+    - clock faces
+    - cheese pizzas
 - Add feature to waffle chart to override the number of rows in the waffle
-- Add styling option to pie charts to make them look like clock faces
 - Grid rounding in waffle chart can now round down also
+- Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
 
 ## 1.0.6 Release
 

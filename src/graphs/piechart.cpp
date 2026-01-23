@@ -1258,6 +1258,11 @@ namespace Wisteria::Graphs
             AddClockTicks(drawAreas);
             AddClockHands(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::CheezePizza)
+            {
+            AddCrustRing(drawAreas);
+            AddToastedCheeseSpots(drawAreas);
+            }
         }
 
     //----------------------------------------------------------------
@@ -1337,6 +1342,260 @@ namespace Wisteria::Graphs
         for (const int m : { 5, 10, 20, 25, 35, 40, 50, 55 })
             {
             addTick(m * 6.0, false);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddToastedCheeseSpots(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        constexpr int targetSpotCount{ 14 };
+
+        const double minRadius = ScaleToScreenAndCanvas(18);
+        const double maxRadius = ScaleToScreenAndCanvas(36);
+
+        const double minSpotSpacing = ScaleToScreenAndCanvas(40);
+
+        const wxColour toastedSpotColor(215, 185, 120, 80);
+        const wxColour toastedHaloColor(235, 215, 160, 60);
+
+        constexpr uint32_t spotSeed{ 0xBEEFCAFE };
+
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double maxHaloRadius = maxRadius * 1.35;
+        const double crustSafetyMargin = maxHaloRadius + ScaleToScreenAndCanvas(4);
+
+        const double maxDistance =
+            (std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0) - crustSafetyMargin;
+        const double maxDistanceEffective = maxDistance * 0.98;
+
+        std::vector<wxPoint> acceptedCenters;
+        acceptedCenters.reserve(targetSpotCount);
+
+        const double angleStep = 360.0 / static_cast<double>(targetSpotCount);
+
+        for (int slotIndex = 0; slotIndex < targetSpotCount; ++slotIndex)
+            {
+            const uint32_t seed = spotSeed + static_cast<uint32_t>(slotIndex * 733);
+
+            const double baseAngle = slotIndex * angleStep;
+            const double jitter = (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStep * 0.6;
+
+            const double angle = baseAngle + jitter;
+
+            const double radialT = HashToUnitInterval(seed ^ 0x2222U);
+            const double mixT = HashToUnitInterval(seed ^ 0x9999U);
+
+            // 75% outer-cheese bias, 25% center-friendly
+            const bool useOuterBias = (mixT < math_constants::half);
+
+            double distance{ 0.0 };
+
+            if (useOuterBias)
+                {
+                // outward-biased (avoids center dominance)
+                const double biasedT = 0.35 + 0.65 * std::pow(radialT, 0.55);
+                distance = biasedT * maxDistanceEffective;
+                }
+            else
+                {
+                // center-friendly (but still area-correct)
+                distance = std::sqrt(radialT) * maxDistanceEffective;
+                }
+
+            const wxPoint candidate(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            bool tooClose{ false };
+            for (const wxPoint& existing : acceptedCenters)
+                {
+                if (geometry::segment_length(GraphItems::Polygon::PointToPair(candidate),
+                                             GraphItems::Polygon::PointToPair(existing)) <
+                    minSpotSpacing)
+                    {
+                    tooClose = true;
+                    break;
+                    }
+                }
+
+            acceptedCenters.push_back(candidate);
+            }
+
+        // irregular toasted blobs
+        constexpr int blobSamples{ 40 };
+
+        for (size_t index = 0; index < acceptedCenters.size(); ++index)
+            {
+            const uint32_t seed = spotSeed + static_cast<uint32_t>(index * 911);
+
+            const double baseRadius =
+                minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius);
+
+                {
+                std::vector<wxPoint> haloPoints;
+                haloPoints.reserve(blobSamples);
+
+                for (int sample = 0; sample < blobSamples; ++sample)
+                    {
+                    const double angleDeg = (360.0 * sample) / static_cast<double>(blobSamples);
+
+                    const double wobble =
+                        0.85 + 0.4 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 311));
+
+                    const double radius = baseRadius * 1.35 * wobble;
+
+                    haloPoints.emplace_back(
+                        static_cast<int>(
+                            std::round(acceptedCenters[index].x +
+                                       std::cos(geometry::degrees_to_radians(angleDeg)) * radius)),
+                        static_cast<int>(
+                            std::round(acceptedCenters[index].y +
+                                       std::sin(geometry::degrees_to_radians(angleDeg)) * radius)));
+                    }
+
+                AddObject(
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                              .Brush(wxBrush(toastedHaloColor))
+                                                              .Pen(wxNullPen)
+                                                              .Scaling(GetScaling())
+                                                              .DPIScaling(GetDPIScaleFactor())
+                                                              .Selectable(false),
+                                                          haloPoints));
+                }
+
+                {
+                std::vector<wxPoint> blobPoints;
+                blobPoints.reserve(blobSamples);
+
+                for (int sample = 0; sample < blobSamples; ++sample)
+                    {
+                    const double angleDeg = safe_divide<double>(360.0 * sample, blobSamples);
+
+                    // gentle radial wobble
+                    const double wobble =
+                        0.75 + 0.5 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 131));
+
+                    const double radius = baseRadius * wobble;
+
+                    const wxPoint point(
+                        static_cast<int>(
+                            std::round(acceptedCenters[index].x +
+                                       std::cos(geometry::degrees_to_radians(angleDeg)) * radius)),
+                        static_cast<int>(
+                            std::round(acceptedCenters[index].y +
+                                       std::sin(geometry::degrees_to_radians(angleDeg)) * radius)));
+
+                    blobPoints.push_back(point);
+                    }
+
+                auto toastedSpot =
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                              .Brush(wxBrush(toastedSpotColor))
+                                                              .Pen(wxNullPen)
+                                                              .Scaling(GetScaling())
+                                                              .DPIScaling(GetDPIScaleFactor())
+                                                              .Selectable(false),
+                                                          blobPoints);
+
+                AddObject(std::move(toastedSpot));
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddCrustRing(const DrawAreas& drawAreas)
+        {
+        // resolution around the circle
+        constexpr int sampleCount{ 180 };
+        const double baseCrustThickness{ ScaleToScreenAndCanvas(10) };
+        const double baseCrustInflation{ ScaleToScreenAndCanvas(6) };
+        const double irregularityAmplitude{ ScaleToScreenAndCanvas(3) };
+        constexpr int crustLayerCount{ 4 };
+
+        constexpr uint32_t crustSeed{ 0xC0FFEE };
+
+        const wxColour doughColor{ 232, 205, 160, 220 };
+        const wxColour toastedColor{ 176, 120, 70, 90 };
+
+        // layered crust passes
+        for (int crustLayerIndex = 0; crustLayerIndex < crustLayerCount; ++crustLayerIndex)
+            {
+            const uint32_t layerSeed = crustSeed + static_cast<uint32_t>(crustLayerIndex * 1337);
+
+            const int horizontalOffset =
+                wxRound((HashToUnitInterval(layerSeed ^ 0xA5A5U) - math_constants::half) *
+                        ScaleToScreenAndCanvas(3));
+            const int verticalOffset =
+                wxRound((HashToUnitInterval(layerSeed ^ 0x5A5AU) - math_constants::half) *
+                        ScaleToScreenAndCanvas(3));
+
+            const double layerThickness =
+                baseCrustThickness * (0.85 + 0.15 * HashToUnitInterval(layerSeed ^ 0x1234U));
+
+            const double layerIrregularity =
+                irregularityAmplitude * (0.70 + 0.60 * HashToUnitInterval(layerSeed ^ 0x5678U));
+
+            wxRect outerEllipseRect = drawAreas.m_pieDrawArea;
+            outerEllipseRect.Inflate(wxRound(baseCrustInflation));
+            outerEllipseRect.Offset(horizontalOffset, verticalOffset);
+
+            wxRect innerEllipseRect = drawAreas.m_pieDrawArea;
+            innerEllipseRect.Inflate(wxRound(baseCrustInflation - layerThickness));
+            innerEllipseRect.Offset(horizontalOffset, verticalOffset);
+
+            std::vector<wxPoint> outerRingPoints;
+            std::vector<wxPoint> innerRingPoints;
+
+            outerRingPoints.reserve(sampleCount);
+            innerRingPoints.reserve(sampleCount);
+
+            for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
+                {
+                const double angleDegrees = safe_divide<double>(360.0 * sampleIndex, sampleCount);
+
+                const double doughNoise = RingIrregularity(angleDegrees, layerSeed);
+
+                const int outerInflationOffset = wxRound(doughNoise * layerIrregularity);
+                const int innerInflationOffset = wxRound(doughNoise * layerIrregularity * 0.35);
+
+                wxRect adjustedOuterRect = outerEllipseRect;
+                wxRect adjustedInnerRect = innerEllipseRect;
+
+                adjustedOuterRect.Inflate(outerInflationOffset, outerInflationOffset);
+                adjustedInnerRect.Inflate(innerInflationOffset, innerInflationOffset);
+
+                outerRingPoints.push_back(GetEllipsePointFromRect(adjustedOuterRect, angleDegrees));
+                innerRingPoints.push_back(GetEllipsePointFromRect(adjustedInnerRect, angleDegrees));
+                }
+
+            std::vector<wxPoint> crustPolygonPoints;
+            crustPolygonPoints.reserve(outerRingPoints.size() + innerRingPoints.size());
+            crustPolygonPoints.insert(crustPolygonPoints.end(), outerRingPoints.begin(),
+                                      outerRingPoints.end());
+            crustPolygonPoints.insert(crustPolygonPoints.end(), innerRingPoints.rbegin(),
+                                      innerRingPoints.rend());
+
+            const bool isToastedLayer = (crustLayerIndex >= 1);
+
+            const wxBrush crustBrush =
+                isToastedLayer ? wxBrush{ toastedColor } : wxBrush{ doughColor };
+            const wxPen crustPen(wxColour(150, 110, 70, isToastedLayer ? 40 : 90),
+                                 ScaleToScreenAndCanvas(1), wxPENSTYLE_SOLID);
+
+            auto crustPolygon =
+                std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                          .Brush(crustBrush)
+                                                          .Pen(crustPen)
+                                                          .Scaling(GetScaling())
+                                                          .DPIScaling(GetDPIScaleFactor())
+                                                          .Selectable(false),
+                                                      crustPolygonPoints);
+
+            AddObject(std::move(crustPolygon));
             }
         }
 
@@ -1607,8 +1866,9 @@ namespace Wisteria::Graphs
 
         // outline of inner slices' sides, which will be half as thick as the
         // outer ring's slice sides
-        auto sliceLine{ GetPen() };
-        sliceLine.SetWidth(std::max(1, (sliceLine.IsOk() ? sliceLine.GetWidth() : 2) / 2));
+        auto sliceOutlinePen{ GetPen() };
+        sliceOutlinePen.SetWidth(
+            std::max(1, (sliceOutlinePen.IsOk() ? sliceOutlinePen.GetWidth() : 2) / 2));
 
         // note that we do NOT clear outerLabels or its smallest font size,
         // both rings use these
@@ -1646,6 +1906,12 @@ namespace Wisteria::Graphs
                                                          GetGhostOpacity() / 2) :
                     sliceBrush.GetColour());
 
+            if (GetPieStyle() == PieStyle::CheezePizza)
+                {
+                sliceBrushToUse.SetColour(GetCheeseColor());
+                sliceOutlinePen.SetColour(*wxBLACK);
+                }
+
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
 
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
@@ -1654,7 +1920,7 @@ namespace Wisteria::Graphs
                     .BaseColor(sliceColorToUse)
                     .DPIScaling(GetDPIScaleFactor())
                     .Scaling(GetScaling())
-                    .Pen(sliceLine),
+                    .Pen(sliceOutlinePen),
                 innerDrawArea, startAngle, startAngle + (innerPie.m_percent * 360),
                 innerPie.m_value, innerPie.m_percent);
             pSlice->SetMidPointLabelDisplay(innerPie.GetMidPointLabelDisplay());
@@ -1752,7 +2018,7 @@ namespace Wisteria::Graphs
         double smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetFractionalPointSize() };
         std::vector<std::unique_ptr<GraphItems::Label>> middleLabels;
         double startAngle{ 0.0 };
-        const wxPen sliceOutlinePen{ GetPen() };
+        wxPen sliceOutlinePen{ GetPen() };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
             const std::optional<wxColour> sliceColor =
@@ -1768,6 +2034,11 @@ namespace Wisteria::Graphs
                     Colors::ColorContrast::ChangeOpacity(GetBrushScheme()->GetBrush(i).GetColour(),
                                                          GetGhostOpacity()) :
                     GetBrushScheme()->GetBrush(i).GetColour());
+            if (GetPieStyle() == PieStyle::CheezePizza)
+                {
+                sliceBrush.SetColour(GetCheeseColor());
+                sliceOutlinePen.SetColour(*wxBLACK);
+                }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
                 GraphItems::GraphItemInfo(GetOuterPie().at(i).GetGroupLabel())
                     .Brush(sliceBrush)

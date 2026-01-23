@@ -440,7 +440,9 @@ namespace Wisteria
         None,
         /// @brief A clockface, where an hour, minute, and seconds (if necessary) are drawn
         ///     to separate the slices.
-        Clockface
+        Clockface,
+        /// @brief A cheese pizza (slice colors will be overridden).
+        CheezePizza
         };
 
     /// @brief Effects that could be applied to an image.
