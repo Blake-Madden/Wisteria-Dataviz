@@ -92,7 +92,7 @@ enum class DTExplanation
     @endcode*/
 template<typename T>
     requires string_literal<T>
-consteval auto
+constexpr auto
 DONTTRANSLATE(T str,
               [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
               [[maybe_unused]] T explanationMessage = nullptr)
@@ -109,7 +109,7 @@ DONTTRANSLATE(T str,
     @returns The same string.*/
 template<typename T>
     requires string_literal<T>
-consteval auto _DT(T str,
+constexpr auto _DT(T str,
                    [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
                    [[maybe_unused]] T explanationMessage = nullptr)
     {
