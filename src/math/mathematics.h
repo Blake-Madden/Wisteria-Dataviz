@@ -224,9 +224,8 @@ constexpr T coalesce(std::initializer_list<T> list)
     @param newDataRange The min and max of the range that the value is being rescaled to.
     @returns The value, rescaled to the new data range.*/
 [[nodiscard]]
-inline constexpr double scale_within(double unscaledValue,
-                                     const std::pair<double, double>& dataRange,
-                                     const std::pair<double, double>& newDataRange)
+inline double scale_within(double unscaledValue, const std::pair<double, double>& dataRange,
+                           const std::pair<double, double>& newDataRange)
     {
     return safe_divide<double>(
                ((newDataRange.second - newDataRange.first) * (unscaledValue - dataRange.first)),
@@ -423,7 +422,7 @@ inline double truncate_decimal_place(const double x, const size_t decimalPlace) 
     return safe_divide<double>(fpart, static_cast<double>(decimalPlace)) + ipart;
     }
 
-/// @brief Floors a number.
+/// @brief Floors (i.e., rounds down) a number.
 template<typename T>
 class floor_value
     {
@@ -683,7 +682,7 @@ namespace geometry
         @param circumference The circumference of the circle.
         @returns The radius of the circle.*/
     [[nodiscard]]
-    inline constexpr double circumference_to_radius(const double circumference) noexcept
+    inline double circumference_to_radius(const double circumference) noexcept
         {
         return safe_divide<double>(safe_divide<double>(circumference, std::numbers::pi), 2);
         }
@@ -713,8 +712,8 @@ namespace geometry
             drawn from 3 o'clock going counterclockwise.
         @returns The end point of the arc.*/
     [[nodiscard]]
-    inline constexpr std::pair<double, double> arc_vertex(const std::pair<double, double>& areaSize,
-                                                          const double degrees) noexcept
+    inline std::pair<double, double> arc_vertex(const std::pair<double, double>& areaSize,
+                                                const double degrees) noexcept
         {
         return std::make_pair(
             (areaSize.first * safe_divide<double>(std::cos(degrees_to_radians(degrees)), 2) +
