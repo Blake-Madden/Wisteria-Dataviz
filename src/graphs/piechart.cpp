@@ -1286,7 +1286,6 @@ namespace Wisteria::Graphs
 
         // very light, translucent coffee pigment
         const wxColour coffeeStainLight{ 210, 195, 170, 45 };
-        const wxColour coffeeStainDark{ 195, 175, 145, 75 };
 
         const auto mixSeed = [](uint32_t x) -> uint32_t
         {
@@ -1449,8 +1448,6 @@ namespace Wisteria::Graphs
         const double minRadius = ScaleToScreenAndCanvas(14);
         const double maxRadius = ScaleToScreenAndCanvas(22);
 
-        const double minSpacing = ScaleToScreenAndCanvas(38);
-
         const wxColour pepperoniFillBase(170, 45, 45);
         const wxColour pepperoniEdgeBase(110, 20, 20);
         const wxColour pepperoniBlisterColor(120, 35, 25, 90);
@@ -1555,12 +1552,12 @@ namespace Wisteria::Graphs
                 const double blisterRadius =
                     radius * (0.18 + 0.12 * HashToUnitInterval(blisterSeed ^ 0xAAAAU));
 
-                const double angleStepDegrees = safe_divide<double>(360.0, blisterCount);
+                const double angleStepInDegrees = safe_divide<double>(360.0, blisterCount);
 
-                const double baseAngleDegrees = blisterIndex * angleStepDegrees;
+                const double baseAngleDegrees = blisterIndex * angleStepInDegrees;
 
                 const double angleJitterDegrees =
-                    (HashToUnitInterval(blisterSeed ^ 0xBBBBU) - 0.5) * angleStepDegrees * 0.6;
+                    (HashToUnitInterval(blisterSeed ^ 0xBBBBU) - 0.5) * angleStepInDegrees * 0.6;
 
                 const double angleDegrees = baseAngleDegrees + angleJitterDegrees;
 
@@ -1719,14 +1716,12 @@ namespace Wisteria::Graphs
                 wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
                 wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
 
-            bool tooClose{ false };
             for (const wxPoint& existing : acceptedCenters)
                 {
                 if (geometry::segment_length(GraphItems::Polygon::PointToPair(candidate),
                                              GraphItems::Polygon::PointToPair(existing)) <
                     minSpotSpacing)
                     {
-                    tooClose = true;
                     break;
                     }
                 }
