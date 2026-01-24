@@ -489,6 +489,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         m_menu.Append(wxID_COPY, _(L"Copy"));
         m_menu.AppendSeparator();
         m_menu.Append(wxID_PRINT, _(L"Print"));
+        // wx framework and arbitrarily disable wxID_SAVE in higher level menus if the active
+        // document is not dirty, so use our own internal Save ID
         m_menu.Append(XRCID("ID_SAVE_ITEM"), _(L"Save"));
 
         m_resizeTimer.SetOwner(this);
@@ -514,6 +516,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         Bind(wxEVT_SIZE, &Canvas::OnResize, this);
         Bind(wxEVT_CONTEXT_MENU, &Canvas::OnContextMenu, this);
         Bind(wxEVT_MENU, &Canvas::OnSave, this, wxID_SAVE);
+        Bind(wxEVT_MENU, &Canvas::OnSave, this, XRCID("ID_SAVE_ITEM"));
         Bind(wxEVT_MENU, &Canvas::OnCopy, this, wxID_COPY);
         Bind(wxEVT_MENU, &Canvas::OnPreview, this, wxID_PREVIEW);
         Bind(wxEVT_MENU, &Canvas::OnPrint, this, wxID_PRINT);
