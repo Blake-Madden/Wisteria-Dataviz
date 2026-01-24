@@ -446,7 +446,7 @@ void MyFrame::OnQuit([[maybe_unused]] wxCommandEvent& event) { Close(); }
 void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     {
     wxAboutDialogInfo aboutInfo;
-    aboutInfo.SetCopyright(_(L"Copyright (c) 2025"));
+    aboutInfo.SetCopyright(_(L"Copyright (c) 2026"));
     wxArrayString devs;
     devs.Add(_DT(L"Blake Madden"));
     aboutInfo.SetDevelopers(devs);

@@ -176,6 +176,10 @@ namespace Wisteria::Graphs
             | :-------------- | :-------------------------------- |
             | @image html DonutChart.svg width=90% | @image html DonutChartSubgrouped.svg width=90% |
 
+            | Styled Pie Charts | |
+            | :-------------- | :-------------------------------- |
+            | @image html clock.svg width=90% | @image html pizza.svg width=90% |
+
         @note The pie slices will be ordered alphabetically and drawn counter-clockwise, starting
             at 3 o'clock.\n
             This order will also be used for the brush, color, or image scheme that

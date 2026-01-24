@@ -37,6 +37,10 @@ Basic
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/images/DonutChart.svg) | ![](docs/images/DonutChartSubgrouped.svg) |
 
+| Styled Pie Charts | |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/clock.svg) | ![](docs/images/pizza.svg) |
+
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
 | ![](docs/images/TableMajors.svg) |

@@ -80,6 +80,10 @@ Basic
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/images/PieChart.svg) | ![](docs/images/DonutChart.svg) |
 
+| Styled Pie Charts | |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/clock.svg) | ![](docs/images/pizza.svg) |
+
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
 | ![](docs/images/TableMajors.svg) |
