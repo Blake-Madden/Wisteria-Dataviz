@@ -305,8 +305,8 @@ namespace lily_of_the_valley
         /** @brief Parses the workbook relationships file for worksheet target paths.
             @details Reads the contents of `xl/_rels/workbook.xml.rels` and extracts the
                 relationship ID and target path pairs defined by each
-                @c <Relationship> element. The parsed results are stored internally
-                and can be accessed via @c get_relative_paths().
+                `<Relationship>` element. The parsed results are stored internally
+                and can be accessed via get_relative_paths().
             @param xml A pointer to the XML text to parse.
             @param length The length of the XML text, in characters.
             @note Call this after read_worksheet_names() and then call map_workbook_paths().*/

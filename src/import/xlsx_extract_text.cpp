@@ -826,7 +826,7 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    void xlsx_extract_text::xlsx_extract_text::map_workbook_paths()
+    void xlsx_extract_text::map_workbook_paths()
         {
         m_worksheet_paths.clear();
 

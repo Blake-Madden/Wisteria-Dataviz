@@ -683,8 +683,11 @@ namespace Wisteria::Graphs
             outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
                 smallestOuterLabelFontSize);
             outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
-            outerLabel->SetFontColor(
-                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+            if (!IsUsingColorLabels())
+                {
+                outerLabel->SetFontColor(
+                    Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                }
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
@@ -769,8 +772,11 @@ namespace Wisteria::Graphs
             outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
                 smallestOuterLabelFontSize);
             outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
-            outerLabel->SetFontColor(
-                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+            if (!IsUsingColorLabels())
+                {
+                outerLabel->SetFontColor(
+                    Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                }
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
@@ -918,8 +924,11 @@ namespace Wisteria::Graphs
             outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
                 smallestOuterLabelFontSize);
             outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
-            outerLabel->SetFontColor(
-                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+            if (!IsUsingColorLabels())
+                {
+                outerLabel->SetFontColor(
+                    Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                }
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
@@ -1004,8 +1013,11 @@ namespace Wisteria::Graphs
             outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
                 smallestOuterLabelFontSize);
             outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
-            outerLabel->SetFontColor(
-                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+            if (!IsUsingColorLabels())
+                {
+                outerLabel->SetFontColor(
+                    Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                }
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
@@ -2218,7 +2230,7 @@ namespace Wisteria::Graphs
                 }
             else if (GetPieStyle() == PieStyle::CoffeeRing)
                 {
-                sliceBrushToUse.SetColour(*wxWHITE);
+                sliceBrushToUse.SetColour(GetPlotOrCanvasColor());
                 sliceOutlinePen.SetColour(*wxBLACK);
                 }
 
@@ -2242,11 +2254,16 @@ namespace Wisteria::Graphs
                 // use the parent slice color for the header, font color for the body
                 if (IsUsingColorLabels())
                     {
-                    pSlice->SetFontColor(
+                    pSlice->GetHeaderInfo().FontColor(
                         GetBrushScheme()->GetBrush(innerPie.m_parentSliceIndex).GetColour());
+                    pSlice->SetFontColor(
+                        Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
                     }
-                pSlice->SetFontColor(
-                    Colors::ColorContrast::ShadeOrTint(pSlice->GetFontColor(), 0.4));
+                else
+                    {
+                    pSlice->SetFontColor(
+                        Colors::ColorContrast::ShadeOrTint(pSlice->GetFontColor(), 0.4));
+                    }
                 }
             else
                 {
@@ -2352,7 +2369,7 @@ namespace Wisteria::Graphs
                 }
             else if (GetPieStyle() == PieStyle::CoffeeRing)
                 {
-                sliceBrush.SetColour(*wxWHITE);
+                sliceBrush.SetColour(GetPlotOrCanvasColor());
                 sliceOutlinePen.SetColour(*wxBLACK);
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
@@ -2374,9 +2391,14 @@ namespace Wisteria::Graphs
                 if (IsUsingColorLabels())
                     {
                     pSlice->GetHeaderInfo().FontColor(GetBrushScheme()->GetBrush(i).GetColour());
+                    pSlice->SetFontColor(
+                        Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
                     }
-                pSlice->SetFontColor(
-                    Colors::ColorContrast::ShadeOrTint(pSlice->GetFontColor(), .4));
+                else
+                    {
+                    pSlice->SetFontColor(
+                        Colors::ColorContrast::ShadeOrTint(pSlice->GetFontColor(), .4));
+                    }
                 }
             else
                 {
@@ -2468,8 +2490,11 @@ namespace Wisteria::Graphs
         auto outerLabel = pSlice->CreateOuterLabel(
             (isInnerSlice ? drawAreas.m_outerPieDrawArea : drawAreas.m_pieDrawArea),
             GetOuterLabelDisplay());
-        outerLabel->SetFontColor(
-            Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+        if (!IsUsingColorLabels())
+            {
+            outerLabel->SetFontColor(
+                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+            }
         outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
         if (outerLabel != nullptr)
             {

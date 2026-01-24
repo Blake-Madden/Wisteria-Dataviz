@@ -492,6 +492,9 @@ namespace Wisteria::Graphs
         /// @brief Whether outer slice labels have their font colors match
         ///     their respective pie slice.
         /// @param useColors @c true to use colors for the labels.
+        /// @note If the label has a header line, then the slice color will be applied to that
+        ///     and the body will be a color contrasting the background.
+        ///     Otherwise, the slice color will be applied to the label.
         void UseColorLabels(const bool useColors) noexcept { m_useColorLabels = useColors; }
 
         /// @returns The effect used for drawing the slices.

@@ -143,6 +143,7 @@ class comparable_first_pair
         @param t2 The second of the pair.*/
     comparable_first_pair(T1 t1, T2 t2) noexcept : first(std::move(t1)), second(std::move(t2)) {}
 
+    /// @private
     comparable_first_pair(const comparable_first_pair&) = default;
 
     /// @private
