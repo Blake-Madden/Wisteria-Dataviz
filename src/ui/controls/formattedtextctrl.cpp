@@ -11,7 +11,8 @@
 #include <wx/paper.h>
 #include <wx/printdlg.h>
 #ifdef __WXOSX__
-    #include "wx/osx/private.h"
+    #include "formattedtextctrl_mac.h"
+    #include <wx/osx/private.h>
 #elif defined(__WXGTK__)
     #include "gtk/gtktextview-helper.h"
     #include <gtk/gtk.h>
@@ -522,77 +523,45 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         g_object_unref(operation);
         g_object_unref(settings);
 #else
-        const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
-        const double paperWidthInInches =
-            safe_divide<double>(paperSize.GetWidth(), 10) * 0.0393700787;
-        const double paperHeightInInches =
-            safe_divide<double>(paperSize.GetHeight(), 10) * 0.0393700787;
+        // Get paper size in points (72 points per inch).
+        // (wxThePrintPaperDatabase returns size in tenths of a millimeter.)
+        const wxSize paperSizeMM = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
+        const double paperWidthInPoints =
+            safe_divide<double>(paperSizeMM.GetWidth(), 10) * 0.0393700787 * 72;
+        const double paperHeightInPoints =
+            safe_divide<double>(paperSizeMM.GetHeight(), 10) * 0.0393700787 * 72;
 
-        wxClientDC dc(this);
-        const wxFont fixedFont(12, wxFontFamily::wxFONTFAMILY_MODERN,
-                               wxFontStyle::wxFONTSTYLE_NORMAL, wxFontWeight::wxFONTWEIGHT_NORMAL,
-                               false, L"Courier New");
-        dc.SetFont(fixedFont);
-        wxCoord textWidth{ 0 }, textHeight{ 0 };
-        dc.GetTextExtent(L" ", &textWidth, &textHeight);
-        const size_t spacesCount =
-            (m_printData->GetOrientation() == wxPORTRAIT) ?
-                safe_divide<size_t>((paperWidthInInches - .5f) * 72, textWidth) :
-                safe_divide<size_t>((paperHeightInInches - .5f) * 72, textWidth);
-
-        // format the header
-        const wxString expandedLeftHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
-        const wxString expandedCenterHeader = ExpandUnixPrintString(GetCenterPrinterHeader());
-        const wxString expandedRightHeader = ExpandUnixPrintString(GetRightPrinterHeader());
-
-        wxString fullHeader = expandedLeftHeader;
-        if (spacesCount >= (expandedLeftHeader.length() + expandedCenterHeader.length() +
-                            expandedRightHeader.length()))
+        // build header string (combines left, center, and right with tabs)
+        wxString fullHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
+        if (!GetCenterPrinterHeader().empty())
             {
-            const size_t paddingSize =
-                spacesCount - (expandedLeftHeader.length() + expandedCenterHeader.length() +
-                               expandedRightHeader.length());
-            fullHeader.Pad(paddingSize / 2);
-            fullHeader += expandedCenterHeader;
-            fullHeader.Pad((paddingSize / 2) + (is_even(paddingSize) ? 0 : 1));
-            fullHeader += expandedRightHeader;
+            fullHeader.append(L'\t').append(ExpandUnixPrintString(GetCenterPrinterHeader()));
             }
-        else
+        if (!GetRightPrinterHeader().empty())
             {
-            fullHeader += expandedCenterHeader;
-            fullHeader += expandedRightHeader;
+            fullHeader.append(L'\t').append(ExpandUnixPrintString(GetRightPrinterHeader()));
             }
 
-        // format the footer
-        const wxString expandedLeftFooter = ExpandUnixPrintString(GetLeftPrinterFooter());
-        const wxString expandedCenterFooter = ExpandUnixPrintString(GetCenterPrinterFooter());
-        const wxString expandedRightFooter = ExpandUnixPrintString(GetRightPrinterFooter());
+        // build footer string
+        wxString fullFooter = ExpandUnixPrintString(GetLeftPrinterFooter());
+        if (!GetCenterPrinterFooter().empty())
+            {
+            fullFooter.append(L'\t').append(ExpandUnixPrintString(GetCenterPrinterFooter()));
+            }
+        if (!GetRightPrinterFooter().empty())
+            {
+            fullFooter.append(L'\t').append(ExpandUnixPrintString(GetRightPrinterFooter()));
+            }
 
-        wxString fullFooter = expandedLeftFooter;
-        if (spacesCount >= (expandedLeftFooter.length() + expandedCenterFooter.length() +
-                            expandedRightFooter.length()))
-            {
-            const size_t paddingSize =
-                spacesCount - (expandedLeftFooter.length() + expandedCenterFooter.length() +
-                               expandedRightFooter.length());
-            fullFooter.Pad(paddingSize / 2);
-            fullFooter += expandedCenterFooter;
-            fullFooter.Pad((paddingSize / 2) + (is_even(paddingSize) ? 0 : 1));
-            fullFooter += expandedRightFooter;
-            }
-        else
-            {
-            fullFooter += expandedCenterFooter;
-            fullFooter += expandedRightFooter;
-            }
-    #ifdef HAS_MAC_TEXT_PRINTING
-        /// @todo test this
-        m_printWindow->GetTextPeer()->Print(
-            wxSize(PaperWidthInInches * 72, PaperHeightInInches * 72),
+        // get the RTF content (prefer unthemed for printing on white paper)
+        const wxString rtfContent = !GetUnthemedFormattedText().empty() ?
+                                        GetUnthemedFormattedTextRtf(false) :
+                                        GetFormattedTextRtf(false);
+
+        macOSPrintRTF(
+            rtfContent,
+            wxSize(static_cast<int>(paperWidthInPoints), static_cast<int>(paperHeightInPoints)),
             static_cast<int>(m_printData->GetOrientation()), fullHeader, fullFooter);
-    #else
-        #pragma message("Text Control printing will not be available.")
-    #endif
 #endif
         }
 
