@@ -268,10 +268,12 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Dataset> Pivot::PivotLonger(
-        const std::shared_ptr<const Dataset>& dataset, const std::vector<wxString>& columnsToKeep,
-        const std::vector<wxString>& fromColumns, const std::vector<wxString>& namesTo,
-        const wxString& valuesTo, [[maybe_unused]] const wxString& namesPattern /*= wxEmptyString*/)
+    std::shared_ptr<Dataset> Pivot::PivotLonger(const std::shared_ptr<const Dataset>& dataset,
+                                                const std::vector<wxString>& columnsToKeep,
+                                                const std::vector<wxString>& fromColumns,
+                                                const std::vector<wxString>& namesTo,
+                                                const wxString& valuesTo,
+                                                const wxString& namesPattern /*= wxEmptyString*/)
         {
         if (dataset == nullptr)
             {

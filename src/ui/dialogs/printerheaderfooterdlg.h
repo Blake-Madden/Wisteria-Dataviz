@@ -63,8 +63,7 @@ namespace Wisteria::UI
               m_centerPrinterFooter(std::move(centerPrinterFooter)),
               m_rightPrinterFooter(std::move(rightPrinterFooter))
             {
-            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
-                                            wxDIALOG_EX_METAL);
+            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
             CreateControls();
 
             Bind(wxEVT_BUTTON, &PrinterHeaderFooterDlg::OnOK, this, wxID_OK);

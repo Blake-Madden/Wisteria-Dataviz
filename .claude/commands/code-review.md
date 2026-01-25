@@ -1,6 +1,20 @@
+---
+name: code review
+description: Review code in a folder, or the entire codebase if no folder is provided
+parameters:
+  folder?:
+    description: Folder path to review (optional)
+---
+
 # Code Review
 
 Review code changes for correctness, style, and project-specific issues.
+
+If a `folder` parameter is provided:
+- Review only the code within `{{folder}}`.
+
+If no `folder` parameter is provided:
+- Review the entire codebase.
 
 ## Standard Review Items
 
