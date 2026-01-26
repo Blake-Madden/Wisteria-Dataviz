@@ -29,7 +29,8 @@ namespace Wisteria::UI
          - `@TIME@`: The time when it was printed.
          - `@PAGENUM@`: The current page number.
          - `@PAGESCNT@`: The number of printed pages.
-         - `@USER@`: The user's name.*/
+         - `@USER@`: The user's name.
+         - `@DATETIME@`: The date and time when it was printed.*/
     class PrinterHeaderFooterDlg final : public DialogWithHelp
         {
       public:

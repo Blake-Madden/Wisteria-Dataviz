@@ -77,7 +77,7 @@ namespace Wisteria::UI
         {
         wxRegEx re(L"(@[[:alpha:]]+@)");
         const std::set<wxString, Wisteria::Data::wxStringLessNoCase> supportedTags = {
-            L"@TITLE@", L"@DATE@", L"@TIME@", L"@PAGENUM@", L"@PAGESCNT@", L"@USER@"
+            L"@TITLE@", L"@DATE@", L"@TIME@", L"@DATETIME@", L"@PAGENUM@", L"@PAGESCNT@", L"@USER@"
         };
 
         // make sure the embedded "@@" tags are recognized
@@ -139,6 +139,7 @@ namespace Wisteria::UI
         choiceStrings.Add(_(L"Page @PAGENUM@ of @PAGESCNT@"));
         choiceStrings.Add(DONTTRANSLATE(L"@DATE@"));
         choiceStrings.Add(DONTTRANSLATE(L"@TIME@"));
+        choiceStrings.Add(DONTTRANSLATE(L"@DATETIME@"));
         choiceStrings.Add(DONTTRANSLATE(L"@USER@"));
         leftHeaderPrinterCombo =
             new wxComboBox(headerFrameSizer->GetStaticBox(), ID_LEFT_HEADER_COMBOBOX, wxString{},

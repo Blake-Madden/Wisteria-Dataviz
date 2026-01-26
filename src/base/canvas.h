@@ -254,8 +254,8 @@ namespace Wisteria
         void SetWatermark(const Watermark& watermark) { m_watermark = watermark; }
 
         /// @returns The watermark label shown across the canvas.
-        /// @note The tags `@DATETIME@`, `@DATE@`, and `@TIME@` are expanded to their literal
-        ///     values at time of rendering.
+        /// @note The tags `@DATETIME@`, `@DATE@`, `@TIME@`, and `@USER@` are expanded to their
+        ///     literal values at time of rendering.
         [[nodiscard]]
         Watermark GetWatermark() const
             {

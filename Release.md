@@ -3,7 +3,8 @@
 ## 1.0.8 Release
 
 - Compatibility change: watermarks are only rendered on print and save now
-- `@USER@` placeholder now supported in watermark
+- `@USER@` placeholder now supported in watermarks
+- `@DATETIME@` placeholder  now supported in print headers and footers
 - Improved layout of watermarks and tilted labels
 - Improve the appearance of pie chart's coffee stain style
 

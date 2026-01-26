@@ -1492,6 +1492,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             const wxDateTime now = wxDateTime::Now();
             expandedString.Replace(L"@DATE@", now.FormatDate(), true);
             expandedString.Replace(L"@TIME@", now.FormatTime(), true);
+            expandedString.Replace(L"@DATETIME@", now.FormatISOCombined());
 
             return expandedString;
             }

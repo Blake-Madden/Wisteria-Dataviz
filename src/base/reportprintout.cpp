@@ -228,6 +228,7 @@ wxString Wisteria::ReportPrintout::ExpandPrintString(const wxString& printString
     expandedString.Replace(L"@USER@", wxGetUserName(), true);
     expandedString.Replace(L"@DATE@", now.FormatDate(), true);
     expandedString.Replace(L"@TIME@", now.FormatTime(), true);
+    expandedString.Replace(L"[DATETIME]", now.FormatISOCombined());
 
     return expandedString;
     }

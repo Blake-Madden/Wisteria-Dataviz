@@ -1548,16 +1548,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //-------------------------------------------
     wxString Canvas::ExpandWatermark(wxString label)
         {
-        label.Replace(L"@DATE@", wxDateTime::Now().FormatDate());
-        label.Replace(L"@TIME@", wxDateTime::Now().FormatTime());
-        label.Replace(L"@DATETIME@",
-                      wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
+        const wxDateTime now = wxDateTime::Now();
+        label.Replace(L"@DATE@", now.FormatDate());
+        label.Replace(L"@TIME@", now.FormatTime());
+        label.Replace(L"@DATETIME@", now.FormatISOCombined());
         label.Replace(L"@USER@", wxGetUserName(), true);
         // backward compatibility
-        label.Replace(L"[DATE]", wxDateTime::Now().FormatDate());
-        label.Replace(L"[TIME]", wxDateTime::Now().FormatTime());
-        label.Replace(L"[DATETIME]",
-                      wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
+        label.Replace(L"[DATE]", now.FormatDate());
+        label.Replace(L"[TIME]", now.FormatTime());
+        label.Replace(L"[DATETIME]", now.FormatISOCombined());
         return label;
         }
 
