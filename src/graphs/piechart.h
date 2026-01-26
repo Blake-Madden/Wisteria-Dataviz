@@ -1117,6 +1117,7 @@ namespace Wisteria::Graphs
         void AddPepperoni(const DrawAreas& drawAreas);
         // coffee styling
         void AddCoffeeInnerStains(const DrawAreas& drawAreas);
+        void AddPartialCoffeeRingStain(const DrawAreas& drawAreas);
 
         void DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed,
                                    const wxColour& color, double sizeScale);

@@ -1284,6 +1284,7 @@ namespace Wisteria::Graphs
         else if (GetPieStyle() == PieStyle::CoffeeRing)
             {
             AddCrustRing(drawAreas);
+            AddPartialCoffeeRingStain(drawAreas);
             AddCoffeeInnerStains(drawAreas);
             }
         }
@@ -1292,12 +1293,11 @@ namespace Wisteria::Graphs
     void PieChart::AddCoffeeInnerStains(const DrawAreas& drawAreas)
         {
         const wxRect pieRect = drawAreas.m_pieDrawArea;
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
 
         constexpr uint32_t coffeeSeed{ 0xC0FFEE77 };
-        constexpr int stainCount{ 3 };
-
-        // very light, translucent coffee pigment
-        const wxColour coffeeStainLight{ 210, 195, 170, 45 };
 
         const auto mixSeed = [](uint32_t x) -> uint32_t
         {
@@ -1309,9 +1309,389 @@ namespace Wisteria::Graphs
             return x;
         };
 
-        for (int i = 0; i < stainCount; ++i)
+        // color palette with varying tones and opacities
+        const std::array<wxColour, 5> stainColors{
+            wxColour{ 195, 175, 145, 55 }, // warm medium
+            wxColour{ 220, 200, 165, 35 }, // light golden
+            wxColour{ 175, 150, 115, 65 }, // darker brown
+            wxColour{ 210, 185, 150, 40 }, // soft tan
+            wxColour{ 185, 160, 125, 50 }  // earthy mid-tone
+        };
+
+        // large, prominent stains (2-3)
+        constexpr int largeStainCount{ 2 };
+        for (int i = 0; i < largeStainCount; ++i)
             {
-            DrawSingleCoffeeStain(pieRect, mixSeed(coffeeSeed + i), coffeeStainLight, 1.0);
+            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>(i * 1117));
+            const double sizeScale = 0.9 + 0.4 * HashToUnitInterval(seed ^ 0x4444U);
+            const wxColour& color = stainColors[seed % stainColors.size()];
+            DrawSingleCoffeeStain(pieRect, seed, color, sizeScale);
+            }
+
+        // medium stains scattered around (4-5)
+        constexpr int mediumStainCount{ 4 };
+        for (int i = 0; i < mediumStainCount; ++i)
+            {
+            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 10) * 733));
+            const double sizeScale = 0.5 + 0.35 * HashToUnitInterval(seed ^ 0x5555U);
+            const wxColour& color = stainColors[seed % stainColors.size()];
+            DrawSingleCoffeeStain(pieRect, seed, color, sizeScale);
+            }
+
+        // small speckles and drips (6-8)
+        constexpr int smallStainCount{ 7 };
+        for (int i = 0; i < smallStainCount; ++i)
+            {
+            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 30) * 557));
+            const double sizeScale = 0.15 + 0.25 * HashToUnitInterval(seed ^ 0x6666U);
+            // small stains get slightly more opaque colors
+            wxColour color = stainColors[seed % stainColors.size()];
+            color = wxColour(color.Red(), color.Green(), color.Blue(),
+                             std::min(255, static_cast<int>(color.Alpha() * 1.4)));
+            DrawSingleCoffeeStain(pieRect, seed, color, sizeScale);
+            }
+
+        // tiny droplets near center (5-6)
+        constexpr int tinyStainCount{ 5 };
+        constexpr int tinySamples{ 16 };
+        for (int i = 0; i < tinyStainCount; ++i)
+            {
+            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 50) * 337));
+
+            // place closer to center
+            const double distance = pieRadius * (0.1 + 0.35 * HashToUnitInterval(seed ^ 0x7777U));
+            const double angle = HashToUnitInterval(seed ^ 0x8888U) * 360.0;
+
+            const wxPoint dropCenter(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            const double dropRadius =
+                ScaleToScreenAndCanvas(4 + 8 * HashToUnitInterval(seed ^ 0x9999U));
+
+            std::vector<wxPoint> dropPoints;
+            dropPoints.reserve(tinySamples);
+            for (int s = 0; s < tinySamples; ++s)
+                {
+                const double sampleAngle = 360.0 * s / tinySamples;
+                const double wobble =
+                    0.7 + 0.5 * HashToUnitInterval(seed ^ static_cast<uint32_t>(s * 53));
+                dropPoints.emplace_back(
+                    wxRound(dropCenter.x + std::cos(geometry::degrees_to_radians(sampleAngle)) *
+                                               dropRadius * wobble),
+                    wxRound(dropCenter.y + std::sin(geometry::degrees_to_radians(sampleAngle)) *
+                                               dropRadius * wobble));
+                }
+
+            const wxColour dropColor{
+                180, 155, 120, static_cast<unsigned char>(50 + 30 * HashToUnitInterval(seed))
+            };
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                                .Brush(wxBrush(dropColor))
+                                                                .Pen(wxNullPen)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false),
+                                                            dropPoints));
+            }
+
+        // elongated drip streaks (2-3)
+        constexpr int streakCount{ 2 };
+        for (int i = 0; i < streakCount; ++i)
+            {
+            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 70) * 443));
+
+            const double distance = pieRadius * (0.3 + 0.4 * HashToUnitInterval(seed ^ 0xAAAAU));
+            const double angle = HashToUnitInterval(seed ^ 0xBBBBU) * 360.0;
+
+            const wxPoint streakCenter(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            // elongated ellipse
+            const double streakLength =
+                ScaleToScreenAndCanvas(25 + 35 * HashToUnitInterval(seed ^ 0xCCCCU));
+            const double streakWidth =
+                streakLength * (0.25 + 0.2 * HashToUnitInterval(seed ^ 0xDDDDU));
+            const double streakRotation = HashToUnitInterval(seed ^ 0xEEEEU) * 360.0;
+
+            constexpr int streakSamples{ 24 };
+            std::vector<wxPoint> streakPoints;
+            streakPoints.reserve(streakSamples);
+            for (int s = 0; s < streakSamples; ++s)
+                {
+                const double sampleAngle = 360.0 * s / streakSamples;
+                const double wobble =
+                    0.85 + 0.25 * HashToUnitInterval(seed ^ static_cast<uint32_t>(s * 71));
+
+                // ellipse point before rotation
+                const double ex =
+                    streakLength * std::cos(geometry::degrees_to_radians(sampleAngle)) * wobble;
+                const double ey =
+                    streakWidth * std::sin(geometry::degrees_to_radians(sampleAngle)) * wobble;
+
+                // rotate
+                const double rotRad = geometry::degrees_to_radians(streakRotation);
+                const double rx = ex * std::cos(rotRad) - ey * std::sin(rotRad);
+                const double ry = ex * std::sin(rotRad) + ey * std::cos(rotRad);
+
+                streakPoints.emplace_back(wxRound(streakCenter.x + rx),
+                                          wxRound(streakCenter.y + ry));
+                }
+
+            const wxColour streakColor{
+                190, 165, 130, static_cast<unsigned char>(35 + 25 * HashToUnitInterval(seed))
+            };
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                                .Brush(wxBrush(streakColor))
+                                                                .Pen(wxNullPen)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false),
+                                                            streakPoints));
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddPartialCoffeeRingStain(const DrawAreas& drawAreas)
+        {
+        // This draws a partial coffee ring stain, like a previous cup was placed
+        // slightly offset from the current one. The arc spans about 1/4 of the
+        // circumference and is offset to the right.
+
+        constexpr int sampleCount{ 60 };
+        constexpr double arcSpanDegrees{ 90.0 };
+        constexpr double arcStartDegrees{ 135.0 }; // upper-left quadrant
+        constexpr double arcEndDegrees{ arcStartDegrees + arcSpanDegrees };
+
+        // offset to the left and slightly up
+        const int xOffset = static_cast<int>(ScaleToScreenAndCanvas(-25));
+        const int yOffset = static_cast<int>(ScaleToScreenAndCanvas(-8));
+
+        const double baseRingThickness{ ScaleToScreenAndCanvas(6) };
+        const double ringInflation{ ScaleToScreenAndCanvas(8) };
+
+        constexpr uint32_t partialRingSeed{ 0xCAFE1234 };
+
+        // coffee stain color - more translucent than the main ring
+        const wxColour stainColor{ 180, 150, 110, 60 };
+        const wxColour stainColorFaded{ 180, 150, 110, 25 };
+
+        // create offset pie rect
+        wxRect offsetPieRect = drawAreas.m_pieDrawArea;
+        offsetPieRect.Offset(xOffset, yOffset);
+        offsetPieRect.Inflate(wxRound(ringInflation));
+
+        // taper factor: 1.0 at center, fading to 0 at ends
+        // Uses a smooth cosine-based falloff for organic appearance
+        const auto getTaperFactor = [](double t) -> double
+        {
+            // t is 0 at start, 1 at end of arc
+            // taper the first and last 20% of the arc
+            constexpr double taperZone{ 0.20 };
+            if (t < taperZone)
+                {
+                // fade in from 0 to 1 over the first taperZone
+                const double localT = t / taperZone;
+                return 0.5 * (1.0 - std::cos(localT * std::numbers::pi));
+                }
+            if (t > (1.0 - taperZone))
+                {
+                // fade out from 1 to 0 over the last taperZone
+                const double localT = (t - (1.0 - taperZone)) / taperZone;
+                return 0.5 * (1.0 + std::cos(localT * std::numbers::pi));
+                }
+            return 1.0;
+        };
+
+        // draw multiple overlapping passes for organic look
+        constexpr int layerCount{ 3 };
+        for (int layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+            {
+            const uint32_t layerSeed = partialRingSeed + static_cast<uint32_t>(layerIndex * 777);
+
+            // each layer has slight random offset for natural variation
+            const int layerXJitter = wxRound((HashToUnitInterval(layerSeed ^ 0xAAAAU) - 0.5) *
+                                             ScaleToScreenAndCanvas(3));
+            const int layerYJitter = wxRound((HashToUnitInterval(layerSeed ^ 0xBBBBU) - 0.5) *
+                                             ScaleToScreenAndCanvas(3));
+
+            wxRect layerRect = offsetPieRect;
+            layerRect.Offset(layerXJitter, layerYJitter);
+
+            const double layerThickness =
+                baseRingThickness * (0.7 + 0.6 * HashToUnitInterval(layerSeed ^ 0xCCCCU));
+
+            wxRect innerRect = layerRect;
+            innerRect.Inflate(-wxRound(layerThickness));
+
+            std::vector<wxPoint> outerPoints;
+            std::vector<wxPoint> innerPoints;
+            outerPoints.reserve(sampleCount + 1);
+            innerPoints.reserve(sampleCount + 1);
+
+            for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
+                {
+                const double t = safe_divide<double>(sampleIndex, sampleCount);
+                const double angleDegrees = arcStartDegrees + t * arcSpanDegrees;
+
+                // add some irregularity like the main crust ring
+                const double noise = RingIrregularity(angleDegrees, layerSeed);
+                const double irregularity = ScaleToScreenAndCanvas(2) * noise;
+
+                wxRect adjustedOuter = layerRect;
+                wxRect adjustedInner = innerRect;
+                adjustedOuter.Inflate(wxRound(irregularity));
+                adjustedInner.Inflate(wxRound(irregularity * 0.4));
+
+                // apply taper to the thickness at the ends
+                const double taper = getTaperFactor(t);
+
+                // when taper < 1, bring inner points closer to outer (reducing thickness)
+                if (taper < 1.0)
+                    {
+                    const wxPoint outerPt = GetEllipsePointFromRect(adjustedOuter, angleDegrees);
+                    const wxPoint innerPtFull =
+                        GetEllipsePointFromRect(adjustedInner, angleDegrees);
+
+                    // interpolate inner point toward outer based on taper
+                    const double invTaper = 1.0 - taper;
+                    const wxPoint innerPtTapered{
+                        wxRound(innerPtFull.x + (outerPt.x - innerPtFull.x) * invTaper),
+                        wxRound(innerPtFull.y + (outerPt.y - innerPtFull.y) * invTaper)
+                    };
+
+                    outerPoints.push_back(outerPt);
+                    innerPoints.push_back(innerPtTapered);
+                    }
+                else
+                    {
+                    outerPoints.push_back(GetEllipsePointFromRect(adjustedOuter, angleDegrees));
+                    innerPoints.push_back(GetEllipsePointFromRect(adjustedInner, angleDegrees));
+                    }
+                }
+
+            // build polygon from outer + reversed inner
+            std::vector<wxPoint> ringPolygon;
+            ringPolygon.reserve(outerPoints.size() + innerPoints.size());
+            ringPolygon.insert(ringPolygon.end(), outerPoints.begin(), outerPoints.end());
+            ringPolygon.insert(ringPolygon.end(), innerPoints.rbegin(), innerPoints.rend());
+
+            // use faded color for outer layers, stronger for inner
+            const wxColour layerColor = (layerIndex == 0) ? stainColor : stainColorFaded;
+
+            auto ringPoly =
+                std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                          .Brush(wxBrush(layerColor))
+                                                          .Pen(wxNullPen)
+                                                          .Scaling(GetScaling())
+                                                          .DPIScaling(GetDPIScaleFactor())
+                                                          .Selectable(false),
+                                                      ringPolygon);
+
+            AddObject(std::move(ringPoly));
+            }
+
+        // Second partial ring: outside right of the main ring
+        // This one is more subtle and covers a different arc segment
+        constexpr double arcSpanDegrees2{ 70.0 };
+        constexpr double arcStartDegrees2{ 320.0 }; // lower-right quadrant
+
+        // offset to the right and slightly down
+        const int xOffset2 = static_cast<int>(ScaleToScreenAndCanvas(30));
+        const int yOffset2 = static_cast<int>(ScaleToScreenAndCanvas(12));
+
+        const double baseRingThickness2{ ScaleToScreenAndCanvas(4) };
+        const double ringInflation2{ ScaleToScreenAndCanvas(12) }; // further out
+
+        constexpr uint32_t partialRingSeed2{ 0xBEAD5678 };
+
+        // even more translucent for subtlety
+        const wxColour stainColor2{ 165, 135, 95, 45 };
+        const wxColour stainColorFaded2{ 165, 135, 95, 18 };
+
+        wxRect offsetPieRect2 = drawAreas.m_pieDrawArea;
+        offsetPieRect2.Offset(xOffset2, yOffset2);
+        offsetPieRect2.Inflate(wxRound(ringInflation2));
+
+        constexpr int layerCount2{ 2 };
+        for (int layerIndex = 0; layerIndex < layerCount2; ++layerIndex)
+            {
+            const uint32_t layerSeed = partialRingSeed2 + static_cast<uint32_t>(layerIndex * 919);
+
+            const int layerXJitter = wxRound((HashToUnitInterval(layerSeed ^ 0xDDDDU) - 0.5) *
+                                             ScaleToScreenAndCanvas(2));
+            const int layerYJitter = wxRound((HashToUnitInterval(layerSeed ^ 0xEEEEU) - 0.5) *
+                                             ScaleToScreenAndCanvas(2));
+
+            wxRect layerRect = offsetPieRect2;
+            layerRect.Offset(layerXJitter, layerYJitter);
+
+            const double layerThickness =
+                baseRingThickness2 * (0.8 + 0.4 * HashToUnitInterval(layerSeed ^ 0xFFFFU));
+
+            wxRect innerRect = layerRect;
+            innerRect.Inflate(-wxRound(layerThickness));
+
+            std::vector<wxPoint> outerPoints;
+            std::vector<wxPoint> innerPoints;
+            outerPoints.reserve(sampleCount + 1);
+            innerPoints.reserve(sampleCount + 1);
+
+            for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
+                {
+                const double t = safe_divide<double>(sampleIndex, sampleCount);
+                const double angleDegrees = arcStartDegrees2 + t * arcSpanDegrees2;
+
+                const double noise = RingIrregularity(angleDegrees, layerSeed);
+                const double irregularity = ScaleToScreenAndCanvas(1.5) * noise;
+
+                wxRect adjustedOuter = layerRect;
+                wxRect adjustedInner = innerRect;
+                adjustedOuter.Inflate(wxRound(irregularity));
+                adjustedInner.Inflate(wxRound(irregularity * 0.3));
+
+                const double taper = getTaperFactor(t);
+
+                if (taper < 1.0)
+                    {
+                    const wxPoint outerPt = GetEllipsePointFromRect(adjustedOuter, angleDegrees);
+                    const wxPoint innerPtFull =
+                        GetEllipsePointFromRect(adjustedInner, angleDegrees);
+
+                    const double invTaper = 1.0 - taper;
+                    const wxPoint innerPtTapered{
+                        wxRound(innerPtFull.x + (outerPt.x - innerPtFull.x) * invTaper),
+                        wxRound(innerPtFull.y + (outerPt.y - innerPtFull.y) * invTaper)
+                    };
+
+                    outerPoints.push_back(outerPt);
+                    innerPoints.push_back(innerPtTapered);
+                    }
+                else
+                    {
+                    outerPoints.push_back(GetEllipsePointFromRect(adjustedOuter, angleDegrees));
+                    innerPoints.push_back(GetEllipsePointFromRect(adjustedInner, angleDegrees));
+                    }
+                }
+
+            std::vector<wxPoint> ringPolygon;
+            ringPolygon.reserve(outerPoints.size() + innerPoints.size());
+            ringPolygon.insert(ringPolygon.end(), outerPoints.begin(), outerPoints.end());
+            ringPolygon.insert(ringPolygon.end(), innerPoints.rbegin(), innerPoints.rend());
+
+            const wxColour layerColor = (layerIndex == 0) ? stainColor2 : stainColorFaded2;
+
+            auto ringPoly =
+                std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                          .Brush(wxBrush(layerColor))
+                                                          .Pen(wxNullPen)
+                                                          .Scaling(GetScaling())
+                                                          .DPIScaling(GetDPIScaleFactor())
+                                                          .Selectable(false),
+                                                      ringPolygon);
+
+            AddObject(std::move(ringPoly));
             }
         }
 

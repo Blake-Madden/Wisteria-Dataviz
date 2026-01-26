@@ -4,6 +4,7 @@
 
 - Compatibility change: watermarks are only rendered on print and save now
 - Improved layout of watermarks and tilted labels
+- Improve the appearance of pie chart's coffee stain style
 
 ## 1.0.7 Release
 
