@@ -75,7 +75,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
                                2);
 
         wxBitmap previewImg;
-        previewImg.CreateWithDIPSize(wxSize(canvas->ToDIP(dcWidth), canvas->ToDIP(dcHeight)),
+        previewImg.CreateWithDIPSize(wxSize{ canvas->ToDIP(dcWidth), canvas->ToDIP(dcHeight) },
                                      canvas->GetDPIScaleFactor());
         wxMemoryDC memDc(previewImg);
         memDc.Clear();
@@ -98,6 +98,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
             gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
             canvas->OnDraw(gcdc);
+            canvas->DrawWatermarkLabel(gcdc);
             }
         else
             {
@@ -107,6 +108,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
             gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
             canvas->OnDraw(gcdc);
+            canvas->DrawWatermarkLabel(gcdc);
             }
 #else
         wxGCDC gcdc(memDc);
@@ -115,6 +117,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
         canvas->OnDraw(gcdc);
+        canvas->DrawWatermarkLabel(gcdc);
 #endif
         dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
 

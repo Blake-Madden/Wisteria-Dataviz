@@ -100,7 +100,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         printOut->SetUp(dc);
         printOutForPrinting->SetUp(dc2);
 
-        // wxPreviewFrame make take ownership, don't use smart pointer here
+        // wxPreviewFrame may take ownership, don't use smart pointer here
         wxPrintPreview* preview =
             new wxPrintPreview(printOut, printOutForPrinting, &GetPrinterSettings());
         preview->GetPrintDialogData().SetPrintData(GetPrinterSettings());
@@ -314,6 +314,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         memDc.Clear();
         wxGCDC gcdc(memDc);
         OnDraw(gcdc);
+        DrawWatermarkLabel(gcdc);
         memDc.SelectObject(wxNullBitmap);
 
         UI::ImageExportOptions imgOptions;
@@ -376,6 +377,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             const wxEventBlocker blocker(this); // prevent resize event
             CalcAllSizes(svg);
             OnDraw(svg);
+            DrawWatermarkLabel(svg);
             // readjust the measurements to the canvas's DC
             wxGCDC gdc(this);
             CalcAllSizes(gdc);
@@ -403,15 +405,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             wxGCDC gcdc(context);
             OnDraw(gcdc);
+            DrawWatermarkLabel(gcdc);
             }
         else
             {
             wxGCDC gcdc(memDc);
             OnDraw(gcdc);
+            DrawWatermarkLabel(gcdc);
             }
 #else
         wxGCDC gcdc(memDc);
         OnDraw(gcdc);
+        DrawWatermarkLabel(gcdc);
 #endif
         // unlock the image from the DC
         memDc.SelectObject(wxNullBitmap);
@@ -1515,21 +1520,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         DrawWatermarkLogo(dc);
 
-            // draw label
-            {
-            const wxDCFontChanger fc{ dc, m_watermarkFont };
-            DrawWatermarkLabel(
-                dc, GetCanvasRect(dc),
-                Watermark{ GetWatermark(),
-                           GetWatermarkColor().IsOpaque() ?
-                               Colors::ColorContrast::ChangeOpacity(
-                                   GetWatermarkColor(),
-                                   std::min<uint8_t>(50, Settings::GetTranslucencyValue())) :
-                               GetWatermarkColor(),
-                           WatermarkDirection::Diagonal },
-                GetScaling());
-            }
-
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             m_debugInfo.Trim();
@@ -1569,6 +1559,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         watermark.Replace(L"[DATETIME]",
                           wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
         return watermark;
+        }
+
+    //-------------------------------------------
+    void Canvas::DrawWatermarkLabel(wxDC & dc) const
+        {
+        if (!GetWatermark().empty())
+            {
+            const wxDCFontChanger fc{ dc, m_watermarkFont };
+            DrawWatermarkLabel(
+                dc, GetCanvasRect(dc),
+                Watermark{ GetWatermark(),
+                           GetWatermarkColor().IsOpaque() ?
+                               Colors::ColorContrast::ChangeOpacity(
+                                   GetWatermarkColor(),
+                                   std::min<uint8_t>(50, Settings::GetTranslucencyValue())) :
+                               GetWatermarkColor(),
+                           WatermarkDirection::Diagonal },
+                GetScaling());
+            }
         }
 
     //-------------------------------------------
