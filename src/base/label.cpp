@@ -1774,6 +1774,24 @@ namespace Wisteria::GraphItems
         const wxCoord spaceBetweenLines =
             (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
+        // For tilted multiline text, pre-adjust the starting position so that
+        // the visual center of the text block (not the first line) is centered.
+        // Each subsequent line shifts by lineAdvance * sin(angle), so we offset
+        // the start by half the total shift in the opposite direction.
+        if (m_tiltAngle.has_value() && m_tiltAngle.value() != 0 && GetLineCount() > 1)
+            {
+            const double angleRad = geometry::degrees_to_radians(m_tiltAngle.value());
+            // Estimate line advance using font height plus spacing
+            wxCoord estLineX{ 0 }, estLineY{ 0 };
+            dc.GetTextExtent(L"Aq", &estLineX, &estLineY);
+            const auto lineAdvance = estLineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+            const auto totalHorizontalShift =
+                (GetLineCount() - 1) * lineAdvance * std::sin(angleRad);
+            // Shift starting position by half the total shift in opposite direction
+            pt.x -= totalHorizontalShift / 2;
+            pt.y += (GetLineCount() - 1) * lineAdvance * (1 - std::cos(angleRad)) / 2;
+            }
+
         pt.y += CalcPageVerticalOffset() + ScaleToScreenAndCanvas(GetTopPadding()) +
                 // if drawing outline, then calculate that also in case the pen width is large
                 ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
@@ -1988,15 +2006,23 @@ namespace Wisteria::GraphItems
                                                                     dc.GetTextForeground());
             if (m_tiltAngle.has_value() && m_tiltAngle.value() != 0)
                 {
-                dc.DrawRotatedText(token, pt.x + offset + currentLineOffset, pt.y + yOffset,
+                const double angleRad = geometry::degrees_to_radians(m_tiltAngle.value());
+                const auto totalOffset = offset + currentLineOffset;
+                dc.DrawRotatedText(token, pt.x + totalOffset * std::cos(angleRad),
+                                   pt.y + yOffset - totalOffset * std::sin(angleRad),
                                    m_tiltAngle.value());
+                // move perpendicular to tilt direction for next line
+                const auto lineAdvance =
+                    lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                pt.x += lineAdvance * std::sin(angleRad);
+                pt.y += lineAdvance * std::cos(angleRad);
                 }
             else
                 {
                 dc.DrawText(token, pt.x + offset + currentLineOffset, pt.y + yOffset);
+                // move down for next line
+                pt.y += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
                 }
-            // move down for next line
-            pt.y += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             ++currentLineNumber;
             }
         }
