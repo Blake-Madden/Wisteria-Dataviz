@@ -1,16 +1,21 @@
 # Releases
 
+## 1.0.8 Release
+
+- Compatibility change: watermarks are only rendered on print and save now
+- Improved layout of watermarks and tilted labels
+
 ## 1.0.7 Release
 
-- Add styling options to pie charts to make them look like:
+- Added styling options to pie charts to make them look like:
     - Clock faces
     - Cheese pizzas
     - Pepperoni pizzas
     - Coffee ring
-- Fix pie chart `UseColorLabels()` function
-- Add feature to waffle chart to override the number of rows in the waffle
+- Fixed pie chart `UseColorLabels()` function
+- Added feature to waffle chart to override the number of rows in the waffle
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
-- Fix **Save** option not working in canvas context menu
+- Fixed **Save** option not working in canvas context menu
 
 ## 1.0.6 Release
 
@@ -19,21 +24,21 @@
 ## 1.0.5 Release
 
 - New graph type:  Waffle Chart
-- Add new shapes:
+- Added new shapes:
   - Curvy road
   - Pumpkin
   - Jack-o'-lantern
-- Add new formulas to JSON syntax:
+- Added new formulas to JSON syntax:
   - `ADD`
   - `MEDIAN`
 
 ## 1.0.4 Release
 
-- Add support for tied games to Win/Loss Sparkline
-- Make legend for Win/Loss Sparkline more dynamic
-- Improve layout of images embedded in reports
+- Added support for tied games to Win/Loss Sparkline
+- Made legend for Win/Loss Sparkline more dynamic
+- Improved layout of images embedded in reports
   - Larger images will now be sized properly to the width of the canvas, while maintaining aspect ratio
-- Improve layout of empty spacers in reports (will now consume zero size)
+- Improved layout of empty spacers in reports (will now consume zero size)
 - Expanded JSON syntax manual
 - JSON syntax manual will now be automatically build via *CMake* (if *Quarto* is installed)
 
