@@ -19,6 +19,11 @@
 @public
     NSMutableAttributedString* m_pageHeader;
     NSMutableAttributedString* m_pageFooter;
+
+    NSString* m_watermarkText;
+    CGFloat   m_watermarkOpacity;
+    CGFloat   m_watermarkAngle;
+    NSColor* m_watermarkColor;
 }
 
 - (NSAttributedString*)pageHeader;
@@ -31,10 +36,15 @@
 - (instancetype)initWithFrame:(NSRect)frameRect
 {
     self = [super initWithFrame:frameRect];
-    if (self)
+    if (self != nil)
         {
         m_pageHeader = nil;
         m_pageFooter = nil;
+
+        m_watermarkText = nil;
+        m_watermarkOpacity = 0.5;
+        m_watermarkAngle = -45.0;
+        m_watermarkColor = nil;
         }
     return self;
 }
@@ -43,6 +53,8 @@
 {
     [m_pageHeader release];
     [m_pageFooter release];
+    [m_watermarkColor release];
+    [m_watermarkText release];
     [super dealloc];
 }
 
@@ -55,7 +67,9 @@
 - (NSAttributedString*)pageHeader
 {
     if (m_pageHeader == nil)
+        {
         return nil;
+        }
 
     NSMutableString* formattedHeader =
         [[[NSMutableString alloc] initWithString:[m_pageHeader string]] autorelease];
@@ -107,7 +121,9 @@
 - (NSAttributedString*)pageFooter
 {
     if (m_pageFooter == nil)
+        {
         return nil;
+        }
 
     NSMutableString* formattedFooter =
         [[[NSMutableString alloc] initWithString:[m_pageFooter string]] autorelease];
@@ -155,6 +171,47 @@
     return attributedFormattedFooter;
 }
 
+- (void)drawRect:(NSRect)rect
+{
+    // draw the text content first
+    [super drawRect:rect];
+
+    // then draw watermark on top (only if we have watermark text)
+    if (m_watermarkText == nil || [m_watermarkText length] == 0)
+        {
+        return;
+        }
+
+    NSGraphicsContext* ctx = [NSGraphicsContext currentContext];
+    [ctx saveGraphicsState];
+
+    CGContextRef cg = [ctx CGContext];
+
+    // center watermark in the visible rect
+    NSPoint center = NSMakePoint(NSMidX(rect), NSMidY(rect));
+
+    CGContextTranslateCTM(cg, center.x, center.y);
+    CGContextRotateCTM(cg, m_watermarkAngle * M_PI / 180.0);
+    CGContextTranslateCTM(cg, -center.x, -center.y);
+
+    NSColor* baseColor = (m_watermarkColor != nil) ? m_watermarkColor : [NSColor blackColor];
+    NSDictionary* attrs = @{
+    NSFontAttributeName :
+        [NSFont boldSystemFontOfSize:72],
+    NSForegroundColorAttributeName :
+        [baseColor colorWithAlphaComponent:m_watermarkOpacity]
+    };
+
+    NSSize textSize = [m_watermarkText sizeWithAttributes:attrs];
+    NSPoint drawPoint = NSMakePoint(
+        center.x - (textSize.width / 2.0),
+        center.y - (textSize.height / 2.0));
+
+    [m_watermarkText drawAtPoint:drawPoint withAttributes:attrs];
+
+    [ctx restoreGraphicsState];
+}
+
 @end
 
 namespace Wisteria::UI
@@ -164,21 +221,22 @@ namespace Wisteria::UI
                        const wxSize& paperSize,
                        int orientation,
                        const wxString& header,
-                       const wxString& footer)
+                       const wxString& footer,
+                       const Canvas::Watermark& watermark)
         {
         @autoreleasepool
             {
             // set up print info
-            NSPrintInfo* sharedInfo = [NSPrintInfo sharedPrintInfo];
-            NSMutableDictionary* sharedDict = [sharedInfo dictionary];
-            NSMutableDictionary* printInfoDict =
+            NSPrintInfo* const sharedInfo = [NSPrintInfo sharedPrintInfo];
+            NSMutableDictionary* const sharedDict = [sharedInfo dictionary];
+            NSMutableDictionary* const printInfoDict =
                 [NSMutableDictionary dictionaryWithDictionary:sharedDict];
 
             // enable header and footer functionality
             [printInfoDict setValue:[NSNumber numberWithBool:YES]
                              forKey:NSPrintHeaderAndFooter];
 
-            NSPrintInfo* printInfo =
+            NSPrintInfo* const printInfo =
                 [[[NSPrintInfo alloc] initWithDictionary:printInfoDict] autorelease];
 
             // set margins (36 points = 0.5 inch)
@@ -188,7 +246,7 @@ namespace Wisteria::UI
             [printInfo setRightMargin:36];
 
             // set paper size and orientation
-            NSSize nsPaperSize = {
+            const NSSize nsPaperSize = {
                 static_cast<CGFloat>(paperSize.GetWidth()),
                 static_cast<CGFloat>(paperSize.GetHeight())
             };
@@ -200,7 +258,7 @@ namespace Wisteria::UI
             [printInfo setVerticallyCentered:NO];
 
             // create print view
-            TextViewForPrinting* printView =
+            TextViewForPrinting* const printView =
                 [[[TextViewForPrinting alloc]
                     initWithFrame:NSMakeRect(0.0, 0.0, nsPaperSize.width, nsPaperSize.height)]
                     autorelease];
@@ -228,17 +286,38 @@ namespace Wisteria::UI
                 printView->m_pageFooter = nil;
                 }
 
+            if (watermark.m_color.IsOk())
+                {
+                printView->m_watermarkColor =
+                    [[NSColor colorWithCalibratedRed:
+                        watermark.m_color.Red()   / 255.0
+                        green: watermark.m_color.Green() / 255.0
+                        blue:  watermark.m_color.Blue()  / 255.0
+                        alpha: watermark.m_color.Alpha() / 255.0] retain];
+                }
+
+            printView->m_watermarkText = [wxCFStringRef(watermark.m_label).AsNSString() retain];
+            printView->m_watermarkOpacity = 0.5;
+            if (watermark.m_direction == Canvas::WatermarkDirection::Diagonal)
+                {
+                printView->m_watermarkAngle = -45.0;
+                }
+            else
+                {
+                printView->m_watermarkAngle = 0;
+                }
+
             // convert RTF string to NSData and load into the text view
             // RTF should be 7-bit ASCII
             const wxScopedCharBuffer rtfBuffer = rtfContent.ToUTF8();
-            NSData* rtfData = [NSData dataWithBytes:rtfBuffer.data()
+            NSData* const rtfData = [NSData dataWithBytes:rtfBuffer.data()
                                              length:rtfBuffer.length()];
 
-            NSRange printViewRange = NSMakeRange(0, [[printView textStorage] length]);
+            const NSRange printViewRange = NSMakeRange(0, [[printView textStorage] length]);
             [printView replaceCharactersInRange:printViewRange withRTF:rtfData];
 
             // run the print operation
-            NSPrintOperation* printOp =
+            NSPrintOperation* const printOp =
                 [NSPrintOperation printOperationWithView:printView printInfo:printInfo];
             [printOp runOperation];
             // printView is autoreleased; its dealloc will clean up m_pageHeader and m_pageFooter

@@ -32,7 +32,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
     @note macOS's text control has its own printing mechanism that we
         patch into wxWidgets and use, so we don't have a dedicated printout
         interface for that platform.*/
-#if defined(__WXMSW__)
+#ifdef __WXMSW__
     class wxFormattedTextCtrlPrintout final : public wxPrintout
         {
       public:
@@ -223,7 +223,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                     }
                 drawingHeight -= (topMargin + bottomMargin);
 
-                const auto mearsureAndDrawText = [this, charStart, renderPage](wxDC& dc)
+                const auto measureAndDrawText = [this, charStart, renderPage](wxDC& dc)
                 {
                     // https://devblogs.microsoft.com/oldnewthing/20070112-02/?p=28423
                     FORMATRANGE fr{ 0 };
@@ -321,7 +321,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                 wxGCDC gcdc(memDc);
 
                 // will just calculate pagination if not rendering
-                const auto retval = mearsureAndDrawText(gcdc);
+                const auto retval = measureAndDrawText(gcdc);
                 if (renderPage)
                     {
                     drawHeadersAndFooters(gcdc);
@@ -381,7 +381,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                                             GetFormattedTextRtf(false));
 #endif
 
-#if defined(__WXMSW__)
+#ifdef __WXMSW__
         wxFormattedTextCtrlPrintout* printOut =
             new wxFormattedTextCtrlPrintout(m_printWindow, GetTitleName());
 
@@ -561,7 +561,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         macOSPrintRTF(
             rtfContent,
             wxSize(static_cast<int>(paperWidthInPoints), static_cast<int>(paperHeightInPoints)),
-            static_cast<int>(m_printData->GetOrientation()), fullHeader, fullFooter);
+            static_cast<int>(m_printData->GetOrientation()), fullHeader, fullFooter,
+            GetWatermark());
 #endif
         }
 
@@ -572,7 +573,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         {
 // note that previewing isn't done on macOS or GTK+ as it has its own native previewing
 // built into its print dialog
-#if defined(__WXMSW__)
+#ifdef __WXMSW__
         if (m_printWindow == nullptr)
             {
             m_printWindow = new FormattedTextCtrl(this);
