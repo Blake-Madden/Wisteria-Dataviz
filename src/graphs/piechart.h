@@ -179,6 +179,7 @@ namespace Wisteria::Graphs
             | Styled Pie Charts | |
             | :-------------- | :-------------------------------- |
             | @image html clock.svg width=90% | @image html pizza.svg width=90% |
+            | @image html coffee.svg width=90% | |
 
         @note The pie slices will be ordered alphabetically and drawn counter-clockwise, starting
             at 3 o'clock.\n

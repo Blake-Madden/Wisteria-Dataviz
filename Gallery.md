@@ -40,6 +40,7 @@ Basic
 | Styled Pie Charts | |
 | :-------------- | :-------------------------------- |
 | ![](docs/images/clock.svg) | ![](docs/images/pizza.svg) |
+| ![](docs/images/coffee.svg) |  |
 
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
