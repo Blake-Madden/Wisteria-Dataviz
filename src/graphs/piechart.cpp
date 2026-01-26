@@ -1294,9 +1294,6 @@ namespace Wisteria::Graphs
         {
         const wxRect pieRect = drawAreas.m_pieDrawArea;
         const wxRect fullRect = drawAreas.m_fullDrawArea;
-        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
-                             pieRect.GetY() + pieRect.GetHeight() / 2);
-        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
 
         // expand the scatter area beyond the pie but within the full draw area
         wxRect scatterRect = pieRect;
@@ -1359,7 +1356,6 @@ namespace Wisteria::Graphs
         constexpr int sampleCount{ 60 };
         constexpr double arcSpanDegrees{ 90.0 };
         constexpr double arcStartDegrees{ 135.0 }; // upper-left quadrant
-        constexpr double arcEndDegrees{ arcStartDegrees + arcSpanDegrees };
 
         // offset to the left and slightly up
         const int xOffset = static_cast<int>(ScaleToScreenAndCanvas(-25));
