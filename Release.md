@@ -6,7 +6,7 @@
 - `@USER@` placeholder now supported in watermarks
 - `@DATETIME@` placeholder  now supported in print headers and footers
 - Improved layout of watermarks and tilted labels
-- Improve the appearance of pie chart's coffee stain style
+- Improved the appearance of pie chart's coffee stain style
 
 ## 1.0.7 Release
 
