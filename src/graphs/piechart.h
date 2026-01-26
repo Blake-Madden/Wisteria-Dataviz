@@ -1120,7 +1120,9 @@ namespace Wisteria::Graphs
         void AddPartialCoffeeRingStain(const DrawAreas& drawAreas);
 
         void DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed,
-                                   const wxColour& color, double sizeScale);
+                                   const wxColour& color, double sizeScale,
+                                   double minDistancePct, double maxDistancePct,
+                                   double angleOffset);
 
         /// @returns Mozzarella.
         [[nodiscard]]

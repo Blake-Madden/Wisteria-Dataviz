@@ -1293,9 +1293,15 @@ namespace Wisteria::Graphs
     void PieChart::AddCoffeeInnerStains(const DrawAreas& drawAreas)
         {
         const wxRect pieRect = drawAreas.m_pieDrawArea;
+        const wxRect fullRect = drawAreas.m_fullDrawArea;
         const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
                              pieRect.GetY() + pieRect.GetHeight() / 2);
         const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+
+        // expand the scatter area beyond the pie but within the full draw area
+        wxRect scatterRect = pieRect;
+        scatterRect.Inflate(wxRound((fullRect.GetWidth() - pieRect.GetWidth()) * 0.4),
+                            wxRound((fullRect.GetHeight() - pieRect.GetHeight()) * 0.4));
 
         constexpr uint32_t coffeeSeed{ 0xC0FFEE77 };
 
@@ -1310,145 +1316,36 @@ namespace Wisteria::Graphs
         };
 
         // color palette with varying tones and opacities
-        const std::array<wxColour, 5> stainColors{
-            wxColour{ 195, 175, 145, 55 }, // warm medium
-            wxColour{ 220, 200, 165, 35 }, // light golden
-            wxColour{ 175, 150, 115, 65 }, // darker brown
-            wxColour{ 210, 185, 150, 40 }, // soft tan
+        const std::array<wxColour, 4> stainColors{
+            wxColour{ 195, 175, 145, 50 }, // warm medium
+            wxColour{ 175, 150, 115, 55 }, // darker brown
+            wxColour{ 210, 185, 150, 45 }, // soft tan
             wxColour{ 185, 160, 125, 50 }  // earthy mid-tone
         };
 
-        // large, prominent stains (2-3)
-        constexpr int largeStainCount{ 2 };
-        for (int i = 0; i < largeStainCount; ++i)
+            // 1 large stain on the left, pushed halfway outside the ring
             {
-            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>(i * 1117));
-            const double sizeScale = 0.9 + 0.4 * HashToUnitInterval(seed ^ 0x4444U);
+            const uint32_t seed = mixSeed(coffeeSeed + 1117U);
+            const double sizeScale = 1.0 + 0.3 * HashToUnitInterval(seed ^ 0x4444U);
             const wxColour& color = stainColors[seed % stainColors.size()];
-            DrawSingleCoffeeStain(pieRect, seed, color, sizeScale);
+            // 180 degrees = left side, high distance to push outside ring
+            DrawSingleCoffeeStain(scatterRect, seed, color, sizeScale, 0.9, 1.05, 180.0);
             }
 
-        // medium stains scattered around (4-5)
-        constexpr int mediumStainCount{ 4 };
-        for (int i = 0; i < mediumStainCount; ++i)
-            {
-            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 10) * 733));
-            const double sizeScale = 0.5 + 0.35 * HashToUnitInterval(seed ^ 0x5555U);
-            const wxColour& color = stainColors[seed % stainColors.size()];
-            DrawSingleCoffeeStain(pieRect, seed, color, sizeScale);
-            }
-
-        // small speckles and drips (6-8)
-        constexpr int smallStainCount{ 7 };
+        // 6 small stains scattered around (avoiding the left where the large one is)
+        constexpr int smallStainCount{ 6 };
         for (int i = 0; i < smallStainCount; ++i)
             {
             const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 30) * 557));
-            const double sizeScale = 0.15 + 0.25 * HashToUnitInterval(seed ^ 0x6666U);
-            // small stains get slightly more opaque colors
+            const double sizeScale = 0.2 + 0.25 * HashToUnitInterval(seed ^ 0x6666U);
             wxColour color = stainColors[seed % stainColors.size()];
+            // small stains slightly more opaque
             color = wxColour(color.Red(), color.Green(), color.Blue(),
-                             std::min(255, static_cast<int>(color.Alpha() * 1.4)));
-            DrawSingleCoffeeStain(pieRect, seed, color, sizeScale);
-            }
-
-        // tiny droplets near center (5-6)
-        constexpr int tinyStainCount{ 5 };
-        constexpr int tinySamples{ 16 };
-        for (int i = 0; i < tinyStainCount; ++i)
-            {
-            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 50) * 337));
-
-            // place closer to center
-            const double distance = pieRadius * (0.1 + 0.35 * HashToUnitInterval(seed ^ 0x7777U));
-            const double angle = HashToUnitInterval(seed ^ 0x8888U) * 360.0;
-
-            const wxPoint dropCenter(
-                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
-                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
-
-            const double dropRadius =
-                ScaleToScreenAndCanvas(4 + 8 * HashToUnitInterval(seed ^ 0x9999U));
-
-            std::vector<wxPoint> dropPoints;
-            dropPoints.reserve(tinySamples);
-            for (int s = 0; s < tinySamples; ++s)
-                {
-                const double sampleAngle = 360.0 * s / tinySamples;
-                const double wobble =
-                    0.7 + 0.5 * HashToUnitInterval(seed ^ static_cast<uint32_t>(s * 53));
-                dropPoints.emplace_back(
-                    wxRound(dropCenter.x + std::cos(geometry::degrees_to_radians(sampleAngle)) *
-                                               dropRadius * wobble),
-                    wxRound(dropCenter.y + std::sin(geometry::degrees_to_radians(sampleAngle)) *
-                                               dropRadius * wobble));
-                }
-
-            const wxColour dropColor{
-                180, 155, 120, static_cast<unsigned char>(50 + 30 * HashToUnitInterval(seed))
-            };
-            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
-                                                                .Brush(wxBrush(dropColor))
-                                                                .Pen(wxNullPen)
-                                                                .Scaling(GetScaling())
-                                                                .DPIScaling(GetDPIScaleFactor())
-                                                                .Selectable(false),
-                                                            dropPoints));
-            }
-
-        // elongated drip streaks (2-3)
-        constexpr int streakCount{ 2 };
-        for (int i = 0; i < streakCount; ++i)
-            {
-            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 70) * 443));
-
-            const double distance = pieRadius * (0.3 + 0.4 * HashToUnitInterval(seed ^ 0xAAAAU));
-            const double angle = HashToUnitInterval(seed ^ 0xBBBBU) * 360.0;
-
-            const wxPoint streakCenter(
-                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
-                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
-
-            // elongated ellipse
-            const double streakLength =
-                ScaleToScreenAndCanvas(25 + 35 * HashToUnitInterval(seed ^ 0xCCCCU));
-            const double streakWidth =
-                streakLength * (0.25 + 0.2 * HashToUnitInterval(seed ^ 0xDDDDU));
-            const double streakRotation = HashToUnitInterval(seed ^ 0xEEEEU) * 360.0;
-
-            constexpr int streakSamples{ 24 };
-            std::vector<wxPoint> streakPoints;
-            streakPoints.reserve(streakSamples);
-            for (int s = 0; s < streakSamples; ++s)
-                {
-                const double sampleAngle = 360.0 * s / streakSamples;
-                const double wobble =
-                    0.85 + 0.25 * HashToUnitInterval(seed ^ static_cast<uint32_t>(s * 71));
-
-                // ellipse point before rotation
-                const double ex =
-                    streakLength * std::cos(geometry::degrees_to_radians(sampleAngle)) * wobble;
-                const double ey =
-                    streakWidth * std::sin(geometry::degrees_to_radians(sampleAngle)) * wobble;
-
-                // rotate
-                const double rotRad = geometry::degrees_to_radians(streakRotation);
-                const double rx = ex * std::cos(rotRad) - ey * std::sin(rotRad);
-                const double ry = ex * std::sin(rotRad) + ey * std::cos(rotRad);
-
-                streakPoints.emplace_back(wxRound(streakCenter.x + rx),
-                                          wxRound(streakCenter.y + ry));
-                }
-
-            const wxColour streakColor{
-                190, 165, 130, static_cast<unsigned char>(35 + 25 * HashToUnitInterval(seed))
-            };
-            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
-                                                                .Brush(wxBrush(streakColor))
-                                                                .Pen(wxNullPen)
-                                                                .Scaling(GetScaling())
-                                                                .DPIScaling(GetDPIScaleFactor())
-                                                                .Selectable(false),
-                                                            streakPoints));
+                             std::min(255, static_cast<int>(color.Alpha() * 1.3)));
+            // spread around the right side and top/bottom (avoiding left where large stain is)
+            // angles: ~280, 335, 30, 85, 140, 195 (wrapping around, mostly right side)
+            const double angleOffset = i * 55.0 + 280.0;
+            DrawSingleCoffeeStain(scatterRect, seed, color, sizeScale, 0.2, 0.9, angleOffset);
             }
         }
 
@@ -1697,9 +1594,12 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void PieChart::DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed,
-                                         const wxColour& color, double sizeScale)
+                                         const wxColour& color, double sizeScale,
+                                         double minDistancePct, double maxDistancePct,
+                                         double angleOffset)
         {
-        constexpr int stainSamples{ 36 };
+        // more samples for smoother curves
+        constexpr int stainSamples{ 48 };
 
         const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
                              pieRect.GetY() + pieRect.GetHeight() / 2);
@@ -1709,9 +1609,12 @@ namespace Wisteria::Graphs
         const double minRadius = ScaleToScreenAndCanvas(32);
         const double maxRadius = ScaleToScreenAndCanvas(85);
 
-        const double distance = pieRadius * (0.6 + 0.6 * HashToUnitInterval(seed ^ 0x1111U));
+        const double distanceRange = maxDistancePct - minDistancePct;
+        const double distance =
+            pieRadius * (minDistancePct + distanceRange * HashToUnitInterval(seed ^ 0x1111U));
 
-        const double angle = HashToUnitInterval(seed ^ 0x2222U) * 360.0;
+        const double angle =
+            std::fmod(HashToUnitInterval(seed ^ 0x2222U) * 360.0 + angleOffset, 360.0);
 
         const wxPoint stainCenter(
             wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
@@ -1720,6 +1623,14 @@ namespace Wisteria::Graphs
         const double baseRadius =
             (minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius)) * sizeScale;
 
+        // use low-frequency sine waves for smooth organic wobble instead of per-sample random
+        const double wavePhase1 = HashToUnitInterval(seed ^ 0x4444U) * 360.0;
+        const double wavePhase2 = HashToUnitInterval(seed ^ 0x5555U) * 360.0;
+        const double wavePhase3 = HashToUnitInterval(seed ^ 0x6666U) * 360.0;
+        const double waveAmp1 = 0.06 + 0.06 * HashToUnitInterval(seed ^ 0x7777U);
+        const double waveAmp2 = 0.03 + 0.04 * HashToUnitInterval(seed ^ 0x8888U);
+        const double waveAmp3 = 0.02 + 0.02 * HashToUnitInterval(seed ^ 0x9999U);
+
         std::vector<wxPoint> points;
         points.reserve(stainSamples);
 
@@ -1727,11 +1638,16 @@ namespace Wisteria::Graphs
             {
             const double angleDeg = 360.0 * sample / stainSamples;
 
+            // smooth wobble using layered sine waves (like simplex noise)
             const double wobble =
-                0.80 + 0.30 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 137));
+                1.0 +
+                waveAmp1 * std::sin(geometry::degrees_to_radians(angleDeg * 2.0 + wavePhase1)) +
+                waveAmp2 * std::sin(geometry::degrees_to_radians(angleDeg * 3.0 + wavePhase2)) +
+                waveAmp3 * std::sin(geometry::degrees_to_radians(angleDeg * 5.0 + wavePhase3));
 
+            // reduced gravity effect to avoid overly elliptical shapes
             const double gravity =
-                1.0 + 0.25 * std::sin(geometry::degrees_to_radians(angleDeg - angle));
+                1.0 + 0.08 * std::sin(geometry::degrees_to_radians(angleDeg - angle));
 
             const double radius = baseRadius * wobble * gravity;
 
