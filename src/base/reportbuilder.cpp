@@ -147,24 +147,26 @@ namespace Wisteria
 
                     // watermark (overrides report-level watermark)
                     const auto watermarkPageProperty = page->GetProperty(L"watermark");
+                    Canvas::Watermark watermark{};
                     if (watermarkPageProperty->IsOk())
                         {
-                        canvas->SetWatermark(ExpandConstants(
-                            watermarkPageProperty->GetProperty(L"label")->AsString()));
-                        canvas->SetWatermarkColor(
-                            ConvertColor(watermarkPageProperty->GetProperty(L"color")));
+                        watermark.m_label =
+                            watermarkPageProperty->GetProperty(L"label")->AsString();
+                        watermark.m_color =
+                            ConvertColor(watermarkPageProperty->GetProperty(L"color"));
                         }
                     else
                         {
                         if (!reportWatermark.empty())
                             {
-                            canvas->SetWatermark(reportWatermark);
+                            watermark.m_label = reportWatermark;
                             }
                         if (reportWatermarkColor.IsOk())
                             {
-                            canvas->SetWatermarkColor(reportWatermarkColor);
+                            watermark.m_color = reportWatermarkColor;
                             }
                         }
+                    canvas->SetWatermark(watermark);
 
                     // background color
                     const auto bgColor = ConvertColor(page->GetProperty(L"background-color"));

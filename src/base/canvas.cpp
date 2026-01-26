@@ -1546,37 +1546,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
-    wxString Canvas::GetWatermark() const
+    wxString Canvas::ExpandWatermark(wxString label)
         {
-        wxString watermark = m_watermark;
-        watermark.Replace(L"@DATE@", wxDateTime::Now().FormatDate());
-        watermark.Replace(L"@TIME@", wxDateTime::Now().FormatTime());
-        watermark.Replace(L"@DATETIME@",
-                          wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
+        label.Replace(L"@DATE@", wxDateTime::Now().FormatDate());
+        label.Replace(L"@TIME@", wxDateTime::Now().FormatTime());
+        label.Replace(L"@DATETIME@",
+                      wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
         // backward compatibility
-        watermark.Replace(L"[DATE]", wxDateTime::Now().FormatDate());
-        watermark.Replace(L"[TIME]", wxDateTime::Now().FormatTime());
-        watermark.Replace(L"[DATETIME]",
-                          wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
-        return watermark;
+        label.Replace(L"[DATE]", wxDateTime::Now().FormatDate());
+        label.Replace(L"[TIME]", wxDateTime::Now().FormatTime());
+        label.Replace(L"[DATETIME]",
+                      wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
+        return label;
         }
 
     //-------------------------------------------
     void Canvas::DrawWatermarkLabel(wxDC & dc) const
         {
-        if (!GetWatermark().empty())
+        if (!GetWatermark().m_label.empty())
             {
             const wxDCFontChanger fc{ dc, m_watermarkFont };
-            DrawWatermarkLabel(
-                dc, GetCanvasRect(dc),
-                Watermark{ GetWatermark(),
-                           GetWatermarkColor().IsOpaque() ?
-                               Colors::ColorContrast::ChangeOpacity(
-                                   GetWatermarkColor(),
-                                   std::min<uint8_t>(50, Settings::GetTranslucencyValue())) :
-                               GetWatermarkColor(),
-                           WatermarkDirection::Diagonal },
-                GetScaling());
+            Watermark watermark = GetWatermark();
+            watermark.m_label = ExpandWatermark(watermark.m_label);
+            DrawWatermarkLabel(dc, GetCanvasRect(dc), watermark, GetScaling());
             }
         }
 
@@ -1610,7 +1602,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
-    void Canvas::DrawWatermarkLabel(wxDC & dc, wxRect drawingRect, const Watermark& watermark,
+    void Canvas::DrawWatermarkLabel(wxDC & dc, wxRect drawingRect, Watermark watermark,
                                     double scaling)
         {
         if (drawingRect.GetWidth() == 0 || drawingRect.GetHeight() == 0)
@@ -1622,6 +1614,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         if (!watermark.m_label.empty())
             {
+            watermark.m_label = ExpandWatermark(watermark.m_label);
             if (watermark.m_direction == WatermarkDirection::Diagonal)
                 {
                 const double angle = std::atan(safe_divide<double>(drawingRect.GetHeight(),

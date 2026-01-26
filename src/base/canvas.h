@@ -169,6 +169,24 @@ namespace Wisteria
         /// @private
         Canvas& operator=(const Canvas&) = delete;
 
+        /// @brief Direction of label drawn across a canvas.
+        enum class WatermarkDirection
+            {
+            Horizontal, /*!< Draw text horizontally.*/
+            Diagonal    /*!< Draw text diagonally.*/
+            };
+
+        /// @brief Information for drawing a watermark across a canvas.
+        struct Watermark
+            {
+            /** @brief The text.*/
+            wxString m_label;
+            /** @brief The text color.*/
+            wxColour m_color{ wxColour(255, 0, 0, wxALPHA_OPAQUE* math_constants::half) };
+            /// @brief The direction that the text is drawn.
+            WatermarkDirection m_direction{ WatermarkDirection::Diagonal };
+            };
+
         /// @private
         void OnDraw(wxDC& dc) final;
 
@@ -233,26 +251,15 @@ namespace Wisteria
         /// @brief Overlays translucent text diagonally across the canvas.
         /// @param watermark The text to draw as the watermark (e.g., a copyright notice).
         /// @sa SetWatermarkColor().
-        void SetWatermark(const wxString& watermark) { m_watermark = watermark; }
+        void SetWatermark(const Watermark& watermark) { m_watermark = watermark; }
 
         /// @returns The watermark label shown across the canvas.
         /// @note The tags `@DATETIME@`, `@DATE@`, and `@TIME@` are expanded to their literal
         ///     values at time of rendering.
         [[nodiscard]]
-        wxString GetWatermark() const;
-
-        /// @brief Sets the color of the watermark.
-        /// @param color The color of the watermark.
-        /// @note Transparency of this color will be used. If opaque, then the default
-        ///     transparency will be applied at runtime.
-        /// @sa SetWatermark().
-        void SetWatermarkColor(const wxColour& color) { m_watermarkColor = color; }
-
-        /// @returns The color of the watermark.
-        [[nodiscard]]
-        wxColour GetWatermarkColor() const
+        Watermark GetWatermark() const
             {
-            return m_watermarkColor;
+            return m_watermark;
             }
 
         /// @brief Overlays a translucent image on bottom corner of the canvas.
@@ -723,31 +730,13 @@ namespace Wisteria
         ///     inserted into a parent (e.g., splitter window).
         void ResetResizeDelay() { m_blockResize = false; }
 
-        /// @brief Direction of label drawn across a canvas.
-        enum class WatermarkDirection
-            {
-            Horizontal, /*!< Draw text horizontally.*/
-            Diagonal    /*!< Draw text diagonally.*/
-            };
-
-        /// @brief Information for drawing a watermark across a canvas.
-        struct Watermark
-            {
-            /** @brief The text.*/
-            wxString m_label;
-            /** @brief The text color.*/
-            wxColour m_color{ wxColour(255, 0, 0, 125) };
-            /// @brief The direction that the text is drawn.
-            WatermarkDirection m_direction{ WatermarkDirection::Diagonal };
-            };
-
         /** @brief Draws a watermark label across a canvas.
             @param dc The device context to draw on.
             @param drawingRect The rect within the DC to draw within.
             @param watermark The label to draw across the canvas.
             @param scaling The scaling (e.g., zoom level) of what is being drawn on.
             @note This is only rendered when printing and saving.*/
-        static void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, const Watermark& watermark,
+        static void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, Watermark watermark,
                                        double scaling);
         /** @brief Draws the canvas's watermark label with its current settings.
             @param dc The device context to draw on.
@@ -807,6 +796,9 @@ namespace Wisteria
         std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(size_t row, size_t column) const;
 
       private:
+        [[nodiscard]]
+        static wxString ExpandWatermark(wxString label);
+
         /// @brief Divides the width of a row into columns, taking into account items
         ///     whose width should not be more than its content (at default scaling).
         /// @param row The row to calculate.
@@ -966,8 +958,7 @@ namespace Wisteria
         std::vector<std::shared_ptr<GraphItems::GraphItemBase>> m_freeFloatingObjects;
 
         // watermarks and logos
-        wxString m_watermark;
-        wxColour m_watermarkColor{ 255, 0, 0 };
+        Watermark m_watermark;
         wxFont m_watermarkFont;
         wxBitmapBundle m_watermarkImg;
         wxSize m_watermarkImgSizeDIPs{ 100, 100 };
