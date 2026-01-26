@@ -240,8 +240,8 @@ Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
       m_originalMinHeight((canvas != nullptr) ? canvas->GetCanvasMinHeightDIPs() : 0),
       m_originalSize((canvas != nullptr) ? canvas->GetSize() : wxSize{})
     {
-    assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
-    assert(printOut && L"Invalid printout passed to PrintFitToPageChanger!");
+    wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
+    wxASSERT_MSG(printOut, L"Invalid printout passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr && printOut != nullptr && m_canvas->IsFittingToPageWhenPrinting())
         {
         int w{ 0 }, h{ 0 };

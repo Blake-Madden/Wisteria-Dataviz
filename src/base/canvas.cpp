@@ -1552,6 +1552,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         label.Replace(L"@TIME@", wxDateTime::Now().FormatTime());
         label.Replace(L"@DATETIME@",
                       wxDateTime::Now().FormatDate() + L" " + wxDateTime::Now().FormatTime());
+        label.Replace(L"@USER@", wxGetUserName(), true);
         // backward compatibility
         label.Replace(L"[DATE]", wxDateTime::Now().FormatDate());
         label.Replace(L"[TIME]", wxDateTime::Now().FormatTime());
@@ -1589,8 +1590,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             img.SetBestSize(wxSize(ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetWidth(), dc),
                                    ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetHeight(), dc)));
             // Make logo image mildly translucent.
-            // Clamp translucency to valid 0–255 range (logo is twice as opaque as system
-            // translucency)
+            // Clamp translucency to valid 0–255 range
+            // (logo is twice as opaque as system translucency)
             img.SetOpacity(static_cast<uint8_t>(
                 std::min<int>(Settings::GetTranslucencyValue() * 2, wxALPHA_OPAQUE)));
 

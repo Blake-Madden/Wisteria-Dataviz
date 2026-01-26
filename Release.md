@@ -3,6 +3,7 @@
 ## 1.0.8 Release
 
 - Compatibility change: watermarks are only rendered on print and save now
+- `@USER@` placeholder now supported in watermark
 - Improved layout of watermarks and tilted labels
 - Improve the appearance of pie chart's coffee stain style
 
@@ -12,7 +13,7 @@
     - Clock faces
     - Cheese pizzas
     - Pepperoni pizzas
-    - Coffee ring
+    - Coffee rings
 - Fixed pie chart `UseColorLabels()` function
 - Added feature to waffle chart to override the number of rows in the waffle
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
