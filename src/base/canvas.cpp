@@ -1646,10 +1646,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     (boundingBox.GetHeight() *
                      std::abs(std::cos(geometry::degrees_to_radians(angle))));
 
-                waterLabel.SetAnchorPoint(
-                    { (drawingRect.GetWidth() / 2) - static_cast<wxCoord>(widthOfWatermark / 2),
-                      (drawingRect.GetHeight() / 2) -
-                          static_cast<wxCoord>(heightOfWatermark / 2) });
+                waterLabel.SetAnchorPoint({ drawingRect.x + (drawingRect.GetWidth() / 2) -
+                                                static_cast<wxCoord>(widthOfWatermark / 2),
+                                            drawingRect.y + (drawingRect.GetHeight() / 2) -
+                                                static_cast<wxCoord>(heightOfWatermark / 2) });
 
                 waterLabel.Tilt(std::negate{}(angle));
                 waterLabel.Draw(dc);
