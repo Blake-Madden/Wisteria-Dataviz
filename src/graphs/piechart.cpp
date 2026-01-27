@@ -1300,7 +1300,7 @@ namespace Wisteria::Graphs
         scatterRect.Inflate(wxRound((fullRect.GetWidth() - pieRect.GetWidth()) * 0.4),
                             wxRound((fullRect.GetHeight() - pieRect.GetHeight()) * 0.4));
 
-        constexpr uint32_t coffeeSeed{ 0xC0FFEE77 };
+        constexpr uint32_t COFFEE_SEED{ 0xC0FFEE77 };
 
         const auto mixSeed = [](uint32_t x) -> uint32_t
         {
@@ -1322,7 +1322,7 @@ namespace Wisteria::Graphs
 
             // 1 large stain on the left, pushed halfway outside the ring
             {
-            const uint32_t seed = mixSeed(coffeeSeed + 1117U);
+            const uint32_t seed = mixSeed(COFFEE_SEED + 1117U);
             const double sizeScale = 1.0 + 0.3 * HashToUnitInterval(seed ^ 0x4444U);
             const wxColour& color = stainColors[seed % stainColors.size()];
             // 180 degrees = left side, high distance to push outside ring
@@ -1333,7 +1333,7 @@ namespace Wisteria::Graphs
         constexpr int smallStainCount{ 6 };
         for (int i = 0; i < smallStainCount; ++i)
             {
-            const uint32_t seed = mixSeed(coffeeSeed + static_cast<uint32_t>((i + 30) * 557));
+            const uint32_t seed = mixSeed(COFFEE_SEED + static_cast<uint32_t>((i + 30) * 557));
             const double sizeScale = 0.2 + 0.25 * HashToUnitInterval(seed ^ 0x6666U);
             wxColour color = stainColors[seed % stainColors.size()];
             // small stains slightly more opaque
@@ -1425,8 +1425,8 @@ namespace Wisteria::Graphs
 
             for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
                 {
-                const double t = safe_divide<double>(sampleIndex, sampleCount);
-                const double angleDegrees = arcStartDegrees + t * arcSpanDegrees;
+                const auto tap = safe_divide<double>(sampleIndex, sampleCount);
+                const double angleDegrees = arcStartDegrees + tap * arcSpanDegrees;
 
                 // add some irregularity like the main crust ring
                 const double noise = RingIrregularity(angleDegrees, layerSeed);
@@ -1438,7 +1438,7 @@ namespace Wisteria::Graphs
                 adjustedInner.Inflate(wxRound(irregularity * 0.4));
 
                 // apply taper to the thickness at the ends
-                const double taper = getTaperFactor(t);
+                const double taper = getTaperFactor(tap);
 
                 // when taper < 1, bring inner points closer to outer (reducing thickness)
                 if (taper < 1.0)
@@ -1533,8 +1533,8 @@ namespace Wisteria::Graphs
 
             for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
                 {
-                const double t = safe_divide<double>(sampleIndex, sampleCount);
-                const double angleDegrees = arcStartDegrees2 + t * arcSpanDegrees2;
+                const auto tap = safe_divide<double>(sampleIndex, sampleCount);
+                const double angleDegrees = arcStartDegrees2 + tap * arcSpanDegrees2;
 
                 const double noise = RingIrregularity(angleDegrees, layerSeed);
                 const double irregularity = ScaleToScreenAndCanvas(1.5) * noise;
@@ -1544,7 +1544,7 @@ namespace Wisteria::Graphs
                 adjustedOuter.Inflate(wxRound(irregularity));
                 adjustedInner.Inflate(wxRound(irregularity * 0.3));
 
-                const double taper = getTaperFactor(t);
+                const double taper = getTaperFactor(tap);
 
                 if (taper < 1.0)
                     {
@@ -1595,7 +1595,7 @@ namespace Wisteria::Graphs
                                          double angleOffset)
         {
         // more samples for smoother curves
-        constexpr int stainSamples{ 48 };
+        constexpr int STAIN_SAMPLES{ 48 };
 
         const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
                              pieRect.GetY() + pieRect.GetHeight() / 2);
@@ -1628,11 +1628,11 @@ namespace Wisteria::Graphs
         const double waveAmp3 = 0.02 + 0.02 * HashToUnitInterval(seed ^ 0x9999U);
 
         std::vector<wxPoint> points;
-        points.reserve(stainSamples);
+        points.reserve(STAIN_SAMPLES);
 
-        for (int sample = 0; sample < stainSamples; ++sample)
+        for (int sample = 0; sample < STAIN_SAMPLES; ++sample)
             {
-            const double angleDeg = 360.0 * sample / stainSamples;
+            const double angleDeg = 360.0 * safe_divide<double>(sample, STAIN_SAMPLES);
 
             // smooth wobble using layered sine waves (like simplex noise)
             const double wobble =
@@ -1746,8 +1746,8 @@ namespace Wisteria::Graphs
         {
         const wxRect pieRect = drawAreas.m_pieDrawArea;
 
-        constexpr int targetPepperoniCount{ 32 };
-        constexpr uint32_t pepperoniSeed{ 0xBEEF1234 };
+        constexpr int TARGET_PEPPERONI_COUNT{ 32 };
+        constexpr uint32_t PEPPERONI_SEED{ 0xBEEF1234 };
 
         const double minRadius = ScaleToScreenAndCanvas(14);
         const double maxRadius = ScaleToScreenAndCanvas(22);
@@ -1765,13 +1765,13 @@ namespace Wisteria::Graphs
             (std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0) - crustMargin;
 
         std::vector<wxPoint> acceptedCenters;
-        acceptedCenters.reserve(targetPepperoniCount);
+        acceptedCenters.reserve(TARGET_PEPPERONI_COUNT);
 
-        const double angleStepDegrees = safe_divide<double>(360.0, targetPepperoniCount);
+        const auto angleStepDegrees = safe_divide<double>(360.0, TARGET_PEPPERONI_COUNT);
 
-        for (int slotIndex = 0; slotIndex < targetPepperoniCount; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < TARGET_PEPPERONI_COUNT; ++slotIndex)
             {
-            const uint32_t seed = pepperoniSeed + static_cast<uint32_t>(slotIndex * 911);
+            const uint32_t seed = PEPPERONI_SEED + static_cast<uint32_t>(slotIndex * 911);
 
             // stratified angle with jitter
             const double baseAngleDegrees = slotIndex * angleStepDegrees;
@@ -1795,7 +1795,7 @@ namespace Wisteria::Graphs
         // pepperoni discs
         for (size_t index = 0; index < acceptedCenters.size(); ++index)
             {
-            const uint32_t seed = pepperoniSeed + static_cast<uint32_t>(index * 733);
+            const uint32_t seed = PEPPERONI_SEED + static_cast<uint32_t>(index * 733);
 
             const double radius =
                 minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius);
@@ -1807,7 +1807,7 @@ namespace Wisteria::Graphs
 
             for (int sample = 0; sample < discSamples; ++sample)
                 {
-                const double angleDegrees = safe_divide<double>(360.0 * sample, discSamples);
+                const auto angleDegrees = safe_divide<double>(360.0 * sample, discSamples);
 
                 const double wobble =
                     0.95 + 0.1 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 97));
@@ -1844,11 +1844,11 @@ namespace Wisteria::Graphs
 
             AddObject(std::move(pepperoni));
 
-            constexpr int blisterCount{ 3 };
-            constexpr int blisterSamples{ 16 };
+            constexpr int BLISTER_COUNT{ 3 };
+            constexpr int BLISTER_SAMPLES{ 16 };
 
             // pepperoni browned blisters
-            for (int blisterIndex = 0; blisterIndex < blisterCount; ++blisterIndex)
+            for (int blisterIndex = 0; blisterIndex < BLISTER_COUNT; ++blisterIndex)
                 {
                 const uint32_t blisterSeed =
                     seed ^ static_cast<uint32_t>(0x9000 + blisterIndex * 131);
@@ -1856,7 +1856,7 @@ namespace Wisteria::Graphs
                 const double blisterRadius =
                     radius * (0.18 + 0.12 * HashToUnitInterval(blisterSeed ^ 0xAAAAU));
 
-                const double angleStepInDegrees = safe_divide<double>(360.0, blisterCount);
+                const auto angleStepInDegrees = safe_divide<double>(360.0, BLISTER_COUNT);
 
                 const double baseAngleDegrees = blisterIndex * angleStepInDegrees;
 
@@ -1869,7 +1869,7 @@ namespace Wisteria::Graphs
                 const double blisterBandMax{ 0.70 };
 
                 const double bandStep =
-                    safe_divide<double>(blisterBandMax - blisterBandMin, blisterCount);
+                    safe_divide<double>(blisterBandMax - blisterBandMin, BLISTER_COUNT);
 
                 const double bandCenter = blisterBandMin + (blisterIndex + 0.5) * bandStep;
 
@@ -1886,11 +1886,11 @@ namespace Wisteria::Graphs
                             std::sin(geometry::degrees_to_radians(angleDegrees)) * offsetDistance));
 
                 std::vector<wxPoint> blisterPoints;
-                blisterPoints.reserve(blisterSamples);
+                blisterPoints.reserve(BLISTER_SAMPLES);
 
-                for (int sample = 0; sample < blisterSamples; ++sample)
+                for (int sample = 0; sample < BLISTER_SAMPLES; ++sample)
                     {
-                    const double sampleAngle = safe_divide<double>(360.0 * sample, blisterSamples);
+                    const auto sampleAngle = safe_divide<double>(360.0 * sample, BLISTER_SAMPLES);
 
                     const double wobble =
                         0.8 +
@@ -1916,10 +1916,10 @@ namespace Wisteria::Graphs
                 }
 
             const wxColour oreganoColor(80, 95, 60, 110);
-            constexpr int seasoningCount{ 20 };
+            constexpr int SEASONING_COUNT{ 20 };
             const double seasoningRadius = ScaleToScreenAndCanvas(1.3);
             // Oregano specks
-            for (int seasoningIndex = 0; seasoningIndex < seasoningCount; ++seasoningIndex)
+            for (int seasoningIndex = 0; seasoningIndex < SEASONING_COUNT; ++seasoningIndex)
                 {
                 const uint32_t spiceSeed =
                     seed ^ static_cast<uint32_t>(0x7000 + seasoningIndex * 47);
@@ -1934,8 +1934,9 @@ namespace Wisteria::Graphs
                     wxRound(acceptedCenters[index].y +
                             std::sin(geometry::degrees_to_radians(angleDegrees)) * distance));
 
-                wxRect spiceRect(spiceCenter.x - seasoningRadius, spiceCenter.y - seasoningRadius,
-                                 seasoningRadius * 2, seasoningRadius * 2);
+                const wxRect spiceRect(spiceCenter.x - seasoningRadius,
+                                       spiceCenter.y - seasoningRadius, seasoningRadius * 2,
+                                       seasoningRadius * 2);
 
                 std::array<wxPoint, 8> spicePoints;
                 for (int sample = 0; std::cmp_less(sample, spicePoints.size()); ++sample)
@@ -1960,7 +1961,7 @@ namespace Wisteria::Graphs
         {
         const wxRect pieRect = drawAreas.m_pieDrawArea;
 
-        constexpr int targetSpotCount{ 14 };
+        constexpr int TARGET_SPOT_COUNT{ 14 };
 
         const double minRadius = ScaleToScreenAndCanvas(18);
         const double maxRadius = ScaleToScreenAndCanvas(36);
@@ -1970,7 +1971,7 @@ namespace Wisteria::Graphs
         const wxColour toastedSpotColor(215, 185, 120, 80);
         const wxColour toastedHaloColor(235, 215, 160, 60);
 
-        constexpr uint32_t spotSeed{ 0xBEEFCAFE };
+        constexpr uint32_t SPOT_SEED{ 0xBEEFCAFE };
 
         const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
                              pieRect.GetY() + pieRect.GetHeight() / 2);
@@ -1983,13 +1984,13 @@ namespace Wisteria::Graphs
         const double maxDistanceEffective = maxDistance * 0.98;
 
         std::vector<wxPoint> acceptedCenters;
-        acceptedCenters.reserve(targetSpotCount);
+        acceptedCenters.reserve(TARGET_SPOT_COUNT);
 
-        const double angleStep = 360.0 / static_cast<double>(targetSpotCount);
+        const double angleStep = 360.0 / static_cast<double>(TARGET_SPOT_COUNT);
 
-        for (int slotIndex = 0; slotIndex < targetSpotCount; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < TARGET_SPOT_COUNT; ++slotIndex)
             {
-            const uint32_t seed = spotSeed + static_cast<uint32_t>(slotIndex * 733);
+            const uint32_t seed = SPOT_SEED + static_cast<uint32_t>(slotIndex * 733);
 
             const double baseAngle = slotIndex * angleStep;
             const double jitter = (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStep * 0.6;
@@ -2034,22 +2035,22 @@ namespace Wisteria::Graphs
             }
 
         // irregular toasted blobs
-        constexpr int blobSamples{ 40 };
+        constexpr int BLOB_SAMPLES{ 40 };
 
         for (size_t index = 0; index < acceptedCenters.size(); ++index)
             {
-            const uint32_t seed = spotSeed + static_cast<uint32_t>(index * 911);
+            const uint32_t seed = SPOT_SEED + static_cast<uint32_t>(index * 911);
 
             const double baseRadius =
                 minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius);
 
                 {
                 std::vector<wxPoint> haloPoints;
-                haloPoints.reserve(blobSamples);
+                haloPoints.reserve(BLOB_SAMPLES);
 
-                for (int sample = 0; sample < blobSamples; ++sample)
+                for (int sample = 0; sample < BLOB_SAMPLES; ++sample)
                     {
-                    const double angleDeg = (360.0 * sample) / static_cast<double>(blobSamples);
+                    const double angleDeg = (360.0 * sample) / static_cast<double>(BLOB_SAMPLES);
 
                     const double wobble =
                         0.85 + 0.4 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 311));
@@ -2077,11 +2078,11 @@ namespace Wisteria::Graphs
 
                 {
                 std::vector<wxPoint> blobPoints;
-                blobPoints.reserve(blobSamples);
+                blobPoints.reserve(BLOB_SAMPLES);
 
-                for (int sample = 0; sample < blobSamples; ++sample)
+                for (int sample = 0; sample < BLOB_SAMPLES; ++sample)
                     {
-                    const double angleDeg = safe_divide<double>(360.0 * sample, blobSamples);
+                    const auto angleDeg = safe_divide<double>(360.0 * sample, BLOB_SAMPLES);
 
                     // gentle radial wobble
                     const double wobble =
@@ -2118,21 +2119,21 @@ namespace Wisteria::Graphs
     void PieChart::AddCrustRing(const DrawAreas& drawAreas)
         {
         // resolution around the circle
-        constexpr int sampleCount{ 180 };
+        constexpr int SAMPLE_COUNT{ 180 };
         const double baseCrustThickness{ ScaleToScreenAndCanvas(10) };
         const double baseCrustInflation{ ScaleToScreenAndCanvas(6) };
         const double irregularityAmplitude{ ScaleToScreenAndCanvas(3) };
-        constexpr int crustLayerCount{ 4 };
+        constexpr int CRUST_LAYER_COUNT{ 4 };
 
-        constexpr uint32_t crustSeed{ 0xC0FFEE };
+        constexpr uint32_t CRUST_SEED{ 0xC0FFEE };
 
         const wxColour doughColor{ 232, 205, 160, 220 };
         const wxColour toastedColor{ 176, 120, 70, 90 };
 
         // layered crust passes
-        for (int crustLayerIndex = 0; crustLayerIndex < crustLayerCount; ++crustLayerIndex)
+        for (int crustLayerIndex = 0; crustLayerIndex < CRUST_LAYER_COUNT; ++crustLayerIndex)
             {
-            const uint32_t layerSeed = crustSeed + static_cast<uint32_t>(crustLayerIndex * 1337);
+            const uint32_t layerSeed = CRUST_SEED + static_cast<uint32_t>(crustLayerIndex * 1337);
 
             const int horizontalOffset =
                 wxRound((HashToUnitInterval(layerSeed ^ 0xA5A5U) - math_constants::half) *
@@ -2158,12 +2159,12 @@ namespace Wisteria::Graphs
             std::vector<wxPoint> outerRingPoints;
             std::vector<wxPoint> innerRingPoints;
 
-            outerRingPoints.reserve(sampleCount);
-            innerRingPoints.reserve(sampleCount);
+            outerRingPoints.reserve(SAMPLE_COUNT);
+            innerRingPoints.reserve(SAMPLE_COUNT);
 
-            for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
+            for (int sampleIndex = 0; sampleIndex <= SAMPLE_COUNT; ++sampleIndex)
                 {
-                const double angleDegrees = safe_divide<double>(360.0 * sampleIndex, sampleCount);
+                const auto angleDegrees = safe_divide<double>(360.0 * sampleIndex, SAMPLE_COUNT);
 
                 const double doughNoise = RingIrregularity(angleDegrees, layerSeed);
 

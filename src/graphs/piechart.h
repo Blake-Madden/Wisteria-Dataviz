@@ -1129,14 +1129,14 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static wxColour GetCheeseColor()
             {
-            return wxColour(255, 235, 190);
+            return { 255, 235, 190 };
             }
         
         /// @returns A light coffee stain.
         [[nodiscard]]
         static wxColour GetCoffeeStainColor()
             {
-            return wxColour{ 235, 224, 200, 150 };;
+            return { 235, 224, 200, 150 };
             }
 
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
