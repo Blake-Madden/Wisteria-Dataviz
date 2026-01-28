@@ -1302,7 +1302,7 @@ namespace Wisteria::Graphs
 
         constexpr uint32_t COFFEE_SEED{ 0xC0FFEE77 };
 
-        const auto mixSeed = [](uint32_t x) -> uint32_t
+        constexpr auto mixSeed = [](uint32_t x) -> uint32_t
         {
             x ^= x >> 16;
             x *= 0x7feb352d;
@@ -1322,16 +1322,16 @@ namespace Wisteria::Graphs
 
             // 1 large stain on the left, pushed halfway outside the ring
             {
-            const uint32_t seed = mixSeed(COFFEE_SEED + 1117U);
-            const double sizeScale = 1.0 + 0.3 * HashToUnitInterval(seed ^ 0x4444U);
-            const wxColour& color = stainColors[seed % stainColors.size()];
+            constexpr uint32_t SEED = mixSeed(COFFEE_SEED + 1117U);
+            const double sizeScale = 1.0 + 0.3 * HashToUnitInterval(SEED ^ 0x4444U);
+            const wxColour& color = stainColors[SEED % stainColors.size()];
             // 180 degrees = left side, high distance to push outside ring
-            DrawSingleCoffeeStain(scatterRect, seed, color, sizeScale, 0.9, 1.05, 180.0);
+            DrawSingleCoffeeStain(scatterRect, SEED, color, sizeScale, 0.9, 1.05, 180.0);
             }
 
         // 6 small stains scattered around (avoiding the left where the large one is)
-        constexpr int smallStainCount{ 6 };
-        for (int i = 0; i < smallStainCount; ++i)
+        constexpr int SMALL_STAIN_COUNT{ 6 };
+        for (int i = 0; i < SMALL_STAIN_COUNT; ++i)
             {
             const uint32_t seed = mixSeed(COFFEE_SEED + static_cast<uint32_t>((i + 30) * 557));
             const double sizeScale = 0.2 + 0.25 * HashToUnitInterval(seed ^ 0x6666U);
@@ -1353,9 +1353,9 @@ namespace Wisteria::Graphs
         // slightly offset from the current one. The arc spans about 1/4 of the
         // circumference and is offset to the right.
 
-        constexpr int sampleCount{ 60 };
-        constexpr double arcSpanDegrees{ 90.0 };
-        constexpr double arcStartDegrees{ 135.0 }; // upper-left quadrant
+        constexpr int SAMPLE_COUNT{ 60 };
+        constexpr double ARC_SPAN_DEGREES{ 90.0 };
+        constexpr double ARC_START_DEGREES{ 135.0 }; // upper-left quadrant
 
         // offset to the left and slightly up
         const int xOffset = static_cast<int>(ScaleToScreenAndCanvas(-25));
@@ -1364,7 +1364,7 @@ namespace Wisteria::Graphs
         const double baseRingThickness{ ScaleToScreenAndCanvas(6) };
         const double ringInflation{ ScaleToScreenAndCanvas(8) };
 
-        constexpr uint32_t partialRingSeed{ 0xCAFE1234 };
+        constexpr uint32_t PARTIAL_RING_SEED{ 0xCAFE1234 };
 
         // coffee stain color - more translucent than the main ring
         const wxColour stainColor{ 180, 150, 110, 60 };
@@ -1381,27 +1381,27 @@ namespace Wisteria::Graphs
         {
             // t is 0 at start, 1 at end of arc
             // taper the first and last 20% of the arc
-            constexpr double taperZone{ 0.20 };
-            if (t < taperZone)
+            constexpr double TAPER_ZONE{ 0.20 };
+            if (t < TAPER_ZONE)
                 {
                 // fade in from 0 to 1 over the first taperZone
-                const double localT = t / taperZone;
+                const double localT = safe_divide<double>(t, TAPER_ZONE);
                 return 0.5 * (1.0 - std::cos(localT * std::numbers::pi));
                 }
-            if (t > (1.0 - taperZone))
+            if (t > (1.0 - TAPER_ZONE))
                 {
                 // fade out from 1 to 0 over the last taperZone
-                const double localT = (t - (1.0 - taperZone)) / taperZone;
+                const double localT = safe_divide<double>(t - (1.0 - TAPER_ZONE), TAPER_ZONE);
                 return 0.5 * (1.0 + std::cos(localT * std::numbers::pi));
                 }
             return 1.0;
         };
 
         // draw multiple overlapping passes for organic look
-        constexpr int layerCount{ 3 };
-        for (int layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+        constexpr int LAYER_COUNT{ 3 };
+        for (int layerIndex = 0; layerIndex < LAYER_COUNT; ++layerIndex)
             {
-            const uint32_t layerSeed = partialRingSeed + static_cast<uint32_t>(layerIndex * 777);
+            const uint32_t layerSeed = PARTIAL_RING_SEED + static_cast<uint32_t>(layerIndex * 777);
 
             // each layer has slight random offset for natural variation
             const int layerXJitter = wxRound((HashToUnitInterval(layerSeed ^ 0xAAAAU) - 0.5) *
@@ -1420,13 +1420,13 @@ namespace Wisteria::Graphs
 
             std::vector<wxPoint> outerPoints;
             std::vector<wxPoint> innerPoints;
-            outerPoints.reserve(sampleCount + 1);
-            innerPoints.reserve(sampleCount + 1);
+            outerPoints.reserve(SAMPLE_COUNT + 1);
+            innerPoints.reserve(SAMPLE_COUNT + 1);
 
-            for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
+            for (int sampleIndex = 0; sampleIndex <= SAMPLE_COUNT; ++sampleIndex)
                 {
-                const auto tap = safe_divide<double>(sampleIndex, sampleCount);
-                const double angleDegrees = arcStartDegrees + tap * arcSpanDegrees;
+                const auto tap = safe_divide<double>(sampleIndex, SAMPLE_COUNT);
+                const double angleDegrees = ARC_START_DEGREES + tap * ARC_SPAN_DEGREES;
 
                 // add some irregularity like the main crust ring
                 const double noise = RingIrregularity(angleDegrees, layerSeed);
@@ -1487,8 +1487,8 @@ namespace Wisteria::Graphs
 
         // Second partial ring: outside right of the main ring
         // This one is more subtle and covers a different arc segment
-        constexpr double arcSpanDegrees2{ 70.0 };
-        constexpr double arcStartDegrees2{ 320.0 }; // lower-right quadrant
+        constexpr double ARC_SPAN_DEGREES2{ 70.0 };
+        constexpr double ARC_START_DEGREES2{ 320.0 }; // lower-right quadrant
 
         // offset to the right and slightly down
         const int xOffset2 = static_cast<int>(ScaleToScreenAndCanvas(30));
@@ -1497,7 +1497,7 @@ namespace Wisteria::Graphs
         const double baseRingThickness2{ ScaleToScreenAndCanvas(4) };
         const double ringInflation2{ ScaleToScreenAndCanvas(12) }; // further out
 
-        constexpr uint32_t partialRingSeed2{ 0xBEAD5678 };
+        constexpr uint32_t PARTIAL_RINGSEED2{ 0xBEAD5678 };
 
         // even more translucent for subtlety
         const wxColour stainColor2{ 165, 135, 95, 45 };
@@ -1507,10 +1507,10 @@ namespace Wisteria::Graphs
         offsetPieRect2.Offset(xOffset2, yOffset2);
         offsetPieRect2.Inflate(wxRound(ringInflation2));
 
-        constexpr int layerCount2{ 2 };
-        for (int layerIndex = 0; layerIndex < layerCount2; ++layerIndex)
+        constexpr int LAYER_COUNT2{ 2 };
+        for (int layerIndex = 0; layerIndex < LAYER_COUNT2; ++layerIndex)
             {
-            const uint32_t layerSeed = partialRingSeed2 + static_cast<uint32_t>(layerIndex * 919);
+            const uint32_t layerSeed = PARTIAL_RINGSEED2 + static_cast<uint32_t>(layerIndex * 919);
 
             const int layerXJitter = wxRound((HashToUnitInterval(layerSeed ^ 0xDDDDU) - 0.5) *
                                              ScaleToScreenAndCanvas(2));
@@ -1528,13 +1528,13 @@ namespace Wisteria::Graphs
 
             std::vector<wxPoint> outerPoints;
             std::vector<wxPoint> innerPoints;
-            outerPoints.reserve(sampleCount + 1);
-            innerPoints.reserve(sampleCount + 1);
+            outerPoints.reserve(SAMPLE_COUNT + 1);
+            innerPoints.reserve(SAMPLE_COUNT + 1);
 
-            for (int sampleIndex = 0; sampleIndex <= sampleCount; ++sampleIndex)
+            for (int sampleIndex = 0; sampleIndex <= SAMPLE_COUNT; ++sampleIndex)
                 {
-                const auto tap = safe_divide<double>(sampleIndex, sampleCount);
-                const double angleDegrees = arcStartDegrees2 + tap * arcSpanDegrees2;
+                const auto tap = safe_divide<double>(sampleIndex, SAMPLE_COUNT);
+                const double angleDegrees = ARC_START_DEGREES2 + tap * ARC_SPAN_DEGREES2;
 
                 const double noise = RingIrregularity(angleDegrees, layerSeed);
                 const double irregularity = ScaleToScreenAndCanvas(1.5) * noise;
@@ -2058,12 +2058,10 @@ namespace Wisteria::Graphs
                     const double radius = baseRadius * 1.35 * wobble;
 
                     haloPoints.emplace_back(
-                        static_cast<int>(
-                            std::round(acceptedCenters[index].x +
-                                       std::cos(geometry::degrees_to_radians(angleDeg)) * radius)),
-                        static_cast<int>(
-                            std::round(acceptedCenters[index].y +
-                                       std::sin(geometry::degrees_to_radians(angleDeg)) * radius)));
+                        wxRound(acceptedCenters[index].x +
+                                std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                        wxRound(acceptedCenters[index].y +
+                                std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
                     }
 
                 AddObject(
@@ -2091,12 +2089,10 @@ namespace Wisteria::Graphs
                     const double radius = baseRadius * wobble;
 
                     const wxPoint point(
-                        static_cast<int>(
-                            std::round(acceptedCenters[index].x +
-                                       std::cos(geometry::degrees_to_radians(angleDeg)) * radius)),
-                        static_cast<int>(
-                            std::round(acceptedCenters[index].y +
-                                       std::sin(geometry::degrees_to_radians(angleDeg)) * radius)));
+                        wxRound(acceptedCenters[index].x +
+                                std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                        wxRound(acceptedCenters[index].y +
+                                std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
 
                     blobPoints.push_back(point);
                     }
