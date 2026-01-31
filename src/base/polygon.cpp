@@ -66,7 +66,7 @@ namespace Wisteria::GraphItems
             minY = std::min(polygon[i].y, minY);
             maxY = std::max(polygon[i].y, maxY);
             }
-        return { wxPoint(minX, minY), wxPoint(maxX, maxY) };
+        return { wxPoint{ minX, minY }, wxPoint{ maxX, maxY } };
         }
 
     //-------------------------------------------
@@ -137,7 +137,7 @@ namespace Wisteria::GraphItems
             highestX = std::max(highestX, points[i].x);
             highestY = std::max(highestY, points[i].y);
             }
-        return { wxPoint(lowestX, lowestY), wxPoint(highestX, highestY) };
+        return { wxPoint{ lowestX, lowestY }, wxPoint{ highestX, highestY } };
         }
 
     //-------------------------------------------
@@ -184,10 +184,10 @@ namespace Wisteria::GraphItems
                                          !GetGraphItemInfo().IsShowingBottomOutline() ||
                                          !GetGraphItemInfo().IsShowingLeftOutline());
 
-        assert(!(GetShape() == PolygonShape::WaterColorRectangle && !GetBrush().IsOk()) &&
-               L"Brush must be set when using watercolor-filled rectangle!");
-        assert(!(GetShape() == PolygonShape::ThickWaterColorRectangle && !GetBrush().IsOk()) &&
-               L"Brush must be set when using watercolor-filled rectangle!");
+        wxASSERT_MSG(!(GetShape() == PolygonShape::WaterColorRectangle && !GetBrush().IsOk()),
+                     L"Brush must be set when using watercolor-filled rectangle!");
+        wxASSERT_MSG(!(GetShape() == PolygonShape::ThickWaterColorRectangle && !GetBrush().IsOk()),
+                     L"Brush must be set when using watercolor-filled rectangle!");
 
         // using a color fill (possibly a gradient)
         if (GetBackgroundFill().IsOk() &&
@@ -270,7 +270,7 @@ namespace Wisteria::GraphItems
                     if (dc.IsKindOf(wxCLASSINFO(wxGCDC)))
                         {
                         wxGraphicsContext* gc = dynamic_cast<wxGCDC&>(dc).GetGraphicsContext();
-                        assert(gc && L"Failed to get graphics context from polygon renderer!");
+                        wxASSERT_MSG(gc, L"Failed to get graphics context from polygon renderer!");
                         if (gc != nullptr)
                             {
                             wxPoint start;
@@ -279,28 +279,28 @@ namespace Wisteria::GraphItems
                                 {
                             case FillDirection::East:
                                 start = boundingBox.GetTopLeft() +
-                                        wxPoint(0, (boundingBox.GetHeight() / 2));
+                                        wxPoint(0, boundingBox.GetHeight() / 2);
                                 stop = boundingBox.GetTopRight() +
-                                       wxPoint(0, (boundingBox.GetHeight() / 2));
+                                       wxPoint(0, boundingBox.GetHeight() / 2);
                                 break;
                             case FillDirection::West:
                                 start = boundingBox.GetTopRight() +
-                                        wxPoint(0, (boundingBox.GetHeight() / 2));
+                                        wxPoint(0, boundingBox.GetHeight() / 2);
                                 stop = boundingBox.GetTopLeft() +
-                                       wxPoint(0, (boundingBox.GetHeight() / 2));
+                                       wxPoint(0, boundingBox.GetHeight() / 2);
                                 break;
                             case FillDirection::North:
                                 start = boundingBox.GetBottomLeft() +
-                                        wxPoint((boundingBox.GetWidth() / 2), 0);
+                                        wxPoint(boundingBox.GetWidth() / 2, 0);
                                 stop = boundingBox.GetTopLeft() +
-                                       wxPoint((boundingBox.GetWidth() / 2), 0);
+                                       wxPoint(boundingBox.GetWidth() / 2, 0);
                                 break;
                             case FillDirection::South:
                             default:
                                 start = boundingBox.GetTopLeft() +
-                                        wxPoint((boundingBox.GetWidth() / 2), 0);
+                                        wxPoint(boundingBox.GetWidth() / 2, 0);
                                 stop = boundingBox.GetBottomLeft() +
-                                       wxPoint((boundingBox.GetWidth() / 2), 0);
+                                       wxPoint(boundingBox.GetWidth() / 2, 0);
                                 break;
                                 };
                             gc->SetBrush(gc->CreateLinearGradientBrush(
@@ -370,7 +370,7 @@ namespace Wisteria::GraphItems
                 {
                 const GraphicsContextFallback gcf{ &dc, boundingBox };
                 auto* gc = gcf.GetGraphicsContext();
-                assert(gc && L"Failed to get graphics context for curvy rectangle!");
+                wxASSERT_MSG(gc, L"Failed to get graphics context for curvy rectangle!");
                 // If drawing commands can't be used, then switch to drawing as
                 // a regular polygon. These shapes often overlap each other (e.g., Sankey diagram),
                 // so using bitmaps won't work.
@@ -461,7 +461,7 @@ namespace Wisteria::GraphItems
     void Polygon::DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
                             const wxSize arrowHeadSize)
         {
-        assert(arrowHeadSize.IsFullySpecified() && L"Arrowhead size not fully specified.");
+        wxASSERT_MSG(arrowHeadSize.IsFullySpecified(), L"Arrowhead size not fully specified.");
         if (!arrowHeadSize.IsFullySpecified())
             {
             return;
@@ -482,10 +482,10 @@ namespace Wisteria::GraphItems
 
         const std::array<wxPoint, 3> arrowHead{
             { pt2,
-              wxPoint(std::round(pt2.x - (arrowHeadSize.GetHeight() * ux) + (halfWidth * vx)),
-                      std::round(pt2.y - (arrowHeadSize.GetHeight() * uy) + (halfWidth * vy))),
-              wxPoint(std::round(pt2.x - (arrowHeadSize.GetHeight() * ux) - (halfWidth * vx)),
-                      std::round(pt2.y - (arrowHeadSize.GetHeight() * uy) - (halfWidth * vy))) }
+              wxPoint{ wxRound(pt2.x - (arrowHeadSize.GetHeight() * ux) + (halfWidth * vx)),
+                       wxRound(pt2.y - (arrowHeadSize.GetHeight() * uy) + (halfWidth * vy)) },
+              wxPoint{ wxRound(pt2.x - (arrowHeadSize.GetHeight() * ux) - (halfWidth * vx)),
+                       wxRound(pt2.y - (arrowHeadSize.GetHeight() * uy) - (halfWidth * vy)) } }
         };
 
         // The end of the line should be going underneath the head by just one pixel,
@@ -497,7 +497,7 @@ namespace Wisteria::GraphItems
             (pt1.y == pt2.y && pt1.x > pt2.x)  ? ((arrowHeadSize.GetWidth()) - 1) :
                                                  0;
 
-        dc.DrawLine(pt1, wxPoint(pt2.x + xAdjustment, pt2.y));
+        dc.DrawLine(pt1, wxPoint{ pt2.x + xAdjustment, pt2.y });
         // fill the arrowhead with the same color as the line
         const wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
         // need to turn off the pen because a thicker pen will cause an odd-looking
@@ -511,7 +511,7 @@ namespace Wisteria::GraphItems
         {
         for (auto& point : m_points)
             {
-            point += wxPoint(xToMove, yToMove);
+            point += wxPoint{ xToMove, yToMove };
             }
         }
 
@@ -519,7 +519,8 @@ namespace Wisteria::GraphItems
     void Polygon::SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
                                  [[maybe_unused]] const double parentScaling)
         {
-        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_MSG(!IsFreeFloating(),
+                     L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             {
             return;

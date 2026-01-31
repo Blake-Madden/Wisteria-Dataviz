@@ -33,7 +33,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
     //----------------------------------------------------------------
     void WordCloud::SetData(
         const std::shared_ptr<const Data::Dataset>& data, const wxString& wordColumnName,
-        const std::optional<const wxString>& weightColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& weightColumnName /*= std::nullopt*/,
         const size_t minFreq /*= 1*/, const std::optional<size_t> maxFreq /*= std::nullopt*/,
         const std::optional<size_t> maxWords /*= std::nullopt*/)
         {

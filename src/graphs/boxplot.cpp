@@ -17,7 +17,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     void BoxPlot::BoxAndWhisker::SetData(const std::shared_ptr<const Data::Dataset>& data,
                                          const wxString& continuousColumnName,
-                                         const std::optional<const wxString>& groupColumnName,
+                                         const std::optional<wxString>& groupColumnName,
                                          const Data::GroupIdType groupId, const size_t schemeIndex)
         {
         if (data == nullptr)
@@ -33,25 +33,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         m_useGrouping = groupColumnName.has_value();
         m_groupId = m_useGrouping ? groupId : 0;
 
-        m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
-                                           m_data->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': group column not found for box plot."),
-                                 groupColumnName.value())
-                    .ToUTF8());
-            }
-        m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == m_data->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': continuous column not found for box plot."),
-                                 continuousColumnName)
-                    .ToUTF8());
-            }
         m_continuousColumnName = continuousColumnName;
         m_groupColumnName = groupColumnName;
+
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumnName);
+        const auto groupColumn = GetGroupColumn(m_groupColumnName);
 
         Calculate();
 
@@ -60,20 +46,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             {
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
-                if (!std::isfinite(m_continuousColumn->GetValue(i)))
+                if (!std::isfinite(continuousColumn->GetValue(i)))
                     {
                     continue;
                     }
 
-                if (m_groupColumn->GetValue(i) == m_groupId)
+                if (groupColumn->GetValue(i) == m_groupId)
                     {
-                    jitterPoints.insert(m_continuousColumn->GetValue(i));
+                    jitterPoints.insert(continuousColumn->GetValue(i));
                     }
                 }
             }
         else
             {
-            for (const auto& datum : m_continuousColumn->GetValues())
+            for (const auto& datum : continuousColumn->GetValues())
                 {
                 if (!std::isfinite(datum))
                     {
@@ -89,7 +75,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     void BoxPlot::BoxAndWhisker::Calculate()
         {
-        if (GetDataset() == nullptr || m_continuousColumn->GetRowCount() == 0)
+        if (GetDataset() == nullptr)
+            {
+            return;
+            }
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumnName);
+        const auto groupColumn = GetGroupColumn(m_groupColumnName);
+        if (continuousColumn->GetRowCount() == 0)
             {
             return;
             }
@@ -99,17 +91,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             dest.reserve(GetDataset()->GetRowCount());
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
-                if (m_groupColumn->GetValue(i) == m_groupId &&
-                    std::isfinite(m_continuousColumn->GetValue(i)))
+                if (groupColumn->GetValue(i) == m_groupId &&
+                    std::isfinite(continuousColumn->GetValue(i)))
                     {
-                    dest.push_back(m_continuousColumn->GetValue(i));
+                    dest.push_back(continuousColumn->GetValue(i));
                     }
                 }
             }
         else
             {
             dest.reserve(GetDataset()->GetRowCount());
-            std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(dest),
+            std::ranges::copy_if(continuousColumn->GetValues(), std::back_inserter(dest),
                                  [](const auto val) noexcept { return std::isfinite(val); });
             }
 
@@ -180,7 +172,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     void BoxPlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
                           const wxString& continuousColumnName,
-                          const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
+                          const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
 
@@ -204,30 +196,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         // AddBox() will turn on label display again if we have more than one box
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 
-        m_groupColumn =
-            (groupColumnName ? GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
-                               GetDataset()->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == GetDataset()->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': group column not found for box plot."),
-                                 groupColumnName.value())
-                    .ToUTF8());
-            }
-        m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': continuous column not found for box plot."),
-                                 continuousColumnName)
-                    .ToUTF8());
-            }
+        m_continuousColumn = continuousColumnName;
+        m_groupColumn = groupColumnName;
+
+        auto groupColumn = GetGroupColumn(m_groupColumn);
 
         std::vector<BoxAndWhisker> boxes;
-        if (m_groupColumn != GetDataset()->GetCategoricalColumns().cend())
+        if (groupColumn != GetDataset()->GetCategoricalColumns().cend())
             {
             std::set<Data::GroupIdType> groups;
-            for (const auto& groupId : m_groupColumn->GetValues())
+            for (const auto& groupId : groupColumn->GetValues())
                 {
                 groups.insert(groupId);
                 }
@@ -259,6 +237,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             {
             return;
             }
+        auto groupColumn = GetGroupColumn(m_groupColumn);
 
         m_boxes.push_back(box);
         const BoxAndWhisker& currentBox = m_boxes[m_boxes.size() - 1];
@@ -275,9 +254,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             {
             const size_t axisOffset = (m_boxes.size() > 1) ? 1 : 2;
             const double boxAxisPosition = (boxPos - m_boxes.begin()) + axisOffset;
-            const wxString groupIdLabel = boxPos->m_useGrouping ?
-                                              m_groupColumn->GetLabelFromID(boxPos->m_groupId) :
-                                              wxString{};
+            const wxString groupIdLabel =
+                boxPos->m_useGrouping ? groupColumn->GetLabelFromID(boxPos->m_groupId) : wxString{};
             boxPos->SetXAxisPosition(boxAxisPosition);
             GetBottomXAxis().SetCustomLabel(boxAxisPosition, GraphItems::Label(groupIdLabel));
             }
@@ -361,6 +339,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                 {
                 return;
                 }
+            auto continuousColumn = box.GetContinuousColumn(m_continuousColumn);
+            auto groupColumn = box.GetGroupColumn(m_groupColumn);
 
             GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
                                    box.m_middleCoordinate);
@@ -661,7 +641,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             dataPoints->SetDPIScaleFactor(GetDPIScaleFactor());
             for (size_t i = 0; i < box.GetDataset()->GetRowCount(); ++i)
                 {
-                if (!std::isfinite(box.m_continuousColumn->GetValue(i)))
+                if (!std::isfinite(continuousColumn->GetValue(i)))
                     {
                     continue;
                     }
@@ -669,23 +649,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                 const auto pointOutline =
                     Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
                 // skip value if from a different group
-                if (box.m_useGrouping && box.m_groupColumn->GetValue(i) != box.m_groupId)
+                if (box.m_useGrouping && groupColumn->GetValue(i) != box.m_groupId)
                     {
                     continue;
                     }
                 // skip non-outlier points (unless they are requested to be shown)
                 if (!box.IsShowingAllPoints() &&
-                    box.m_continuousColumn->GetValue(i) <= box.GetUpperWhisker() &&
-                    box.m_continuousColumn->GetValue(i) >= box.GetLowerWhisker())
+                    continuousColumn->GetValue(i) <= box.GetUpperWhisker() &&
+                    continuousColumn->GetValue(i) >= box.GetLowerWhisker())
                     {
                     continue;
                     }
-                if (GetPhysicalCoordinates(box.GetXAxisPosition(),
-                                           box.m_continuousColumn->GetValue(i), pt))
+                if (GetPhysicalCoordinates(box.GetXAxisPosition(), continuousColumn->GetValue(i),
+                                           pt))
                     {
                     box.m_jitter.JitterPoint(pt);
-                    if (box.m_continuousColumn->GetValue(i) > box.GetUpperWhisker() ||
-                        box.m_continuousColumn->GetValue(i) < box.GetLowerWhisker())
+                    if (continuousColumn->GetValue(i) > box.GetUpperWhisker() ||
+                        continuousColumn->GetValue(i) < box.GetLowerWhisker())
                         {
                         outliers->AddPoint(
                             GraphItems::Point2D(GraphItems::GraphItemInfo(

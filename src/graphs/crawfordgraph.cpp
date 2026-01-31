@@ -65,6 +65,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             return;
             }
 
+        m_scoresColumn = scoreColumnName;
+        m_syllablesPer100WordsColumn = syllablesPer100WordsColumnName;
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
@@ -72,9 +74,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             {
             BuildGroupIdMap();
             }
-
-        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
-        m_syllablesPer100WordsColumn = GetContinuousColumnRequired(syllablesPer100WordsColumnName);
         }
 
     //----------------------------------------------------------------
@@ -281,11 +280,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         addTextPoint(6.5, 208, 1.4, 1);
         addTextPoint(6.5, 206, 1.0, 1);
 
-        if (GetDataset() == nullptr || m_scoresColumn == nullptr ||
-            m_syllablesPer100WordsColumn == nullptr)
+        if (GetDataset() == nullptr)
             {
             return;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+        const auto syllablesPer100WordsColumn = GetContinuousColumn(m_syllablesPer100WordsColumn);
 
         // plot the data
         auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
@@ -294,21 +295,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         points->Reserve(GetDataset()->GetRowCount());
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_scoresColumn->GetValue(i)) ||
-                std::isnan(m_syllablesPer100WordsColumn->GetValue(i)))
+            if (std::isnan(scoresColumn->GetValue(i)) ||
+                std::isnan(syllablesPer100WordsColumn->GetValue(i)))
                 {
                 continue;
                 }
 
-            const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), 0.5, 7.0);
+            const auto currentScore = std::clamp<double>(scoresColumn->GetValue(i), 0.5, 7.0);
             const auto currentSyllableCount =
-                std::clamp<double>(m_syllablesPer100WordsColumn->GetValue(i), 166, 222);
+                std::clamp<double>(syllablesPer100WordsColumn->GetValue(i), 166, 222);
 
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
             if (GetPhysicalCoordinates(currentScore, currentSyllableCount, pt))
                 {

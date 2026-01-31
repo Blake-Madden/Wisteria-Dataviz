@@ -111,7 +111,7 @@ namespace Wisteria::Graphs
         void AdjustAxes();
         void UpdateCustomAxes();
 
-        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
+        wxString m_scoresColumn;
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
         bool m_useEnglishLabels{ false }; // use translated labels from Schulz article
         bool m_showcaseScore{ false };

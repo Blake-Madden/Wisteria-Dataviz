@@ -36,10 +36,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
         const std::shared_ptr<const Data::Dataset>& data, const DateInterval interval,
         const FiscalYear FYType, const wxString& taskColumnName,
         const wxString& startDateColumnName, const wxString& endDateColumnName,
-        const std::optional<const wxString>& resourceColumnName /*= std::nullopt*/,
-        const std::optional<const wxString>& descriptionColumnName /*= std::nullopt*/,
-        const std::optional<const wxString>& completionColumnName /*= std::nullopt*/,
-        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
+        const std::optional<wxString>& resourceColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& descriptionColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& completionColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         // point to (new) data and reset
         SetDataset(data);
@@ -97,10 +97,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             BuildGroupIdMap();
             }
 
+        const auto groupColumn = GetGroupColumn();
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
             AddTask(GanttChart::TaskInfo(taskColumn->GetLabelFromID(taskColumn->GetValue(i)))
                         .Resource((resourceColumn != GetDataset()->GetCategoricalColumns().cend()) ?

@@ -99,9 +99,9 @@ namespace Wisteria::Graphs
       private:
         void RecalcSizes(wxDC& dc) final;
 
-        const Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
-        const Data::Column<double>* m_scoresColumn{ nullptr };
-        const Data::Column<double>* m_syllablesPerWordColumn{ nullptr };
+        wxString m_wordsPerSentenceColumn;
+        wxString m_scoresColumn;
+        wxString m_syllablesPerWordColumn;
 
         Data::Jitter m_jitterWords{ Wisteria::AxisType::LeftYAxis };
         Data::Jitter m_jitterScores{ Wisteria::AxisType::LeftYAxis };

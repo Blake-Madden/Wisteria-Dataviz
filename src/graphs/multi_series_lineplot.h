@@ -127,7 +127,26 @@ namespace Wisteria::Graphs
       private:
         void AddLine(const LinePlot::Line& line, const wxString& yColumnName);
         void RecalcSizes(wxDC& dc) final;
-        std::vector<Data::ContinuousColumnConstIterator> m_yColumns;
+
+        [[nodiscard]]
+        auto LoadYColumns()
+            {
+            std::vector<Data::ContinuousColumnConstIterator> yColumns;
+            for (const auto& yColumnName : m_yColumnNames)
+                {
+                auto yColumn = GetDataset()->GetContinuousColumn(yColumnName);
+                if (yColumn == GetDataset()->GetContinuousColumns().cend())
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"'%s': y column not found for multi-series line plot."),
+                                         yColumnName)
+                            .ToUTF8());
+                    }
+                yColumns.push_back(yColumn);
+                }
+            return yColumns;
+            }
+
         std::vector<wxString> m_yColumnNames;
         };
     } // namespace Wisteria::Graphs

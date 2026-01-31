@@ -598,16 +598,16 @@ namespace Wisteria::GraphItems
         gc->SetPen(*wxBLACK_PEN);
 
         const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
-        const double w = rect.GetWidth();
-        const double h = rect.GetHeight();
+        const double width = rect.GetWidth();
+        const double height = rect.GetHeight();
 
         //--------------------------------------------------
         // Eyes
         //--------------------------------------------------
-        const double eyeW = w * 0.14;
-        const double eyeH = h * 0.12;
-        const double eyeOffsetX = w * 0.12;
-        const double eyeTopY = rect.GetY() + (h * 0.45);
+        const double eyeW = width * 0.14;
+        const double eyeH = height * 0.12;
+        const double eyeOffsetX = width * 0.12;
+        const double eyeTopY = rect.GetY() + (height * 0.45);
         constexpr double EYE_TILT_RAD = 45.0 * (std::numbers::pi / 180.0);
 
         const auto drawEye = [&](const bool left)
@@ -615,17 +615,17 @@ namespace Wisteria::GraphItems
             const double centerX = cx + (left ? -eyeOffsetX : eyeOffsetX);
             const double centerY = eyeTopY + (eyeH / 2.0);
 
-            // Build eye in local space, then transform into world space
+            // build eye in local space, then transform into world space
             wxGraphicsPath eye = gc->CreatePath();
             eye.MoveToPoint(-eyeW / 2.0, 0.0);
             eye.AddLineToPoint(eyeW / 2.0, 0.0);
             eye.AddArc(0.0, 0.0, eyeW / 2.0, 0.0, std::numbers::pi, true);
             eye.CloseSubpath();
 
-            wxGraphicsMatrix m = gc->CreateMatrix();
-            m.Translate(centerX, centerY);
-            m.Rotate(left ? EYE_TILT_RAD : -EYE_TILT_RAD);
-            eye.Transform(m); // in-place, correct
+            wxGraphicsMatrix matrix = gc->CreateMatrix();
+            matrix.Translate(centerX, centerY);
+            matrix.Rotate(left ? EYE_TILT_RAD : -EYE_TILT_RAD);
+            eye.Transform(matrix);
 
             FillCarvedFeature(
                 gc, eye,
@@ -638,9 +638,9 @@ namespace Wisteria::GraphItems
         //--------------------------------------------------
         // Nose
         //--------------------------------------------------
-        const double noseW = w * math_constants::tenth;
-        const double noseH = h * math_constants::tenth;
-        const double noseY = rect.GetY() + (h * 0.53) + noseH;
+        const double noseW = width * math_constants::tenth;
+        const double noseH = height * math_constants::tenth;
+        const double noseY = rect.GetY() + (height * 0.53) + noseH;
 
         wxGraphicsPath nose = gc->CreatePath();
         nose.MoveToPoint(cx, noseY - (noseH / 2.0));
@@ -652,9 +652,9 @@ namespace Wisteria::GraphItems
         //--------------------------------------------------
         // Mouth
         //--------------------------------------------------
-        const double mouthTop = rect.GetY() + (h * 0.63);
-        const double mouthW = w * 0.55;
-        const double mouthH = h * 0.40;
+        const double mouthTop = rect.GetY() + (height * 0.63);
+        const double mouthW = width * 0.55;
+        const double mouthH = height * 0.40;
 
         wxGraphicsPath mouth = gc->CreatePath();
         mouth.MoveToPoint(cx - (mouthW / 2.0), mouthTop);
@@ -671,25 +671,25 @@ namespace Wisteria::GraphItems
         // upper teeth
         const double upperOffset = mouthW * math_constants::fifth;
 
-        const wxRect topLeftTooth(static_cast<int>(cx - upperOffset - (toothW / 2.0)),
-                                  static_cast<int>(mouthTop + (mouthH * math_constants::tenth)),
-                                  static_cast<int>(toothW), static_cast<int>(toothH));
-
-        const wxRect topRightTooth(static_cast<int>(cx + upperOffset - (toothW / 2.0)),
+        const wxRect topLeftTooth{ static_cast<int>(cx - upperOffset - (toothW / 2.0)),
                                    static_cast<int>(mouthTop + (mouthH * math_constants::tenth)),
-                                   static_cast<int>(toothW), static_cast<int>(toothH));
+                                   static_cast<int>(toothW), static_cast<int>(toothH) };
+
+        const wxRect topRightTooth{ static_cast<int>(cx + upperOffset - (toothW / 2.0)),
+                                    static_cast<int>(mouthTop + (mouthH * math_constants::tenth)),
+                                    static_cast<int>(toothW), static_cast<int>(toothH) };
 
         // bottom tooth
-        const wxRect bottomTooth(static_cast<int>(cx - (toothW / 2.0)),
-                                 static_cast<int>(mouthTop + (mouthH * 0.40)),
-                                 static_cast<int>(toothW), static_cast<int>(toothH * 1.6));
+        const wxRect bottomTooth{ static_cast<int>(cx - (toothW / 2.0)),
+                                  static_cast<int>(mouthTop + (mouthH * 0.40)),
+                                  static_cast<int>(toothW), static_cast<int>(toothH * 1.6) };
 
         double clipX{ 0.0 }, clipY{ 0.0 }, clipW{ 0.0 }, clipH{ 0.0 };
         gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
-        const wxRect originalClipRect(static_cast<int>(clipX), static_cast<int>(clipY),
-                                      static_cast<int>(clipW), static_cast<int>(clipH));
+        const wxRect originalClipRect{ static_cast<int>(clipX), static_cast<int>(clipY),
+                                       static_cast<int>(clipW), static_cast<int>(clipH) };
 
-        wxRegion mouthClip(rect);
+        wxRegion mouthClip{ rect };
         mouthClip.Subtract(wxRegion(topLeftTooth));
         mouthClip.Subtract(wxRegion(topRightTooth));
         mouthClip.Subtract(wxRegion(bottomTooth));
@@ -865,7 +865,7 @@ namespace Wisteria::GraphItems
             const auto centerY = [&](const double t) noexcept { return baseY - (stemHeight * t); };
 
             // sample points along left and right edges
-            constexpr int STEPS = 24;
+            constexpr int STEPS{ 24 };
             std::array<wxPoint2DDouble, STEPS + 1> leftPts;
             std::array<wxPoint2DDouble, STEPS + 1> rightPts;
 

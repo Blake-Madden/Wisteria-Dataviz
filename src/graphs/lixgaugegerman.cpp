@@ -48,7 +48,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
         {
         SetDataset(data);
         ResetGrouping();
-        m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();
         GetSelectedIds().clear();
 
@@ -57,6 +56,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             return;
             }
 
+        m_scoresColumn = scoreColumnName;
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
@@ -66,10 +66,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             }
 
         // get the score data
-        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
 
         frequency_set<double> jitterPoints;
-        for (const auto& datum : m_scoresColumn->GetValues())
+        for (const auto& datum : scoresColumn->GetValues())
             {
             if (std::isnan(datum))
                 {
@@ -88,12 +88,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
         {
             if (GetDataset() != nullptr)
                 {
+                const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
                 const auto [minVal, maxVal] = std::minmax_element(
-                    m_scoresColumn->GetValues().cbegin(), m_scoresColumn->GetValues().cend());
-                const auto minYAxis = !m_scoresColumn->GetValues().empty() ?
+                    scoresColumn->GetValues().cbegin(), scoresColumn->GetValues().cend());
+                const auto minYAxis = !scoresColumn->GetValues().empty() ?
                                           std::min(20.0, previous_interval(*minVal, 2)) :
                                           20.0;
-                const auto maxYAxis = !m_scoresColumn->GetValues().empty() ?
+                const auto maxYAxis = !scoresColumn->GetValues().empty() ?
                                           std::max(70.0, next_interval(*maxVal, 2)) :
                                           70.0;
                 return std::make_pair(minYAxis, maxYAxis);
@@ -232,15 +233,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
     //----------------------------------------------------------------
     void LixGaugeGerman::UpdateCustomAxes()
         {
+        if (GetDataset() == nullptr)
+            {
+            return;
+            }
+
         std::vector<double> activeScoreAreas;
         std::vector<double> activeScoreAreasMainAxis;
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_scoresColumn->GetValue(i)))
+            if (std::isnan(scoresColumn->GetValue(i)))
                 {
                 continue;
                 }
-            const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
             // NOLINTBEGIN(misc-redundant-expression)
             auto leftRulerAxisPos = is_within<size_t>(std::make_pair(0, 24), currentScore)   ? 25 :
                                     is_within<size_t>(std::make_pair(25, 34), currentScore)  ? 35 :
@@ -311,6 +318,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             {
             return;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
 
         // start plotting the points
         const auto& middleRuler{ GetCustomAxes()[1] };
@@ -325,13 +334,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
         points->Reserve(GetDataset()->GetRowCount());
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_scoresColumn->GetValue(i)))
+            if (std::isnan(scoresColumn->GetValue(i)))
                 {
                 continue;
                 }
 
             // sensical scores fall within 0-100
-            const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore = std::clamp<double>(scoresColumn->GetValue(i), 0, 100);
 
             wxCoord yPt{ 0 };
             assert(middleRuler.GetPhysicalCoordinate(currentScore, yPt));
@@ -340,7 +349,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
             if (middleRuler.GetPhysicalCoordinate(currentScore, yPt))
                 {

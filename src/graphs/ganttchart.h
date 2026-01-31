@@ -164,10 +164,10 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Data::Dataset>& data, DateInterval interval,
                      FiscalYear FYType, const wxString& taskColumnName,
                      const wxString& startDateColumnName, const wxString& endDateColumnName,
-                     const std::optional<const wxString>& resourceColumnName = std::nullopt,
-                     const std::optional<const wxString>& descriptionColumnName = std::nullopt,
-                     const std::optional<const wxString>& completionColumnName = std::nullopt,
-                     const std::optional<const wxString>& groupColumnName = std::nullopt);
+                     const std::optional<wxString>& resourceColumnName = std::nullopt,
+                     const std::optional<wxString>& descriptionColumnName = std::nullopt,
+                     const std::optional<wxString>& completionColumnName = std::nullopt,
+                     const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /// @returns The date intervals as they are shown along the scaling axis.
         [[nodiscard]]

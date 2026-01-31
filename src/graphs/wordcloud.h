@@ -67,7 +67,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& wordColumnName,
-                     const std::optional<const wxString>& weightColumnName = std::nullopt,
+                     const std::optional<wxString>& weightColumnName = std::nullopt,
                      size_t minFreq = 1, std::optional<size_t> maxFreq = std::nullopt,
                      std::optional<size_t> maxWords = std::nullopt);
 

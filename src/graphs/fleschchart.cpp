@@ -134,7 +134,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         {
         SetDataset(data);
         ResetGrouping();
-        m_wordsPerSentenceColumn = m_scoresColumn = m_syllablesPerWordColumn = nullptr;
         m_jitterWords.ResetJitterData();
         m_jitterScores.ResetJitterData();
         m_jitterSyllables.ResetJitterData();
@@ -145,6 +144,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             return;
             }
 
+        m_wordsPerSentenceColumn = wordsPerSentenceColumnName;
+        m_scoresColumn = scoreColumnName;
+        m_syllablesPerWordColumn = syllablesPerWordColumnName;
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
@@ -153,14 +155,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             BuildGroupIdMap();
             }
 
-        m_wordsPerSentenceColumn = GetContinuousColumnRequired(wordsPerSentenceColumnName);
-        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
-        m_syllablesPerWordColumn = GetContinuousColumnRequired(syllablesPerWordColumnName);
+        const auto wordsPerSentenceColumn = GetContinuousColumn(m_wordsPerSentenceColumn);
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+        const auto syllablesPerWordColumn = GetContinuousColumn(m_syllablesPerWordColumn);
 
             // words
             {
             frequency_set<double> jitterPoints;
-            for (const auto& wordsPerSentence : m_wordsPerSentenceColumn->GetValues())
+            for (const auto& wordsPerSentence : wordsPerSentenceColumn->GetValues())
                 {
                 if (std::isnan(wordsPerSentence))
                     {
@@ -174,7 +176,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             // scores
             {
             frequency_set<double> jitterPoints;
-            for (const auto& score : m_scoresColumn->GetValues())
+            for (const auto& score : scoresColumn->GetValues())
                 {
                 if (std::isnan(score))
                     {
@@ -188,7 +190,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             // syllables
             {
             frequency_set<double> jitterPoints;
-            for (const auto& syllablesPerWord : m_syllablesPerWordColumn->GetValues())
+            for (const auto& syllablesPerWord : syllablesPerWordColumn->GetValues())
                 {
                 if (std::isnan(syllablesPerWord))
                     {
@@ -218,12 +220,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
 
                 for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                     {
-                    if (std::isnan(m_syllablesPerWordColumn->GetValue(i)))
+                    if (std::isnan(syllablesPerWordColumn->GetValue(i)))
                         {
                         continue;
                         }
                     const auto currentValue{ std::clamp<size_t>(
-                        m_syllablesPerWordColumn->GetValue(i) * 100, 120, 200) };
+                        syllablesPerWordColumn->GetValue(i) * 100, 120, 200) };
 
                     if (currentValue >= bucket1.m_start && currentValue <= bucket1.m_end)
                         {
@@ -337,6 +339,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             {
             return;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto wordsPerSentenceColumn = GetContinuousColumn(m_wordsPerSentenceColumn);
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+        const auto syllablesPerWordColumn = GetContinuousColumn(m_syllablesPerWordColumn);
 
         // plot the points
         const auto& wordsRuler{ GetCustomAxes()[0] };
@@ -356,18 +362,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         points->Reserve(GetDataset()->GetRowCount() * 3); // point for each ruler
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_wordsPerSentenceColumn->GetValue(i)) ||
-                std::isnan(m_scoresColumn->GetValue(i)) ||
-                std::isnan(m_syllablesPerWordColumn->GetValue(i)))
+            if (std::isnan(wordsPerSentenceColumn->GetValue(i)) ||
+                std::isnan(scoresColumn->GetValue(i)) ||
+                std::isnan(syllablesPerWordColumn->GetValue(i)))
                 {
                 continue;
                 }
 
             const auto wordsPerSentence =
-                std::clamp<size_t>(m_wordsPerSentenceColumn->GetValue(i), 5, 40);
-            const auto score = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+                std::clamp<size_t>(wordsPerSentenceColumn->GetValue(i), 5, 40);
+            const auto score = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
             const auto syllablesPerWord =
-                std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i) * 100, 120, 200);
+                std::clamp<size_t>(syllablesPerWordColumn->GetValue(i) * 100, 120, 200);
 
             wxCoord coord1{ 0 }, coord2{ 0 }, coord3{ 0 };
             assert(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
@@ -406,8 +412,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 // (index is ordered by labels alphabetically).
                 // Note that this will be zero if grouping is not in use.
                 const size_t colorIndex =
-                    IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
-                                        0;
+                    IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
                 // points on the rulers
                 points->AddPoint(

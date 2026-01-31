@@ -203,20 +203,6 @@ namespace Wisteria::Graphs
 
             /// @}
 
-            /// @private
-            [[nodiscard]]
-            bool operator<(const BoxAndWhisker& that) const noexcept
-                {
-                if (!m_useGrouping || !that.m_useGrouping)
-                    {
-                    return false;
-                    }
-                return wxUILocale::GetCurrent().CompareStrings(
-                           m_groupColumn->GetLabelFromID(m_groupId),
-                           that.m_groupColumn->GetLabelFromID(that.m_groupId),
-                           wxCompare_CaseInsensitive) < 0;
-                }
-
           private:
             /// @name Data Functions
             /// @brief Functions relating to setting up the data and how the
@@ -239,8 +225,8 @@ namespace Wisteria::Graphs
                     an error message.*/
             void SetData(const std::shared_ptr<const Data::Dataset>& data,
                          const wxString& continuousColumnName,
-                         const std::optional<const wxString>& groupColumnName,
-                         Data::GroupIdType groupId, size_t schemeIndex);
+                         const std::optional<wxString>& groupColumnName, Data::GroupIdType groupId,
+                         size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
             [[nodiscard]]
@@ -281,6 +267,36 @@ namespace Wisteria::Graphs
             /// @brief Calculates the outlier and box ranges.
             void Calculate();
 
+            [[nodiscard]]
+            auto GetContinuousColumn(const wxString& continuousColumnName) const
+                {
+                auto continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
+                if (continuousColumn == GetDataset()->GetContinuousColumns().cend())
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"'%s': continuous column not found for box plot."),
+                                         continuousColumnName)
+                            .ToUTF8());
+                    }
+                return continuousColumn;
+                }
+
+            [[nodiscard]]
+            auto GetGroupColumn(const std::optional<wxString>& groupColumnName) const
+                {
+                auto groupColumn =
+                    (groupColumnName ? GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
+                                       GetDataset()->GetCategoricalColumns().cend());
+                if (groupColumnName && groupColumn == GetDataset()->GetCategoricalColumns().cend())
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"'%s': group column not found for box plot."),
+                                         groupColumnName.value())
+                            .ToUTF8());
+                    }
+                return groupColumn;
+                }
+
             bool m_displayLabels{ false };
             bool m_showAllPoints{ false };
 
@@ -289,8 +305,6 @@ namespace Wisteria::Graphs
             BoxCorners m_boxCorners{ BoxCorners::Straight };
 
             std::shared_ptr<const Data::Dataset> m_data{ nullptr };
-            std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
-            std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
             wxString m_continuousColumnName;
             std::optional<wxString> m_groupColumnName;
 
@@ -313,6 +327,23 @@ namespace Wisteria::Graphs
             wxPoint m_lowerQuartileCoordinate;
             wxPoint m_upperQuartileCoordinate;
             wxRect m_boxRect;
+
+          public:
+            /// @private
+            [[nodiscard]]
+            bool operator<(const BoxAndWhisker& that) const
+                {
+                if (!m_useGrouping || !that.m_useGrouping)
+                    {
+                    return false;
+                    }
+                auto groupColumn = GetGroupColumn(m_groupColumnName);
+                auto thatGroupColumn = that.GetGroupColumn(that.m_groupColumnName);
+                return wxUILocale::GetCurrent().CompareStrings(
+                           groupColumn->GetLabelFromID(m_groupId),
+                           thatGroupColumn->GetLabelFromID(that.m_groupId),
+                           wxCompare_CaseInsensitive) < 0;
+                }
             };
 
         /** @brief Constructor.
@@ -342,7 +373,7 @@ namespace Wisteria::Graphs
                 wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& continuousColumnName,
-                     const std::optional<const wxString>& groupColumnName = std::nullopt);
+                     const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /// @name Box Functions
         /// @brief Functions relating to the boxes.
@@ -547,12 +578,28 @@ namespace Wisteria::Graphs
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes(wxDC& dc) final;
 
+        [[nodiscard]]
+        auto GetGroupColumn(const std::optional<wxString>& groupColumnName) const
+            {
+            auto groupColumn =
+                (groupColumnName ? GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
+                                   GetDataset()->GetCategoricalColumns().cend());
+            if (groupColumnName && groupColumn == GetDataset()->GetCategoricalColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': group column not found for box plot."),
+                                     groupColumnName.value())
+                        .ToUTF8());
+                }
+            return groupColumn;
+            }
+
         std::vector<BoxAndWhisker> m_boxes;
         bool m_overlayLegend{ true };
         uint8_t m_labelPrecision{ 1 };
 
-        std::vector<Data::ColumnWithStringTable>::const_iterator m_groupColumn;
-        std::vector<Data::Column<double>>::const_iterator m_continuousColumn;
+        std::optional<wxString> m_groupColumn;
+        wxString m_continuousColumn;
 
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };

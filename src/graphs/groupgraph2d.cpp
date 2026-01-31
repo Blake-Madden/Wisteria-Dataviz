@@ -14,28 +14,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    void GroupGraph2D::SetGroupColumn(
-        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
-        {
-        assert(GetDataset() && L"You must call SetDataset() before calling SetGroupColumn()!");
-        if (GetDataset() == nullptr)
-            {
-            throw std::runtime_error(
-                wxString(_(L"Dataset not set before calling SetGroupColumn().")).ToUTF8());
-            }
-        const auto groupColIter = groupColumnName ?
-                                      GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
-                                      GetDataset()->GetCategoricalColumns().cend();
-        if (groupColumnName && groupColIter == GetDataset()->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(_(L"'%s': group column not found for graph."),
-                                                      groupColumnName.value())
-                                         .ToUTF8());
-            }
-        SetGroupColumn(groupColumnName ? &(*groupColIter) : nullptr);
-        }
-
-    //----------------------------------------------------------------
     void GroupGraph2D::BuildGroupIdMap()
         {
         m_groupIds.clear();
@@ -121,8 +99,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
 
-            assert((GetBrushScheme() || GetColorScheme()) &&
-                   L"Legend needs either a brush scheme or color scheme!");
+            wxASSERT_MSG((GetBrushScheme() || GetColorScheme()),
+                         L"Legend needs either a brush scheme or color scheme!");
             // Graphs usually use the brush as the primary, but some may
             // only use the color scheme; fallback to that if necessary.
             const wxBrush br =
@@ -142,7 +120,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
         // add MD label at the bottom if there are missing data
         if (GetGroupColumn()->ContainsMissingData())
             {
-            assert(mdCode.has_value() && L"Cat. column has MD, but string table has no MD code?!");
+            wxASSERT_MSG(mdCode.has_value(),
+                         L"Cat. column has MD, but string table has no MD code?!");
             if (mdCode.has_value())
                 {
                 legendText.append(_(L"[NO GROUP]")).append(L"\n");

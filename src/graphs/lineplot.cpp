@@ -28,13 +28,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
 
         SetGroupColumn(groupColumnName);
         m_yColumnName = yColumnName;
-        m_yColumn = GetDataset()->GetContinuousColumn(yColumnName);
-        if (m_yColumn == GetDataset()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': y column not found for line plot."), yColumnName)
-                    .ToUTF8());
-            }
+
         // set the x column, which will be accessed through various GetX functions later
         // (do not reference these iterators after setting them here)
         SetXColumn(xColumnName);
@@ -48,9 +42,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
 
         if (IsUsingGrouping())
             {
+            auto groupColumn = GetGroupColumn();
             // create a reverse string table, with it sorted by label
             std::map<wxString, Data::GroupIdType, Data::wxStringLessNoCase> groups;
-            for (const auto& [id, str] : GetGroupColumn()->GetStringTable())
+            for (const auto& [id, str] : groupColumn->GetStringTable())
                 {
                 groups.insert(std::make_pair(str, id));
                 }
@@ -59,7 +54,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 {
                 Line ln;
                 ln.SetGroupInfo(groupColumnName, group.second,
-                                GetGroupColumn()->GetLabelFromID(group.second));
+                                groupColumn->GetLabelFromID(group.second));
                 ln.GetPen().SetColour(GetColorScheme()->GetColor(currentIndex));
                 ln.SetShape(GetShapeScheme()->GetShape(currentIndex));
                 ln.SetShapeImage(GetShapeScheme()->GetImage(currentIndex));
@@ -104,24 +99,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     bool LinePlot::IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
                                          const Data::GroupIdType group) const
         {
-        assert(data && L"Null dataset passed to IsDataSingleDirection()");
+        wxASSERT_MSG(data, L"Null dataset passed to IsDataSingleDirection()");
         // this only makes sense with numeric data
         if (data == nullptr || data->GetRowCount() == 0 || IsXDates() || IsXCategorical())
             {
             return true;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto xColumns = GetXColumns();
         double currentX{ std::numeric_limits<double>::lowest() };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (!IsUsingGrouping() || group == GetGroupColumn()->GetValue(i))
+            if (!IsUsingGrouping() || group == groupColumn->GetValue(i))
                 {
-                if (IsXValid(i))
+                if (IsXValid(i, xColumns))
                     {
-                    if (GetXValue(i) < currentX)
+                    if (GetXValue(i, xColumns) < currentX)
                         {
                         return false;
                         }
-                    currentX = GetXValue(i);
+                    currentX = GetXValue(i, xColumns);
                     }
                 }
             }
@@ -137,11 +134,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             {
             return;
             }
+        auto yColumn = GetContinuousColumn(m_yColumnName);
 
         GetLines().push_back(line);
 
         const auto [fullYDataMin, fullYDataMax] =
-            std::minmax_element(m_yColumn->GetValues().cbegin(), m_yColumn->GetValues().cend());
+            std::minmax_element(yColumn->GetValues().cbegin(), yColumn->GetValues().cend());
         const auto [minYValue, maxYValue] =
             IsUsingGrouping() ? GetDataset()->GetContinuousMinMax(
                                     m_yColumnName, line.GetGroupColumnName(), line.GetGroupId()) :
@@ -177,14 +175,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1), false);
 
             // if we have a string table to work with, use that for the x-axis labels
-            if (IsXCategorical() && !GetXCategoricalColumnIterator()->GetStringTable().empty())
+            if (IsXCategorical())
                 {
-                GetBottomXAxis().ClearCustomLabels();
-                GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
-                // customize the x-axis labels
-                for (const auto& label : GetXCategoricalColumnIterator()->GetStringTable())
+                auto xColumnName = GetCategoricalColumn(GetXColumnName());
+                if (!xColumnName->GetStringTable().empty())
                     {
-                    GetBottomXAxis().SetCustomLabel(label.first, GraphItems::Label(label.second));
+                    GetBottomXAxis().ClearCustomLabels();
+                    GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+                    // customize the x-axis labels
+                    for (const auto& label : xColumnName->GetStringTable())
+                        {
+                        GetBottomXAxis().SetCustomLabel(label.first,
+                                                        GraphItems::Label(label.second));
+                        }
                     }
                 }
             }
@@ -196,6 +199,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         // clear everything, update axes mirroring or whatever if requested by client
         Graph2D::RecalcSizes(dc);
 
+        const auto groupColumn = GetGroupColumn();
+        const auto yColumn = GetContinuousColumn(m_yColumnName);
+        const auto xColumns = GetXColumns();
         for (auto& line : GetLines())
             {
             auto points = std::make_unique<GraphItems::Points2D>(line.GetPen());
@@ -215,13 +221,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
                 // skip value if from a different group
-                if (IsUsingGrouping() && GetGroupColumn()->GetValue(i) != line.GetGroupId())
+                if (IsUsingGrouping() && groupColumn->GetValue(i) != line.GetGroupId())
                     {
                     continue;
                     }
                 // if explicitly missing data (i.e., NaN),
                 // then add a bogus point to show a gap in the line
-                if (!IsXValid(i) || std::isnan(m_yColumn->GetValue(i)))
+                if (!IsXValid(i, xColumns) || std::isnan(yColumn->GetValue(i)))
                     {
                     points->AddPoint(
                         GraphItems::Point2D(GraphItems::GraphItemInfo().AnchorPoint(
@@ -230,12 +236,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                         dc);
                     continue;
                     }
-                if (!GetPhysicalCoordinates(GetXValue(i), m_yColumn->GetValue(i), pt))
+                if (!GetPhysicalCoordinates(GetXValue(i, xColumns), yColumn->GetValue(i), pt))
                     {
                     continue;
                     }
                 const wxColor ptColor = GetMaybeGhostedColor(
-                    m_colorIf ? m_colorIf(GetXValue(i), m_yColumn->GetValue(i)) :
+                    m_colorIf ? m_colorIf(GetXValue(i, xColumns), yColumn->GetValue(i)) :
                                 line.GetPen().GetColour(),
                     isLineGhosted);
                 points->AddPoint(
@@ -262,6 +268,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             return nullptr;
             }
 
+        auto groupColumn = GetGroupColumn();
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
@@ -281,8 +288,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 legendText.append(L"\u2026");
                 break;
                 }
-            wxString currentLabel = GetGroupColumn()->GetLabelFromID(line.GetGroupId());
-            assert(Settings::GetMaxLegendTextLength() >= 1 && L"Max legend text length is zero?!");
+            wxString currentLabel = groupColumn->GetLabelFromID(line.GetGroupId());
+            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+                         L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
@@ -305,7 +313,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             }
         if (options.IsIncludingHeader())
             {
-            legendText.Prepend(wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
+            legendText.Prepend(wxString::Format(L"%s\n", groupColumn->GetName()));
             legend->GetHeaderInfo()
                 .Enable(true)
                 .LabelAlignment(TextAlignment::FlushLeft)
@@ -321,24 +329,37 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     void LinePlot::SetXColumn(const wxString& xColumnName)
         {
-        ResetXColumns();
+        m_xColumnName = xColumnName;
+        m_xColumnType = Data::ColumnType::None;
         // look for it as a continuous variable first
-        m_xColumnContinuous = GetDataset()->GetContinuousColumn(xColumnName);
-        if (m_xColumnContinuous == GetDataset()->GetContinuousColumns().cend())
+        const auto xColumnContinuous = GetDataset()->GetContinuousColumn(xColumnName);
+        if (xColumnContinuous == GetDataset()->GetContinuousColumns().cend())
             {
             // if not found, look for it as a categorical
-            m_xColumnCategorical = GetDataset()->GetCategoricalColumn(xColumnName);
-            if (m_xColumnCategorical == GetDataset()->GetCategoricalColumns().cend())
+            const auto xColumnCategorical = GetDataset()->GetCategoricalColumn(xColumnName);
+            if (xColumnCategorical == GetDataset()->GetCategoricalColumns().cend())
                 {
                 // try date columns
-                m_xColumnDate = GetDataset()->GetDateColumn(xColumnName);
-                if (m_xColumnDate == GetDataset()->GetDateColumns().cend())
+                const auto xColumnDate = GetDataset()->GetDateColumn(xColumnName);
+                if (xColumnDate == GetDataset()->GetDateColumns().cend())
                     {
                     throw std::runtime_error(
                         wxString::Format(_(L"'%s': x column not found for line plot."), xColumnName)
                             .ToUTF8());
                     }
+                else
+                    {
+                    m_xColumnType = Data::ColumnType::Date;
+                    }
                 }
+            else
+                {
+                m_xColumnType = Data::ColumnType::Categorical;
+                }
+            }
+        else
+            {
+            m_xColumnType = Data::ColumnType::Continuous;
             }
         }
     } // namespace Wisteria::Graphs

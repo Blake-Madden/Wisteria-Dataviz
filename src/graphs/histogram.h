@@ -275,7 +275,7 @@ namespace Wisteria::Graphs
                 re-plot the data.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& continuousColumnName,
-                     const std::optional<const wxString>& groupColumnName = std::nullopt,
+                     const std::optional<wxString>& groupColumnName = std::nullopt,
                      BinningMethod bMethod = BinningMethod::BinByIntegerRange,
                      RoundingMethod rounding = RoundingMethod::NoRounding,
                      IntervalDisplay iDisplay = IntervalDisplay::Cutpoints,
@@ -413,7 +413,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         size_t CalcNumberOfBins() const;
 
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
+        wxString m_continuousColumn;
         size_t m_validN{ 0 };
 
         BinningMethod m_binningMethod{ BinningMethod::BinByIntegerRange };

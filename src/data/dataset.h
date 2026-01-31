@@ -111,7 +111,8 @@ namespace Wisteria::Data
         ID,
         Date,
         Continuous,
-        Categorical
+        Categorical,
+        None
         };
 
     /// @brief A column of data.

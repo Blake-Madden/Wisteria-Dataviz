@@ -17,7 +17,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
     //----------------------------------------------------------------
     void Histogram::SetData(
         const std::shared_ptr<const Data::Dataset>& data, const wxString& continuousColumnName,
-        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& groupColumnName /*= std::nullopt*/,
         const BinningMethod bMethod /*= BinningMethod::BinByIntegerRange*/,
         const RoundingMethod rounding /*= RoundingMethod::NoRounding*/,
         const IntervalDisplay iDisplay /*= IntervalDisplay::Cutpoints*/,
@@ -30,6 +30,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         {
         // point to (new) data and reset
         SetDataset(data);
+        m_continuousColumn = continuousColumnName;
 
         ResetGrouping();
         GetSelectedIds().clear();
@@ -57,16 +58,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         // set the grouping column (or keep it as `std::nullopt` if not in use)
         SetGroupColumn(groupColumnName);
 
-        m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': continuous column not found for histogram."),
-                                 continuousColumnName)
-                    .ToUTF8());
-            }
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumn);
 
-        m_validN = statistics::valid_n(m_continuousColumn->GetValues());
+        m_validN = statistics::valid_n(continuousColumn->GetValues());
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
@@ -103,7 +97,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         GetBarAxis().ShowOuterLabels(false);
 
         // set axis labels
-        GetBarAxis().GetTitle().SetText(m_continuousColumn->GetName());
+        GetBarAxis().GetTitle().SetText(continuousColumn->GetName());
         GetScalingAxis().GetTitle().SetText(_(L"Frequency"));
         }
 
@@ -127,13 +121,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             {
             return 0;
             }
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumn);
 
         frequency_set<double> groups;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (!std::isnan(m_continuousColumn->GetValue(i)))
+            if (!std::isnan(continuousColumn->GetValue(i)))
                 {
-                groups.insert(ConvertToSortableValue(m_continuousColumn->GetValue(i)));
+                groups.insert(ConvertToSortableValue(continuousColumn->GetValue(i)));
                 }
             }
         return groups.get_data().size();
@@ -146,6 +141,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             {
             return;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumn);
 
         // calculate how many observations are in each group
         multi_value_aggregate_map<BinBlock, wxString, std::less<>, Data::wxStringLessNoCase> groups;
@@ -154,7 +151,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
 
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_continuousColumn->GetValue(i)))
+            if (std::isnan(continuousColumn->GetValue(i)))
                 {
                 continue;
                 }
@@ -163,18 +160,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
-            groups.insert(BinBlock{ ConvertToSortableValue(m_continuousColumn->GetValue(i)),
-                                    (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) :
+            groups.insert(BinBlock{ ConvertToSortableValue(continuousColumn->GetValue(i)),
+                                    (IsUsingGrouping() ? groupColumn->GetValue(i) :
                                                          static_cast<Data::GroupIdType>(0)),
                                     colorIndex,
-                                    (IsUsingGrouping() ? GetGroupColumn()->GetLabelFromID(
-                                                             GetGroupColumn()->GetValue(i)) :
-                                                         wxString()) },
+                                    (IsUsingGrouping() ?
+                                         groupColumn->GetLabelFromID(groupColumn->GetValue(i)) :
+                                         wxString()) },
                           GetDataset()->GetIdColumn().GetValue(i).wc_str());
             if ((GetRoundingMethod() == RoundingMethod::NoRounding) &&
-                has_fractional_part(m_continuousColumn->GetValue(i)))
+                has_fractional_part(continuousColumn->GetValue(i)))
                 {
                 GetBarAxis().SetPrecision(4);
                 hasFloatingPointValue = true;
@@ -322,9 +319,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             {
             return;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumn);
         std::vector<double> validData;
         validData.reserve(GetDataset()->GetRowCount());
-        std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+        std::ranges::copy_if(continuousColumn->GetValues(), std::back_inserter(validData),
                              [](auto x) { return std::isfinite(x); });
         double minVal = *std::ranges::min_element(std::as_const(validData));
         double maxVal = *std::ranges::max_element(std::as_const(validData));
@@ -419,14 +418,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             numOfBins);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_continuousColumn->GetValue(i)))
+            if (std::isnan(continuousColumn->GetValue(i)))
                 {
                 continue;
                 }
 
             for (size_t j = 0; j < bins.size(); ++j)
                 {
-                const double currentVal = ConvertToSortableValue(m_continuousColumn->GetValue(i));
+                const double currentVal = ConvertToSortableValue(continuousColumn->GetValue(i));
                 /* Logic is a little different for the first bin. The low value in the data needs to
                    go into this bin, even if it is actually less than the bin's range (right on the
                    edge). This prevents us from making an extra bin just for this one value.*/
@@ -435,7 +434,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     auto foundGroup = std::ranges::find(
                         bins[0],
                         comparable_first_pair(
-                            (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
+                            (IsUsingGrouping() ? groupColumn->GetValue(i) : 0),
                             valuesCounter(0.0, std::set<wxString, Data::wxStringLessNoCase>{})));
                     if (foundGroup != bins[0].end())
                         {
@@ -450,9 +449,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         {
                         std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
-                        bins[0].emplace_back(
-                            (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
-                            valuesCounter(1.0, theSet));
+                        bins[0].emplace_back((IsUsingGrouping() ? groupColumn->GetValue(i) : 0),
+                                             valuesCounter(1.0, theSet));
                         }
                     break;
                     }
@@ -464,7 +462,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     auto foundGroup = std::ranges::find(
                         bins[j],
                         comparable_first_pair(
-                            (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
+                            (IsUsingGrouping() ? groupColumn->GetValue(i) : 0),
                             valuesCounter(0.0, std::set<wxString, Data::wxStringLessNoCase>{})));
                     if (foundGroup != bins[j].end())
                         {
@@ -480,7 +478,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
                         bins[j].emplace_back((IsUsingGrouping() ?
-                                                  GetGroupColumn()->GetValue(i) :
+                                                  groupColumn->GetValue(i) :
                                                   static_cast<Data::GroupIdType>(0)),
                                              valuesCounter(1, theSet));
                         }
@@ -572,8 +570,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     }
 
                 const wxString blockTag =
-                    (IsUsingGrouping() ? GetGroupColumn()->GetLabelFromID(block.first) :
-                                         wxString());
+                    (IsUsingGrouping() ? groupColumn->GetLabelFromID(block.first) : wxString());
 
                 BarBlock theBlock{ BarBlock(BarBlockInfo(block.second.first)
                                                 .Tag(blockTag)
@@ -697,6 +694,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             {
             return 0;
             }
+        const auto continuousColumn = GetContinuousColumn(m_continuousColumn);
 
         if (m_validN <= 1)
             {
@@ -710,7 +708,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         // Scott
         std::vector<double> validData;
         validData.reserve(GetDataset()->GetRowCount());
-        std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+        std::ranges::copy_if(continuousColumn->GetValues(), std::back_inserter(validData),
                              [](auto x) { return std::isfinite(x); });
         const auto minVal = *std::ranges::min_element(std::as_const(validData));
         const auto maxVal = *std::ranges::max_element(std::as_const(validData));

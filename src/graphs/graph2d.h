@@ -663,7 +663,7 @@ namespace Wisteria::Graphs
         /** @private
             Finds and returns a pointer to a continuous column
                 from the loaded dataset. If not found, throws.*/
-        [[nodiscard]]
+        [[nodiscard]] [[deprecated("Use GetContinuousColumn (which returns an iterator) instead.")]]
         const Wisteria::Data::Column<double>*
         GetContinuousColumnRequired(const wxString& colName) const
             {
@@ -674,6 +674,65 @@ namespace Wisteria::Graphs
                     wxString::Format(_(L"'%s': continuous column not found."), colName).ToUTF8());
                 }
             return &(*continuousCol);
+            }
+
+        /** @returns The continuous column by name. If not found, throws.
+            @param continuousColumnName The continuous column's name.
+            @throws std::runtime_error If the column is not found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        auto GetContinuousColumn(const wxString& continuousColumnName) const
+            {
+            auto continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
+            if (continuousColumn == GetDataset()->GetContinuousColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': continuous column not found for graph."),
+                                     continuousColumnName)
+                        .ToUTF8());
+                }
+            return continuousColumn;
+            }
+
+        /** @returns The categorical column by name. If not found, throws.
+            @param categoricalColumnName The categorical column's name.
+            @throws std::runtime_error If the column is not found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        auto GetCategoricalColumn(const wxString& categoricalColumnName) const
+            {
+            auto categoricalColumn = GetDataset()->GetCategoricalColumn(categoricalColumnName);
+            if (categoricalColumn == GetDataset()->GetCategoricalColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': categorical column not found for graph."),
+                                     categoricalColumnName)
+                        .ToUTF8());
+                }
+            return categoricalColumn;
+            }
+
+        /** @returns The date column by name. If not found, throws.
+            @param dateColumnName The date column's name.
+            @throws std::runtime_error If the column is not found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        auto GetDateColumn(const wxString& dateColumnName) const
+            {
+            auto dateColumn = GetDataset()->GetDateColumn(dateColumnName);
+            if (dateColumn == GetDataset()->GetDateColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': date column not found for graph."), dateColumnName)
+                        .ToUTF8());
+                }
+            return dateColumn;
             }
 
         /// @returns The image drawn across all bars/boxes.\n

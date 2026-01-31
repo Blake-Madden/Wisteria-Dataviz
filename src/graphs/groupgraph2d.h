@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         bool IsUsingGrouping() const noexcept
             {
-            return (m_groupColumn != nullptr);
+            return m_groupColumn.has_value();
             }
 
       protected:
@@ -88,7 +88,7 @@ namespace Wisteria::Graphs
             if (IsUsingGrouping())
                 {
                 const auto pos = m_groupIds.find(identifier);
-                assert((pos != m_groupIds.cend()) && L"Error finding scheme index for group!");
+                wxASSERT_MSG((pos != m_groupIds.cend()), L"Error finding scheme index for group!");
                 if (pos != m_groupIds.cend())
                     {
                     return pos->second;
@@ -105,7 +105,7 @@ namespace Wisteria::Graphs
         void ResetGrouping() noexcept
             {
             m_groupIds.clear();
-            m_groupColumn = nullptr;
+            m_groupColumn.reset();
             }
 
         /// @brief Sets the shape to use in the legend (if a shape scheme isn't in use).
@@ -115,23 +115,43 @@ namespace Wisteria::Graphs
             m_defaultLegendShape = shape;
             }
 
-        /// @private
+        /** @brief Returns the grouping column.
+            @returns An iterator to the grouping column. If not found, throws.
+            @note Call SetGroupColumn() first to set the grouping column.
+            @throws std::runtime_error If the column is not found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        const Wisteria::Data::ColumnWithStringTable* GetGroupColumn() const
+        auto GetGroupColumn() const
             {
-            return m_groupColumn;
+            wxASSERT_MSG(GetDataset(),
+                         L"You must call SetDataset() before calling SetGroupColumn()!");
+            if (GetDataset() == nullptr)
+                {
+                throw std::runtime_error(
+                    wxString(_(L"Dataset not set before calling SetGroupColumn().")).ToUTF8());
+                }
+            const auto groupColIter =
+                m_groupColumn ? GetDataset()->GetCategoricalColumn(m_groupColumn.value()) :
+                                GetDataset()->GetCategoricalColumns().cend();
+            if (m_groupColumn && groupColIter == GetDataset()->GetCategoricalColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': group column not found for graph."),
+                                     m_groupColumn.value())
+                        .ToUTF8());
+                }
+            return groupColIter;
             }
 
-        /// @private
-        void SetGroupColumn(const Wisteria::Data::ColumnWithStringTable* groupColumn)
-            {
-            m_groupColumn = groupColumn;
-            }
-
-        /// @private
         /// @brief Sets the grouping column (or keep it as `std::nullopt` if not in use).
+        /// @param groupColumnName The group column's name.
         /// @warning Call SetDataset() first before calling this.
-        void SetGroupColumn(const std::optional<const wxString>& groupColumnName = std::nullopt);
+        void SetGroupColumn(const std::optional<wxString>& groupColumnName = std::nullopt)
+            {
+            m_groupColumn = groupColumnName;
+            }
 
       private:
         [[nodiscard]]
@@ -144,7 +164,7 @@ namespace Wisteria::Graphs
 
         // cat ID and string order
         std::map<Data::GroupIdType, size_t> m_groupIds;
-        const Wisteria::Data::ColumnWithStringTable* m_groupColumn{ nullptr };
+        std::optional<wxString> m_groupColumn{ std::nullopt };
         };
     } // namespace Wisteria::Graphs
 

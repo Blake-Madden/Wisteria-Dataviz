@@ -482,9 +482,9 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     std::optional<const wxString> weightColumnName,
+                     std::optional<wxString> weightColumnName,
                      const wxString& groupColumn1Name,
-                     std::optional<const wxString> groupColumn2Name = std::nullopt);
+                     std::optional<wxString> groupColumn2Name = std::nullopt);
 
         /// @returns @c true if outer slice labels have their font colors match
         ///     their respective pie slice.

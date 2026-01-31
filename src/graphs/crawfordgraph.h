@@ -79,8 +79,8 @@ namespace Wisteria::Graphs
       private:
         void RecalcSizes(wxDC& dc) final;
 
-        const Data::Column<double>* m_scoresColumn{ nullptr };
-        const Data::Column<double>* m_syllablesPer100WordsColumn{ nullptr };
+        wxString m_scoresColumn;
+        wxString m_syllablesPer100WordsColumn;
         };
     } // namespace Wisteria::Graphs
 

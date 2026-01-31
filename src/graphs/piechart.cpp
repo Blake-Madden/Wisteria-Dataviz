@@ -401,9 +401,9 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void PieChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                           std::optional<const wxString> weightColumnName,
+                           std::optional<wxString> weightColumnName,
                            const wxString& groupColumn1Name,
-                           std::optional<const wxString> groupColumn2Name /*= std::nullopt*/)
+                           std::optional<wxString> groupColumn2Name /*= std::nullopt*/)
         {
         if (data == nullptr)
             {
@@ -1694,8 +1694,8 @@ namespace Wisteria::Graphs
                                  static_cast<int>(cy + outerRadius * std::sin(angleRad)) };
 
             // direction of tick
-            wxPoint2DDouble dir(static_cast<double>(outer.x - inner.x),
-                                static_cast<double>(outer.y - inner.y));
+            wxPoint2DDouble dir{ static_cast<double>(outer.x - inner.x),
+                                 static_cast<double>(outer.y - inner.y) };
 
             const double mag = std::sqrt(dir.m_x * dir.m_x + dir.m_y * dir.m_y);
             if (mag < 1.0)
@@ -1707,7 +1707,7 @@ namespace Wisteria::Graphs
             dir.m_y /= mag;
 
             // perpendicular
-            const wxPoint2DDouble perp(dir.m_y, -dir.m_x);
+            const wxPoint2DDouble perp{ dir.m_y, -dir.m_x };
 
             // build 4 corners of the pill rectangle
             const wxPoint p1(inner.x + perp.m_x * halfWidth, inner.y + perp.m_y * halfWidth);
@@ -1735,9 +1735,9 @@ namespace Wisteria::Graphs
             }
 
         // short ticks: 5-min increments
-        for (const int m : { 5, 10, 20, 25, 35, 40, 50, 55 })
+        for (const int minuteTick : { 5, 10, 20, 25, 35, 40, 50, 55 })
             {
-            addTick(m * 6.0, false);
+            addTick(minuteTick * 6.0, false);
             }
         }
 

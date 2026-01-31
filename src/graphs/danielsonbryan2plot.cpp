@@ -47,7 +47,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         {
         SetDataset(data);
         ResetGrouping();
-        m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();
         GetSelectedIds().clear();
 
@@ -56,6 +55,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             return;
             }
 
+        m_scoresColumn = scoreColumnName;
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
@@ -65,10 +65,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             }
 
         // get the score data
-        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
+        auto scoresColumn = GetContinuousColumn(m_scoresColumn);
 
         frequency_set<double> jitterPoints;
-        for (const auto& datum : m_scoresColumn->GetValues())
+        for (const auto& datum : scoresColumn->GetValues())
             {
             if (std::isnan(datum))
                 {
@@ -172,19 +172,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
     //----------------------------------------------------------------
     void DanielsonBryan2Plot::UpdateCustomAxes()
         {
-        if (GetDataset() == nullptr || m_scoresColumn == nullptr)
+        if (GetDataset() == nullptr)
             {
             return;
             }
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
 
         std::vector<double> activeScoreAreas;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_scoresColumn->GetValue(i)))
+            if (std::isnan(scoresColumn->GetValue(i)))
                 {
                 continue;
                 }
-            const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
             // NOLINTBEGIN(misc-redundant-expression)
             const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
                                   is_within<size_t>(std::make_pair(30, 49), currentScore)  ? 3 :
@@ -226,6 +227,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             {
             return;
             }
+        const auto groupColumn = GetGroupColumn();
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
 
         // start plotting the points
         const auto& middleRuler{ GetCustomAxes()[1] };
@@ -240,13 +243,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         points->Reserve(GetDataset()->GetRowCount());
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(m_scoresColumn->GetValue(i)))
+            if (std::isnan(scoresColumn->GetValue(i)))
                 {
                 continue;
                 }
 
             // sensical scores fall within 0-100
-            const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
 
             // NOLINTBEGIN(misc-redundant-expression)
             const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
@@ -266,7 +269,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
             if (middleRuler.GetPhysicalCoordinate(yAxisPos, yPt))
                 {

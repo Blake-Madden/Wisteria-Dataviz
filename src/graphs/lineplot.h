@@ -437,11 +437,39 @@ namespace Wisteria::Graphs
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
 
       protected:
+        /// @brief X column iterators.
+        struct XColumns
+            {
+            /// @brief The continuous column iterator.
+            Data::ContinuousColumnConstIterator xColumnContinuous;
+            /// @brief The categorical column iterator.
+            Data::CategoricalColumnConstIterator xColumnCategorical;
+            /// @brief The date column iterator.
+            Data::DateColumnConstIterator xColumnDate;
+            };
+
+        /// @returns Column iterators pointing to the X column in the data.
+        /// @note Call the various `IsX...` functions to verify which column iterator will be valid.
+        XColumns GetXColumns() const
+            {
+            XColumns xColumns;
+            xColumns.xColumnContinuous = IsXContinuous() ?
+                                             GetContinuousColumn(GetXColumnName()) :
+                                             GetDataset()->GetContinuousColumns().cend();
+            xColumns.xColumnCategorical = IsXCategorical() ?
+                                              GetCategoricalColumn(GetXColumnName()) :
+                                              GetDataset()->GetCategoricalColumns().cend();
+            xColumns.xColumnDate = IsXDates() ? GetDateColumn(GetXColumnName()) :
+                                                GetDataset()->GetDateColumns().cend();
+            return xColumns;
+            }
+
         /// @brief Returns true if the value at @c index in the x column is valid (i.e., not NaN).
         /// @param index The row in the x column to review.
+        /// @param xColumns The X column iterators (must be initialized via GetXColumns()).
         /// @returns @c true if the given row in the x column is valid.
         [[nodiscard]]
-        bool IsXValid(const size_t index) const
+        bool IsXValid(const size_t index, const XColumns& xColumns) const
             {
             if (index >= GetDataset()->GetRowCount())
                 {
@@ -450,7 +478,7 @@ namespace Wisteria::Graphs
             // continuous x
             if (IsXContinuous())
                 {
-                return !std::isnan(m_xColumnContinuous->GetValue(index));
+                return !std::isnan(xColumns.xColumnContinuous->GetValue(index));
                 }
             // categorical x, which in this case anything would be OK (even empty string)
             if (IsXCategorical())
@@ -460,7 +488,7 @@ namespace Wisteria::Graphs
             if (IsXDates())
                 {
                 return GetBottomXAxis()
-                    .FindDatePosition(m_xColumnDate->GetValue(index))
+                    .FindDatePosition(xColumns.xColumnDate->GetValue(index))
                     .has_value();
                 }
             return false;
@@ -468,10 +496,11 @@ namespace Wisteria::Graphs
 
         /// @brief Returns the value at @c index of the x column.
         /// @param index The row in the x column to retrieve.
+        /// @param xColumns The X column iterators (must be initialized via GetXColumns()).
         /// @returns The value of the given row in the x column.\n
         ///     Note that this value may be NaN if invalid.
         [[nodiscard]]
-        double GetXValue(const size_t index) const
+        double GetXValue(const size_t index, const XColumns& xColumns) const
             {
             if (index >= GetDataset()->GetRowCount())
                 {
@@ -480,18 +509,18 @@ namespace Wisteria::Graphs
             // continuous x
             if (IsXContinuous())
                 {
-                return m_xColumnContinuous->GetValue(index);
+                return xColumns.xColumnContinuous->GetValue(index);
                 }
             // categorical x, just want the underlying number code as that is what
             // goes along the x-axis
             if (IsXCategorical())
                 {
-                return static_cast<double>(m_xColumnCategorical->GetValue(index));
+                return static_cast<double>(xColumns.xColumnCategorical->GetValue(index));
                 }
             if (IsXDates())
                 {
                 const auto foundDate =
-                    GetBottomXAxis().FindDatePosition(m_xColumnDate->GetValue(index));
+                    GetBottomXAxis().FindDatePosition(xColumns.xColumnDate->GetValue(index));
                 return (foundDate.has_value() ? foundDate.value() :
                                                 std::numeric_limits<double>::quiet_NaN());
                 }
@@ -506,8 +535,9 @@ namespace Wisteria::Graphs
             {
             wxASSERT_MSG(IsXDates(),
                          L"GetXMinMaxDates() should only be called if x-axis is date based!");
+            auto xColumnDate = GetDateColumn(GetXColumnName());
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
-                m_xColumnDate->GetValues().cbegin(), m_xColumnDate->GetValues().cend());
+                xColumnDate->GetValues().cbegin(), xColumnDate->GetValues().cend());
             return std::make_pair(*fullXDataMin, *fullXDataMax);
             }
 
@@ -525,18 +555,19 @@ namespace Wisteria::Graphs
             // continuous x
             if (IsXContinuous())
                 {
-                const auto [fullXDataMin, fullXDataMax] =
-                    std::minmax_element(m_xColumnContinuous->GetValues().cbegin(),
-                                        m_xColumnContinuous->GetValues().cend());
+                auto xColumnContinuous = GetContinuousColumn(GetXColumnName());
+                const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
+                    xColumnContinuous->GetValues().cbegin(), xColumnContinuous->GetValues().cend());
                 return std::make_pair(*fullXDataMin, *fullXDataMax);
                 }
             // categorical x, just want the underlying numeric code as that is what
             // goes along the x-axis
             if (IsXCategorical())
                 {
+                const auto xColumnCategorical = GetCategoricalColumn(GetXColumnName());
                 const auto [fullXDataMin, fullXDataMax] =
-                    std::minmax_element(m_xColumnCategorical->GetValues().cbegin(),
-                                        m_xColumnCategorical->GetValues().cend());
+                    std::minmax_element(xColumnCategorical->GetValues().cbegin(),
+                                        xColumnCategorical->GetValues().cend());
                 return std::make_pair(static_cast<double>(*fullXDataMin),
                                       static_cast<double>(*fullXDataMax));
                 }
@@ -564,21 +595,21 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         bool IsXContinuous() const noexcept
             {
-            return (m_xColumnContinuous != GetDataset()->GetContinuousColumns().cend());
+            return (m_xColumnType == Data::ColumnType::Continuous);
             }
 
         /// @returns Whether X was loaded from a categorical column.
         [[nodiscard]]
         bool IsXCategorical() const noexcept
             {
-            return (m_xColumnCategorical != GetDataset()->GetCategoricalColumns().cend());
+            return (m_xColumnType == Data::ColumnType::Categorical);
             }
 
         /// @returns Whether X was loaded from a date column.
         [[nodiscard]]
         bool IsXDates() const noexcept
             {
-            return (m_xColumnDate != GetDataset()->GetDateColumns().cend());
+            return (m_xColumnType == Data::ColumnType::Date);
             }
 
         /** @brief Returns a color that is ghosted if ghosting is enabled.
@@ -615,26 +646,14 @@ namespace Wisteria::Graphs
         /// @warning This must be called after setting the dataset.
         void SetXColumn(const wxString& xColumnName);
 
-        /// @returns The iterator to the categorical column.
-        /// @details This would usually be used to gather axis labels
-        ///     from the categorical column's string table.
-        /// @warning Call IsXCategorical() first to ensure that this iterator is valid.
+        /// @returns The name of the X column.
         [[nodiscard]]
-        Data::CategoricalColumnConstIterator GetXCategoricalColumnIterator()
+        const wxString& GetXColumnName() const noexcept
             {
-            return m_xColumnCategorical;
+            return m_xColumnName;
             }
 
       private:
-        /// @brief Resets the x column iterators.
-        /// @warning This must be called after setting the dataset.
-        void ResetXColumns()
-            {
-            m_xColumnContinuous = GetDataset()->GetContinuousColumns().cend();
-            m_xColumnCategorical = GetDataset()->GetCategoricalColumns().cend();
-            m_xColumnDate = GetDataset()->GetDateColumns().cend();
-            }
-
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
         void AddLine(const Line& line);
@@ -642,10 +661,8 @@ namespace Wisteria::Graphs
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) override;
 
-        Data::ContinuousColumnConstIterator m_xColumnContinuous;
-        Data::CategoricalColumnConstIterator m_xColumnCategorical;
-        Data::DateColumnConstIterator m_xColumnDate;
-        Data::ContinuousColumnConstIterator m_yColumn;
+        Data::ColumnType m_xColumnType{ Data::ColumnType::None };
+        wxString m_xColumnName;
         wxString m_yColumnName;
 
         std::vector<Line> m_lines;

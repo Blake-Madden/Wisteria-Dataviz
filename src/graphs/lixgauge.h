@@ -97,7 +97,7 @@ namespace Wisteria::Graphs
 
         void UpdateCustomAxes();
 
-        const Data::Column<double>* m_scoresColumn{ nullptr };
+        wxString m_scoresColumn;
         Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
 
         bool m_showcaseScore{ false };

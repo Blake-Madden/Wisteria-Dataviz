@@ -166,6 +166,53 @@ namespace Wisteria::Graphs
 
         void Calculate();
 
+        /** @brief Retrieves the categorical column iterator by name.
+            @details Unlike other graphs' column accessors, this returns
+                `GetDataset()->GetCategoricalColumns().cend()`
+                (rather than throwing) when the ID column is being used in place of
+                a categorical column (i.e., @c m_useIDColumnForBars is @c true).
+                Callers should check for @c m_useIDColumnForBars before dereferencing.
+            @param categoricalColumnName The name of the categorical column.
+            @returns An iterator to the column, or `GetDataset()->GetCategoricalColumns().cend()`
+                if the ID column is being used for the bars.
+            @throws std::runtime_error If the column is not found and the ID column
+                is not being used.*/
+        [[nodiscard]]
+        auto GetCategoricalColumn(const wxString& categoricalColumnName) const
+            {
+            if (m_useIDColumnForBars)
+                {
+                return GetDataset()->GetCategoricalColumns().cend();
+                }
+
+            auto categoricalColumn = GetDataset()->GetCategoricalColumn(categoricalColumnName);
+            if (categoricalColumn == GetDataset()->GetCategoricalColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(
+                        _(L"'%s': categorical/ID column not found for categorical bar chart."),
+                        categoricalColumnName)
+                        .ToUTF8());
+                }
+            return categoricalColumn;
+            }
+
+        [[nodiscard]]
+        auto GetWeightColumn(const std::optional<wxString>& weightColumnName) const
+            {
+            auto weightColumn =
+                (weightColumnName ? GetDataset()->GetContinuousColumn(weightColumnName.value()) :
+                                    GetDataset()->GetContinuousColumns().cend());
+            if (weightColumnName && weightColumn == GetDataset()->GetContinuousColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': weight column not found for categorical bar chart."),
+                                     weightColumnName.value())
+                        .ToUTF8());
+                }
+            return weightColumn;
+            }
+
         /// @brief Simpler way to get the bar slots since this isn't like a histogram that
         ///     can have gaps in between the bars.
         [[nodiscard]]
@@ -174,9 +221,8 @@ namespace Wisteria::Graphs
             return GetBars().size();
             }
 
-        const Data::Column<wxString>* m_idColumn{ nullptr };
-        std::vector<Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
-        std::vector<Data::Column<double>>::const_iterator m_weightColumn;
+        wxString m_categoricalColumnName;
+        std::optional<wxString> m_weightColumn;
 
         bool m_useIDColumnForBars{ false };
         bool m_useWeightColumn{ false };

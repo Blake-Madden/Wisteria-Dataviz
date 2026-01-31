@@ -20,7 +20,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         SetDataset(data);
         ResetGrouping();
         GetSelectedIds().clear();
-        m_yColumns.clear();
 
         if (GetDataset() == nullptr)
             {
@@ -28,18 +27,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             }
 
         m_yColumnNames = yColumnNames;
-        for (const auto& yColumnName : m_yColumnNames)
-            {
-            auto yColumn = GetDataset()->GetContinuousColumn(yColumnName);
-            if (yColumn == GetDataset()->GetContinuousColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"'%s': y column not found for multi-series line plot."),
-                                     yColumnName)
-                        .ToUTF8());
-                }
-            m_yColumns.push_back(yColumn);
-            }
+
         // set the x column, which will be access through various GetX functions later
         // (do not reference these iterators after setting them here)
         SetXColumn(xColumnName);
@@ -91,10 +79,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             return;
             }
 
+        auto yColumns = LoadYColumns();
+
         const auto foundYColumn = std::ranges::find_if(
-            m_yColumns, [&yColumnName = std::as_const(yColumnName)](const auto& colIter)
+            yColumns, [&yColumnName = std::as_const(yColumnName)](const auto& colIter)
             { return colIter->GetName() == yColumnName; });
-        if (foundYColumn == m_yColumns.cend())
+        if (foundYColumn == yColumns.cend())
             {
             return;
             }
@@ -135,14 +125,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                 ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1), false);
 
             // if we have a string table to work with, use that for the x-axis labels
-            if (IsXCategorical() && !GetXCategoricalColumnIterator()->GetStringTable().empty())
+            if (IsXCategorical())
                 {
-                GetBottomXAxis().ClearCustomLabels();
-                GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
-                // customize the x-axis labels
-                for (const auto& label : GetXCategoricalColumnIterator()->GetStringTable())
+                auto xColumnName = GetCategoricalColumn(GetXColumnName());
+                if (!xColumnName->GetStringTable().empty())
                     {
-                    GetBottomXAxis().SetCustomLabel(label.first, GraphItems::Label(label.second));
+                    GetBottomXAxis().ClearCustomLabels();
+                    GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+                    // customize the x-axis labels
+                    for (const auto& label : xColumnName->GetStringTable())
+                        {
+                        GetBottomXAxis().SetCustomLabel(label.first,
+                                                        GraphItems::Label(label.second));
+                        }
                     }
                 }
             }
@@ -156,7 +151,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         // axis and title rendering, then we will do our own line plot rendering here.
         Graph2D::RecalcSizes(dc); // NOLINT
 
-        for (size_t colCounter = 0; colCounter < m_yColumns.size(); ++colCounter)
+        const auto yColumns = LoadYColumns();
+        const auto xColumns = GetXColumns();
+
+        for (size_t colCounter = 0; colCounter < yColumns.size(); ++colCounter)
             {
             wxASSERT_MSG(colCounter < GetLines().size(),
                          L"Not enough lines defined in MultiSeriesLinePlot!");
@@ -183,7 +181,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                 {
                 // if explicitly missing data (i.e., NaN),
                 // then add a bogus point to show a gap in the line
-                if (!IsXValid(i) || std::isnan(m_yColumns[colCounter]->GetValue(i)))
+                if (!IsXValid(i, xColumns) || std::isnan(yColumns[colCounter]->GetValue(i)))
                     {
                     points->AddPoint(
                         GraphItems::Point2D(GraphItems::GraphItemInfo().AnchorPoint(
@@ -192,13 +190,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                         dc);
                     continue;
                     }
-                if (!GetPhysicalCoordinates(GetXValue(i), m_yColumns[colCounter]->GetValue(i), pt))
+                if (!GetPhysicalCoordinates(GetXValue(i, xColumns),
+                                            yColumns[colCounter]->GetValue(i), pt))
                     {
                     continue;
                     }
                 const wxColor ptColor = GetMaybeGhostedColor(
-                    GetColorIf() ? GetColorIf()(GetXValue(i), m_yColumns[colCounter]->GetValue(i)) :
-                                   GetLines()[colCounter].GetPen().GetColour(),
+                    GetColorIf() ?
+                        GetColorIf()(GetXValue(i, xColumns), yColumns[colCounter]->GetValue(i)) :
+                        GetLines()[colCounter].GetPen().GetColour(),
                     isLineGhosted);
                 points->AddPoint(
                     GraphItems::Point2D{

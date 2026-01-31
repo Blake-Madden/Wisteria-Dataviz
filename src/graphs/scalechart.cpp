@@ -49,7 +49,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         {
         SetDataset(data);
         ResetGrouping();
-        m_scoresColumnName = scoreColumnName;
         m_jitter.ResetJitterData();
         GetSelectedIds().clear();
 
@@ -58,6 +57,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             return;
             }
 
+        m_scoresColumnName = scoreColumnName;
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
@@ -67,7 +67,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             }
 
         // get the score data
-        const auto* scoresColumn = GetContinuousColumnRequired(scoreColumnName);
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumnName);
 
         AdjustAxes();
 
@@ -255,6 +255,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             }
 
         // start plotting the scores
+        const auto groupColumn = GetGroupColumn();
         const auto [yStart, yEnd] = GetScalingAxis().GetRange();
         const auto middleRuler{ GetCustomAxes()[1] };
         const double ptLeft{ GetCustomAxes()[0].GetPhysicalCustomXPosition() };
@@ -266,7 +267,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
-        const auto* scoresColumn = GetContinuousColumnRequired(m_scoresColumnName);
+        auto scoresColumn = GetContinuousColumn(m_scoresColumnName);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(scoresColumn->GetValue(i)))
@@ -284,7 +285,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
             if (GetScalingAxis().GetPhysicalCoordinate(currentScore, yPt))
                 {

@@ -85,9 +85,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         const wxString crossedOutSymbolForNaN{ L"\u274C" };
         if (IsUsingGrouping())
             {
+            const auto groupColumn = GetGroupColumn();
             // see how many groups there are
             frequency_set<Data::GroupIdType> groups;
-            for (const auto& groupId : GetGroupColumn()->GetValues())
+            for (const auto& groupId : groupColumn->GetValues())
                 {
                 groups.insert(groupId);
                 }
@@ -103,15 +104,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 }
 
             size_t currentRow{ 0 }, currentColumn{ 0 };
-            auto currentGroupId = GetGroupColumn()->GetValue(0);
+            auto currentGroupId = groupColumn->GetValue(0);
             for (size_t i = 0; i < cellColors.size(); ++i)
                 {
                 // move to next row if on another group ID
-                if (GetGroupColumn()->GetValue(i) != currentGroupId)
+                if (groupColumn->GetValue(i) != currentGroupId)
                     {
                     ++currentRow;
                     currentColumn = 0;
-                    currentGroupId = GetGroupColumn()->GetValue(i);
+                    currentGroupId = groupColumn->GetValue(i);
                     }
                 wxASSERT_MSG(currentRow < m_matrix.size(),
                              L"Invalid row when filling heatmap matrix! "
@@ -140,7 +141,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                                                      Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
                     GetDataset()->GetIdColumn().GetValue(i);
-                m_matrix[currentRow][currentColumn].m_groupId = GetGroupColumn()->GetValue(i);
+                m_matrix[currentRow][currentColumn].m_groupId = groupColumn->GetValue(i);
                 ++currentColumn;
                 }
             }
@@ -219,6 +220,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         bool groupHeaderLabelMultiline{ false };
 
         // find the width of the longest group label
+        const auto groupColumn = GetGroupColumn();
         GraphItems::Label measuringLabel(GraphItems::GraphItemInfo()
                                              .Scaling(GetScaling())
                                              .Pen(wxNullPen)
@@ -227,7 +229,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         wxString widestStr;
         if (IsUsingGrouping())
             {
-            for (const auto& [id, strVal] : GetGroupColumn()->GetStringTable())
+            for (const auto& [id, strVal] : groupColumn->GetStringTable())
                 {
                 measuringLabel.SetText(strVal);
                 if (widestLabelWidth < measuringLabel.GetBoundingBox(dc).GetWidth())
@@ -238,8 +240,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), widestLabelWidth);
                 }
             }
-        const bool hasGroupLabels{ IsUsingGrouping() &&
-                                   !GetGroupColumn()->GetStringTable().empty() };
+        const bool hasGroupLabels{ IsUsingGrouping() && !groupColumn->GetStringTable().empty() };
         const auto groupLabelWidth{ hasGroupLabels ? widestLabelWidth : 0 };
         if (IsUsingGrouping() && m_matrix.size() > 1)
             {
@@ -426,7 +427,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 {
                 // add a group label
                 auto groupRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(GetGroupColumn()->GetLabelFromID(currentGroupStart))
+                    GraphItems::GraphItemInfo(groupColumn->GetLabelFromID(currentGroupStart))
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(groupLabelFont) // font is already scaled, so leave its scaling at 1
                         .AnchorPoint(wxPoint{ drawArea.GetTopLeft().x - groupLabelWidth,

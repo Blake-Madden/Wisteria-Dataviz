@@ -23,6 +23,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
         // point to (new) data and reset
         SetDataset(data);
         ResetGrouping();
+        m_categoricalColumnName = categoricalColumnName;
+        m_weightColumn = weightColumnName;
         m_useWeightColumn = weightColumnName.has_value();
         m_useIDColumnForBars = false;
         GetSelectedIds().clear();
@@ -36,39 +38,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
 
         SetBinLabelDisplay(blDisplay);
 
-        m_idColumn = &GetDataset()->GetIdColumn();
-
-        m_categoricalColumn = GetDataset()->GetCategoricalColumn(categoricalColumnName);
-        if (m_categoricalColumn == GetDataset()->GetCategoricalColumns().cend())
+        // see if they are using the ID column for the bars
+        if (GetDataset()->GetIdColumn().GetName().CmpNoCase(categoricalColumnName) == 0)
             {
-            // see if they are using the ID column for the bars
-            if (m_idColumn->GetName().CmpNoCase(categoricalColumnName) == 0)
-                {
-                m_useIDColumnForBars = true;
-                }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': categorical/ID column not found for categorical bar chart."),
-                        categoricalColumnName)
-                        .ToUTF8());
-                }
+            m_useIDColumnForBars = true;
             }
+        const auto categoricalColumn = GetCategoricalColumn(m_categoricalColumnName);
 
         // set the grouping column (or keep it as `std::nullopt` if not in use)
         SetGroupColumn(groupColumnName);
-
-        m_weightColumn =
-            (weightColumnName ? GetDataset()->GetContinuousColumn(weightColumnName.value()) :
-                                GetDataset()->GetContinuousColumns().cend());
-        if (weightColumnName && m_weightColumn == GetDataset()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': weight column not found for categorical bar chart."),
-                                 weightColumnName.value())
-                    .ToUTF8());
-            }
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
@@ -92,8 +70,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
         GetBarAxis().ShowOuterLabels(false);
 
         // set axis labels
-        GetBarAxis().GetTitle().SetText(m_useIDColumnForBars ? m_idColumn->GetName() :
-                                                               m_categoricalColumn->GetName());
+        GetBarAxis().GetTitle().SetText(m_useIDColumnForBars ?
+                                            GetDataset()->GetIdColumn().GetName() :
+                                            categoricalColumn->GetName());
         GetScalingAxis().GetTitle().SetText(_(L"Frequency"));
         }
 
@@ -112,37 +91,42 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
             {
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
-                idMap.insert(std::make_pair(m_idColumn->GetValue(i), idMap.size()));
+                idMap.insert(std::make_pair(GetDataset()->GetIdColumn().GetValue(i), idMap.size()));
                 }
             }
+
+        const auto groupColumn = GetGroupColumn();
+        const auto categoricalColumn = GetCategoricalColumn(m_categoricalColumnName);
+        const auto weightColumn = GetWeightColumn(m_weightColumn);
 
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
-            if (m_useWeightColumn && std::isnan(m_weightColumn->GetValue(i)))
+            if (m_useWeightColumn && std::isnan(weightColumn->GetValue(i)))
                 {
                 continue;
                 }
-            const double groupTotal = (m_useWeightColumn ? m_weightColumn->GetValue(i) : 1);
+            const double groupTotal = (m_useWeightColumn ? weightColumn->GetValue(i) : 1);
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex =
-                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(groupColumn->GetValue(i)) : 0;
 
             if (m_useIDColumnForBars)
                 {
-                const auto id = idMap.find(m_idColumn->GetValue(i));
-                assert((id != idMap.cend()) && L"Error finding bar index for ID value!");
+                const auto id = idMap.find(GetDataset()->GetIdColumn().GetValue(i));
+                wxASSERT_MSG(id != idMap.cend(), L"Error finding bar index for ID value!");
                 if (id != idMap.cend())
                     {
                     groups.insert(
                         // the current category ID (and group's color index and label,
                         // if applicable)
-                        CatBarBlock{ id->second, m_idColumn->GetValue(i), colorIndex,
-                                     (IsUsingGrouping() ? GetGroupColumn()->GetLabelFromID(
-                                                              GetGroupColumn()->GetValue(i)) :
-                                                          wxString()) },
+                        CatBarBlock{ id->second, GetDataset()->GetIdColumn().GetValue(i),
+                                     colorIndex,
+                                     (IsUsingGrouping() ?
+                                          groupColumn->GetLabelFromID(groupColumn->GetValue(i)) :
+                                          wxString{}) },
                         groupTotal);
                     }
                 }
@@ -150,13 +134,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                 {
                 groups.insert(
                     // the current category ID (and group's color index and label, if applicable)
-                    CatBarBlock{
-                        m_categoricalColumn->GetValue(i),
-                        m_categoricalColumn->GetLabelFromID(m_categoricalColumn->GetValue(i)),
-                        colorIndex,
-                        (IsUsingGrouping() ?
-                             GetGroupColumn()->GetLabelFromID(GetGroupColumn()->GetValue(i)) :
-                             wxString()) },
+                    CatBarBlock{ categoricalColumn->GetValue(i),
+                                 categoricalColumn->GetLabelFromID(categoricalColumn->GetValue(i)),
+                                 colorIndex,
+                                 (IsUsingGrouping() ?
+                                      groupColumn->GetLabelFromID(groupColumn->GetValue(i)) :
+                                      wxString{}) },
                     groupTotal);
                 }
             }
