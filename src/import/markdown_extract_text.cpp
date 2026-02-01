@@ -8,6 +8,7 @@
 
 #include "markdown_extract_text.h"
 #include <map>
+#include <set>
 
 // LaTeX command -> Unicode character lookup table.
 // Only simple commands that map to a single Unicode character are included.
@@ -1030,6 +1031,45 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
             {
             std::advance(currentStart, 1);
             continue;
+            }
+        // Quarto cross references (figures, tables, sections, etc.)
+        else if (!isEscaping && *currentStart == L'@')
+            {
+            const auto* refStart = std::next(currentStart);
+            // scan past lowercase ASCII letters to find the would-be prefix
+            const auto* prefixEnd = refStart;
+            while (prefixEnd < currentEndSentinel && *prefixEnd >= L'a' && *prefixEnd <= L'z')
+                {
+                ++prefixEnd;
+                }
+            // if followed by '-', check whether the prefix is a known cross-ref type
+            if (prefixEnd < currentEndSentinel && *prefixEnd == L'-' && prefixEnd > refStart)
+                {
+                static const std::set<std::wstring_view> QUARTO_XREF_PREFIXES{
+                    L"fig", L"tbl", L"sec", L"eq",  L"lst", L"thm", L"lem",
+                    L"cor", L"prp", L"cnj", L"def", L"exm", L"exr"
+                };
+                const std::wstring_view candidate{ refStart, static_cast<size_t>(std::distance(
+                                                                 refStart, prefixEnd)) };
+                if (QUARTO_XREF_PREFIXES.contains(candidate))
+                    {
+                    // -@ref suppresses the type label in Quarto;
+                    // remove the preceding '-' if it was already written
+                    if (get_filtered_text_length() > 0 && get_filtered_buffer().back() == L'-')
+                        {
+                        get_filtered_buffer().pop_back();
+                        }
+                    // skip the entire @prefix-identifier
+                    const auto* refEnd = prefixEnd;
+                    while (refEnd < currentEndSentinel &&
+                           (std::iswalnum(*refEnd) != 0 || *refEnd == L'-' || *refEnd == L'_'))
+                        {
+                        ++refEnd;
+                        }
+                    currentStart = refEnd;
+                    continue;
+                    }
+                }
             }
         // display math ($$...$$)
         else if (!isEscaping && std::wcsncmp(currentStart, L"$$", 2) == 0)

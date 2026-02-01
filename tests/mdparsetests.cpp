@@ -427,6 +427,29 @@ TEST_CASE("Markdown Parser Quarto Shortcodes", "[md import]")
         CHECK(std::wstring{ md({ L"Press {{< kbd Ctrl-C >}} then {{< kbd Ctrl-V >}} to paste." }) } ==
               std::wstring{ L"Press CTRL-C then CTRL-V to paste." });
         }
+
+    SECTION("Quarto cross references")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"See @fig-penguins-by-island for a breakdown by @island." }) } ==
+              std::wstring{ L"See  for a breakdown by @island." });
+        CHECK(std::wstring{ md({ L"As shown in @tbl-summary and @sec-intro." }) } ==
+              std::wstring{ L"As shown in  and ." });
+        CHECK(std::wstring{ md({ L"Refer to @eq-quadratic for details." }) } ==
+              std::wstring{ L"Refer to  for details." });
+        CHECK(std::wstring{ md({ L"See @lst-code and @thm-main." }) } ==
+              std::wstring{ L"See  and ." });
+        // non-crossref @ should remain
+        CHECK(std::wstring{ md({ L"Email me @home." }) } ==
+              std::wstring{ L"Email me @home." });
+        }
+
+    SECTION("Quarto cross references in braces")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"See [Chapter -@sec-visualization] for" }) } ==
+              std::wstring{ L"See [Chapter ] for" });
+        }
     }
 
 TEST_CASE("Markdown Parser Math", "[md import]")
