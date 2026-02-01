@@ -759,6 +759,15 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static const wchar_t* find_tag(const wchar_t* text, std::wstring_view tag,
                                        bool allowQuotedTags);
+        /** @brief Checks whether an attribute exists in the current element,
+                regardless of whether it has a value.
+            @details This handles boolean HTML attributes (e.g., `hidden`)
+                that may appear without an assignment operator or value.
+            @param text The start of the HTML element (should be on or after '<').
+            @param attribute The attribute name to look for.
+            @returns @c true if the attribute is present in the element.*/
+        [[nodiscard]]
+        static bool has_attribute(const wchar_t* text, std::wstring_view attribute);
         /** @brief Searches a buffer range for a bookmark (e.g., "<a name="citation" />").
             @param sectionStart The start of the HTML buffer.
             @param sectionEnd The end of the HTML buffer.

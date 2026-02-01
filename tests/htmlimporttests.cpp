@@ -2305,5 +2305,62 @@ TEST_CASE("HTML Link Strip", "[html import]")
         }
     }
 
+TEST_CASE("HTML Parser Hidden Elements", "[html import]")
+    {
+    html_extract_text filter_html;
+
+    SECTION("Hidden attribute bare")
+        {
+        const wchar_t* text = L"<p>Visible</p><div hidden>Secret</div><p>Also visible</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Secret") == std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Visible") != std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Also visible") != std::wstring::npos);
+        }
+    SECTION("Hidden attribute empty value")
+        {
+        const wchar_t* text = L"<p>Visible</p><div hidden=\"\">Secret</div><p>End</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Secret") == std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Visible") != std::wstring::npos);
+        }
+    SECTION("Hidden attribute value hidden")
+        {
+        const wchar_t* text = L"<p>Visible</p><span hidden=\"hidden\">Secret</span><p>End</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Secret") == std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Visible") != std::wstring::npos);
+        }
+    SECTION("Hidden until-found should NOT be skipped")
+        {
+        const wchar_t* text = L"<p>Visible</p><div hidden=\"until-found\">Findable</div><p>End</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Findable") != std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Visible") != std::wstring::npos);
+        }
+    SECTION("Aria-hidden true")
+        {
+        const wchar_t* text = L"<p>Visible</p><span aria-hidden=\"true\">Icon glyph</span><p>End</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Icon glyph") == std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Visible") != std::wstring::npos);
+        }
+    SECTION("Aria-hidden false should NOT be skipped")
+        {
+        const wchar_t* text = L"<p>Visible</p><span aria-hidden=\"false\">Still here</span><p>End</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Still here") != std::wstring::npos);
+        }
+    SECTION("Hidden with nested elements")
+        {
+        const wchar_t* text = L"<p>Before</p><div hidden><p>Inner <b>bold</b></p></div><p>After</p>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(p).find(L"Inner") == std::wstring::npos);
+        CHECK(std::wstring(p).find(L"bold") == std::wstring::npos);
+        CHECK(std::wstring(p).find(L"Before") != std::wstring::npos);
+        CHECK(std::wstring(p).find(L"After") != std::wstring::npos);
+        }
+    }
+
 // NOLINTEND
 // clang-format on

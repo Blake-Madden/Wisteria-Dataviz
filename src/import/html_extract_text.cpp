@@ -1019,6 +1019,18 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    bool html_extract_text::has_attribute(const wchar_t* text, std::wstring_view attribute)
+        {
+        if (text == nullptr || attribute.empty())
+            {
+            return false;
+            }
+        const wchar_t* foundTag = find_tag(text, attribute, false);
+        const wchar_t* elementEnd = find_close_tag(text);
+        return (foundTag != nullptr) && (elementEnd != nullptr) && (foundTag < elementEnd);
+        }
+
+    //------------------------------------------------------------------
     const wchar_t* html_extract_text::operator()(const wchar_t* html_text, const size_t text_length,
                                                  const bool include_outer_text,
                                                  const bool preserve_newlines)
@@ -1164,7 +1176,7 @@ namespace lily_of_the_valley
                 linkListPositionsEnds.clear();
                 }
 
-            bool isSymbolFontSection = false;
+            bool isSymbolFontSection{ false };
             // if it's a comment, then look for matching comment ending sequence
             if (remainingTextLength >= 4 && start[0] == L'<' && start[1] == L'!' &&
                 start[2] == L'-' && start[3] == L'-')
@@ -1461,6 +1473,42 @@ namespace lily_of_the_valley
                 }
             else
                 {
+                // Skip elements with the "hidden" or "aria-hidden" attributes.
+                // The "hidden" attribute is a boolean attribute; its mere presence means hidden.
+                // The exception is hidden="until-found", which should not be skipped.
+                // aria-hidden="true" also indicates content that should be skipped.
+                if (!currentElement.empty() && currentElement[0] != L'/')
+                    {
+                    bool isHiddenElement{ false };
+                    if (has_attribute(start, L"hidden"))
+                        {
+                        const std::wstring hiddenVal =
+                            read_attribute_as_string(start, L"hidden", false, false);
+                        if (string_util::stricmp(hiddenVal.c_str(), L"until-found") != 0)
+                            {
+                            isHiddenElement = true;
+                            }
+                        }
+                    if (!isHiddenElement)
+                        {
+                        const std::wstring ariaVal =
+                            read_attribute_as_string(start, L"aria-hidden", false, false);
+                        if (string_util::stricmp(ariaVal.c_str(), L"true") == 0)
+                            {
+                            isHiddenElement = true;
+                            }
+                        }
+                    if (isHiddenElement)
+                        {
+                        const auto* closingEl = find_closing_element(
+                            start, endSentinel, { currentElement.data(), currentElement.length() });
+                        if (closingEl != nullptr)
+                            {
+                            start = closingEl;
+                            continue;
+                            }
+                        }
+                    }
                 // Symbol font section (we will need to do some special formatting later).
                 // First, special logic for "font" element...
                 if (currentElement == L"font")
