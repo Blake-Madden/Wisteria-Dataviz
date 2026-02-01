@@ -130,6 +130,7 @@ Properties common to all graphs:
   - `"banner"`
   - `"watercolor-rectangle"`
   - `"thick-watercolor-rectangle"`
+  - `"marker-rectangle"`
   - `"graduation-cap"`
   - `"book"`
   - `"tire"`

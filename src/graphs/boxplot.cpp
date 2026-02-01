@@ -376,39 +376,126 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     wxNumberFormatter::ToString(box.GetUpperWhisker(), 3,
                                                 Settings::GetDefaultNumberFormat()));
 
+                const bool useStylizedWhiskers = (box.GetBoxEffect() == BoxEffect::Marker ||
+                                                  box.GetBoxEffect() == BoxEffect::WaterColor ||
+                                                  box.GetBoxEffect() == BoxEffect::ThickWaterColor);
+
+                // When using a stylized effect, draw the original whisker lines
+                // with a transparent pen so they remain for hit-testing/tooltips
+                // but are not visible (the stylized lines are drawn on top).
                 const wxPen linePen(
-                    Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), 2);
+                    useStylizedWhiskers ?
+                        wxColour{ 0, 0, 0, 0 } :
+                        Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                    2);
+                const wxColour lineBrush =
+                    useStylizedWhiskers ?
+                        wxColour{ 0, 0, 0, 0 } :
+                        Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
 
                 std::array<wxPoint, 2> linePoints = { box.m_upperOutlierRangeCoordinate,
                                                       box.m_lowerOutlierRangeCoordinate };
-                AddObject(std::make_unique<GraphItems::Polygon>(
-                    GraphItems::GraphItemInfo(whiskerLabel)
-                        .Pen(linePen)
-                        .Brush(Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
-                        .Scaling(GetScaling()),
-                    linePoints));
+                AddObject(
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo(whiskerLabel)
+                                                              .Pen(linePen)
+                                                              .Brush(lineBrush)
+                                                              .Scaling(GetScaling()),
+                                                          linePoints));
 
-                linePoints[0] = wxPoint(box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
-                                        box.m_lowerOutlierRangeCoordinate.y);
+                linePoints[0] = wxPoint{ box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
+                                         box.m_lowerOutlierRangeCoordinate.y };
                 linePoints[1] =
                     wxPoint(linePoints[0].x + (boxWidth / 2), box.m_lowerOutlierRangeCoordinate.y);
-                AddObject(std::make_unique<GraphItems::Polygon>(
-                    GraphItems::GraphItemInfo(whiskerLabel)
-                        .Pen(linePen)
-                        .Brush(Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
-                        .Scaling(GetScaling()),
-                    linePoints));
+                AddObject(
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo(whiskerLabel)
+                                                              .Pen(linePen)
+                                                              .Brush(lineBrush)
+                                                              .Scaling(GetScaling()),
+                                                          linePoints));
 
-                linePoints[0] = wxPoint(box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
-                                        box.m_upperOutlierRangeCoordinate.y);
+                linePoints[0] = wxPoint{ box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
+                                         box.m_upperOutlierRangeCoordinate.y };
                 linePoints[1] =
                     wxPoint(linePoints[0].x + (boxWidth / 2), box.m_upperOutlierRangeCoordinate.y);
-                AddObject(std::make_unique<GraphItems::Polygon>(
-                    GraphItems::GraphItemInfo(whiskerLabel)
-                        .Pen(linePen)
-                        .Brush(Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
-                        .Scaling(GetScaling()),
-                    linePoints));
+                AddObject(
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo(whiskerLabel)
+                                                              .Pen(linePen)
+                                                              .Brush(lineBrush)
+                                                              .Scaling(GetScaling()),
+                                                          linePoints));
+
+                // draw the whiskers with a wobbly stylized pen
+                if (useStylizedWhiskers)
+                    {
+                    const auto whiskerWidth = ScaleToScreenAndCanvas(2);
+                    const bool isWaterColor = (box.GetBoxEffect() == BoxEffect::WaterColor ||
+                                               box.GetBoxEffect() == BoxEffect::ThickWaterColor);
+                    wxColour brushColor =
+                        GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour();
+                    if (isWaterColor)
+                        {
+                        brushColor = Colors::ColorContrast::ChangeOpacity(
+                            brushColor, Settings::GetTranslucencyValue());
+                        }
+                    const wxPen whiskerPen(brushColor, whiskerWidth);
+                    const auto wobble = std::max(whiskerWidth * 0.4, 1.0);
+                    std::uniform_real_distribution<> wobbleDist(-wobble, wobble);
+                    static thread_local std::mt19937 mt{ std::random_device{}() };
+
+                    // helper to draw a wobbly line between two points
+                    const auto drawWobblyLine = [&](wxPoint from, wxPoint to)
+                    {
+                        constexpr int segments{ 5 };
+                        const double dx = safe_divide<double>(to.x - from.x, segments);
+                        const double dy = safe_divide<double>(to.y - from.y, segments);
+                        std::vector<wxPoint> pts;
+                        pts.reserve(segments + 1);
+                        pts.push_back(from);
+                        for (int segment = 1; segment < segments; ++segment)
+                            {
+                            pts.emplace_back(
+                                static_cast<int>(from.x + dx * segment + wobbleDist(mt)),
+                                static_cast<int>(from.y + dy * segment + wobbleDist(mt)));
+                            }
+                        pts.push_back(to);
+                        auto poly = std::make_unique<GraphItems::Polygon>(
+                            GraphItems::GraphItemInfo(whiskerLabel)
+                                .Pen(whiskerPen)
+                                .Brush(brushColor)
+                                .Scaling(GetScaling()),
+                            pts);
+                        AddObject(std::move(poly));
+                    };
+
+                    // vertical stem
+                    drawWobblyLine(box.m_upperOutlierRangeCoordinate,
+                                   box.m_lowerOutlierRangeCoordinate);
+                    // lower cap
+                    drawWobblyLine(wxPoint(box.m_lowerOutlierRangeCoordinate.x - (boxWidth / 4),
+                                           box.m_lowerOutlierRangeCoordinate.y),
+                                   wxPoint(box.m_lowerOutlierRangeCoordinate.x + (boxWidth / 4),
+                                           box.m_lowerOutlierRangeCoordinate.y));
+                    // upper cap
+                    drawWobblyLine(wxPoint(box.m_upperOutlierRangeCoordinate.x - (boxWidth / 4),
+                                           box.m_upperOutlierRangeCoordinate.y),
+                                   wxPoint(box.m_upperOutlierRangeCoordinate.x + (boxWidth / 4),
+                                           box.m_upperOutlierRangeCoordinate.y));
+
+                    // second coat for thick watercolor
+                    if (box.GetBoxEffect() == BoxEffect::ThickWaterColor)
+                        {
+                        drawWobblyLine(box.m_upperOutlierRangeCoordinate,
+                                       box.m_lowerOutlierRangeCoordinate);
+                        drawWobblyLine(wxPoint(box.m_lowerOutlierRangeCoordinate.x - (boxWidth / 4),
+                                               box.m_lowerOutlierRangeCoordinate.y),
+                                       wxPoint(box.m_lowerOutlierRangeCoordinate.x + (boxWidth / 4),
+                                               box.m_lowerOutlierRangeCoordinate.y));
+                        drawWobblyLine(wxPoint(box.m_upperOutlierRangeCoordinate.x - (boxWidth / 4),
+                                               box.m_upperOutlierRangeCoordinate.y),
+                                       wxPoint(box.m_upperOutlierRangeCoordinate.x + (boxWidth / 4),
+                                               box.m_upperOutlierRangeCoordinate.y));
+                        }
+                    }
                 }
 
             if (box.GetDataset()->GetRowCount() > 1)
@@ -593,6 +680,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                             GraphItems::Polygon::PolygonShape::WaterColorRectangle :
                         (box.GetBoxEffect() == BoxEffect::ThickWaterColor) ?
                             GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
+                        (box.GetBoxEffect() == BoxEffect::Marker) ?
+                            GraphItems::Polygon::PolygonShape::MarkerRectangle :
                         (box.GetBoxEffect() == BoxEffect::Glassy) ?
                             GraphItems::Polygon::PolygonShape::GlassyRectangle :
                             GraphItems::Polygon::PolygonShape::Rectangle);

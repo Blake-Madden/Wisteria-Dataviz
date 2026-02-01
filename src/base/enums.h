@@ -419,8 +419,11 @@ namespace Wisteria
         CommonImage = 8,
         /// @brief An image scaled down to fit the box.
         Image = 9,
+        /// @brief A felt-marker-like effect, where the outline is rough and slightly uneven
+        ///     and the interior is filled with diagonal hatching lines.
+        Marker = 10,
         /// @private
-        EFFECTS_COUNT = 10
+        EFFECTS_COUNT = 11
         };
 
     /// @brief Pie slice rendering options (used for pie charts.)

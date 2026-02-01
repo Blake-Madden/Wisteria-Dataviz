@@ -320,6 +320,15 @@ namespace Wisteria::GraphItems
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
         void DrawThickWaterColorRectangle(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a rectangle with a marker-like effect: rough, uneven thick outline
+        ///     and diagonal hatching lines inside.
+        /// @param rect The area to draw within.
+        /// @param dc The DC to draw to.
+        /// @note The outline may go slightly outside the provided rectangle to simulate
+        ///     marker roughness.\n
+        ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
+        ///     object using this renderer.
+        void DrawMarkerRectangle(wxRect rect, wxDC& dc) const;
         /// @brief Draws a graduation cap with tassel.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.

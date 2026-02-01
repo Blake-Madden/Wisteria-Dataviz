@@ -1296,6 +1296,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GraphItems::Polygon::PolygonShape::WaterColorRectangle :
                               (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
                                   GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
+                              (bar.GetEffect() == BoxEffect::Marker) ?
+                                  GraphItems::Polygon::PolygonShape::MarkerRectangle :
                               (bar.GetShape() == BarShape::Arrow ||
                                bar.GetShape() == BarShape::ReverseArrow) ?
                                   GraphItems::Polygon::PolygonShape::Irregular :
@@ -1314,7 +1316,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // flip outline logic so that we have a hard outline since we are
                 // not "drawing within the lines" (also, don't clip)
                 if (bar.GetEffect() == BoxEffect::WaterColor ||
-                    bar.GetEffect() == BoxEffect::ThickWaterColor)
+                    bar.GetEffect() == BoxEffect::ThickWaterColor ||
+                    bar.GetEffect() == BoxEffect::Marker)
                     {
                     // ...but only use hard outline if there isn't a user-defined outline
                     if (!barBlock.GetOutlinePen().IsOk())
@@ -1323,7 +1326,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()));
                         }
-                    SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
+                    SetDefaultLegendShape((bar.GetEffect() == BoxEffect::Marker) ?
+                                              Icons::IconShape::MarkerRectangle :
+                                              Icons::IconShape::WaterColorRectangle);
                     }
                 // clip box to not be on top of axes
                 else
@@ -1869,6 +1874,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GraphItems::Polygon::PolygonShape::WaterColorRectangle :
                               (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
                                   GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
+                              (bar.GetEffect() == BoxEffect::Marker) ?
+                                  GraphItems::Polygon::PolygonShape::MarkerRectangle :
                               (bar.GetShape() == BarShape::Arrow ||
                                bar.GetShape() == BarShape::ReverseArrow) ?
                                   GraphItems::Polygon::PolygonShape::Irregular :
@@ -1887,7 +1894,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // flip outline logic so that we have a hard outline since we are
                 // not "drawing within the lines" (also, don't clip)
                 if (bar.GetEffect() == BoxEffect::WaterColor ||
-                    bar.GetEffect() == BoxEffect::ThickWaterColor)
+                    bar.GetEffect() == BoxEffect::ThickWaterColor ||
+                    bar.GetEffect() == BoxEffect::Marker)
                     {
                     // ...but only use hard outline if there isn't a user-defined outline
                     if (!barBlock.GetOutlinePen().IsOk())
@@ -1896,7 +1904,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()));
                         }
-                    SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
+                    SetDefaultLegendShape((bar.GetEffect() == BoxEffect::Marker) ?
+                                              Icons::IconShape::MarkerRectangle :
+                                              Icons::IconShape::WaterColorRectangle);
                     }
                 // clip box to not be on top of axes
                 else

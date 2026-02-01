@@ -213,6 +213,7 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
             { Icons::IconShape::ThickWaterColorRectangle,
               &ShapeRenderer::DrawThickWaterColorRectangle },
+            { Icons::IconShape::MarkerRectangle, &ShapeRenderer::DrawMarkerRectangle },
             { Icons::IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
             { Icons::IconShape::Book, &ShapeRenderer::DrawBook },
             { Icons::IconShape::Tire, &ShapeRenderer::DrawTire },
@@ -5631,6 +5632,135 @@ namespace Wisteria::GraphItems
 
                 gc->DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
                 }
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawMarkerRectangle(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for marker effect!");
+        if (gc != nullptr)
+            {
+            const wxColour markerColor = GetGraphItemInfo().GetBrush().IsOk() ?
+                                             GetGraphItemInfo().GetBrush().GetColour() :
+                                             *wxBLACK;
+
+            // perturbation ranges for the marker wobble, proportional to each dimension
+            const auto wiggleH =
+                std::max(safe_divide<double>(ScaleToScreenAndCanvas(2), rect.GetWidth()), 0.005);
+            const auto wiggleV =
+                std::max(safe_divide<double>(ScaleToScreenAndCanvas(2), rect.GetHeight()), 0.005);
+            std::uniform_real_distribution<> wiggleDistroH(-wiggleH, wiggleH);
+            std::uniform_real_distribution<> wiggleDistroV(-wiggleV, wiggleV);
+
+            // Use the shorter side of the box (the base width) for marker sizing.
+            // This keeps all bars with the same base width looking consistent.
+            const auto baseWidth = std::min(rect.GetWidth(), rect.GetHeight());
+            const auto markerWidth = std::max<double>(baseWidth * math_constants::tenth, 1.0);
+
+            // draw diagonal hatching lines (top-left to bottom-right direction)
+            gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+            const wxPen hatchPen(
+                wxPenInfo{ markerColor, static_cast<int>(markerWidth) }.Cap(wxPenCap::wxCAP_BUTT));
+
+            const auto hatchSpacing = std::max(baseWidth * 0.35, 4.0);
+            // Sweep a diagonal line from top-left to bottom-right.
+            // The line sweeps across the rectangle via an offset value.
+            const int totalSweep = rect.GetWidth() + rect.GetHeight();
+            for (int offset = hatchSpacing; offset < totalSweep; offset += hatchSpacing)
+                {
+                // calculate unclipped start/end of the diagonal line
+                double x1 = rect.GetX() + offset;
+                double y1 = static_cast<double>(rect.GetY());
+                double x2 = static_cast<double>(rect.GetX());
+                double y2 = rect.GetY() + offset;
+
+                // clip to rectangle bounds
+                if (x1 > rect.GetRight())
+                    {
+                    y1 += (x1 - rect.GetRight());
+                    x1 = rect.GetRight();
+                    }
+                if (y2 > rect.GetBottom())
+                    {
+                    x2 += (y2 - rect.GetBottom());
+                    y2 = rect.GetBottom();
+                    }
+                if (y1 > rect.GetBottom() || x2 > rect.GetRight())
+                    {
+                    continue;
+                    }
+
+                // draw the line as a wobbly path with a few segments
+                auto hatchPath = gc->CreatePath();
+                constexpr int segments{ 4 };
+                const double dx = safe_divide<double>(x2 - x1, segments);
+                const double dy = safe_divide<double>(y2 - y1, segments);
+
+                hatchPath.MoveToPoint(x1, y1);
+                for (int segment = 1; segment <= segments; ++segment)
+                    {
+                    const double wx = rect.GetWidth() * wiggleDistroH(m_mt);
+                    const double wy = rect.GetHeight() * wiggleDistroV(m_mt);
+                    hatchPath.AddLineToPoint(x1 + dx * segment + wx, y1 + dy * segment + wy);
+                    }
+
+                gc->SetPen(hatchPen);
+                gc->StrokePath(hatchPath);
+                }
+
+            // draw rough marker outline
+            wxPen outlinePen(markerColor, markerWidth);
+            outlinePen.SetCap(wxPenCap::wxCAP_BUTT);
+            gc->SetPen(outlinePen);
+            gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+
+            const size_t edgeSegments =
+                std::max<size_t>(safe_divide<int>(std::max(rect.GetWidth(), rect.GetHeight()),
+                                                  ScaleToScreenAndCanvas(20)),
+                                 3);
+
+            auto outlinePath = gc->CreatePath();
+
+            // top edge
+            outlinePath.MoveToPoint(rect.GetX(), rect.GetY());
+            for (size_t i = 1; i <= edgeSegments; ++i)
+                {
+                const double tip = safe_divide<double>(i, edgeSegments);
+                outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * tip,
+                                           rect.GetY() + rect.GetHeight() * wiggleDistroV(m_mt));
+                }
+            // right edge
+            for (size_t i = 1; i <= edgeSegments; ++i)
+                {
+                const double tip = safe_divide<double>(i, edgeSegments);
+                outlinePath.AddLineToPoint(rect.GetRight() + rect.GetWidth() * wiggleDistroH(m_mt),
+                                           rect.GetY() + rect.GetHeight() * tip);
+                }
+            // bottom edge
+            for (size_t i = 1; i <= edgeSegments; ++i)
+                {
+                const double tip = 1.0 - safe_divide<double>(i, edgeSegments);
+                outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * tip,
+                                           rect.GetBottom() +
+                                               rect.GetHeight() * wiggleDistroV(m_mt));
+                }
+            // left edge
+            for (size_t i = 1; i <= edgeSegments; ++i)
+                {
+                const double tip = 1.0 - safe_divide<double>(i, edgeSegments);
+                outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * wiggleDistroH(m_mt),
+                                           rect.GetY() + rect.GetHeight() * tip);
+                }
+
+            outlinePath.CloseSubpath();
+            gc->StrokePath(outlinePath);
             }
         }
 

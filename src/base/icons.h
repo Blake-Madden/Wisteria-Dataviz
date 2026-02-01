@@ -80,6 +80,8 @@ namespace Wisteria::Icons
         WaterColorRectangle,      /*!< A warped rectangle that looks like a watercolor-filled box.*/
         ThickWaterColorRectangle, /*!< A warped rectangle that looks like a watercolor-filled box,
                                        painted with a second coat.*/
+        MarkerRectangle,          /*!< A rectangle drawn with a marker-like effect, with rough
+                                      outline and diagonal hatching.*/
         GraduationCap,            /*!< A graduation cap.*/
         Book,                     /*!< A textbook.*/
         Tire,                     /*!< A car tire.*/
@@ -130,7 +132,8 @@ namespace Wisteria::Icons
         explicit LegendIcon(std::vector<wxColour> colors)
             : m_shape(IconShape::ColorGradient), m_colors(std::move(colors))
             {
-            assert(m_colors.size() >= 2 && L"Color gradient legend created with only one color!?");
+            wxASSERT_MSG(m_colors.size() >= 2,
+                         L"Color gradient legend created with only one color!?");
             }
 
         /** @brief Constructs legend icon.
@@ -173,7 +176,7 @@ namespace Wisteria::Icons
         [[nodiscard]]
         static wxSize GetArrowheadSizeDIPs()
             {
-            return wxSize{ 2, 2 };
+            return { 2, 2 };
             }
         };
 
