@@ -1302,7 +1302,7 @@ namespace Wisteria::Graphs
 
         constexpr uint32_t COFFEE_SEED{ 0xC0FFEE77 };
 
-        constexpr auto mixSeed = [](uint32_t x) -> uint32_t
+        constexpr auto MIX_SEED = [](uint32_t x) -> uint32_t
         {
             x ^= x >> 16;
             x *= 0x7feb352d;
@@ -1322,7 +1322,7 @@ namespace Wisteria::Graphs
 
             // 1 large stain on the left, pushed halfway outside the ring
             {
-            constexpr uint32_t SEED = mixSeed(COFFEE_SEED + 1117U);
+            constexpr uint32_t SEED = MIX_SEED(COFFEE_SEED + 1117U);
             const double sizeScale = 1.0 + 0.3 * HashToUnitInterval(SEED ^ 0x4444U);
             const wxColour& color = stainColors[SEED % stainColors.size()];
             // 180 degrees = left side, high distance to push outside ring
@@ -1333,7 +1333,7 @@ namespace Wisteria::Graphs
         constexpr int SMALL_STAIN_COUNT{ 6 };
         for (int i = 0; i < SMALL_STAIN_COUNT; ++i)
             {
-            const uint32_t seed = mixSeed(COFFEE_SEED + static_cast<uint32_t>((i + 30) * 557));
+            const uint32_t seed = MIX_SEED(COFFEE_SEED + static_cast<uint32_t>((i + 30) * 557));
             const double sizeScale = 0.2 + 0.25 * HashToUnitInterval(seed ^ 0x6666U);
             wxColour color = stainColors[seed % stainColors.size()];
             // small stains slightly more opaque
@@ -1385,13 +1385,13 @@ namespace Wisteria::Graphs
             if (t < TAPER_ZONE)
                 {
                 // fade in from 0 to 1 over the first taperZone
-                const double localT = safe_divide<double>(t, TAPER_ZONE);
+                const auto localT = safe_divide<double>(t, TAPER_ZONE);
                 return 0.5 * (1.0 - std::cos(localT * std::numbers::pi));
                 }
             if (t > (1.0 - TAPER_ZONE))
                 {
                 // fade out from 1 to 0 over the last taperZone
-                const double localT = safe_divide<double>(t - (1.0 - TAPER_ZONE), TAPER_ZONE);
+                const auto localT = safe_divide<double>(t - (1.0 - TAPER_ZONE), TAPER_ZONE);
                 return 0.5 * (1.0 + std::cos(localT * std::numbers::pi));
                 }
             return 1.0;
@@ -1868,7 +1868,7 @@ namespace Wisteria::Graphs
                 const double blisterBandMin{ 0.15 };
                 const double blisterBandMax{ 0.70 };
 
-                const double bandStep =
+                const auto bandStep =
                     safe_divide<double>(blisterBandMax - blisterBandMin, BLISTER_COUNT);
 
                 const double bandCenter = blisterBandMin + (blisterIndex + 0.5) * bandStep;

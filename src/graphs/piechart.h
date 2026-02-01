@@ -1192,7 +1192,7 @@ namespace Wisteria::Graphs
             const double combinedWave = (lowFrequencyWave * 0.65) + (midFrequencyWave * 0.35);
 
             const uint32_t jitterHash =
-                static_cast<uint32_t>(angleDegrees * 10.0) ^ (noiseSeed * 2654435761u);
+                static_cast<uint32_t>(angleDegrees * 10.0) ^ (noiseSeed * 2654435761U);
 
             const double jitter = (HashToUnitInterval(jitterHash) - math_constants::half) *
                                   math_constants::quarter;
