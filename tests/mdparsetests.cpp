@@ -429,5 +429,178 @@ TEST_CASE("Markdown Parser Quarto Shortcodes", "[md import]")
         }
     }
 
+TEST_CASE("Markdown Parser Math", "[md import]")
+    {
+    SECTION("Inline math")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"The equation $x+y=z$ is simple." }) } ==
+              std::wstring{ L"The equation x+y=z is simple." });
+        CHECK(std::wstring{ md({ L"Where $a^2 + b^2 = c^2$ holds." }) } ==
+              std::wstring{ L"Where a^2 + b^2 = c^2 holds." });
+        // LaTeX relational operators
+        CHECK(std::wstring{ md({ L"$x \\leq y$" }) } ==
+              std::wstring{ L"x \u2264 y" });
+        CHECK(std::wstring{ md({ L"$x \\geq y$" }) } ==
+              std::wstring{ L"x \u2265 y" });
+        CHECK(std::wstring{ md({ L"$a \\neq b$" }) } ==
+              std::wstring{ L"a \u2260 b" });
+        CHECK(std::wstring{ md({ L"$a \\approx b$" }) } ==
+              std::wstring{ L"a \u2248 b" });
+        CHECK(std::wstring{ md({ L"$a \\equiv b$" }) } ==
+              std::wstring{ L"a \u2261 b" });
+        // Greek letters
+        CHECK(std::wstring{ md({ L"$\\alpha + \\beta$" }) } ==
+              std::wstring{ L"\u03B1 + \u03B2" });
+        CHECK(std::wstring{ md({ L"$\\Sigma$" }) } ==
+              std::wstring{ L"\u03A3" });
+        CHECK(std::wstring{ md({ L"$\\pi r^2$" }) } ==
+              std::wstring{ L"\u03C0 r^2" });
+        CHECK(std::wstring{ md({ L"$\\theta + \\phi$" }) } ==
+              std::wstring{ L"\u03B8 + \u03C6" });
+        CHECK(std::wstring{ md({ L"$\\Omega$" }) } ==
+              std::wstring{ L"\u03A9" });
+        CHECK(std::wstring{ md({ L"$\\Delta x$" }) } ==
+              std::wstring{ L"\u0394 x" });
+        // Large operators
+        CHECK(std::wstring{ md({ L"$\\sum_{i=0}^{n} x$" }) } ==
+              std::wstring{ L"\u2211_{i=0}^{n} x" });
+        CHECK(std::wstring{ md({ L"$\\prod_{i=1}^{n} x_i$" }) } ==
+              std::wstring{ L"\u220F_{i=1}^{n} x_i" });
+        CHECK(std::wstring{ md({ L"$\\int_0^1 f(x) dx$" }) } ==
+              std::wstring{ L"\u222B_0^1 f(x) dx" });
+        CHECK(std::wstring{ md({ L"$\\partial f$" }) } ==
+              std::wstring{ L"\u2202 f" });
+        // Arrows
+        CHECK(std::wstring{ md({ L"$x \\to y$" }) } ==
+              std::wstring{ L"x \u2192 y" });
+        CHECK(std::wstring{ md({ L"$A \\Rightarrow B$" }) } ==
+              std::wstring{ L"A \u21D2 B" });
+        CHECK(std::wstring{ md({ L"$A \\Leftrightarrow B$" }) } ==
+              std::wstring{ L"A \u21D4 B" });
+        CHECK(std::wstring{ md({ L"$f: X \\mapsto Y$" }) } ==
+              std::wstring{ L"f: X \u21A6 Y" });
+        // Set/logic operators
+        CHECK(std::wstring{ md({ L"$x \\in S$" }) } ==
+              std::wstring{ L"x \u2208 S" });
+        CHECK(std::wstring{ md({ L"$A \\cup B$" }) } ==
+              std::wstring{ L"A \u222A B" });
+        CHECK(std::wstring{ md({ L"$A \\cap B$" }) } ==
+              std::wstring{ L"A \u2229 B" });
+        CHECK(std::wstring{ md({ L"$A \\subseteq B$" }) } ==
+              std::wstring{ L"A \u2286 B" });
+        CHECK(std::wstring{ md({ L"$\\forall x \\exists y$" }) } ==
+              std::wstring{ L"\u2200 x \u2203 y" });
+        CHECK(std::wstring{ md({ L"$\\emptyset$" }) } ==
+              std::wstring{ L"\u2205" });
+        // Misc symbols
+        CHECK(std::wstring{ md({ L"$\\infty$" }) } ==
+              std::wstring{ L"\u221E" });
+        CHECK(std::wstring{ md({ L"$a \\pm b$" }) } ==
+              std::wstring{ L"a \u00B1 b" });
+        CHECK(std::wstring{ md({ L"$a \\times b$" }) } ==
+              std::wstring{ L"a \u00D7 b" });
+        CHECK(std::wstring{ md({ L"$a \\cdot b$" }) } ==
+              std::wstring{ L"a \u00B7 b" });
+        CHECK(std::wstring{ md({ L"$\\sqrt{x}$" }) } ==
+              std::wstring{ L"\u221A{x}" });
+        CHECK(std::wstring{ md({ L"$\\nabla f$" }) } ==
+              std::wstring{ L"\u2207 f" });
+        CHECK(std::wstring{ md({ L"$\\ldots$" }) } ==
+              std::wstring{ L"\u2026" });
+        // Multiple commands in one equation
+        CHECK(std::wstring{ md({ L"$\\alpha \\leq \\beta \\to \\infty$" }) } ==
+              std::wstring{ L"\u03B1 \u2264 \u03B2 \u2192 \u221E" });
+        // Unknown command left as-is
+        CHECK(std::wstring{ md({ L"$\\frac{a}{b}$" }) } ==
+              std::wstring{ L"\\frac{a}{b}" });
+        // Backslash not followed by letters left as-is
+        CHECK(std::wstring{ md({ L"$a \\+ b$" }) } ==
+              std::wstring{ L"a \\+ b" });
+        CHECK(std::wstring{ md({ L"$a \\ b$" }) } ==
+              std::wstring{ L"a \\ b" });
+        }
+
+    SECTION("Display math")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Before\n$$\nx = 5\n$$\nAfter" }) } ==
+              std::wstring{ L"Before x = 5 After" });
+        // display math with LaTeX commands
+        CHECK(std::wstring{ md({ L"$$\\sum_{i=0}^{\\infty} \\alpha_i$$" }) } ==
+              std::wstring{ L"\u2211_{i=0}^{\u221E} \u03B1_i" });
+        }
+
+    SECTION("Dollar sign not math")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // space after opening $ means not math
+        CHECK(std::wstring{ md({ L"The price is $ 5.00 today." }) } ==
+              std::wstring{ L"The price is $ 5.00 today." });
+        // no closing $, not math
+        CHECK(std::wstring{ md({ L"I have $5 in my pocket." }) } ==
+              std::wstring{ L"I have $5 in my pocket." });
+        // closing $ followed by digit, not math
+        CHECK(std::wstring{ md({ L"between $5 and $10 range" }) } ==
+              std::wstring{ L"between $5 and $10 range" });
+        // tab after opening $
+        CHECK(std::wstring{ md({ L"cost $\t50$ here" }) } ==
+              std::wstring{ L"cost $\t50$ here" });
+        // space before closing $
+        CHECK(std::wstring{ md({ L"the $value $ is odd" }) } ==
+              std::wstring{ L"the $value $ is odd" });
+        }
+
+    SECTION("Inline math boundary")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // equation at very start of input
+        CHECK(std::wstring{ md({ L"$x$" }) } ==
+              std::wstring{ L"x" });
+        // equation at very end of input
+        CHECK(std::wstring{ md({ L"see $x$" }) } ==
+              std::wstring{ L"see x" });
+        // back-to-back equations
+        CHECK(std::wstring{ md({ L"$a$$b$" }) } ==
+              std::wstring{ L"ab" });
+        // single character equation
+        CHECK(std::wstring{ md({ L"the $x$ axis" }) } ==
+              std::wstring{ L"the x axis" });
+        // equation with special markdown chars inside
+        CHECK(std::wstring{ md({ L"$a*b*c$" }) } ==
+              std::wstring{ L"a*b*c" });
+        }
+
+    SECTION("Display math boundary")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // inline style (no newlines)
+        CHECK(std::wstring{ md({ L"$$x = 5$$" }) } ==
+              std::wstring{ L"x = 5" });
+        // empty display block
+        CHECK(std::wstring{ md({ L"$$$$" }) } ==
+              std::wstring{ L"" });
+        // display math at end of input
+        CHECK(std::wstring{ md({ L"see\n$$\nx+1\n$$" }) } ==
+              std::wstring{ L"see x+1" });
+        }
+
+    SECTION("Malformed math")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // unclosed display math, reads $$ as literal
+        CHECK(std::wstring{ md({ L"Before $$x = 5 and no close" }) } ==
+              std::wstring{ L"Before $$x = 5 and no close" });
+        CHECK(md.get_log().find(L"Bad display math") != std::wstring::npos);
+        // lone $ at end of input
+        CHECK(std::wstring{ md({ L"trailing $" }) } ==
+              std::wstring{ L"trailing $" });
+        // $$ without closing, reads as literal
+        CHECK(std::wstring{ md({ L"a $$ b" }) } ==
+              std::wstring{ L"a $$ b" });
+        CHECK(md.get_log().find(L"Bad display math") != std::wstring::npos);
+        }
+    }
+
 // NOLINTEND
 // clang-format on

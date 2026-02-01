@@ -49,6 +49,11 @@ namespace lily_of_the_valley
                               const wchar_t*& currentStart, wchar_t& previousChar,
                               bool& headerMode);
 
+        /** @brief Expands simple LaTeX commands (e.g., \\leq, \\sum) in an equation
+                string to their Unicode equivalents.
+            @param equation The equation string to transform in place.*/
+        static void transform_equation(std::wstring& equation);
+
         /** @brief Metadata sections end on the first blank like, so moves to that.
             @param md_text The Markdown text, starting anywhere in the metadata section.
             @returns The start of the document's body.

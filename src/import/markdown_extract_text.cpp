@@ -7,6 +7,155 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "markdown_extract_text.h"
+#include <map>
+
+// LaTeX command -> Unicode character lookup table.
+// Only simple commands that map to a single Unicode character are included.
+// clang-format off
+static const std::map<std::wstring_view, wchar_t> LATEX_COMMAND_MAP
+    {
+    // Greek letters (lowercase)
+    { L"alpha",    L'\x03B1' },  // α
+    { L"beta",     L'\x03B2' },  // β
+    { L"gamma",    L'\x03B3' },  // γ
+    { L"delta",    L'\x03B4' },  // δ
+    { L"epsilon",  L'\x03B5' },  // ε
+    { L"zeta",     L'\x03B6' },  // ζ
+    { L"eta",      L'\x03B7' },  // η
+    { L"theta",    L'\x03B8' },  // θ
+    { L"iota",     L'\x03B9' },  // ι
+    { L"kappa",    L'\x03BA' },  // κ
+    { L"lambda",   L'\x03BB' },  // λ
+    { L"mu",       L'\x03BC' },  // μ
+    { L"nu",       L'\x03BD' },  // ν
+    { L"xi",       L'\x03BE' },  // ξ
+    { L"pi",       L'\x03C0' },  // π
+    { L"rho",      L'\x03C1' },  // ρ
+    { L"sigma",    L'\x03C3' },  // σ
+    { L"tau",      L'\x03C4' },  // τ
+    { L"upsilon",  L'\x03C5' },  // υ
+    { L"phi",      L'\x03C6' },  // φ
+    { L"chi",      L'\x03C7' },  // χ
+    { L"psi",      L'\x03C8' },  // ψ
+    { L"omega",    L'\x03C9' },  // ω
+    // Greek letters (uppercase)
+    { L"Gamma",    L'\x0393' },  // Γ
+    { L"Delta",    L'\x0394' },  // Δ
+    { L"Theta",    L'\x0398' },  // Θ
+    { L"Lambda",   L'\x039B' },  // Λ
+    { L"Xi",       L'\x039E' },  // Ξ
+    { L"Pi",       L'\x03A0' },  // Π
+    { L"Sigma",    L'\x03A3' },  // Σ
+    { L"Phi",      L'\x03A6' },  // Φ
+    { L"Psi",      L'\x03A8' },  // Ψ
+    { L"Omega",    L'\x03A9' },  // Ω
+    // Relational operators
+    { L"leq",      L'\x2264' },  // ≤ (less than or equal)
+    { L"geq",      L'\x2265' },  // ≥ (greater than or equal)
+    { L"neq",      L'\x2260' },  // ≠ (not equal)
+    { L"approx",   L'\x2248' },  // ≈ (approximately equal)
+    { L"equiv",    L'\x2261' },  // ≡ (identical/congruent)
+    { L"sim",      L'\x223C' },  // ∼ (similar to)
+    { L"propto",   L'\x221D' },  // ∝ (proportional to)
+    { L"prec",     L'\x227A' },  // ≺ (precedes)
+    { L"succ",     L'\x227B' },  // ≻ (succeeds)
+    { L"ll",       L'\x226A' },  // ≪ (much less than)
+    { L"gg",       L'\x226B' },  // ≫ (much greater than)
+    // Set/logic operators
+    { L"in",       L'\x2208' },  // ∈ (element of)
+    { L"notin",    L'\x2209' },  // ∉ (not element of)
+    { L"subset",   L'\x2282' },  // ⊂ (subset)
+    { L"supset",   L'\x2283' },  // ⊃ (superset)
+    { L"subseteq", L'\x2286' },  // ⊆ (subset or equal)
+    { L"supseteq", L'\x2287' },  // ⊇ (superset or equal)
+    { L"cup",      L'\x222A' },  // ∪ (union)
+    { L"cap",      L'\x2229' },  // ∩ (intersection)
+    { L"emptyset", L'\x2205' },  // ∅ (empty set)
+    { L"forall",   L'\x2200' },  // ∀ (for all)
+    { L"exists",   L'\x2203' },  // ∃ (there exists)
+    { L"neg",      L'\x00AC' },  // ¬ (logical not)
+    { L"land",     L'\x2227' },  // ∧ (logical and)
+    { L"lor",      L'\x2228' },  // ∨ (logical or)
+    // Arrows
+    { L"to",           L'\x2192' },  // → (right arrow)
+    { L"rightarrow",   L'\x2192' },  // → (right arrow)
+    { L"leftarrow",    L'\x2190' },  // ← (left arrow)
+    { L"leftrightarrow", L'\x2194' }, // ↔ (left-right arrow)
+    { L"Rightarrow",   L'\x21D2' },  // ⇒ (double right arrow / implies)
+    { L"Leftarrow",    L'\x21D0' },  // ⇐ (double left arrow)
+    { L"Leftrightarrow", L'\x21D4' }, // ⇔ (double left-right arrow / iff)
+    { L"uparrow",      L'\x2191' },  // ↑ (up arrow)
+    { L"downarrow",    L'\x2193' },  // ↓ (down arrow)
+    { L"mapsto",       L'\x21A6' },  // ↦ (maps to)
+    // Large operators / calculus
+    { L"sum",      L'\x2211' },  // ∑ (summation)
+    { L"prod",     L'\x220F' },  // ∏ (product)
+    { L"int",      L'\x222B' },  // ∫ (integral)
+    { L"oint",     L'\x222E' },  // ∮ (contour integral)
+    { L"partial",  L'\x2202' },  // ∂ (partial derivative)
+    { L"nabla",    L'\x2207' },  // ∇ (nabla/del)
+    // Miscellaneous math symbols
+    { L"infty",    L'\x221E' },  // ∞ (infinity)
+    { L"pm",       L'\x00B1' },  // ± (plus-minus)
+    { L"mp",       L'\x2213' },  // ∓ (minus-plus)
+    { L"times",    L'\x00D7' },  // × (multiplication)
+    { L"div",      L'\x00F7' },  // ÷ (division)
+    { L"cdot",     L'\x00B7' },  // · (centered dot)
+    { L"star",     L'\x22C6' },  // ⋆ (star operator)
+    { L"circ",     L'\x2218' },  // ∘ (ring operator / composition)
+    { L"bullet",   L'\x2022' },  // • (bullet)
+    { L"sqrt",     L'\x221A' },  // √ (square root)
+    { L"angle",    L'\x2220' },  // ∠ (angle)
+    { L"perp",     L'\x22A5' },  // ⊥ (perpendicular)
+    { L"parallel", L'\x2225' },  // ∥ (parallel)
+    { L"therefore", L'\x2234' }, // ∴ (therefore)
+    { L"because",  L'\x2235' },  // ∵ (because)
+    { L"ldots",    L'\x2026' },  // … (ellipsis)
+    { L"cdots",    L'\x22EF' },  // ⋯ (centered ellipsis)
+    { L"prime",    L'\x2032' },  // ′ (prime)
+    { L"hbar",     L'\x210F' },  // ℏ (reduced Planck constant)
+    { L"ell",      L'\x2113' },  // ℓ (script small l)
+    { L"Re",       L'\x211C' },  // ℜ (real part)
+    { L"Im",       L'\x2111' },  // ℑ (imaginary part)
+    { L"aleph",    L'\x2135' },  // ℵ (aleph)
+    { L"wp",       L'\x2118' },  // ℘ (Weierstrass p)
+    { L"dagger",   L'\x2020' },  // † (dagger)
+    { L"ddagger",  L'\x2021' },  // ‡ (double dagger)
+    };
+// clang-format on
+
+//--------------------------------------------
+void lily_of_the_valley::markdown_extract_text::transform_equation(std::wstring& equation)
+    {
+    size_t pos{ 0 };
+    while (pos < equation.length())
+        {
+        if (equation[pos] == L'\\')
+            {
+            // find the end of the command name (letters only)
+            const size_t cmdStart = pos + 1;
+            size_t cmdEnd = cmdStart;
+            while (cmdEnd < equation.length() && std::iswalpha(equation[cmdEnd]) != 0)
+                {
+                ++cmdEnd;
+                }
+            if (cmdEnd > cmdStart)
+                {
+                const std::wstring_view cmd{ equation.data() + cmdStart, cmdEnd - cmdStart };
+                const auto it = LATEX_COMMAND_MAP.find(cmd);
+                if (it != LATEX_COMMAND_MAP.cend())
+                    {
+                    // replace \command with the Unicode character
+                    equation.replace(pos, cmdEnd - pos, 1, it->second);
+                    // advance past the inserted character
+                    ++pos;
+                    continue;
+                    }
+                }
+            }
+        ++pos;
+        }
+    }
 
 //--------------------------------------------
 bool lily_of_the_valley::markdown_extract_text::parse_code_block(const bool isEscaping,
@@ -881,6 +1030,72 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
             {
             std::advance(currentStart, 1);
             continue;
+            }
+        // display math ($$...$$)
+        else if (!isEscaping && std::wcsncmp(currentStart, L"$$", 2) == 0)
+            {
+            std::advance(currentStart, 2);
+            // skip optional newline after opening $$
+            while (currentStart < currentEndSentinel &&
+                   (*currentStart == L'\r' || *currentStart == L'\n'))
+                {
+                std::advance(currentStart, 1);
+                }
+            const auto* endOfTag = std::wcsstr(currentStart, L"$$");
+            if (endOfTag == nullptr || endOfTag >= currentEndSentinel)
+                {
+                log_message(L"Bad display math block in markdown file.");
+                // no matching $$, treat the $$ as literal and continue
+                add_characters(L"$$");
+                previousChar = L'$';
+                continue;
+                }
+            // trim trailing newlines before closing $$
+            const auto* contentEnd{ endOfTag };
+            while (contentEnd > currentStart &&
+                   (*(contentEnd - 1) == L'\r' || *(contentEnd - 1) == L'\n'))
+                {
+                --contentEnd;
+                }
+            std::wstring equation(currentStart, contentEnd);
+            if (!equation.empty())
+                {
+                transform_equation(equation);
+                add_characters({ equation.data(), equation.length() });
+                previousChar = equation.back();
+                }
+            currentStart = std::next(endOfTag, 2);
+            continue;
+            }
+        // inline math ($...$)
+        else if (!isEscaping && *currentStart == L'$')
+            {
+            // opening $ must not be followed by whitespace
+            if (std::next(currentStart) < currentEndSentinel && *std::next(currentStart) != L' ' &&
+                *std::next(currentStart) != L'\t' && *std::next(currentStart) != L'\r' &&
+                *std::next(currentStart) != L'\n')
+                {
+                const auto* scanStart = std::next(currentStart);
+                const auto* endOfTag = string_util::find_unescaped_char_same_line_n(
+                    scanStart, L'$', std::distance(scanStart, currentEndSentinel));
+                // closing $ must not be preceded by whitespace and not followed by a digit
+                if (endOfTag != nullptr && endOfTag < currentEndSentinel && endOfTag > scanStart &&
+                    *std::prev(endOfTag, 1) != L' ' && *std::prev(endOfTag, 1) != L'\t' &&
+                    (std::next(endOfTag) >= currentEndSentinel ||
+                     std::iswdigit(*std::next(endOfTag)) == 0))
+                    {
+                    std::wstring equation(scanStart, endOfTag);
+                    if (!equation.empty())
+                        {
+                        transform_equation(equation);
+                        add_characters({ equation.data(), equation.length() });
+                        previousChar = equation.back();
+                        }
+                    currentStart = std::next(endOfTag);
+                    continue;
+                    }
+                }
+            // not math, treat $ as literal character
             }
         // RMarkdown (Pandoc) comment
         else if (!isEscaping && std::wcsncmp(currentStart, L"<!--", 4) == 0)
