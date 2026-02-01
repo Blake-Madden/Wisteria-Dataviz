@@ -328,5 +328,106 @@ TEST_CASE("Markdown Parser Header", "[md import]")
         }
     }
 
+TEST_CASE("Markdown Parser Quarto Shortcodes", "[md import]")
+    {
+    SECTION("Kbd")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Press {{< kbd Shift-Ctrl-P >}} to open." }) } ==
+              std::wstring{ L"Press SHIFT-CTRL-P to open." });
+        }
+
+    SECTION("Kbd multi-platform")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Use {{< kbd mac=Shift-Command-O win=Shift-Control-O >}} here." }) } ==
+              std::wstring{ L"Use MAC=SHIFT-COMMAND-O WIN=SHIFT-CONTROL-O here." });
+        }
+
+    SECTION("Meta")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"The {{< meta title >}} is shown." }) } ==
+              std::wstring{ L"The TITLE is shown." });
+        }
+
+    SECTION("Var")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Version {{< var version >}} released." }) } ==
+              std::wstring{ L"Version VERSION released." });
+        }
+
+    SECTION("Env")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Home is {{< env HOME >}} here." }) } ==
+              std::wstring{ L"Home is HOME here." });
+        }
+
+    SECTION("Pagebreak")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Before{{< pagebreak >}}After" }) } ==
+              std::wstring{ L"Before\n\nAfter" });
+        }
+
+    SECTION("Video")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"See {{< video https://example.com >}} here." }) } ==
+              std::wstring{ L"See https://example.com here." });
+        }
+
+    SECTION("Unknown shortcode stripped")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"See {{< lipsum 3 >}} here." }) } ==
+              std::wstring{ L"See  here." });
+        CHECK(std::wstring{ md({ L"See {{< bogus some args >}} here." }) } ==
+              std::wstring{ L"See  here." });
+        }
+
+    SECTION("Empty shortcode")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // {{<  >}} with just whitespace inside
+        CHECK(std::wstring{ md({ L"See {{<  >}} here." }) } ==
+              std::wstring{ L"See  here." });
+        }
+
+    SECTION("Shortcode name only, no value")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // kbd with no arguments
+        CHECK(std::wstring{ md({ L"Press {{< kbd >}} now." }) } ==
+              std::wstring{ L"Press  now." });
+        CHECK(std::wstring{ md({ L"The {{< meta>}} value." }) } ==
+              std::wstring{ L"The  value." });
+        CHECK(std::wstring{ md({ L"The {{<var>}} value." }) } ==
+              std::wstring{ L"The  value." });
+        CHECK(std::wstring{ md({ L"The {{< env >}} value." }) } ==
+              std::wstring{ L"The  value." });
+        CHECK(std::wstring{ md({ L"See {{< video >}} here." }) } ==
+              std::wstring{ L"See  here." });
+        }
+
+    SECTION("Malformed shortcode, missing closing")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        // missing >}}, parser should log error and stop
+        const auto* result = md({ L"See {{< kbd Ctrl-C here." });
+        CHECK(result != nullptr);
+        CHECK(md.get_log().find(L"Bad Quarto shortcode") != std::wstring::npos);
+        }
+
+    SECTION("Multiple shortcodes in one line")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Press {{< kbd Ctrl-C >}} then {{< kbd Ctrl-V >}} to paste." }) } ==
+              std::wstring{ L"Press CTRL-C then CTRL-V to paste." });
+        }
+    }
+
 // NOLINTEND
 // clang-format on

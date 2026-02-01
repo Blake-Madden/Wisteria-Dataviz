@@ -2362,5 +2362,31 @@ TEST_CASE("HTML Parser Hidden Elements", "[html import]")
         }
     }
 
+TEST_CASE("HTML Parser Unquoted Attributes With Trailing Quote", "[html import]")
+    {
+    html_extract_text filter_html;
+
+    SECTION("Unquoted href with trailing quote")
+        {
+        const wchar_t* text =
+            L"<li><a href=https://diversity.edu/diversity-campus-culture/belonging-resources/\">Campus Belonging</a></li>"
+            L"<li><a href=https://diversity.edu/diversity-campus-culture/interfaith-conference/2024-2/\">Interfaith Conference</a></li>"
+            L"<li><a href=https://diversity.edu/diversity-campus-culture/co-sponsorship-request/\">How to Request Co-Sponsorship Support</a></li>";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        const std::wstring result(p);
+        CHECK(result.find(L"Campus Belonging") != std::wstring::npos);
+        CHECK(result.find(L"Interfaith Conference") != std::wstring::npos);
+        CHECK(result.find(L"How to Request Co-Sponsorship Support") != std::wstring::npos);
+        }
+    SECTION("Single unquoted href with trailing quote")
+        {
+        const wchar_t* text = L"<a href=https://example.com/page/\">Link Text</a> after";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        const std::wstring result(p);
+        CHECK(result.find(L"Link Text") != std::wstring::npos);
+        CHECK(result.find(L"after") != std::wstring::npos);
+        }
+    }
+
 // NOLINTEND
 // clang-format on

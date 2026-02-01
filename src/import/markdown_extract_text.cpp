@@ -797,12 +797,67 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
             {
             if (!isEscaping)
                 {
-                // if quarto syntax
-                if (std::wcsncmp(currentStart, QUARTO_PAGEBREAK.data(),
-                                 QUARTO_PAGEBREAK.length()) == 0)
+                // Quarto shortcodes: {{< name args >}}
+                if (std::wcsncmp(currentStart, L"{{< ", 4) == 0 ||
+                    std::wcsncmp(currentStart, L"{{<\t", 4) == 0)
                     {
-                    std::advance(currentStart, QUARTO_PAGEBREAK.length());
-                    add_characters(L"\n\n");
+                    const auto* endOfShortcode = std::wcsstr(currentStart, L">}}");
+                    if (endOfShortcode == nullptr || endOfShortcode >= currentEndSentinel)
+                        {
+                        log_message(L"Bad Quarto shortcode in markdown file.");
+                        break;
+                        }
+                    const auto* scStart = std::next(currentStart, 4); // past "{{< "
+                    const auto* scEnd = endOfShortcode;               // at ">}}"
+                    // trim trailing space before >}}
+                    while (scEnd > scStart &&
+                           (*std::prev(scEnd, 1) == L' ' || *std::prev(scEnd, 1) == L'\t'))
+                        {
+                        --scEnd;
+                        }
+                    const std::wstring_view scContent{ scStart, static_cast<size_t>(std::distance(
+                                                                    scStart, scEnd)) };
+                    // find shortcode name (first token)
+                    size_t nameEnd = scContent.find_first_of(L" \t");
+                    const std::wstring_view scName = (nameEnd == std::wstring_view::npos) ?
+                                                         scContent :
+                                                         scContent.substr(0, nameEnd);
+                    if (scName == L"pagebreak")
+                        {
+                        add_characters(L"\n\n");
+                        }
+                    else if (scName == L"kbd" || scName == L"meta" || scName == L"var" ||
+                             scName == L"env")
+                        {
+                        // extract arguments after the name, uppercased
+                        if (nameEnd != std::wstring_view::npos && nameEnd + 1 < scContent.size())
+                            {
+                            auto args = scContent.substr(nameEnd + 1);
+                            for (const auto ch : args)
+                                {
+                                add_character(static_cast<wchar_t>(std::towupper(ch)));
+                                }
+                            if (!args.empty())
+                                {
+                                previousChar = args.back();
+                                }
+                            }
+                        }
+                    else if (scName == L"video")
+                        {
+                        // extract URL as-is
+                        if (nameEnd != std::wstring_view::npos && nameEnd + 1 < scContent.size())
+                            {
+                            auto args = scContent.substr(nameEnd + 1);
+                            add_characters(args);
+                            if (!args.empty())
+                                {
+                                previousChar = args.back();
+                                }
+                            }
+                        }
+                    // else: unknown shortcode, strip entirely
+                    currentStart = std::next(endOfShortcode, 3); // past ">}}"
                     }
                 else
                     {
