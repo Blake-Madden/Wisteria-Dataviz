@@ -39,6 +39,7 @@ som = "som"
 Som = "Som"
 mor = "mor"
 WORL = "WORL"
+thm = "thm"
 
 [type.svg]
 extend-glob = ["*.svg"]
