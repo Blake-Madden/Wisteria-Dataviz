@@ -247,7 +247,10 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::CurvingRoad, &ShapeRenderer::DrawCurvingRoad },
             { Icons::IconShape::Pumpkin, &ShapeRenderer::DrawPumpkin },
             { Icons::IconShape::JackOLantern, &ShapeRenderer::DrawJackOLantern },
-            { Icons::IconShape::NumberRange, &ShapeRenderer::DrawNumberRange }
+            { Icons::IconShape::NumberRange, &ShapeRenderer::DrawNumberRange },
+            { Icons::IconShape::CheesePizza, &ShapeRenderer::DrawCheesePizza },
+            { Icons::IconShape::PepperoniPizza, &ShapeRenderer::DrawPepperoniPizza },
+            { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza }
         };
 
         // connect the rendering function to the shape
@@ -6401,6 +6404,222 @@ namespace Wisteria::GraphItems
 
             gc->FillPath(outlinePath);
             gc->StrokePath(outlinePath);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCheesePizza(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
+        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        // cheese color
+        const wxColour cheeseColor{ 255, 235, 190 };
+        const wxColour crustColor{ 210, 170, 110 };
+        const wxColour crustEdgeColor{ 180, 140, 80 };
+        const wxColour toastedSpotColor{ 215, 185, 120, 120 };
+
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
+        const double cy = rect.GetY() + (rect.GetHeight() / 2.0);
+        const double radius = GetRadius(rect);
+        const double crustThickness = std::max(2.0, radius * 0.12);
+
+        // draw cheese base
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ cheeseColor });
+        gc->DrawEllipse(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+
+        // draw crust ring
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+        gc->SetPen(wxPen{ crustEdgeColor, outlinePenWidth });
+        gc->SetBrush(wxBrush{ crustColor });
+
+        wxGraphicsPath crustPath = gc->CreatePath();
+        crustPath.AddEllipse(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+        const double innerRadius = radius - crustThickness;
+        const double innerDiameter = innerRadius * 2;
+        crustPath.AddEllipse(cx - innerRadius, cy - innerRadius, innerDiameter, innerDiameter);
+        gc->FillPath(crustPath, wxODDEVEN_RULE);
+        gc->StrokePath(crustPath);
+
+        // add toasted cheese spots
+        constexpr int SPOT_COUNT{ 5 };
+        constexpr uint32_t SPOT_SEED{ 0xBEEFCAFE };
+        const double maxSpotDistance = innerRadius * 0.75;
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush(toastedSpotColor));
+
+        for (int i = 0; i < SPOT_COUNT; ++i)
+            {
+            const uint32_t seed = SPOT_SEED + static_cast<uint32_t>(i * 733);
+            const double angle = (360.0 * i / SPOT_COUNT) + ((seed % 30) - 15);
+            const double distance = maxSpotDistance * (0.3 + 0.7 * ((seed % 100) / 100.0));
+            const double spotRadius = crustThickness * (0.8 + 0.6 * ((seed % 50) / 50.0));
+
+            const double spotX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
+            const double spotY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
+
+            gc->DrawEllipse(spotX - spotRadius, spotY - spotRadius, spotRadius * 2, spotRadius * 2);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawPepperoniPizza(wxRect rect, wxDC& dc) const
+        {
+        // draw the cheese pizza base first
+        DrawCheesePizza(rect, dc);
+
+        // now add pepperoni on top
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        const wxColour pepperoniFillColor{ 170, 45, 45 };
+        const wxColour pepperoniEdgeColor{ 110, 20, 20 };
+
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
+        const double cy = rect.GetY() + (rect.GetHeight() / 2.0);
+        const double radius = GetRadius(rect);
+        const double crustThickness = std::max(2.0, radius * 0.12);
+        const double innerRadius = radius - crustThickness;
+
+        constexpr int PEPPERONI_COUNT{ 5 };
+        const double pepperoniRadius = std::max(2.0, radius * 0.15);
+        const double minPepperoniDistance = innerRadius * 0.25;
+        const double maxPepperoniDistance = innerRadius * 0.70;
+
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+        gc->SetPen(wxPen{ pepperoniEdgeColor, outlinePenWidth });
+        gc->SetBrush(wxBrush{ pepperoniFillColor });
+
+        // 5 pepperoni spread 72° apart, starting from top-right
+        constexpr std::array<double, PEPPERONI_COUNT> angleOffsets = { -45.0, 27.0, 99.0, 171.0,
+                                                                       243.0 };
+        // alternating distances to avoid clustering
+        constexpr std::array<double, PEPPERONI_COUNT> distanceFactors = { 0.80, 0.50, 0.85, 0.45,
+                                                                          0.75 };
+
+        for (int i = 0; i < PEPPERONI_COUNT; ++i)
+            {
+            const double angle = angleOffsets[i];
+            const double distance =
+                minPepperoniDistance +
+                (maxPepperoniDistance - minPepperoniDistance) * distanceFactors[i];
+
+            const double pepX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
+            const double pepY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
+
+            gc->DrawEllipse(pepX - pepperoniRadius, pepY - pepperoniRadius, pepperoniRadius * 2,
+                            pepperoniRadius * 2);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawHawaiianPizza(const wxRect rect, wxDC& dc) const
+        {
+        // draw the pepperoni pizza base first
+        DrawPepperoniPizza(rect, dc);
+
+        // now add pineapple chunks on top
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        const wxColour pineappleFillColor{ 240, 220, 80 };
+        const wxColour pineappleEdgeColor{ 200, 180, 60 };
+
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
+        const double cy = rect.GetY() + (rect.GetHeight() / 2.0);
+        const double radius = GetRadius(rect);
+        const double crustThickness = std::max(2.0, radius * 0.12);
+        const double innerRadius = radius - crustThickness;
+
+        // pineapple chunks - rectangular, about half pepperoni size, 50% longer
+        constexpr int PINEAPPLE_COUNT{ 10 };
+        const double pineappleWidth = std::max(2.0, radius * 0.12); // 50% longer
+        const double pineappleHeight = std::max(1.5, radius * 0.06);
+        const double minPineappleDistance = innerRadius * 0.15;
+        const double maxPineappleDistance = innerRadius * 0.65;
+
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+        gc->SetPen(wxPen{ pineappleEdgeColor, outlinePenWidth });
+        gc->SetBrush(wxBrush{ pineappleFillColor });
+
+        // offset from pepperoni positions so they don't overlap directly
+        constexpr std::array<double, PINEAPPLE_COUNT> angleOffsets = { 0.0,   36.0,  72.0,  108.0,
+                                                                       144.0, 180.0, 216.0, 252.0,
+                                                                       288.0, 324.0 };
+        constexpr std::array<double, PINEAPPLE_COUNT> distanceFactors = { 0.55, 0.85, 0.40, 0.70,
+                                                                          0.90, 0.35, 0.75, 0.50,
+                                                                          0.80, 0.45 };
+        // random rotation angles for each chunk (in radians)
+        constexpr std::array<double, PINEAPPLE_COUNT> rotationAngles = { 0.4, -0.7, 1.2, -0.3,
+                                                                         0.9, -1.1, 0.6, -0.5,
+                                                                         1.0, -0.2 };
+
+        for (int i = 0; i < PINEAPPLE_COUNT; ++i)
+            {
+            const double angle = angleOffsets[i];
+            const double distance =
+                minPineappleDistance +
+                (maxPineappleDistance - minPineappleDistance) * distanceFactors[i];
+
+            const double pineX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
+            const double pineY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
+
+            // draw rotated rectangle using path and transform
+            wxGraphicsPath chunkPath = gc->CreatePath();
+            chunkPath.AddRectangle(-pineappleWidth / 2, -pineappleHeight / 2, pineappleWidth,
+                                   pineappleHeight);
+
+            wxGraphicsMatrix matrix = gc->CreateMatrix();
+            matrix.Translate(pineX, pineY);
+            matrix.Rotate(rotationAngles[i]);
+            chunkPath.Transform(matrix);
+
+            gc->FillPath(chunkPath);
+            gc->StrokePath(chunkPath);
+            }
+
+        // add cinnamon sprinkles on top
+        const wxColour cinnamonColor{ 139, 90, 43, 180 };
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ cinnamonColor });
+
+        constexpr int CINNAMON_COUNT{ 30 };
+        constexpr uint32_t CINNAMON_SEED{ 0xC1AA0A };
+        const double cinnamonSize = std::max(1.0, radius * 0.02);
+        const double maxCinnamonDistance = innerRadius * 0.80;
+
+        for (int i = 0; i < CINNAMON_COUNT; ++i)
+            {
+            const uint32_t seed = CINNAMON_SEED + static_cast<uint32_t>(i * 557);
+            const double angle = (360.0 * i / CINNAMON_COUNT) + ((seed % 50) - 25);
+            const double distance = maxCinnamonDistance * (0.2 + 0.8 * ((seed % 100) / 100.0));
+
+            const double spiceX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
+            const double spiceY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
+
+            gc->DrawEllipse(spiceX - cinnamonSize, spiceY - cinnamonSize, cinnamonSize * 2,
+                            cinnamonSize * 2);
             }
         }
     } // namespace Wisteria::GraphItems

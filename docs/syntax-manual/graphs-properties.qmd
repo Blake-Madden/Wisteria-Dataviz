@@ -164,6 +164,9 @@ Properties common to all graphs:
   - `"pumpkin"`
   - `"jack-o-lantern"`
   - `"number-range"`
+  - `"cheese-pizza"`
+  - `"pepperoni-pizza"`
+  - `"hawaiian-pizza"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

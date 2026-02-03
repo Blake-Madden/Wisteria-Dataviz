@@ -117,8 +117,11 @@ namespace Wisteria::Icons
         CurvingRoad,              /*!< A curvy road.*/
         Pumpkin,                  /*!< A pumpkin.*/
         JackOLantern,             /*!< A jack-o'-lantern.*/
-        NumberRange               /*!< Two numbers with a bar (with dots on both ends)
+        NumberRange,              /*!< Two numbers with a bar (with dots on both ends)
                                        between them.*/
+        CheesePizza,              /*!< A cheese pizza.*/
+        PepperoniPizza,           /*!< A pepperoni pizza.*/
+        HawaiianPizza             /*!< A Hawaiian pizza (pepperoni and pineapple).*/
         };
 
     /// @brief Item to draw on a legend.

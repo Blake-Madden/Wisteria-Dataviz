@@ -2,7 +2,11 @@
 
 ## 1.0.8 Release
 
-- Add marker effect to bar charts and box plots
+- Added new shapes:
+    - Cheese pizza
+    - Pepperoni pizza
+    - Hawaiian pizza
+- Added marker effect to bar charts and box plots
 - When using a water color effect for box plots, draw the whisker with the "paint brush" also
 - Compatibility change: watermarks are only rendered on print and save now
 - `@USER@` placeholder now supported in watermarks

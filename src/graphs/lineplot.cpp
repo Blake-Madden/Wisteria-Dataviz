@@ -347,10 +347,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                         wxString::Format(_(L"'%s': x column not found for line plot."), xColumnName)
                             .ToUTF8());
                     }
-                else
-                    {
-                    m_xColumnType = Data::ColumnType::Date;
-                    }
+                m_xColumnType = Data::ColumnType::Date;
                 }
             else
                 {

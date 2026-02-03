@@ -658,7 +658,6 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
     currentStart = md_text.data();
     currentEndSentinel = md_text.data() + md_text.length();
 
-    constexpr std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
     constexpr std::wstring_view BEGIN_FIGURE{ L"\\begin{figure}" };
     constexpr std::wstring_view END_FIGURE{ L"\\end{figure}" };
 
