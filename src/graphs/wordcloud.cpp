@@ -330,7 +330,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
             for (size_t i = 0; i < placementAttempts; ++i)
                 {
                 if (tryPlaceLabel(*labelPos, polyBoundingBox,
-                                  wxPoint{ xPosDistro(m_mt), yPosDistro(m_mt) }))
+                                  wxPoint{ xPosDistro(GraphItems::ShapeRenderer::GetRNG()),
+                                           yPosDistro(GraphItems::ShapeRenderer::GetRNG()) }))
                     {
                     labelPos = labels.erase(labelPos);
                     successfullyPlaced = true;

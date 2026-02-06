@@ -473,7 +473,16 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawHawaiianPizza(wxRect rect, wxDC& dc) const;
+
         /// @}
+
+        /// @returns The random number engine for water color and other "hand drawn" effects.
+        [[nodiscard]]
+        static std::mt19937& GetRNG()
+            {
+            return m_mt;
+            }
+
       private:
         enum class Temperature
             {

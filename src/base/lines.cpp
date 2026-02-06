@@ -8,6 +8,7 @@
 
 #include "lines.h"
 #include "polygon.h"
+#include "shapes.h"
 #include <algorithm>
 
 namespace Wisteria::GraphItems
@@ -47,6 +48,12 @@ namespace Wisteria::GraphItems
                 const int head = std::max<int>(ScaleToScreenAndCanvas(5), penW * 3);
                 Polygon::DrawArrow(dc, line.first, line.second, wxSize(head, head));
                 }
+            else if (GetLineStyle() == LineStyle::Pencil &&
+                     // needs to be perfectly vertical or horizontal
+                     (line.first.x == line.second.x || line.first.y == line.second.y))
+                {
+                DrawPencilLine(dc, line.first, line.second);
+                }
             else
                 {
                 dc.DrawLine(line.first, line.second);
@@ -71,6 +78,41 @@ namespace Wisteria::GraphItems
             dc.DestroyClippingRegion();
             }
         return GetBoundingBox(dc);
+        }
+
+    //--------------------------------------
+    void Lines::DrawPencilLine(wxDC& dc, const wxPoint startPt, const wxPoint endPt) const
+        {
+        const double length =
+            geometry::segment_length(Polygon::PointToPair(startPt), Polygon::PointToPair(endPt));
+
+        const int segments = std::max(2, safe_divide<int>(length, ScaleToScreenAndCanvas(20)));
+        std::uniform_real_distribution<> jitter(-ScaleToScreenAndCanvas(1),
+                                                ScaleToScreenAndCanvas(1));
+
+        std::vector<wxPoint> points;
+        points.reserve(segments);
+        points.push_back(startPt);
+
+        for (int i = 1; i < segments; ++i)
+            {
+            const double pos = safe_divide<double>(i, segments);
+            if (startPt.y == endPt.y) // horizontal
+                {
+                points.push_back(wxPoint(startPt.x + pos * length,
+                                         startPt.y + jitter(GraphItems::ShapeRenderer::GetRNG())));
+                }
+            else
+                {
+                points.push_back(wxPoint(startPt.x + jitter(GraphItems::ShapeRenderer::GetRNG()),
+                                         startPt.y + pos * length));
+                }
+            }
+        points.push_back(endPt);
+
+        wxPen pencilPen(wxColour{ 80, 80, 80, 200 }, ScaleToScreenAndCanvas(1));
+        const wxDCPenChanger pc{ dc, pencilPen };
+        dc.DrawSpline(points.size(), points.data());
         }
 
     //----------------------------------------------------------------

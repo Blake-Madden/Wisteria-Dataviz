@@ -13,6 +13,7 @@
 #define WISTERIA_LINES_H
 
 #include "graphitems.h"
+#include <random>
 #include <vector>
 
 namespace Wisteria::Graphs
@@ -81,11 +82,18 @@ namespace Wisteria::GraphItems
             @param yToMove The amount to move vertically.*/
         void Offset(int xToMove, int yToMove) final;
 
-      private:
         /** @brief Draws the points, using the pen and brush connected to this object.
             @param dc The device context to draw to.
             @returns The area that the points are being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
+
+      private:
+        /** @brief Draws a line that looks like it was made with a pencil.
+            @param dc The DC to render to.
+            @param startPt The starting point in the line.
+            @param endPt The ending point of the line.*/
+        void DrawPencilLine(wxDC& dc, wxPoint startPt, wxPoint endPt) const;
+
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]

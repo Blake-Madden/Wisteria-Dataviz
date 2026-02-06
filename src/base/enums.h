@@ -382,7 +382,10 @@ namespace Wisteria
         {
         Lines,  /*!< Each pair of points are connected with a regular line.*/
         Arrows, /*!< Each pair of points are connected with a line with a terminal arrow.*/
-        Spline  /*!< Consecutive valid points are connected with a spline.*/
+        Spline, /*!< Consecutive valid points are connected with a spline.*/
+        Pencil  /*!< A wobbly pencil line that looks hand drawn.
+                     This style will only work for perfectly straight vertical
+                     or horizontal lines.*/
         };
 
     /// @brief Box rendering options (used for bar charts, box plots, etc.)

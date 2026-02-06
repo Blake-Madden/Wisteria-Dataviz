@@ -1370,6 +1370,17 @@ namespace Wisteria::GraphItems
             @param capStyle The cap style to use.*/
         void SetCapStyle(const AxisCapStyle capStyle) noexcept { m_capStyle = capStyle; }
 
+        /// @returns The style to draw the lines with.
+        [[nodiscard]]
+        LineStyle GetLineStyle() const noexcept
+            {
+            return m_lineStyle;
+            }
+
+        /** @brief Sets the visual style of the axis lines being drawn.
+            @param lineStyle The visual style to use.*/
+        void SetLineStyle(const LineStyle lineStyle) noexcept { m_lineStyle = lineStyle; }
+
         /// @brief Sets the axis line and tickmarks to be translucent.
         /// @param ghost @c true to make the lines translucent.
         /// @note Titles, headers, footers, labels, and brackets will not be affected.
@@ -2252,6 +2263,8 @@ namespace Wisteria::GraphItems
         // ghosting settings
         uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         bool m_ghost{ false };
+
+        LineStyle m_lineStyle{ LineStyle::Lines };
 
         // scale information
         bool m_scaledReserved{ false };

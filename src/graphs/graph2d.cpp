@@ -13,9 +13,6 @@ wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::Graphs::Graph2D, Wisteria::GraphItems::Grap
 
 namespace Wisteria::Graphs
     {
-    // random number generator that can be used by the graph
-    thread_local std::mt19937 Graph2D::m_mt{ std::random_device{}() };
-
     //----------------------------------------------------------------
     void Graph2D::ContrastColors()
         {
@@ -871,6 +868,7 @@ namespace Wisteria::Graphs
             {
             auto xAxisLines = std::make_unique<Wisteria::GraphItems::Lines>(
                 GetBottomXAxis().GetGridlinePen(), GetScaling());
+            xAxisLines->SetLineStyle(GetBottomXAxis().GetLineStyle());
             for (auto pos = GetBottomXAxis().GetAxisPoints().cbegin() + 1;
                  pos != GetBottomXAxis().GetAxisPoints().cend() - 1; ++pos)
                 {
@@ -889,6 +887,7 @@ namespace Wisteria::Graphs
             {
             auto yAxisLines = std::make_unique<Wisteria::GraphItems::Lines>(
                 GetLeftYAxis().GetGridlinePen(), GetScaling());
+            yAxisLines->SetLineStyle(GetLeftYAxis().GetLineStyle());
             for (auto pos = GetLeftYAxis().GetAxisPoints().cbegin() + 1;
                  pos != GetLeftYAxis().GetAxisPoints().cend() - 1; ++pos)
                 {

@@ -5165,7 +5165,7 @@ namespace Wisteria::GraphItems
                         static_cast<int>(ScaleToScreenAndCanvas(
                             rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? math_constants::whole :
                                                                             math_constants::half)),
-                        static_cast<wxPenStyle>(randPenStyle(m_mt)) }
+                        static_cast<wxPenStyle>(randPenStyle(GetRNG())) }
                 };
                 if ((currentLine % 10) > 0)
                     {
@@ -5549,15 +5549,16 @@ namespace Wisteria::GraphItems
                 fillPath.AddQuadCurveToPoint(
                     GetXPosFromLeft(rect,
                                     previousXPos + safe_divide<double>(xPos - previousXPos, 2)),
-                    GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt)), GetXPosFromLeft(rect, xPos),
-                    GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt)));
+                    GetYPosFromTop(rect, wiggleDistroTopBottom(GetRNG())),
+                    GetXPosFromLeft(rect, xPos),
+                    GetYPosFromTop(rect, wiggleDistroTopBottom(GetRNG())));
                 previousXPos = xPos;
                 }
             fillPath.AddQuadCurveToPoint(
-                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
-                GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt)),
-                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
-                GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt))); // top right
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(GetRNG())),
+                GetYPosFromTop(rect, wiggleDistroTopBottom(GetRNG())),
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(GetRNG())),
+                GetYPosFromTop(rect, wiggleDistroTopBottom(GetRNG()))); // top right
 
             // right
             //------
@@ -5567,19 +5568,20 @@ namespace Wisteria::GraphItems
                 auto yPos =
                     safe_divide<double>(math_constants::full, strayLinesAlongLeftRight + 1) * i;
                 fillPath.AddQuadCurveToPoint(
-                    GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                    GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(GetRNG())),
                     GetYPosFromTop(rect,
                                    previousYPos + safe_divide<double>(yPos - previousYPos, 2)),
-                    GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                    GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(GetRNG())),
                     GetYPosFromTop(rect, yPos));
                 previousYPos = yPos;
                 }
             fillPath.AddQuadCurveToPoint(
-                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
-                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(m_mt)),
-                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(GetRNG())),
+                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(GetRNG())),
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(GetRNG())),
                 GetYPosFromTop(rect,
-                               math_constants::full + wiggleDistroTopBottom(m_mt))); // bottom right
+                               math_constants::full +
+                                   wiggleDistroTopBottom(GetRNG()))); // bottom right
 
             // bottom
             //-------
@@ -5591,17 +5593,18 @@ namespace Wisteria::GraphItems
                     safe_divide<double>(math_constants::full, strayLinesAlongTopBottom + 1) * i;
                 fillPath.AddQuadCurveToPoint(
                     GetXPosFromLeft(rect, xPos + safe_divide<double>(previousXPos - xPos, 2)),
-                    GetYPosFromTop(rect, math_constants::full - wiggleDistroTopBottom(m_mt)),
+                    GetYPosFromTop(rect, math_constants::full - wiggleDistroTopBottom(GetRNG())),
                     GetXPosFromLeft(rect, xPos),
-                    GetYPosFromTop(rect, math_constants::full - wiggleDistroTopBottom(m_mt)));
+                    GetYPosFromTop(rect, math_constants::full - wiggleDistroTopBottom(GetRNG())));
                 previousXPos = xPos;
                 }
             fillPath.AddQuadCurveToPoint(
-                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
-                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(m_mt)),
-                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
+                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(GetRNG())),
+                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(GetRNG())),
+                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(GetRNG())),
                 GetYPosFromTop(rect,
-                               math_constants::full + wiggleDistroTopBottom(m_mt))); // bottom left
+                               math_constants::full +
+                                   wiggleDistroTopBottom(GetRNG()))); // bottom left
 
             // left
             //-----
@@ -5611,15 +5614,16 @@ namespace Wisteria::GraphItems
                 auto yPos =
                     safe_divide<double>(math_constants::full, strayLinesAlongLeftRight + 1) * i;
                 fillPath.AddQuadCurveToPoint(
-                    GetXPosFromLeft(rect, wiggleDistroLeftRight(m_mt)),
+                    GetXPosFromLeft(rect, wiggleDistroLeftRight(GetRNG())),
                     GetYPosFromTop(rect, yPos + safe_divide<double>(previousYPos - yPos, 2)),
-                    GetXPosFromLeft(rect, wiggleDistroLeftRight(m_mt)), GetYPosFromTop(rect, yPos));
+                    GetXPosFromLeft(rect, wiggleDistroLeftRight(GetRNG())),
+                    GetYPosFromTop(rect, yPos));
                 previousYPos = yPos;
                 }
-            fillPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
-                                         GetYPosFromTop(rect, 0 + wiggleDistroTopBottom(m_mt)),
-                                         GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
-                                         GetYPosFromTop(rect, 0 + wiggleDistroTopBottom(m_mt)));
+            fillPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(GetRNG())),
+                                         GetYPosFromTop(rect, 0 + wiggleDistroTopBottom(GetRNG())),
+                                         GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(GetRNG())),
+                                         GetYPosFromTop(rect, 0 + wiggleDistroTopBottom(GetRNG())));
 
             fillPath.CloseSubpath();
             gc->FillPath(fillPath);
@@ -5709,8 +5713,8 @@ namespace Wisteria::GraphItems
                 hatchPath.MoveToPoint(x1, y1);
                 for (int segment = 1; segment <= segments; ++segment)
                     {
-                    const double wx = rect.GetWidth() * wiggleDistroH(m_mt);
-                    const double wy = rect.GetHeight() * wiggleDistroV(m_mt);
+                    const double wx = rect.GetWidth() * wiggleDistroH(GetRNG());
+                    const double wy = rect.GetHeight() * wiggleDistroV(GetRNG());
                     hatchPath.AddLineToPoint(x1 + dx * segment + wx, y1 + dy * segment + wy);
                     }
 
@@ -5737,13 +5741,15 @@ namespace Wisteria::GraphItems
                 {
                 const double tip = safe_divide<double>(i, edgeSegments);
                 outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * tip,
-                                           rect.GetY() + rect.GetHeight() * wiggleDistroV(m_mt));
+                                           rect.GetY() +
+                                               rect.GetHeight() * wiggleDistroV(GetRNG()));
                 }
             // right edge
             for (size_t i = 1; i <= edgeSegments; ++i)
                 {
                 const double tip = safe_divide<double>(i, edgeSegments);
-                outlinePath.AddLineToPoint(rect.GetRight() + rect.GetWidth() * wiggleDistroH(m_mt),
+                outlinePath.AddLineToPoint(rect.GetRight() +
+                                               rect.GetWidth() * wiggleDistroH(GetRNG()),
                                            rect.GetY() + rect.GetHeight() * tip);
                 }
             // bottom edge
@@ -5752,13 +5758,13 @@ namespace Wisteria::GraphItems
                 const double tip = 1.0 - safe_divide<double>(i, edgeSegments);
                 outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * tip,
                                            rect.GetBottom() +
-                                               rect.GetHeight() * wiggleDistroV(m_mt));
+                                               rect.GetHeight() * wiggleDistroV(GetRNG()));
                 }
             // left edge
             for (size_t i = 1; i <= edgeSegments; ++i)
                 {
                 const double tip = 1.0 - safe_divide<double>(i, edgeSegments);
-                outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * wiggleDistroH(m_mt),
+                outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * wiggleDistroH(GetRNG()),
                                            rect.GetY() + rect.GetHeight() * tip);
                 }
 

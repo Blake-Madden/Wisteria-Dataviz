@@ -8,7 +8,9 @@
 
 #include "axis.h"
 #include "currencyformat.h"
+#include "lines.h"
 #include <algorithm>
+#include <random>
 
 namespace Wisteria::GraphItems
     {
@@ -54,6 +56,7 @@ namespace Wisteria::GraphItems
             SetTextAlignment(TextAlignment::Centered);
             m_axisLabelAlignment = AxisLabelAlignment::AlignWithAxisLine;
             m_axisLinePen = Colors::ColorBrewer::GetColor(Colors::Color::Black);
+            m_lineStyle = LineStyle::Lines;
             m_gridlinePen = wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT));
             m_outlineSize = wxDefaultSize;
             }
@@ -831,6 +834,7 @@ namespace Wisteria::GraphItems
         m_labelAlignment = that.m_labelAlignment;
         m_gridlinePen = that.m_gridlinePen;
         m_axisLinePen = that.m_axisLinePen;
+        m_lineStyle = that.m_lineStyle;
 
         m_rangeStart = that.m_rangeStart;
         m_rangeEnd = that.m_rangeEnd;
@@ -945,7 +949,7 @@ namespace Wisteria::GraphItems
 
         const wxRect axisRect = GetBoundingBox(dc);
 
-        wxPen axisPen(GetAxisLinePen());
+        wxPen axisPen{ GetAxisLinePen() };
         if (GetAxisLinePen().IsOk())
             {
             // if adding a terminal arrow to the axis line and the line is thin, then make
@@ -964,12 +968,12 @@ namespace Wisteria::GraphItems
             axisPen.SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(axisPen.GetColour(),
                                                                              GetGhostOpacity()));
             }
-        const wxPen tickMarkPen(axisPen);
+        const wxPen tickMarkPen{ axisPen };
 
         if (GetAxisType() == AxisType::LeftYAxis &&
             GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
-            const wxDCPenChanger dcPenCh(dc, tickMarkPen);
+            const wxDCPenChanger dcPenCh{ dc, tickMarkPen };
             // regular tick marks
             for (const auto& tick : GetTickMarks())
                 {
@@ -1020,7 +1024,7 @@ namespace Wisteria::GraphItems
         else if (GetAxisType() == AxisType::RightYAxis &&
                  GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
-            const wxDCPenChanger dcPenCh(dc, tickMarkPen);
+            const wxDCPenChanger dcPenCh{ dc, tickMarkPen };
             // regular tick marks
             for (const auto& tick : GetTickMarks())
 
@@ -1072,7 +1076,7 @@ namespace Wisteria::GraphItems
         else if (GetAxisType() == AxisType::BottomXAxis &&
                  GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
-            const wxDCPenChanger dcPenCh(dc, tickMarkPen);
+            const wxDCPenChanger dcPenCh{ dc, tickMarkPen };
             // regular tick marks
             for (const auto& tick : GetTickMarks())
                 {
@@ -1138,7 +1142,7 @@ namespace Wisteria::GraphItems
         else if (GetAxisType() == AxisType::TopXAxis &&
                  GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
-            const wxDCPenChanger dcPenCh(dc, tickMarkPen);
+            const wxDCPenChanger dcPenCh{ dc, tickMarkPen };
             // regular tick marks
             for (const auto& tick : GetTickMarks())
                 {
@@ -1193,7 +1197,7 @@ namespace Wisteria::GraphItems
         // draw the main line
         if (GetAxisLinePen().IsOk())
             {
-            const wxDCPenChanger dcPenCh(dc, axisPen);
+            const wxDCPenChanger dcPenCh{ dc, axisPen };
             if (GetCapStyle() == AxisCapStyle::Arrow)
                 {
                 const auto arrowHeadSize =
@@ -1212,7 +1216,21 @@ namespace Wisteria::GraphItems
                 }
             else
                 {
-                dc.DrawLine(GetTopPoint(), GetBottomPoint());
+                auto axisLine = Wisteria::GraphItems::Lines{ GetAxisLinePen(), GetScaling() };
+                axisLine.SetDPIScaleFactor(GetDPIScaleFactor());
+                axisLine.SetLineStyle(GetLineStyle());
+
+                if (GetLineStyle() == LineStyle::Lines)
+                    {
+                    axisLine.AddLine(GetTopPoint(), GetBottomPoint());
+                    }
+                else
+                    {
+                    const wxPoint startPt = IsHorizontal() ? GetLeftPoint() : GetTopPoint();
+                    const wxPoint endPt = IsHorizontal() ? GetRightPoint() : GetBottomPoint();
+                    axisLine.AddLine(startPt, endPt);
+                    }
+                axisLine.Draw(dc);
                 }
             }
 
@@ -1237,8 +1255,8 @@ namespace Wisteria::GraphItems
                 else if (header.GetRelativeAlignment() == RelativeAlignment::Centered)
                     {
                     header.SetAnchoring(Anchoring::Center);
-                    header.SetAnchorPoint(wxPoint(
-                        GetTopPoint().x, axisRect.GetTop() + ((headerSize.GetHeight() / 2))));
+                    header.SetAnchorPoint(wxPoint{
+                        GetTopPoint().x, axisRect.GetTop() + (headerSize.GetHeight() / 2) });
                     }
                 }
             else if (IsHorizontal())
