@@ -424,7 +424,7 @@ namespace Wisteria
         ///     and the interior is filled with diagonal hatching lines.
         Marker = 10,
         /// @brief A hand-drawn pencil effect, where the outline is drawn with a wobbly
-        ///     pencil line style. No fill is applied, only the outline.
+        ///     pencil line style. Interior is filled with dense, diagonal hatching lines.
         Pencil = 11,
         /// @private
         EFFECTS_COUNT = 12
@@ -518,8 +518,8 @@ namespace Wisteria
     enum class RoundingMethod
         {
         Round,      /*!< Round up or down.*/
-        RoundDown,  /*!< Round down (ceiling).*/
-        RoundUp,    /*!< Round up (floor).*/
+        RoundDown,  /*!< Round down (floor).*/
+        RoundUp,    /*!< Round up (ceiling).*/
         NoRounding, /*!< Do not round.*/
         /// @private
         ROUNDING_METHOD_COUNT

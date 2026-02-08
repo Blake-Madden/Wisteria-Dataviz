@@ -13,46 +13,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `src/utfcpp`
   - `src/wxStartPage`
 
-## Build Commands
+## Code Style
 
-**Windows (Visual Studio):**
-```bash
-# Open CMakeLists.txt in Visual Studio, configure Release build, then build targets
-# Build targets: demo, wisteria (library), doxygen-docs
-```
+The project uses clang-format (v20) and clang-tidy. Key style rules:
 
-**Linux/macOS:**
-```bash
-cmake . -DCMAKE_BUILD_TYPE=Release
-cmake --build . -j4 --config Release
-```
+- Use `std::wstring_view`, `std::prev`, `std::next`, `std::advance` instead of pointer arithmetic
+- Make variables and lambdas `const` if possible
+- **Indentation:** 4 spaces, no tabs
+- **Line length:** 100 characters max
+- **Brace style:** Whitesmiths
+- **Naming conventions:**
+  - Class members: `m_` prefix with camelBack (e.g., `m_lineStyle`)
+  - Local variables: camelBack
+  - Macros/constants: UPPER_CASE
+- **Pointers/references:** Left-aligned (`int* ptr`, not `int *ptr`)
+- **Comments:** First word lowercase, unless the comment contains multiple sentences
+- **Line endings:** LF (Unix-style)
 
-**Build targets:**
+## Build Targets
+
 - `wisteria` - Static library
 - `demo` - Demo application
 - `doxygen-docs` - API documentation (requires Doxygen)
 - `quarto-docs` - JSON syntax documentation (requires Quarto)
 
-## Running Tests
+## Unit Tests
 
-There are two test suites using Catch2:
+There are two test suites using Catch2 (v3):
 
-**Non-GUI tests** (tests/):
-```bash
-cd tests
-cmake . -DCMAKE_BUILD_TYPE=Debug
-cmake --build .
-./bin/WisteriaTestRunner
-# Or run specific test: ./bin/WisteriaTestRunner "[tagname]"
-```
-
-**GUI tests** (tests/gui-tests/):
-```bash
-cd tests/gui-tests
-cmake . -DCMAKE_BUILD_TYPE=Debug
-cmake --build .
-./bin/WisteriaGuiTestRunner
-```
+- **Non-GUI tests** (tests/)
+- **GUI tests** (tests/gui-tests/):
 
 ## Code Analysis
 

@@ -27,21 +27,21 @@ The following properties are common to all items.
   - `"top-right-corner"`
 - `"relative-alignment"`: How an object is aligned with its parent (e.g., an axis title relative to its axis). \
   Available options are:
-  - `"flush-left"`
-  - `"flush-right"`
-  - `"flush-top"`
-  - `"flush-bottom"`
-  - `"centered"`
+  - `"flush-left"`: Flush left/ragged right.
+  - `"flush-right"`: Flush right/ragged left.
+  - `"flush-top"`: Flush to the top.
+  - `"flush-bottom"`: Flush to the bottom.
+  - `"centered"`: Centered.
 - `"horizontal-page-alignment"`: How to horizontally align the item within its area. \
   Available options are:
-  - `"left-aligned"`
-  - `"right-aligned"`
-  - `"centered"`
+  - `"left-aligned"`: Item is aligned to the left of its bounding box (the default).
+  - `"right-aligned"`: Item is aligned to the right of its bounding box.
+  - `"centered"`: Item is centered in its bounding box.
 - `"vertical-page-alignment"`: How to vertically align the item within its area. \
   Available options are:
-  - `"top-aligned"`
-  - `"bottom-aligned"`
-  - `"centered"`
+  - `"top-aligned"`: Item is aligned to the top of its bounding box.
+  - `"bottom-aligned"`: Item is aligned to the bottom of its bounding box.
+  - `"centered"`: Item is centered in its bounding box (the default).
 - `"fit-row-to-content"`: A boolean value specifying whether the item's calculated height should
     control how tall its canvas row is.
 - `"fixed-width"`: A boolean value specifying whether the item should be constrained
@@ -152,10 +152,10 @@ Properties for `"image"` nodes:
   Note that the aspect ratio of the image's original size will be preserved.
 - `"resize-method"`: How the image's size is adjusted when its bounding box is changed. \
   Available options are:
-  - `"downscale-only"`
-  - `"downscale-or-upscale"` (the default)
-  - `"upscale-only"`
-  - `"no-resize"`
+  - `"downscale-or-upscale"`: Make the item smaller or larger to fit the bounding box (the default).
+  - `"downscale-only"`: Only make items smaller if necessary.
+  - `"upscale-only"`: Only make items larger if necessary.
+  - `"no-resize"`: Don't rescale the item.
 
 ```json
 {
@@ -180,10 +180,22 @@ Properties for `"label"` nodes:
   [constants](#constants-properties) section.
 - `"orientation"`: string specifying the orientation of the text. \
   Available options are:
-  - `"vertical"`
-  - `"horizontal"`
+  - `"vertical"`: Text is written upwards.
+  - `"horizontal"`: Text is writting left-to-right (or right-to-left).
 - `"background"`: The background color. \
   This can be either a color name or hex-encoded value.
+- `"style"`: A background visual style to apply to the label. \
+  Available options are:
+  - `"no-label-style"`: No extra visual style should be applied to the label, other than possible outlining.
+  - `"index-card"`: Display the label as an index card.
+  - `"lined-paper"`: Display the label as lined paper (lines under each text line).
+  - `"lined-paper-with-margins"`: Display the label as lined paper (lines under each text line, within the margins of the label).
+  - `"dotted-lined-paper"`: Display the label as dotted lined paper (lines under each text line).
+  - `"dotted-lined-paper-with-margins"`: Display the label as dotted lined paper (lines under each text line, within the margins of the label).
+  - `"right-arrow-lined-paper"`: Display the label as lined paper (right arrow lines under each text line). \
+    Will use the same pen as the label's text.
+  - `"right-arrow-lined-paper-with-margins"`: Display the label as lined paper (right arrow lines under each text line, within the margins of the label). \
+    Will use the same pen as the label's text.
 - `"color"`: The font color. \
   This can be either a color name or hex-encoded value.
 - `"bold"`: `true` to make the text bold.
@@ -191,11 +203,11 @@ Properties for `"label"` nodes:
   For line-spacing, note that negative values tighten the spacing between lines (for example, `-5` makes lines closer together). 
 - `"text-alignment"`: How to align the label's text. \
   The available options are:
-  - `"flush-left"` or `"ragged-right"`
-  - `"flush-right"` or `"ragged-left"`
-  - `"centered"`
-  - `"justified"` or `"justified-at-character"`
-  - `"justified-at-word"`
+  - `"flush-left"` or `"ragged-right"`: Text is flush left/ragged right (the default).
+  - `"flush-right"` or `"ragged-left"`: Text is flush right/ragged left.
+  - `"centered"`: Text is centered.
+  - `"justified"` or `"justified-at-character"`: Multiline text is tracked (space inserted) to make lines equal width. Hair spaces are inserted between each character.
+  - `"justified-at-word"`: Multiline text is tracked (space inserted) to make lines equal width. Hair spaces are inserted between each word.
 - `"left-image"`: Properties specifying an image to display on the left side of the label. \
   The available options are:
   - `"image-import"`: An image import specification.
@@ -227,11 +239,11 @@ Properties for `"label"` nodes:
     This can be either a color name or hex-encoded value.
   - `"text-alignment"`: How to align the label's text. \
       The available options are:
-    - `"flush-left"` or `"ragged-right"`
-    - `"flush-right"` or `"ragged-left"`
-    - `"centered"`
-    - `"justified"` or `"justified-at-character"`
-    - `"justified-at-word"`
+    - `"flush-left"` or `"ragged-right"`: Text is flush left/ragged right (the default).
+    - `"flush-right"` or `"ragged-left"`: Text is flush right/ragged left.
+    - `"centered"`: Text is centered.
+    - `"justified"` or `"justified-at-character"`: Multiline text is tracked to make lines equal width.
+    - `"justified-at-word"`: Multiline text is tracked to make lines equal width.
   - `"relative-scaling"`: numeric value of how much to scale the header's font size relative to the label's scaling.
        For example, `2.0` will double the header's default font size compared to the rest of the label. \
        Note that this will only affect the header scaling. \

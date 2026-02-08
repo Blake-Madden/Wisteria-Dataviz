@@ -74,9 +74,10 @@ Properties common to all graphs:
         is used for the area.
   - `"style"`: The style to apply to the reference area. \
     Available options are:
-    - `"fade-from-left-to-right"`
-    - `"fade-from-right-to-left"`
-    - `"solid"`
+    - `"solid"`: Solid color fill.
+    - `"fade-from-left-to-right"`: Fades from the start value to the end value.
+    - `"fade-from-right-to-left"`: Fades from the end value to the start value. \
+      This is useful for showing a reference area with a vague starting point.
 - `"brush-scheme"`: For graphs that support brush schemes only. \
      Contains the following properties:
      - `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
@@ -173,17 +174,18 @@ Properties common to all graphs:
   Each specification contains the following:
   - `"line-style"`: A string specifying the line style. \
     Available options are:
-    - `"lines"`
-    - `"arrows"`
-    - `"spline"`
+    - `"lines"`: Each pair of points are connected with a regular line.
+    - `"arrows"`: Each pair of points are connected with a line with a terminal arrow.
+    - `"spline"`: Consecutive valid points are connected with a spline.
+    - `"pencil"`: A wobbly pencil line that looks hand drawn.
   - `"pen-style"`: A [pen](#pen-properties) specification (only the pen's style is used)
 - `"legend"`: An item containing the following properties:
   - `"placement"`: Where to place the legend. \
     Available options are:
-    - `"left"`
-    - `"right"` (the default)
-    - `"top"`
-    - `"bottom"`
+    - `"left"`: The legend will be on the left of the plot.
+    - `"right"`: The legend will be on the right of the plot (the default).
+    - `"top"`: The legend will be above the plot.
+    - `"bottom"`: The legend will be below the plot.
   - `"include-header"`: `true` to include a header (the default), `false` to not.
   - `"title"`: If `"include-header"` is `true`, a string specifying the title of the legend.
   - `"ring"`: For pie charts, which ring to use for the legend. \
@@ -246,21 +248,21 @@ Properties for image import specifications:
 - `"stitch"`: A string specifying how to stitch multiple images together.
   (You must use `"paths"` to import multiple images.) \
   Available options are:
-  - `"vertical"`
-  - `"horizontal"` (the default)
+  - `"horizontal"`: Stitch images left to right (the default).
+  - `"vertical"`: Stitch images top to bottom.
 - `"color-filter"`: A string specifying a color to translucently apply across the image.
 - `"opacity"`: A number between `0–255` specifying how opaque the image is. \
   Note that when loading an image for a page's background, this value will be overridden
   by the page's background opacity setting.
 - `"effect"`: A string specifying an effect to apply to the image. \
   Available options are:
-  - `"blur-horizontal"`
-  - `"blur-vertical"`
-  - `"frosted-glass"`
-  - `"gray-scale"`
-  - `"oil-painting"`
-  - `"sepia"`
-  - `"no-effect"`
+  - `"no-effect"`: Do not alter the image.
+  - `"gray-scale"`: Shades of gray (i.e., black & white).
+  - `"blur-horizontal"`: A horizontal blur across the image.
+  - `"blur-vertical"`: A vertical blur across the image.
+  - `"sepia"`: A sepia (i.e., faded photograph) effect.
+  - `"frosted-glass"`: A frosted glass window effect. In other words, the image as it may appear when viewed through frosted glass.
+  - `"oil-painting"`: An oil painting effect.
 
 Note that instead of properties, a single string can be specified indicating a file path to load.
 :::
@@ -284,22 +286,23 @@ Note that instead of properties, a single string can be specified indicating a f
 - `"tickmarks"`: Tickmark settings, which contains the following properties:
   - `"display"`: A string, indicating how to display the tickmarks. \
     Available options are:
-    - `"inner"`
-    - `"outer"`
-    - `"crossed"`
-    - `"no-display"`
+    - `"inner"`: The tickmark is inside the plot.
+    - `"outer"`: The tickmark is outside the plot.
+    - `"crossed"`: The tickmark is both inside and outside the plot.
+    - `"no-display"`: Do not display tickmarks.
 - `"label-display"`: What to display for the labels along the axis. \
   Available options are:
-  - `"custom-labels-or-values"`
-  - `"only-custom-labels"`
-  - `"custom-labels-and-values"`
-  - `"no-display"`
+  - `"custom-labels-or-values"`: Display either custom label (if available) or numeric value.
+  - `"only-custom-labels"`: Only show as a custom label; nothing will be displayed if custom label isn't available.
+  - `"custom-labels-and-values"`: Display both numeric value and custom label.
+  - `"no-display"`: Do not display any label.
+  - `"values"`: Display the numeric value.
 - `"number-display"`: A string specifying how to display numeric axis points. \
   Available options are:
-  - `"percentage"`
-  - `"value"`
-  - `"value-simple"`
-  - `"currency"`
+  - `"value"`: Display the number as-is, but with thousands separators.
+  - `"percentage"`: Show as a percent.
+  - `"currency"`: Show as currency (using the current locale).
+  - `"value-simple"`: Display the number as-is, no thousands separators.
 - `"custom-labels"`: An array of custom label specifications, which contains the following properties:
   - `"value"`: The axis position.
   - `"label"`: The text to display on next to the brackets, which will contain [label](#label-properties) properties.
@@ -334,12 +337,12 @@ Note that instead of properties, a single string can be specified indicating a f
   - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
   - `"style"`: The style of the braces. \
     Available options are:
-    - `"arrow"`
-    - `"reverse-arrow"`
-    - `"lines"`
-    - `"curly-braces"`
-    - `"no-connection-lines"`
-  
+    - `"lines"`: Regular line.
+    - `"arrow"`: Arrow pointing at the axis.
+    - `"reverse-arrow"`: Arrow pointing at the labels on the bracket.
+    - `"curly-braces"`: The connecting lines and main bracket line will be a curly brace.
+    - `"no-connection-lines"`: Do not draw a line from the axis to the bracket; only the bracket itself will be drawn.
+
   If building brackets individually, specify an area of items, each with the following properties:
   - `"start"`: The starting axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
@@ -349,11 +352,11 @@ Note that instead of properties, a single string can be specified indicating a f
   - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
   - `"style"`: The style of the braces. \
     Available options are:
-    - `"arrow"`
-    - `"reverse-arrow"`
-    - `"lines"`
-    - `"curly-braces"` (the default)
-    - `"no-connection-lines"`
+    - `"lines"`: Regular line.
+    - `"arrow"`: Arrow pointing at the axis.
+    - `"reverse-arrow"`: Arrow pointing at the labels on the bracket.
+    - `"curly-braces"`: The connecting lines and main bracket line will be a curly brace (the default).
+    - `"no-connection-lines"`: Do not draw a line from the axis to the bracket; only the bracket itself will be drawn.
 
 ::: {.minipage data-latex="{\textwidth}"}
 ### Positions {#position-properties .unnumbered}

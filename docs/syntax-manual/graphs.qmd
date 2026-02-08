@@ -10,18 +10,20 @@ Properties for `"box-plot"` nodes:
   - `"group-1"`: An (optional) grouping column to divide the boxes into (along the x-axis).
 - `"box-effect"`: A string specifying the effects for the boxes. \
   Available options are:
-  - `"common-image"` (This will require an `"image-scheme"` to be defined.)
-  - `"image"` (This will require an `"image-scheme"` to be defined.)
-  - `"fade-from-bottom-to-top"`
-  - `"fade-from-left-to-right"`
-  - `"fade-from-right-to-left"`
-  - `"fade-from-top-to-bottom"`
-  - `"glassy"`
-  - `"solid"` (the default)
-  - `"stipple"`
-  - `"marker"`
-  - `"watercolor"`
-  - `"pencil"`
+  - `"solid"`: Solid color (the default).
+  - `"glassy"`: Glass effect.
+  - `"fade-from-bottom-to-top"`: Color gradient, bottom-to-top.
+  - `"fade-from-left-to-right"`: Color gradient, left-to-right.
+  - `"fade-from-top-to-bottom"`: Color gradient, top-to-bottom.
+  - `"fade-from-right-to-left"`: Color gradient, right-to-left.
+  - `"stipple"`: Fill with a repeating image. (This will require an `"image-scheme"` to be defined.)
+  - `"watercolor"`: A watercolor-like effect, where the box is warped and looks like it was filled in with watercolor paint. \
+    Note that if an outline pen is in use, it will be drawn over the fill color, giving the look that it is showing through the watercolor.
+  - `"thick-watercolor"`: Same as `"watercolor"`, but applies a second coat of paint, making it appear thicker.
+  - `"common-image"`: A subimage of a larger image shared by all boxes. (This will require an `"image-scheme"` to be defined.)
+  - `"image"`: An image scaled down to fit the box. (This will require an `"image-scheme"` to be defined.)
+  - `"marker"`: A felt-marker-like effect, where the outline is rough and slightly uneven and the interior is filled with diagonal hatching lines.
+  - `"pencil"`: A hand-drawn pencil effect, where the outline is drawn with a wobbly pencil line style. No fill is applied, only the outline.
 - `"show-all-points"`: `true` to show all points.
   By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
@@ -40,8 +42,8 @@ Properties for `"candlestick-plot"` nodes:
   - `"close"`: The closing-value column.
 - `"plot-type"`: A string specifying which type of plot it should be. \
   Available options are:
-  - `"candlestick"`
-  - `"ohlc"`
+  - `"candlestick"`: Display gains and losses as candles.
+  - `"ohlc"`: Display gains and losses as protruding lines.
 - `"gain-brush"`: A [brush](#brush-properties) specification for candles that had a resulting gain for the day.
 - `"loss-brush"`: A [brush](#brush-properties) specification for candles that had a resulting loss for the day.
 :::
@@ -59,8 +61,8 @@ Properties for `"categorical-bar-chart"` nodes:
   - `"group"`: An (optional) grouping column to further divide the main categorical data into.
 - `"bar-orientation"`: string specifying the orientation of the bars. \
   Available options are:
-  - `"vertical"`
-  - `"horizontal"`
+  - `"vertical"`: Bars are drawn vertically (i.e., top to bottom).
+  - `"horizontal"`: Bars are drawn horizontally (i.e., left to right).
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 :::
@@ -80,14 +82,14 @@ Properties for `"gantt-chart"` nodes:
   - `"group"`: The grouping column (this is optional).
 - `"task-label-display"`: A string specifying what to display on the tasks. \
   Available options are:
-  - `"days"`
-  - `"description"`
-  - `"description-and-days"`
-  - `"no-display"`
-  - `"resource"`
-  - `"resource-and-days"`
-  - `"resource-and-description"`
-  - `"resource-description-and-days"`
+  - `"resource"`: Display the name of the task.
+  - `"description"`: Display the description of the task.
+  - `"resource-and-description"`: Display the name and description of the task.
+  - `"days"`: Display the number of days in the task.
+  - `"resource-and-days"`: Display the name of the task and number of days in it.
+  - `"description-and-days"`: Display the description of the task and number of days in it.
+  - `"resource-description-and-days"`: Display the name and description of the task and number of days in it.
+  - `"no-display"`: Don't display anything on the bar.
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
@@ -112,21 +114,23 @@ Properties for `"histogram"` nodes:
 - `"variables"`: An item containing the following properties:
   - `"aggregate"`: The continuous data column to aggregate.
   - `"group"`: The grouping column (this is optional).
-- `"binning-method"`: A string specifying how to sort the data. \
+- `"binning-method"`: A string specifying how to bin the data. \
   Available options are:
-  - `"bin-by-integer-range"`
-  - `"bin-by-range"`
-  - `"bin-unique-values"`
+  - `"bin-unique-values"`: Each unique value gets its own bin.
+  - `"bin-by-range"`: Values are categorized into ranges \
+    (this is the norm for histograms, except this method retains the values' floating-point precision when creating the bin size and range).
+  - `"bin-by-integer-range"`: Values are categorized into ranges, where the bin size and range are integral. \
+    This is usually the norm, as classifying data by floating-point precision categories isn't common.
 - `"interval-display"`: A string specifying how to display the intervals. \
   Available options are:
-  - `"cutpoints"`
-  - `"midpoints"`
+  - `"cutpoints"`: In range mode, places the bars in between axis lines so that the range of the bins are shown on the sides of the bars.
+  - `"midpoints"`: Places the bars on top of the axis lines so that a custom bin range label (for integer range mode) or a midpoint label (non-integer mode) is shown at the bottom of the bar.
 - `"rounding"`: A string specifying how to round the data. \
   Available options are:
-  - `"no-rounding"`
-  - `"round"`
-  - `"round-down"`
-  - `"round-up"`
+  - `"round"`: Round up or down.
+  - `"round-down"`: Round down (floor).
+  - `"round-up"`: Round up (ceiling).
+  - `"no-rounding"`: Do not round.
 - `"bins-start"`: A number specifying where on the X-axis to start the bins.
 - `"suggested-bin-count"`: A number specifying the suggested number of bins.
 - `"max-bin-count"`: A number specifying the maximum number of bins.
@@ -152,18 +156,19 @@ Properties for `"likert-chart"` nodes:
   - `"group"`: The grouping column (this is optional).
 - `"survey-format"`: string specifying the scale used for all questions. \
   Available options are:
-  - `"two-point"`
-  - `"two-point-categorized"`
-  - `"three-point"`
-  - `"three-point-categorized"`
-  - `"four-point"`
-  - `"four-point-categorized"`
-  - `"five-point"`
-  - `"five-point-categorized"`
-  - `"six-point"`
-  - `"six-point-categorized"`
-  - `"seven-point"`
-  - `"seven-point-categorized"`
+  - `"two-point"`: Negative and positive responses.
+  - `"two-point-categorized"`: Negative and positive responses, with sub-categories (e.g., male vs. female).
+  - `"three-point"`: Negative, neutral, and positive responses.
+  - `"three-point-categorized"`: Negative, neutral, and positive responses, with sub-categories (e.g., male vs. female).
+  - `"four-point"`: Strong negative, negative, positive, and strong positive responses.
+  - `"four-point-categorized"`: Strong negative, negative, positive, and strong positive responses, with sub-categories (e.g., male vs. female).
+  - `"five-point"`: Strong negative, negative, neutral, positive, and strong positive responses.
+  - `"five-point-categorized"`: Strong negative, negative, neutral, positive, and strong positive responses, with sub-categories (e.g., male vs. female).
+  - `"six-point"`: Strong negative, negative, weak negative, strong positive, positive, and weak positive responses.
+  - `"six-point-categorized"`: Strong negative, negative, weak negative, strong positive, positive, and weak positive responses, with sub-categories (e.g., male vs. female).
+  - `"seven-point"`: Strong negative, negative, weak negative, neutral, strong positive, positive, and weak positive responses.
+  - `"seven-point-categorized"`: Strong negative, negative, weak negative, neutral, strong positive, positive, and weak positive responses, with sub-categories (e.g., male vs. female).
+
   (Note that if this is not supplied, then the program will deduce the scale for you.)
 - `"simplify"`: If `true`, the responses in the dataset will be collapsed.
 - `"apply-default-labels"`: If `true`, the string tables in the dataset's question columns
@@ -222,63 +227,69 @@ Properties for `"pie-chart"` nodes:
 - `"right-margin-note"`: A label specification for a label within the right margin of the chart.
 - `"pie-slice-effect"`: A string specifying the effects for the pie slices. \
   Available options are:
-  - `"image"` (This will require an `"image-scheme"` to be defined.)
-  - `"solid"` (the default)
+  - `"solid"`: Solid color (the default).
+  - `"image"`: An image scaled down to fit the slice (or repeated as a pattern if smaller than the slice area). \
+    This will require an `"image-scheme"` to be defined.
 - `"pie-style"`: A string specifying the visual style for the pie chart. \
   Available options are:
-  - `"none"` (the default)
-  - `"clockface"`
+  - `"none"`: No style (the default).
+  - `"clockface"`: A clockface, where an hour, minute, and seconds (if necessary) are drawn to separate the slices.
+  - `"cheeze-pizza"`: A cheese pizza (slice colors will be overridden).
+  - `"pepperoni-cheeze-pizza"`: A pepperoni pizza (slice colors will be overridden). \
+    Note that the pepperonis are placed on top of the pie, so labels on the pie slices will be obscured. \
+    If using this style, it is recommended to display labels outside of the pie.
+  - `"coffee-ring"`: A coffee cup ring, with a light coffee stain in the middle and small splatter off to the side.
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
-  - `"flush"` (the default)
-  - `"next-to-parent"`
+  - `"flush"`: Labels are flush with the plotting area's left or right side (the default).
+  - `"next-to-parent"`: Labels are next to their parents.
 - `"inner-pie-midpoint-label-display"`: A string specifying what to display on the labels in the middle
   of the slices (within the inner pie). \
   Available options are:
-  - `"value"`
-  - `"percentage"` (the default)
-  - `"value-and-percentage"`
-  - `"bin-name"`
-  - `"no-display"`
-  - `"bin-name-and-value"`
-  - `"bin-name-and-percentage"`
+  - `"value"`: The number of items in (or aggregated value of) each slice.
+  - `"percentage"`: The percentage of items in (or aggregated value of) each slice (the default).
+  - `"value-and-percentage"`: Both the percentage and number of items in (or aggregated value of) each slice.
+  - `"no-display"`: Don't display labels on the slices.
+  - `"bin-name"`: The name of the slice (e.g., the group name).
+  - `"bin-name-and-value"`: The name of the slice (e.g., the group name) and the value.
+  - `"bin-name-and-percentage"`: The name of the slice (e.g., the group name) and the percentage of items in (or aggregated value of) each slice.
 - `"outer-pie-midpoint-label-display"`: A string specifying what to display on the labels in the middle
   of the slices (within the outer pie, or pie if only one grouping variable is in use). \
   Available options are:
-  - `"value"`
-  - `"percentage"` (the default)
-  - `"value-and-percentage"`
-  - `"bin-name"`
-  - `"no-display"`
-  - `"bin-name-and-value"`
-  - `"bin-name-and-percentage"`
+  - `"value"`: The number of items in (or aggregated value of) each slice.
+  - `"percentage"`: The percentage of items in (or aggregated value of) each slice (the default).
+  - `"value-and-percentage"`: Both the percentage and number of items in (or aggregated value of) each slice.
+  - `"no-display"`: Don't display labels on the slices.
+  - `"bin-name"`: The name of the slice (e.g., the group name).
+  - `"bin-name-and-value"`: The name of the slice (e.g., the group name) and the value.
+  - `"bin-name-and-percentage"`: The name of the slice (e.g., the group name) and the percentage of items in (or aggregated value of) each slice.
 - `"outer-label-display"`: A string specifying what to display on the outer (i.e., gutter) labels. \
   Available options are:
-  - `"value"`
-  - `"percentage"` (the default)
-  - `"value-and-percentage"`
-  - `"bin-name"`
-  - `"no-display"`
-  - `"bin-name-and-value"`
-  - `"bin-name-and-percentage"`
+  - `"value"`: The number of items in (or aggregated value of) each slice.
+  - `"percentage"`: The percentage of items in (or aggregated value of) each slice (the default).
+  - `"value-and-percentage"`: Both the percentage and number of items in (or aggregated value of) each slice.
+  - `"no-display"`: Don't display labels on the slices.
+  - `"bin-name"`: The name of the slice (e.g., the group name).
+  - `"bin-name-and-value"`: The name of the slice (e.g., the group name) and the value.
+  - `"bin-name-and-percentage"`: The name of the slice (e.g., the group name) and the percentage of items in (or aggregated value of) each slice.
 - `"inner-pie-line-pen"`: A pen specification for the pen used to draw a line connecting inner slices with their outer labels.
 - `"showcase-slices"`: Draws attention to a slice (or series of slices). \
   This can either be an array of strings specifying which outer slices to showcase, or the following properties:
   - `"pie"`: Which pie to showcase. \
     Available options are:
-    - `"inner"`
-    - `"outer"`
+    - `"inner"`: Inner ring.
+    - `"outer"`: Outer ring.
   - `"category"`: Which type of slices to showcase. \
     Available options are:
-    - `"smallest"`
-    - `"largest"`
+    - `"smallest"`: Showcase the smallest slices.
+    - `"largest"`: Showcase the largest slices.
   - `"by-group"`: If showcasing the inner pie, `true` will show the smallest/largest slice within each group.
   - `"show-outer-pie-midpoint-labels"`: If showcasing the inner pie, `true` to keep the outer pie midpoint labels shown.
 - `"showcased-ring-labels"`: If showcasing, a string specifying which ring should have its group labels
     shown outside of the pie. \
     Available options are:
-    - `"inner"`
-    - `"outer"`
+    - `"inner"`: Inner ring.
+    - `"outer"`: Outer ring.
 - `"color-labels"`: `true` to apply the slice colors to their respective outer labels.
 - `"ghost-opacity"`: A number specifying the opacity for ghosted labels.
 - `"include-outer-pie-labels"`: `true` to show the outer labels for the outer pie
@@ -306,10 +317,10 @@ Properties for `"linear-regression-roadmap"` nodes:
   Common thresholds are `0.05` or `0.01` (most stringent).
 - `"predictors-to-include"`: Array of strings specifying which types of predictors (e.g., negative influencers) to include. \
   Available options are:
-  - `"positive"`
-  - `"negative"`
-  - `"neutral"`
-  - `"all"` (the default)
+  - `"positive"`: Positive influence (e.g., IVs with coefficients > 0).
+  - `"negative"`: Negative influence (e.g., IVs with coefficients < 0).
+  - `"neutral"`: No influence (e.g., IVs with coefficients = 0).
+  - `"all"`: All levels of influence (the default).
 - `"dependent-variable-name"`: The name of the dependent variable from the original analysis. \
   This will be used on the legend and default caption.
 - `"default-caption"`: `true` to add a caption explaining how to interpret the graph.
@@ -317,22 +328,22 @@ Properties for `"linear-regression-roadmap"` nodes:
 - `"lane-separator-pen"`: A pen specification for the road's lane separator.
 - `"lane-separator-style"`: A string specifying the lane separator style. \
   Available options are:
-  - `"single-line"` (the default)
-  - `"double-line"`
-  - `"no-display"`
+  - `"single-line"`: Single line (the default).
+  - `"double-line"`: Double line.
+  - `"no-display"`: Do not draw a lane separator.
 - `"road-stop-theme"`: A string specifying the road stops theme. \
   Available options are:
-  - `"location-markers"` (the default)
-  - `"road-signs"`
+  - `"location-markers"`: A geolocation marker (the default).
+  - `"road-signs"`: Warning and GO road signs.
 - `"marker-label-display"`: A string specifying what to show for the markers' labels. \
   Available options are:
-  - `"name"`
-  - `"name-and-value"`
-  - `"name-and-absolute-value"`
+  - `"name"`: Just the influencer's name.
+  - `"name-and-value"`: The name and value (value can be negative, in the case of a linear regression coefficient).
+  - `"name-and-absolute-value"`: The name and absolute value of the value.
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
-  - `"flush"` (the default)
-  - `"next-to-parent"`
+  - `"flush"`: Labels are flush with the plotting area's left or right side (the default).
+  - `"next-to-parent"`: Labels are next to their parents.
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
@@ -352,22 +363,22 @@ Properties for `"pro-con-roadmap"` nodes:
 - `"lane-separator-pen"`: A pen specification for the road's lane separator.
 - `"lane-separator-style"`: A string specifying the lane separator style. \
   Available options are:
-  - `"single-line"` (the default)
-  - `"double-line"`
-  - `"no-display"`
+  - `"single-line"`: Single line (the default).
+  - `"double-line"`: Double line.
+  - `"no-display"`: Do not draw a lane separator.
 - `"road-stop-theme"`: A string specifying the road stops theme. \
   Available options are:
-  - `"location-markers"` (the default)
-  - `"road-signs"`
+  - `"location-markers"`: A geolocation marker (the default).
+  - `"road-signs"`: Warning and GO road signs.
 - `"marker-label-display"`: A string specifying what to show for the markers' labels. \
   Available options are:
-  - `"name"`
-  - `"name-and-value"`
-  - `"name-and-absolute-value"`
+  - `"name"`: Just the influencer's name.
+  - `"name-and-value"`: The name and value.
+  - `"name-and-absolute-value"`: The name and absolute value of the value.
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
-  - `"flush"` (the default)
-  - `"next-to-parent"`
+  - `"flush"`: Labels are flush with the plotting area's left or right side (the default).
+  - `"next-to-parent"`: Labels are next to their parents.
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
@@ -388,13 +399,13 @@ Properties for `"sankey-diagram"` nodes:
        This can also be a string specifying a named color scheme (e.g., `"icecream"`).
 - `"group-label-display"`: A string specifying how to display labels on the groups/nodes. \
   Available options are:
-  - `"percentage"`
-  - `"value"`
-  - `"value-and-percentage"`
-  - `"no-display"`
-  - `"bin-name"`
-  - `"bin-name-and-value"`
-  - `"bin-name-and-percentage"`
+  - `"value"`: The number of items in (or aggregated value of) each group.
+  - `"percentage"`: The percentage of items in (or aggregated value of) each group.
+  - `"value-and-percentage"`: Both the percentage and number of items in (or aggregated value of) each group.
+  - `"no-display"`: Don't display labels on the groups.
+  - `"bin-name"`: The name of the group.
+  - `"bin-name-and-value"`: The name of the group and the value.
+  - `"bin-name-and-percentage"`: The name of the group and the percentage of items in (or aggregated value of) each group.
 - `"group-header-display"`: A string specifying how the columns
   (i.e., groups from each variable) display their variable's name. \
   Available options are:
@@ -430,8 +441,8 @@ Properties for `"table"` nodes:
   Available options are:
   - `"direction"`: The direction to sort the rows. \
     Available options are:
-    - `"ascending"`
-    - `"descending"`
+    - `"ascending"`: Sorted smallest to largest.
+    - `"descending"`: Sorted largest to smallest.
   - `"column"`: Which column to sort the rows by. \
        Refer to [position](#position-properties) for available properties.
   - `"labels"`: The cell labels, specified in the order they should be sorted. \
@@ -491,10 +502,11 @@ The remaining properties are executed in the following order:
      Refer to [position](#position-properties) for available properties.
   - `"format"`: The formatting for the column. \
     Available options are:
-    - `"accounting"`
-    - `"general"`
-    - `"percent"`
-    - `"percent-changed"`
+    - `"general"`: Displays a number generically.
+    - `"percent"`: Displays a value such as `0.25` as `25%`.
+    - `"percent-change"`: Displays a value such as `0.25` as `25%`, but with an up or down arrow next to it if positive or negative (respectively).
+    - `"general-change"`: Displays a number generically, but with an up or down arrow next to it if positive or negative (respectively).
+    - `"accounting"`: Displays numbers in accounting format. For example, a negative value would appear as `$    (5,000.00)`.
   - `"stops"`: An array of which rows columns to skip over when changing the row's formatting \
        This is an array of `"position"` items.
 - `"row-color"`: An array of row and color pairs, which contain the following properties:
@@ -540,9 +552,9 @@ The remaining properties are executed in the following order:
        Refer to [position](#position-properties) for available properties.
   - `"horizontal-page-alignment"`: How to horizontally align the cells' content. \
     Available options are:
-    - `"left-aligned"`
-    - `"right-aligned"`
-    - `"centered"`
+    - `"left-aligned"`: Content is aligned to the left of the cell (the default).
+    - `"right-aligned"`: Content is aligned to the right of the cell.
+    - `"centered"`: Content is centered in the cell.
   - `"stops"`: An array of which columns to skip over when changing the column's content alignment. \
        This is an array of `"position"` items.
 - `"column-formatting"`: An array of column and formatting pairs, which contain the following properties:
@@ -554,10 +566,11 @@ The remaining properties are executed in the following order:
        Refer to [position](#position-properties) for available properties.
   - `"format"`: The formatting for the column. \
     Available options are:
-    - `"accounting"`
-    - `"general"`
-    - `"percent"`
-    - `"percent-changed"`
+    - `"general"`: Displays a number generically.
+    - `"percent"`: Displays a value such as `0.25` as `25%`.
+    - `"percent-change"`: Displays a value such as `0.25` as `25%`, but with an up or down arrow next to it if positive or negative (respectively).
+    - `"general-change"`: Displays a number generically, but with an up or down arrow next to it if positive or negative (respectively).
+    - `"accounting"`: Displays numbers in accounting format. For example, a negative value would appear as `$    (5,000.00)`.
   - `"stops"`: An array of which rows to skip over when changing the column's formatting \
        This is an array of `"position"` items.
 - `"column-color"`: An array of column and color pairs, which contain the following properties:
@@ -609,9 +622,10 @@ The remaining properties are executed in the following order:
     - `"column"`
   - `"aggregate-type"`: The type of aggregate to add. \
     Available options are:
-    - `"percent-change"`
-    - `"change"`
-    - `"total"`
+    - `"total"`: Sums a series of values.
+    - `"percent-change"`: Calculates the change from one value to another (as a percentage).
+    - `"change"`: Calculates the change (i.e., difference) from one value to another.
+    - `"ratio"`: Calculates the ratio between two values (ratios will be rounded to integers if the cell's precision is zero).
   - `"background"`: The background color for the column/row. \
      This can be either a color name or hex-encoded value.
   - `"use-adjacent-color"`: `true` to use the color of the cell adjacent to this column.
@@ -657,20 +671,29 @@ The remaining properties are executed in the following order:
     These values go clockwise, starting at 12 o'clock.
   - `"horizontal-page-alignment"`: How to horizontally align the item within its area. \
     Available options are:
-    - `"left-aligned"`
-    - `"right-aligned"`
-    - `"centered"`
+    - `"left-aligned"`: Content is aligned to the left of the cell (the default).
+    - `"right-aligned"`: Content is aligned to the right of the cell.
+    - `"centered"`: Content is centered in the cell.
   - `"text-alignment"`: How to align the cell's text (if multi-line). \
     Available options are:
-    - `"flush-left"` or `"ragged-right"`
-    - `"flush-right"` or `"ragged-left"`
-    - `"centered"`
-    - `"justified"`
+    - `"flush-left"` or `"ragged-right"`: Text is flush left/ragged right.
+    - `"flush-right"` or `"ragged-left"`: Text is flush right/ragged left.
+    - `"centered"`: Text is centered.
+    - `"justified"`: Multiline text is tracked (space inserted) to make lines equal width.
 - `"cell-annotations"`: An array of cell annotation specifications, which each contain the following properties:
-  - `"value"`
-  - `"side"`
-  - `"pen"`
-  - `"background"`
+  - `"value"`: The note to display in the gutter next to the table.
+  - `"side"`: Which side of the table that the note should be on. \
+    Available options are:
+    - `"left"`: Left side.
+    - `"right"`: Right side.
+    - `"top"`: Top side.
+    - `"bottom"`: Bottom side.
+
+    Note that this will be overridden if the page placement of the table conflicts with this option. \
+    For example, if the table is left aligned in the drawing area, then this value will be ignored and the note will always appear to the right of the table.
+  - `"pen"`: Pen to draw the line connecting highlighted cells with the annotation, which includes [pen](#pen-properties) properties. \
+    If not specified, then the table highlight pen will be used.
+  - `"background"`: Color to fill the cell with.
   - `"cells"`: Properties for which cells to annotate. \
     Available options are:
     - `"range"`: A provided range of cells (`"start"` and `"end"` subkeys must be provided.)
