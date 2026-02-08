@@ -6,6 +6,7 @@
     - Cheese pizza
     - Pepperoni pizza
     - Hawaiian pizza
+    - Chocolate chip cookie
 - Added marker effect to bar charts and box plots
 - Added pencil effect to bar charts and box plots
 - Add pencil style for axis and grid lines

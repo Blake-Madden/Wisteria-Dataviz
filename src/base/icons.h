@@ -123,7 +123,8 @@ namespace Wisteria::Icons
                                        between them.*/
         CheesePizza,              /*!< A cheese pizza.*/
         PepperoniPizza,           /*!< A pepperoni pizza.*/
-        HawaiianPizza             /*!< A Hawaiian pizza (pepperoni and pineapple).*/
+        HawaiianPizza,            /*!< A Hawaiian pizza (pepperoni and pineapple).*/
+        ChocolateChipCookie       /*!< A chocolate chip cookie.*/
         };
 
     /// @brief Item to draw on a legend.

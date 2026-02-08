@@ -252,7 +252,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::NumberRange, &ShapeRenderer::DrawNumberRange },
             { Icons::IconShape::CheesePizza, &ShapeRenderer::DrawCheesePizza },
             { Icons::IconShape::PepperoniPizza, &ShapeRenderer::DrawPepperoniPizza },
-            { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza }
+            { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza },
+            { Icons::IconShape::ChocolateChipCookie, &ShapeRenderer::DrawChocolateChipCookie }
         };
 
         // connect the rendering function to the shape
@@ -6670,6 +6671,7 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawHawaiianPizza(const wxRect rect, wxDC& dc) const
         {
         // draw the pepperoni pizza base first
+        // (technically, it should be Canadian bacon)
         DrawPepperoniPizza(rect, dc);
 
         // now add pineapple chunks on top
@@ -6749,7 +6751,8 @@ namespace Wisteria::GraphItems
         for (int i = 0; i < CINNAMON_COUNT; ++i)
             {
             const uint32_t seed = CINNAMON_SEED + static_cast<uint32_t>(i * 557);
-            const double angle = (360.0 * i / CINNAMON_COUNT) + ((seed % 50) - 25);
+            const double angle =
+                safe_divide<double>(360.0 * i, CINNAMON_COUNT) + ((seed % 50) - 25);
             const double distance = maxCinnamonDistance * (0.2 + 0.8 * ((seed % 100) / 100.0));
 
             const double spiceX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
@@ -6757,6 +6760,111 @@ namespace Wisteria::GraphItems
 
             gc->DrawEllipse(spiceX - cinnamonSize, spiceY - cinnamonSize, cinnamonSize * 2,
                             cinnamonSize * 2);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawChocolateChipCookie(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
+        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
+        const double cy = rect.GetY() + (rect.GetHeight() / 2.0);
+        const double radius = GetRadius(rect);
+
+        // cookie base - warm golden tan color with gradient
+        const wxColour cookieBaseColor{ 210, 170, 110 };
+        const wxColour cookieEdgeColor{ 180, 140, 80 };
+
+        auto cookieBrush =
+            gc->CreateRadialGradientBrush(cx, cy, cx, cy, radius, cookieBaseColor, cookieEdgeColor);
+        gc->SetBrush(cookieBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->DrawEllipse(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+
+        // toasted spots - darker brown spots scattered on the cookie
+        const wxColour toastedColor{ 160, 120, 70, 180 };
+        gc->SetBrush(wxBrush{ toastedColor });
+
+        constexpr int TOASTED_SPOT_COUNT{ 6 };
+        constexpr uint32_t TOASTED_SEED{ 0xC00C1E };
+        const double toastedSpotSize = std::max(3.0, radius * 0.4);
+        const double maxToastedDistance = radius * 0.85;
+
+        for (int i = 0; i < TOASTED_SPOT_COUNT; ++i)
+            {
+            const uint32_t seed = TOASTED_SEED + static_cast<uint32_t>(i * 431);
+            const double angle =
+                safe_divide<double>(360.0 * i, TOASTED_SPOT_COUNT) + ((seed % 30) - 15);
+            const double distance = maxToastedDistance * (0.3 + 0.6 * ((seed % 100) / 100.0));
+
+            const double spotX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
+            const double spotY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
+
+            const double spotW = toastedSpotSize * (0.8 + 0.4 * (((seed * 7) % 100) / 100.0));
+            const double spotH = toastedSpotSize * (0.6 + 0.3 * (((seed * 13) % 100) / 100.0));
+
+            gc->DrawEllipse(spotX - (spotW / 2), spotY - (spotH / 2), spotW, spotH);
+            }
+
+        // chocolate chips - dark brown ellipses
+        const wxColour chipFillColor{ 60, 30, 15 };
+        const wxColour chipEdgeColor{ 40, 20, 10 };
+
+        constexpr int CHIP_COUNT{ 7 };
+        const double chipRadius = std::max(2.0, radius * 0.14);
+        const double minChipDistance = radius * 0.15;
+        const double maxChipDistance = radius * 0.70;
+
+        const auto chipOutlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+        gc->SetPen(wxPen{ chipEdgeColor, chipOutlinePenWidth });
+        gc->SetBrush(wxBrush{ chipFillColor });
+
+        // spread chips around the cookie
+        constexpr std::array<double, CHIP_COUNT> chipAngleOffsets = { -30.0, 25.0,  80.0, 135.0,
+                                                                      190.0, 250.0, 310.0 };
+        constexpr std::array<double, CHIP_COUNT> chipDistanceFactors = { 0.65, 0.40, 0.75, 0.50,
+                                                                         0.80, 0.35, 0.0 };
+
+        const double scaledChipDiameter{ chipRadius * 2.0 };
+
+        for (int i = 0; i < CHIP_COUNT; ++i)
+            {
+            const double angle = chipAngleOffsets[i];
+            const double distance =
+                minChipDistance + (maxChipDistance - minChipDistance) * chipDistanceFactors[i];
+
+            const double chipX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
+            const double chipY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
+
+            gc->DrawEllipse(chipX - chipRadius, chipY - chipRadius, scaledChipDiameter,
+                            scaledChipDiameter);
+
+            // add sheen on chips
+            const wxColour sheenColor{ 255, 255, 255, 60 };
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxBrush{ sheenColor });
+
+            const double sheenRadius = chipRadius * 0.35;
+            const double sheenOffsetX = chipRadius * 0.25;
+            const double sheenOffsetY = chipRadius * 0.25;
+
+            gc->DrawEllipse(chipX - sheenOffsetX - sheenRadius, chipY - sheenOffsetY - sheenRadius,
+                            sheenRadius * 2, sheenRadius * 2);
+
+            // restore pen and brush for next chip
+            gc->SetPen(wxPen{ chipEdgeColor, chipOutlinePenWidth });
+            gc->SetBrush(wxBrush{ chipFillColor });
             }
         }
     } // namespace Wisteria::GraphItems
