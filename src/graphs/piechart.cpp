@@ -1281,6 +1281,13 @@ namespace Wisteria::Graphs
             AddToastedCheeseSpots(drawAreas);
             AddPepperoni(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::HawaiianPizza)
+            {
+            AddCrustRing(drawAreas);
+            AddToastedCheeseSpots(drawAreas);
+            AddPepperoni(drawAreas);
+            AddPineappleAndCinnamon(drawAreas);
+            }
         else if (GetPieStyle() == PieStyle::CoffeeRing)
             {
             AddCrustRing(drawAreas);
@@ -1957,6 +1964,141 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void PieChart::AddPineappleAndCinnamon(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        const wxPoint pieCenter(pieRect.GetX() + pieRect.GetWidth() / 2,
+                                pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+        const double crustThickness = ScaleToScreenAndCanvas(14);
+        const double innerRadius = pieRadius - crustThickness;
+
+        // pineapple chunks - yellowish rectangular pieces
+        const wxColour pineappleFillColor{ 240, 220, 80 };
+        const wxColour pineappleEdgeColor{ 200, 180, 60 };
+
+        constexpr int PINEAPPLE_COUNT{ 16 };
+        constexpr uint32_t PINEAPPLE_SEED{ 0xAC1DC0DE };
+
+        const double pineappleWidth = ScaleToScreenAndCanvas(16);
+        const double pineappleHeight = ScaleToScreenAndCanvas(10);
+        const double minPineappleDistance = innerRadius * 0.10;
+        const double maxPineappleDistance = innerRadius * 0.92;
+
+        const auto angleStepDegrees = safe_divide<double>(360.0, PINEAPPLE_COUNT);
+
+        for (int i = 0; i < PINEAPPLE_COUNT; ++i)
+            {
+            const uint32_t seed = PINEAPPLE_SEED + static_cast<uint32_t>(i * 557);
+
+            // stratified angle with jitter
+            const double baseAngleDegrees = i * angleStepDegrees;
+            const double angleJitterDegrees =
+                (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStepDegrees * 0.9;
+            const double angleDegrees = baseAngleDegrees + angleJitterDegrees;
+
+            // sqrt biases towards outer edge for better spread
+            const double distanceFactor = std::sqrt(HashToUnitInterval(seed ^ 0x2222U));
+            const double distance = minPineappleDistance +
+                                    (maxPineappleDistance - minPineappleDistance) * distanceFactor;
+
+            const double pineX =
+                pieCenter.x + std::cos(geometry::degrees_to_radians(angleDegrees)) * distance;
+            const double pineY =
+                pieCenter.y + std::sin(geometry::degrees_to_radians(angleDegrees)) * distance;
+
+            // random rotation for each chunk
+            const double rotationRadians =
+                (HashToUnitInterval(seed ^ 0x3333U) - 0.5) * std::numbers::pi;
+
+            // create rotated rectangle points
+            const double halfWidth = pineappleWidth / 2.0;
+            const double halfHeight = pineappleHeight / 2.0;
+
+            const double cosR = std::cos(rotationRadians);
+            const double sinR = std::sin(rotationRadians);
+
+            std::vector<wxPoint> chunkPoints;
+            chunkPoints.reserve(4);
+
+            // four corners of the rectangle, rotated
+            const std::array<std::pair<double, double>, 4> corners = {
+                { { -halfWidth, -halfHeight },
+                  { halfWidth, -halfHeight },
+                  { halfWidth, halfHeight },
+                  { -halfWidth, halfHeight } }
+            };
+
+            for (const auto& [cx, cy] : corners)
+                {
+                const double rx = cx * cosR - cy * sinR;
+                const double ry = cx * sinR + cy * cosR;
+                chunkPoints.emplace_back(wxRound(pineX + rx), wxRound(pineY + ry));
+                }
+
+            AddObject(std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo()
+                    .Brush(wxBrush(pineappleFillColor))
+                    .Pen(wxPen(pineappleEdgeColor, ScaleToScreenAndCanvas(1)))
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                chunkPoints));
+            }
+
+        // cinnamon sprinkles - small reddish-brown dots
+        const wxColour cinnamonColor{ 139, 90, 43, 180 };
+
+        constexpr int CINNAMON_COUNT{ 40 };
+        constexpr uint32_t CINNAMON_SEED{ 0xC1AA0A };
+        const double cinnamonRadius = ScaleToScreenAndCanvas(2);
+        const double minCinnamonDistance = innerRadius * 0.08;
+        const double maxCinnamonDistance = innerRadius * 0.95;
+
+        constexpr int CINNAMON_SAMPLES{ 8 };
+
+        for (int i = 0; i < CINNAMON_COUNT; ++i)
+            {
+            const uint32_t seed = CINNAMON_SEED + static_cast<uint32_t>(i * 557);
+
+            const double angleStepDegrees = safe_divide<double>(360.0, CINNAMON_COUNT);
+            const double angleDegrees =
+                (i * angleStepDegrees) +
+                (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStepDegrees * 0.9;
+            // sqrt biases towards outer edge for better spread
+            const double distance =
+                minCinnamonDistance + (maxCinnamonDistance - minCinnamonDistance) *
+                                          std::sqrt(HashToUnitInterval(seed ^ 0x2222U));
+
+            const double spiceX =
+                pieCenter.x + std::cos(geometry::degrees_to_radians(angleDegrees)) * distance;
+            const double spiceY =
+                pieCenter.y + std::sin(geometry::degrees_to_radians(angleDegrees)) * distance;
+
+            const wxRect spiceRect(wxRound(spiceX - cinnamonRadius),
+                                   wxRound(spiceY - cinnamonRadius), wxRound(cinnamonRadius * 2),
+                                   wxRound(cinnamonRadius * 2));
+
+            std::array<wxPoint, CINNAMON_SAMPLES> spicePoints;
+            for (int sample = 0; std::cmp_less(sample, spicePoints.size()); ++sample)
+                {
+                spicePoints[sample] = GetEllipsePointFromRect(
+                    spiceRect, safe_divide<double>(360.0 * sample, spicePoints.size()));
+                }
+
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                                .Brush(wxBrush(cinnamonColor))
+                                                                .Pen(wxNullPen)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false),
+                                                            spicePoints));
+            }
+        }
+
+    //----------------------------------------------------------------
     void PieChart::AddToastedCheeseSpots(const DrawAreas& drawAreas)
         {
         const wxRect pieRect = drawAreas.m_pieDrawArea;
@@ -2512,7 +2654,8 @@ namespace Wisteria::Graphs
                     sliceBrush.GetColour());
 
             if (GetPieStyle() == PieStyle::CheezePizza ||
-                GetPieStyle() == PieStyle::PepperoniCheezePizza)
+                GetPieStyle() == PieStyle::PepperoniCheezePizza ||
+                GetPieStyle() == PieStyle::HawaiianPizza)
                 {
                 sliceBrushToUse.SetColour(GetCheeseColor());
                 sliceOutlinePen.SetColour(*wxBLACK);
@@ -2651,7 +2794,8 @@ namespace Wisteria::Graphs
                                                          GetGhostOpacity()) :
                     GetBrushScheme()->GetBrush(i).GetColour());
             if (GetPieStyle() == PieStyle::CheezePizza ||
-                GetPieStyle() == PieStyle::PepperoniCheezePizza)
+                GetPieStyle() == PieStyle::PepperoniCheezePizza ||
+                GetPieStyle() == PieStyle::HawaiianPizza)
                 {
                 sliceBrush.SetColour(GetCheeseColor());
                 sliceOutlinePen.SetColour(*wxBLACK);

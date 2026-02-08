@@ -443,7 +443,7 @@ namespace Wisteria
     /// @brief Styling to apply to a pie chart.
     enum class PieStyle
         {
-        /// @brief No style.
+        /// @brief No style. Color schemes or images will be used instead.
         None,
         /// @brief A clockface, where an hour, minute, and seconds (if necessary) are drawn
         ///     to separate the slices.
@@ -455,6 +455,12 @@ namespace Wisteria
         ///     will be obscured. If using this style, it is recommended to display labels
         ///     outside of the pie.
         PepperoniCheezePizza,
+        /// @brief A Hawaiian pizza with pepperoni, pineapple chunks, and cinnamon sprinkles
+        ///     (slice colors will be overridden).
+        /// @warning The toppings are placed on top of the pie, so labels on the pie slices
+        ///     will be obscured. If using this style, it is recommended to display labels
+        ///     outside of the pie.
+        HawaiianPizza,
         /// @brief A coffee cup ring, with a light coffee stain in the middle and small
         ///     splatter off to the side.
         CoffeeRing

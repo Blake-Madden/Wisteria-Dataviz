@@ -7,13 +7,15 @@
     - Pepperoni pizza
     - Hawaiian pizza
     - Chocolate chip cookie
+- Added styling options to pie charts to make them look like:
+    - Hawaiian pizzas
 - Added marker effect to bar charts and box plots
 - Added pencil effect to bar charts and box plots
 - Add pencil style for axis and grid lines
 - When using a water color effect for box plots, draw the whisker with the "paint brush" also
 - Compatibility change: watermarks are only rendered on print and save now
 - `@USER@` placeholder now supported in watermarks
-- `@DATETIME@` placeholder  now supported in print headers and footers
+- `@DATETIME@` placeholder now supported in print headers and footers
 - Improved layout of watermarks and tilted labels
 - Improved the appearance of pie chart's coffee stain style
 

@@ -1116,6 +1116,7 @@ namespace Wisteria::Graphs
         void AddCrustRing(const DrawAreas& drawAreas);
         void AddToastedCheeseSpots(const DrawAreas& drawAreas);
         void AddPepperoni(const DrawAreas& drawAreas);
+        void AddPineappleAndCinnamon(const DrawAreas& drawAreas);
         // coffee styling
         void AddCoffeeInnerStains(const DrawAreas& drawAreas);
         void AddPartialCoffeeRingStain(const DrawAreas& drawAreas);

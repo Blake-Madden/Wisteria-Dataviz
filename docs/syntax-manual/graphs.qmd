@@ -232,11 +232,12 @@ Properties for `"pie-chart"` nodes:
     This will require an `"image-scheme"` to be defined.
 - `"pie-style"`: A string specifying the visual style for the pie chart. \
   Available options are:
-  - `"none"`: No style (the default).
+  - `"none"`: No style (the default). Color schemes or images will be used instead.
   - `"clockface"`: A clockface, where an hour, minute, and seconds (if necessary) are drawn to separate the slices.
   - `"cheeze-pizza"`: A cheese pizza (slice colors will be overridden).
-  - `"pepperoni-cheeze-pizza"`: A pepperoni pizza (slice colors will be overridden). \
-    Note that the pepperonis are placed on top of the pie, so labels on the pie slices will be obscured. \
+  - `"pepperoni-cheese-pizza"`: A pepperoni pizza (slice colors will be overridden). \
+  - `"hawaiian-pizza"`: A hawaiian pizza (slice colors will be overridden). \
+    Note that the extra toppings for pepperoni and hawaiian pizzas are placed on top of the pie, so labels on the pie slices will be obscured. \
     If using this style, it is recommended to display labels outside of the pie.
   - `"coffee-ring"`: A coffee cup ring, with a light coffee stain in the middle and small splatter off to the side.
 - `"label-placement"`: A string specifying where to align the outer labels. \
