@@ -329,6 +329,10 @@ namespace Wisteria::GraphItems
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
         void DrawMarkerRectangle(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a rectangle with a hand-drawn pencil outline (no fill).
+        /// @param rect The area to draw within.
+        /// @param dc The DC to draw to.
+        void DrawPencilRectangle(wxRect rect, wxDC& dc) const;
         /// @brief Draws a graduation cap with tassel.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.

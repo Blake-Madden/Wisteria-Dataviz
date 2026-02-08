@@ -124,6 +124,7 @@ namespace Wisteria
                 { L"watercolor-rectangle", Icons::IconShape::WaterColorRectangle },
                 { L"thick-watercolor-rectangle", Icons::IconShape::ThickWaterColorRectangle },
                 { L"marker-rectangle", Icons::IconShape::MarkerRectangle },
+                { L"pencil-rectangle", Icons::IconShape::PencilRectangle },
                 { L"graduation-cap", Icons::IconShape::GraduationCap },
                 { L"book", Icons::IconShape::Book },
                 { L"tire", Icons::IconShape::Tire },
@@ -545,7 +546,8 @@ namespace Wisteria
                 { L"stipple-image", BoxEffect::StippleImage },
                 { L"stipple-shape", BoxEffect::StippleShape },
                 { L"watercolor", BoxEffect::WaterColor },
-                { L"marker", BoxEffect::Marker }
+                { L"marker", BoxEffect::Marker },
+                { L"pencil", BoxEffect::Pencil }
             };
 
             const auto foundValue = boxEffects.find(value.Lower().ToStdWstring());

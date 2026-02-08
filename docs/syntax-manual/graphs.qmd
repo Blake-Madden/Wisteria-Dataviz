@@ -21,6 +21,7 @@ Properties for `"box-plot"` nodes:
   - `"stipple"`
   - `"marker"`
   - `"watercolor"`
+  - `"pencil"`
 - `"show-all-points"`: `true` to show all points.
   By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.

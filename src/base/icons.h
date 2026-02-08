@@ -82,6 +82,8 @@ namespace Wisteria::Icons
                                        painted with a second coat.*/
         MarkerRectangle,          /*!< A rectangle drawn with a marker-like effect, with rough
                                       outline and diagonal hatching.*/
+        PencilRectangle,          /*!< A rectangle drawn with a hand-drawn pencil outline
+                                      (no fill, just the wobbly outline).*/
         GraduationCap,            /*!< A graduation cap.*/
         Book,                     /*!< A textbook.*/
         Tire,                     /*!< A car tire.*/

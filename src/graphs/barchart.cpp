@@ -1298,6 +1298,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
                               (bar.GetEffect() == BoxEffect::Marker) ?
                                   GraphItems::Polygon::PolygonShape::MarkerRectangle :
+                              (bar.GetEffect() == BoxEffect::Pencil) ?
+                                  GraphItems::Polygon::PolygonShape::PencilRectangle :
                               (bar.GetShape() == BarShape::Arrow ||
                                bar.GetShape() == BarShape::ReverseArrow) ?
                                   GraphItems::Polygon::PolygonShape::Irregular :
@@ -1313,11 +1315,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     box->GetBrush().SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(
                         box->GetBrush().GetColour(), 200));
                     }
+                // for pencil effect, use a thicker pen
+                if (bar.GetEffect() == BoxEffect::Pencil)
+                    {
+                    const auto axisPenWidth = GetLeftYAxis().GetAxisLinePen().IsOk() ?
+                                                  GetLeftYAxis().GetAxisLinePen().GetWidth() :
+                                                  1;
+                    box->GetPen().SetWidth(axisPenWidth * 1.5);
+                    }
                 // flip outline logic so that we have a hard outline since we are
                 // not "drawing within the lines" (also, don't clip)
                 if (bar.GetEffect() == BoxEffect::WaterColor ||
                     bar.GetEffect() == BoxEffect::ThickWaterColor ||
-                    bar.GetEffect() == BoxEffect::Marker)
+                    bar.GetEffect() == BoxEffect::Marker || bar.GetEffect() == BoxEffect::Pencil)
                     {
                     // ...but only use hard outline if there isn't a user-defined outline
                     if (!barBlock.GetOutlinePen().IsOk())
@@ -1328,6 +1338,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         }
                     SetDefaultLegendShape((bar.GetEffect() == BoxEffect::Marker) ?
                                               Icons::IconShape::MarkerRectangle :
+                                          (bar.GetEffect() == BoxEffect::Pencil) ?
+                                              Icons::IconShape::PencilRectangle :
                                               Icons::IconShape::WaterColorRectangle);
                     }
                 // clip box to not be on top of axes
@@ -1876,6 +1888,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
                               (bar.GetEffect() == BoxEffect::Marker) ?
                                   GraphItems::Polygon::PolygonShape::MarkerRectangle :
+                              (bar.GetEffect() == BoxEffect::Pencil) ?
+                                  GraphItems::Polygon::PolygonShape::PencilRectangle :
                               (bar.GetShape() == BarShape::Arrow ||
                                bar.GetShape() == BarShape::ReverseArrow) ?
                                   GraphItems::Polygon::PolygonShape::Irregular :
@@ -1891,11 +1905,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     box->GetBrush().SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(
                         box->GetBrush().GetColour(), 200));
                     }
+                // for Pencil effect, use a thicker pen
+                if (bar.GetEffect() == BoxEffect::Pencil)
+                    {
+                    const auto axisPenWidth = GetBottomXAxis().GetAxisLinePen().IsOk() ?
+                                                  GetBottomXAxis().GetAxisLinePen().GetWidth() :
+                                                  1;
+                    box->GetPen().SetWidth(axisPenWidth * 1.5);
+                    }
                 // flip outline logic so that we have a hard outline since we are
                 // not "drawing within the lines" (also, don't clip)
                 if (bar.GetEffect() == BoxEffect::WaterColor ||
                     bar.GetEffect() == BoxEffect::ThickWaterColor ||
-                    bar.GetEffect() == BoxEffect::Marker)
+                    bar.GetEffect() == BoxEffect::Marker || bar.GetEffect() == BoxEffect::Pencil)
                     {
                     // ...but only use hard outline if there isn't a user-defined outline
                     if (!barBlock.GetOutlinePen().IsOk())
@@ -1906,6 +1928,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         }
                     SetDefaultLegendShape((bar.GetEffect() == BoxEffect::Marker) ?
                                               Icons::IconShape::MarkerRectangle :
+                                          (bar.GetEffect() == BoxEffect::Pencil) ?
+                                              Icons::IconShape::PencilRectangle :
                                               Icons::IconShape::WaterColorRectangle);
                     }
                 // clip box to not be on top of axes

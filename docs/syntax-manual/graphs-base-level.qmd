@@ -19,6 +19,7 @@ Properties common to all bar-chart-derived graphs:
   - `"stipple-shape"`
   - `"watercolor"`
   - `"marker"`
+  - `"pencil"`
 - `"bar-label-display"`: A string specifying how to display labels on the bars. \
   Available options are:
   - `"percentage"`

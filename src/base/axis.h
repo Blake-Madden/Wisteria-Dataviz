@@ -2227,7 +2227,7 @@ namespace Wisteria::GraphItems
         double m_majorTickMarkLength{ 10 };
         TickMark::DisplayType m_tickMarkDisplayType{ TickMark::DisplayType::NoDisplay };
 
-        std::pair<wxPoint, wxPoint> m_points{ wxPoint(0, 0), wxPoint(0, 0) };
+        std::pair<wxPoint, wxPoint> m_points{ wxPoint{ 0, 0 }, wxPoint{ 0, 0 } };
 
         bool m_doubleSidedAxisLabels{ false };
         bool m_mirrorBracketsWhenDoubleSided{ true };
@@ -2247,7 +2247,7 @@ namespace Wisteria::GraphItems
         bool m_enableAutoStacking{ true };
         double m_labelSpacingPhysicalOffset{ 0 };
         wxPen m_axisLinePen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        wxPen m_gridlinePen{ wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT)) };
+        wxPen m_gridlinePen{ wxPen{ wxPenInfo{ wxColour{ 211, 211, 211, 200 } }.Cap(wxCAP_BUTT) } };
 
         // date information (if being used to display date intervals)
         wxDateTime m_fyQ1{ wxDateTime(1, wxDateTime::Month::Jul,
@@ -2288,8 +2288,8 @@ namespace Wisteria::GraphItems
         std::optional<wxCoord> m_maxHeight;
         std::optional<wxCoord> m_maxWidth;
         // cached values
-        mutable Label m_widestLabel{ Label(GraphItemInfo().Ok(false)) };
-        mutable Label m_tallestLabel{ Label(GraphItemInfo().Ok(false)) };
+        mutable Label m_widestLabel{ Label(GraphItemInfo{}.Ok(false)) };
+        mutable Label m_tallestLabel{ Label(GraphItemInfo{}.Ok(false)) };
 
         wxSize m_outlineSize{ wxDefaultSize };
         };

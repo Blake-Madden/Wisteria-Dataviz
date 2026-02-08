@@ -196,7 +196,8 @@ namespace Wisteria::GraphItems
             // use solid color for these
             (GetShape() != PolygonShape::WaterColorRectangle) &&
             (GetShape() != PolygonShape::ThickWaterColorRectangle) &&
-            (GetShape() != PolygonShape::MarkerRectangle))
+            (GetShape() != PolygonShape::MarkerRectangle) &&
+            (GetShape() != PolygonShape::PencilRectangle))
             {
             const wxDCBrushChanger bc(dc, GetBackgroundFill().GetColor1());
             if (GetBackgroundFill().IsGradient())
@@ -422,6 +423,12 @@ namespace Wisteria::GraphItems
             else if (GetShape() == PolygonShape::MarkerRectangle)
                 {
                 const GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::MarkerRectangle,
+                                           boundingBox.GetSize());
+                sh.Draw(boundingBox, dc);
+                }
+            else if (GetShape() == PolygonShape::PencilRectangle)
+                {
+                const GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::PencilRectangle,
                                            boundingBox.GetSize());
                 sh.Draw(boundingBox, dc);
                 }

@@ -73,6 +73,8 @@ namespace Wisteria::GraphItems
             ThickWaterColorRectangle,
             /// @brief A marker-like rectangle, with rough outline and diagonal hatching.
             MarkerRectangle,
+            /// @brief A pencil-drawn rectangle, with wobbly outline and no fill.
+            PencilRectangle,
             /// @brief A spline-like rectangle.
             /// @note Requires ten points; will be draws as-is an irregular shape otherwise.
             CurvyRectangle,

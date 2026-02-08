@@ -131,6 +131,7 @@ Properties common to all graphs:
   - `"watercolor-rectangle"`
   - `"thick-watercolor-rectangle"`
   - `"marker-rectangle"`
+  - `"pencil-rectangle"`
   - `"graduation-cap"`
   - `"book"`
   - `"tire"`

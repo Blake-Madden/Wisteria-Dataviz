@@ -383,9 +383,7 @@ namespace Wisteria
         Lines,  /*!< Each pair of points are connected with a regular line.*/
         Arrows, /*!< Each pair of points are connected with a line with a terminal arrow.*/
         Spline, /*!< Consecutive valid points are connected with a spline.*/
-        Pencil  /*!< A wobbly pencil line that looks hand drawn.
-                     This style will only work for perfectly straight vertical
-                     or horizontal lines.*/
+        Pencil  /*!< A wobbly pencil line that looks hand drawn.*/
         };
 
     /// @brief Box rendering options (used for bar charts, box plots, etc.)
@@ -425,8 +423,11 @@ namespace Wisteria
         /// @brief A felt-marker-like effect, where the outline is rough and slightly uneven
         ///     and the interior is filled with diagonal hatching lines.
         Marker = 10,
+        /// @brief A hand-drawn pencil effect, where the outline is drawn with a wobbly
+        ///     pencil line style. No fill is applied, only the outline.
+        Pencil = 11,
         /// @private
-        EFFECTS_COUNT = 11
+        EFFECTS_COUNT = 12
         };
 
     /// @brief Pie slice rendering options (used for pie charts.)

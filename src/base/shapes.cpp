@@ -9,6 +9,7 @@
 #include "shapes.h"
 #include "image.h"
 #include "label.h"
+#include "lines.h"
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
 
@@ -214,6 +215,7 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::ThickWaterColorRectangle,
               &ShapeRenderer::DrawThickWaterColorRectangle },
             { Icons::IconShape::MarkerRectangle, &ShapeRenderer::DrawMarkerRectangle },
+            { Icons::IconShape::PencilRectangle, &ShapeRenderer::DrawPencilRectangle },
             { Icons::IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
             { Icons::IconShape::Book, &ShapeRenderer::DrawBook },
             { Icons::IconShape::Tire, &ShapeRenderer::DrawTire },
@@ -5771,6 +5773,135 @@ namespace Wisteria::GraphItems
             outlinePath.CloseSubpath();
             gc->StrokePath(outlinePath);
             }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawPencilRectangle(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger pc{ dc, *wxBLACK_PEN };
+        const wxDCBrushChanger bc{ dc, *wxBLACK_BRUSH };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        // get the pencil pen for color reference
+        wxPen pencilPen = GetGraphItemInfo().GetPen();
+        if (!pencilPen.IsOk())
+            {
+            pencilPen = *wxBLACK_PEN;
+            }
+        const wxColour pencilColor = pencilPen.GetColour();
+        const auto penWidth = std::max(ScaleToScreenAndCanvas(pencilPen.GetWidth()), 1.0);
+
+        // create a lighter, translucent shade of the pencil color for shading
+        const wxColour shadingColor(pencilColor.Red(), pencilColor.Green(), pencilColor.Blue(),
+                                    80); // ~30% opacity
+
+        // random distributions for imperfections
+        std::uniform_real_distribution<> overflowDist(-penWidth * 2, penWidth * 4);
+        std::uniform_real_distribution<> skipDist(0.0, 1.0);
+        std::uniform_real_distribution<> gapDist(0.8, 1.5); // random spacing multiplier
+        std::uniform_real_distribution<> wiggleDist(-penWidth * 0.5, penWidth * 0.5);
+
+        // use the shorter side for sizing, like Marker effect
+        const auto baseWidth = std::min(rect.GetWidth(), rect.GetHeight());
+        const auto strokeWidth = std::max<double>(penWidth * 0.8, 1.0);
+
+        // draw diagonal hatching lines (top-left to bottom-right direction)
+        gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+        wxPen shadingPen(shadingColor, static_cast<int>(strokeWidth));
+        shadingPen.SetCap(wxPenCap::wxCAP_ROUND);
+
+        const auto baseSpacing = std::max(baseWidth * 0.03, penWidth * 0.5);
+        const int totalSweep = rect.GetWidth() + rect.GetHeight();
+
+        double offset = baseSpacing * gapDist(GetRNG());
+        while (offset < totalSweep)
+            {
+            // randomly skip some strokes to create gaps (about 15% chance)
+            if (skipDist(GetRNG()) < 0.15)
+                {
+                offset += baseSpacing * gapDist(GetRNG());
+                continue;
+                }
+
+            // calculate unclipped start/end of the diagonal line
+            double x1 = rect.GetX() + offset;
+            double y1 = static_cast<double>(rect.GetY());
+            double x2 = static_cast<double>(rect.GetX());
+            double y2 = rect.GetY() + offset;
+
+            // add random overflow/underflow at the ends
+            const double startOverflow = overflowDist(GetRNG());
+            const double endOverflow = overflowDist(GetRNG());
+
+            // apply overflow before clipping (can extend outside)
+            x1 += startOverflow * 0.707; // cos(45°)
+            y1 -= startOverflow * 0.707; // extend diagonally outward
+            x2 -= endOverflow * 0.707;
+            y2 += endOverflow * 0.707;
+
+            // clip to rectangle bounds (with some tolerance for overflow)
+            const double clipMargin{ penWidth * 3 };
+            if (x1 > rect.GetRight() + clipMargin)
+                {
+                const double excess = x1 - rect.GetRight();
+                y1 += excess;
+                x1 = rect.GetRight() + std::min(startOverflow, clipMargin);
+                }
+            if (y2 > rect.GetBottom() + clipMargin)
+                {
+                const double excess = y2 - rect.GetBottom();
+                x2 += excess;
+                y2 = rect.GetBottom() + std::min(endOverflow, clipMargin);
+                }
+            if (y1 > rect.GetBottom() + clipMargin || x2 > rect.GetRight() + clipMargin)
+                {
+                offset += baseSpacing * gapDist(GetRNG());
+                continue;
+                }
+
+            // draw the line as a wobbly path with a few segments
+            auto hatchPath = gc->CreatePath();
+            constexpr int segments{ 5 };
+            const double dx = safe_divide<double>(x2 - x1, segments);
+            const double dy = safe_divide<double>(y2 - y1, segments);
+
+            hatchPath.MoveToPoint(x1, y1);
+            for (int segment = 1; segment <= segments; ++segment)
+                {
+                const double wx = wiggleDist(GetRNG());
+                const double wy = wiggleDist(GetRNG());
+                hatchPath.AddLineToPoint(x1 + dx * segment + wx, y1 + dy * segment + wy);
+                }
+
+            gc->SetPen(shadingPen);
+            gc->StrokePath(hatchPath);
+
+            offset += baseSpacing * gapDist(GetRNG());
+            }
+
+        // draw outline with pencil style
+        pencilPen.SetWidth(penWidth);
+        Lines lines(pencilPen, GetScaling());
+        lines.SetLineStyle(LineStyle::Pencil);
+        lines.SetDPIScaleFactor(GetDPIScaleFactor());
+
+        // top edge (horizontal)
+        lines.AddLine(rect.GetTopLeft(), rect.GetTopRight());
+        // right edge (vertical)
+        lines.AddLine(rect.GetTopRight(), rect.GetBottomRight());
+        // bottom edge (horizontal)
+        lines.AddLine(rect.GetBottomRight(), rect.GetBottomLeft());
+        // left edge (vertical)
+        lines.AddLine(rect.GetBottomLeft(), rect.GetTopLeft());
+
+        lines.Draw(dc);
         }
 
     //---------------------------------------------------

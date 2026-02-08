@@ -31,26 +31,24 @@ namespace Wisteria::GraphItems
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
-        wxPen scaledPen(GetPen());
+        wxPen scaledPen{ GetPen() };
         if (GetPen().IsOk())
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
             }
         const int penW = scaledPen.IsOk() ? scaledPen.GetWidth() : ScaleToScreenAndCanvas(1);
         const wxDCPenChanger pc(dc, IsSelected() ?
-                                        wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                              2 * penW, wxPENSTYLE_DOT) :
+                                        wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               2 * penW, wxPENSTYLE_DOT } :
                                         scaledPen);
         for (const auto& line : m_lines)
             {
             if (GetLineStyle() == LineStyle::Arrows)
                 {
                 const int head = std::max<int>(ScaleToScreenAndCanvas(5), penW * 3);
-                Polygon::DrawArrow(dc, line.first, line.second, wxSize(head, head));
+                Polygon::DrawArrow(dc, line.first, line.second, wxSize{ head, head });
                 }
-            else if (GetLineStyle() == LineStyle::Pencil &&
-                     // needs to be perfectly vertical or horizontal
-                     (line.first.x == line.second.x || line.first.y == line.second.y))
+            else if (GetLineStyle() == LineStyle::Pencil)
                 {
                 DrawPencilLine(dc, line.first, line.second);
                 }
@@ -66,9 +64,9 @@ namespace Wisteria::GraphItems
                 {
                 std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
-                const wxDCPenChanger pcDebug{ dc, wxPen(Colors::ColorBrewer::GetColor(
-                                                            Colors::Color::Red),
-                                                        2 * penW, wxPENSTYLE_SHORT_DASH) };
+                const wxDCPenChanger pcDebug{ dc, wxPen{ Colors::ColorBrewer::GetColor(
+                                                             Colors::Color::Red),
+                                                         2 * penW, wxPENSTYLE_SHORT_DASH } };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
@@ -94,24 +92,33 @@ namespace Wisteria::GraphItems
         points.reserve(segments);
         points.push_back(startPt);
 
+        // calculate direction vector and perpendicular for jitter
+        const double dx = endPt.x - startPt.x;
+        const double dy = endPt.y - startPt.y;
+        // perpendicular unit vector (rotated 90 degrees)
+        const double perpX = (length > 0) ? safe_divide<double>(-dy, length) : 0.0;
+        const double perpY = (length > 0) ? safe_divide<double>(dx, length) : 0.0;
+
         for (int i = 1; i < segments; ++i)
             {
             const double pos = safe_divide<double>(i, segments);
-            if (startPt.y == endPt.y) // horizontal
-                {
-                points.push_back(wxPoint(startPt.x + pos * length,
-                                         startPt.y + jitter(GraphItems::ShapeRenderer::GetRNG())));
-                }
-            else
-                {
-                points.push_back(wxPoint(startPt.x + jitter(GraphItems::ShapeRenderer::GetRNG()),
-                                         startPt.y + pos * length));
-                }
+            const double jitterAmount = jitter(GraphItems::ShapeRenderer::GetRNG());
+            // move along the line by pos fraction, then add perpendicular jitter
+            points.push_back(
+                wxPoint(static_cast<int>(startPt.x + pos * dx + jitterAmount * perpX),
+                        static_cast<int>(startPt.y + pos * dy + jitterAmount * perpY)));
             }
         points.push_back(endPt);
 
-        wxPen pencilPen(wxColour{ 80, 80, 80, 200 }, ScaleToScreenAndCanvas(1));
-        const wxDCPenChanger pc{ dc, pencilPen };
+        wxPen pencilPen{ GetPen() };
+        if (GetPen().IsOk())
+            {
+            pencilPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
+            }
+        const int penW = pencilPen.IsOk() ? pencilPen.GetWidth() : ScaleToScreenAndCanvas(1);
+        const wxDCPenChanger pc(
+            dc, IsSelected() ? wxPen{ wxColour{ 80, 80, 80, 200 }, 2 * penW, wxPENSTYLE_DOT } :
+                               pencilPen);
         dc.DrawSpline(points.size(), points.data());
         }
 

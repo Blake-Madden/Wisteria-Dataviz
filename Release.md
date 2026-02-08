@@ -7,6 +7,7 @@
     - Pepperoni pizza
     - Hawaiian pizza
 - Added marker effect to bar charts and box plots
+- Added pencil effect to bar charts and box plots
 - Add pencil style for axis and grid lines
 - When using a water color effect for box plots, draw the whisker with the "paint brush" also
 - Compatibility change: watermarks are only rendered on print and save now
