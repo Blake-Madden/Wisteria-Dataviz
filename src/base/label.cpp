@@ -302,7 +302,7 @@ namespace Wisteria::GraphItems
         {
         if (!IsOk())
             {
-            return wxRect{};
+            return {};
             }
 
         if (!GetCachedBoundingBox().IsEmpty())
@@ -396,11 +396,11 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Label::GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const
         {
-        assert(GetFont().IsOk());
+        wxASSERT(GetFont().IsOk());
 
         width = height = 0;
 
-        const DCFontChangerIfDifferent fc(dc, (GetFont().Scaled(GetScaling())));
+        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
 
         const wxStringTokenizer tokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         const wxCoord spaceBetweenLines =

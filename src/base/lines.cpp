@@ -45,7 +45,7 @@ namespace Wisteria::GraphItems
             {
             if (GetLineStyle() == LineStyle::Arrows)
                 {
-                const int head = std::max<int>(ScaleToScreenAndCanvas(5), penW * 3);
+                const int head = std::max<int>(ScaleToScreenAndCanvas(10), penW * 3);
                 Polygon::DrawArrow(dc, line.first, line.second, wxSize{ head, head });
                 }
             else if (GetLineStyle() == LineStyle::Pencil)
@@ -116,9 +116,9 @@ namespace Wisteria::GraphItems
             pencilPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
             }
         const int penW = pencilPen.IsOk() ? pencilPen.GetWidth() : ScaleToScreenAndCanvas(1);
-        const wxDCPenChanger pc(
-            dc, IsSelected() ? wxPen{ wxColour{ 80, 80, 80, 200 }, 2 * penW, wxPENSTYLE_DOT } :
-                               pencilPen);
+        const wxDCPenChanger pc{ dc, IsSelected() ? wxPen{ wxColour{ 80, 80, 80, 200 }, 2 * penW,
+                                                           wxPENSTYLE_DOT } :
+                                                    pencilPen };
         dc.DrawSpline(points.size(), points.data());
         }
 

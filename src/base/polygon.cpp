@@ -482,8 +482,8 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        const auto dx = static_cast<float>(pt2.x - pt1.x);
-        const auto dy = static_cast<float>(pt2.y - pt1.y);
+        const auto dx = static_cast<double>(pt2.x - pt1.x);
+        const auto dy = static_cast<double>(pt2.y - pt1.y);
         const auto length = std::sqrt((dx * dx) + (dy * dy));
 
         // ux,uy is a unit vector parallel to the line.
@@ -498,10 +498,10 @@ namespace Wisteria::GraphItems
 
         const std::array<wxPoint, 3> arrowHead{
             { pt2,
-              wxPoint{ wxRound(pt2.x - (arrowHeadSize.GetHeight() * ux) + (halfWidth * vx)),
-                       wxRound(pt2.y - (arrowHeadSize.GetHeight() * uy) + (halfWidth * vy)) },
-              wxPoint{ wxRound(pt2.x - (arrowHeadSize.GetHeight() * ux) - (halfWidth * vx)),
-                       wxRound(pt2.y - (arrowHeadSize.GetHeight() * uy) - (halfWidth * vy)) } }
+              wxPoint(std::ceil(pt2.x - (arrowHeadSize.GetHeight() * ux) + (halfWidth * vx)),
+                      std::ceil(pt2.y - (arrowHeadSize.GetHeight() * uy) + (halfWidth * vy))),
+              wxPoint(std::ceil(pt2.x - (arrowHeadSize.GetHeight() * ux) - (halfWidth * vx)),
+                      std::ceil(pt2.y - (arrowHeadSize.GetHeight() * uy) - (halfWidth * vy))) }
         };
 
         // The end of the line should be going underneath the head by just one pixel,
@@ -515,10 +515,10 @@ namespace Wisteria::GraphItems
 
         dc.DrawLine(pt1, wxPoint{ pt2.x + xAdjustment, pt2.y });
         // fill the arrowhead with the same color as the line
-        const wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
+        const wxDCBrushChanger bc{ dc, dc.GetPen().GetColour() };
         // need to turn off the pen because a thicker pen will cause an odd-looking
         // effect when the two lines converge at the tip of the arrowhead
-        const wxDCPenChanger pc(dc, wxColour{ 0, 0, 0, 0 });
+        const wxDCPenChanger pc{ dc, wxColour{ 0, 0, 0, 0 } };
         dc.DrawPolygon(arrowHead.size(), arrowHead.data());
         }
 

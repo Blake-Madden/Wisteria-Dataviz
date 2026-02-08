@@ -8,6 +8,7 @@
 
 #include "points.h"
 #include "label.h"
+#include "lines.h"
 #include "polygon.h"
 #include "shapes.h"
 
@@ -263,21 +264,11 @@ namespace Wisteria::GraphItems
                     {
                     if (m_points[i].IsOk() && m_points[i + 1].IsOk())
                         {
-                        if (GetLineStyle() == LineStyle::Lines)
-                            {
-                            dc.DrawLine(m_points[i].GetAnchorPoint(),
-                                        m_points[i + 1].GetAnchorPoint());
-                            }
-                        else if (GetLineStyle() == LineStyle::Arrows)
-                            {
-                            const int arrowHeadDimension =
-                                std::max<int>(ScaleToScreenAndCanvas(10),
-                                              scaledPen.IsOk() ? scaledPen.GetWidth() * 3 :
-                                                                 ScaleToScreenAndCanvas(10));
-                            Polygon::DrawArrow(dc, m_points[i].GetAnchorPoint(),
-                                               m_points[i + 1].GetAnchorPoint(),
-                                               wxSize(arrowHeadDimension, arrowHeadDimension));
-                            }
+                        Lines lns(GetPen(), GetScaling());
+                        lns.SetDPIScaleFactor(GetDPIScaleFactor());
+                        lns.AddLine(m_points[i].GetAnchorPoint(), m_points[i + 1].GetAnchorPoint());
+                        lns.SetLineStyle(GetLineStyle());
+                        lns.Draw(dc);
                         }
                     }
                 }

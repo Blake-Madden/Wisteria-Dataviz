@@ -749,7 +749,7 @@ namespace Wisteria
         /// @returns The (scaled) rectangle area of the canvas.
         /// @param dc The measuring DC.
         [[nodiscard]]
-        wxRect GetCanvasRect(const wxDC& dc) const noexcept
+        wxRect GetCanvasRect(const wxReadOnlyDC& dc) const noexcept
             {
             wxRect scaledRect(m_rectDIPs);
             scaledRect.SetSize(dc.FromDIP(m_rectDIPs.GetSize()));
@@ -863,7 +863,7 @@ namespace Wisteria
         ///     It should <b>not</b> be used with font point sizes because DPI scaling is handled by
         ///     the OS for those. Instead, font sizes should only be scaled to the canvas's scaling.
         [[nodiscard]]
-        double ScaleToScreenAndCanvas(const double value, const wxDC& dc) const noexcept
+        double ScaleToScreenAndCanvas(const double value, const wxReadOnlyDC& dc) const noexcept
             {
             return value * GetScaling() * dc.FromDIP(1);
             }
