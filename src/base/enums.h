@@ -449,12 +449,12 @@ namespace Wisteria
         ///     to separate the slices.
         Clockface,
         /// @brief A cheese pizza (slice colors will be overridden).
-        CheezePizza,
+        CheesePizza,
         /// @brief A pepperoni pizza (slice colors will be overridden).
         /// @warning The pepperonis are placed on top of the pie, so labels on the pie slices
         ///     will be obscured. If using this style, it is recommended to display labels
         ///     outside of the pie.
-        PepperoniCheezePizza,
+        PepperoniPizza,
         /// @brief A Hawaiian pizza with pepperoni, pineapple chunks, and cinnamon sprinkles
         ///     (slice colors will be overridden).
         /// @warning The toppings are placed on top of the pie, so labels on the pie slices
@@ -463,7 +463,13 @@ namespace Wisteria
         HawaiianPizza,
         /// @brief A coffee cup ring, with a light coffee stain in the middle and small
         ///     splatter off to the side.
-        CoffeeRing
+        CoffeeRing,
+        /// @brief A Venus symbol (♀), with a thick baby pink outer ring and cross below.
+        ///     Slice colors will be overridden with a tinted baby pink.
+        Venus,
+        /// @brief A Mars symbol (♂), with a thick baby blue outer ring and arrow above-right.
+        ///     Slice colors will be overridden with a tinted baby blue.
+        Mars
         };
 
     /// @brief Effects that could be applied to an image.

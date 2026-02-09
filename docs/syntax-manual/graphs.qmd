@@ -234,12 +234,14 @@ Properties for `"pie-chart"` nodes:
   Available options are:
   - `"none"`: No style (the default). Color schemes or images will be used instead.
   - `"clockface"`: A clockface, where an hour, minute, and seconds (if necessary) are drawn to separate the slices.
-  - `"cheeze-pizza"`: A cheese pizza (slice colors will be overridden).
-  - `"pepperoni-cheese-pizza"`: A pepperoni pizza (slice colors will be overridden). \
+  - `"cheese-pizza"`: A cheese pizza (slice colors will be overridden).
+  - `"pepperoni-pizza"`: A pepperoni pizza (slice colors will be overridden). \
   - `"hawaiian-pizza"`: A hawaiian pizza (slice colors will be overridden). \
     Note that the extra toppings for pepperoni and hawaiian pizzas are placed on top of the pie, so labels on the pie slices will be obscured. \
     If using this style, it is recommended to display labels outside of the pie.
   - `"coffee-ring"`: A coffee cup ring, with a light coffee stain in the middle and small splatter off to the side.
+  - `"venus"`: A Venus symbol (♀), with a thick baby pink outer ring and cross below. Slice colors will be overridden with a tinted baby pink.
+  - `"mars"`: A Mars symbol (♂), with a thick baby blue outer ring and arrow above-right. Slice colors will be overridden with a tinted baby blue.
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"`: Labels are flush with the plotting area's left or right side (the default).

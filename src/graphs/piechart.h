@@ -1140,6 +1140,25 @@ namespace Wisteria::Graphs
             return { 235, 224, 200, 150 };
             }
 
+        /// @returns A very light tinted baby pink for Venus slice fill.
+        [[nodiscard]]
+        static wxColour GetVenusFillColor()
+            {
+            return Colors::ColorBrewer::GetColor(Colors::Color::BabyPink).ChangeLightness(170);
+            }
+
+        /// @returns A very light tinted baby blue for Mars slice fill.
+        [[nodiscard]]
+        static wxColour GetMarsFillColor()
+            {
+            return Colors::ColorBrewer::GetColor(Colors::Color::BabyBlue).ChangeLightness(170);
+            }
+
+        // planet styling
+        void AddRing(const DrawAreas& drawAreas, const wxColour& ringColor);
+        void AddVenusSymbol(const DrawAreas& drawAreas);
+        void AddMarsSymbol(const DrawAreas& drawAreas);
+
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
 
             @details Given a bounding rectangle, treats the rectangle as the axis-aligned

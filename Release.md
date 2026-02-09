@@ -9,6 +9,8 @@
     - Chocolate chip cookie
 - Added styling options to pie charts to make them look like:
     - Hawaiian pizzas
+    - Mars symbol (♂)
+    - Venus symbol (♀)
 - Added marker effect to bar charts and box plots
 - Added pencil effect to bar charts and box plots
 - Add pencil style for axis and grid lines

@@ -576,7 +576,14 @@ namespace Wisteria
         static std::optional<PieStyle> ConvertPieStyle(const wxString& value)
             {
             static const std::map<std::wstring_view, PieStyle> sliceEffects = {
-                { L"none", PieStyle::None }, { L"clockface", PieStyle::Clockface }
+                { L"none", PieStyle::None },
+                { L"clockface", PieStyle::Clockface },
+                { L"cheese-pizza", PieStyle::CheesePizza },
+                { L"pepperoni-pizza", PieStyle::PepperoniPizza },
+                { L"hawaiian-pizza", PieStyle::HawaiianPizza },
+                { L"coffee-ring", PieStyle::CoffeeRing },
+                { L"venus", PieStyle::Venus },
+                { L"mars", PieStyle::Mars }
             };
 
             const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());
