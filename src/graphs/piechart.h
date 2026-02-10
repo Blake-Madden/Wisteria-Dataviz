@@ -1159,6 +1159,19 @@ namespace Wisteria::Graphs
         void AddVenusSymbol(const DrawAreas& drawAreas);
         void AddMarsSymbol(const DrawAreas& drawAreas);
 
+        // cookie styling
+        /// @returns A warm golden tan for cookie slice fill.
+        [[nodiscard]]
+        static wxColour GetCookieFillColor()
+            {
+            return wxColour{ 210, 170, 110 };
+            }
+
+        void AddCookieEdge(const DrawAreas& drawAreas);
+        void AddCookieToastedSpots(const DrawAreas& drawAreas);
+        void AddChocolateChips(const DrawAreas& drawAreas);
+        void AddCookieCrumbs(const DrawAreas& drawAreas);
+
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
 
             @details Given a bounding rectangle, treats the rectangle as the axis-aligned

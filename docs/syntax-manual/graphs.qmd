@@ -242,6 +242,8 @@ Properties for `"pie-chart"` nodes:
   - `"coffee-ring"`: A coffee cup ring, with a light coffee stain in the middle and small splatter off to the side.
   - `"venus"`: A Venus symbol (♀), with a thick baby pink outer ring and cross below. Slice colors will be overridden with a tinted baby pink.
   - `"mars"`: A Mars symbol (♂), with a thick baby blue outer ring and arrow above-right. Slice colors will be overridden with a tinted baby blue.
+  - `"chocolate-chip-cookie"`: A chocolate chip cookie with a slightly wobbly edge, toasted spots, chocolate chips, and a few crumbs off to the side. \
+     Slice colors will be overridden with cookie colors.
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"`: Labels are flush with the plotting area's left or right side (the default).

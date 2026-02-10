@@ -469,7 +469,11 @@ namespace Wisteria
         Venus,
         /// @brief A Mars symbol (♂), with a thick baby blue outer ring and arrow above-right.
         ///     Slice colors will be overridden with a tinted baby blue.
-        Mars
+        Mars,
+        /// @brief A chocolate chip cookie with a slightly irregular edge, toasted spots,
+        ///     chocolate chips, and a few crumbs off to the side.
+        ///     Slice colors will be overridden with cookie colors.
+        ChocolateChipCookie
         };
 
     /// @brief Effects that could be applied to an image.

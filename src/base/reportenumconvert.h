@@ -583,7 +583,8 @@ namespace Wisteria
                 { L"hawaiian-pizza", PieStyle::HawaiianPizza },
                 { L"coffee-ring", PieStyle::CoffeeRing },
                 { L"venus", PieStyle::Venus },
-                { L"mars", PieStyle::Mars }
+                { L"mars", PieStyle::Mars },
+                { L"chocolate-chip-cookie", PieStyle::ChocolateChipCookie }
             };
 
             const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());

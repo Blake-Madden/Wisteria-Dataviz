@@ -1306,6 +1306,13 @@ namespace Wisteria::Graphs
             AddRing(drawAreas, Colors::ColorBrewer::GetColor(Colors::Color::BabyBlue));
             AddMarsSymbol(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::ChocolateChipCookie)
+            {
+            AddCookieEdge(drawAreas);
+            AddCookieToastedSpots(drawAreas);
+            AddChocolateChips(drawAreas);
+            AddCookieCrumbs(drawAreas);
+            }
         }
 
     //----------------------------------------------------------------
@@ -1786,6 +1793,465 @@ namespace Wisteria::Graphs
                                                       .Selectable(false),
                                                   arrowPoints);
         AddObject(std::move(arrowPolygon));
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddCookieEdge(const DrawAreas& drawAreas)
+        {
+        // slightly irregular cookie edge
+        constexpr int SAMPLE_COUNT{ 120 };
+        const double irregularityAmplitude{ ScaleToScreenAndCanvas(2) };
+
+        constexpr uint32_t COOKIE_SEED{ 0xC00C1E };
+
+        const wxColour cookieEdgeColor{ 160, 115, 65 };
+
+        wxRect edgeRect = drawAreas.m_pieDrawArea;
+
+        std::vector<wxPoint> edgePoints;
+        edgePoints.reserve(SAMPLE_COUNT);
+
+        for (int sampleIndex = 0; sampleIndex <= SAMPLE_COUNT; ++sampleIndex)
+            {
+            const auto angleDegrees = safe_divide<double>(360.0 * sampleIndex, SAMPLE_COUNT);
+
+            const double cookieNoise = RingIrregularity(angleDegrees, COOKIE_SEED);
+            const int inflationOffset = wxRound(cookieNoise * irregularityAmplitude);
+
+            wxRect adjustedRect = edgeRect;
+            adjustedRect.Inflate(inflationOffset, inflationOffset);
+
+            edgePoints.push_back(GetEllipsePointFromRect(adjustedRect, angleDegrees));
+            }
+
+        const wxPen cookiePen(cookieEdgeColor, ScaleToScreenAndCanvas(4), wxPENSTYLE_SOLID);
+
+        auto cookieEdge = std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                    .Brush(*wxTRANSPARENT_BRUSH)
+                                                                    .Pen(cookiePen)
+                                                                    .Scaling(GetScaling())
+                                                                    .DPIScaling(GetDPIScaleFactor())
+                                                                    .Selectable(false),
+                                                                edgePoints);
+
+        AddObject(std::move(cookieEdge));
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddCookieToastedSpots(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        constexpr int TARGET_SPOT_COUNT{ 8 };
+
+        const double minRadius = ScaleToScreenAndCanvas(10);
+        const double maxRadius = ScaleToScreenAndCanvas(24);
+
+        const double minSpotSpacing = ScaleToScreenAndCanvas(35);
+
+        const wxColour toastedColor(160, 120, 70, 100);
+        const wxColour toastedHaloColor(180, 145, 90, 50);
+
+        constexpr uint32_t TOASTED_SEED{ 0xC00C1E77 };
+
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double maxHaloRadius = maxRadius * 1.4;
+        const double edgeSafetyMargin = maxHaloRadius + ScaleToScreenAndCanvas(6);
+
+        const double maxDistance =
+            (std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0) - edgeSafetyMargin;
+        const double maxDistanceEffective = maxDistance * 0.95;
+
+        std::vector<wxPoint> acceptedCenters;
+        acceptedCenters.reserve(TARGET_SPOT_COUNT);
+
+        const double angleStep = safe_divide<double>(360.0, TARGET_SPOT_COUNT);
+
+        for (int slotIndex = 0; slotIndex < TARGET_SPOT_COUNT; ++slotIndex)
+            {
+            const uint32_t seed = TOASTED_SEED + static_cast<uint32_t>(slotIndex * 733);
+
+            const double baseAngle = slotIndex * angleStep;
+            const double jitter = (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStep * 0.6;
+
+            const double angle = baseAngle + jitter;
+
+            const double radialT = HashToUnitInterval(seed ^ 0x2222U);
+
+            // spread across the cookie surface
+            const double distance = std::sqrt(radialT) * maxDistanceEffective;
+
+            const wxPoint candidate(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            bool tooClose = false;
+            for (const wxPoint& existing : acceptedCenters)
+                {
+                if (geometry::segment_length(GraphItems::Polygon::PointToPair(candidate),
+                                             GraphItems::Polygon::PointToPair(existing)) <
+                    minSpotSpacing)
+                    {
+                    tooClose = true;
+                    break;
+                    }
+                }
+
+            if (!tooClose)
+                {
+                acceptedCenters.push_back(candidate);
+                }
+            }
+
+        constexpr int BLOB_SAMPLES{ 32 };
+
+        for (size_t index = 0; index < acceptedCenters.size(); ++index)
+            {
+            const uint32_t seed = TOASTED_SEED + static_cast<uint32_t>(index * 911);
+
+            const double baseRadius =
+                minRadius + HashToUnitInterval(seed ^ 0x3333U) * (maxRadius - minRadius);
+
+                // halo layer
+                {
+                std::vector<wxPoint> haloPoints;
+                haloPoints.reserve(BLOB_SAMPLES);
+
+                for (int sample = 0; sample < BLOB_SAMPLES; ++sample)
+                    {
+                    const double angleDeg = (360.0 * sample) / static_cast<double>(BLOB_SAMPLES);
+
+                    const double wobble =
+                        0.85 + 0.3 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 311));
+
+                    const double radius = baseRadius * 1.4 * wobble;
+
+                    haloPoints.emplace_back(
+                        wxRound(acceptedCenters[index].x +
+                                std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                        wxRound(acceptedCenters[index].y +
+                                std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
+                    }
+
+                AddObject(
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                              .Brush(wxBrush{ toastedHaloColor })
+                                                              .Pen(wxNullPen)
+                                                              .Scaling(GetScaling())
+                                                              .DPIScaling(GetDPIScaleFactor())
+                                                              .Selectable(false),
+                                                          haloPoints));
+                }
+
+                // core toasted spot
+                {
+                std::vector<wxPoint> blobPoints;
+                blobPoints.reserve(BLOB_SAMPLES);
+
+                for (int sample = 0; sample < BLOB_SAMPLES; ++sample)
+                    {
+                    const auto angleDeg = safe_divide<double>(360.0 * sample, BLOB_SAMPLES);
+
+                    const double wobble =
+                        0.75 + 0.5 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 131));
+
+                    const double radius = baseRadius * wobble;
+
+                    const wxPoint point(
+                        wxRound(acceptedCenters[index].x +
+                                std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                        wxRound(acceptedCenters[index].y +
+                                std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
+
+                    blobPoints.push_back(point);
+                    }
+
+                auto toastedSpot =
+                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                              .Brush(wxBrush{ toastedColor })
+                                                              .Pen(wxNullPen)
+                                                              .Scaling(GetScaling())
+                                                              .DPIScaling(GetDPIScaleFactor())
+                                                              .Selectable(false),
+                                                          blobPoints);
+
+                AddObject(std::move(toastedSpot));
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddChocolateChips(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        constexpr int CHIP_COUNT{ 16 };
+
+        const wxColour chipFillColor{ 60, 30, 15 };
+        const wxColour chipEdgeColor{ 40, 20, 10 };
+        const wxColour sheenColor{ 255, 255, 255, 50 };
+
+        constexpr uint32_t CHIP_SEED{ 0xC01DCAFE };
+
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+        const double chipRadius = std::max(ScaleToScreenAndCanvas(5), pieRadius * 0.09);
+        const double minChipDistance = pieRadius * 0.15;
+        const double maxChipDistance = pieRadius * 0.75;
+        const double minSpacing = chipRadius * 3.0;
+
+        std::vector<wxPoint> chipCenters;
+        chipCenters.reserve(CHIP_COUNT);
+
+        const double angleStep = 360.0 / static_cast<double>(CHIP_COUNT);
+
+        for (int chipIndex = 0; chipIndex < CHIP_COUNT; ++chipIndex)
+            {
+            const uint32_t seed = CHIP_SEED + static_cast<uint32_t>(chipIndex * 557);
+
+            const double baseAngle = chipIndex * angleStep;
+            const double jitter = (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStep * 0.7;
+            const double angle = baseAngle + jitter;
+
+            const double distanceT = HashToUnitInterval(seed ^ 0x2222U);
+            const double distance =
+                minChipDistance + distanceT * (maxChipDistance - minChipDistance);
+
+            const wxPoint candidate(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            bool tooClose{ false };
+            for (const wxPoint& existing : chipCenters)
+                {
+                if (geometry::segment_length(GraphItems::Polygon::PointToPair(candidate),
+                                             GraphItems::Polygon::PointToPair(existing)) <
+                    minSpacing)
+                    {
+                    tooClose = true;
+                    break;
+                    }
+                }
+
+            if (!tooClose)
+                {
+                chipCenters.push_back(candidate);
+                }
+            }
+
+        // add a chip in the center area
+        const uint32_t centerSeed = CHIP_SEED + 9999;
+        const double centerOffset = pieRadius * 0.08;
+        const wxPoint centerChip(
+            wxRound(center.x +
+                    (HashToUnitInterval(centerSeed ^ 0xAAAAU) - 0.5) * 2.0 * centerOffset),
+            wxRound(center.y +
+                    (HashToUnitInterval(centerSeed ^ 0xBBBBU) - 0.5) * 2.0 * centerOffset));
+        chipCenters.push_back(centerChip);
+
+        const auto chipPenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+        const wxPen chipOutlinePen(chipEdgeColor, chipPenWidth, wxPENSTYLE_SOLID);
+
+        constexpr int CHIP_SAMPLES{ 24 };
+
+        for (size_t index = 0; index < chipCenters.size(); ++index)
+            {
+            const uint32_t seed = CHIP_SEED + static_cast<uint32_t>(index * 773);
+
+            // slight size variation
+            const double sizeVariation = 0.85 + 0.3 * HashToUnitInterval(seed ^ 0x4444U);
+            const double thisChipRadius = chipRadius * sizeVariation;
+
+            // draw the chip as a smooth, slightly irregular circle
+            std::vector<wxPoint> chipPoints;
+            chipPoints.reserve(CHIP_SAMPLES);
+
+            for (int sample = 0; sample < CHIP_SAMPLES; ++sample)
+                {
+                const double angleDeg = (360.0 * sample) / static_cast<double>(CHIP_SAMPLES);
+                // gentle wobble for smooth irregular circle
+                const double wobble =
+                    0.96 + 0.08 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 97));
+                const double radius = thisChipRadius * wobble;
+
+                chipPoints.emplace_back(
+                    wxRound(chipCenters[index].x +
+                            std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                    wxRound(chipCenters[index].y +
+                            std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
+                }
+
+            auto chip = std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                  .Brush(wxBrush{ chipFillColor })
+                                                                  .Pen(chipOutlinePen)
+                                                                  .Scaling(GetScaling())
+                                                                  .DPIScaling(GetDPIScaleFactor())
+                                                                  .Selectable(false),
+                                                              chipPoints);
+            AddObject(std::move(chip));
+
+            // add sheen highlight on the chip
+            const double sheenRadius = thisChipRadius * 0.35;
+            const double sheenOffsetX = thisChipRadius * 0.25;
+            const double sheenOffsetY = thisChipRadius * 0.25;
+
+            std::vector<wxPoint> sheenPoints;
+            sheenPoints.reserve(CHIP_SAMPLES);
+
+            for (int sample = 0; sample < CHIP_SAMPLES; ++sample)
+                {
+                const double angleDeg = (360.0 * sample) / static_cast<double>(CHIP_SAMPLES);
+
+                sheenPoints.emplace_back(
+                    wxRound(chipCenters[index].x - sheenOffsetX +
+                            std::cos(geometry::degrees_to_radians(angleDeg)) * sheenRadius),
+                    wxRound(chipCenters[index].y - sheenOffsetY +
+                            std::sin(geometry::degrees_to_radians(angleDeg)) * sheenRadius));
+                }
+
+            auto sheen = std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                   .Brush(wxBrush{ sheenColor })
+                                                                   .Pen(wxNullPen)
+                                                                   .Scaling(GetScaling())
+                                                                   .DPIScaling(GetDPIScaleFactor())
+                                                                   .Selectable(false),
+                                                               sheenPoints);
+            AddObject(std::move(sheen));
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddCookieCrumbs(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        const wxColour crumbColor{ 195, 155, 95 };
+        const wxColour crumbEdgeColor{ 165, 125, 70 };
+
+        constexpr uint32_t CRUMB_SEED{ 0xC20B05 };
+
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+        const double cookieEdgeInflation = ScaleToScreenAndCanvas(5);
+
+        // crumb off to the left (around 180 degrees)
+        constexpr int LEFT_CRUMB_COUNT{ 1 };
+        for (int crumbIndex = 0; crumbIndex < LEFT_CRUMB_COUNT; ++crumbIndex)
+            {
+            const uint32_t seed = CRUMB_SEED + static_cast<uint32_t>(crumbIndex * 431);
+
+            // angle for left side with slight jitter
+            const double angle = 180.0 + (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * 20.0;
+
+            // varying distances from the cookie edge (wide range for variety)
+            const double distanceFromEdge =
+                ScaleToScreenAndCanvas(10) +
+                HashToUnitInterval(seed ^ 0x2222U) * ScaleToScreenAndCanvas(40);
+            const double distance = pieRadius + cookieEdgeInflation + distanceFromEdge;
+
+            const wxPoint crumbCenter(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            // varying crumb sizes (wide range: small to large)
+            const double crumbRadius =
+                ScaleToScreenAndCanvas(3) +
+                HashToUnitInterval(seed ^ 0x3333U) * ScaleToScreenAndCanvas(10);
+
+            // smooth, slightly irregular crumb shape
+            constexpr int CRUMB_SAMPLES{ 20 };
+            std::vector<wxPoint> crumbPoints;
+            crumbPoints.reserve(CRUMB_SAMPLES);
+
+            for (int sample = 0; sample < CRUMB_SAMPLES; ++sample)
+                {
+                const double angleDeg = (360.0 * sample) / static_cast<double>(CRUMB_SAMPLES);
+                const double wobble =
+                    0.92 + 0.16 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 73));
+                const double radius = crumbRadius * wobble;
+
+                crumbPoints.emplace_back(
+                    wxRound(crumbCenter.x +
+                            std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                    wxRound(crumbCenter.y +
+                            std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
+                }
+
+            const auto crumbPenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+
+            auto crumb = std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo{}
+                    .Brush(wxBrush{ crumbColor })
+                    .Pen(wxPen{ crumbEdgeColor, crumbPenWidth })
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                crumbPoints);
+            AddObject(std::move(crumb));
+            }
+
+        // crumbs off to the upper right (around 290-340 degrees, spread out)
+        constexpr int RIGHT_CRUMB_COUNT{ 2 };
+        for (int crumbIndex = 0; crumbIndex < RIGHT_CRUMB_COUNT; ++crumbIndex)
+            {
+            const uint32_t seed = CRUMB_SEED + 1000 + static_cast<uint32_t>(crumbIndex * 557);
+
+            // angle range for upper right, evenly distributed with jitter
+            const double baseAngle = 295.0 + (crumbIndex * 35.0);
+            const double jitter = (HashToUnitInterval(seed ^ 0x4444U) - 0.5) * 12.0;
+            const double angle = baseAngle + jitter;
+
+            // varying distances from the cookie edge (wide range for variety)
+            const double distanceFromEdge =
+                ScaleToScreenAndCanvas(8) +
+                HashToUnitInterval(seed ^ 0x5555U) * ScaleToScreenAndCanvas(35);
+            const double distance = pieRadius + cookieEdgeInflation + distanceFromEdge;
+
+            const wxPoint crumbCenter(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
+                wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
+
+            // varying crumb sizes (wide range: small to large)
+            const double crumbRadius =
+                ScaleToScreenAndCanvas(3) +
+                HashToUnitInterval(seed ^ 0x6666U) * ScaleToScreenAndCanvas(9);
+
+            constexpr int CRUMB_SAMPLES{ 20 };
+            std::vector<wxPoint> crumbPoints;
+            crumbPoints.reserve(CRUMB_SAMPLES);
+
+            for (int sample = 0; sample < CRUMB_SAMPLES; ++sample)
+                {
+                const double angleDeg = (360.0 * sample) / static_cast<double>(CRUMB_SAMPLES);
+                const double wobble =
+                    0.92 + 0.16 * HashToUnitInterval(seed ^ static_cast<uint32_t>(sample * 89));
+                const double radius = crumbRadius * wobble;
+
+                crumbPoints.emplace_back(
+                    wxRound(crumbCenter.x +
+                            std::cos(geometry::degrees_to_radians(angleDeg)) * radius),
+                    wxRound(crumbCenter.y +
+                            std::sin(geometry::degrees_to_radians(angleDeg)) * radius));
+                }
+
+            const auto crumbPenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+
+            auto crumb = std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo{}
+                    .Brush(wxBrush{ crumbColor })
+                    .Pen(wxPen{ crumbEdgeColor, crumbPenWidth })
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                crumbPoints);
+            AddObject(std::move(crumb));
+            }
         }
 
     //----------------------------------------------------------------
@@ -2868,6 +3334,11 @@ namespace Wisteria::Graphs
                 sliceBrushToUse.SetColour(GetMarsFillColor());
                 sliceOutlinePen.SetColour(Colors::ColorBrewer::GetColor(Colors::Color::BabyBlue));
                 }
+            else if (GetPieStyle() == PieStyle::ChocolateChipCookie)
+                {
+                sliceBrushToUse.SetColour(GetCookieFillColor());
+                sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
+                }
 
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
 
@@ -3017,6 +3488,11 @@ namespace Wisteria::Graphs
                 {
                 sliceBrush.SetColour(GetMarsFillColor());
                 sliceOutlinePen.SetColour(Colors::ColorBrewer::GetColor(Colors::Color::BabyBlue));
+                }
+            else if (GetPieStyle() == PieStyle::ChocolateChipCookie)
+                {
+                sliceBrush.SetColour(GetCookieFillColor());
+                sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
                 GraphItems::GraphItemInfo(GetOuterPie().at(i).GetGroupLabel())
