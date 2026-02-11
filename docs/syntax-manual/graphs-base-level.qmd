@@ -14,15 +14,19 @@ Properties common to all bar-chart-derived graphs:
   - `"fade-from-left-to-right"`: Color gradient, left-to-right.
   - `"fade-from-top-to-bottom"`: Color gradient, top-to-bottom.
   - `"fade-from-right-to-left"`: Color gradient, right-to-left.
-  - `"stipple-image"`: Fill with a repeating image. (This will require an `"image-scheme"` to be defined.)
+  - `"stipple-image"`: Fill with a repeating image. \
+    (This will require an `"image-scheme"` to be defined.)
   - `"stipple-shape"`: Fill with a repeating shape.
   - `"watercolor"`: A watercolor-like effect, where the box is warped and looks like it was filled in with watercolor paint. \
     Note that if an outline pen is in use, it will be drawn over the fill color, giving the look that it is showing through the watercolor.
   - `"thick-watercolor"`: Same as `"watercolor"`, but applies a second coat of paint, making it appear thicker.
-  - `"common-image"`: A subimage of a larger image shared by all boxes. (This will require an `"image-scheme"` to be defined.)
-  - `"image"`: An image scaled down to fit the box. (This will require an `"image-scheme"` to be defined.)
+  - `"common-image"`: A subimage of a larger image shared by all boxes. \
+    (This will require an `"image-scheme"` to be defined.)
+  - `"image"`: An image scaled down to fit the box. \
+    (This will require an `"image-scheme"` to be defined.)
   - `"marker"`: A felt-marker-like effect, where the outline is rough and slightly uneven and the interior is filled with diagonal hatching lines.
-  - `"pencil"`: A hand-drawn pencil effect, where the outline is drawn with a wobbly pencil line style. No fill is applied, only the outline.
+  - `"pencil"`: A hand-drawn pencil effect, where the outline is drawn with a wobbly pencil line style. \
+    No fill is applied, only the outline.
 - `"bar-label-display"`: A string specifying how to display labels on the bars. \
   Available options are:
   - `"value"`: The number of items in (or aggregated value of) each bar.

@@ -181,7 +181,7 @@ Properties for `"label"` nodes:
 - `"orientation"`: string specifying the orientation of the text. \
   Available options are:
   - `"vertical"`: Text is written upwards.
-  - `"horizontal"`: Text is writting left-to-right (or right-to-left).
+  - `"horizontal"`: Text is writing left-to-right (or right-to-left).
 - `"background"`: The background color. \
   This can be either a color name or hex-encoded value.
 - `"style"`: A background visual style to apply to the label. \
@@ -206,8 +206,10 @@ Properties for `"label"` nodes:
   - `"flush-left"` or `"ragged-right"`: Text is flush left/ragged right (the default).
   - `"flush-right"` or `"ragged-left"`: Text is flush right/ragged left.
   - `"centered"`: Text is centered.
-  - `"justified"` or `"justified-at-character"`: Multiline text is tracked (space inserted) to make lines equal width. Hair spaces are inserted between each character.
-  - `"justified-at-word"`: Multiline text is tracked (space inserted) to make lines equal width. Hair spaces are inserted between each word.
+  - `"justified"` or `"justified-at-character"`: Multiline text is tracked (space inserted) to make lines equal width. \
+    Hair spaces are inserted between each character.
+  - `"justified-at-word"`: Multiline text is tracked (space inserted) to make lines equal width. \
+    Hair spaces are inserted between each word.
 - `"left-image"`: Properties specifying an image to display on the left side of the label. \
   The available options are:
   - `"image-import"`: An image import specification.

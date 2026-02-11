@@ -16,14 +16,18 @@ Properties for `"box-plot"` nodes:
   - `"fade-from-left-to-right"`: Color gradient, left-to-right.
   - `"fade-from-top-to-bottom"`: Color gradient, top-to-bottom.
   - `"fade-from-right-to-left"`: Color gradient, right-to-left.
-  - `"stipple"`: Fill with a repeating image. (This will require an `"image-scheme"` to be defined.)
+  - `"stipple"`: Fill with a repeating image. \
+    (This will require an `"image-scheme"` to be defined.)
   - `"watercolor"`: A watercolor-like effect, where the box is warped and looks like it was filled in with watercolor paint. \
     Note that if an outline pen is in use, it will be drawn over the fill color, giving the look that it is showing through the watercolor.
   - `"thick-watercolor"`: Same as `"watercolor"`, but applies a second coat of paint, making it appear thicker.
-  - `"common-image"`: A subimage of a larger image shared by all boxes. (This will require an `"image-scheme"` to be defined.)
-  - `"image"`: An image scaled down to fit the box. (This will require an `"image-scheme"` to be defined.)
+  - `"common-image"`: A subimage of a larger image shared by all boxes. \
+    (This will require an `"image-scheme"` to be defined.)
+  - `"image"`: An image scaled down to fit the box. \
+    (This will require an `"image-scheme"` to be defined.)
   - `"marker"`: A felt-marker-like effect, where the outline is rough and slightly uneven and the interior is filled with diagonal hatching lines.
-  - `"pencil"`: A hand-drawn pencil effect, where the outline is drawn with a wobbly pencil line style. No fill is applied, only the outline.
+  - `"pencil"`: A hand-drawn pencil effect, where the outline is drawn with a wobbly pencil line style.
+    No fill is applied, only the outline.
 - `"show-all-points"`: `true` to show all points.
   By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
@@ -240,8 +244,10 @@ Properties for `"pie-chart"` nodes:
     Note that the extra toppings for pepperoni and hawaiian pizzas are placed on top of the pie, so labels on the pie slices will be obscured. \
     If using this style, it is recommended to display labels outside of the pie.
   - `"coffee-ring"`: A coffee cup ring, with a light coffee stain in the middle and small splatter off to the side.
-  - `"venus"`: A Venus symbol (♀), with a thick baby pink outer ring and cross below. Slice colors will be overridden with a tinted baby pink.
-  - `"mars"`: A Mars symbol (♂), with a thick baby blue outer ring and arrow above-right. Slice colors will be overridden with a tinted baby blue.
+  - `"venus"`: A Venus symbol (♀), with a thick baby pink outer ring and cross below.
+    Slice colors will be overridden with a tinted baby pink.
+  - `"mars"`: A Mars symbol (♂), with a thick baby blue outer ring and arrow above-right.
+    Slice colors will be overridden with a tinted baby blue.
   - `"chocolate-chip-cookie"`: A chocolate chip cookie with a slightly wobbly edge, toasted spots, chocolate chips, and a few crumbs off to the side. \
      Slice colors will be overridden with cookie colors.
 - `"label-placement"`: A string specifying where to align the outer labels. \
@@ -511,7 +517,8 @@ The remaining properties are executed in the following order:
     - `"percent"`: Displays a value such as `0.25` as `25%`.
     - `"percent-change"`: Displays a value such as `0.25` as `25%`, but with an up or down arrow next to it if positive or negative (respectively).
     - `"general-change"`: Displays a number generically, but with an up or down arrow next to it if positive or negative (respectively).
-    - `"accounting"`: Displays numbers in accounting format. For example, a negative value would appear as `$    (5,000.00)`.
+    - `"accounting"`: Displays numbers in accounting format. \
+      For example, a negative value would appear as `$    (5,000.00)`.
   - `"stops"`: An array of which rows columns to skip over when changing the row's formatting \
        This is an array of `"position"` items.
 - `"row-color"`: An array of row and color pairs, which contain the following properties:

@@ -262,7 +262,8 @@ Properties for image import specifications:
   - `"blur-horizontal"`: A horizontal blur across the image.
   - `"blur-vertical"`: A vertical blur across the image.
   - `"sepia"`: A sepia (i.e., faded photograph) effect.
-  - `"frosted-glass"`: A frosted glass window effect. In other words, the image as it may appear when viewed through frosted glass.
+  - `"frosted-glass"`: A frosted glass window effect. \
+     In other words, the image as it may appear when viewed through frosted glass.
   - `"oil-painting"`: An oil painting effect.
 
 Note that instead of properties, a single string can be specified indicating a file path to load.

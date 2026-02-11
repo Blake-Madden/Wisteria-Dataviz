@@ -2722,10 +2722,10 @@ namespace Wisteria::Graphs
             {
             const uint32_t seed = CINNAMON_SEED + static_cast<uint32_t>(i * 557);
 
-            const double angleStepDegrees = safe_divide<double>(360.0, CINNAMON_COUNT);
+            const double angleStepDegreesCinnamon = safe_divide<double>(360.0, CINNAMON_COUNT);
             const double angleDegrees =
-                (i * angleStepDegrees) +
-                (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStepDegrees * 0.9;
+                (i * angleStepDegreesCinnamon) +
+                (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStepDegreesCinnamon * 0.9;
             // sqrt biases towards outer edge for better spread
             const double distance =
                 minCinnamonDistance + (maxCinnamonDistance - minCinnamonDistance) *
