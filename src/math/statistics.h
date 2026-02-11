@@ -570,6 +570,300 @@ namespace statistics
                "Error in phi coefficient calculation. Value should be -1 >= and <= 1.");
         return pc;
         }
+
+    /** @brief Results from a simple linear regression analysis.
+        @details Contains slope, intercept, R-squared, correlation coefficient,
+            standard errors, t-statistic, and p-value for the slope.
+        @par Citations:
+            Kutner, Michael H., et al. *Applied Linear Statistical Models*. 5th ed.,
+            McGraw-Hill/Irwin, 2004.*/
+    struct linear_regression_results
+        {
+        /// @brief slope of the regression line (beta_1).
+        double slope{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief y-intercept of the regression line (beta_0).
+        double intercept{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief coefficient of determination (proportion of variance explained).
+        double r_squared{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief Pearson correlation coefficient.
+        double correlation{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief standard error of the estimate (residual standard error).
+        double standard_error{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief standard error of the slope coefficient.
+        double slope_standard_error{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief t-statistic for testing H0: slope = 0.
+        double t_statistic{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief two-tailed p-value for the slope coefficient.
+        double p_value{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief number of valid observation pairs used.
+        size_t n{ 0 };
+
+        /// @returns @c true if the regression was successfully computed.
+        [[nodiscard]]
+        bool is_valid() const noexcept
+            {
+            return n >= 2 && std::isfinite(slope) && std::isfinite(intercept);
+            }
+        };
+
+    /** @brief Computes the regularized incomplete beta function I_x(a, b).
+        @param x The evaluation point (0 <= x <= 1).
+        @param shape1 First shape parameter.
+        @param shape2 Second shape parameter.
+        @returns The regularized value (normalized to the range [0, 1]).\n
+            If @c shape1 or @c b are negative, returns NaN.
+        @note @c shape1 and @c b should be non-negative.
+        @par Citations:
+            Press, William H., et al. *Numerical Recipes: The Art of Scientific Computing*. 3rd ed.,
+            Cambridge University Press, 2007, sec. 6.4.*/
+    [[nodiscard]]
+    inline double regularized_incomplete_beta(double x, double shape1, double shape2)
+        {
+        if (!std::isfinite(x) || !std::isfinite(shape1) || !std::isfinite(shape2) || shape1 < 0 ||
+            shape2 < 0)
+            {
+            return std::numeric_limits<double>::quiet_NaN();
+            }
+        if (x <= 0.0)
+            {
+            return 0.0;
+            }
+        if (x >= 1.0)
+            {
+            return 1.0;
+            }
+
+        // use symmetry relation for numerical stability when x > (a+1)/(a+b+2)
+        const bool symmetry = x > safe_divide<double>(shape1 + 1.0, shape1 + shape2 + 2.0);
+        if (symmetry)
+            {
+            x = 1.0 - x;
+            std::swap(shape1, shape2);
+            }
+
+        // compute log of the beta function coefficient
+        // ln(x^a * (1-x)^b / B(a,b)) where B(a,b) = Gamma(a)*Gamma(b)/Gamma(a+b)
+        const double logBetaCoeff = shape1 * std::log(x) + shape2 * std::log(1.0 - x) +
+                                    std::lgamma(shape1 + shape2) - std::lgamma(shape1) -
+                                    std::lgamma(shape2);
+        const double betaCoeff = std::exp(logBetaCoeff);
+
+        // Lentz's continued fraction algorithm
+        // (Lentz, William J.
+        //  "Generating Generalized Continued Fractions of Radicals by Newton's Iterative Method."
+        //  Applied Optics, vol. 15, no. 3, 1976, pp. 668-71.)
+        constexpr double tiny{ 1e-30 };
+        constexpr double eps{ 1e-14 };
+        constexpr size_t maxIter{ 200 };
+
+        double fractionStepNumerator{ 1.0 };
+        double fractionStepDenominator =
+            1.0 - safe_divide<double>((shape1 + shape2) * x, shape1 + 1.0);
+        if (std::abs(fractionStepDenominator) < tiny)
+            {
+            fractionStepDenominator = tiny;
+            }
+        fractionStepDenominator = safe_divide<double>(1.0, fractionStepDenominator);
+        double result{ fractionStepDenominator };
+
+        for (size_t m = 1; m <= maxIter; ++m)
+            {
+            // even step: d_{2m}
+            const double mDouble = static_cast<double>(m);
+            double numerator =
+                safe_divide<double>(mDouble * (shape2 - mDouble) * x,
+                                    (shape1 + 2.0 * mDouble - 1.0) * (shape1 + 2.0 * mDouble));
+
+            fractionStepDenominator = 1.0 + numerator * fractionStepDenominator;
+            if (std::abs(fractionStepDenominator) < tiny)
+                {
+                fractionStepDenominator = tiny;
+                }
+            fractionStepNumerator = 1.0 + safe_divide<double>(numerator, fractionStepNumerator);
+            if (std::abs(fractionStepNumerator) < tiny)
+                {
+                fractionStepNumerator = tiny;
+                }
+            fractionStepDenominator = safe_divide<double>(1.0, fractionStepDenominator);
+            result *= fractionStepDenominator * fractionStepNumerator;
+
+            // odd step: d_{2m+1}
+            numerator =
+                safe_divide<double>(-(shape1 + mDouble) * (shape1 + shape2 + mDouble) * x,
+                                    (shape1 + 2.0 * mDouble) * (shape1 + 2.0 * mDouble + 1.0));
+
+            fractionStepDenominator = 1.0 + numerator * fractionStepDenominator;
+            if (std::abs(fractionStepDenominator) < tiny)
+                {
+                fractionStepDenominator = tiny;
+                }
+            fractionStepNumerator = 1.0 + safe_divide<double>(numerator, fractionStepNumerator);
+            if (std::abs(fractionStepNumerator) < tiny)
+                {
+                fractionStepNumerator = tiny;
+                }
+            fractionStepDenominator = safe_divide<double>(1.0, fractionStepDenominator);
+            const double delta = fractionStepDenominator * fractionStepNumerator;
+            result *= delta;
+
+            if (std::abs(delta - 1.0) < eps)
+                {
+                break;
+                }
+            }
+
+        const double value = safe_divide<double>(betaCoeff * result, shape1);
+        return symmetry ? 1.0 - value : value;
+        }
+
+    /** @brief Calculates the two-tailed p-value from a t-distribution.
+        @details Uses the relationship between the t-distribution CDF and the
+            regularized incomplete beta function:
+            P(T <= t) = 1 - 0.5 * I_{df/(df+t^2)}(df/2, 0.5) for t > 0.
+        @param t The t-statistic.
+        @param df The degrees of freedom (must be positive).
+        @returns The two-tailed p-value, or NaN if df <= 0.
+        @par Citations:
+            Abramowitz, Milton, and Irene A. Stegun.
+            *Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables*.
+            9th printing, Dover Publications, 1965.*/
+    [[nodiscard]]
+    inline double t_distribution_p_value(double t, double df)
+        {
+        if (df <= 0.0 || !std::isfinite(t) || !std::isfinite(df))
+            {
+            return std::numeric_limits<double>::quiet_NaN();
+            }
+
+        // compute one-tailed probability using incomplete beta function
+        const double x = safe_divide<double>(df, df + (t * t));
+        const double oneTailed = 0.5 * regularized_incomplete_beta(x, df * 0.5, 0.5);
+
+        // return two-tailed p-value
+        return 2.0 * oneTailed;
+        }
+
+    /** @brief Performs simple linear regression (ordinary least squares).
+        @details Fits the model `Y = beta_0 + beta_1 * X` using the least squares method.
+        @param xData The independent variable values.
+        @param yData The dependent variable values.
+        @returns A linear_regression_results struct containing all computed statistics.\n
+            Returns a default (invalid) result if fewer than 2 valid pairs exist.
+        @note Uses pair-wise deletion when NaN values are encountered.
+        @par Citations:
+            Kutner, Michael H., et al. *Applied Linear Statistical Models*. 5th ed.,
+            McGraw-Hill/Irwin, 2004.*/
+    [[nodiscard]]
+    inline linear_regression_results linear_regression(const std::vector<double>& xData,
+                                                       const std::vector<double>& yData)
+        {
+        linear_regression_results results;
+
+        if (xData.size() != yData.size() || xData.size() < 2)
+            {
+            return results;
+            }
+
+        double n{ 0.0 };
+        double meanX{ 0.0 }, meanY{ 0.0 };
+        double ssXX{ 0.0 }, ssYY{ 0.0 }, ssXY{ 0.0 };
+
+        // filter NaN and apply Welford's algorithm
+        for (size_t i = 0; i < xData.size(); ++i)
+            {
+            const double x = xData[i];
+            const double y = yData[i];
+
+            if (std::isfinite(x) && std::isfinite(y))
+                {
+                n += 1.0;
+                const double dx = x - meanX;
+                const double dy = y - meanY;
+
+                // update means
+                meanX += dx / n;
+                meanY += dy / n;
+
+                // update sums of squares and cross-products
+                // using the updated mean for the second factor provides better stability
+                ssXX += dx * (x - meanX);
+                ssYY += dy * (y - meanY);
+                ssXY += dx * (y - meanY);
+                }
+            }
+
+        results.n = static_cast<size_t>(n);
+        if (results.n < 2 || ssXX == 0.0)
+            {
+            return results;
+            }
+
+        // slope and intercept
+        results.slope = safe_divide<double>(ssXY, ssXX);
+        results.intercept = meanY - results.slope * meanX;
+
+        // correlation and R-Squared
+        if (ssYY > 0.0)
+            {
+            results.correlation = safe_divide<double>(ssXY, std::sqrt(ssXX * ssYY));
+            results.r_squared = results.correlation * results.correlation;
+            }
+        else
+            {
+            // variance is zero, so R-squared is undefined
+            results.correlation = std::numeric_limits<double>::quiet_NaN();
+            results.r_squared = std::numeric_limits<double>::quiet_NaN();
+            }
+
+        // residuals and p-value
+        const double dfError{ n - 2.0 };
+        // for ssRes, summing squared residuals directly is safest,
+        // but requires a second pass. Using the algebraic identity below:
+        double ssRes = std::max(0.0, ssYY - results.slope * ssXY);
+
+        if (dfError > 0.0)
+            {
+            // calculate the basic errors
+            // (use standard division to allow tiny numbers)
+            const double mse = safe_divide<double>(ssRes, dfError);
+            results.standard_error = std::sqrt(mse);
+
+            // always calculate slope_standard_error if ssXX is valid
+            const double sqrt_ssXX = std::sqrt(ssXX);
+            if (sqrt_ssXX > 0.0)
+                {
+                results.slope_standard_error =
+                    safe_divide<double>(results.standard_error, sqrt_ssXX);
+
+                // handle the t-statistic and p-value
+                if (results.slope_standard_error > 0.0)
+                    {
+                    // tiny error results in a massive t-stat and tiny p-value
+                    results.t_statistic =
+                        safe_divide<double>(results.slope, results.slope_standard_error);
+                    results.p_value = t_distribution_p_value(results.t_statistic, dfError);
+                    }
+                else
+                    {
+                    // This is the "perfect fit" way: standard error is exactly 0.0.
+                    // If the slope is not zero, the t-stat is infinite and v-value is 0.
+                    if (results.slope != 0.0)
+                        {
+                        results.t_statistic = std::numeric_limits<double>::infinity();
+                        results.p_value = 0.0;
+                        }
+                    else
+                        {
+                        // flat horizontal line (slope 0, error 0)
+                        results.t_statistic = 0.0;
+                        results.p_value = 1.0;
+                        }
+                    }
+                }
+            }
+
+        return results;
+        }
     } // namespace statistics
 
 /** @}*/

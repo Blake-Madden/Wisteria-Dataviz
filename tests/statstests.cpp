@@ -1048,5 +1048,648 @@ TEST_CASE("phi_coefficient always in [-1, 1] for all 0/1 arrays", "[phi_coeffici
         }
     }
 
+// ---------------- regularized_incomplete_beta tests ----------------
+// Reference values from Wolfram Alpha and NIST Digital Library of Mathematical Functions
+TEST_CASE("regularized_incomplete_beta boundary values", "[stats][beta]")
+    {
+    // I_0(a,b) = 0 for all a,b > 0
+    CHECK_THAT(regularized_incomplete_beta(0.0, 1.0, 1.0), WithinAbs(0.0, 1e-10));
+    CHECK_THAT(regularized_incomplete_beta(0.0, 2.0, 3.0), WithinAbs(0.0, 1e-10));
+
+    // I_1(a,b) = 1 for all a,b > 0
+    CHECK_THAT(regularized_incomplete_beta(1.0, 1.0, 1.0), WithinAbs(1.0, 1e-10));
+    CHECK_THAT(regularized_incomplete_beta(1.0, 2.0, 3.0), WithinAbs(1.0, 1e-10));
+    }
+
+TEST_CASE("regularized_incomplete_beta uniform distribution", "[stats][beta]")
+    {
+    // When a=b=1 (uniform distribution), I_x(1,1) = x
+    CHECK_THAT(regularized_incomplete_beta(0.0, 1.0, 1.0), WithinAbs(0.0, 1e-10));
+    CHECK_THAT(regularized_incomplete_beta(0.25, 1.0, 1.0), WithinAbs(0.25, 1e-10));
+    CHECK_THAT(regularized_incomplete_beta(0.5, 1.0, 1.0), WithinAbs(0.5, 1e-10));
+    CHECK_THAT(regularized_incomplete_beta(0.75, 1.0, 1.0), WithinAbs(0.75, 1e-10));
+    CHECK_THAT(regularized_incomplete_beta(1.0, 1.0, 1.0), WithinAbs(1.0, 1e-10));
+    }
+
+TEST_CASE("regularized_incomplete_beta known values", "[stats][beta]")
+    {
+    // Reference: Wolfram Alpha - "RegularizedIncompleteBeta[0.5, 2, 3]"
+    // I_0.5(2,3) = 0.6875
+    CHECK_THAT(regularized_incomplete_beta(0.5, 2.0, 3.0), WithinRel(0.6875, 1e-6));
+
+    // I_0.3(2,5) = 0.57982... (from Wolfram Alpha: BetaRegularized[0.3, 2, 5])
+    CHECK_THAT(regularized_incomplete_beta(0.3, 2.0, 5.0), WithinRel(0.579825, 1e-4));
+
+    // I_0.7(3,2) = 0.6517 (from Wolfram Alpha: BetaRegularized[0.7, 3, 2])
+    CHECK_THAT(regularized_incomplete_beta(0.7, 3.0, 2.0), WithinRel(0.6517, 1e-3));
+    }
+
+TEST_CASE("regularized_incomplete_beta symmetry relation", "[stats][beta]")
+    {
+    // I_x(a,b) = 1 - I_{1-x}(b,a)
+    const double x = 0.3;
+    const double a = 2.5;
+    const double b = 4.0;
+
+    const double left = regularized_incomplete_beta(x, a, b);
+    const double right = 1.0 - regularized_incomplete_beta(1.0 - x, b, a);
+
+    CHECK_THAT(left, WithinRel(right, 1e-8));
+    }
+
+TEST_CASE("regularized_incomplete_beta edge cases", "[stats][beta]")
+    {
+    // Limits of x
+    CHECK(regularized_incomplete_beta(0.0, 2.0, 3.0) == 0.0);
+    CHECK(regularized_incomplete_beta(1.0, 2.0, 3.0) == 1.0);
+
+    // Identity: I_x(a, 1) = x^a
+    CHECK_THAT(regularized_incomplete_beta(0.5, 3.0, 1.0), WithinRel(0.125, 1e-12));
+    }
+
+TEST_CASE("regularized_incomplete_beta precision at tails", "[stats][beta]")
+    {
+    // Testing small x with large a/b (common in high-significance p-values)
+    // R: pbeta(0.1, 10, 10) = 0.000003929882449...
+    const double val = regularized_incomplete_beta(0.1, 10.0, 10.0);
+    CHECK_THAT(val, WithinRel(0.000003929882449, 1e-6));
+    }
+
+TEST_CASE("regularized_incomplete_beta precision symmetry point for large parameters", "[stats][beta]")
+    {
+    // Published case: Symmetry point for large parameters
+    // R: pbeta(0.5, 500, 500)
+    const double large_sym = regularized_incomplete_beta(0.5, 500.0, 500.0);
+    CHECK_THAT(large_sym, WithinRel(0.5, 1e-6));
+    }
+
+TEST_CASE("regularized_incomplete_beta precision high symmetrys", "[stats][beta]")
+    {
+    // Published case: High asymmetry
+    // R: pbeta(0.01, 0.5, 20.0) = 0.4713699
+    const double j_shape = regularized_incomplete_beta(0.01, 0.5, 20.0);
+    CHECK_THAT(j_shape, WithinRel(0.4713699, 1e-6));
+    }
+
+TEST_CASE("regularized_incomplete_beta precision Abramowitz & Stegun case", "[stats][beta]")
+    {
+    // A&S Table 26.4 Case
+    // x=0.2, a=2, b=2
+    // I_0.2(2, 2) = 3(0.2)^2 - 2(0.2)^3 = 0.12 - 0.016 = 0.104
+    CHECK_THAT(regularized_incomplete_beta(0.2, 2.0, 2.0), WithinRel(0.104, 1e-6));
+    }
+
+TEST_CASE("regularized_incomplete_beta t-distribution bridge", "[stats][beta]")
+    {
+    // Verify the t-stat to p-value conversion
+    // Case: t = 2.0, df = 10
+    // x = df / (df + t^2) = 10 / (10 + 4) = 0.7142857...
+    // I_x(df/2, 0.5) should match the two-tailed p-value
+    const double t = 2.0;
+    const double df = 10.0;
+    const double x = df / (df + t * t);
+    const double a = df / 2.0;
+    const double b = 0.5;
+
+    const double p_val = regularized_incomplete_beta(x, a, b);
+    
+    // R: 2 * pt(-2.0, df=10) = 0.07338803...
+    CHECK_THAT(p_val, WithinRel(0.07338803, 1e-6));
+    }
+
+TEST_CASE("regularized_incomplete_beta large parameters", "[stats][beta]")
+    {
+    // Tests Lanczos/Log-Gamma stability to prevent overflow
+    // R: pbeta(0.5, 100, 100) should be exactly 0.5 due to symmetry
+    CHECK_THAT(regularized_incomplete_beta(0.5, 100.0, 100.0), WithinRel(0.5, 1e-12));
+    }
+
+TEST_CASE("regularized_incomplete_beta bad shapes", "[stats][beta]")
+    {
+    CHECK(std::isnan(regularized_incomplete_beta(0.5, -1, 100.0)));
+    CHECK(std::isnan(regularized_incomplete_beta(0.5, 1, -0.5)));
+    }
+
+// ---------------- t_distribution_p_value tests ----------------
+// Reference: Standard t-distribution tables from statistics textbooks
+// Montgomery, D.C. & Runger, G.C. (2014). Applied Statistics and Probability
+// for Engineers (6th ed.). Wiley. Appendix Table III.
+TEST_CASE("t_distribution_p_value at t=0", "[stats][ttest]")
+    {
+    // t=0 should give p=1 for any df (symmetric around 0)
+    CHECK_THAT(t_distribution_p_value(0.0, 1.0), WithinAbs(1.0, 1e-6));
+    CHECK_THAT(t_distribution_p_value(0.0, 10.0), WithinAbs(1.0, 1e-6));
+    CHECK_THAT(t_distribution_p_value(0.0, 100.0), WithinAbs(1.0, 1e-6));
+    }
+
+TEST_CASE("t_distribution_p_value symmetry", "[stats][ttest]")
+    {
+    // p-value should be the same for +t and -t (two-tailed)
+    CHECK_THAT(t_distribution_p_value(2.0, 10.0),
+               WithinRel(t_distribution_p_value(-2.0, 10.0), 1e-10));
+    CHECK_THAT(t_distribution_p_value(1.5, 5.0),
+               WithinRel(t_distribution_p_value(-1.5, 5.0), 1e-10));
+    }
+
+TEST_CASE("t_distribution_p_value known critical values", "[stats][ttest]")
+    {
+    // Reference: Standard t-tables
+    // For df=10, t=2.228 gives two-tailed p=0.05 (approximately)
+    CHECK_THAT(t_distribution_p_value(2.228, 10.0), WithinAbs(0.05, 0.002));
+
+    // For df=10, t=3.169 gives two-tailed p=0.01 (approximately)
+    CHECK_THAT(t_distribution_p_value(3.169, 10.0), WithinAbs(0.01, 0.002));
+
+    // For df=20, t=2.086 gives two-tailed p=0.05 (approximately)
+    CHECK_THAT(t_distribution_p_value(2.086, 20.0), WithinAbs(0.05, 0.002));
+
+    // For df=120, t=1.980 gives two-tailed p=0.05 (approximately, close to z)
+    CHECK_THAT(t_distribution_p_value(1.980, 120.0), WithinAbs(0.05, 0.002));
+    }
+
+TEST_CASE("t_distribution_p_value converges to normal", "[stats][ttest]")
+    {
+    // As df -> infinity, t-distribution approaches standard normal
+    // For z=1.96, two-tailed p ≈ 0.05
+    CHECK_THAT(t_distribution_p_value(1.96, 1000.0), WithinAbs(0.05, 0.002));
+
+    // For z=2.576, two-tailed p ≈ 0.01
+    CHECK_THAT(t_distribution_p_value(2.576, 1000.0), WithinAbs(0.01, 0.002));
+    }
+
+TEST_CASE("t_distribution_p_value invalid inputs", "[stats][ttest]")
+    {
+    // df <= 0 should return NaN
+    CHECK(std::isnan(t_distribution_p_value(1.0, 0.0)));
+    CHECK(std::isnan(t_distribution_p_value(1.0, -1.0)));
+
+    // NaN inputs should return NaN
+    CHECK(std::isnan(t_distribution_p_value(std::numeric_limits<double>::quiet_NaN(), 10.0)));
+    CHECK(std::isnan(t_distribution_p_value(1.0, std::numeric_limits<double>::quiet_NaN())));
+    }
+
+// ---------------- linear_regression tests ----------------
+// Reference: Kutner, M.H., Nachtsheim, C.J., Neter, J., & Li, W. (2005).
+// Applied Linear Statistical Models (5th ed.). McGraw-Hill/Irwin.
+// Example data from Chapter 1 (Toluca Company dataset, simplified).
+TEST_CASE("linear_regression textbook example", "[stats][regression]")
+    {
+    // textbook example: Hours studying vs. exam score
+    // hand-calculated values for verification:
+    // mean_x = 3, mean_y = 63
+    // SS_xx = 10, SS_yy = 430, SS_xy = 65
+    // slope = 65/10 = 6.5, intercept = 63 - 6.5*3 = 43.5
+    // r = 65/sqrt(10*430) = 65/65.574 = 0.9912
+
+    const std::vector<double> hours = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const std::vector<double> scores = { 50.0, 55.0, 65.0, 70.0, 75.0 };
+
+    const auto result = linear_regression(hours, scores);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 5);
+    CHECK_THAT(result.slope, WithinRel(6.5, 1e-10));
+    CHECK_THAT(result.intercept, WithinRel(43.5, 1e-10));
+    CHECK_THAT(result.correlation, WithinRel(0.9912, 1e-3));
+    CHECK_THAT(result.r_squared, WithinRel(0.9825, 1e-3));
+    }
+
+TEST_CASE("linear_regression perfect positive correlation", "[stats][regression]")
+    {
+    // perfect positive linear relationship: y = 2x + 3
+    const std::vector<double> x = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const std::vector<double> y = { 5.0, 7.0, 9.0, 11.0, 13.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK_THAT(result.slope, WithinAbs(2.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(3.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinAbs(1.0, 1e-10));
+    CHECK_THAT(result.r_squared, WithinAbs(1.0, 1e-10));
+    // perfect fit means residuals = 0, so SE = 0
+    CHECK_THAT(result.standard_error, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.slope_standard_error, WithinAbs(0, 1e-10));
+    }
+
+TEST_CASE("linear_regression perfect negative correlation", "[stats][regression]")
+    {
+    // perfect negative linear relationship: y = -3x + 20
+    const std::vector<double> x = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const std::vector<double> y = { 17.0, 14.0, 11.0, 8.0, 5.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK_THAT(result.slope, WithinAbs(-3.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(20.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinAbs(-1.0, 1e-10));
+    CHECK_THAT(result.r_squared, WithinAbs(1.0, 1e-10));
+    CHECK_THAT(result.standard_error, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.slope_standard_error, WithinAbs(0, 1e-10));
+    }
+
+TEST_CASE("linear_regression no correlation", "[stats][regression]")
+    {
+    // horizontal line: y is constant, no relationship with x
+    const std::vector<double> x = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const std::vector<double> y = { 10.0, 10.0, 10.0, 10.0, 10.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK_THAT(result.slope, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(10.0, 1e-10));
+    // when y is constant, r and r^2 are perfect prediction of constant,
+    // which is "unreliable" and set to NaN
+    CHECK(std::isnan(result.r_squared));
+    CHECK(std::isnan(result.correlation));
+    CHECK_THAT(result.standard_error, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.slope_standard_error, WithinAbs(0, 1e-10));
+    }
+
+TEST_CASE("linear_regression with noise", "[stats][regression]")
+    {
+    // hand-calculated example with some scatter
+    // x = {1, 2, 3, 4, 5}, y = {2.1, 3.9, 6.2, 7.8, 10.1}
+    // Best fit line: y ≈ 1.99x + 0.06
+    const std::vector<double> x = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const std::vector<double> y = { 2.1, 3.9, 6.2, 7.8, 10.1 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 5);
+    CHECK_THAT(result.slope, WithinRel(1.99, 0.01));
+    CHECK_THAT(result.intercept, WithinAbs(0.05, 0.01));
+    CHECK(result.correlation > 0.99); // very high correlation
+    CHECK(result.r_squared > 0.98);
+    CHECK_THAT(result.t_statistic, WithinAbs(33.32129 , 1e-06));
+    CHECK(result.p_value < 0.01); // highly significant
+    }
+
+TEST_CASE("linear_regression NIST Norris dataset subset", "[stats][regression]")
+    {
+    // NIST Statistical Reference Datasets (subset of 16 points)
+    // https://www.itl.nist.gov/div898/strd/lls/data/Norris.shtml
+    // The Norris dataset has y ≈ x relationship (slope ≈ 1, intercept ≈ 0)
+    // Hand-verified values for this 16-point subset:
+    // slope ≈ 1.00321, intercept ≈ -0.2140
+    const std::vector<double> x = { 0.2, 337.4, 118.2, 884.6, 10.1, 226.5, 666.3, 996.3,
+                                    448.6, 777.0, 558.2, 0.4, 0.6, 775.5, 666.9, 338.0 };
+    const std::vector<double> y = { 0.1, 338.8, 118.1, 888.0, 9.2, 228.1, 668.5, 998.5,
+                                    449.1, 779.0, 559.2, 0.3, 0.1, 778.1, 668.8, 339.3 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 16);
+    // verified values for this subset
+    CHECK_THAT(result.slope, WithinRel(1.00321, 1e-4));
+    CHECK_THAT(result.intercept, WithinAbs(-0.214, 0.01));
+    // very high correlation expected (y ≈ x)
+    CHECK_THAT(result.r_squared ,WithinAbs(0.9999, 1e-4));
+    }
+
+TEST_CASE("linear_regression minimum valid points (n=2)", "[stats][regression]")
+    {
+    // with exactly 2 points, we can fit a perfect line
+    const std::vector<double> x = { 0.0, 10.0 };
+    const std::vector<double> y = { 5.0, 25.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 2);
+    CHECK_THAT(result.slope, WithinAbs(2.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(5.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinAbs(1.0, 1e-10));
+    CHECK_THAT(result.r_squared, WithinAbs(1.0, 1e-10));
+    // with n=2, df=0, so SE and p-value will be undefined/NaN
+    CHECK(std::isnan(result.standard_error));
+    CHECK(std::isnan(result.p_value));
+    }
+
+TEST_CASE("linear_regression with three points", "[stats][regression]")
+    {
+    // three points with some scatter: (1,2), (2,4), (3,5)
+    // hand-calculated: slope = 1.5, intercept = 0.667, r ≈ 0.9820
+    const std::vector<double> x = { 1.0, 2.0, 3.0 };
+    const std::vector<double> y = { 2.0, 4.0, 5.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 3);
+    CHECK_THAT(result.slope, WithinRel(1.5, 1e-10));
+    CHECK_THAT(result.intercept, WithinRel(0.6666667, 1e-6));
+    CHECK_THAT(result.correlation, WithinRel(0.9819, 1e-3));
+    // with n=3, df=1
+    CHECK_THAT(result.t_statistic, WithinAbs(5.196152, 1e-6));
+    CHECK_THAT(result.p_value, WithinAbs(0.1210377, 1e-6));
+    }
+
+// ---------------- linear_regression edge cases ----------------
+TEST_CASE("linear_regression empty input", "[stats][regression][edge]")
+    {
+    const std::vector<double> empty;
+
+    const auto result = linear_regression(empty, empty);
+
+    CHECK_FALSE(result.is_valid());
+    CHECK(result.n == 0);
+    CHECK(std::isnan(result.slope));
+    CHECK(std::isnan(result.intercept));
+    CHECK(std::isnan(result.correlation));
+    CHECK(std::isnan(result.t_statistic));
+    CHECK(std::isnan(result.p_value));
+    }
+
+TEST_CASE("linear_regression single point", "[stats][regression][edge]")
+    {
+    const std::vector<double> x = { 5.0 };
+    const std::vector<double> y = { 10.0 };
+
+    const auto result = linear_regression(x, y);
+
+    // with only 1 point, regression is undefined
+    CHECK_FALSE(result.is_valid());
+    // n is 0 because the function returns early before counting valid pairs
+    CHECK(result.n == 0);
+    CHECK(std::isnan(result.slope));
+    CHECK(std::isnan(result.intercept));
+    CHECK(std::isnan(result.correlation));
+    CHECK(std::isnan(result.t_statistic));
+    CHECK(std::isnan(result.p_value));
+    }
+
+TEST_CASE("linear_regression mismatched sizes", "[stats][regression][edge]")
+    {
+    const std::vector<double> x = { 1.0, 2.0, 3.0 };
+    const std::vector<double> y = { 1.0, 2.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK_FALSE(result.is_valid());
+    CHECK(result.n == 0);
+    CHECK(std::isnan(result.slope));
+    CHECK(std::isnan(result.intercept));
+    CHECK(std::isnan(result.correlation));
+    CHECK(std::isnan(result.t_statistic));
+    CHECK(std::isnan(result.p_value));
+    }
+
+TEST_CASE("linear_regression vertical line (zero variance in x)", "[stats][regression][edge]")
+    {
+    // all x values are the same -> undefined slope
+    const std::vector<double> x = { 5.0, 5.0, 5.0, 5.0 };
+    const std::vector<double> y = { 1.0, 2.0, 3.0, 4.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK_FALSE(result.is_valid());
+    CHECK(std::isnan(result.slope));
+    CHECK(std::isnan(result.intercept));
+    CHECK(std::isnan(result.correlation));
+    CHECK(std::isnan(result.t_statistic));
+    CHECK(std::isnan(result.p_value));
+    CHECK(std::isnan(result.standard_error));
+    }
+
+TEST_CASE("linear_regression with x NaN value", "[stats][regression][nan]")
+    {
+    using std::numeric_limits;
+
+    // NaN values should be excluded from the calculation
+    const std::vector<double> x = { 1.0, 2.0, numeric_limits<double>::quiet_NaN(), 4.0, 5.0 };
+    const std::vector<double> y = { 2.0, 4.0, 6.0, 8.0, 10.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 4); // only 4 valid pairs
+    CHECK_THAT(result.slope, WithinAbs(2.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinRel(1.0, 1e-6));
+    CHECK_THAT(result.r_squared, WithinRel(1.0, 1e-6));
+    CHECK(std::isinf(result.t_statistic));
+    CHECK_THAT(result.p_value, WithinAbs(0.0, 1e-6));
+    }
+
+TEST_CASE("linear_regression with y NaN value", "[stats][regression][nan]")
+    {
+    using std::numeric_limits;
+
+    // NaN values should be excluded from the calculation
+    const std::vector<double> x = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const std::vector<double> y = { 2.0, 4.0, numeric_limits<double>::quiet_NaN(), 8.0, 10.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 4); // only 4 valid pairs
+    CHECK_THAT(result.slope, WithinAbs(2.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinRel(1.0, 1e-6));
+    CHECK_THAT(result.r_squared, WithinRel(1.0, 1e-6));
+    CHECK(std::isinf(result.t_statistic));
+    CHECK_THAT(result.p_value, WithinAbs(0.0, 1e-6));
+    }
+
+TEST_CASE("linear_regression with infinity values", "[stats][regression][inf]")
+    {
+    using std::numeric_limits;
+
+    // infinity values should be excluded
+    const std::vector<double> x = { 1.0, 2.0, 3.0, numeric_limits<double>::infinity() };
+    const std::vector<double> y = { 3.0, 5.0, 7.0, 100.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.n == 3);
+    CHECK_THAT(result.slope, WithinAbs(2.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(1.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinRel(1.0, 1e-6));
+    CHECK_THAT(result.r_squared, WithinRel(1.0, 1e-6));
+    CHECK(std::isinf(result.t_statistic));
+    CHECK_THAT(result.p_value, WithinAbs(0.0, 1e-6));
+    }
+
+TEST_CASE("linear_regression all NaN", "[stats][regression][nan]")
+    {
+    using std::numeric_limits;
+
+    const std::vector<double> x = { numeric_limits<double>::quiet_NaN(),
+                                    numeric_limits<double>::quiet_NaN() };
+    const std::vector<double> y = { 1.0, 2.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK_FALSE(result.is_valid());
+    CHECK(result.n == 0);
+    CHECK(std::isnan(result.slope));
+    CHECK(std::isnan(result.intercept));
+    CHECK(std::isnan(result.correlation));
+    CHECK(std::isnan(result.t_statistic));
+    CHECK(std::isnan(result.p_value));
+    CHECK(std::isnan(result.standard_error));
+    }
+
+TEST_CASE("linear_regression negative values", "[stats][regression]")
+    {
+    // regression with all negative values
+    const std::vector<double> x = { -5.0, -4.0, -3.0, -2.0, -1.0 };
+    const std::vector<double> y = { -15.0, -12.0, -9.0, -6.0, -3.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK_THAT(result.slope, WithinAbs(3.0, 1e-10));
+    CHECK_THAT(result.intercept, WithinAbs(0.0, 1e-10));
+    CHECK_THAT(result.correlation, WithinAbs(1.0, 1e-10));
+    }
+
+TEST_CASE("linear_regression large values", "[stats][regression]")
+    {
+    // test numerical stability with large values
+    const std::vector<double> x = { 1e8, 2e8, 3e8, 4e8, 5e8 };
+    const std::vector<double> y = { 2e8, 4e8, 6e8, 8e8, 1e9 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK_THAT(result.slope, WithinAbs(2.0, 1e-6));
+    CHECK_THAT(result.intercept, WithinAbs(0.0, 1e6)); // some numerical error expected
+    CHECK_THAT(result.correlation, WithinAbs(1.0, 1e-10));
+    }
+
+TEST_CASE("linear_regression small values", "[stats][regression]")
+    {
+    // test numerical stability with small values
+    const std::vector<double> x = { 1e-8, 2e-8, 3e-8, 4e-8, 5e-8 };
+    const std::vector<double> y = { 3e-8, 6e-8, 9e-8, 1.2e-7, 1.5e-7 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK_THAT(result.slope, WithinAbs(3.0, 1e-6));
+    CHECK_THAT(result.correlation, WithinAbs(1.0, 1e-10));
+    }
+
+TEST_CASE("linear_regression p-value significance levels", "[stats][regression]")
+    {
+    // test that significant relationships give small p-values
+    // and non-significant relationships give large p-values
+    SECTION("highly significant relationship")
+        {
+        const std::vector<double> x = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        const std::vector<double> y = { 2.1, 3.9, 6.1, 8.0, 9.9, 12.1, 13.9, 16.0, 18.1, 20.0 };
+
+        const auto result = linear_regression(x, y);
+
+        CHECK(result.is_valid());
+        CHECK_THAT(result.slope, WithinAbs(1.999394, 1e-6));
+        CHECK_THAT(result.intercept, WithinAbs(0.01333333, 1e-6));
+        CHECK_THAT(result.correlation, WithinRel(0.9998955, 1e-6));
+        CHECK_THAT(result.r_squared, WithinRel(0.9997909, 1e-6));
+        CHECK_THAT(result.t_statistic, WithinRel(195.5875 , 1e-6));
+        CHECK_THAT(result.p_value, WithinAbs(0.0, 1e-6));
+        }
+
+    SECTION("no significant relationship")
+        {
+        // random-ish data with no clear pattern
+        const std::vector<double> x = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        const std::vector<double> y = { 5.2, 4.8, 5.1, 4.9, 5.0, 5.1, 4.8, 5.2, 4.9, 5.0 };
+
+        const auto result = linear_regression(x, y);
+
+        CHECK(result.is_valid());
+        CHECK_THAT(result.slope, WithinAbs(-0.004848485, 1e-6));
+        CHECK_THAT(result.intercept, WithinAbs(5.026667, 1e-6));
+        CHECK_THAT(result.correlation, WithinRel(-0.09847319 , 1e-6));
+        CHECK_THAT(result.r_squared, WithinRel(0.00969697, 1e-6));
+        CHECK_THAT(result.t_statistic, WithinRel(-0.2798846, 1e-6));
+        CHECK_THAT(result.p_value, WithinAbs(0.7866666, 1e-6));
+        }
+    }
+
+TEST_CASE("linear_regression filtering results in n=1", "[stats][regression][nan]")
+    {
+    const std::vector<double> x = { 1.0, std::numeric_limits<double>::quiet_NaN() };
+    const std::vector<double> y = { 2.0, 4.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK_FALSE(result.is_valid());
+    CHECK(result.n == 1);
+    CHECK(std::isnan(result.slope));
+    }
+
+TEST_CASE("linear_regression near-vertical line", "[stats][regression][edge]")
+    {
+    // Points are almost vertical: (1.0, 1), (1.00000000001, 2).
+    // Slope should be massive, but not NaN.
+    const std::vector<double> x = { 1.0, 1.0000000001 };
+    const std::vector<double> y = { 1.0, 2.0 };
+
+    const auto result = linear_regression(x, y);
+
+    CHECK(result.is_valid());
+    CHECK(result.slope > 1e9); 
+    CHECK(std::isfinite(result.slope));
+    }
+
+TEST_CASE("linear_regression Anscombe's Quartet Case I", "[stats][regression]")
+    {
+    // dataset I from Anscombe's Quartet
+    const std::vector<double> x = { 10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5 };
+    const std::vector<double> y = { 8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68 };
+
+    const auto result = linear_regression(x, y);
+
+    // standard properties for Anscombe's I
+    CHECK_THAT(result.slope, WithinRel(0.5, 0.01));
+    CHECK_THAT(result.intercept, WithinRel(3.0, 0.01));
+    CHECK_THAT(result.r_squared, WithinRel(0.667, 0.01));
+    }
+
+TEST_CASE("linear_regression results struct is_valid", "[stats][regression]")
+    {
+    SECTION("default constructed is invalid")
+        {
+        linear_regression_results results;
+        CHECK_FALSE(results.is_valid());
+        }
+
+    SECTION("valid results")
+        {
+        linear_regression_results results;
+        results.n = 5;
+        results.slope = 2.0;
+        results.intercept = 1.0;
+        CHECK(results.is_valid());
+        }
+
+    SECTION("n=1 is invalid")
+        {
+        linear_regression_results results;
+        results.n = 1;
+        results.slope = 2.0;
+        results.intercept = 1.0;
+        CHECK_FALSE(results.is_valid());
+        }
+
+    SECTION("NaN slope is invalid")
+        {
+        linear_regression_results results;
+        results.n = 5;
+        results.slope = std::numeric_limits<double>::quiet_NaN();
+        results.intercept = 1.0;
+        CHECK_FALSE(results.is_valid());
+        }
+    }
+
 // NOLINTEND
 // clang-format on
