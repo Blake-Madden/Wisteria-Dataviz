@@ -1402,7 +1402,8 @@ namespace Wisteria::Data
                     // (Don't allow 0 because we use that for the default missing data value
                     //  for categorical columns.)
                     !is_within(
-                        std::make_pair(1.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
+                        std::make_pair(
+                            1.0, std::max(static_cast<double>(importInfo.m_maxDiscreteValue), 1.0)),
                         parsedNumber))
                     {
                     currentColumnType = ColumnImportType::Numeric;
