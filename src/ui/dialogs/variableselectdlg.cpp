@@ -50,7 +50,7 @@ namespace Wisteria::UI
         // enable/disable the Add/Remove buttons
         for (const auto& varList : m_varLists)
             {
-            assert(m_mainVarlist && L"Main variable list not created!");
+            wxASSERT_MSG(m_mainVarlist, L"Main variable list not created!");
             auto* button = FindWindowById(varList.m_removeId, this);
             if (button != nullptr && m_mainVarlist != nullptr)
                 {
@@ -68,8 +68,8 @@ namespace Wisteria::UI
     void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list,
                                                               wxListView* otherList)
         {
-        assert(list && "Invalid list control!");
-        assert(otherList && "Invalid list control!");
+        wxASSERT_MSG(list, "Invalid list control!");
+        wxASSERT_MSG(otherList, "Invalid list control!");
         if (list == nullptr || otherList == nullptr)
             {
             return;
@@ -165,7 +165,7 @@ namespace Wisteria::UI
         mainSizer->Add(varsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         // fill the main list of variables
-        varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables")), wxGBPosition(0, 0),
+        varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables:")), wxGBPosition(0, 0),
                        wxGBSpan(1, 1));
         m_mainVarlist = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxLC_REPORT | wxLC_NO_HEADER);
@@ -174,8 +174,10 @@ namespace Wisteria::UI
             {
             m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
             }
-
-        varsSizer->Add(m_mainVarlist, wxGBPosition(1, 0), wxGBSpan(3, 1));
+        // quneiform-suppress-begin
+        varsSizer->Add(m_mainVarlist, wxGBPosition{ 1, 0 }, wxGBSpan(varInfo.size() * 2, 1),
+                       wxEXPAND);
+        // quneiform-suppress-end
 
         // set up the variable groups on the right side
         int currentButtonRow{ 1 };
@@ -191,22 +193,24 @@ namespace Wisteria::UI
             auto* varButtonRemove = new wxButton(this, removeId);
             varButtonRemove->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_GO_BACK));
             buttonSz->Add(varButtonRemove);
-            varsSizer->Add(buttonSz, wxGBPosition(currentButtonRow, 1), wxGBSpan(1, 1),
+            varsSizer->Add(buttonSz, wxGBPosition{ currentButtonRow, 1 }, wxGBSpan{ 1, 1 },
                            wxALIGN_CENTER_VERTICAL);
-            if (!(listStyle & wxLC_SINGLE_SEL))
+            if ((listStyle & wxLC_SINGLE_SEL) != 0)
                 {
                 varsSizer->AddGrowableRow(currentButtonRow);
                 }
             currentButtonRow += 2;
 
             varsSizer->Add(new wxStaticText(this, wxID_STATIC, label),
-                           wxGBPosition(currentLabelRow, 2), wxGBSpan(1, 1));
+                           wxGBPosition{ currentLabelRow, 2 }, wxGBSpan{ 1, 1 });
             currentLabelRow += 2;
 
             auto* list =
                 new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
             list->InsertColumn(0, wxString{});
-            varsSizer->Add(list, wxGBPosition(currentListRow, 2), wxGBSpan(1, 1));
+            // quneiform-suppress-begin
+            varsSizer->Add(list, wxGBPosition{ currentListRow, 2 }, wxGBSpan{ 1, 1 }, wxEXPAND);
+            // quneiform-suppress-end
             currentListRow += 2;
 
             return list;
@@ -230,15 +234,24 @@ namespace Wisteria::UI
             currentList.m_list =
                 addVarControls(currentList.m_addId, currentList.m_removeId,
                                (currentList.m_required ?
-                                    currentList.m_label :
-                                    wxString::Format(_(L"%s (optional)"), currentList.m_label)),
+                                    currentList.m_label + L':' :
+                                    wxString::Format(_(L"%s (optional):"), currentList.m_label)),
                                style);
             m_varLists.push_back(std::move(currentList));
             }
 
-        // make list columns growable, but not button columns
+        // make list columns growable horizontally, but not button columns
         varsSizer->AddGrowableCol(0);
         varsSizer->AddGrowableCol(2);
+
+        // make the list rows growable vertically
+        for (size_t i = 1; i < varInfo.size() * 2; i += 2)
+            {
+            if (!varsSizer->IsRowGrowable(i))
+                {
+                varsSizer->AddGrowableRow(i);
+                }
+            }
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());

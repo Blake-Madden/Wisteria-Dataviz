@@ -1105,14 +1105,42 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Scatter Plot"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto chirpsData = std::make_shared<Wisteria::Data::Dataset>();
+
+        // demonstrates how to select a dataset and the variables to use
+        wxFileDialog fileDlg(this, _(L"Select Dataset"), wxString{}, wxString{},
+                             Wisteria::Data::Dataset::GetDataFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        auto columnInfo = Wisteria::Data::Dataset::ReadColumnInfo(
+            fileDlg.GetPath(),
+            // more aggressively force discrete data to be imported as continuous columns
+            Wisteria::Data::ImportInfo{}.MaxDiscreteValue(1));
+        auto scatterData = std::make_shared<Wisteria::Data::Dataset>();
+
+        Wisteria::UI::VariableSelectDlg selectVarsDlg(
+            this, columnInfo,
+            { Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                  .Label(_(L"Y variable"))
+                  .SingleSelection(true)
+                  .Required(true),
+              Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                  .Label(_(L"X variable"))
+                  .SingleSelection(true)
+                  .Required(true) });
+        if (selectVarsDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
         try
             {
-            chirpsData->ImportCSV(
-                appDir + L"/datasets/historical/crickets.csv",
-                                  Wisteria::Data::Dataset::ImportInfoFromPreview(
-                                      Wisteria::Data::Dataset::ReadColumnInfo(
-                                          appDir + L"/datasets/historical/crickets.csv")));
+            scatterData->ImportCSV(fileDlg.GetPath(),
+                                   Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
             }
         catch (const std::exception& err)
             {
@@ -1122,14 +1150,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto scatterPlot = std::make_shared<Wisteria::Graphs::ScatterPlot>(subframe->m_canvas);
-
-        // chirping rate vs temperature (Dolbear's Law: cricket chirps correlate with temperature)
-        scatterPlot->SetData(chirpsData, L"rate", L"temp", L"species");
-
-        scatterPlot->GetTitle().SetText(_(L"Cricket Chirps vs. Temperature"));
-        scatterPlot->GetSubtitle().SetText(_(L"Dolbear's Law"));
-        scatterPlot->GetBottomXAxis().GetTitle().SetText(_(L"Temperature (°C)"));
-        scatterPlot->GetLeftYAxis().GetTitle().SetText(_(L"Chirps per 15 seconds"));
+        scatterPlot->SetData(scatterData, selectVarsDlg.GetSelectedVariables(0)[0],
+                             selectVarsDlg.GetSelectedVariables(1)[0]);
 
         subframe->m_canvas->SetFixedObject(0, 0, scatterPlot);
         subframe->m_canvas->SetFixedObject(

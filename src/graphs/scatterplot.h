@@ -121,10 +121,7 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the marker shape for points.
             /// @param shape The shape.
-            void SetShape(const Icons::IconShape shape) noexcept
-                {
-                m_shape = shape;
-                }
+            void SetShape(const Icons::IconShape shape) noexcept { m_shape = shape; }
 
             /// @returns The color for points in this series.
             [[nodiscard]]
@@ -135,10 +132,7 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the color for points.
             /// @param color The color.
-            void SetColor(const wxColour& color) noexcept
-                {
-                m_color = color;
-                }
+            void SetColor(const wxColour& color) noexcept { m_color = color; }
 
             /// @}
 
@@ -212,8 +206,7 @@ namespace Wisteria::Graphs
             @param regressionLineStyles The line styles to use for the regression lines.
                 The default is to use solid, straight lines.*/
         explicit ScatterPlot(
-            Canvas* canvas,
-            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+            Canvas* canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
             const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,
             const std::shared_ptr<LineStyleScheme>& regressionLineStyles = nullptr);
 
@@ -284,10 +277,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets whether to show regression lines.
         /// @param show @c true to show regression lines.
-        void ShowRegressionLines(const bool show) noexcept
-            {
-            m_showRegressionLines = show;
-            }
+        void ShowRegressionLines(const bool show) noexcept { m_showRegressionLines = show; }
 
         /// @returns @c true if regression lines are being shown.
         [[nodiscard]]
