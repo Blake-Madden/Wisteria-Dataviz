@@ -220,7 +220,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
             {
             if (count == Settings::GetMaxLegendItemCount())
                 {
-                legendText.append(L"\u2026");
+                legendText.append(L'…');
                 break;
                 }
 
@@ -230,7 +230,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
                 label.erase(Settings::GetMaxLegendTextLength() - 1);
-                label.append(L"\u2026");
+                label.append(L'…');
                 }
 
             legendText.append(label).append(L"\n");

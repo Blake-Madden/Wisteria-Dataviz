@@ -194,7 +194,7 @@ working with imported values. Also, any parsing errors (from malformed input) wh
 Using the Data
 =============================
 
-After importing a dataset, you can [transform](TransformingData.md) it (if needed) and pass it
+After importing a dataset, you can [transform](transforming-data.md) it (if needed) and pass it
 to a graph's `SetData()` function and specify which columns to use.
 For example, a `Wisteria::Graphs::BoxPlot` will use a dataset's continuous column (and optionally a group column).
 A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two continuous columns and a group column.
@@ -202,4 +202,4 @@ A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two continuou
 Building a Dataset
 =============================
 
-To build a dataset manually, please refer to the [dataset building overview](BuildingData.md).
+To build a dataset manually, please refer to the [dataset building overview](building-data.md).

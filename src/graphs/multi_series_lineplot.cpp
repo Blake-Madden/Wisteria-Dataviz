@@ -239,16 +239,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             {
             if (Settings::GetMaxLegendItemCount() == lineCount)
                 {
-                legendText.append(L"\u2026");
+                legendText.append(L'…');
                 break;
                 }
             wxString currentLabel = line.GetText();
-            assert(Settings::GetMaxLegendTextLength() >= 1 && L"Max legend text length is zero?!");
+            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+                         L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
                 currentLabel.erase(Settings::GetMaxLegendTextLength() - 1);
-                currentLabel.append(L"\u2026");
+                currentLabel.append(L'…');
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             if (showingMarkers)

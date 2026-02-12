@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   width="400"
+   height="400"
+   viewBox="0 0 400 400"
+   version="1.1">
+
+  <!-- Regression line -->
+  <path d="M 70,300 L 350,90" stroke="#666666" stroke-width="2" fill="none" />
+
+  <!-- Group 1 points (blue) - scattered -->
+  <circle cx="85" cy="310" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="95" cy="180" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="130" cy="260" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="160" cy="120" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="175" cy="240" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="210" cy="290" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="240" cy="150" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="270" cy="200" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="310" cy="80" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+  <circle cx="340" cy="170" r="12" fill="#4a90d9" stroke="#000000" stroke-width="1.5" />
+
+  <!-- Group 2 points (red) - scattered -->
+  <circle cx="80" cy="250" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="115" cy="320" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="145" cy="190" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="190" cy="145" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="220" cy="210" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="255" cy="280" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="285" cy="110" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="320" cy="240" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="345" cy="95" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+  <circle cx="350" cy="300" r="12" fill="#e57373" stroke="#000000" stroke-width="1.5" />
+</svg>

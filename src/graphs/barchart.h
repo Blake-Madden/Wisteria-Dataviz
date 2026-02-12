@@ -153,7 +153,7 @@ namespace Wisteria::Graphs
 
          canvas->SetFixedObject(0, 0, plot);
         @endcode
-        @sa The [bar chart](../../BarChart.md) overview for more information.
+        @sa The [bar chart](../../bar-chart.md) overview for more information.
     */
     class BarChart : public GroupGraph2D
         {

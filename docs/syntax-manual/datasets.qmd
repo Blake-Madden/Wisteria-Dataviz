@@ -61,7 +61,8 @@ Each dataset property will contain the following properties (loaded in the follo
     - `"strptime-format"`: Parse using a strptime()-like format string (e.g., "%Y-%m-%d"). \
       The `"format"` property must also be provided.
     - `"automatic"`: Tries to interpret the given string as date and time (if not specified, this will be the default).
-    - `"time"`: Parse as a time, using the "HH:MM:SS" format. (The date will be set to today.)
+    - `"time"`: Parse as a time, using the "HH:MM:SS" format. \
+      (The date will be set to today.)
   - `"format"`: If `"parser"` is set to `"strptime-format"`,
     then this is the user-defined format to parse with.
 

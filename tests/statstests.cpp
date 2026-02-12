@@ -1228,6 +1228,49 @@ TEST_CASE("t_distribution_p_value invalid inputs", "[stats][ttest]")
     CHECK(std::isnan(t_distribution_p_value(1.0, std::numeric_limits<double>::quiet_NaN())));
     }
 
+/*  R code to validate simple linear regression:
+
+    # Define the data
+    x <- c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5)
+    y <- c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68)
+
+    # Perform linear regression
+    model <- lm(y ~ x, na.action = na.omit)
+
+    # View the full summary
+    summary_info <- summary(model)
+    print(summary_info)
+
+    # 1. Residual Standard Error (matches results.standard_error)
+    # This is the 'sigma' field in the summary object
+    res_std_error <- summary_info$sigma
+
+    # 2. Standard Error of the Slope (matches results.slope_standard_error)
+    # This is found in the coefficients table [row "x", column "Std. Error"]
+    slope_std_error <- summary_info$coefficients["x", "Std. Error"]
+
+    # Extract the p-value for the slope 'x'
+    # The coefficients table is a matrix: [Row "x", Column "Pr(>|t|)"]
+    p_val <- summary_info$coefficients["x", "Pr(>|t|)"]
+
+    # Extract the t-statistic while we're at it
+    t_stat <- summary_info$coefficients["x", "t value"]
+
+    # Extract specific values for comparison
+    cat("\n--- Comparison Values ---\n")
+    cat("Slope:      ", coef(model)["x"], "\n")
+    cat("Intercept:  ", coef(model)["(Intercept)"], "\n")
+    # Derived from R-squared with the correct sign
+    correlation_derived <- sqrt(summary_info$r.squared) * sign(coef(model)["x"])
+    cat("Correlation (from R2):", correlation_derived, "\n")
+    cat("R-squared:  ", summary_info$r.squared, "\n")
+    cat("Residual Std Error (S): ", res_std_error, "\n")
+    cat("Slope Std Error (SE):   ", slope_std_error, "\n")
+    cat("\n--- Significance Testing ---\n")
+    cat("T-statistic: ", t_stat, "\n")
+    cat("P-value:     ", p_val, "\n")
+*/
+
 // ---------------- linear_regression tests ----------------
 // Reference: Kutner, M.H., Nachtsheim, C.J., Neter, J., & Li, W. (2005).
 // Applied Linear Statistical Models (5th ed.). McGraw-Hill/Irwin.
@@ -1240,7 +1283,6 @@ TEST_CASE("linear_regression textbook example", "[stats][regression]")
     // SS_xx = 10, SS_yy = 430, SS_xy = 65
     // slope = 65/10 = 6.5, intercept = 63 - 6.5*3 = 43.5
     // r = 65/sqrt(10*430) = 65/65.574 = 0.9912
-
     const std::vector<double> hours = { 1.0, 2.0, 3.0, 4.0, 5.0 };
     const std::vector<double> scores = { 50.0, 55.0, 65.0, 70.0, 75.0 };
 

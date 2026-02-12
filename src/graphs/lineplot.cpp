@@ -285,7 +285,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             {
             if (Settings::GetMaxLegendItemCount() == lineCount)
                 {
-                legendText.append(L"\u2026");
+                legendText.append(L'…');
                 break;
                 }
             wxString currentLabel = groupColumn->GetLabelFromID(line.GetGroupId());
@@ -295,7 +295,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
                 currentLabel.erase(Settings::GetMaxLegendTextLength() - 1);
-                currentLabel.append(L"\u2026");
+                currentLabel.append(L'…');
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             if (showingMarkers)

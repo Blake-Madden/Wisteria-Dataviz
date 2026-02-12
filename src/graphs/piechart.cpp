@@ -4328,7 +4328,7 @@ namespace Wisteria::Graphs
             {
             if (Settings::GetMaxLegendItemCount() == i)
                 {
-                legendText.append(L"\u2026");
+                legendText.append(L'…');
                 // cppcheck-suppress unreadVariable
                 ++currentLine;
                 break;
@@ -4340,7 +4340,7 @@ namespace Wisteria::Graphs
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
                 currentLabel.erase(Settings::GetMaxLegendTextLength() - 1);
-                currentLabel.append(L"\u2026");
+                currentLabel.append(L'…');
                 ++currentLine;
                 }
 
@@ -4419,7 +4419,7 @@ namespace Wisteria::Graphs
             {
             if (Settings::GetMaxLegendItemCount() == i)
                 {
-                legendText.append(L"\u2026");
+                legendText.append(L'…');
                 break;
                 }
             wxString currentLabel = GetOuterPie().at(i).GetGroupLabel();
@@ -4429,7 +4429,7 @@ namespace Wisteria::Graphs
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
                 currentLabel.erase(Settings::GetMaxLegendTextLength() - 1);
-                currentLabel.append(L"\u2026");
+                currentLabel.append(L'…');
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(

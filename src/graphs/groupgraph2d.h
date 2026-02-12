@@ -101,7 +101,7 @@ namespace Wisteria::Graphs
             }
 
         /// @private
-        /// @brief Invalidates the group column pointer and clears the ordered IDs.
+        /// @brief Invalidates the group column and clears the ordered IDs.
         void ResetGrouping() noexcept
             {
             m_groupIds.clear();

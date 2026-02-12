@@ -62,8 +62,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
                 .DPIScaling(GetDPIScaleFactor())
                 .FontColor(GetLeftYAxis().GetFontColor()));
 
-        constexpr std::wstring_view ELLIPSIS{ L"\u2026" };
-
         wxString legendText;
         size_t lineCount{ 0 };
 
@@ -86,18 +84,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
                 }
             if (Settings::GetMaxLegendItemCount() == lineCount)
                 {
-                legendText.append(ELLIPSIS.data());
+                legendText.append(L'…');
                 break;
                 }
             wxString currentLabel = GetGroupColumn()->GetLabelFromID(groupId);
-            assert(Settings::GetMaxLegendTextLength() >= 1 && L"Max legend text length is zero?!");
+            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+                         L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
                 currentLabel.erase(Settings::GetMaxLegendTextLength() - 1);
-                currentLabel.append(ELLIPSIS.data());
+                currentLabel.append(L'…');
                 }
-            legendText.append(currentLabel.c_str()).append(L"\n");
+            legendText.append(currentLabel.c_str()).append(L'\n');
 
             wxASSERT_MSG((GetBrushScheme() || GetColorScheme()),
                          L"Legend needs either a brush scheme or color scheme!");

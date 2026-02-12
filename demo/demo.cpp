@@ -136,6 +136,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_MULTIPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_MULTIPLOT_COMMON_AXIS);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_TABLE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SCATTERPLOT);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -172,6 +173,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
                      _(L"Histogram (Discrete Category Counts)"));
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"));
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"));
+    fileMenu->Append(MyApp::ID_NEW_SCATTERPLOT, _(L"Scatter Plot"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"));
@@ -796,7 +798,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             mtcarsData->ImportCSV(
-                appDir + L"/datasets/mtcars.csv",
+                appDir + L"/datasets/historical/mtcars.csv",
                 Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"mpg" })
                     .CategoricalColumns(
@@ -1097,6 +1099,44 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 appDir + L"/res/wisteria.svg",
                 Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
             wxSize(32, 32));
+        }
+    // Scatter Plot
+    else if (event.GetId() == MyApp::ID_NEW_SCATTERPLOT)
+        {
+        subframe->SetTitle(_(L"Scatter Plot"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+        auto chirpsData = std::make_shared<Wisteria::Data::Dataset>();
+        try
+            {
+            chirpsData->ImportCSV(
+                appDir + L"/datasets/historical/crickets.csv",
+                                  Wisteria::Data::Dataset::ImportInfoFromPreview(
+                                      Wisteria::Data::Dataset::ReadColumnInfo(
+                                          appDir + L"/datasets/historical/crickets.csv")));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        auto scatterPlot = std::make_shared<Wisteria::Graphs::ScatterPlot>(subframe->m_canvas);
+
+        // chirping rate vs temperature (Dolbear's Law: cricket chirps correlate with temperature)
+        scatterPlot->SetData(chirpsData, L"rate", L"temp", L"species");
+
+        scatterPlot->GetTitle().SetText(_(L"Cricket Chirps vs. Temperature"));
+        scatterPlot->GetSubtitle().SetText(_(L"Dolbear's Law"));
+        scatterPlot->GetBottomXAxis().GetTitle().SetText(_(L"Temperature (°C)"));
+        scatterPlot->GetLeftYAxis().GetTitle().SetText(_(L"Chirps per 15 seconds"));
+
+        subframe->m_canvas->SetFixedObject(0, 0, scatterPlot);
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            scatterPlot->CreateLegend(
+                Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                    Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Gantt Chart
     else if (event.GetId() == MyApp::ID_NEW_GANTT)
@@ -2587,6 +2627,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot-points.svg", iconSize),
                      _(L"Line Plot (Customized)"));
+    toolBar->AddTool(MyApp::ID_NEW_SCATTERPLOT, _(L"Scatter Plot"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/scatterplot.svg", iconSize),
+                     _(L"Scatter Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"),

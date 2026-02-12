@@ -10,8 +10,8 @@ Wisteria Dataviz contains features such as:
 - Built-in copy support
 - [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, TIFF, and WebP are supported)
 - Mouse- and keyboard-enabled zooming
-- Data [importing](ImportingData.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
-- Data [transformations](TransformingData.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
+- Data [importing](importing-data.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
+- Data [transformations](transforming-data.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
 - Data exporting (CSV, tab-delimited, or user-defined delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date/time, and ID columns
@@ -60,7 +60,7 @@ Wisteria Dataviz contains features such as:
   - All UI-facing text is available for translation (via the `gettext` library)
   - i18n functions to help prevent accidental translations (e.g., `DONTTRANSLATE()` and `_DT()`)
 - An extensible framework for designing custom graphs
-  - New graph types can be designed from the ground up or be derived from existing graph types (e.g., [BarChart](BarChart.md))
+  - New graph types can be designed from the ground up or be derived from existing graph types (e.g., [BarChart](bar-chart.md))
   - Uses an object-based API for positioning points, text boxes, polygons, lines, and images
   - Supports custom axes
   - Draw bounding boxes and extended information in debug mode

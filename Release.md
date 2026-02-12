@@ -2,6 +2,7 @@
 
 ## 1.0.8 Release
 
+- New graph type: Scatterplot
 - Added new shapes:
     - Cheese pizza
     - Pepperoni pizza
@@ -40,7 +41,7 @@
 
 ## 1.0.5 Release
 
-- New graph type:  Waffle Chart
+- New graph type: Waffle Chart
 - Added new shapes:
   - Curvy road
   - Pumpkin

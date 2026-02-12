@@ -36,6 +36,7 @@
 #include "../src/graphs/proconroadmap.h"
 #include "../src/graphs/sankeydiagram.h"
 #include "../src/graphs/scalechart.h"
+#include "../src/graphs/scatterplot.h"
 #include "../src/graphs/table.h"
 #include "../src/graphs/waffle_chart.h"
 #include "../src/graphs/wcurveplot.h"
@@ -95,7 +96,8 @@ class MyApp final : public wxApp
         ID_NEW_TABLE,
         ID_PRINT_ALL,
         ID_TEXT_CLASSIFIER,
-        ID_NEW_SCALE_CHART
+        ID_NEW_SCALE_CHART,
+        ID_NEW_SCATTERPLOT
         };
     };
 

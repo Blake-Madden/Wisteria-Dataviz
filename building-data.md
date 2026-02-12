@@ -1,7 +1,7 @@
 Building a Dataset
 =============================
 
-A `Wisteria::Data::Dataset` object can be built programmatically, as well as [imported](ImportingData.md).
+A `Wisteria::Data::Dataset` object can be built programmatically, as well as [imported](importing-data.md).
 To build a dataset, you first construct it as a `shared_ptr<Data::Dataset>`, then you set its data via
 `AddRow()`. After that, if you are using a categorical (e.g., grouping) variable, you can set its string labels.
 
