@@ -271,9 +271,9 @@ inline constexpr double previous_interval(const double value, const uint8_t inte
     @param start The start of the interval.
     @param end The end of the interval.\n
      For example:\n
-     - 0.75 & 4.2 -> 0-5*/
+     - 0.75 & 4.2 -> 0.5 - 4.5*/
 [[nodiscard]]
-inline constexpr std::pair<double, double> adjust_intervals(double start, double end) noexcept
+inline std::pair<double, double> adjust_intervals(double start, double end)
     {
     // in case the values are backwards
     if (end < start)
@@ -281,46 +281,34 @@ inline constexpr std::pair<double, double> adjust_intervals(double start, double
         std::swap(start, end);
         }
 
-    const auto rangeSize = (end - start);
-    uint8_t intervalSize{};
-    if (rangeSize > 100'000'000)
+    const double range = end - start;
+
+    // if start and end are the same, just return them as-is
+    if (range == 0.0)
         {
-        intervalSize = 9;
+        return std::make_pair(start, end);
         }
-    else if (rangeSize > 10'000'000)
+
+    const double magnitude = std::pow(10, std::floor(std::log10(range)));
+    const double normalizedRange = safe_divide<double>(range, magnitude);
+
+    // choose a "neat" step from 1, 2, 2.5, 5, 10 scaled by magnitude
+    double neatStep{ 0.0 };
+    if (normalizedRange <= 2)
         {
-        intervalSize = 8;
+        neatStep = 0.2 * magnitude;
         }
-    else if (rangeSize > 1'000'000)
+    else if (normalizedRange <= 5)
         {
-        intervalSize = 7;
-        }
-    else if (rangeSize > 100'000)
-        {
-        intervalSize = 6;
-        }
-    else if (rangeSize > 10'000)
-        {
-        intervalSize = 5;
-        }
-    else if (rangeSize > 1'000)
-        {
-        intervalSize = 4;
-        }
-    else if (rangeSize > 100)
-        {
-        intervalSize = 3;
-        }
-    else if (rangeSize > 10)
-        {
-        intervalSize = 2;
+        neatStep = 0.5 * magnitude;
         }
     else
         {
-        intervalSize = 1;
+        neatStep = magnitude;
         }
 
-    return std::make_pair(previous_interval(start, intervalSize), next_interval(end, intervalSize));
+    return std::make_pair(std::floor(safe_divide<double>(start, neatStep)) * neatStep,
+                          std::ceil(safe_divide<double>(end, neatStep)) * neatStep);
     }
 
 /** @brief Combines two 32-bit integers into one 64-bit integer.

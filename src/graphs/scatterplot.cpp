@@ -140,29 +140,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
         if (xMin != xColumn->GetValues().cend() && xMax != xColumn->GetValues().cend() &&
             std::isfinite(*xMin) && std::isfinite(*xMax))
             {
-            // use tighter axis intervals for scatter plots to better fit the data
-            const double xRange = *xMax - *xMin;
-            const double magnitude = std::pow(10, std::floor(std::log10(xRange)));
-            const double normalizedRange = safe_divide<double>(xRange, magnitude);
-
-            // choose a "neat" step from 1, 2, 2.5, 5, 10 scaled by magnitude
-            double neatStep{ 0.0 };
-            if (normalizedRange <= 2)
-                {
-                neatStep = 0.2 * magnitude;
-                }
-            else if (normalizedRange <= 5)
-                {
-                neatStep = 0.5 * magnitude;
-                }
-            else
-                {
-                neatStep = magnitude;
-                }
-
-            const double xStart = std::floor(safe_divide<double>(*xMin, neatStep)) * neatStep;
-            const double xEnd = std::ceil(safe_divide<double>(*xMax, neatStep)) * neatStep;
-
+            const auto [xStart, xEnd] = adjust_intervals(*xMin, *xMax);
             GetBottomXAxis().SetRange(
                 xStart, xEnd, ((get_mantissa(xStart) == 0 && get_mantissa(xEnd) == 0) ? 0 : 1),
                 false);
