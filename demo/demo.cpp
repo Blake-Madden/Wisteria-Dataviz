@@ -1116,31 +1116,49 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto columnInfo = Wisteria::Data::Dataset::ReadColumnInfo(
-            fileDlg.GetPath(),
-            // more aggressively force discrete data to be imported as continuous columns
-            Wisteria::Data::ImportInfo{}.MaxDiscreteValue(1));
-        auto scatterData = std::make_shared<Wisteria::Data::Dataset>();
-
-        Wisteria::UI::VariableSelectDlg selectVarsDlg(
-            this, columnInfo,
-            { Wisteria::UI::VariableSelectDlg::VariableListInfo{}
-                  .Label(_(L"Y variable"))
-                  .SingleSelection(true)
-                  .Required(true),
-              Wisteria::UI::VariableSelectDlg::VariableListInfo{}
-                  .Label(_(L"X variable"))
-                  .SingleSelection(true)
-                  .Required(true) });
-        if (selectVarsDlg.ShowModal() != wxID_OK)
-            {
-            return;
-            }
-
         try
             {
+            auto columnInfo = Wisteria::Data::Dataset::ReadColumnInfo(
+                fileDlg.GetPath(),
+                // more aggressively force discrete data to be imported as continuous columns
+                Wisteria::Data::ImportInfo{}.MaxDiscreteValue(1));
+            auto scatterData = std::make_shared<Wisteria::Data::Dataset>();
+
+            Wisteria::UI::VariableSelectDlg selectVarsDlg(
+                this, columnInfo,
+                { Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Y variable"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"X variable"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Grouping variable"))
+                      .SingleSelection(true)
+                      .Required(false) });
+            if (selectVarsDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+
             scatterData->ImportCSV(fileDlg.GetPath(),
                                    Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
+
+            const auto groupingCols = selectVarsDlg.GetSelectedVariables(2);
+            auto scatterPlot = std::make_shared<Wisteria::Graphs::ScatterPlot>(subframe->m_canvas);
+            scatterPlot->SetData(
+                scatterData, selectVarsDlg.GetSelectedVariables(0)[0],
+                selectVarsDlg.GetSelectedVariables(1)[0],
+                !groupingCols.empty() ? std::optional<wxString>{ groupingCols[0] } : std::nullopt);
+
+            subframe->m_canvas->SetFixedObject(0, 0, scatterPlot);
+            subframe->m_canvas->SetFixedObject(
+                0, 1,
+                scatterPlot->CreateLegend(
+                    Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                        Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
             }
         catch (const std::exception& err)
             {
@@ -1148,17 +1166,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-
-        auto scatterPlot = std::make_shared<Wisteria::Graphs::ScatterPlot>(subframe->m_canvas);
-        scatterPlot->SetData(scatterData, selectVarsDlg.GetSelectedVariables(0)[0],
-                             selectVarsDlg.GetSelectedVariables(1)[0]);
-
-        subframe->m_canvas->SetFixedObject(0, 0, scatterPlot);
-        subframe->m_canvas->SetFixedObject(
-            0, 1,
-            scatterPlot->CreateLegend(
-                Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
-                    Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Gantt Chart
     else if (event.GetId() == MyApp::ID_NEW_GANTT)
