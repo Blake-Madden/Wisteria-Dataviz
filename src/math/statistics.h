@@ -597,6 +597,10 @@ namespace statistics
         double p_value{ std::numeric_limits<double>::quiet_NaN() };
         /// @brief number of valid observation pairs used.
         size_t n{ 0 };
+        /// @brief mean of x values (used for confidence interval calculations).
+        double mean_x{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief sum of squared deviations of x (used for confidence interval calculations).
+        double ss_xx{ std::numeric_limits<double>::quiet_NaN() };
 
         /// @returns @c true if the regression was successfully computed.
         [[nodiscard]]
@@ -743,6 +747,93 @@ namespace statistics
         return 2.0 * oneTailed;
         }
 
+    /** @brief Calculates the quantile (inverse CDF) for a t-distribution.
+        @details Uses Newton-Raphson iteration to find the t-value corresponding
+            to a given probability. This is useful for computing critical values
+            for confidence intervals.
+        @param p The probability (0 < p < 1), typically 0.975 for a 95% two-tailed CI.
+        @param df The degrees of freedom (must be positive).
+        @returns The t-value such that P(T <= t) = p, or NaN if inputs are invalid.
+        @par Citations:
+            Abramowitz, Milton, and Irene A. Stegun.
+            *Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables*.
+            9th printing, Dover Publications, 1965.*/
+    [[nodiscard]]
+    inline double t_distribution_quantile(double p, double df)
+        {
+        if (df <= 0.0 || !std::isfinite(p) || !std::isfinite(df) || p <= 0.0 || p >= 1.0)
+            {
+            return std::numeric_limits<double>::quiet_NaN();
+            }
+
+        // initial estimate using normal approximation for large df
+        // for smaller df, use a rough approximation
+        double t = 0.0;
+        if (df > 30)
+            {
+            // use normal approximation: Φ^(-1)(p) ≈ t for large df
+            // Abramowitz & Stegun 26.2.23 rational approximation
+            const double q = (p > 0.5) ? (1.0 - p) : p;
+            const double w = std::sqrt(-2.0 * std::log(q));
+            constexpr double c0 = 2.515517;
+            constexpr double c1 = 0.802853;
+            constexpr double c2 = 0.010328;
+            constexpr double d1 = 1.432788;
+            constexpr double d2 = 0.189269;
+            constexpr double d3 = 0.001308;
+            t = w - safe_divide<double>(c0 + c1 * w + c2 * w * w,
+                                        1.0 + d1 * w + d2 * w * w + d3 * w * w * w);
+            if (p < 0.5)
+                {
+                t = -t;
+                }
+            }
+        else
+            {
+            // start with a reasonable guess based on the sign
+            t = (p > 0.5) ? 1.0 : -1.0;
+            }
+
+        // Newton-Raphson iteration
+        constexpr double eps{ 1e-10 };
+        constexpr size_t maxIter{ 50 };
+
+        for (size_t iter = 0; iter < maxIter; ++iter)
+            {
+            // current CDF value P(T <= t)
+            // t_distribution_p_value returns two-tailed: 2 * P(T > |t|)
+            // for t >= 0: P(T <= t) = 1 - P(T > t) = 1 - p_two_tailed/2
+            // for t < 0:  P(T <= t) = P(T > |t|) = p_two_tailed/2
+            const double pTwoTailed = t_distribution_p_value(t, df);
+            const double currentP = (t >= 0.0) ? (1.0 - 0.5 * pTwoTailed) : (0.5 * pTwoTailed);
+
+            const double error = currentP - p;
+            if (std::abs(error) < eps)
+                {
+                break;
+                }
+
+            // PDF of t-distribution for the derivative
+            // f(t) = Γ((df+1)/2) / (sqrt(df*π) * Γ(df/2)) * (1 + t²/df)^(-(df+1)/2)
+            const double logPdf =
+                std::lgamma((df + 1.0) * 0.5) - std::lgamma(df * 0.5) -
+                0.5 * std::log(df * std::numbers::pi) -
+                ((df + 1.0) * 0.5) * std::log(1.0 + safe_divide<double>(t * t, df));
+            const double pdf = std::exp(logPdf);
+
+            if (pdf < 1e-300)
+                {
+                // avoid division by very small numbers
+                break;
+                }
+
+            // Newton step
+            t -= safe_divide<double>(error, pdf);
+            }
+
+        return t;
+        }
+
     /** @brief Performs simple linear regression (ordinary least squares).
         @details Fits the model `Y = beta_0 + beta_1 * X` using the least squares method.
         @param xData The independent variable values.
@@ -793,6 +884,8 @@ namespace statistics
             }
 
         results.n = static_cast<size_t>(n);
+        results.mean_x = meanX;
+        results.ss_xx = ssXX;
         if (results.n < 2 || ssXX == 0.0)
             {
             return results;

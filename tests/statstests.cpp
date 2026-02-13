@@ -1228,6 +1228,135 @@ TEST_CASE("t_distribution_p_value invalid inputs", "[stats][ttest]")
     CHECK(std::isnan(t_distribution_p_value(1.0, std::numeric_limits<double>::quiet_NaN())));
     }
 
+// ---------------- t_distribution_quantile tests ----------------
+// Reference: Standard t-distribution tables and R's qt() function
+// R verification: qt(0.975, 10) = 2.228139, qt(0.95, 10) = 1.812461
+TEST_CASE("t_distribution_quantile known critical values", "[stats][tquantile]")
+    {
+    // 95% CI critical values (two-tailed α=0.05, so p=0.975)
+    CHECK_THAT(t_distribution_quantile(0.975, 1.0), WithinAbs(12.706, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.975, 2.0), WithinAbs(4.303, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.975, 5.0), WithinAbs(2.571, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.975, 10.0), WithinAbs(2.228, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.975, 20.0), WithinAbs(2.086, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.975, 30.0), WithinAbs(2.042, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.975, 120.0), WithinAbs(1.980, 0.01));
+
+    // 99% CI critical values (two-tailed α=0.01, so p=0.995)
+    CHECK_THAT(t_distribution_quantile(0.995, 10.0), WithinAbs(3.169, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.995, 20.0), WithinAbs(2.845, 0.01));
+    }
+
+TEST_CASE("t_distribution_quantile at p=0.5", "[stats][tquantile]")
+    {
+    // median of t-distribution is always 0
+    CHECK_THAT(t_distribution_quantile(0.5, 1.0), WithinAbs(0.0, 1e-6));
+    CHECK_THAT(t_distribution_quantile(0.5, 5.0), WithinAbs(0.0, 1e-6));
+    CHECK_THAT(t_distribution_quantile(0.5, 10.0), WithinAbs(0.0, 1e-6));
+    CHECK_THAT(t_distribution_quantile(0.5, 100.0), WithinAbs(0.0, 1e-6));
+    }
+
+TEST_CASE("t_distribution_quantile symmetry", "[stats][tquantile]")
+    {
+    // q(p, df) = -q(1-p, df) for symmetric t-distribution
+    CHECK_THAT(t_distribution_quantile(0.025, 10.0),
+               WithinRel(-t_distribution_quantile(0.975, 10.0), 1e-6));
+    CHECK_THAT(t_distribution_quantile(0.1, 5.0),
+               WithinRel(-t_distribution_quantile(0.9, 5.0), 1e-6));
+    CHECK_THAT(t_distribution_quantile(0.05, 20.0),
+               WithinRel(-t_distribution_quantile(0.95, 20.0), 1e-6));
+    }
+
+TEST_CASE("t_distribution_quantile inverse of p_value", "[stats][tquantile]")
+    {
+    // verify that quantile is the inverse of the CDF
+    // for a given t, p = P(T <= t), then quantile(p, df) should return t
+    const double df = 10.0;
+
+    // helper to compute CDF from two-tailed p-value
+    auto cdf_from_t = [df](double t)
+        {
+        const double pTwoTailed = t_distribution_p_value(t, df);
+        return (t >= 0.0) ? (1.0 - 0.5 * pTwoTailed) : (0.5 * pTwoTailed);
+        };
+
+    SECTION("positive t values")
+        {
+        const double t = 2.0;
+        const double p = cdf_from_t(t);
+        CHECK_THAT(t_distribution_quantile(p, df), WithinRel(t, 1e-6));
+        }
+
+    SECTION("negative t values")
+        {
+        const double t = -1.5;
+        const double p = cdf_from_t(t);
+        CHECK_THAT(t_distribution_quantile(p, df), WithinRel(t, 1e-6));
+        }
+
+    SECTION("round trip for various values")
+        {
+        for (double t : { -3.0, -1.0, 0.0, 1.0, 2.5 })
+            {
+            const double p = cdf_from_t(t);
+            CHECK_THAT(t_distribution_quantile(p, df), WithinAbs(t, 1e-4));
+            }
+        }
+    }
+
+TEST_CASE("t_distribution_quantile converges to normal", "[stats][tquantile]")
+    {
+    // for large df, t-distribution approaches standard normal
+    // z_0.975 ≈ 1.96, z_0.995 ≈ 2.576
+    CHECK_THAT(t_distribution_quantile(0.975, 1000.0), WithinAbs(1.96, 0.01));
+    CHECK_THAT(t_distribution_quantile(0.995, 1000.0), WithinAbs(2.576, 0.02));
+    CHECK_THAT(t_distribution_quantile(0.90, 1000.0), WithinAbs(1.282, 0.01));
+    }
+
+TEST_CASE("t_distribution_quantile small df", "[stats][tquantile]")
+    {
+    // df=1 is Cauchy distribution with heavy tails
+    // R: qt(0.75, 1) = 1.0
+    CHECK_THAT(t_distribution_quantile(0.75, 1.0), WithinAbs(1.0, 0.01));
+    // R: qt(0.9, 1) = 3.077684
+    CHECK_THAT(t_distribution_quantile(0.9, 1.0), WithinAbs(3.078, 0.01));
+    }
+
+TEST_CASE("t_distribution_quantile invalid inputs", "[stats][tquantile]")
+    {
+    // p <= 0 should return NaN
+    CHECK(std::isnan(t_distribution_quantile(0.0, 10.0)));
+    CHECK(std::isnan(t_distribution_quantile(-0.5, 10.0)));
+
+    // p >= 1 should return NaN
+    CHECK(std::isnan(t_distribution_quantile(1.0, 10.0)));
+    CHECK(std::isnan(t_distribution_quantile(1.5, 10.0)));
+
+    // df <= 0 should return NaN
+    CHECK(std::isnan(t_distribution_quantile(0.975, 0.0)));
+    CHECK(std::isnan(t_distribution_quantile(0.975, -1.0)));
+
+    // NaN inputs should return NaN
+    CHECK(std::isnan(t_distribution_quantile(std::numeric_limits<double>::quiet_NaN(), 10.0)));
+    CHECK(std::isnan(t_distribution_quantile(0.975, std::numeric_limits<double>::quiet_NaN())));
+    }
+
+TEST_CASE("t_distribution_quantile extreme probabilities", "[stats][tquantile]")
+    {
+    // very small p (left tail)
+    const double smallP = t_distribution_quantile(0.001, 10.0);
+    CHECK(smallP < -3.0);
+    CHECK(std::isfinite(smallP));
+
+    // very large p (right tail)
+    const double largeP = t_distribution_quantile(0.999, 10.0);
+    CHECK(largeP > 3.0);
+    CHECK(std::isfinite(largeP));
+
+    // symmetry still holds
+    CHECK_THAT(smallP, WithinRel(-largeP, 1e-6));
+    }
+
 /*  R code to validate simple linear regression:
 
     # Define the data

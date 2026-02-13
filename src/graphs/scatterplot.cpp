@@ -85,7 +85,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                     m_regressionLineStyles->GetLineStyle(currentIndex);
                 series.GetRegressionPen().SetStyle(penStyle);
                 series.GetRegressionPen().SetColour(Colors::ColorContrast::ShadeOrTint(
-                    GetColorScheme()->GetColor(currentIndex), math_constants::three_quarters));
+                    GetColorScheme()->GetColor(currentIndex), math_constants::half));
                 series.SetRegressionLineStyle(lineStyle);
                 CalculateRegression(series);
                 m_series.push_back(series);
@@ -101,7 +101,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             const auto& [penStyle, lineStyle] = m_regressionLineStyles->GetLineStyle(0);
             series.GetRegressionPen().SetStyle(penStyle);
             series.GetRegressionPen().SetColour(Colors::ColorContrast::ShadeOrTint(
-                GetColorScheme()->GetColor(0), math_constants::three_quarters));
+                GetColorScheme()->GetColor(0), math_constants::half));
             series.SetRegressionLineStyle(lineStyle);
             CalculateRegression(series);
             m_series.push_back(series);
@@ -209,6 +209,81 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                 const auto [xAxisMin, xAxisMax] = GetBottomXAxis().GetRange();
                 const auto [yAxisMin, yAxisMax] = GetLeftYAxis().GetRange();
 
+                // draw confidence bands if enabled (before the regression line)
+                if (IsShowingConfidenceBands() && stats.n > 2 &&
+                    std::isfinite(stats.standard_error) && std::isfinite(stats.mean_x) &&
+                    std::isfinite(stats.ss_xx) && stats.ss_xx > 0)
+                    {
+                    // calculate t critical value for the confidence level
+                    const double alpha = 1.0 - GetConfidenceLevel();
+                    const double df = static_cast<double>(stats.n) - 2.0;
+                    const double tCritical =
+                        statistics::t_distribution_quantile(1.0 - alpha * 0.5, df);
+
+                    if (std::isfinite(tCritical))
+                        {
+                        // generate points along the x range for the confidence band
+                        constexpr size_t numPoints{ 50 };
+                        std::vector<wxPoint> upperBand;
+                        std::vector<wxPoint> lowerBand;
+                        upperBand.reserve(numPoints);
+                        lowerBand.reserve(numPoints);
+
+                        const double xStep =
+                            safe_divide<double>(xAxisMax - xAxisMin, numPoints - 1);
+                        const double nRecip =
+                            safe_divide<double>(1.0, static_cast<double>(stats.n));
+
+                        for (size_t i = 0; i < numPoints; ++i)
+                            {
+                            const double x = xAxisMin + static_cast<double>(i) * xStep;
+                            const double yPred = stats.slope * x + stats.intercept;
+
+                            // SE(ŷ) = s_e * sqrt(1/n + (x - x̄)² / SS_XX)
+                            const double xDev = x - stats.mean_x;
+                            const double seY =
+                                stats.standard_error *
+                                std::sqrt(nRecip + safe_divide<double>(xDev * xDev, stats.ss_xx));
+
+                            const double margin = tCritical * seY;
+                            double yUpper = yPred + margin;
+                            double yLower = yPred - margin;
+
+                            // clip to axis range
+                            yUpper = std::clamp(yUpper, yAxisMin, yAxisMax);
+                            yLower = std::clamp(yLower, yAxisMin, yAxisMax);
+
+                            wxPoint ptUpper, ptLower;
+                            if (GetPhysicalCoordinates(x, yUpper, ptUpper) &&
+                                GetPhysicalCoordinates(x, yLower, ptLower))
+                                {
+                                upperBand.push_back(ptUpper);
+                                lowerBand.push_back(ptLower);
+                                }
+                            }
+
+                        // create polygon: upper band forward, lower band backward
+                        if (upperBand.size() >= 2)
+                            {
+                            std::vector<wxPoint> bandPolygon;
+                            bandPolygon.reserve(upperBand.size() + lowerBand.size());
+                            bandPolygon.insert(bandPolygon.end(), upperBand.begin(),
+                                               upperBand.end());
+                            bandPolygon.insert(bandPolygon.end(), lowerBand.rbegin(),
+                                               lowerBand.rend());
+
+                            auto confidenceBand = std::make_unique<GraphItems::Polygon>(
+                                GraphItems::GraphItemInfo{}
+                                    .Pen(wxPen{ wxColour{ 128, 128, 128, 128 }, 1 })
+                                    .Brush(wxBrush{ wxColour{ 128, 128, 128, 64 } })
+                                    .Scaling(GetScaling()),
+                                bandPolygon);
+                            confidenceBand->SetDPIScaleFactor(GetDPIScaleFactor());
+                            AddObject(std::move(confidenceBand));
+                            }
+                        }
+                    }
+
                 // calculate Y values at axis endpoints
                 double x1 = xAxisMin;
                 double x2 = xAxisMax;
@@ -223,22 +298,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                     // x where line crosses yAxisMax: x = (yAxisMax - intercept) / slope
                     if (y1 < yAxisMin)
                         {
-                        x1 = (yAxisMin - stats.intercept) / stats.slope;
+                        x1 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
                         y1 = yAxisMin;
                         }
                     else if (y1 > yAxisMax)
                         {
-                        x1 = (yAxisMax - stats.intercept) / stats.slope;
+                        x1 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
                         y1 = yAxisMax;
                         }
                     if (y2 < yAxisMin)
                         {
-                        x2 = (yAxisMin - stats.intercept) / stats.slope;
+                        x2 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
                         y2 = yAxisMin;
                         }
                     else if (y2 > yAxisMax)
                         {
-                        x2 = (yAxisMax - stats.intercept) / stats.slope;
+                        x2 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
                         y2 = yAxisMax;
                         }
                     }

@@ -191,7 +191,8 @@ namespace Wisteria::Graphs
             Icons::IconShape m_shape{ Icons::IconShape::Circle };
             wxColour m_color{ *wxBLACK };
 
-            wxPen m_regressionPen{ wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Red), 2 } };
+            wxPen m_regressionPen{ wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                          2 } };
             LineStyle m_regressionLineStyle{ LineStyle::Lines };
 
             statistics::linear_regression_results m_regressionResults;
@@ -286,6 +287,32 @@ namespace Wisteria::Graphs
             return m_showRegressionLines;
             }
 
+        /// @brief Sets whether to show confidence bands around the regression lines.
+        /// @param show @c true to show confidence bands.
+        /// @note Confidence bands are only shown when regression lines are also shown.
+        void ShowConfidenceBands(const bool show) noexcept { m_showConfidenceBands = show; }
+
+        /// @returns @c true if confidence bands are being shown.
+        [[nodiscard]]
+        bool IsShowingConfidenceBands() const noexcept
+            {
+            return m_showConfidenceBands;
+            }
+
+        /// @brief Sets the confidence level for the confidence bands.
+        /// @param level The confidence level (0 < level < 1), default is 0.95 (95%).
+        void SetConfidenceLevel(const double level) noexcept
+            {
+            m_confidenceLevel = std::clamp(level, 0.01, 0.99);
+            }
+
+        /// @returns The confidence level for the confidence bands.
+        [[nodiscard]]
+        double GetConfidenceLevel() const noexcept
+            {
+            return m_confidenceLevel;
+            }
+
         /// @}
 
         /// @name Legend Functions
@@ -323,6 +350,8 @@ namespace Wisteria::Graphs
         wxString m_xColumnName;
         wxString m_yColumnName;
         bool m_showRegressionLines{ true };
+        bool m_showConfidenceBands{ true };
+        double m_confidenceLevel{ 0.95 };
         };
     } // namespace Wisteria::Graphs
 
