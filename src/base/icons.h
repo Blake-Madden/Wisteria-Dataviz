@@ -124,7 +124,8 @@ namespace Wisteria::Icons
         CheesePizza,              /*!< A cheese pizza.*/
         PepperoniPizza,           /*!< A pepperoni pizza.*/
         HawaiianPizza,            /*!< A Hawaiian pizza (pepperoni and pineapple).*/
-        ChocolateChipCookie       /*!< A chocolate chip cookie.*/
+        ChocolateChipCookie,      /*!< A chocolate chip cookie.*/
+        CoffeeShopCup             /*!< A takeaway coffee cup with sleeve and logo.*/
         };
 
     /// @brief Item to draw on a legend.

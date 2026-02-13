@@ -253,7 +253,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::CheesePizza, &ShapeRenderer::DrawCheesePizza },
             { Icons::IconShape::PepperoniPizza, &ShapeRenderer::DrawPepperoniPizza },
             { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza },
-            { Icons::IconShape::ChocolateChipCookie, &ShapeRenderer::DrawChocolateChipCookie }
+            { Icons::IconShape::ChocolateChipCookie, &ShapeRenderer::DrawChocolateChipCookie },
+            { Icons::IconShape::CoffeeShopCup, &ShapeRenderer::DrawCoffeeShopCup }
         };
 
         // connect the rendering function to the shape
@@ -6866,5 +6867,231 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPen{ chipEdgeColor, chipOutlinePenWidth });
             gc->SetBrush(wxBrush{ chipFillColor });
             }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCoffeeShopCup(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
+        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        // colors
+        const wxColour cupColor{ 240, 200, 160 };         // tan/beige cup body
+        const wxColour cupShadowColor{ 220, 180, 140 };   // slightly darker for depth
+        const wxColour lidColor{ 139, 90, 43 };           // brown lid
+        const wxColour lidDarkColor{ 100, 65, 30 };       // darker brown for lid edge
+        const wxColour sleeveColor{ 60, 60, 60 };         // dark gray sleeve
+        const wxColour logoBackgroundColor{ 50, 50, 50 }; // dark circle background
+        const wxColour logoRingColor{ 80, 80, 80 };       // slightly lighter ring
+        const wxColour beanColor{ 200, 180, 160 };        // light color for coffee bean
+        const wxColour steamColor{ 180, 180, 180, 150 };  // semi-transparent gray steam
+
+        const double width = rect.GetWidth();
+        const double height = rect.GetHeight();
+
+        // reserve space for steam at top
+        const double steamHeight = height * 0.18;
+        const double cupAreaTop = rect.GetY() + steamHeight;
+        const double cupAreaHeight = height - steamHeight;
+
+        // cup proportions (relative to cup area, not full rect)
+        const double lidHeight = cupAreaHeight * 0.10;
+        const double cupTopWidth = width * 0.48;
+        const double cupBottomWidth = width * 0.36;
+        const double lidWidth = width * 0.52;
+
+        const double cx = rect.GetX() + (width / 2.0);
+        const double cupTop = cupAreaTop + lidHeight;
+        const double cupBottom = rect.GetY() + height;
+
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+
+        // draw steam swooshes first (so they appear behind the cup)
+        const double steamBaseY = cupAreaTop;
+        const double steamTopY = rect.GetY();
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ steamColor });
+
+        // large swoosh (left)
+        wxGraphicsPath largeSwoosh = gc->CreatePath();
+        const double largeX = cx - (width * 0.02);
+        largeSwoosh.MoveToPoint(largeX, steamBaseY);
+        // outer curve going up and curving right
+        largeSwoosh.AddCurveToPoint(largeX - (width * 0.15), steamBaseY - steamHeight * 0.3,
+                                    largeX - (width * 0.18), steamBaseY - steamHeight * 0.6,
+                                    largeX - (width * 0.05), steamBaseY - steamHeight * 0.75);
+        largeSwoosh.AddCurveToPoint(largeX + (width * 0.08), steamBaseY - steamHeight * 0.88,
+                                    largeX + (width * 0.02), steamBaseY - steamHeight * 0.95,
+                                    largeX - (width * 0.08), steamTopY);
+        // inner curve coming back down
+        largeSwoosh.AddCurveToPoint(largeX + (width * 0.06), steamBaseY - steamHeight * 0.90,
+                                    largeX + (width * 0.12), steamBaseY - steamHeight * 0.80,
+                                    largeX + (width * 0.02), steamBaseY - steamHeight * 0.65);
+        largeSwoosh.AddCurveToPoint(largeX - (width * 0.10), steamBaseY - steamHeight * 0.50,
+                                    largeX - (width * 0.08), steamBaseY - steamHeight * 0.25,
+                                    largeX + (width * 0.06), steamBaseY);
+        largeSwoosh.CloseSubpath();
+        gc->FillPath(largeSwoosh);
+
+        // small swoosh (spooning inside the large one, same direction, half size)
+        wxGraphicsPath smallSwoosh = gc->CreatePath();
+        const double smallX = cx + (width * 0.06);
+        const double smallScale = 0.5;
+        const double smallBaseY = steamBaseY - steamHeight * 0.08;
+        const double smallSteamHeight = steamHeight * smallScale;
+        smallSwoosh.MoveToPoint(smallX, smallBaseY);
+        // outer curve going up and curving right (same direction as large)
+        smallSwoosh.AddCurveToPoint(smallX - (width * 0.08), smallBaseY - smallSteamHeight * 0.3,
+                                    smallX - (width * 0.10), smallBaseY - smallSteamHeight * 0.6,
+                                    smallX - (width * 0.02), smallBaseY - smallSteamHeight * 0.75);
+        smallSwoosh.AddCurveToPoint(smallX + (width * 0.05), smallBaseY - smallSteamHeight * 0.88,
+                                    smallX + (width * 0.02), smallBaseY - smallSteamHeight * 0.95,
+                                    smallX - (width * 0.04), smallBaseY - smallSteamHeight);
+        // inner curve coming back down
+        smallSwoosh.AddCurveToPoint(smallX + (width * 0.04), smallBaseY - smallSteamHeight * 0.90,
+                                    smallX + (width * 0.07), smallBaseY - smallSteamHeight * 0.80,
+                                    smallX + (width * 0.02), smallBaseY - smallSteamHeight * 0.65);
+        smallSwoosh.AddCurveToPoint(smallX - (width * 0.04), smallBaseY - smallSteamHeight * 0.50,
+                                    smallX - (width * 0.03), smallBaseY - smallSteamHeight * 0.25,
+                                    smallX + (width * 0.04), smallBaseY);
+        smallSwoosh.CloseSubpath();
+        gc->FillPath(smallSwoosh);
+
+        // draw cup body (tapered trapezoid)
+        wxGraphicsPath cupPath = gc->CreatePath();
+        cupPath.MoveToPoint(cx - (cupTopWidth / 2), cupTop);
+        cupPath.AddLineToPoint(cx + (cupTopWidth / 2), cupTop);
+        cupPath.AddLineToPoint(cx + (cupBottomWidth / 2), cupBottom);
+        cupPath.AddLineToPoint(cx - (cupBottomWidth / 2), cupBottom);
+        cupPath.CloseSubpath();
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ cupColor });
+        gc->FillPath(cupPath);
+
+        // add curved shadow on left side of cup for cylindrical effect
+        const double shadowWidth = cupTopWidth * 0.20;
+        const double bottomShadowWidth = cupBottomWidth * 0.20;
+        wxGraphicsPath shadowPath = gc->CreatePath();
+        shadowPath.MoveToPoint(cx - (cupTopWidth / 2), cupTop);
+        // curved inner edge using quadratic bezier
+        const double shadowCtrlX = cx - (cupTopWidth / 2) + shadowWidth * 1.5;
+        const double shadowCtrlY = (cupTop + cupBottom) / 2.0;
+        shadowPath.AddQuadCurveToPoint(shadowCtrlX, shadowCtrlY,
+                                       cx - (cupBottomWidth / 2) + bottomShadowWidth, cupBottom);
+        shadowPath.AddLineToPoint(cx - (cupBottomWidth / 2), cupBottom);
+        shadowPath.AddLineToPoint(cx - (cupTopWidth / 2), cupTop);
+        shadowPath.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ cupShadowColor });
+        gc->FillPath(shadowPath);
+
+        // draw cup outline now (before sleeve so sleeve covers it)
+        gc->SetPen(wxPen{ cupShadowColor, outlinePenWidth });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->StrokePath(cupPath);
+
+        // draw sleeve band (middle of cup) - slightly wider to cover cup outline
+        const double sleeveTop = cupTop + (cupAreaHeight - lidHeight) * 0.32;
+        const double sleeveBottom = cupTop + (cupAreaHeight - lidHeight) * 0.62;
+        const double sleeveTopWidth =
+            cupTopWidth -
+            (cupTopWidth - cupBottomWidth) * ((sleeveTop - cupTop) / (cupBottom - cupTop));
+        const double sleeveBottomWidth =
+            cupTopWidth -
+            (cupTopWidth - cupBottomWidth) * ((sleeveBottom - cupTop) / (cupBottom - cupTop));
+        // add small padding to ensure sleeve covers cup outline
+        const double sleevePadding = outlinePenWidth + 1;
+
+        wxGraphicsPath sleevePath = gc->CreatePath();
+        sleevePath.MoveToPoint(cx - (sleeveTopWidth / 2) - sleevePadding, sleeveTop);
+        sleevePath.AddLineToPoint(cx + (sleeveTopWidth / 2) + sleevePadding, sleeveTop);
+        sleevePath.AddLineToPoint(cx + (sleeveBottomWidth / 2) + sleevePadding, sleeveBottom);
+        sleevePath.AddLineToPoint(cx - (sleeveBottomWidth / 2) - sleevePadding, sleeveBottom);
+        sleevePath.CloseSubpath();
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ sleeveColor });
+        gc->FillPath(sleevePath);
+
+        // draw circular logo on sleeve
+        const double sleeveMiddleY = (sleeveTop + sleeveBottom) / 2.0;
+        const double logoRadius = (sleeveBottom - sleeveTop) * 0.42;
+
+        // outer logo circle (dark background)
+        gc->SetPen(wxPen{ logoRingColor, outlinePenWidth });
+        gc->SetBrush(wxBrush{ logoBackgroundColor });
+        gc->DrawEllipse(cx - logoRadius, sleeveMiddleY - logoRadius, logoRadius * 2,
+                        logoRadius * 2);
+
+        // inner ring
+        const double innerRingRadius = logoRadius * 0.75;
+        gc->SetPen(wxPen{ logoRingColor, outlinePenWidth });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawEllipse(cx - innerRingRadius, sleeveMiddleY - innerRingRadius, innerRingRadius * 2,
+                        innerRingRadius * 2);
+
+        // draw coffee bean in center of logo (rotated 45 degrees)
+        const double beanWidth = logoRadius * 0.80;
+        const double beanHeight = logoRadius * 0.55;
+        constexpr double beanRotation = 45.0 * std::numbers::pi / 180.0;
+
+        gc->SetPen(wxPen{ beanColor, outlinePenWidth });
+        gc->SetBrush(wxBrush{ beanColor });
+
+        // bean ellipse with rotation
+        wxGraphicsPath beanPath = gc->CreatePath();
+        beanPath.AddEllipse(-beanWidth / 2, -beanHeight / 2, beanWidth, beanHeight);
+        wxGraphicsMatrix beanMatrix = gc->CreateMatrix();
+        beanMatrix.Translate(cx, sleeveMiddleY);
+        beanMatrix.Rotate(beanRotation);
+        beanPath.Transform(beanMatrix);
+        gc->FillPath(beanPath);
+        gc->StrokePath(beanPath);
+
+        // draw curved S-shaped crease along the bean's long axis (also rotated)
+        gc->SetPen(wxPen{ logoBackgroundColor, outlinePenWidth });
+        wxGraphicsPath creasePath = gc->CreatePath();
+        const double creaseHalfLen = beanWidth * 0.35;
+        creasePath.MoveToPoint(-creaseHalfLen, 0);
+        // S-curve along the horizontal axis (bean's length)
+        creasePath.AddQuadCurveToPoint(-beanWidth * 0.1, -beanHeight * 0.15, 0, 0);
+        creasePath.AddQuadCurveToPoint(beanWidth * 0.1, beanHeight * 0.15, creaseHalfLen, 0);
+        wxGraphicsMatrix creaseMatrix = gc->CreateMatrix();
+        creaseMatrix.Translate(cx, sleeveMiddleY);
+        creaseMatrix.Rotate(beanRotation);
+        creasePath.Transform(creaseMatrix);
+        gc->StrokePath(creasePath);
+
+        // draw lid
+        const double lidTop = cupAreaTop;
+        const double lidBottom = cupTop;
+
+        wxGraphicsPath lidPath = gc->CreatePath();
+        lidPath.MoveToPoint(cx - (lidWidth / 2), lidBottom);
+        lidPath.AddLineToPoint(cx + (lidWidth / 2), lidBottom);
+        lidPath.AddLineToPoint(cx + (lidWidth / 2) * 0.90, lidTop);
+        lidPath.AddLineToPoint(cx - (lidWidth / 2) * 0.90, lidTop);
+        lidPath.CloseSubpath();
+
+        gc->SetPen(wxPen{ lidDarkColor, outlinePenWidth });
+        gc->SetBrush(wxBrush{ lidColor });
+        gc->FillPath(lidPath);
+        gc->StrokePath(lidPath);
+
+        // add rim detail on lid
+        const double rimY = lidBottom - (lidHeight * 0.25);
+        gc->SetPen(wxPen{ lidDarkColor, outlinePenWidth });
+        gc->StrokeLine(cx - (lidWidth / 2) * 0.95, rimY, cx + (lidWidth / 2) * 0.95, rimY);
         }
     } // namespace Wisteria::GraphItems

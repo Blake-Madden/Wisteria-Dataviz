@@ -8,6 +8,7 @@
     - Pepperoni pizza
     - Hawaiian pizza
     - Chocolate chip cookie
+    - Coffee shop cup
 - Added styling options to pie charts to make them look like:
     - Hawaiian pizzas
     - Mars symbols (♂)

@@ -162,7 +162,8 @@ namespace Wisteria
                 { L"cheese-pizza", Icons::IconShape::CheesePizza },
                 { L"pepperoni-pizza", Icons::IconShape::PepperoniPizza },
                 { L"hawaiian-pizza", Icons::IconShape::HawaiianPizza },
-                { L"chocolate-chip-cookie", Icons::IconShape::ChocolateChipCookie }
+                { L"chocolate-chip-cookie", Icons::IconShape::ChocolateChipCookie },
+                { L"coffee-shop-cup", Icons::IconShape::CoffeeShopCup }
             };
 
             const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));

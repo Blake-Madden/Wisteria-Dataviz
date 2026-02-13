@@ -95,10 +95,10 @@ TEST_CASE("normalize returns input value when any argument is non-finite",
     {
     using std::numeric_limits;
 
-    const double inf  = numeric_limits<double>::infinity();
-    const double ninf = -numeric_limits<double>::infinity();
-    const double nan  = numeric_limits<double>::quiet_NaN();
-    const double v    = 42.0;
+    constexpr double inf  = numeric_limits<double>::infinity();
+    constexpr double ninf = -numeric_limits<double>::infinity();
+    constexpr double nan  = numeric_limits<double>::quiet_NaN();
+    const double v = 42.0;
 
     // value non-finite → return that same non-finite value
     CHECK(std::isinf(statistics::normalize(0.0, 100.0, inf)));
