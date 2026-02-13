@@ -11,9 +11,11 @@
 #ifndef SAFE_MATH_H
 #define SAFE_MATH_H
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 
 /// @brief Returns the given value, unless it is NaN. In that case, returns zero.
 /// @param val The value to review.
@@ -93,32 +95,73 @@ inline constexpr ldiv_t safe_ldiv(const T dividend, const T divisor) noexcept
 // FLOATING-POINT OPERATIONS
 //-----------------
 
+/// @brief Threshold below which double comparisons switch from absolute to relative tolerance.
+/// @details Values with magnitude below this threshold use relative tolerance to handle
+///     numbers near machine epsilon correctly. Values above use absolute tolerance for
+///     backward compatibility.
+constexpr double double_relative_tolerance_threshold = 1e-12;
+
 /** @brief Compares two double values (given the specified precision).
     @param actual The value being reviewed.
     @param expected The expected value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
-        lower precision used in the comparison.
+        lower precision used in the comparison. For values with magnitude below
+        @c double_relative_tolerance_threshold, a relative tolerance is used instead.
     @returns @c true if the value matches the expected value.*/
 [[nodiscard]]
 inline bool compare_doubles(const double actual, const double expected,
                             const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
-    return (std::fabs(actual - expected) <= std::fabs(delta));
+    // handle exact equality (including infinity == infinity)
+    if (actual == expected)
+        {
+        return true;
+        }
+    // opposite signs (and neither is zero) are never equal
+    if ((actual > 0 && expected < 0) || (actual < 0 && expected > 0))
+        {
+        return false;
+        }
+    const double diff = std::fabs(actual - expected);
+    const double maxMagnitude = std::max(std::fabs(actual), std::fabs(expected));
+    const double absDelta = std::fabs(delta);
+    // for normal numbers, use absolute tolerance;
+    // for numbers near machine epsilon, use relative tolerance
+    const double effectiveDelta =
+        (maxMagnitude > double_relative_tolerance_threshold) ?
+            absDelta :
+            std::max(absDelta * maxMagnitude, std::numeric_limits<double>::epsilon() / 2);
+    return diff <= effectiveDelta;
     }
 
 /** @brief Compares two double values for less than (given the specified precision).
     @param left The value being reviewed.
     @param right The other value to compare against.
-    @param delta The tolerance of how different the values can be. The larger the delta, the
-     higher precision used in the comparison.
+    @param delta The tolerance of how different the values can be. The larger the delta,
+        the lower precision used in the comparison. For values with magnitude below
+        @c double_relative_tolerance_threshold, a relative tolerance is used instead.
     @returns @c true if the value is less than the other value.*/
 [[nodiscard]]
 inline bool compare_doubles_less(const double left, const double right,
                                  const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
-    return std::fabs(left - right) > std::fabs(delta) && (left < right);
+    // exact equality means not less than (also handles infinity)
+    if (left == right)
+        {
+        return false;
+        }
+    const double diff = std::fabs(left - right);
+    const double maxMagnitude = std::max(std::fabs(left), std::fabs(right));
+    const double absDelta = std::fabs(delta);
+    // for normal numbers, use absolute tolerance;
+    // for numbers near machine epsilon, use relative tolerance
+    const double effectiveDelta =
+        (maxMagnitude > double_relative_tolerance_threshold) ?
+            absDelta :
+            std::max(absDelta * maxMagnitude, std::numeric_limits<double>::epsilon() / 2);
+    return diff > effectiveDelta && (left < right);
     }
 
 /** @brief Compares two double values for less than or equal to (given the specified precision).
@@ -138,15 +181,30 @@ inline bool compare_doubles_less_or_equal(const double left, const double right,
 /** @brief Compares two double values for greater than (given the specified precision).
     @param left The value being reviewed.
     @param right The other value to compare against.
-    @param delta The tolerance of how different the values can be. The larger the delta, the
-     higher precision used in the comparison.
+    @param delta The tolerance of how different the values can be. The larger the delta,
+        the lower precision used in the comparison. For values with magnitude below
+        @c double_relative_tolerance_threshold, a relative tolerance is used instead.
     @returns @c true if the value is greater than the other value.*/
 [[nodiscard]]
 inline bool compare_doubles_greater(const double left, const double right,
                                     const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
-    return std::fabs(left - right) > std::fabs(delta) && (left > right);
+    // exact equality means not greater than (also handles infinity)
+    if (left == right)
+        {
+        return false;
+        }
+    const double diff = std::fabs(left - right);
+    const double maxMagnitude = std::max(std::fabs(left), std::fabs(right));
+    const double absDelta = std::fabs(delta);
+    // for normal numbers, use absolute tolerance;
+    // for numbers near machine epsilon, use relative tolerance
+    const double effectiveDelta =
+        (maxMagnitude > double_relative_tolerance_threshold) ?
+            absDelta :
+            std::max(absDelta * maxMagnitude, std::numeric_limits<double>::epsilon() / 2);
+    return diff > effectiveDelta && (left > right);
     }
 
 /** @brief Compares two double values for greater than or equal to (given the specified precision).

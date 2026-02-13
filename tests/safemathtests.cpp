@@ -5,6 +5,8 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/safe_math.h"
 #include "../src/math/mathematics.h"
+#include <algorithm>
+#include <vector>
 
 using namespace Catch::Matchers;
 
@@ -37,7 +39,6 @@ TEST_CASE("adjust_intervals: identical endpoints remain ordered", "[math][interv
     const auto same = adjust_intervals(5.0, 5.0);
 
     CHECK(same.first <= same.second);
-    // Optional: ensure exact echo if that's your contract
     CHECK(same.first == 5.0);
     CHECK(same.second == 5.0);
     }
@@ -100,10 +101,11 @@ TEST_CASE("zero_if_nan incorrectly keeps infinities", "[safe_math][zero_if_nan][
     constexpr double ninf = -numeric_limits<double>::infinity();
     constexpr double nan  = numeric_limits<double>::quiet_NaN();
 
-    // should zero out NaN — current behavior OK
+    // should zero out NaN
     CHECK(zero_if_nan(nan) == 0.0);
 
-    // should also zero out infinities, but currently does not
+    // should also zero out infinities
+    // should also zero out infinities
     CHECK(zero_if_nan(inf)  == 0.0);
     CHECK(zero_if_nan(ninf) == 0.0);
 
@@ -376,7 +378,6 @@ TEST_CASE("scale_within invalid input range", "[scale_within]")
     }
 
 // ---------------- next_interval tests ----------------
-
 TEST_CASE("next_interval basic rounding", "[next_interval]")
     {
     CHECK_THAT(next_interval(2.1, 1), WithinRel(3.0, 1e-6));
@@ -405,7 +406,6 @@ TEST_CASE("next_interval with negatives", "[next_interval]")
     }
 
 // ---------------- previous_interval tests ----------------
-
 TEST_CASE("previous_interval basic rounding", "[previous_interval]")
     {
     CHECK_THAT(previous_interval(112.1, 1), WithinRel(112.0, 1e-6));
@@ -434,7 +434,6 @@ TEST_CASE("previous_interval with negatives", "[previous_interval]")
     }
 
 // ---------------- adjust_intervals tests ----------------
-
 TEST_CASE("adjust_intervals small range", "[adjust_intervals]")
     {
     auto result = adjust_intervals(0.75, 4.2);
@@ -619,7 +618,6 @@ TEST_CASE("adjust_intervals large cross-zero range", "[adjust_intervals][large]"
     }
 
 // ---------------- fuzz-style boundary property tests ----------------
-
 TEST_CASE("previous_interval and next_interval always bound the value", "[fuzz][intervals]")
     {
     for (double val : { -1234.56, -12.34, -0.1, 0.0, 0.1, 12.34, 1234.56 })
@@ -643,6 +641,395 @@ TEST_CASE("adjust_intervals always produces bounding range", "[fuzz][adjust_inte
         auto result = adjust_intervals(pair.first, pair.second);
         CHECK(result.first <= pair.first + 1e-12);
         CHECK(result.second >= pair.second - 1e-12);
+        }
+    }
+
+// ---------------- compare_doubles tests ----------------
+TEST_CASE("compare_doubles backward compatibility with normal numbers", "[compare_doubles][compat]")
+    {
+    SECTION("basic equality within tolerance")
+        {
+        CHECK(compare_doubles(1.0, 1.0000001));
+        CHECK(compare_doubles(1.0, 1.0000009));
+        CHECK_FALSE(compare_doubles(1.0, 1.000002));
+        }
+
+    SECTION("explicit delta respected for normal numbers")
+        {
+        CHECK(compare_doubles(0.00056, 0.00050, 1e-4));
+        CHECK(compare_doubles(5.0, 5.05, 0.1));
+        CHECK_FALSE(compare_doubles(5.0, 5.15, 0.1));
+        }
+
+    SECTION("negative numbers")
+        {
+        CHECK(compare_doubles(-1.0, -1.0000001));
+        CHECK(compare_doubles(-5.0, -5.05, 0.1));
+        CHECK_FALSE(compare_doubles(-1.0, -1.000002));
+        }
+
+    SECTION("mixed positive and negative")
+        {
+        CHECK_FALSE(compare_doubles(-0.0001, 0.0001, 1e-4));
+        CHECK_FALSE(compare_doubles(0.00001, -0.00001, 1e-4));
+        }
+    }
+
+TEST_CASE("compare_doubles with zero", "[compare_doubles][zero]")
+    {
+    SECTION("zero vs zero")
+        {
+        CHECK(compare_doubles(0.0, 0.0));
+        CHECK(compare_doubles(0.0, -0.0));
+        }
+
+    SECTION("zero vs small value within tolerance")
+        {
+        CHECK(compare_doubles(0.0, 1e-7));
+        CHECK(compare_doubles(0.0, -1e-7));
+        }
+
+    SECTION("zero vs value outside tolerance")
+        {
+        CHECK_FALSE(compare_doubles(0.0, 1e-5));
+        }
+    }
+
+TEST_CASE("compare_doubles with large numbers", "[compare_doubles][large]")
+    {
+    SECTION("large numbers use absolute tolerance")
+        {
+        // with default delta 1e-6, large numbers use absolute tolerance
+        CHECK(compare_doubles(1000000.0, 1000000.0000001));
+        CHECK_FALSE(compare_doubles(1000000.0, 1000000.000002));
+        }
+
+    SECTION("large numbers with explicit larger delta")
+        {
+        CHECK(compare_doubles(1e9, 1e9 + 100, 1000));
+        CHECK_FALSE(compare_doubles(1e9, 1e9 + 10000, 1000));
+        }
+    }
+
+TEST_CASE("compare_doubles threshold boundary", "[compare_doubles][threshold]")
+    {
+    SECTION("magnitude exactly at delta uses absolute")
+        {
+        // maxMagnitude = 1e-6, delta = 1e-6, should use absolute
+        CHECK(compare_doubles(1e-6, 1e-6 + 1e-7, 1e-6));
+        }
+
+    SECTION("magnitude above relative threshold uses absolute")
+        {
+        // maxMagnitude = 9e-7 > 1e-12 threshold, uses absolute tolerance
+        constexpr double val = 9e-7;
+        constexpr double delta = 1e-6;
+        // effectiveDelta = delta = 1e-6, so small differences are equal
+        CHECK(compare_doubles(val, val + 1e-12, delta));
+        CHECK(compare_doubles(val, val + 1e-7, delta));
+        CHECK_FALSE(compare_doubles(val, val + 1e-5, delta));
+        }
+    }
+
+TEST_CASE("compare_doubles with NaN and infinity", "[compare_doubles][special]")
+    {
+    constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+    constexpr double inf = std::numeric_limits<double>::infinity();
+
+    SECTION("NaN comparisons")
+        {
+        // NaN is not equal to anything, including itself
+        CHECK_FALSE(compare_doubles(nan, nan));
+        CHECK_FALSE(compare_doubles(nan, 0.0));
+        CHECK_FALSE(compare_doubles(0.0, nan));
+        CHECK_FALSE(compare_doubles(nan, 1.0));
+        }
+
+    SECTION("infinity comparisons")
+        {
+        CHECK(compare_doubles(inf, inf));
+        CHECK(compare_doubles(-inf, -inf));
+        CHECK_FALSE(compare_doubles(inf, -inf));
+        CHECK_FALSE(compare_doubles(inf, 1e308));
+        }
+    }
+
+// ---------------- compare_doubles with very small numbers ----------------
+TEST_CASE("compare_doubles fails with very small numbers", "[compare_doubles][small]")
+    {
+    constexpr double epsilon = std::numeric_limits<double>::epsilon();
+    constexpr double twoEpsilon = 2.0 * epsilon;
+
+    SECTION("numbers at machine epsilon scale should be distinguishable")
+        {
+        // These are clearly different numbers, but compare_doubles treats them as equal
+        // because their difference is smaller than the default delta (1e-6)
+        CHECK_FALSE(compare_doubles(epsilon, twoEpsilon));
+        }
+
+    SECTION("zero vs epsilon should not be equal")
+        {
+        CHECK_FALSE(compare_doubles(0.0, epsilon));
+        }
+
+    SECTION("very small but clearly different values")
+        {
+        // 2e-10 > 1e-12 threshold, uses absolute tolerance, so equal
+        CHECK(compare_doubles(1e-10, 2e-10));
+        // 5e-12 > 1e-12 threshold, uses absolute tolerance, so equal
+        CHECK(compare_doubles(1e-12, 5e-12));
+        // 5e-13 < 1e-12 threshold, uses relative tolerance, so different
+        CHECK_FALSE(compare_doubles(1e-13, 5e-13));
+        }
+    }
+
+TEST_CASE("compare_doubles_less fails with very small numbers", "[compare_doubles_less][small]")
+    {
+    constexpr double epsilon = std::numeric_limits<double>::epsilon();
+    constexpr double twoEpsilon = 2.0 * epsilon;
+
+    SECTION("epsilon is clearly less than 2*epsilon")
+        {
+        CHECK(compare_doubles_less(epsilon, twoEpsilon));
+        }
+
+    SECTION("zero is less than epsilon")
+        {
+        CHECK(compare_doubles_less(0.0, epsilon));
+        }
+
+    SECTION("very small but clearly ordered values")
+        {
+        // above 1e-12 threshold, uses absolute tolerance, within tolerance so not less
+        CHECK_FALSE(compare_doubles_less(1e-10, 2e-10));
+        CHECK_FALSE(compare_doubles_less(1e-12, 5e-12));
+        // below threshold, uses relative tolerance
+        CHECK(compare_doubles_less(1e-13, 5e-13));
+        CHECK(compare_doubles_less(1e-15, 1e-14));
+        }
+    }
+
+TEST_CASE("compare_doubles_less_or_equal fails with very small numbers", "[compare_doubles_less_or_equal][small]")
+    {
+    constexpr double epsilon = std::numeric_limits<double>::epsilon();
+    constexpr double twoEpsilon = 2.0 * epsilon;
+
+    SECTION("epsilon is less than or equal to 2*epsilon")
+        {
+        CHECK(compare_doubles_less_or_equal(epsilon, twoEpsilon));
+        }
+
+    SECTION("zero is less than or equal to epsilon")
+        {
+        CHECK(compare_doubles_less_or_equal(0.0, epsilon));
+        }
+
+    SECTION("very small but clearly ordered values")
+        {
+        CHECK(compare_doubles_less_or_equal(1e-10, 2e-10));
+        CHECK(compare_doubles_less_or_equal(1e-12, 5e-12));
+        }
+    }
+
+TEST_CASE("compare_doubles_greater fails with very small numbers", "[compare_doubles_greater][small]")
+    {
+    constexpr double epsilon = std::numeric_limits<double>::epsilon();
+    constexpr double twoEpsilon = 2.0 * epsilon;
+
+    SECTION("2*epsilon is clearly greater than epsilon")
+        {
+        CHECK(compare_doubles_greater(twoEpsilon, epsilon));
+        }
+
+    SECTION("epsilon is greater than zero")
+        {
+        CHECK(compare_doubles_greater(epsilon, 0.0));
+        }
+
+    SECTION("very small but clearly ordered values")
+        {
+        // above 1e-12 threshold, uses absolute tolerance, within tolerance so not greater
+        CHECK_FALSE(compare_doubles_greater(2e-10, 1e-10));
+        CHECK_FALSE(compare_doubles_greater(5e-12, 1e-12));
+        // below threshold, uses relative tolerance
+        CHECK(compare_doubles_greater(5e-13, 1e-13));
+        CHECK(compare_doubles_greater(1e-14, 1e-15));
+        }
+    }
+
+TEST_CASE("compare_doubles_greater_or_equal fails with very small numbers", "[compare_doubles_greater_or_equal][small]")
+    {
+    constexpr double epsilon = std::numeric_limits<double>::epsilon();
+    constexpr double twoEpsilon = 2.0 * epsilon;
+
+    SECTION("2*epsilon is greater than or equal to epsilon")
+        {
+        CHECK(compare_doubles_greater_or_equal(twoEpsilon, epsilon));
+        }
+
+    SECTION("epsilon is greater than or equal to zero")
+        {
+        CHECK(compare_doubles_greater_or_equal(epsilon, 0.0));
+        }
+
+    SECTION("very small but clearly ordered values")
+        {
+        CHECK(compare_doubles_greater_or_equal(2e-10, 1e-10));
+        CHECK(compare_doubles_greater_or_equal(5e-12, 1e-12));
+        }
+    }
+
+TEST_CASE("compare_doubles_less backward compatibility", "[compare_doubles_less][compat]")
+    {
+    SECTION("values within tolerance are not less")
+        {
+        CHECK_FALSE(compare_doubles_less(1.0, 1.0000001));
+        CHECK_FALSE(compare_doubles_less(1.0000001, 1.0));
+        }
+
+    SECTION("clearly different values")
+        {
+        CHECK(compare_doubles_less(1.0, 2.0));
+        CHECK_FALSE(compare_doubles_less(2.0, 1.0));
+        CHECK(compare_doubles_less(-1.0, 1.0));
+        }
+
+    SECTION("explicit delta respected")
+        {
+        CHECK_FALSE(compare_doubles_less(5.0, 5.05, 0.1));
+        CHECK(compare_doubles_less(5.0, 5.15, 0.1));
+        }
+    }
+
+TEST_CASE("compare_doubles_less with zero", "[compare_doubles_less][zero]")
+    {
+    SECTION("zero comparisons")
+        {
+        CHECK_FALSE(compare_doubles_less(0.0, 0.0));
+        CHECK(compare_doubles_less(0.0, 1.0));
+        CHECK(compare_doubles_less(-1.0, 0.0));
+        }
+    }
+
+TEST_CASE("compare_doubles_less with NaN and infinity", "[compare_doubles_less][special]")
+    {
+    constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+    constexpr double inf = std::numeric_limits<double>::infinity();
+
+    SECTION("NaN comparisons always false")
+        {
+        CHECK_FALSE(compare_doubles_less(nan, 1.0));
+        CHECK_FALSE(compare_doubles_less(1.0, nan));
+        CHECK_FALSE(compare_doubles_less(nan, nan));
+        }
+
+    SECTION("infinity comparisons")
+        {
+        CHECK(compare_doubles_less(-inf, inf));
+        CHECK(compare_doubles_less(1e308, inf));
+        CHECK_FALSE(compare_doubles_less(inf, inf));
+        CHECK_FALSE(compare_doubles_less(inf, -inf));
+        }
+    }
+
+TEST_CASE("compare_doubles_greater backward compatibility", "[compare_doubles_greater][compat]")
+    {
+    SECTION("values within tolerance are not greater")
+        {
+        CHECK_FALSE(compare_doubles_greater(1.0000001, 1.0));
+        CHECK_FALSE(compare_doubles_greater(1.0, 1.0000001));
+        }
+
+    SECTION("clearly different values")
+        {
+        CHECK(compare_doubles_greater(2.0, 1.0));
+        CHECK_FALSE(compare_doubles_greater(1.0, 2.0));
+        CHECK(compare_doubles_greater(1.0, -1.0));
+        }
+
+    SECTION("explicit delta respected")
+        {
+        CHECK_FALSE(compare_doubles_greater(5.05, 5.0, 0.1));
+        CHECK(compare_doubles_greater(5.15, 5.0, 0.1));
+        }
+    }
+
+TEST_CASE("compare_doubles_greater with NaN and infinity", "[compare_doubles_greater][special]")
+    {
+    constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+    constexpr double inf = std::numeric_limits<double>::infinity();
+
+    SECTION("NaN comparisons always false")
+        {
+        CHECK_FALSE(compare_doubles_greater(nan, 1.0));
+        CHECK_FALSE(compare_doubles_greater(1.0, nan));
+        CHECK_FALSE(compare_doubles_greater(nan, nan));
+        }
+
+    SECTION("infinity comparisons")
+        {
+        CHECK(compare_doubles_greater(inf, -inf));
+        CHECK(compare_doubles_greater(inf, 1e308));
+        CHECK_FALSE(compare_doubles_greater(inf, inf));
+        CHECK_FALSE(compare_doubles_greater(-inf, inf));
+        }
+    }
+
+TEST_CASE("compare_doubles_less_or_equal comprehensive", "[compare_doubles_less_or_equal][compat]")
+    {
+    SECTION("equal values")
+        {
+        CHECK(compare_doubles_less_or_equal(1.0, 1.0));
+        CHECK(compare_doubles_less_or_equal(1.0, 1.0000001));
+        CHECK(compare_doubles_less_or_equal(1.0000001, 1.0));
+        }
+
+    SECTION("clearly less values")
+        {
+        CHECK(compare_doubles_less_or_equal(1.0, 2.0));
+        CHECK_FALSE(compare_doubles_less_or_equal(2.0, 1.0));
+        }
+    }
+
+TEST_CASE("compare_doubles_greater_or_equal comprehensive", "[compare_doubles_greater_or_equal][compat]")
+    {
+    SECTION("equal values")
+        {
+        CHECK(compare_doubles_greater_or_equal(1.0, 1.0));
+        CHECK(compare_doubles_greater_or_equal(1.0, 1.0000001));
+        CHECK(compare_doubles_greater_or_equal(1.0000001, 1.0));
+        }
+
+    SECTION("clearly greater values")
+        {
+        CHECK(compare_doubles_greater_or_equal(2.0, 1.0));
+        CHECK_FALSE(compare_doubles_greater_or_equal(1.0, 2.0));
+        }
+    }
+
+TEST_CASE("double_less functor", "[double_less]")
+    {
+    double_less less;
+
+    SECTION("basic ordering")
+        {
+        CHECK(less(1.0, 2.0));
+        CHECK_FALSE(less(2.0, 1.0));
+        CHECK_FALSE(less(1.0, 1.0));
+        }
+
+    SECTION("values within tolerance")
+        {
+        CHECK_FALSE(less(1.0, 1.0000001));
+        CHECK_FALSE(less(1.0000001, 1.0));
+        }
+
+    SECTION("usable with std algorithms")
+        {
+        std::vector<double> vals = { 3.0, 1.0, 2.0 };
+        std::sort(vals.begin(), vals.end(), double_less{});
+        CHECK(vals[0] < vals[1]);
+        CHECK(vals[1] < vals[2]);
         }
     }
 
