@@ -285,7 +285,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                         GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(series.GetColor())
-                            .Brush(series.GetColor()),
+                            .Brush(Colors::ColorContrast::ChangeOpacity(series.GetColor(), 100)),
                         Settings::GetPointRadius(), series.GetShape() },
                     dc);
                 }
@@ -327,7 +327,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                 legend->GetLegendIcons().emplace_back(
                     series.GetShape(),
                     Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
-                    wxBrush{ series.GetColor() }, series.GetColor());
+                    wxBrush{ Colors::ColorContrast::ChangeOpacity(series.GetColor(), 100) },
+                    series.GetColor());
                 }
 
             // add regression statistics if available
@@ -345,6 +346,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                     }
 
                 // statistics
+                // number of observations
+                legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
+                                                      *wxTRANSPARENT_BRUSH);
+                legendText.append(wxString::Format(
+                    // TRANSLATORS: 'n' is number of observations.
+                    _(L"n: %s\n"),
+                    wxNumberFormatter::ToString(stats.n, 0,
+                                                wxNumberFormatter::Style::Style_WithThousandsSep)));
                 // R² (coefficient of determination)
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
                                                       *wxTRANSPARENT_BRUSH);
@@ -376,10 +385,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                                                       *wxTRANSPARENT_BRUSH);
                 if (std::isfinite(stats.p_value))
                     {
-                    if (compare_doubles_less(stats.p_value, 0.0001))
+                    if (compare_doubles_less(stats.p_value, std::numeric_limits<double>::epsilon()))
                         {
                         legendText.append(
-                            /* TRANSLATORS: don't translate 'p'. */ _(L"p-value: < 0.0001\n"));
+                            wxString::Format(_(L"p-value: < %.1e\n"),
+                                             std::numeric_limits<double>::epsilon())); // "2.22e-16"
+                        }
+                    else if (compare_doubles_less(stats.p_value, 0.0001))
+                        {
+                        legendText.append(wxString::Format(
+                            // TRANSLATORS: don't translate 'p' ('value' is OK) or '%.2e'
+                            // (scientific notation)
+                            _(L"p-value: %.2e\n"), stats.p_value));
                         }
                     else
                         {
@@ -394,19 +411,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                     {
                     legendText.append(_(L"p-value: Undefined (insufficient degrees of freedom)\n"));
                     }
-                legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
-                                                      *wxTRANSPARENT_BRUSH);
-                legendText.append(wxString::Format(L"n: %zu\n", stats.n));
                 // regression equation (slope and intercept)
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
                                                       *wxTRANSPARENT_BRUSH);
                 if (std::isfinite(stats.slope) && std::isfinite(stats.intercept))
                     {
                     legendText.append(wxString::Format(
-                        L"y = %sx + %s\n",
-                        wxNumberFormatter::ToString(stats.slope, 4,
-                                                    Settings::GetDefaultNumberFormat()),
+                        L"ŷ = %s + %sx\n",
                         wxNumberFormatter::ToString(stats.intercept, 4,
+                                                    Settings::GetDefaultNumberFormat()),
+                        wxNumberFormatter::ToString(stats.slope, 4,
                                                     Settings::GetDefaultNumberFormat())));
                     }
                 else if (!std::isfinite(stats.slope))
