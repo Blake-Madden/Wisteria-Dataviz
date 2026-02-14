@@ -114,7 +114,7 @@ namespace Wisteria::Graphs
 
           // customize the header of the legend and add it to the canvas
           auto legend{ plot->CreateLegend(
-            LegendOptions().
+            LegendOptions{}.
                 IncludeHeader(true).
                 PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
           legend->SetLine(0, _(L"Range of Scores"));

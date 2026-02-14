@@ -118,7 +118,7 @@ namespace Wisteria::Graphs
 
           // add a descriptive legend
           auto legend{ plot->CreateLegend(
-            LegendOptions().
+            LegendOptions{}.
                 PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) };
           canvas->SetFixedObject(1, 0, legend);
          @endcode

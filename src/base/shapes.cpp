@@ -6913,7 +6913,7 @@ namespace Wisteria::GraphItems
         const double cupTop = cupAreaTop + lidHeight;
         const double cupBottom = rect.GetY() + height;
 
-        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half));
 
         // draw steam swooshes first (so they appear behind the cup)
         const double steamBaseY = cupAreaTop;

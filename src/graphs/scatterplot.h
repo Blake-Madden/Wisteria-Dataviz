@@ -20,6 +20,8 @@ namespace Wisteria::Graphs
     /** @brief Scatter plot, which displays the relationship between two continuous variables
             with optional linear regression lines and statistics.
 
+        @image html scatterplot.svg width=90%
+
         @par %Data:
             This plot accepts a Data::Dataset, where one continuous column is the Y values
             (dependent variable) and another continuous column is the X values
@@ -51,7 +53,7 @@ namespace Wisteria::Graphs
          canvas->SetFixedObject(0, 0, scatterPlot);
          canvas->SetFixedObject(0, 1,
             scatterPlot->CreateLegend(
-                LegendOptions().
+                LegendOptions{}.
                     IncludeHeader(true).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         @endcode
@@ -340,7 +342,21 @@ namespace Wisteria::Graphs
       protected:
         /// @brief Recalculates the layout and plots the data.
         /// @param dc The DC to draw to.
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override;
+
+        /// @returns The X column name.
+        [[nodiscard]]
+        const wxString& GetXColumnName() const noexcept
+            {
+            return m_xColumnName;
+            }
+
+        /// @returns The Y column name.
+        [[nodiscard]]
+        const wxString& GetYColumnName() const noexcept
+            {
+            return m_yColumnName;
+            }
 
       private:
         void CalculateRegression(Series& series);

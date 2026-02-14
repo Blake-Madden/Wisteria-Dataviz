@@ -2,7 +2,8 @@
 
 ## 1.0.8 Release
 
-- New graph type: Scatterplot
+- New graph type: Scatter Plot
+- New graph type: Bubble Plot
 - Added new shapes:
     - Cheese pizza
     - Pepperoni pizza

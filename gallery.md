@@ -42,6 +42,10 @@ Basic
 | ![](docs/images/clock.svg) | ![](docs/images/pizza.svg) |
 | ![](docs/images/coffee.svg) |  |
 
+| Scatter Plot (Wisteria::Graphs::ScatterPlot) | Bubble Plot (Wisteria::Graphs::BubblePlot) |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/scatterplot.svg) | ![](docs/images/bubbleplot.svg) |
+
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
 | ![](docs/images/TableMajors.svg) |

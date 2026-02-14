@@ -118,7 +118,7 @@ namespace Wisteria::Graphs
          OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
          OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
          auto legend = OTroadmap->CreateLegend(
-            LegendOptions().
+            LegendOptions{}.
                 IncludeHeader(true).
                 PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
          const auto proportionForEachRoadMap =

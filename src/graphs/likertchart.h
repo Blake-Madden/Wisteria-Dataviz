@@ -116,7 +116,7 @@ namespace Wisteria::Graphs
 
          canvas->SetFixedObject(0, 0, likertChart);
          canvas->SetFixedObject(0, 1, likertChart->CreateLegend(
-            LegendOptions().
+            LegendOptions{}.
                 PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
 
@@ -877,7 +877,7 @@ namespace Wisteria::Graphs
         [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
             {
-            return CreateLegend(LegendOptions().PlacementHint(hint));
+            return CreateLegend(LegendOptions{}.PlacementHint(hint));
             }
 
       private:

@@ -230,7 +230,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 if (!IsXValid(i, xColumns) || std::isnan(yColumn->GetValue(i)))
                     {
                     points->AddPoint(
-                        GraphItems::Point2D(GraphItems::GraphItemInfo().AnchorPoint(
+                        GraphItems::Point2D(GraphItems::GraphItemInfo{}.AnchorPoint(
                                                 wxPoint(wxDefaultCoord, wxDefaultCoord)),
                                             1),
                         dc);
@@ -270,7 +270,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
 
         auto groupColumn = GetGroupColumn();
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo()
+            GraphItems::GraphItemInfo{}
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
                 .DPIScaling(GetDPIScaleFactor())
                 .FontColor(GetLeftYAxis().GetFontColor()));

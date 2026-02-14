@@ -57,7 +57,7 @@ namespace Wisteria::GraphItems
             Other features include creating silhouettes, filling an area with a stipple bitmap,
             stitching multiple images together, changing pixel colors,
             changing the opacity, etc.
-        @sa The [image](../../Images.md) overview for more information.*/
+        @sa The [image](../../images.md) overview for more information.*/
     class Image final : public GraphItems::GraphItemBase
         {
         friend class Wisteria::Canvas;

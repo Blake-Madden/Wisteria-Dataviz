@@ -17,6 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The project uses clang-format (v20) and clang-tidy. Key style rules:
 
+- C++20 syntax
 - Use `std::wstring_view`, `std::prev`, `std::next`, `std::advance` instead of pointer arithmetic
 - Make variables and lambdas `const` if possible
 - **Indentation:** 4 spaces, no tabs
@@ -30,13 +31,6 @@ The project uses clang-format (v20) and clang-tidy. Key style rules:
 - **Comments:** First word lowercase, unless the comment contains multiple sentences
 - **Line endings:** LF (Unix-style)
 
-## Build Targets
-
-- `wisteria` - Static library
-- `demo` - Demo application
-- `doxygen-docs` - API documentation (requires Doxygen)
-- `quarto-docs` - JSON syntax documentation (requires Quarto)
-
 ## Unit Tests
 
 There are two test suites using Catch2 (v3):
@@ -46,7 +40,7 @@ There are two test suites using Catch2 (v3):
 
 ## Code Analysis
 
-The project uses these static analysis tools (run via GitHub Actions):
+The project uses these static analysis tools (run via *GitHub* Actions):
 - cppcheck
 - clang-tidy (enable with `-DUSE_CLANG_TIDY=ON`)
 - MS PREfast (Windows)

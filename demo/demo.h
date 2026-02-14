@@ -22,6 +22,7 @@
 #include "../src/data/textclassifier.h"
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
+#include "../src/graphs/bubbleplot.h"
 #include "../src/graphs/candlestickplot.h"
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/graphs/ganttchart.h"
@@ -97,7 +98,8 @@ class MyApp final : public wxApp
         ID_PRINT_ALL,
         ID_TEXT_CLASSIFIER,
         ID_NEW_SCALE_CHART,
-        ID_NEW_SCATTERPLOT
+        ID_NEW_SCATTERPLOT,
+        ID_NEW_BUBBLEPLOT
         };
     };
 

@@ -30,6 +30,7 @@ SET(WISTERIA_SRC
     ../../src/easyexif/exif.cpp
     ../../src/graphs/barchart.cpp
     ../../src/graphs/boxplot.cpp
+    ../../src/graphs/bubbleplot.cpp
     ../../src/graphs/candlestickplot.cpp
     ../../src/graphs/categoricalbarchart.cpp
     ../../src/graphs/crawfordgraph.cpp

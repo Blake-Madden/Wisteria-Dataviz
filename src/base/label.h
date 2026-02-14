@@ -42,7 +42,7 @@ namespace Wisteria::GraphItems
     /** @brief A text box that can be placed on a canvas. Can also be used as a legend.
         @note Call @c GetGraphItemInfo() to edit most of the appearance and layout
             functionality for a label.
-        @sa The [label](../../Labels.md) overview for more information.*/
+        @sa The [label](../../labels.md) overview for more information.*/
     class Label final : public GraphItemBase
         {
         friend class Graphs::Graph2D;

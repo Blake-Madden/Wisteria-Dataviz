@@ -972,7 +972,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         if (GetBoxCount() == 1 && IsOverlayingLegend())
             {
             auto legend = BoxPlot::CreateLegend(
-                LegendOptions().PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
+                LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
             legend->SetAnchorPoint(
                 wxPoint(GetPlotAreaBoundingBox().GetX() + GetPlotAreaBoundingBox().GetWidth(),
                         GetPlotAreaBoundingBox().GetY() + GetPlotAreaBoundingBox().GetHeight()));

@@ -137,6 +137,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_MULTIPLOT_COMMON_AXIS);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_TABLE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SCATTERPLOT);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BUBBLEPLOT);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -174,6 +175,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"));
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"));
     fileMenu->Append(MyApp::ID_NEW_SCATTERPLOT, _(L"Scatter Plot"));
+    fileMenu->Append(MyApp::ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"));
@@ -691,7 +693,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
         auto legend{ plot->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::RightOfGraph)) };
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
@@ -735,7 +737,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
         auto legend{ plot->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::RightOfGraph)) };
         legend->SetLine(0, _(L"Range of Scores"));
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
@@ -785,7 +787,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
         auto legend{ plot->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::RightOfGraph)) };
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
         }
@@ -840,7 +842,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas->SetFixedObject(
                 0, 1,
                 plot->CreateLegend(
-                    Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                         Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
             }
         }
@@ -944,7 +946,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(
             0, 1,
             linePlot->CreateLegend(
-                Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                     Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
 
         /* A note about dataset design. If you have a dataset built like this:
@@ -1080,7 +1082,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a legend to the side and center it vertically
         auto legend = linePlot->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(false).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::RightOfGraph));
         legend->SetPageVerticalAlignment(Wisteria::PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
@@ -1157,7 +1159,78 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas->SetFixedObject(
                 0, 1,
                 scatterPlot->CreateLegend(
-                    Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
+                        Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+        }
+    // Bubble Plot
+    else if (event.GetId() == MyApp::ID_NEW_BUBBLEPLOT)
+        {
+        subframe->SetTitle(_(L"Bubble Plot"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+
+        // demonstrates how to select a dataset and the variables to use
+        wxFileDialog fileDlg(this, _(L"Select Dataset"), wxString{}, wxString{},
+                             Wisteria::Data::Dataset::GetDataFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        try
+            {
+            auto columnInfo = Wisteria::Data::Dataset::ReadColumnInfo(
+                fileDlg.GetPath(),
+                // more aggressively force discrete data to be imported as continuous columns
+                Wisteria::Data::ImportInfo{}.MaxDiscreteValue(1));
+            auto bubbleData = std::make_shared<Wisteria::Data::Dataset>();
+
+            Wisteria::UI::VariableSelectDlg selectVarsDlg(
+                this, columnInfo,
+                { Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Y variable"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"X variable"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Size variable"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Grouping variable"))
+                      .SingleSelection(true)
+                      .Required(false) });
+            if (selectVarsDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+
+            bubbleData->ImportCSV(fileDlg.GetPath(),
+                                  Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
+
+            const auto groupingCols = selectVarsDlg.GetSelectedVariables(3);
+            auto bubblePlot = std::make_shared<Wisteria::Graphs::BubblePlot>(subframe->m_canvas);
+            bubblePlot->SetData(
+                bubbleData, selectVarsDlg.GetSelectedVariables(0)[0],
+                selectVarsDlg.GetSelectedVariables(1)[0], selectVarsDlg.GetSelectedVariables(2)[0],
+                !groupingCols.empty() ? std::optional<wxString>{ groupingCols[0] } : std::nullopt);
+
+            subframe->m_canvas->SetFixedObject(0, 0, bubblePlot);
+            subframe->m_canvas->SetFixedObject(
+                0, 1,
+                bubblePlot->CreateLegend(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                         Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
             }
         catch (const std::exception& err)
@@ -1241,7 +1314,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(
             0, 1,
             ganttChart->CreateLegend(
-                Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+                Wisteria::Graphs::LegendOptions{}.IncludeHeader(false).PlacementHint(
                     Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
@@ -1561,7 +1634,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            plot->CreateLegend(Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+            plot->CreateLegend(Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Bar Chart using a stipple icon
@@ -1728,7 +1801,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(
             0, 1,
             plot->CreateLegend(
-                Wisteria::Graphs::LegendOptions()
+                Wisteria::Graphs::LegendOptions{}
                     .RingPerimeter(Wisteria::Perimeter::Inner)
                     .PlacementHint(Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
@@ -1786,7 +1859,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(
             0, 1,
             plot->CreateLegend(
-                Wisteria::Graphs::LegendOptions()
+                Wisteria::Graphs::LegendOptions{}
                     .RingPerimeter(Wisteria::Perimeter::Inner)
                     .PlacementHint(Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
@@ -1947,7 +2020,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add the legend at the bottom (beneath the explanatory caption)
         auto legend = roadmap->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph));
         subframe->m_canvas->SetFixedObject(1, 0, std::move(legend));
 
@@ -2013,7 +2086,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         optThreatRoadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
         optThreatRoadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
         auto legend = optThreatRoadmap->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph));
 
         // add a title with a green banner background and white font
@@ -2101,7 +2174,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(
             0, 1,
             wCurve->CreateLegend(
-                Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+                Wisteria::Graphs::LegendOptions{}.IncludeHeader(false).PlacementHint(
                     Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Likert (3-Point)
@@ -2241,7 +2314,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            likertChart->CreateLegend(Wisteria::Graphs::LegendOptions().PlacementHint(
+            likertChart->CreateLegend(Wisteria::Graphs::LegendOptions{}.PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
 
         // when printing, make it landscape and stretch it to fill the entire page
@@ -2377,7 +2450,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // instead of adding the legend to the canvas, overlay it on top of the line plot
         auto lineLegend = linePlot->CreateLegend(
-            Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+            Wisteria::Graphs::LegendOptions{}.IncludeHeader(false).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::EmbeddedOnGraph));
         lineLegend->SetAnchoring(Wisteria::Anchoring::BottomRightCorner);
         linePlot->AddAnnotation(std::move(lineLegend),
@@ -2659,6 +2732,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_SCATTERPLOT, _(L"Scatter Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/scatterplot.svg", iconSize),
                      _(L"Scatter Plot"));
+    toolBar->AddTool(MyApp::ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/bubbleplot.svg", iconSize),
+                     _(L"Bubble Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"),

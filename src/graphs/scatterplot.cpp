@@ -424,11 +424,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                 // number of observations
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
                                                       *wxTRANSPARENT_BRUSH);
+                // quneiform-suppress-begin
                 legendText.append(wxString::Format(
                     // TRANSLATORS: 'n' is number of observations.
                     _(L"n: %s\n"),
                     wxNumberFormatter::ToString(stats.n, 0,
                                                 wxNumberFormatter::Style::Style_WithThousandsSep)));
+                // quneiform-suppress-end
                 // R² (coefficient of determination)
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
                                                       *wxTRANSPARENT_BRUSH);

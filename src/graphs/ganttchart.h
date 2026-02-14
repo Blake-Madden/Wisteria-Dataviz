@@ -102,7 +102,7 @@ namespace Wisteria::Graphs
          // (If not using a grouping column, then adding a legend will be unnecessary.)
          canvas->SetFixedObject(0, 1,
             ganttChart->CreateLegend(
-                LegendOptions().
+                LegendOptions{}.
                     IncludeHeader(false).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         @endcode*/

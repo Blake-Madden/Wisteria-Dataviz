@@ -95,7 +95,7 @@ namespace Wisteria::Graphs
             {
             canvas->SetFixedObject(0, 1,
                 plot->CreateLegend(
-                    LegendOptions().
+                    LegendOptions{}.
                         IncludeHeader(true).
                         PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
             }

@@ -325,7 +325,7 @@ namespace Wisteria::Graphs
          // which will also show headers for their parent groups)
          canvas->SetFixedObject(0, 1,
                  plot->CreateLegend(
-                    LegendOptions().
+                    LegendOptions{}.
                         RingPerimeter(Perimeter::Inner).
                         PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode*/

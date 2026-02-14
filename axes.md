@@ -59,7 +59,7 @@ theChart->GetRightYAxis().GetFooter().
                        |
                        FOOTER (FLUSH LEFT)
 
-Refer to the [label](Labels.md) overview for more about how to edit labels.
+Refer to the [label](labels.md) overview for more about how to edit labels.
 
 Tickmark Labels
 =============================

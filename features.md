@@ -6,9 +6,9 @@ Wisteria Dataviz contains features such as:
 - Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
 - Interface for displaying tabular data, including support for aggregate columns/rows, cell highlighting,
   outlier detection, and annotations
-- Built-in [printing](Printing.md) support
+- Built-in [printing](printing.md) support
 - Built-in copy support
-- [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, TIFF, and WebP are supported)
+- [Exporting](exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, TIFF, and WebP are supported)
 - Mouse- and keyboard-enabled zooming
 - Data [importing](importing-data.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
 - Data [transformations](transforming-data.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
@@ -17,7 +17,7 @@ Wisteria Dataviz contains features such as:
   - Includes support for continuous, categorical, date/time, and ID columns
   - Graphs are designed to handle missing data
 - Uses high-quality `wxGraphicsContext` for rendering (uses Direct2D on Windows, if available)
-- [Image](Images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
+- [Image](images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
 - Image effects, such as:
   - Applying an oil-painting look
   - Applying a Sepia tone
@@ -28,7 +28,7 @@ Wisteria Dataviz contains features such as:
 - HiDPI display support
 - Customizable point markers and line styles
   - Pre-defined and extensible shape schemes
-- Customizable [axes](Axes.md)
+- Customizable [axes](axes.md)
   - Ranges can be adjusted
   - Supports date ranges
   - Supports logarithmic scales
@@ -42,7 +42,7 @@ Wisteria Dataviz contains features such as:
 - Reference areas (e.g., recession areas on a financial chart)
 - Legends with shape, image, and color scale support
 - Extensive list of pre-built colors that can be referenced via an enumeration (`Wisteria::Colors::Color`)
-- A [color brewing](Colors.md) interface, which is helpful for:
+- A [color brewing](colors.md) interface, which is helpful for:
   - Building color scales
   - Shading or tinting colors
   - Selecting black or white (e.g., for a font color), depending on which better contrasts against the background color

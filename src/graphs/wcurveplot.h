@@ -104,7 +104,7 @@ namespace Wisteria::Graphs
          canvas->SetFixedObject(0, 0, WCurve);
          canvas->SetFixedObject(0, 1,
             WCurve->CreateLegend(
-                LegendOptions().
+                LegendOptions{}.
                     IncludeHeader(false).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
