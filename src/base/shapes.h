@@ -485,6 +485,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawCoffeeShopCup(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a medicine pill/capsule.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawPill(wxRect rect, wxDC& dc) const;
 
         /// @}
 

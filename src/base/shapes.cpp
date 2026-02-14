@@ -254,7 +254,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::PepperoniPizza, &ShapeRenderer::DrawPepperoniPizza },
             { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza },
             { Icons::IconShape::ChocolateChipCookie, &ShapeRenderer::DrawChocolateChipCookie },
-            { Icons::IconShape::CoffeeShopCup, &ShapeRenderer::DrawCoffeeShopCup }
+            { Icons::IconShape::CoffeeShopCup, &ShapeRenderer::DrawCoffeeShopCup },
+            { Icons::IconShape::Pill, &ShapeRenderer::DrawPill }
         };
 
         // connect the rendering function to the shape
@@ -7093,5 +7094,218 @@ namespace Wisteria::GraphItems
         const double rimY = lidBottom - (lidHeight * 0.25);
         gc->SetPen(wxPen{ lidDarkColor, outlinePenWidth });
         gc->StrokeLine(cx - (lidWidth / 2) * 0.95, rimY, cx + (lidWidth / 2) * 0.95, rimY);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawPill(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
+        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        // colors
+        const wxColour outlineColor{ 80, 30, 30 };       // dark reddish-brown outline
+        const wxColour whiteBase{ 240, 240, 240 };       // white half base
+        const wxColour whiteShadow{ 180, 180, 180 };     // shadow on white half
+        const wxColour whiteSheen{ 255, 255, 255, 200 }; // highlight on white half
+        const wxColour redBase{ 200, 60, 60 };           // red half base
+        const wxColour redShadow{ 140, 35, 35 };         // shadow on red half
+        const wxColour redSheen{ 255, 150, 150, 180 };   // highlight on red half
+        const wxColour dividerLine{ 60, 20, 20 };        // line between halves
+
+        const double width = rect.GetWidth();
+        const double height = rect.GetHeight();
+        const double cx = rect.GetX() + (width / 2.0);
+        const double cy = rect.GetY() + (height / 2.0);
+
+        // pill dimensions - fit diagonal in rect
+        const double diagonal = std::min(width, height) * 0.98;
+        const double pillLength = diagonal * 0.85;
+        const double pillWidth = pillLength * 0.40;
+        const double r = pillWidth / 2.0;               // cap radius
+        const double halfBody = (pillLength / 2.0) - r; // half of straight section
+
+        // rotation angle (tilted like reference image)
+        constexpr double angle = -45.0 * std::numbers::pi / 180.0;
+        const double cosA = std::cos(angle);
+        const double sinA = std::sin(angle);
+
+        // control point offset for circular arc approximation (4/3 * tan(pi/4) ≈ 0.5523)
+        constexpr double kappa = 0.5523;
+        const double k = r * kappa;
+
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(1));
+
+        // helper to rotate and translate a point
+        auto transform = [&](double x, double y) -> wxPoint2DDouble
+        {
+            const double rx = x * cosA - y * sinA;
+            const double ry = x * sinA + y * cosA;
+            return { cx + rx, cy + ry };
+        };
+
+        // build white half (top half with rounded end)
+        // in local coords: from y=0 (middle) to y=-(halfBody+r) (top)
+        wxGraphicsPath whitePath = gc->CreatePath();
+            {
+            // start at middle-right
+            auto p0 = transform(r, 0);
+            whitePath.MoveToPoint(p0.m_x, p0.m_y);
+
+            // line up the right side
+            auto p1 = transform(r, -halfBody);
+            whitePath.AddLineToPoint(p1.m_x, p1.m_y);
+
+            // top-right curve (quarter circle using bezier)
+            auto c1 = transform(r, -halfBody - k);
+            auto c2 = transform(k, -halfBody - r);
+            auto p2 = transform(0, -halfBody - r);
+            whitePath.AddCurveToPoint(c1.m_x, c1.m_y, c2.m_x, c2.m_y, p2.m_x, p2.m_y);
+
+            // top-left curve
+            auto c3 = transform(-k, -halfBody - r);
+            auto c4 = transform(-r, -halfBody - k);
+            auto p3 = transform(-r, -halfBody);
+            whitePath.AddCurveToPoint(c3.m_x, c3.m_y, c4.m_x, c4.m_y, p3.m_x, p3.m_y);
+
+            // line down the left side to middle
+            auto p4 = transform(-r, 0);
+            whitePath.AddLineToPoint(p4.m_x, p4.m_y);
+
+            whitePath.CloseSubpath();
+            }
+
+        // build red half (bottom half with rounded end)
+        wxGraphicsPath redPath = gc->CreatePath();
+            {
+            // start at middle-right
+            auto p0 = transform(r, 0);
+            redPath.MoveToPoint(p0.m_x, p0.m_y);
+
+            // line down the right side
+            auto p1 = transform(r, halfBody);
+            redPath.AddLineToPoint(p1.m_x, p1.m_y);
+
+            // bottom-right curve
+            auto c1 = transform(r, halfBody + k);
+            auto c2 = transform(k, halfBody + r);
+            auto p2 = transform(0, halfBody + r);
+            redPath.AddCurveToPoint(c1.m_x, c1.m_y, c2.m_x, c2.m_y, p2.m_x, p2.m_y);
+
+            // bottom-left curve
+            auto c3 = transform(-k, halfBody + r);
+            auto c4 = transform(-r, halfBody + k);
+            auto p3 = transform(-r, halfBody);
+            redPath.AddCurveToPoint(c3.m_x, c3.m_y, c4.m_x, c4.m_y, p3.m_x, p3.m_y);
+
+            // line up the left side to middle
+            auto p4 = transform(-r, 0);
+            redPath.AddLineToPoint(p4.m_x, p4.m_y);
+
+            redPath.CloseSubpath();
+            }
+
+        // gradient direction (perpendicular to pill axis for 3D effect)
+        const double gradLen = pillWidth * 0.6;
+        const double gradAngle = angle + (std::numbers::pi / 2.0);
+        const double gx = gradLen * std::cos(gradAngle);
+        const double gy = gradLen * std::sin(gradAngle);
+
+        // fill white half
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(gc->CreateLinearGradientBrush(cx - gx, cy - gy, cx + gx, cy + gy, whiteBase,
+                                                   whiteShadow));
+        gc->FillPath(whitePath);
+
+        // fill red half
+        gc->SetBrush(
+            gc->CreateLinearGradientBrush(cx - gx, cy - gy, cx + gx, cy + gy, redBase, redShadow));
+        gc->FillPath(redPath);
+
+        // sheen highlights - elongated ellipses along the pill
+        // keep sheens within their respective halves (don't cross y=0 divider)
+        const double sheenW = r * 0.30;
+        const double sheenH = halfBody * 0.85; // shorter to stay in half
+        const double sheenOffsetX = -r * 0.4;  // offset toward left edge
+
+        // white sheen (centered in white half, away from divider)
+        wxGraphicsPath whiteSheenPath = gc->CreatePath();
+            {
+            const double sheenCenterY = -(halfBody * 0.55 + r * 0.3);
+            // approximate ellipse with 4 bezier curves
+            auto top = transform(sheenOffsetX, sheenCenterY - sheenH / 2);
+            auto right = transform(sheenOffsetX + sheenW / 2, sheenCenterY);
+            auto bottom = transform(sheenOffsetX, sheenCenterY + sheenH / 2);
+            auto left = transform(sheenOffsetX - sheenW / 2, sheenCenterY);
+            const double ek = 0.5523;
+            auto tc1 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY - sheenH / 2);
+            auto tc2 = transform(sheenOffsetX + sheenW / 2, sheenCenterY - sheenH / 2 * ek);
+            auto rc1 = transform(sheenOffsetX + sheenW / 2, sheenCenterY + sheenH / 2 * ek);
+            auto rc2 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY + sheenH / 2);
+            auto bc1 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY + sheenH / 2);
+            auto bc2 = transform(sheenOffsetX - sheenW / 2, sheenCenterY + sheenH / 2 * ek);
+            auto lc1 = transform(sheenOffsetX - sheenW / 2, sheenCenterY - sheenH / 2 * ek);
+            auto lc2 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY - sheenH / 2);
+
+            whiteSheenPath.MoveToPoint(top.m_x, top.m_y);
+            whiteSheenPath.AddCurveToPoint(tc1.m_x, tc1.m_y, tc2.m_x, tc2.m_y, right.m_x,
+                                           right.m_y);
+            whiteSheenPath.AddCurveToPoint(rc1.m_x, rc1.m_y, rc2.m_x, rc2.m_y, bottom.m_x,
+                                           bottom.m_y);
+            whiteSheenPath.AddCurveToPoint(bc1.m_x, bc1.m_y, bc2.m_x, bc2.m_y, left.m_x, left.m_y);
+            whiteSheenPath.AddCurveToPoint(lc1.m_x, lc1.m_y, lc2.m_x, lc2.m_y, top.m_x, top.m_y);
+            whiteSheenPath.CloseSubpath();
+            }
+        gc->SetBrush(wxBrush{ whiteSheen });
+        gc->FillPath(whiteSheenPath);
+
+        // red sheen (centered in red half, away from divider)
+        wxGraphicsPath redSheenPath = gc->CreatePath();
+            {
+            const double sheenCenterY = halfBody * 0.55 + r * 0.3;
+            auto top = transform(sheenOffsetX, sheenCenterY - sheenH / 2);
+            auto right = transform(sheenOffsetX + sheenW / 2, sheenCenterY);
+            auto bottom = transform(sheenOffsetX, sheenCenterY + sheenH / 2);
+            auto left = transform(sheenOffsetX - sheenW / 2, sheenCenterY);
+            const double ek = 0.5523;
+            auto tc1 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY - sheenH / 2);
+            auto tc2 = transform(sheenOffsetX + sheenW / 2, sheenCenterY - sheenH / 2 * ek);
+            auto rc1 = transform(sheenOffsetX + sheenW / 2, sheenCenterY + sheenH / 2 * ek);
+            auto rc2 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY + sheenH / 2);
+            auto bc1 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY + sheenH / 2);
+            auto bc2 = transform(sheenOffsetX - sheenW / 2, sheenCenterY + sheenH / 2 * ek);
+            auto lc1 = transform(sheenOffsetX - sheenW / 2, sheenCenterY - sheenH / 2 * ek);
+            auto lc2 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY - sheenH / 2);
+
+            redSheenPath.MoveToPoint(top.m_x, top.m_y);
+            redSheenPath.AddCurveToPoint(tc1.m_x, tc1.m_y, tc2.m_x, tc2.m_y, right.m_x, right.m_y);
+            redSheenPath.AddCurveToPoint(rc1.m_x, rc1.m_y, rc2.m_x, rc2.m_y, bottom.m_x,
+                                         bottom.m_y);
+            redSheenPath.AddCurveToPoint(bc1.m_x, bc1.m_y, bc2.m_x, bc2.m_y, left.m_x, left.m_y);
+            redSheenPath.AddCurveToPoint(lc1.m_x, lc1.m_y, lc2.m_x, lc2.m_y, top.m_x, top.m_y);
+            redSheenPath.CloseSubpath();
+            }
+        gc->SetBrush(wxBrush{ redSheen });
+        gc->FillPath(redSheenPath);
+
+        // draw outlines
+        gc->SetPen(wxPen{ outlineColor, outlinePenWidth });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->StrokePath(whitePath);
+        gc->StrokePath(redPath);
+
+        // dividing line between halves
+        auto divLeft = transform(-r, 0);
+        auto divRight = transform(r, 0);
+        gc->SetPen(wxPen{ dividerLine, outlinePenWidth });
+        gc->StrokeLine(divLeft.m_x, divLeft.m_y, divRight.m_x, divRight.m_y);
         }
     } // namespace Wisteria::GraphItems

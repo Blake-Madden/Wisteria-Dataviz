@@ -1,6 +1,6 @@
 # Releases
 
-## 1.0.8 Release
+## 1.1.0 Release
 
 - New graph type: Scatter Plot
 - New graph type: Bubble Plot
@@ -10,6 +10,7 @@
     - Hawaiian pizza
     - Chocolate chip cookie
     - Coffee shop cup
+    - Pill
 - Added styling options to pie charts to make them look like:
     - Hawaiian pizzas
     - Mars symbols (♂)

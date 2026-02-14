@@ -212,8 +212,8 @@ Next, download *Wisteria* and build the library, demo, and documentation:
 ```
 git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
 cd Wisteria-Dataviz
-cmake . -DCMAKE_BUILD_TYPE=Release
-cmake --build . -j4 --config Release
+cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release
+cmake --build ./build -j4 --config Release
 ```
 
 If using *CLion*, *KDevelop* or *VS Code*, you can also open the *CMake* file and build from there.
@@ -238,8 +238,8 @@ Next, download *Wisteria* and build the library, demo, and documentation:
 ```
 git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
 cd Wisteria-Dataviz
-cmake . -DCMAKE_BUILD_TYPE=Release
-cmake --build . -j4 --config Release
+cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release
+cmake --build ./build -j4 --config Release
 ```
 
 Documentation
