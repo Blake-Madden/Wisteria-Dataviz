@@ -25,8 +25,10 @@
 namespace Wisteria::UI
     {
     /// @brief Base class for a virtual data interface to a list control.
-    class ListCtrlExDataProviderBase
+    class ListCtrlExDataProviderBase : public wxObject
         {
+        wxDECLARE_ABSTRACT_CLASS(ListCtrlExDataProviderBase);
+
       public:
         /// @private
         ListCtrlExDataProviderBase(const ListCtrlExDataProviderBase&) = delete;
@@ -744,6 +746,8 @@ namespace Wisteria::UI
     /// @brief Data provider filled with text (numbers would be formatted as text).
     class ListCtrlExDataProvider final : public ListCtrlExDataProviderBase
         {
+        wxDECLARE_DYNAMIC_CLASS(ListCtrlExDataProvider);
+
       public:
         /// @returns The underlying value of a cell.
         /// @param row The row to access.
@@ -950,7 +954,14 @@ namespace Wisteria::UI
 
         /// @returns The underlying matrix (i.e., grid) of data.
         [[nodiscard]]
-        inline StringMatrix& GetMatrix() noexcept
+        StringMatrix& GetMatrix() noexcept
+            {
+            return m_virtualData;
+            }
+
+        /// @private
+        [[nodiscard]]
+        const StringMatrix& GetMatrix() const noexcept
             {
             return m_virtualData;
             }
@@ -1041,6 +1052,8 @@ namespace Wisteria::UI
     /// @brief Data provider filled with double values (and optionally sporadic text values).
     class ListCtrlExNumericDataProvider final : public ListCtrlExDataProviderBase
         {
+        wxDECLARE_DYNAMIC_CLASS(ListCtrlExNumericDataProvider);
+
       public:
         /// @private
         ListCtrlExNumericDataProvider() = default;
@@ -1399,7 +1412,14 @@ namespace Wisteria::UI
 
         /// @returns The data.
         [[nodiscard]]
-        inline DoubleWithLabelMatrix& GetMatrix() noexcept
+        DoubleWithLabelMatrix& GetMatrix() noexcept
+            {
+            return m_virtualData;
+            }
+
+        /// @private
+        [[nodiscard]]
+        const DoubleWithLabelMatrix& GetMatrix() const noexcept
             {
             return m_virtualData;
             }

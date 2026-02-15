@@ -12,6 +12,7 @@
 #include "../dialogs/listctrlitemviewdlg.h"
 #include "../dialogs/listctrlsortdlg.h"
 #include "../dialogs/radioboxdlg.h"
+#include "listctrlexcelexporter.h"
 #include <algorithm>
 #include <cstddef>
 #include <utility>
@@ -19,8 +20,13 @@
 wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
+    wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::UI::ListCtrlExDataProviderBase, wxObject)
+        wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlExDataProvider,
+                                  Wisteria::UI::ListCtrlExDataProviderBase)
+            wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlExNumericDataProvider,
+                                      Wisteria::UI::ListCtrlExDataProviderBase)
 
-    namespace Wisteria::UI
+                namespace Wisteria::UI
     {
     //------------------------------------------------------
     ListEditTextCtrl::ListEditTextCtrl(
@@ -2570,6 +2576,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             // "longtable" is a LaTeX command that is not translated.
             _(L"This format will write the list in a <tt>longtable{}</tt> environment that can be "
               "included in a larger <tt>LaTeX</tt> document.")));
+        choices.Add(_DT(L"Excel"));
+        descriptions.Add(
+            wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"Excel"),
+                             _(L"This format will write the list as an "
+                               "<span style='font-style:italic;'>Excel</span> spreadsheet.")));
         RadioBoxDlg exportTypesDlg(this, _(L"Select List Format"), wxString{}, _(L"List formats:"),
                                    _(L"Export List"), choices, descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
@@ -2587,6 +2598,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             break;
         case 2:
             fileFilter = _DT(L"TeX (*.tex)|*.tex");
+            break;
+        case 3:
+            fileFilter = _DT(L"Excel (*.xlsx)|*.xlsx");
             break;
         default:
             fileFilter = _DT(L"HTML (*.htm;*.html)|*.htm;*.html");
@@ -2614,9 +2628,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             case 2:
                 filePath.SetExt(L"tex");
                 break;
+            case 3:
+                filePath.SetExt(L"xlsx");
+                break;
             default:
                 filePath.SetExt(L"htm");
                 };
+            }
+
+        // Excel export is handled separately since it uses a different exporter
+        if (filePath.GetExt().CmpNoCase(L"XLSX") == 0)
+            {
+            const wxBusyCursor wait;
+            ListCtrlExcelExporter exporter;
+            if (!exporter.Export(this, filePath, true))
+                {
+                wxMessageBox(_(L"Unable to save list."), _(L"Export Error"),
+                             wxOK | wxICON_EXCLAMATION);
+                }
+            return;
             }
 
         const GridExportFormat exportFormat = (filePath.GetExt().CmpNoCase(L"HTM") == 0 ||

@@ -72,6 +72,7 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/htmltablewin.cpp
     ../../src/ui/controls/htmltablewinprintout.cpp
     ../../src/ui/controls/listctrlex.cpp
+    ../../src/ui/controls/listctrlexcelexporter.cpp
     ../../src/ui/controls/listctrlexdataprovider.cpp
     ../../src/ui/controls/searchpanel.cpp
     ../../src/ui/controls/sidebar.cpp

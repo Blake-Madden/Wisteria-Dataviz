@@ -786,6 +786,13 @@ namespace Wisteria::UI
             return m_virtualData;
             }
 
+        /// @returns The underlying data provider for a virtual list control (const version).
+        [[nodiscard]]
+        const std::shared_ptr<ListCtrlExDataProviderBase>& GetVirtualDataProvider() const
+            {
+            return m_virtualData;
+            }
+
         /// @brief Sets whether clicking the list can be sorted.
         /// @param sortable @c true to make it sortable.
         void SetSortable(const bool sortable) noexcept { m_sortable = sortable; }

@@ -19,7 +19,7 @@
 
 namespace lily_of_the_valley
     {
-    /// @brief Functor that accepts the sharedStrings.xml from a Microsoft® Excel (2007+) file
+    /// @brief Functor that accepts the sharedStrings.xml from a Microsoft® *Excel* (2007+) file
     ///     and returns the string table item in it, one-by-one.
     class xlsx_string_table_parse
         {

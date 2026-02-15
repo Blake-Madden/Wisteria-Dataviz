@@ -38,14 +38,6 @@ There are two test suites using Catch2 (v3):
 - **Non-GUI tests** (tests/)
 - **GUI tests** (tests/gui-tests/):
 
-## Code Analysis
-
-The project uses these static analysis tools (run via *GitHub* Actions):
-- cppcheck
-- clang-tidy (enable with `-DUSE_CLANG_TIDY=ON`)
-- MS PREfast (Windows)
-- clang-format for formatting
-
 ## Architecture Overview
 
 ### Source Structure
@@ -95,14 +87,6 @@ GraphItemBase (wxObject)
 ### JSON-based Reports
 
 `ReportBuilder` (`src/base/reportbuilder.h`) can generate complete multi-page reports from JSON configuration files, creating datasets, graphs, and layouts declaratively.
-
-## Dependencies
-
-- wxWidgets 3.3.1+ (sibling directory expected)
-- C++20 compiler
-- CMake 3.25+
-- Catch2 (for tests, sibling directory or system install)
-- Linux: GTK3, libtbb, OpenMP
 
 ## Submodules
 

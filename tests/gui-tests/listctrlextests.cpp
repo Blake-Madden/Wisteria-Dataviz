@@ -1,5 +1,6 @@
 #include "../../src/ui/controls/listctrlex.h"
 #include "../../src/ui/controls/listctrlexdataprovider.h"
+#include "../../src/ui/controls/listctrlexcelexporter.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
@@ -2116,5 +2117,173 @@ TEST_CASE("ListCtrlEx Find", "[listctrlex]")
         m_list->OnFind(event);
         // wrap around to the beginning
         CHECK(m_list->GetFocusedItem() == 2);
+        }
+    }
+
+// ParseFormattedNumber uses the system locale to resolve ambiguous cases.
+// When both period and comma are present, the last one is the decimal separator.
+// These tests assume a US/English locale (decimal separator = period).
+TEST_CASE("ListCtrlExcelExporter ParseFormattedNumber", "[listctrlexcelexporter][parseformattednumber]")
+    {
+    double value = 0.0;
+
+    SECTION("Simple integers")
+        {
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"123", value));
+        CHECK_THAT(value, WithinAbs(123.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"0", value));
+        CHECK_THAT(value, WithinAbs(0.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"-456", value));
+        CHECK_THAT(value, WithinAbs(-456.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"+789", value));
+        CHECK_THAT(value, WithinAbs(789.0, 0.0001));
+        }
+
+    SECTION("Simple decimals")
+        {
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"123.45", value));
+        CHECK_THAT(value, WithinAbs(123.45, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"0.5", value));
+        CHECK_THAT(value, WithinAbs(0.5, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"-0.123", value));
+        CHECK_THAT(value, WithinAbs(-0.123, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L".5", value));
+        CHECK_THAT(value, WithinAbs(0.5, 0.0001));
+        }
+
+    SECTION("US format - comma as thousands separator, period as decimal")
+        {
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1,234", value));
+        CHECK_THAT(value, WithinAbs(1234.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1,234.56", value));
+        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1,234,567.89", value));
+        CHECK_THAT(value, WithinAbs(1234567.89, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"-1,234.56", value));
+        CHECK_THAT(value, WithinAbs(-1234.56, 0.0001));
+        }
+
+    SECTION("European format - both separators present, last one is decimal")
+        {
+        // both present - last one is decimal separator (unambiguous, locale-independent)
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.234,56", value));
+        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.234.567,89", value));
+        CHECK_THAT(value, WithinAbs(1234567.89, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"-1.234,56", value));
+        CHECK_THAT(value, WithinAbs(-1234.56, 0.0001));
+        }
+
+    SECTION("Currency symbols stripped")
+        {
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"$1234.56", value));
+        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"$1,234.56", value));
+        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
+
+        // Euro symbol
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"\u20AC1.234,56", value));
+        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
+
+        // Pound symbol
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"\u00A31,234.56", value));
+        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
+
+        // Yen symbol
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"\u00A51234", value));
+        CHECK_THAT(value, WithinAbs(1234.0, 0.0001));
+        }
+
+    SECTION("Percent signs stripped")
+        {
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"50%", value));
+        CHECK_THAT(value, WithinAbs(50.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"12.5%", value));
+        CHECK_THAT(value, WithinAbs(12.5, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"-3.14%", value));
+        CHECK_THAT(value, WithinAbs(-3.14, 0.0001));
+        }
+
+    SECTION("Spaces stripped")
+        {
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L" 123 ", value));
+        CHECK_THAT(value, WithinAbs(123.0, 0.0001));
+
+        // spaces as thousands separator
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1 234 567", value));
+        CHECK_THAT(value, WithinAbs(1234567.0, 0.0001));
+        }
+
+    SECTION("Invalid inputs return false")
+        {
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"abc", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"hello world", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"-", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"+", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"$", value));
+        }
+
+    SECTION("Edge cases")
+        {
+        // leading zeros
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"007", value));
+        CHECK_THAT(value, WithinAbs(7.0, 0.0001));
+
+        // scientific notation (handled by wxString::ToDouble)
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.5e3", value));
+        CHECK_THAT(value, WithinAbs(1500.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.5E-2", value));
+        CHECK_THAT(value, WithinAbs(0.015, 0.0001));
+
+        // very large numbers
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"999999999999", value));
+        CHECK_THAT(value, WithinAbs(999999999999.0, 1.0));
+
+        // very small decimals
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"0.0001", value));
+        CHECK_THAT(value, WithinAbs(0.0001, 0.00001));
+        }
+
+    SECTION("Ambiguous single comma - uses locale (US: comma is thousands)")
+        {
+        // on US locale, lone comma is treated as thousands separator
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1,5", value));
+        CHECK_THAT(value, WithinAbs(15.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1,234", value));
+        CHECK_THAT(value, WithinAbs(1234.0, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1,234,567", value));
+        CHECK_THAT(value, WithinAbs(1234567.0, 0.0001));
+        }
+
+    SECTION("Ambiguous single period - uses locale (US: period is decimal)")
+        {
+        // on US locale, lone period is treated as decimal separator
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.5", value));
+        CHECK_THAT(value, WithinAbs(1.5, 0.0001));
+
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.234", value));
+        CHECK_THAT(value, WithinAbs(1.234, 0.0001));
+
+        // multiple periods = thousands separators (unambiguous)
+        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.234.567", value));
+        CHECK_THAT(value, WithinAbs(1234567.0, 0.0001));
         }
     }
