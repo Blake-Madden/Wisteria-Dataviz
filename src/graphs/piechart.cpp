@@ -1867,7 +1867,7 @@ namespace Wisteria::Graphs
         std::vector<wxPoint> acceptedCenters;
         acceptedCenters.reserve(TARGET_SPOT_COUNT);
 
-        const double angleStep = safe_divide<double>(360.0, TARGET_SPOT_COUNT);
+        const auto angleStep = safe_divide<double>(360.0, TARGET_SPOT_COUNT);
 
         for (int slotIndex = 0; slotIndex < TARGET_SPOT_COUNT; ++slotIndex)
             {
@@ -2722,7 +2722,7 @@ namespace Wisteria::Graphs
             {
             const uint32_t seed = CINNAMON_SEED + static_cast<uint32_t>(i * 557);
 
-            const double angleStepDegreesCinnamon = safe_divide<double>(360.0, CINNAMON_COUNT);
+            const auto angleStepDegreesCinnamon = safe_divide<double>(360.0, CINNAMON_COUNT);
             const double angleDegrees =
                 (i * angleStepDegreesCinnamon) +
                 (HashToUnitInterval(seed ^ 0x1111U) - 0.5) * angleStepDegreesCinnamon * 0.9;

@@ -62,6 +62,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
         {
         // call Graph2D::RecalcSizes, not ScatterPlot::RecalcSizes
         // because we need to draw points with variable sizes
+        // NOLINTNEXTLINE(bugprone-parent-virtual-call)
         Graph2D::RecalcSizes(dc);
 
         if (GetDataset() == nullptr)
@@ -119,18 +120,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
 
                     if (std::isfinite(tCritical))
                         {
-                        constexpr size_t numPoints{ 50 };
+                        constexpr size_t NUMPOINTS{ 50 };
                         std::vector<wxPoint> upperBand;
                         std::vector<wxPoint> lowerBand;
-                        upperBand.reserve(numPoints);
-                        lowerBand.reserve(numPoints);
+                        upperBand.reserve(NUMPOINTS);
+                        lowerBand.reserve(NUMPOINTS);
 
-                        const double xStep =
-                            safe_divide<double>(xAxisMax - xAxisMin, numPoints - 1);
-                        const double nRecip =
-                            safe_divide<double>(1.0, static_cast<double>(stats.n));
+                        const auto xStep = safe_divide<double>(xAxisMax - xAxisMin, NUMPOINTS - 1);
+                        const auto nRecip = safe_divide<double>(1.0, static_cast<double>(stats.n));
 
-                        for (size_t i = 0; i < numPoints; ++i)
+                        for (size_t i = 0; i < NUMPOINTS; ++i)
                             {
                             const double x = xAxisMin + static_cast<double>(i) * xStep;
                             const double yPred = stats.slope * x + stats.intercept;
@@ -252,7 +251,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
                     {
                     const double sizeVal = sizeColumn->GetValue(i);
                     // normalize to 0-1 range
-                    const double normalized =
+                    const auto normalized =
                         safe_divide<double>(sizeVal - sizeMin, sizeMax - sizeMin);
                     // interpolate area
                     const double area = minArea + normalized * (maxArea - minArea);

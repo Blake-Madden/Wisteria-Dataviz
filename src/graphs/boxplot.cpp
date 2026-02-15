@@ -429,7 +429,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         const auto axisPenWidth = GetLeftYAxis().GetAxisLinePen().IsOk() ?
                                                       GetLeftYAxis().GetAxisLinePen().GetWidth() :
                                                       1;
-                        wxPen pencilPen(
+                        const wxPen pencilPen(
                             Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
                             axisPenWidth * 1.5);
 
@@ -473,13 +473,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         // helper to draw a wobbly line between two points
                         const auto drawWobblyLine = [&](wxPoint from, wxPoint to)
                         {
-                            constexpr int segments{ 5 };
-                            const double dx = safe_divide<double>(to.x - from.x, segments);
-                            const double dy = safe_divide<double>(to.y - from.y, segments);
+                            constexpr int SEGMENTS{ 5 };
+                            const auto dx = safe_divide<double>(to.x - from.x, SEGMENTS);
+                            const auto dy = safe_divide<double>(to.y - from.y, SEGMENTS);
                             std::vector<wxPoint> pts;
-                            pts.reserve(segments + 1);
+                            pts.reserve(SEGMENTS + 1);
                             pts.push_back(from);
-                            for (int segment = 1; segment < segments; ++segment)
+                            for (int segment = 1; segment < SEGMENTS; ++segment)
                                 {
                                 pts.emplace_back(
                                     static_cast<int>(

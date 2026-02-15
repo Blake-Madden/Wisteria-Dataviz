@@ -673,8 +673,8 @@ namespace statistics
         for (size_t m = 1; m <= maxIter; ++m)
             {
             // even step: d_{2m}
-            const double mDouble = static_cast<double>(m);
-            double numerator =
+            const auto mDouble = static_cast<double>(m);
+            auto numerator =
                 safe_divide<double>(mDouble * (shape2 - mDouble) * x,
                                     (shape1 + 2.0 * mDouble - 1.0) * (shape1 + 2.0 * mDouble));
 
@@ -716,7 +716,7 @@ namespace statistics
                 }
             }
 
-        const double value = safe_divide<double>(betaCoeff * result, shape1);
+        const auto value = safe_divide<double>(betaCoeff * result, shape1);
         return symmetry ? 1.0 - value : value;
         }
 
@@ -740,7 +740,7 @@ namespace statistics
             }
 
         // compute one-tailed probability using incomplete beta function
-        const double x = safe_divide<double>(df, df + (t * t));
+        const auto x = safe_divide<double>(df, df + (t * t));
         const double oneTailed = 0.5 * regularized_incomplete_beta(x, df * 0.5, 0.5);
 
         // return two-tailed p-value
@@ -912,13 +912,13 @@ namespace statistics
         const double dfError{ n - 2.0 };
         // for ssRes, summing squared residuals directly is safest,
         // but requires a second pass. Using the algebraic identity below:
-        double ssRes = std::max(0.0, ssYY - results.slope * ssXY);
+        const double ssRes = std::max(0.0, ssYY - results.slope * ssXY);
 
         if (dfError > 0.0)
             {
             // calculate the basic errors
             // (use standard division to allow tiny numbers)
-            const double mse = safe_divide<double>(ssRes, dfError);
+            const auto mse = safe_divide<double>(ssRes, dfError);
             results.standard_error = std::sqrt(mse);
 
             // always calculate slope_standard_error if ssXX is valid

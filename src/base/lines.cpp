@@ -101,12 +101,11 @@ namespace Wisteria::GraphItems
 
         for (int i = 1; i < segments; ++i)
             {
-            const double pos = safe_divide<double>(i, segments);
+            const auto pos = safe_divide<double>(i, segments);
             const double jitterAmount = jitter(GraphItems::ShapeRenderer::GetRNG());
             // move along the line by pos fraction, then add perpendicular jitter
-            points.push_back(
-                wxPoint(static_cast<int>(startPt.x + pos * dx + jitterAmount * perpX),
-                        static_cast<int>(startPt.y + pos * dy + jitterAmount * perpY)));
+            points.emplace_back(static_cast<int>(startPt.x + pos * dx + jitterAmount * perpX),
+                                static_cast<int>(startPt.y + pos * dy + jitterAmount * perpY));
             }
         points.push_back(endPt);
 

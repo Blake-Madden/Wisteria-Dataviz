@@ -290,7 +290,7 @@ inline std::pair<double, double> adjust_intervals(double start, double end)
         }
 
     const double magnitude = std::pow(10, std::floor(std::log10(range)));
-    const double normalizedRange = safe_divide<double>(range, magnitude);
+    const auto normalizedRange = safe_divide<double>(range, magnitude);
 
     // choose a "neat" step from 1, 2, 2.5, 5, 10 scaled by magnitude
     double neatStep{ 0.0 };

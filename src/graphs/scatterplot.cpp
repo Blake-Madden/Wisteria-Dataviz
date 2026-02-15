@@ -223,18 +223,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                     if (std::isfinite(tCritical))
                         {
                         // generate points along the x range for the confidence band
-                        constexpr size_t numPoints{ 50 };
+                        constexpr size_t NUMPOINTS{ 50 };
                         std::vector<wxPoint> upperBand;
                         std::vector<wxPoint> lowerBand;
-                        upperBand.reserve(numPoints);
-                        lowerBand.reserve(numPoints);
+                        upperBand.reserve(NUMPOINTS);
+                        lowerBand.reserve(NUMPOINTS);
 
-                        const double xStep =
-                            safe_divide<double>(xAxisMax - xAxisMin, numPoints - 1);
-                        const double nRecip =
-                            safe_divide<double>(1.0, static_cast<double>(stats.n));
+                        const auto xStep = safe_divide<double>(xAxisMax - xAxisMin, NUMPOINTS - 1);
+                        const auto nRecip = safe_divide<double>(1.0, static_cast<double>(stats.n));
 
-                        for (size_t i = 0; i < numPoints; ++i)
+                        for (size_t i = 0; i < NUMPOINTS; ++i)
                             {
                             const double x = xAxisMin + static_cast<double>(i) * xStep;
                             const double yPred = stats.slope * x + stats.intercept;
@@ -513,12 +511,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             // separator between groups
             if (IsUsingGrouping() && seriesIndex < m_series.size() - 1)
                 {
-                legend->GetLegendIcons().emplace_back(Icons::LegendIcon(
+                legend->GetLegendIcons().emplace_back(
                     Icons::IconShape::HorizontalSeparator,
                     Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
                     wxBrush{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                         GetPlotOrCanvasColor()) },
-                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())));
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
                 legendText.append(L'\n');
                 }
             ++seriesIndex;

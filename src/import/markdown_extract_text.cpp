@@ -967,7 +967,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
                     const std::wstring_view scContent{ scStart, static_cast<size_t>(std::distance(
                                                                     scStart, scEnd)) };
                     // find shortcode name (first token)
-                    size_t nameEnd = scContent.find_first_of(L" \t");
+                    const size_t nameEnd = scContent.find_first_of(L" \t");
                     const std::wstring_view scName = (nameEnd == std::wstring_view::npos) ?
                                                          scContent :
                                                          scContent.substr(0, nameEnd);
@@ -1044,13 +1044,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(std::wstrin
             // if followed by '-', check whether the prefix is a known cross-ref type
             if (prefixEnd < currentEndSentinel && *prefixEnd == L'-' && prefixEnd > refStart)
                 {
-                static const std::set<std::wstring_view> QUARTO_XREF_PREFIXES{
+                static const std::set<std::wstring_view> quartoXrefPrefixes{
                     L"fig", L"tbl", L"sec", L"eq",  L"lst", L"thm", L"lem",
                     L"cor", L"prp", L"cnj", L"def", L"exm", L"exr"
                 };
                 const std::wstring_view candidate{ refStart, static_cast<size_t>(std::distance(
                                                                  refStart, prefixEnd)) };
-                if (QUARTO_XREF_PREFIXES.contains(candidate))
+                if (quartoXrefPrefixes.contains(candidate))
                     {
                     // -@ref suppresses the type label in Quarto;
                     // remove the preceding '-' if it was already written

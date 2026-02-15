@@ -5689,8 +5689,8 @@ namespace Wisteria::GraphItems
                 {
                 // calculate unclipped start/end of the diagonal line
                 double x1 = rect.GetX() + offset;
-                double y1 = static_cast<double>(rect.GetY());
-                double x2 = static_cast<double>(rect.GetX());
+                auto y1 = static_cast<double>(rect.GetY());
+                auto x2 = static_cast<double>(rect.GetX());
                 double y2 = rect.GetY() + offset;
 
                 // clip to rectangle bounds
@@ -5711,12 +5711,12 @@ namespace Wisteria::GraphItems
 
                 // draw the line as a wobbly path with a few segments
                 auto hatchPath = gc->CreatePath();
-                constexpr int segments{ 4 };
-                const double dx = safe_divide<double>(x2 - x1, segments);
-                const double dy = safe_divide<double>(y2 - y1, segments);
+                constexpr int SEGMENTS{ 4 };
+                const auto dx = safe_divide<double>(x2 - x1, SEGMENTS);
+                const auto dy = safe_divide<double>(y2 - y1, SEGMENTS);
 
                 hatchPath.MoveToPoint(x1, y1);
-                for (int segment = 1; segment <= segments; ++segment)
+                for (int segment = 1; segment <= SEGMENTS; ++segment)
                     {
                     const double wx = rect.GetWidth() * wiggleDistroH(GetRNG());
                     const double wy = rect.GetHeight() * wiggleDistroV(GetRNG());
@@ -5744,7 +5744,7 @@ namespace Wisteria::GraphItems
             outlinePath.MoveToPoint(rect.GetX(), rect.GetY());
             for (size_t i = 1; i <= edgeSegments; ++i)
                 {
-                const double tip = safe_divide<double>(i, edgeSegments);
+                const auto tip = safe_divide<double>(i, edgeSegments);
                 outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * tip,
                                            rect.GetY() +
                                                rect.GetHeight() * wiggleDistroV(GetRNG()));
@@ -5752,7 +5752,7 @@ namespace Wisteria::GraphItems
             // right edge
             for (size_t i = 1; i <= edgeSegments; ++i)
                 {
-                const double tip = safe_divide<double>(i, edgeSegments);
+                const auto tip = safe_divide<double>(i, edgeSegments);
                 outlinePath.AddLineToPoint(rect.GetRight() +
                                                rect.GetWidth() * wiggleDistroH(GetRNG()),
                                            rect.GetY() + rect.GetHeight() * tip);
@@ -5760,7 +5760,7 @@ namespace Wisteria::GraphItems
             // bottom edge
             for (size_t i = 1; i <= edgeSegments; ++i)
                 {
-                const double tip = 1.0 - safe_divide<double>(i, edgeSegments);
+                const auto tip = 1.0 - safe_divide<double>(i, edgeSegments);
                 outlinePath.AddLineToPoint(rect.GetX() + rect.GetWidth() * tip,
                                            rect.GetBottom() +
                                                rect.GetHeight() * wiggleDistroV(GetRNG()));
@@ -5872,8 +5872,8 @@ namespace Wisteria::GraphItems
             // draw the line as a wobbly path with a few segments
             auto hatchPath = gc->CreatePath();
             constexpr int segments{ 5 };
-            const double dx = safe_divide<double>(x2 - x1, segments);
-            const double dy = safe_divide<double>(y2 - y1, segments);
+            const auto dx = safe_divide<double>(x2 - x1, segments);
+            const auto dy = safe_divide<double>(y2 - y1, segments);
 
             hatchPath.MoveToPoint(x1, y1);
             for (int segment = 1; segment <= segments; ++segment)
@@ -6648,18 +6648,18 @@ namespace Wisteria::GraphItems
         gc->SetBrush(wxBrush{ pepperoniFillColor });
 
         // 5 pepperoni spread 72° apart, starting from top-right
-        constexpr std::array<double, PEPPERONI_COUNT> angleOffsets = { -45.0, 27.0, 99.0, 171.0,
-                                                                       243.0 };
+        constexpr std::array<double, PEPPERONI_COUNT> ANGLE_OFFSETS = { -45.0, 27.0, 99.0, 171.0,
+                                                                        243.0 };
         // alternating distances to avoid clustering
-        constexpr std::array<double, PEPPERONI_COUNT> distanceFactors = { 0.80, 0.50, 0.85, 0.45,
-                                                                          0.75 };
+        constexpr std::array<double, PEPPERONI_COUNT> DISTANCE_FACTORS = { 0.80, 0.50, 0.85, 0.45,
+                                                                           0.75 };
 
         for (int i = 0; i < PEPPERONI_COUNT; ++i)
             {
-            const double angle = angleOffsets[i];
+            const double angle = ANGLE_OFFSETS[i];
             const double distance =
                 minPepperoniDistance +
-                (maxPepperoniDistance - minPepperoniDistance) * distanceFactors[i];
+                (maxPepperoniDistance - minPepperoniDistance) * DISTANCE_FACTORS[i];
 
             const double pepX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
             const double pepY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
@@ -6705,23 +6705,23 @@ namespace Wisteria::GraphItems
         gc->SetBrush(wxBrush{ pineappleFillColor });
 
         // offset from pepperoni positions so they don't overlap directly
-        constexpr std::array<double, PINEAPPLE_COUNT> angleOffsets = { 0.0,   36.0,  72.0,  108.0,
-                                                                       144.0, 180.0, 216.0, 252.0,
-                                                                       288.0, 324.0 };
-        constexpr std::array<double, PINEAPPLE_COUNT> distanceFactors = { 0.55, 0.85, 0.40, 0.70,
-                                                                          0.90, 0.35, 0.75, 0.50,
-                                                                          0.80, 0.45 };
+        constexpr std::array<double, PINEAPPLE_COUNT> ANGLE_OFFSETS = { 0.0,   36.0,  72.0,  108.0,
+                                                                        144.0, 180.0, 216.0, 252.0,
+                                                                        288.0, 324.0 };
+        constexpr std::array<double, PINEAPPLE_COUNT> DISTANCE_FACTORS = { 0.55, 0.85, 0.40, 0.70,
+                                                                           0.90, 0.35, 0.75, 0.50,
+                                                                           0.80, 0.45 };
         // random rotation angles for each chunk (in radians)
-        constexpr std::array<double, PINEAPPLE_COUNT> rotationAngles = { 0.4, -0.7, 1.2, -0.3,
-                                                                         0.9, -1.1, 0.6, -0.5,
-                                                                         1.0, -0.2 };
+        constexpr std::array<double, PINEAPPLE_COUNT> ROTATION_ANGLES = { 0.4, -0.7, 1.2, -0.3,
+                                                                          0.9, -1.1, 0.6, -0.5,
+                                                                          1.0, -0.2 };
 
         for (int i = 0; i < PINEAPPLE_COUNT; ++i)
             {
-            const double angle = angleOffsets[i];
+            const double angle = ANGLE_OFFSETS[i];
             const double distance =
                 minPineappleDistance +
-                (maxPineappleDistance - minPineappleDistance) * distanceFactors[i];
+                (maxPineappleDistance - minPineappleDistance) * DISTANCE_FACTORS[i];
 
             const double pineX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
             const double pineY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
@@ -6733,7 +6733,7 @@ namespace Wisteria::GraphItems
 
             wxGraphicsMatrix matrix = gc->CreateMatrix();
             matrix.Translate(pineX, pineY);
-            matrix.Rotate(rotationAngles[i]);
+            matrix.Rotate(ROTATION_ANGLES[i]);
             chunkPath.Transform(matrix);
 
             gc->FillPath(chunkPath);
@@ -6833,18 +6833,18 @@ namespace Wisteria::GraphItems
         gc->SetBrush(wxBrush{ chipFillColor });
 
         // spread chips around the cookie
-        constexpr std::array<double, CHIP_COUNT> chipAngleOffsets = { -30.0, 25.0,  80.0, 135.0,
-                                                                      190.0, 250.0, 310.0 };
-        constexpr std::array<double, CHIP_COUNT> chipDistanceFactors = { 0.65, 0.40, 0.75, 0.50,
-                                                                         0.80, 0.35, 0.0 };
+        constexpr std::array<double, CHIP_COUNT> CHIP_ANGLE_OFFSETS = { -30.0, 25.0,  80.0, 135.0,
+                                                                        190.0, 250.0, 310.0 };
+        constexpr std::array<double, CHIP_COUNT> CHIP_DISTANCE_FACTORS = { 0.65, 0.40, 0.75, 0.50,
+                                                                           0.80, 0.35, 0.0 };
 
         const double scaledChipDiameter{ chipRadius * 2.0 };
 
         for (int i = 0; i < CHIP_COUNT; ++i)
             {
-            const double angle = chipAngleOffsets[i];
+            const double angle = CHIP_ANGLE_OFFSETS[i];
             const double distance =
-                minChipDistance + (maxChipDistance - minChipDistance) * chipDistanceFactors[i];
+                minChipDistance + (maxChipDistance - minChipDistance) * CHIP_DISTANCE_FACTORS[i];
 
             const double chipX = cx + std::cos(angle * std::numbers::pi / 180.0) * distance;
             const double chipY = cy + std::sin(angle * std::numbers::pi / 180.0) * distance;
@@ -7045,7 +7045,7 @@ namespace Wisteria::GraphItems
         // draw coffee bean in center of logo (rotated 45 degrees)
         const double beanWidth = logoRadius * 0.80;
         const double beanHeight = logoRadius * 0.55;
-        constexpr double beanRotation = 45.0 * std::numbers::pi / 180.0;
+        constexpr double BEAN_ROTATION = 45.0 * std::numbers::pi / 180.0;
 
         gc->SetPen(wxPen{ beanColor, outlinePenWidth });
         gc->SetBrush(wxBrush{ beanColor });
@@ -7055,7 +7055,7 @@ namespace Wisteria::GraphItems
         beanPath.AddEllipse(-beanWidth / 2, -beanHeight / 2, beanWidth, beanHeight);
         wxGraphicsMatrix beanMatrix = gc->CreateMatrix();
         beanMatrix.Translate(cx, sleeveMiddleY);
-        beanMatrix.Rotate(beanRotation);
+        beanMatrix.Rotate(BEAN_ROTATION);
         beanPath.Transform(beanMatrix);
         gc->FillPath(beanPath);
         gc->StrokePath(beanPath);
@@ -7070,7 +7070,7 @@ namespace Wisteria::GraphItems
         creasePath.AddQuadCurveToPoint(beanWidth * 0.1, beanHeight * 0.15, creaseHalfLen, 0);
         wxGraphicsMatrix creaseMatrix = gc->CreateMatrix();
         creaseMatrix.Translate(cx, sleeveMiddleY);
-        creaseMatrix.Rotate(beanRotation);
+        creaseMatrix.Rotate(BEAN_ROTATION);
         creasePath.Transform(creaseMatrix);
         gc->StrokePath(creasePath);
 
@@ -7134,13 +7134,13 @@ namespace Wisteria::GraphItems
         const double halfBody = (pillLength / 2.0) - r; // half of straight section
 
         // rotation angle (tilted like reference image)
-        constexpr double angle = -45.0 * std::numbers::pi / 180.0;
-        const double cosA = std::cos(angle);
-        const double sinA = std::sin(angle);
+        constexpr double ANGLE = -45.0 * std::numbers::pi / 180.0;
+        const double cosA = std::cos(ANGLE);
+        const double sinA = std::sin(ANGLE);
 
         // control point offset for circular arc approximation (4/3 * tan(pi/4) ≈ 0.5523)
-        constexpr double kappa = 0.5523;
-        const double k = r * kappa;
+        constexpr double KAPPA = 0.5523;
+        const double k = r * KAPPA;
 
         const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(1));
 
@@ -7215,7 +7215,7 @@ namespace Wisteria::GraphItems
 
         // gradient direction (perpendicular to pill axis for 3D effect)
         const double gradLen = pillWidth * 0.6;
-        const double gradAngle = angle + (std::numbers::pi / 2.0);
+        const double gradAngle = ANGLE + (std::numbers::pi / 2.0);
         const double gx = gradLen * std::cos(gradAngle);
         const double gy = gradLen * std::sin(gradAngle);
 
