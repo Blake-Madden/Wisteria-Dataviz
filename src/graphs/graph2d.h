@@ -437,6 +437,15 @@ namespace Wisteria::Graphs
                 }
             }
 
+        // @returns @c true if a box style looks "hand crafted."
+        // @param boxEffect The effect to review.
+        [[nodiscard]]
+        static constexpr bool IsBoxEffectStylized(const BoxEffect boxEffect) noexcept
+            {
+            return (boxEffect == BoxEffect::Marker || boxEffect == BoxEffect::WaterColor ||
+                    boxEffect == BoxEffect::ThickWaterColor || boxEffect == BoxEffect::Pencil);
+            }
+
         /// @}
 
         /** @name Property Functions

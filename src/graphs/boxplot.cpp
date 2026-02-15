@@ -377,22 +377,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     wxNumberFormatter::ToString(box.GetUpperWhisker(), 3,
                                                 Settings::GetDefaultNumberFormat()));
 
-                const bool useStylizedWhiskers =
-                    (box.GetBoxEffect() == BoxEffect::Marker ||
-                     box.GetBoxEffect() == BoxEffect::WaterColor ||
-                     box.GetBoxEffect() == BoxEffect::ThickWaterColor ||
-                     box.GetBoxEffect() == BoxEffect::Pencil);
-
                 // When using a stylized effect, draw the original whisker lines
                 // with a transparent pen so they remain for hit-testing/tooltips
                 // but are not visible (the stylized lines are drawn on top).
                 const wxPen linePen(
-                    useStylizedWhiskers ?
+                    IsBoxEffectStylized(box.GetBoxEffect()) ?
                         wxColour{ 0, 0, 0, 0 } :
                         Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
                     2);
                 const wxColour lineBrush =
-                    useStylizedWhiskers ?
+                    IsBoxEffectStylized(box.GetBoxEffect()) ?
                         wxColour{ 0, 0, 0, 0 } :
                         Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
 
@@ -428,7 +422,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                                           linePoints));
 
                 // draw the whiskers with a wobbly stylized pen
-                if (useStylizedWhiskers)
+                if (IsBoxEffectStylized(box.GetBoxEffect()))
                     {
                     if (box.GetBoxEffect() == BoxEffect::Pencil)
                         {
@@ -728,6 +722,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         (box.GetBoxEffect() == BoxEffect::Glassy) ?
                             GraphItems::Polygon::PolygonShape::GlassyRectangle :
                             GraphItems::Polygon::PolygonShape::Rectangle);
+                    // turn off shadow for "hand-crafted" bar effects
+                    if (IsBoxEffectStylized(box.GetBoxEffect()))
+                        {
+                        boxPoly->SetShadowType(ShadowType::NoDisplay);
+                        }
                     // for pencil effect, use a thicker pen
                     if (box.GetBoxEffect() == BoxEffect::Pencil)
                         {

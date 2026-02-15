@@ -179,7 +179,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     std::optional<double> BarChart::FindBarBlockStart(const size_t barIndex,
                                                       const wxString& blockTag) const
         {
-        assert(barIndex < GetBars().size() && L"Bar index out of range!");
+        wxASSERT_MSG(barIndex < GetBars().size(), L"Bar index out of range!");
         if (barIndex >= GetBars().size())
             {
             return std::nullopt;
@@ -201,7 +201,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     std::optional<double> BarChart::FindBarBlockEnd(const size_t barIndex, const wxString& blockTag)
         const
         {
-        assert(barIndex < GetBars().size() && L"Bar index out of range!");
+        wxASSERT_MSG(barIndex < GetBars().size(), L"Bar index out of range!");
         if (barIndex >= GetBars().size())
             {
             return std::nullopt;
@@ -223,7 +223,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::AddFirstBarBracket(const wxString& firstBarBlock, const wxString& lastBarBlock,
                                       const wxString& bracketLabel)
         {
-        assert(!GetBars().empty() && L"No bars available when adding an axis bracket!");
+        wxASSERT_MSG(!GetBars().empty(), L"No bars available when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars available when adding an axis bracket.").ToUTF8());
@@ -259,7 +259,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                         const wxString& lastBarBlockPattern,
                                         const wxString& bracketLabel)
         {
-        assert(!GetBars().empty() && L"No bars available when adding an axis bracket!");
+        wxASSERT_MSG(!GetBars().empty(), L"No bars available when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars available when adding an axis bracket.").ToUTF8());
@@ -292,7 +292,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::AddLastBarBracket(const wxString& firstBarBlock, const wxString& lastBarBlock,
                                      const wxString& bracketLabel)
         {
-        assert(!GetBars().empty() && L"No bars when adding an axis bracket!");
+        wxASSERT_MSG(!GetBars().empty(), L"No bars when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars when adding an axis bracket.").ToUTF8());
@@ -337,7 +337,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                        const wxString& lastBarBlockPattern,
                                        const wxString& bracketLabel)
         {
-        assert(!GetBars().empty() && L"No bars when adding an axis bracket!");
+        wxASSERT_MSG(!GetBars().empty(), L"No bars when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars when adding an axis bracket.").ToUTF8());
@@ -629,8 +629,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::SortBars(std::vector<wxString> labels, const Wisteria::SortDirection direction)
         {
-        assert(IsSortable() && L"Bars are not sortable. "
-                               "Call SetSortable(true) prior to calling SortBars().");
+        wxASSERT_MSG(IsSortable(), L"Bars are not sortable. "
+                                   "Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort || GetBarAxis().IsReversed())
             {
@@ -784,8 +784,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::SortBars(const BarSortComparison sortMethod,
                             const Wisteria::SortDirection direction)
         {
-        assert(IsSortable() && L"Bars are not sortable. "
-                               "Call SetSortable(true) prior to calling SortBars().");
+        wxASSERT_MSG(IsSortable(), L"Bars are not sortable. "
+                                   "Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort || GetBarAxis().IsReversed())
             {
@@ -1020,7 +1020,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
                     Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
                         .Pen(GetImageOutlineColor())
-                        .AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                        .AnchorPoint(wxPoint{ lineXStart, lineYStart }),
                     barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
                 barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
@@ -1036,7 +1036,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
                     Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
                         .Pen(GetImageOutlineColor())
-                        .AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                        .AnchorPoint(wxPoint{ lineXStart, lineYStart }),
                     Wisteria::GraphItems::Image::CropImageToRect(
                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
                         barRenderInfo.m_barRect, true));
@@ -1050,9 +1050,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
                 {
-                assert((bar.GetShape() == BarShape::Rectangle) &&
-                       L"Non-rectangular shapes not currently "
-                       "supported with stipple bar effect.");
+                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
+                             L"Non-rectangular shapes not currently "
+                             "supported with stipple bar effect.");
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
                     Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
                         .Pen(wxNullPen)
@@ -1073,9 +1073,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleShape)
                 {
-                assert((bar.GetShape() == BarShape::Rectangle) &&
-                       L"Non-rectangular shapes not currently "
-                       "supported with stipple bar effect.");
+                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
+                             L"Non-rectangular shapes not currently "
+                             "supported with stipple bar effect.");
                 auto shapeWidth{ barRenderInfo.m_barWidth };
                 auto shapeHeight{ barRenderInfo.m_barWidth };
                 // These particular icons are drawn with a ratio where the width
@@ -1177,8 +1177,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 else if (bar.GetShape() == BarShape::Arrow ||
                          bar.GetShape() == BarShape::ReverseArrow)
                     {
-                    assert(GetShadowType() == ShadowType::NoDisplay &&
-                           L"Drop shadow not supported for arrow shape currently.");
+                    wxASSERT_MSG(GetShadowType() == ShadowType::NoDisplay,
+                                 L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize{ 0, safe_divide(barNeckRect.GetHeight(), 5) });
                     const auto originalWidth{ barNeckRect.GetWidth() };
                     barNeckRect.SetWidth(barNeckRect.GetWidth() * 0.90);
@@ -1235,7 +1235,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         arrowPoints);
                     }
 
-                assert(box);
+                wxASSERT(box);
 
                 if (barBlock.GetOutlinePen().IsOk())
                     {
@@ -1306,6 +1306,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                               (bar.GetEffect() == BoxEffect::Glassy) ?
                                   GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                   GraphItems::Polygon::PolygonShape::Rectangle);
+                // turn off shadow for "hand-crafted" bar effects
+                if (IsBoxEffectStylized(bar.GetEffect()))
+                    {
+                    box->SetShadowType(ShadowType::NoDisplay);
+                    }
                 // along with a second coat, we will make the thick water color
                 // brush use a more opaque value than the system's default
                 if (bar.GetEffect() == BoxEffect::ThickWaterColor && box->GetBrush().IsOk() &&
@@ -1667,9 +1672,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
                 {
-                assert((bar.GetShape() == BarShape::Rectangle) &&
-                       L"Non-rectangular shapes not currently "
-                       "supported with stipple bar effect.");
+                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
+                             L"Non-rectangular shapes not currently "
+                             "supported with stipple bar effect.");
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
                     Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
                         .Pen(wxNullPen)
@@ -1690,9 +1695,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleShape)
                 {
-                assert((bar.GetShape() == BarShape::Rectangle) &&
-                       L"Non-rectangular shapes not currently "
-                       "supported with stipple bar effect.");
+                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
+                             L"Non-rectangular shapes not currently "
+                             "supported with stipple bar effect.");
                 auto shapeHeight{ barRenderInfo.m_barWidth };
                 auto currentYTop = lineYStart - shapeHeight;
                 while ((currentYTop + shapeHeight) > lineYEnd)
@@ -1764,8 +1769,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 else if (bar.GetShape() == BarShape::Arrow ||
                          bar.GetShape() == BarShape::ReverseArrow)
                     {
-                    assert(GetShadowType() == ShadowType::NoDisplay &&
-                           L"Drop shadow not supported for arrow shape currently.");
+                    wxASSERT_MSG(GetShadowType() == ShadowType::NoDisplay,
+                                 L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
 
                     const auto originalHeight{ barNeckRect.GetHeight() };
@@ -1825,7 +1830,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         arrowPoints);
                     }
 
-                assert(box);
+                wxASSERT(box);
                 if (barBlock.GetOutlinePen().IsOk())
                     {
                     box->GetPen() = barBlock.GetOutlinePen();
@@ -1896,6 +1901,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                               (bar.GetEffect() == BoxEffect::Glassy) ?
                                   GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                   GraphItems::Polygon::PolygonShape::Rectangle);
+                // turn off shadow for "hand-crafted" bar effects
+                if (IsBoxEffectStylized(bar.GetEffect()))
+                    {
+                    box->SetShadowType(ShadowType::NoDisplay);
+                    }
                 // along with a second coat, we will make the thick water color
                 // brush use a more opaque value than the system's default
                 if (bar.GetEffect() == BoxEffect::ThickWaterColor && box->GetBrush().IsOk() &&
