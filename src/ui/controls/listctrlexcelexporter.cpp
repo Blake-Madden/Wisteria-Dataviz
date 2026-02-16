@@ -65,7 +65,9 @@ namespace Wisteria::UI
         // add all required files to the ZIP
         const bool success =
             addToZip(L"[Content_Types].xml", BuildContentTypesXml()) &&
+            // quneiform-suppress-begin
             addToZip(L"_rels/.rels", BuildRelsXml()) &&
+            // quneiform-suppress-end
             addToZip(L"xl/workbook.xml", BuildWorkbookXml()) &&
             addToZip(L"xl/_rels/workbook.xml.rels", BuildWorkbookRelsXml()) &&
             addToZip(L"xl/worksheets/sheet1.xml", BuildSheetXml(includeColumnHeaders)) &&
@@ -526,6 +528,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     wxString ListCtrlExcelExporter::BuildContentTypesXml()
         {
+        // quneiform-suppress-begin
         wxString xml =
             L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
             "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">\n"
@@ -551,6 +554,7 @@ namespace Wisteria::UI
 
         xml += "</Types>";
         return xml;
+        // quneiform-suppress-end
         }
 
     //------------------------------------------------------
@@ -632,7 +636,7 @@ namespace Wisteria::UI
 
             for (long col = 0; col < m_listCtrl->GetColumnCount(); ++col)
                 {
-                const wxString cellRef = ColumnToLetter(col) + wxString::Format(L"%ld", excelRow);
+                const wxString cellRef = ColumnToLetter(col) + std::to_string(excelRow);
                 const wxString headerText = m_listCtrl->GetColumnName(col);
                 const size_t stringIndex = GetOrAddSharedString(headerText);
 
@@ -650,7 +654,7 @@ namespace Wisteria::UI
 
             for (long col = 0; col < m_listCtrl->GetColumnCount(); ++col)
                 {
-                const wxString cellRef = ColumnToLetter(col) + wxString::Format(L"%ld", excelRow);
+                const wxString cellRef = ColumnToLetter(col) + std::to_string(excelRow);
                 const CellData cellData = GetCellData(row, col);
 
                 switch (cellData.m_type)
@@ -722,14 +726,14 @@ namespace Wisteria::UI
 
         // fonts: collect unique text colors
         std::vector<wxColour> fontColors;
-        fontColors.push_back(wxColour()); // default (index 0) - no color specified
+        fontColors.push_back(wxColour{}); // default (index 0) - no color specified
 
         for (const auto& style : m_stylesList)
             {
             if (style.m_textColor.IsOk())
                 {
                 // check if this color is already in our list
-                bool found = false;
+                bool found{ false };
                 for (const auto& fc : fontColors)
                     {
                     if (fc.IsOk() && fc.GetRGBA() == style.m_textColor.GetRGBA())
@@ -753,16 +757,18 @@ namespace Wisteria::UI
                 {
                 xml += wxString::Format(L"      <color rgb=\"%s\"/>\n", ColorToArgb(fontColor));
                 }
+            // quneiform-suppress-begin
             xml += L"      <name val=\"Calibri\"/>\n"
                    "      <family val=\"2\"/>\n"
                    "    </font>\n";
+            // quneiform-suppress-end
             }
         xml += L"  </fonts>\n";
 
         // fills - collect unique background colors
         std::vector<wxColour> fillColors;
-        fillColors.push_back(wxColour()); // default (index 0) - no fill
-        fillColors.push_back(wxColour()); // gray125 pattern (index 1) - required by Excel
+        fillColors.push_back(wxColour{}); // default (index 0) - no fill
+        fillColors.push_back(wxColour{}); // gray125 pattern (index 1) - required by Excel
 
         for (const auto& style : m_stylesList)
             {
@@ -800,6 +806,7 @@ namespace Wisteria::UI
             }
         xml += L"  </fills>\n";
 
+        // quneiform-suppress-begin
         // borders - just one default border
         xml += L"  <borders count=\"1\">\n"
                "    <border><left/><right/><top/><bottom/><diagonal/></border>\n"
@@ -809,13 +816,14 @@ namespace Wisteria::UI
         xml += L"  <cellStyleXfs count=\"1\">\n"
                "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\n"
                "  </cellStyleXfs>\n";
+        // quneiform-suppress-end
 
         // cell xfs (actual styles used by cells)
         xml += wxString::Format(L"  <cellXfs count=\"%zu\">\n", m_stylesList.size());
         for (const auto& style : m_stylesList)
             {
             // find font index for this style
-            size_t fontIndex = 0;
+            size_t fontIndex{ 0 };
             if (style.m_textColor.IsOk())
                 {
                 for (size_t i = 0; i < fontColors.size(); ++i)
@@ -830,7 +838,7 @@ namespace Wisteria::UI
                 }
 
             // find fill index for this style
-            size_t fillIndex = 0;
+            size_t fillIndex{ 0 };
             if (style.m_backgroundColor.IsOk())
                 {
                 for (size_t i = 0; i < fillColors.size(); ++i)
@@ -860,10 +868,12 @@ namespace Wisteria::UI
             }
         xml += L"  </cellXfs>\n";
 
+        // quneiform-suppress-begin
         // cell styles
         xml += L"  <cellStyles count=\"1\">\n"
                "    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\n"
                "  </cellStyles>\n";
+        // quneiform-suppress-end
 
         xml += L"</styleSheet>";
         return xml;
