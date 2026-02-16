@@ -33,6 +33,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/bubbleplot.cpp
     ../../src/graphs/candlestickplot.cpp
     ../../src/graphs/categoricalbarchart.cpp
+    ../../src/graphs/chernoffplot.cpp
     ../../src/graphs/crawfordgraph.cpp
     ../../src/graphs/danielsonbryan2plot.cpp
     ../../src/graphs/fleschchart.cpp

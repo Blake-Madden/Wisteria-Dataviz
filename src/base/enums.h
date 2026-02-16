@@ -74,6 +74,15 @@ namespace Wisteria
         Bottom
         };
 
+    /// @brief Gender options.
+    enum class Gender
+        {
+        /// @brief Female.
+        Female,
+        /// @brief Male.
+        Male
+        };
+
     /// @brief Where a ring is within a circle.
     enum class Perimeter
         {

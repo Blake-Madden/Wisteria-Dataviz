@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <!-- Face: narrow, frown, small eyes -->
+  <g transform="translate(200,158) scale(4)">
+    <ellipse cx="0" cy="0" rx="28" ry="35" fill="#ffe0bd" stroke="#000" stroke-width="1.5"/>
+    <ellipse cx="-10" cy="-8" rx="5" ry="4" fill="#fff" stroke="#000" stroke-width="1"/>
+    <ellipse cx="10" cy="-8" rx="5" ry="4" fill="#fff" stroke="#000" stroke-width="1"/>
+    <circle cx="-10" cy="-8" r="2" fill="#000"/>
+    <circle cx="10" cy="-8" r="2" fill="#000"/>
+    <line x1="-15" y1="-16" x2="-5" y2="-14" stroke="#000" stroke-width="1.5"/>
+    <line x1="5" y1="-14" x2="15" y2="-16" stroke="#000" stroke-width="1.5"/>
+    <path d="M -8 18 Q 0 12 8 18" fill="none" stroke="#000" stroke-width="1.5"/>
+    <path d="M 0 2 L 0 10 L -3 10 M 0 10 L 3 10" fill="none" stroke="#000" stroke-width="1"/>
+  </g>
+</svg>

@@ -138,6 +138,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_TABLE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SCATTERPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BUBBLEPLOT);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CHERNOFFPLOT);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -176,6 +177,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"));
     fileMenu->Append(MyApp::ID_NEW_SCATTERPLOT, _(L"Scatter Plot"));
     fileMenu->Append(MyApp::ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"));
+    fileMenu->Append(MyApp::ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"));
@@ -1230,6 +1232,118 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas->SetFixedObject(
                 0, 1,
                 bubblePlot->CreateLegend(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
+                        Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+        }
+    // Chernoff Faces Plot
+    else if (event.GetId() == MyApp::ID_NEW_CHERNOFFPLOT)
+        {
+        subframe->SetTitle(_(L"Chernoff Faces Plot"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+
+        wxFileDialog fileDlg(this, _(L"Select Dataset"), wxString{}, wxString{},
+                             Wisteria::Data::Dataset::GetDataFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        try
+            {
+            auto columnInfo = Wisteria::Data::Dataset::ReadColumnInfo(
+                fileDlg.GetPath(), Wisteria::Data::ImportInfo{}.MaxDiscreteValue(1));
+            auto chernoffData = std::make_shared<Wisteria::Data::Dataset>();
+
+            Wisteria::UI::VariableSelectDlg selectVarsDlg(
+                this, columnInfo,
+                { Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"ID (label)"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Face width"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Face height"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Eye size"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Eye position"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Eyebrow slant"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Pupil position"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Nose size"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Mouth width"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Mouth curvature"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Face color"))
+                      .SingleSelection(true)
+                      .Required(false),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Ear size"))
+                      .SingleSelection(true)
+                      .Required(false) });
+            if (selectVarsDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+
+            const auto getOptionalVar = [&](size_t index) -> std::optional<wxString>
+            {
+                const auto vars = selectVarsDlg.GetSelectedVariables(index);
+                return !vars.empty() ? std::optional<wxString>{ vars[0] } : std::nullopt;
+            };
+
+            auto importInfo = Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo);
+            const auto idCol = getOptionalVar(0);
+            if (idCol.has_value())
+                {
+                importInfo.IdColumn(idCol.value());
+                }
+            chernoffData->ImportCSV(fileDlg.GetPath(), importInfo);
+
+            auto chernoffPlot =
+                std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(subframe->m_canvas);
+            chernoffPlot->SetData(chernoffData, selectVarsDlg.GetSelectedVariables(1)[0],
+                                  getOptionalVar(2), getOptionalVar(3), getOptionalVar(4),
+                                  getOptionalVar(5), getOptionalVar(6), getOptionalVar(7),
+                                  getOptionalVar(8), getOptionalVar(9), getOptionalVar(10),
+                                  getOptionalVar(11));
+
+            subframe->m_canvas->SetFixedObject(0, 0, chernoffPlot);
+            subframe->m_canvas->SetFixedObject(
+                0, 1,
+                chernoffPlot->CreateLegend(
                     Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                         Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
             }
@@ -2735,6 +2849,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/bubbleplot.svg", iconSize),
                      _(L"Bubble Plot"));
+    toolBar->AddTool(MyApp::ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/chernoffplot.svg", iconSize),
+                     _(L"Chernoff Faces Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"),
