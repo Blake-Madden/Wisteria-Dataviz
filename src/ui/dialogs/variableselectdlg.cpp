@@ -164,6 +164,11 @@ namespace Wisteria::UI
             new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
         mainSizer->Add(varsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
+        // split var groups into columns of 5
+        constexpr size_t maxGroupsPerColumn{ 5 };
+        const size_t numColumnSets = (varInfo.size() + maxGroupsPerColumn - 1) / maxGroupsPerColumn;
+        const size_t rowsNeeded = std::min(varInfo.size(), maxGroupsPerColumn) * 2;
+
         // fill the main list of variables
         varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables:")), wxGBPosition(0, 0),
                        wxGBSpan(1, 1));
@@ -175,16 +180,14 @@ namespace Wisteria::UI
             m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
             }
         // quneiform-suppress-begin
-        varsSizer->Add(m_mainVarlist, wxGBPosition{ 1, 0 }, wxGBSpan(varInfo.size() * 2, 1),
-                       wxEXPAND);
+        varsSizer->Add(m_mainVarlist, wxGBPosition{ 1, 0 }, wxGBSpan(rowsNeeded, 1), wxEXPAND);
         // quneiform-suppress-end
 
         // set up the variable groups on the right side
-        int currentButtonRow{ 1 };
-        int currentLabelRow{ 0 };
-        int currentListRow{ 1 };
-        const auto addVarControls =
-            [&](const auto addId, const auto removeId, const wxString& label, const long listStyle)
+        const auto addVarControls = [&](const auto addId, const auto removeId,
+                                        const wxString& label, const long listStyle,
+                                        const int buttonCol, const int listCol, const int buttonRow,
+                                        const int labelRow, const int listRow)
         {
             auto* buttonSz = new wxBoxSizer(wxVERTICAL);
             auto* varButtonAdd = new wxButton(this, addId);
@@ -193,25 +196,18 @@ namespace Wisteria::UI
             auto* varButtonRemove = new wxButton(this, removeId);
             varButtonRemove->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_GO_BACK));
             buttonSz->Add(varButtonRemove);
-            varsSizer->Add(buttonSz, wxGBPosition{ currentButtonRow, 1 }, wxGBSpan{ 1, 1 },
+            varsSizer->Add(buttonSz, wxGBPosition{ buttonRow, buttonCol }, wxGBSpan{ 1, 1 },
                            wxALIGN_CENTER_VERTICAL);
-            if ((listStyle & wxLC_SINGLE_SEL) != 0)
-                {
-                varsSizer->AddGrowableRow(currentButtonRow);
-                }
-            currentButtonRow += 2;
 
             varsSizer->Add(new wxStaticText(this, wxID_STATIC, label),
-                           wxGBPosition{ currentLabelRow, 2 }, wxGBSpan{ 1, 1 });
-            currentLabelRow += 2;
+                           wxGBPosition{ labelRow, listCol }, wxGBSpan{ 1, 1 });
 
             auto* list =
                 new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
             list->InsertColumn(0, wxString{});
             // quneiform-suppress-begin
-            varsSizer->Add(list, wxGBPosition{ currentListRow, 2 }, wxGBSpan{ 1, 1 }, wxEXPAND);
+            varsSizer->Add(list, wxGBPosition{ listRow, listCol }, wxGBSpan{ 1, 1 }, wxEXPAND);
             // quneiform-suppress-end
-            currentListRow += 2;
 
             return list;
         };
@@ -219,8 +215,18 @@ namespace Wisteria::UI
         int currentId{ wxID_HIGHEST };
 
         // create the user-defined variable lists on the right
-        for (const auto& var : varInfo)
+        for (size_t i = 0; i < varInfo.size(); ++i)
             {
+            const auto& var = varInfo[i];
+            const size_t columnSet = i / maxGroupsPerColumn;
+            const size_t rowWithinSet = i % maxGroupsPerColumn;
+
+            const int buttonCol = 1 + static_cast<int>(columnSet) * 2;
+            const int listCol = 2 + static_cast<int>(columnSet) * 2;
+            const int labelRow = static_cast<int>(rowWithinSet) * 2;
+            const int listRow = labelRow + 1;
+            const int buttonRow = listRow;
+
             VariableList currentList;
             currentList.m_label = var.m_label;
             currentList.m_addId = ++currentId;
@@ -236,21 +242,21 @@ namespace Wisteria::UI
                                (currentList.m_required ?
                                     currentList.m_label + L':' :
                                     wxString::Format(_(L"%s (optional):"), currentList.m_label)),
-                               style);
+                               style, buttonCol, listCol, buttonRow, labelRow, listRow);
             m_varLists.push_back(std::move(currentList));
             }
 
         // make list columns growable horizontally, but not button columns
         varsSizer->AddGrowableCol(0);
-        varsSizer->AddGrowableCol(2);
+        for (size_t cs = 0; cs < numColumnSets; ++cs)
+            {
+            varsSizer->AddGrowableCol(2 + cs * 2);
+            }
 
         // make the list rows growable vertically
-        for (size_t i = 1; i < varInfo.size() * 2; i += 2)
+        for (size_t i = 1; i < rowsNeeded; i += 2)
             {
-            if (!varsSizer->IsRowGrowable(i))
-                {
-                varsSizer->AddGrowableRow(i);
-                }
+            varsSizer->AddGrowableRow(i);
             }
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
