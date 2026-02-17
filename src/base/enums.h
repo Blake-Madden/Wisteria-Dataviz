@@ -83,6 +83,21 @@ namespace Wisteria
         Male
         };
 
+    /// @brief Hair style options for Chernoff faces.
+    enum class HairStyle
+        {
+        /// @brief No hair.
+        Bald,
+        /// @brief Short bob cut at jaw level.
+        Bob,
+        /// @brief Very short cropped style.
+        Pixie,
+        /// @brief Hair pulled into a bun.
+        Bun,
+        /// @brief Long straight hair past shoulders.
+        LongStraight
+        };
+
     /// @brief Where a ring is within a circle.
     enum class Perimeter
         {

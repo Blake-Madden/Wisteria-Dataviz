@@ -249,6 +249,34 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /// @returns The hair style (female faces only).
+        [[nodiscard]]
+        HairStyle GetHairStyle() const noexcept
+            {
+            return m_hairStyle;
+            }
+
+        /// @brief Sets the hair style (female faces only).
+        /// @param style The hair style to use.
+        void SetHairStyle(const HairStyle style) noexcept { m_hairStyle = style; }
+
+        /// @returns The hair color.
+        [[nodiscard]]
+        wxColour GetHairColor() const noexcept
+            {
+            return m_hairColor;
+            }
+
+        /// @brief Sets the hair color.
+        /// @param color The hair color.
+        void SetHairColor(const wxColour& color) noexcept
+            {
+            if (color.IsOk())
+                {
+                m_hairColor = color;
+                }
+            }
+
         /// @}
 
         /** @brief Builds and returns a legend explaining the feature mappings.
@@ -283,11 +311,13 @@ namespace Wisteria::Graphs
             FaceObject(const GraphItems::GraphItemInfo& itemInfo, const FaceFeatures& features,
                        const wxSize& sz, const wxColour& faceColorLighter,
                        const wxColour& faceColorDarker, const wxColour& outlineColor,
-                       const wxColour& lipstickColor, const wxColour& eyeColor, const Gender gender)
+                       const wxColour& lipstickColor, const wxColour& eyeColor,
+                       const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
                 : GraphItemBase(itemInfo), m_features(features), m_size(sz),
                   m_faceColorLighter(faceColorLighter), m_faceColorDarker(faceColorDarker),
                   m_outlineColor(outlineColor), m_lipstickColor(lipstickColor),
-                  m_eyeColor(eyeColor), m_gender(gender)
+                  m_eyeColor(eyeColor), m_hairColor(hairColor), m_hairStyle(hairStyle),
+                  m_gender(gender)
                 {
                 }
 
@@ -322,6 +352,8 @@ namespace Wisteria::Graphs
             wxColour m_outlineColor;
             wxColour m_lipstickColor;
             wxColour m_eyeColor;
+            wxColour m_hairColor;
+            HairStyle m_hairStyle{ HairStyle::Bob };
             Gender m_gender{ Gender::Male };
             };
 
@@ -336,12 +368,14 @@ namespace Wisteria::Graphs
         /// @param outlineColor The outline color.
         /// @param lipstickColor The lipstick color (female only).
         /// @param eyeColor The eye/iris color.
+        /// @param hairColor The hair color.
+        /// @param hairStyle The hair style (female only).
         /// @param gender The gender for face styling.
         static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,
                              const FaceFeatures& features, const wxColour& faceColorLighter,
                              const wxColour& faceColorDarker, const wxColour& outlineColor,
                              const wxColour& lipstickColor, const wxColour& eyeColor,
-                             Gender gender);
+                             const wxColour& hairColor, HairStyle hairStyle, Gender gender);
 
         /// @brief Normalizes a value to the [0,1] range.
         /// @param value The raw value.
@@ -363,8 +397,10 @@ namespace Wisteria::Graphs
         wxColour m_outlineColor{ *wxBLACK };
         wxColour m_lipstickColor{ 178, 34, 34 };
         wxColour m_eyeColor{ 143, 188, 143 }; // light green
+        wxColour m_hairColor{ 183, 82, 46 };  // natural auburn/ginger
         bool m_showLabels{ true };
         Gender m_gender{ Gender::Female };
+        HairStyle m_hairStyle{ HairStyle::Bob };
 
         // column names for legend
         wxString m_faceWidthColumnName;
