@@ -483,6 +483,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
+            // for dark hair, artists use a deep blue tint for strands instead of black
+            const wxColour hairStrandColor =
+                Colors::ColorContrast::IsDark(hairColor) ?
+                    wxColour(30, 40, 90, 50) : // deep indigo-blue for dark hair
+                    wxColour(0, 0, 0, 40);     // dark strands for light hair
 
             // calculate where eyebrows will be drawn (to stop hair above them)
             const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.eyePosition);
@@ -542,7 +547,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->FillPath(bobHairSheen);
 
                 // hair strands for texture
-                gc->SetPen(wxPen(wxColour(0, 0, 0, 40), 1));
+                gc->SetPen(wxPen(hairStrandColor, 1));
                 // top/crown strands - stay well above bangs line
                 const double strandBottomLimit = browYLimit - faceHeight * 0.08;
                 for (int s = 0; s < 6; ++s)
@@ -624,7 +629,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->FillPath(pixieHairSheen);
 
                 // hair strands for texture - short wispy strands
-                gc->SetPen(wxPen(wxColour(0, 0, 0, 40), 1));
+                gc->SetPen(wxPen(hairStrandColor, 1));
                 // top strands radiating outward with more arc
                 for (int s = 0; s < 7; ++s)
                     {
@@ -701,7 +706,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->FillPath(longHairSheen);
 
                 // hair strands for texture - long flowing strands
-                gc->SetPen(wxPen(wxColour(0, 0, 0, 40), 1));
+                gc->SetPen(wxPen(hairStrandColor, 1));
                 // top/crown strands flowing down with arc
                 for (int s = 0; s < 6; ++s)
                     {
@@ -800,7 +805,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
 
                 // hair strands for texture - swept back look
-                gc->SetPen(wxPen(wxColour(0, 0, 0, 40), 1));
+                gc->SetPen(wxPen(hairStrandColor, 1));
                 // crown strands sweeping back toward bun with strong arc
                 for (int s = 0; s < 6; ++s)
                     {
@@ -843,6 +848,51 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 }
+            }
+        // draw hair for male faces - high top fade
+        else if (gender == Gender::Male && hairStyle == HairStyle::HighTopFade)
+            {
+            const wxColour hairHighlight = hairColor.ChangeLightness(130);
+            const wxColour hairShadow = hairColor.ChangeLightness(80);
+
+            // thin arc of hair on top - connects to head at sides
+            wxGraphicsPath hair = gc->CreatePath();
+            // outer edge - starts where head curve is, follows around
+            hair.MoveToPoint(cx - faceWidth * 0.95, cy - faceHeight * 0.3);
+            hair.AddCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.7, cx - faceWidth * 0.55,
+                                 cy - faceHeight * 1.05, cx, cy - faceHeight * 1.08);
+            hair.AddCurveToPoint(cx + faceWidth * 0.55, cy - faceHeight * 1.05,
+                                 cx + faceWidth * 1.0, cy - faceHeight * 0.7, cx + faceWidth * 0.95,
+                                 cy - faceHeight * 0.3);
+            // inner edge - higher hairline showing forehead
+            hair.AddCurveToPoint(cx + faceWidth * 0.9, cy - faceHeight * 0.6, cx + faceWidth * 0.5,
+                                 cy - faceHeight * 0.85, cx, cy - faceHeight * 0.88);
+            hair.AddCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.85, cx - faceWidth * 0.9,
+                                 cy - faceHeight * 0.6, cx - faceWidth * 0.95,
+                                 cy - faceHeight * 0.3);
+            hair.CloseSubpath();
+
+            gc->SetBrush(wxBrush(hairColor));
+            gc->SetPen(wxPen(hairShadow, 1));
+            gc->FillPath(hair);
+            gc->StrokePath(hair);
+
+            // curved sheen
+            wxGraphicsPath sheen = gc->CreatePath();
+            sheen.MoveToPoint(cx - faceWidth * 0.7, cy - faceHeight * 0.65);
+            sheen.AddQuadCurveToPoint(cx - faceWidth * 0.4, cy - faceHeight * 0.95,
+                                      cx - faceWidth * 0.05, cy - faceHeight * 1.0);
+            sheen.AddQuadCurveToPoint(cx - faceWidth * 0.35, cy - faceHeight * 0.88,
+                                      cx - faceWidth * 0.6, cy - faceHeight * 0.65);
+            sheen.CloseSubpath();
+
+            auto sheenBrush = gc->CreateLinearGradientBrush(
+                cx - faceWidth * 0.4, cy - faceHeight * 0.98, cx - faceWidth * 0.4,
+                cy - faceHeight * 0.75, hairHighlight,
+                wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+            gc->SetBrush(sheenBrush);
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->FillPath(sheen);
             }
 
         // draw eyes

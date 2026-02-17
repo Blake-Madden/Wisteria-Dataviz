@@ -95,7 +95,9 @@ namespace Wisteria
         /// @brief Hair pulled into a bun.
         Bun,
         /// @brief Long straight hair past shoulders.
-        LongStraight
+        LongStraight,
+        /// @brief High top fade style (male).
+        HighTopFade
         };
 
     /// @brief Where a ring is within a circle.
