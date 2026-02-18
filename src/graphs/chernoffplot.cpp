@@ -1081,7 +1081,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 for (double y = beardTop; y < chinBottom; y += spacing)
                     {
                     // calculate face width at this y position (ellipse)
-                    const double normalizedY = (y - cy) / faceHeight;
+                    const auto normalizedY = safe_divide<double>(y - cy, faceHeight);
                     const double faceWidthAtY =
                         faceWidth * std::sqrt(std::max(0.0, 1.0 - normalizedY * normalizedY));
 
@@ -1095,8 +1095,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         const double dotY = y + offsetY;
 
                         // check within face ellipse
-                        const double normX = (dotX - cx) / faceWidth;
-                        const double normY = (dotY - cy) / faceHeight;
+                        const auto normX = safe_divide<double>(dotX - cx, faceWidth);
+                        const auto normY = safe_divide<double>(dotY - cy, faceHeight);
                         if (normX * normX + normY * normY < 0.92)
                             {
                             // vary size
@@ -1117,12 +1117,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     for (double y = sideTop; y < sideBottom; y += spacing)
                         {
                         // find face edge at this y (ellipse x for given y)
-                        const double normY = (y - cy) / faceHeight;
+                        const auto normY = safe_divide<double>(y - cy, faceHeight);
                         const double edgeX =
                             faceWidth * std::sqrt(std::max(0.0, 1.0 - normY * normY));
 
                         // stubble width narrows as we go up
-                        const double progress = (sideBottom - y) / (sideBottom - sideTop);
+                        const auto progress =
+                            safe_divide<double>(sideBottom - y, sideBottom - sideTop);
                         const double stubbleWidth = faceWidth * 0.15 * (1.0 - progress * 0.5);
 
                         // draw stubble along the edge
@@ -1133,8 +1134,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             const double dotX = cx + side * (edgeX * 0.92 - inward) + offsetX;
                             const double dotY = y + offsetY;
 
-                            const double normX = (dotX - cx) / faceWidth;
-                            const double normDotY = (dotY - cy) / faceHeight;
+                            const auto normX = safe_divide<double>(dotX - cx, faceWidth);
+                            const auto normDotY = safe_divide<double>(dotY - cy, faceHeight);
                             if (normX * normX + normDotY * normDotY < 0.88)
                                 {
                                 const double sizeVar = 0.6 + std::cos(inward * 1.3 + y * 0.7) * 0.4;
@@ -1151,7 +1152,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double mustacheBottom = mouthY - faceHeight * 0.01;
                 for (double y = mustacheTop; y < mustacheBottom; y += spacing * 0.9)
                     {
-                    const double progress = (y - mustacheTop) / (mustacheBottom - mustacheTop);
+                    const auto progress =
+                        safe_divide<double>(y - mustacheTop, mustacheBottom - mustacheTop);
                     const double mustacheWidth = faceWidth * (0.15 + progress * 0.2);
 
                     for (double x = cx - mustacheWidth; x < cx + mustacheWidth; x += spacing * 0.9)
