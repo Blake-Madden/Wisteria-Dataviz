@@ -66,9 +66,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         auto* gc = gcf.GetGraphicsContext();
         if (gc != nullptr)
             {
-            ChernoffFacesPlot::DrawFace(gc, boundingBox, m_features, m_faceColorLighter,
-                                        m_faceColorDarker, m_outlineColor, m_lipstickColor,
-                                        m_eyeColor, m_hairColor, m_hairStyle, m_gender);
+            ChernoffFacesPlot::DrawFace(
+                gc, boundingBox, m_features, m_faceColorLighter, m_faceColorDarker, m_outlineColor,
+                m_lipstickColor, m_eyeColor, m_hairColor, m_hairStyle, m_gender, m_facialHair);
             }
 
         return boundingBox;
@@ -373,7 +373,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         .AnchorPoint(wxPoint{ x, y }),
                     m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
                     m_faceColor, m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
-                    m_hairStyle, m_gender));
+                    m_hairStyle, m_gender, m_facialHair));
 
                 // add label below face if enabled
                 if (m_showLabels && !m_faces[faceIndex].label.empty())
@@ -398,11 +398,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         }
 
     //----------------------------------------------------------------
-    void ChernoffFacesPlot::DrawFace(
-        wxGraphicsContext * gc, const wxRect& rect, const FaceFeatures& features,
-        const wxColour& faceColorLighter, const wxColour& faceColorDarker,
-        const wxColour& outlineColor, const wxColour& lipstickColor, const wxColour& eyeColor,
-        const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
+    void ChernoffFacesPlot::DrawFace(wxGraphicsContext * gc, const wxRect& rect,
+                                     const FaceFeatures& features, const wxColour& faceColorLighter,
+                                     const wxColour& faceColorDarker, const wxColour& outlineColor,
+                                     const wxColour& lipstickColor, const wxColour& eyeColor,
+                                     const wxColour& hairColor, const HairStyle hairStyle,
+                                     const Gender gender, const FacialHair facialHair)
         {
         if (gc == nullptr)
             {
@@ -483,11 +484,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
-            // for dark hair, artists use a deep blue tint for strands instead of black
+            // for dark hair, artists use a blue tint for strands instead of black
             const wxColour hairStrandColor =
                 Colors::ColorContrast::IsDark(hairColor) ?
-                    wxColour(30, 40, 90, 50) : // deep indigo-blue for dark hair
-                    wxColour(0, 0, 0, 40);     // dark strands for light hair
+                    wxColour(70, 90, 160, 90) : // blue tint for dark hair
+                    wxColour(0, 0, 0, 40);      // dark strands for light hair
 
             // calculate where eyebrows will be drawn (to stop hair above them)
             const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.eyePosition);
@@ -553,11 +554,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 for (int s = 0; s < 6; ++s)
                     {
                     wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx - faceWidth * 0.4 + s * faceWidth * 0.16;
-                    const double topY = cy - faceHeight * 1.0;
+                    // add variation to spacing, arc, and length
+                    const double spacingVar = std::sin(s * 2.1) * faceWidth * 0.025;
+                    const double arcVar = std::cos(s * 1.7) * faceWidth * 0.05;
+                    const double lengthVar = std::sin(s * 3.2) * faceHeight * 0.04;
+                    // spread across the hair width
+                    const double startX = cx - faceWidth * 0.45 + s * faceWidth * 0.18 + spacingVar;
+                    const double topY =
+                        cy - faceHeight * 0.98 + std::cos(s * 2.5) * faceHeight * 0.02;
                     strand.MoveToPoint(startX, topY);
-                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.2, topY + faceHeight * 0.25,
-                                               startX + faceWidth * 0.1, strandBottomLimit);
+                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.12 + arcVar,
+                                               topY + faceHeight * 0.22, startX + faceWidth * 0.06,
+                                               strandBottomLimit + lengthVar);
                     gc->StrokePath(strand);
                     }
                 // left outer side strands - stay within hair boundary, curve outward
@@ -634,23 +642,30 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 for (int s = 0; s < 7; ++s)
                     {
                     wxGraphicsPath strand = gc->CreatePath();
-                    const double offsetX = -0.5 + s * 0.17;
+                    // narrower range and variation
+                    const double spacingVar = std::sin(s * 2.3) * 0.02;
+                    const double offsetX = -0.38 + s * 0.13 + spacingVar;
                     const double startX = cx + faceWidth * offsetX;
-                    const double startY = cy - faceHeight * 0.98;
+                    // outer strands start lower to stay within hair
+                    const double outerAdj = std::abs(offsetX) * faceHeight * 0.15;
+                    const double startY = cy - faceHeight * 0.95 + outerAdj;
                     strand.MoveToPoint(startX, startY);
+                    const double arcVar = std::cos(s * 1.9) * faceWidth * 0.04;
                     strand.AddQuadCurveToPoint(
-                        startX + faceWidth * 0.25 * offsetX, startY + faceHeight * 0.25,
-                        startX + faceWidth * 0.15 * offsetX, browYLimit + faceHeight * 0.01);
+                        startX + faceWidth * 0.18 * offsetX + arcVar, startY + faceHeight * 0.22,
+                        startX + faceWidth * 0.1 * offsetX, browYLimit + faceHeight * 0.01);
                     gc->StrokePath(strand);
                     }
                 // additional crown strands with strong arc
                 for (int s = 0; s < 5; ++s)
                     {
                     wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx - faceWidth * 0.3 + s * faceWidth * 0.15;
-                    strand.MoveToPoint(startX, cy - faceHeight * 1.0);
-                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.2, cy - faceHeight * 0.65,
-                                               startX + faceWidth * 0.08,
+                    const double spacingVar = std::sin(s * 2.7) * faceWidth * 0.02;
+                    const double arcVar = std::cos(s * 1.5) * faceWidth * 0.04;
+                    const double startX = cx - faceWidth * 0.28 + s * faceWidth * 0.14 + spacingVar;
+                    strand.MoveToPoint(startX, cy - faceHeight * 0.97);
+                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.15 + arcVar,
+                                               cy - faceHeight * 0.65, startX + faceWidth * 0.06,
                                                browYLimit - faceHeight * 0.02);
                     gc->StrokePath(strand);
                     }
@@ -785,26 +800,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->SetPen(*wxTRANSPARENT_PEN);
                 gc->FillPath(bunHairSheen);
 
-                // the bun itself
-                const double bunRadius = faceHeight * 0.18;
-                const double bunX = cx;
-                const double bunY = cy - faceHeight * 1.05;
-                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
-
-                // sheen on bun
-                auto bunSheen =
-                    gc->CreateRadialGradientBrush(bunX - bunRadius * 0.3, bunY - bunRadius * 0.3,
-                                                  bunX, bunY, bunRadius, hairHighlight, hairColor);
-                gc->SetBrush(bunSheen);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
-
-                // outline the bun
-                gc->SetPen(wxPen(hairShadow, 1));
-                gc->SetBrush(*wxTRANSPARENT_BRUSH);
-                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
-
-                // hair strands for texture - swept back look
+                // hair strands for texture - swept back look (drawn before bun)
                 gc->SetPen(wxPen(hairStrandColor, 1));
                 // crown strands sweeping back toward bun with strong arc
                 for (int s = 0; s < 6; ++s)
@@ -832,6 +828,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         gc->StrokePath(strand);
                         }
                     }
+
+                // the bun itself - drawn on top of strands
+                const double bunRadius = faceHeight * 0.18;
+                const double bunX = cx;
+                const double bunY = cy - faceHeight * 1.05;
+                gc->SetBrush(wxBrush(hairColor));
+                gc->SetPen(wxPen(hairShadow, 1));
+                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
+
+                // sheen on bun
+                auto bunSheen =
+                    gc->CreateRadialGradientBrush(bunX - bunRadius * 0.3, bunY - bunRadius * 0.3,
+                                                  bunX, bunY, bunRadius, hairHighlight, hairColor);
+                gc->SetBrush(bunSheen);
+                gc->SetPen(*wxTRANSPARENT_PEN);
+                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
+
+                // outline the bun
+                gc->SetPen(wxPen(hairShadow, 1));
+                gc->SetBrush(*wxTRANSPARENT_BRUSH);
+                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
+
                 // strands on the bun itself - spiral pattern with more curve
                 for (int s = 0; s < 6; ++s)
                     {
@@ -849,8 +867,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     }
                 }
             }
-        // draw hair for male faces - high top fade
-        else if (gender == Gender::Male && hairStyle == HairStyle::HighTopFade)
+        // high top fade - works for both genders
+        else if (hairStyle == HairStyle::HighTopFade)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -1042,6 +1060,120 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             mouth.MoveToPoint(cx - mouthWidthVal, mouthY);
             mouth.AddQuadCurveToPoint(cx, mouthY + curvature, cx + mouthWidthVal, mouthY);
             gc->StrokePath(mouth);
+
+            // draw facial hair for males
+            if (facialHair == FacialHair::FiveOClockShadow)
+                {
+                // stubble using hair color with transparency
+                const wxColour stubbleColor(hairColor.Red(), hairColor.Green(), hairColor.Blue(),
+                                            80);
+                gc->SetPen(*wxTRANSPARENT_PEN);
+                gc->SetBrush(wxBrush(stubbleColor));
+
+                const double dotSize = faceHeight * 0.012;
+                const double spacing = dotSize * 1.4;
+
+                // beard area - from below mouth to chin, and along jawline to ears
+                const double beardTop = mouthY + faceHeight * 0.06;
+                const double chinBottom = cy + faceHeight * 0.95;
+
+                // fill the entire lower face area with stubble
+                for (double y = beardTop; y < chinBottom; y += spacing)
+                    {
+                    // calculate face width at this y position (ellipse)
+                    const double normalizedY = (y - cy) / faceHeight;
+                    const double faceWidthAtY =
+                        faceWidth * std::sqrt(std::max(0.0, 1.0 - normalizedY * normalizedY));
+
+                    for (double x = cx - faceWidthAtY * 0.95; x < cx + faceWidthAtY * 0.95;
+                         x += spacing)
+                        {
+                        // randomize position
+                        const double offsetX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
+                        const double offsetY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
+                        const double dotX = x + offsetX;
+                        const double dotY = y + offsetY;
+
+                        // check within face ellipse
+                        const double normX = (dotX - cx) / faceWidth;
+                        const double normY = (dotY - cy) / faceHeight;
+                        if (normX * normX + normY * normY < 0.92)
+                            {
+                            // vary size
+                            const double sizeVar = 0.6 + std::sin(x * 1.1 + y * 0.9) * 0.4;
+                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+                    }
+
+                // sideburns along face edge going up toward ears
+                for (int side = -1; side <= 1; side += 2)
+                    {
+                    const double sideTop = cy + faceHeight * 0.1;
+                    const double sideBottom = mouthY + faceHeight * 0.08;
+
+                    for (double y = sideTop; y < sideBottom; y += spacing)
+                        {
+                        // find face edge at this y (ellipse x for given y)
+                        const double normY = (y - cy) / faceHeight;
+                        const double edgeX =
+                            faceWidth * std::sqrt(std::max(0.0, 1.0 - normY * normY));
+
+                        // stubble width narrows as we go up
+                        const double progress = (sideBottom - y) / (sideBottom - sideTop);
+                        const double stubbleWidth = faceWidth * 0.15 * (1.0 - progress * 0.5);
+
+                        // draw stubble along the edge
+                        for (double inward = 0; inward < stubbleWidth; inward += spacing)
+                            {
+                            const double offsetX = std::sin(inward * 1.2 + y * 0.8) * dotSize * 0.7;
+                            const double offsetY = std::cos(inward * 0.9 + y * 1.1) * dotSize * 0.7;
+                            const double dotX = cx + side * (edgeX * 0.92 - inward) + offsetX;
+                            const double dotY = y + offsetY;
+
+                            const double normX = (dotX - cx) / faceWidth;
+                            const double normDotY = (dotY - cy) / faceHeight;
+                            if (normX * normX + normDotY * normDotY < 0.88)
+                                {
+                                const double sizeVar = 0.6 + std::cos(inward * 1.3 + y * 0.7) * 0.4;
+                                gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                                dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                                dotSize * sizeVar);
+                                }
+                            }
+                        }
+                    }
+
+                // mustache above upper lip
+                const double mustacheTop = mouthY - faceHeight * 0.12;
+                const double mustacheBottom = mouthY - faceHeight * 0.01;
+                for (double y = mustacheTop; y < mustacheBottom; y += spacing * 0.9)
+                    {
+                    const double progress = (y - mustacheTop) / (mustacheBottom - mustacheTop);
+                    const double mustacheWidth = faceWidth * (0.15 + progress * 0.2);
+
+                    for (double x = cx - mustacheWidth; x < cx + mustacheWidth; x += spacing * 0.9)
+                        {
+                        const double offsetX = std::sin(x * 1.5 + y * 2.3) * dotSize * 0.5;
+                        const double offsetY = std::cos(x * 1.8 + y * 1.6) * dotSize * 0.5;
+                        const double dotX = x + offsetX;
+                        const double dotY = y + offsetY;
+
+                        // small gap under nose center
+                        const double distFromCenter = std::abs(dotX - cx);
+                        if (distFromCenter > faceWidth * 0.04 ||
+                            y > mustacheTop + faceHeight * 0.04)
+                            {
+                            const double sizeVar = 0.7 + std::sin(x * 2.1 + y * 1.4) * 0.3;
+                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+                    }
+                }
             }
         }
 

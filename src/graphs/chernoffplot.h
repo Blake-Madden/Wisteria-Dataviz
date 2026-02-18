@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CHERNOFF_PLOT_H__
-#define __WISTERIA_CHERNOFF_PLOT_H__
+#ifndef WISTERIA_CHERNOFF_PLOT_H
+#define WISTERIA_CHERNOFF_PLOT_H
 
 #include "graph2d.h"
 
@@ -277,6 +277,17 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /// @returns The facial hair style (male faces only).
+        [[nodiscard]]
+        FacialHair GetFacialHair() const noexcept
+            {
+            return m_facialHair;
+            }
+
+        /// @brief Sets the facial hair style (male faces only).
+        /// @param style The facial hair style to use.
+        void SetFacialHair(const FacialHair style) noexcept { m_facialHair = style; }
+
         /// @}
 
         /** @brief Builds and returns a legend explaining the feature mappings.
@@ -312,12 +323,13 @@ namespace Wisteria::Graphs
                        const wxSize& sz, const wxColour& faceColorLighter,
                        const wxColour& faceColorDarker, const wxColour& outlineColor,
                        const wxColour& lipstickColor, const wxColour& eyeColor,
-                       const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
+                       const wxColour& hairColor, const HairStyle hairStyle, const Gender gender,
+                       const FacialHair facialHair)
                 : GraphItemBase(itemInfo), m_features(features), m_size(sz),
                   m_faceColorLighter(faceColorLighter), m_faceColorDarker(faceColorDarker),
                   m_outlineColor(outlineColor), m_lipstickColor(lipstickColor),
                   m_eyeColor(eyeColor), m_hairColor(hairColor), m_hairStyle(hairStyle),
-                  m_gender(gender)
+                  m_gender(gender), m_facialHair(facialHair)
                 {
                 }
 
@@ -354,7 +366,8 @@ namespace Wisteria::Graphs
             wxColour m_eyeColor;
             wxColour m_hairColor;
             HairStyle m_hairStyle{ HairStyle::Bob };
-            Gender m_gender{ Gender::Male };
+            Gender m_gender{ Gender::Female };
+            FacialHair m_facialHair{ FacialHair::CleanShaven };
             };
 
         void RecalcSizes(wxDC& dc) final;
@@ -369,13 +382,15 @@ namespace Wisteria::Graphs
         /// @param lipstickColor The lipstick color (female only).
         /// @param eyeColor The eye/iris color.
         /// @param hairColor The hair color.
-        /// @param hairStyle The hair style (female only).
+        /// @param hairStyle The hair style.
         /// @param gender The gender for face styling.
+        /// @param facialHair The facial hair style (male only).
         static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,
                              const FaceFeatures& features, const wxColour& faceColorLighter,
                              const wxColour& faceColorDarker, const wxColour& outlineColor,
                              const wxColour& lipstickColor, const wxColour& eyeColor,
-                             const wxColour& hairColor, HairStyle hairStyle, Gender gender);
+                             const wxColour& hairColor, HairStyle hairStyle, Gender gender,
+                             FacialHair facialHair);
 
         /// @brief Normalizes a value to the [0,1] range.
         /// @param value The raw value.
@@ -401,6 +416,7 @@ namespace Wisteria::Graphs
         bool m_showLabels{ true };
         Gender m_gender{ Gender::Female };
         HairStyle m_hairStyle{ HairStyle::Bob };
+        FacialHair m_facialHair{ FacialHair::CleanShaven };
 
         // column names for legend
         wxString m_faceWidthColumnName;
@@ -419,4 +435,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_CHERNOFF_PLOT_H__
+#endif // WISTERIA_CHERNOFF_PLOT_H
