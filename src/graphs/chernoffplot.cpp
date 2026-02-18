@@ -99,7 +99,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             return DEFAULT_FEATURE_VALUE;
             }
-        if (minVal >= maxVal)
+        if (compare_doubles_greater_or_equal(minVal, maxVal))
             {
             return DEFAULT_FEATURE_VALUE;
             }
@@ -253,7 +253,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         if (GetDataset()->GetRowCount() > MAX_FACES)
             {
             wxLogWarning(L"Chernoff plot limited to %zu observations; "
-                         L"%zu observations truncated.",
+                         "%zu observations truncated.",
                          MAX_FACES, GetDataset()->GetRowCount() - MAX_FACES);
             }
 
@@ -355,6 +355,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             drawArea.GetY() + safe_divide<int>(drawArea.GetHeight() - totalHeight, 2);
 
         // add each face as a drawable object
+        std::vector<std::unique_ptr<GraphItems::Label>> faceLabels;
+        double smallestTextScaling{ std::numeric_limits<double>::max() };
         size_t faceIndex = 0;
         for (size_t row = 0; row < rows && faceIndex < faceCount; ++row)
             {
@@ -381,19 +383,33 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     auto label = std::make_unique<GraphItems::Label>(
                         GraphItems::GraphItemInfo(m_faces[faceIndex].label)
                             .Pen(wxNullPen)
-                            .AnchorPoint(wxPoint{ x, y + faceSize })
+                            .Scaling(GetScaling())
+                            .DPIScaling(GetDPIScaleFactor())
                             .Anchoring(Anchoring::TopLeftCorner)
-                            .MinimumUserSizeDIPs(faceSize, std::nullopt)
-                            .LabelAlignment(TextAlignment::Centered)
-                            .LabelPageHorizontalAlignment(PageHorizontalAlignment::Centered)
-                            .DPIScaling(GetDPIScaleFactor()));
-                    label->GetFont().SetPointSize(
-                        std::max(6, static_cast<int>(label->GetFont().GetPointSize() * 0.75)));
-                    AddObject(std::move(label));
+                            .AnchorPoint(wxPoint{ x, y + faceSize }));
+                    label->SetTextAlignment(TextAlignment::Centered);
+                    label->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                    label->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                    const wxRect labelBox(wxPoint{ x, y + faceSize },
+                                          wxSize{ faceSize, labelHeight });
+                    label->SetBoundingBox(labelBox, dc, GetScaling());
+                    smallestTextScaling = std::min(label->GetScaling(), smallestTextScaling);
+                    faceLabels.push_back(std::move(label));
                     }
 
                 ++faceIndex;
                 }
+            }
+
+        // homogenize labels' text scaling to the smallest size and add them
+        for (auto& label : faceLabels)
+            {
+            const wxRect bBox = label->GetBoundingBox(dc);
+            label->SetScaling(smallestTextScaling);
+            label->LockBoundingBoxScaling();
+            label->SetBoundingBox(bBox, dc, GetScaling());
+            label->UnlockBoundingBoxScaling();
+            AddObject(std::move(label));
             }
         }
 
@@ -1078,16 +1094,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double chinBottom = cy + faceHeight * 0.95;
 
                 // fill the entire lower face area with stubble
-                for (double y = beardTop; y < chinBottom; y += spacing)
+                const int ySteps = static_cast<int>(safe_divide(chinBottom - beardTop, spacing));
+                for (int yi = 0; yi <= ySteps; ++yi)
                     {
+                    const double y = beardTop + yi * spacing;
                     // calculate face width at this y position (ellipse)
                     const auto normalizedY = safe_divide<double>(y - cy, faceHeight);
                     const double faceWidthAtY =
                         faceWidth * std::sqrt(std::max(0.0, 1.0 - normalizedY * normalizedY));
 
-                    for (double x = cx - faceWidthAtY * 0.95; x < cx + faceWidthAtY * 0.95;
-                         x += spacing)
+                    const double xStart = cx - faceWidthAtY * 0.95;
+                    const int xSteps = static_cast<int>(safe_divide(faceWidthAtY * 1.9, spacing));
+                    for (int xi = 0; xi <= xSteps; ++xi)
                         {
+                        const double x = xStart + xi * spacing;
                         // randomize position
                         const double offsetX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
                         const double offsetY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
@@ -1114,8 +1134,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     const double sideTop = cy + faceHeight * 0.1;
                     const double sideBottom = mouthY + faceHeight * 0.08;
 
-                    for (double y = sideTop; y < sideBottom; y += spacing)
+                    const int sideYSteps =
+                        static_cast<int>(safe_divide(sideBottom - sideTop, spacing));
+                    for (int syi = 0; syi <= sideYSteps; ++syi)
                         {
+                        const double y = sideTop + syi * spacing;
                         // find face edge at this y (ellipse x for given y)
                         const auto normY = safe_divide<double>(y - cy, faceHeight);
                         const double edgeX =
@@ -1127,8 +1150,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         const double stubbleWidth = faceWidth * 0.15 * (1.0 - progress * 0.5);
 
                         // draw stubble along the edge
-                        for (double inward = 0; inward < stubbleWidth; inward += spacing)
+                        const int inwardSteps =
+                            static_cast<int>(safe_divide(stubbleWidth, spacing));
+                        for (int ini = 0; ini <= inwardSteps; ++ini)
                             {
+                            const double inward = ini * spacing;
                             const double offsetX = std::sin(inward * 1.2 + y * 0.8) * dotSize * 0.7;
                             const double offsetY = std::cos(inward * 0.9 + y * 1.1) * dotSize * 0.7;
                             const double dotX = cx + side * (edgeX * 0.92 - inward) + offsetX;
@@ -1150,14 +1176,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 // mustache above upper lip
                 const double mustacheTop = mouthY - faceHeight * 0.12;
                 const double mustacheBottom = mouthY - faceHeight * 0.01;
-                for (double y = mustacheTop; y < mustacheBottom; y += spacing * 0.9)
+                const double mustacheSpacing = spacing * 0.9;
+                const int mustacheYSteps =
+                    static_cast<int>(safe_divide(mustacheBottom - mustacheTop, mustacheSpacing));
+                for (int myi = 0; myi <= mustacheYSteps; ++myi)
                     {
+                    const double y = mustacheTop + myi * mustacheSpacing;
                     const auto progress =
                         safe_divide<double>(y - mustacheTop, mustacheBottom - mustacheTop);
                     const double mustacheWidth = faceWidth * (0.15 + progress * 0.2);
 
-                    for (double x = cx - mustacheWidth; x < cx + mustacheWidth; x += spacing * 0.9)
+                    const double mxStart = cx - mustacheWidth;
+                    const int mustacheXSteps =
+                        static_cast<int>(safe_divide(mustacheWidth * 2, mustacheSpacing));
+                    for (int mxi = 0; mxi <= mustacheXSteps; ++mxi)
                         {
+                        const double x = mxStart + mxi * mustacheSpacing;
                         const double offsetX = std::sin(x * 1.5 + y * 2.3) * dotSize * 0.5;
                         const double offsetY = std::cos(x * 1.8 + y * 1.6) * dotSize * 0.5;
                         const double dotX = x + offsetX;
