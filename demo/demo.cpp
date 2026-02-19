@@ -13,6 +13,42 @@
 
 wxIMPLEMENT_APP(MyApp);
 
+/// @brief Extended icon provider, which is connected to application's
+///     custom icons.
+class WisteriaArtProvider final : public wxArtProvider
+    {
+  public:
+    WisteriaArtProvider();
+
+  protected:
+    [[nodiscard]]
+    wxBitmapBundle CreateBitmapBundle(const wxArtID& id, const wxArtClient& client,
+                                      const wxSize& size) final;
+
+  private:
+    std::map<wxArtID, wxString> m_idFileMap;
+    };
+
+WisteriaArtProvider::WisteriaArtProvider()
+    {
+    // cppcheck-suppress useInitializationList
+    m_idFileMap = { { L"ID_CONTINUOUS", L"scale.svg" },
+                    { L"ID_CATEGORICAL", L"categorical.svg" },
+                    { L"ID_DISCRETE", L"discrete.svg" },
+                    { L"ID_DATE", L"date.svg" } };
+    }
+
+//-------------------------------------------
+wxBitmapBundle WisteriaArtProvider::CreateBitmapBundle(const wxArtID& id, const wxArtClient& client,
+                                                       const wxSize& size)
+    {
+    const auto filePath = m_idFileMap.find(id);
+
+    return (filePath != m_idFileMap.cend()) ?
+               wxGetApp().GetResourceManager().GetSVG(filePath->second) :
+               wxArtProvider::CreateBitmapBundle(id, client, size);
+    }
+
 // ===========================================================================
 // implementation
 // ===========================================================================
@@ -32,6 +68,10 @@ bool MyApp::OnInit()
     wxUILocale::UseDefault();
 
     wxInitAllImageHandlers();
+
+    GetResourceManager().SetDirectory(
+        wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() + L"/res");
+    wxArtProvider::Push(new WisteriaArtProvider{});
 
     // enable this to route wxLog messages to a file:
     // auto logFile = new LogFile{ true };

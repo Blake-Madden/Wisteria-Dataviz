@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Discrete values represented as distinct evenly-spaced dots on a number line -->
+
+  <!-- Horizontal line -->
+  <line x1="24" y1="128" x2="232" y2="128" stroke="#707070" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Tick marks -->
+  <line x1="48" y1="115" x2="48" y2="141" stroke="#707070" stroke-width="3"/>
+  <line x1="104" y1="115" x2="104" y2="141" stroke="#707070" stroke-width="3"/>
+  <line x1="160" y1="115" x2="160" y2="141" stroke="#707070" stroke-width="3"/>
+  <line x1="216" y1="115" x2="216" y2="141" stroke="#707070" stroke-width="3"/>
+
+  <!-- Discrete value dots -->
+  <circle cx="48" cy="128" r="18" fill="#5c6bc0" stroke="#707070" stroke-width="3"/>
+  <circle cx="104" cy="128" r="18" fill="#5c6bc0" stroke="#707070" stroke-width="3"/>
+  <circle cx="160" cy="128" r="18" fill="#5c6bc0" stroke="#707070" stroke-width="3"/>
+  <circle cx="216" cy="128" r="18" fill="#5c6bc0" stroke="#707070" stroke-width="3"/>
+
+  <!-- Integer labels -->
+  <text x="48" y="190" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#505050" text-anchor="middle">1</text>
+  <text x="104" y="190" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#505050" text-anchor="middle">2</text>
+  <text x="160" y="190" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#505050" text-anchor="middle">3</text>
+  <text x="216" y="190" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#505050" text-anchor="middle">4</text>
+</svg>

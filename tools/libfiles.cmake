@@ -76,6 +76,7 @@ SET(WISTERIA_SRC
     src/util/i18n_string_util.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
+    src/util/resource_manager.cpp
     src/util/textreplace.cpp
     src/util/textstream.cpp
     src/util/zipcatalog.cpp

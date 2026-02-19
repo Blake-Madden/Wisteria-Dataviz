@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Three distinct colored circles representing categorical groups -->
+
+  <!-- Top circle - coral/red -->
+  <circle cx="128" cy="70" r="50" fill="#e8685d" stroke="#707070" stroke-width="4"/>
+
+  <!-- Bottom left circle - teal -->
+  <circle cx="78" cy="170" r="50" fill="#4db6ac" stroke="#707070" stroke-width="4"/>
+
+  <!-- Bottom right circle - gold -->
+  <circle cx="178" cy="170" r="50" fill="#ffb74d" stroke="#707070" stroke-width="4"/>
+</svg>

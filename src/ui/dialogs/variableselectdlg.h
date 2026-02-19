@@ -109,6 +109,9 @@ namespace Wisteria::UI
         /// @private
         VariableSelectDlg& operator=(const VariableSelectDlg&) = delete;
 
+        /// @private
+        ~VariableSelectDlg() { delete m_listImages; }
+
         /// @brief Gets the variables that a user has moved into a given list.
         /// @details The list is accessed by index, in the order that the variable definitions
         ///     were passed to the constructor. For example, if the VariableListInfo passed to the
@@ -140,7 +143,7 @@ namespace Wisteria::UI
         /// @param list The list to get the selected items from.
         /// @returns A vector of the selected strings.
         [[nodiscard]]
-        static std::vector<wxString> GetSelectedVariablesInList(const wxListView* list);
+        static std::vector<wxListItem> GetSelectedVariablesInList(const wxListView* list);
         /// @brief Removes the selected items from a list.
         /// @param list The list box to remove items from.
         static void RemoveSelectedVariablesFromList(wxListView* list);
@@ -149,6 +152,7 @@ namespace Wisteria::UI
 
         Data::Dataset::ColumnPreviewInfo m_columnInfo;
         wxListView* m_mainVarlist{ nullptr };
+        wxImageList* m_listImages{ nullptr };
         std::vector<VariableList> m_varLists;
         };
     } // namespace Wisteria::UI

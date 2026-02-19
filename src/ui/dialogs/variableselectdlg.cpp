@@ -68,8 +68,8 @@ namespace Wisteria::UI
     void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list,
                                                               wxListView* otherList)
         {
-        wxASSERT_MSG(list, "Invalid list control!");
-        wxASSERT_MSG(otherList, "Invalid list control!");
+        wxASSERT_MSG(list, L"Invalid list control!");
+        wxASSERT_MSG(otherList, L"Invalid list control!");
         if (list == nullptr || otherList == nullptr)
             {
             return;
@@ -85,25 +85,26 @@ namespace Wisteria::UI
                 return;
                 }
             }
-        const auto selStrings = GetSelectedVariablesInList(list);
+        auto selStrings = GetSelectedVariablesInList(list);
         const wxWindowUpdateLocker noUpdates(otherList);
         // de-select items in the target list, and then select the item(s) being moved into it
         for (int i = 0; i < otherList->GetItemCount(); ++i)
             {
             otherList->Select(i, false);
             }
-        for (const auto& str : selStrings)
+        for (auto& str : selStrings)
             {
-            otherList->Select(otherList->InsertItem(otherList->GetItemCount(), str));
+            str.SetId(otherList->GetItemCount());
+            otherList->Select(otherList->InsertItem(str));
             }
 
         RemoveSelectedVariablesFromList(list);
         }
 
     //-------------------------------------------------------------
-    std::vector<wxString> VariableSelectDlg::GetSelectedVariablesInList(const wxListView* list)
+    std::vector<wxListItem> VariableSelectDlg::GetSelectedVariablesInList(const wxListView* list)
         {
-        std::vector<wxString> selStrings;
+        std::vector<wxListItem> selStrings;
         long item{ wxNOT_FOUND };
         for (;;)
             {
@@ -112,7 +113,14 @@ namespace Wisteria::UI
                 {
                 break;
                 }
-            selStrings.push_back(list->GetItemText(item));
+            wxListItem listItem;
+            listItem.SetId(item);
+            listItem.SetColumn(0);
+            listItem.SetMask(wxLIST_MASK_TEXT | wxLIST_MASK_IMAGE);
+            if (list->GetItem(listItem))
+                {
+                selStrings.push_back(listItem);
+                }
             }
         return selStrings;
         }
@@ -144,7 +152,7 @@ namespace Wisteria::UI
         if (listIndex >= m_varLists.size())
             {
             wxFAIL_MSG(L"Invalid index specified for variable list!");
-            return std::vector<wxString>{};
+            return {};
             }
         const auto& varList = m_varLists[listIndex];
         std::vector<wxString> strings;
@@ -170,14 +178,43 @@ namespace Wisteria::UI
         const size_t rowsNeeded = std::min(varInfo.size(), maxGroupsPerColumn) * 2;
 
         // fill the main list of variables
-        varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables:")), wxGBPosition(0, 0),
-                       wxGBSpan(1, 1));
+        varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables:")), wxGBPosition{ 0, 0 },
+                       wxGBSpan{ 1, 1 });
         m_mainVarlist = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxLC_REPORT | wxLC_NO_HEADER);
         m_mainVarlist->InsertColumn(0, wxString{});
+        m_listImages = new wxImageList(FromDIP(16), FromDIP(16));
+        m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_CONTINUOUS")
+                              .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
+        m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_CATEGORICAL")
+                              .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
+        m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DISCRETE")
+                              .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
+        m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DATE").GetBitmap(
+            wxSize{ FromDIP(16), FromDIP(16) }));
+        m_mainVarlist->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
         for (const auto& [name, type] : m_columnInfo)
             {
-            m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
+            if (type == Data::Dataset::ColumnImportType::Numeric)
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 0);
+                }
+            else if (type == Data::Dataset::ColumnImportType::String)
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 1);
+                }
+            else if (type == Data::Dataset::ColumnImportType::Discrete)
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 2);
+                }
+            else if (type == Data::Dataset::ColumnImportType::String)
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 3);
+                }
+            else
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
+                }
             }
         // quneiform-suppress-begin
         varsSizer->Add(m_mainVarlist, wxGBPosition{ 1, 0 }, wxGBSpan(rowsNeeded, 1), wxEXPAND);
@@ -205,6 +242,7 @@ namespace Wisteria::UI
             auto* list =
                 new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
             list->InsertColumn(0, wxString{});
+            list->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
             // quneiform-suppress-begin
             varsSizer->Add(list, wxGBPosition{ listRow, listCol }, wxGBSpan{ 1, 1 }, wxEXPAND);
             // quneiform-suppress-end

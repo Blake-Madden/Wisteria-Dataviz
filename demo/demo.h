@@ -23,9 +23,9 @@
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
 #include "../src/graphs/bubbleplot.h"
-#include "../src/graphs/chernoffplot.h"
 #include "../src/graphs/candlestickplot.h"
 #include "../src/graphs/categoricalbarchart.h"
+#include "../src/graphs/chernoffplot.h"
 #include "../src/graphs/ganttchart.h"
 #include "../src/graphs/heatmap.h"
 #include "../src/graphs/histogram.h"
@@ -47,6 +47,7 @@
 #include "../src/import/text_matrix.h"
 #include "../src/ui/dialogs/variableselectdlg.h"
 #include "../src/util/logfile.h"
+#include "../src/util/resource_manager.h"
 #include <wx/aboutdlg.h>
 #include <wx/artprov.h>
 #include <wx/choicdlg.h>
@@ -63,6 +64,21 @@ class MyApp final : public wxApp
     {
   public:
     bool OnInit() final;
+
+    /// @returns The resource manager, which can extract images and
+    ///     XRC files from a resource archive.
+    [[nodiscard]]
+    ResourceManager& GetResourceManager() noexcept
+        {
+        return m_resManager;
+        }
+
+    /// @private
+    [[nodiscard]]
+    const ResourceManager& GetResourceManager() const noexcept
+        {
+        return m_resManager;
+        }
 
     enum ControlIDs
         {
@@ -103,6 +119,9 @@ class MyApp final : public wxApp
         ID_NEW_BUBBLEPLOT,
         ID_NEW_CHERNOFFPLOT
         };
+
+  private:
+    ResourceManager m_resManager;
     };
 
 // Define a new frame
