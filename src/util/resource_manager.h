@@ -30,11 +30,19 @@ class ResourceManager
     ResourceManager() = default;
 
     /** @brief Constructor.
-        @param resourceArchivePath The path to the ZIP file containing the resources
-            to load.*/
+        @param resourceArchivePath The path to the ZIP file  for folder containing
+            the resources to load.*/
     explicit ResourceManager(const wxString& resourceArchivePath)
         {
-        LoadArchive(resourceArchivePath);
+        wxFileName fn{ resourceArchivePath };
+        if (!fn.HasExt())
+            {
+            SetDirectory(resourceArchivePath);
+            }
+        else
+            {
+            LoadArchive(resourceArchivePath);
+            }
         }
 
     /// @private
@@ -52,7 +60,11 @@ class ResourceManager
             any previously loaded ZIP file.*/
     void LoadArchive(const wxString& resourceArchivePath);
 
-    /** @returns The @c wxWidgets file-system path to a file in the loaded archive.
+    /** @brief Sets the manager to read files from a folder instead of an archive.
+        @param path The folder path to use.*/
+    void SetDirectory(const wxString& path) { m_resourceFile = path; }
+
+    /** @returns The path to a file in the loaded archive or resource folder.
         @param subFile The file to look for in the archive.*/
     [[nodiscard]]
     wxString GetResourceFilePath(const wxString& subFile = wxEmptyString) const
@@ -60,6 +72,13 @@ class ResourceManager
         if (subFile.empty())
             {
             return m_resourceFile;
+            }
+
+        // if not an archive file, then may be a folder
+        wxFileName fn{ m_resourceFile };
+        if (!fn.HasExt())
+            {
+            return fn.GetFullPath() + wxFileName::GetPathSeparator() + subFile;
             }
 
         return m_resourceFile + _DT(L"#zip:") + subFile;
@@ -70,7 +89,7 @@ class ResourceManager
     ///     Can be relative to the ZIP file loaded by this class, or a local file.
     /// @param bitmapType The image's type.
     [[nodiscard]]
-    wxBitmap GetBitmap(const wxString& filePath, const wxBitmapType bitmapType);
+    wxBitmap GetBitmap(wxString filePath, const wxBitmapType bitmapType);
 
     /// @returns A bitmap bundle from the provided path.
     /// @param path The path to the image.\n
@@ -78,7 +97,7 @@ class ResourceManager
     /// @note The returned bundle will contain 16x16, 32x32, 64x64, and 128x128
     ///     copies of the image.
     [[nodiscard]]
-    wxBitmapBundle GetSVG(const wxString& path);
+    wxBitmapBundle GetSVG(wxString path);
 
     /** @returns A list of files in a given folder
             (relative to its location in the loaded archive's folder structure).

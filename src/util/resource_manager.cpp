@@ -57,12 +57,21 @@ wxBitmap ResourceManager::ExtractBitmap(const wxString& bmpPath,
     }
 
 //---------------------------------------------------
-wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType bitmapType)
+wxBitmap ResourceManager::GetBitmap(wxString filePath, const wxBitmapType bitmapType)
     {
     const auto imagePos = m_imageMap.find(filePath);
+    // load bitmap from disk if a local file
     if (imagePos == m_imageMap.cend())
         {
-        // load bitmap from disk if a local file
+        // if not an absolute path, then see if using a resource folder and look in there
+        if (!wxFile::Exists(filePath))
+            {
+            wxFileName fn{ m_resourceFile };
+            if (!fn.HasExt())
+                {
+                filePath = GetResourceFilePath(filePath);
+                }
+            }
         if (wxFile::Exists(filePath))
             {
             const wxImage img = Wisteria::GraphItems::Image::LoadFile(filePath);
@@ -75,9 +84,8 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
             return m_imageMap[filePath] = wxBitmap(img);
             }
         // ...otherwise, load from the resource zip file
-
         const wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
-        wxASSERT_MSG(bmp.IsOk(), "Failed to load image from resources!");
+        wxASSERT_MSG(bmp.IsOk(), L"Failed to load image from resources!");
         wxLogDebug(L"%s extracted from resource file. Width=%d, Height=%d", filePath,
                    bmp.GetWidth(), bmp.GetHeight());
         return m_imageMap[filePath] = bmp;
@@ -87,12 +95,21 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
     }
 
 //-------------------------------------------------------
-wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
+wxBitmapBundle ResourceManager::GetSVG(wxString path)
     {
     const auto imagePos = m_bmpBundleMap.find(path);
+    // load bitmap from disk if a local file
     if (imagePos == m_bmpBundleMap.cend())
         {
-        // load bitmap from disk if a local file
+        // not an absolute path, then see if using a resource folder and look in there
+        if (!wxFile::Exists(path))
+            {
+            wxFileName fn{ m_resourceFile };
+            if (!fn.HasExt())
+                {
+                path = GetResourceFilePath(path);
+                }
+            }
         if (wxFile::Exists(path))
             {
             wxASSERT_MSG(wxBitmapBundle::FromSVGFile(path, wxSize{ 16, 16 }).IsOk(),
