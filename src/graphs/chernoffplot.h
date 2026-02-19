@@ -290,6 +290,29 @@ namespace Wisteria::Graphs
 
         /// @}
 
+        /// @brief Identifiers for facial features.
+        /// @private
+        enum class FeatureId
+            {
+            FaceWidth,
+            FaceHeight,
+            EyeSize,
+            EyePosition,
+            EyebrowSlant,
+            PupilDirection,
+            NoseSize,
+            MouthWidth,
+            SmileFrown,
+            FaceColor,
+            EarSize
+            };
+
+        /// @brief Returns the localized display name for a feature.
+        /// @param id The feature identifier.
+        /// @returns The localized string for the feature.
+        [[nodiscard]]
+        static wxString GetFeatureDisplayName(FeatureId id);
+
         /// @name Legend
         /// @brief Legend-related classes and functions.
         /// @{
@@ -301,8 +324,8 @@ namespace Wisteria::Graphs
             /// @brief Structure describing a feature label and its position.
             struct FeatureLabel
                 {
-                wxString columnName;   ///< data column name (empty = not in use)
-                wxString displayName;  ///< display name, e.g., "Face width"
+                wxString columnName; ///< data column name (empty = not in use)
+                FeatureId featureId{ FeatureId::FaceWidth }; ///< feature identifier
                 bool leftSide{ true }; ///< whether label is on left or right side
                 };
 

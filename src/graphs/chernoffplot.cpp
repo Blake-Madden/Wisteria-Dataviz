@@ -13,6 +13,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
+    wxString ChernoffFacesPlot::GetFeatureDisplayName(FeatureId id)
+        {
+        switch (id)
+            {
+        case FeatureId::FaceWidth:
+            return _(L"Face width");
+        case FeatureId::FaceHeight:
+            return _(L"Face height");
+        case FeatureId::EyeSize:
+            return _(L"Eye size");
+        case FeatureId::EyePosition:
+            return _(L"Eye position");
+        case FeatureId::EyebrowSlant:
+            return _(L"Eyebrow slant");
+        case FeatureId::PupilDirection:
+            return _(L"Pupil direction");
+        case FeatureId::NoseSize:
+            return _(L"Nose size");
+        case FeatureId::MouthWidth:
+            return _(L"Mouth width");
+        case FeatureId::SmileFrown:
+            return _(L"Smile/frown");
+        case FeatureId::FaceColor:
+            return _(L"Face color");
+        case FeatureId::EarSize:
+            return _(L"Ear size");
+        default:
+            return wxString{};
+            }
+        }
+
+    //----------------------------------------------------------------
     wxRect ChernoffFacesPlot::FaceObject::GetBoundingBox([[maybe_unused]]
                                                          wxDC &
                                                          dc) const
@@ -112,7 +144,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             if (!feature.columnName.empty())
                 {
                 GraphItems::Label label(
-                    GraphItems::GraphItemInfo(feature.displayName + L": " + feature.columnName)
+                    GraphItems::GraphItemInfo(GetFeatureDisplayName(feature.featureId) + L": " +
+                                              feature.columnName)
                         .Pen(wxNullPen)
                         .Scaling(labelScaling)
                         .DPIScaling(GetDPIScaleFactor()));
@@ -152,11 +185,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             return {};
             }
 
-        // collect features for each side with their display names for connection points
+        // collect features for each side with their IDs for connection points
         struct FeatureInfo
             {
             wxString labelText;
-            wxString displayName;
+            FeatureId featureId;
             };
 
         std::vector<FeatureInfo> leftFeatures;
@@ -167,8 +200,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             if (!feature.columnName.empty())
                 {
-                FeatureInfo info{ feature.displayName + L": " + feature.columnName,
-                                  feature.displayName };
+                const wxString displayName = GetFeatureDisplayName(feature.featureId);
+                FeatureInfo info{ displayName + L": " + feature.columnName, feature.featureId };
                 if (feature.leftSide)
                     {
                     leftFeatures.push_back(info);
@@ -271,51 +304,37 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         const double noseY = cy + ellipseHeight * 0.1;
 
         // helper to get feature point on face
-        auto getFeaturePoint = [&](const wxString& displayName) -> wxPoint
+        const auto getFeaturePoint = [&](FeatureId featureId)
         {
-            if (displayName == _(L"Face width"))
+            switch (featureId)
                 {
+            case FeatureId::FaceWidth:
                 return wxPoint{ static_cast<int>(cx - ellipseWidth), static_cast<int>(cy) };
-                }
-            if (displayName == _(L"Face height"))
-                {
+            case FeatureId::FaceHeight:
                 return wxPoint{ static_cast<int>(cx), static_cast<int>(cy - ellipseHeight) };
-                }
-            if (displayName == _(L"Eye size") || displayName == _(L"Pupil direction"))
-                {
+            case FeatureId::EyeSize:
+                [[fallthrough]];
+            case FeatureId::PupilDirection:
+                [[fallthrough]];
+            case FeatureId::EyePosition:
                 return wxPoint{ static_cast<int>(cx - eyeSpacing), static_cast<int>(eyeY) };
-                }
-            if (displayName == _(L"Eye position"))
-                {
-                return wxPoint{ static_cast<int>(cx - eyeSpacing), static_cast<int>(eyeY) };
-                }
-            if (displayName == _(L"Eyebrow slant"))
-                {
+            case FeatureId::EyebrowSlant:
                 return wxPoint{ static_cast<int>(cx - eyeSpacing), static_cast<int>(browY) };
-                }
-            if (displayName == _(L"Nose size"))
-                {
+            case FeatureId::NoseSize:
                 return wxPoint{ static_cast<int>(cx), static_cast<int>(noseY) };
-                }
-            if (displayName == _(L"Mouth width"))
-                {
+            case FeatureId::MouthWidth:
                 return wxPoint{ static_cast<int>(cx), static_cast<int>(mouthY) };
-                }
-            if (displayName == _(L"Smile/frown"))
-                {
+            case FeatureId::SmileFrown:
                 return wxPoint{ static_cast<int>(cx + ellipseWidth * 0.2),
                                 static_cast<int>(mouthY) };
-                }
-            if (displayName == _(L"Face color"))
-                {
+            case FeatureId::FaceColor:
                 return wxPoint{ static_cast<int>(cx + ellipseWidth * 0.5),
                                 static_cast<int>(cy + ellipseHeight * 0.3) };
-                }
-            if (displayName == _(L"Ear size"))
-                {
+            case FeatureId::EarSize:
                 return wxPoint{ static_cast<int>(cx + ellipseWidth), static_cast<int>(cy) };
+            default:
+                return wxPoint{ static_cast<int>(cx), static_cast<int>(cy) };
                 }
-            return wxPoint{ static_cast<int>(cx), static_cast<int>(cy) };
         };
 
         // calculate contrasting color for labels (same approach as Axis)
@@ -346,7 +365,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         wxString faceWidthLabelText;
         for (const auto& f : leftFeatures)
             {
-            if (f.displayName == _(L"Face width"))
+            if (f.featureId == FeatureId::FaceWidth)
                 {
                 hasFaceWidth = true;
                 faceWidthLabelText = f.labelText;
@@ -412,7 +431,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
             const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
 
-            const wxPoint featurePt = getFeaturePoint(otherLeftFeatures[i].displayName);
+            const wxPoint featurePt = getFeaturePoint(otherLeftFeatures[i].featureId);
             arrowLines.AddLine(wxPoint{ labelCenterX, labelCenterY }, featurePt);
 
             label.Draw(dc);
@@ -427,7 +446,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         for (size_t i = 0; i < rightFeatures.size(); ++i)
             {
             const auto labelY = m_rect.GetY() + static_cast<int>(i + 1) * rightLabelSpacing;
-            const wxPoint featurePt = getFeaturePoint(rightFeatures[i].displayName);
+            const wxPoint featurePt = getFeaturePoint(rightFeatures[i].featureId);
 
             // create and measure label to find its center (with left padding for line gap)
             GraphItems::Label label(GraphItems::GraphItemInfo(rightFeatures[i].labelText)
@@ -1612,28 +1631,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             legend->GetHeaderInfo().Enable(true);
             }
 
-        const auto addFeatureEntry = [&](const wxString& featureName, const wxString& columnName)
+        const auto addFeatureEntry = [&](FeatureId featureId, const wxString& columnName)
         {
             if (!columnName.empty())
                 {
-                legendText.append(wxString::Format(L"%s: %s\n", featureName, columnName));
+                legendText.append(
+                    wxString::Format(L"%s: %s\n", GetFeatureDisplayName(featureId), columnName));
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
                                                       wxPen(m_outlineColor),
                                                       wxBrush(m_outlineColor));
                 }
         };
 
-        addFeatureEntry(_(L"Face width"), m_faceWidthColumnName);
-        addFeatureEntry(_(L"Face height"), m_faceHeightColumnName);
-        addFeatureEntry(_(L"Eye size"), m_eyeSizeColumnName);
-        addFeatureEntry(_(L"Eye position"), m_eyePositionColumnName);
-        addFeatureEntry(_(L"Eyebrow slant"), m_eyebrowSlantColumnName);
-        addFeatureEntry(_(L"Pupil direction"), m_pupilPositionColumnName);
-        addFeatureEntry(_(L"Nose size"), m_noseSizeColumnName);
-        addFeatureEntry(_(L"Mouth width"), m_mouthWidthColumnName);
-        addFeatureEntry(_(L"Smile/frown"), m_mouthCurvatureColumnName);
-        addFeatureEntry(_(L"Face color"), m_faceSaturationColumnName);
-        addFeatureEntry(_(L"Ear size"), m_earSizeColumnName);
+        addFeatureEntry(FeatureId::FaceWidth, m_faceWidthColumnName);
+        addFeatureEntry(FeatureId::FaceHeight, m_faceHeightColumnName);
+        addFeatureEntry(FeatureId::EyeSize, m_eyeSizeColumnName);
+        addFeatureEntry(FeatureId::EyePosition, m_eyePositionColumnName);
+        addFeatureEntry(FeatureId::EyebrowSlant, m_eyebrowSlantColumnName);
+        addFeatureEntry(FeatureId::PupilDirection, m_pupilPositionColumnName);
+        addFeatureEntry(FeatureId::NoseSize, m_noseSizeColumnName);
+        addFeatureEntry(FeatureId::MouthWidth, m_mouthWidthColumnName);
+        addFeatureEntry(FeatureId::SmileFrown, m_mouthCurvatureColumnName);
+        addFeatureEntry(FeatureId::FaceColor, m_faceSaturationColumnName);
+        addFeatureEntry(FeatureId::EarSize, m_earSizeColumnName);
 
         legend->SetText(legendText.Trim());
         AdjustLegendSettings(*legend, options.GetPlacementHint());
@@ -1653,49 +1673,49 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // left side features
         if (!m_faceWidthColumnName.empty())
             {
-            features.push_back({ m_faceWidthColumnName, _(L"Face width"), true });
+            features.push_back({ m_faceWidthColumnName, FeatureId::FaceWidth, true });
             }
         if (!m_faceHeightColumnName.empty())
             {
-            features.push_back({ m_faceHeightColumnName, _(L"Face height"), true });
+            features.push_back({ m_faceHeightColumnName, FeatureId::FaceHeight, true });
             }
         if (!m_eyeSizeColumnName.empty())
             {
-            features.push_back({ m_eyeSizeColumnName, _(L"Eye size"), true });
+            features.push_back({ m_eyeSizeColumnName, FeatureId::EyeSize, true });
             }
         if (!m_eyePositionColumnName.empty())
             {
-            features.push_back({ m_eyePositionColumnName, _(L"Eye position"), true });
+            features.push_back({ m_eyePositionColumnName, FeatureId::EyePosition, true });
             }
         if (!m_eyebrowSlantColumnName.empty())
             {
-            features.push_back({ m_eyebrowSlantColumnName, _(L"Eyebrow slant"), true });
+            features.push_back({ m_eyebrowSlantColumnName, FeatureId::EyebrowSlant, true });
             }
         if (!m_pupilPositionColumnName.empty())
             {
-            features.push_back({ m_pupilPositionColumnName, _(L"Pupil direction"), true });
+            features.push_back({ m_pupilPositionColumnName, FeatureId::PupilDirection, true });
             }
 
         // right side features
         if (!m_noseSizeColumnName.empty())
             {
-            features.push_back({ m_noseSizeColumnName, _(L"Nose size"), false });
+            features.push_back({ m_noseSizeColumnName, FeatureId::NoseSize, false });
             }
         if (!m_mouthWidthColumnName.empty())
             {
-            features.push_back({ m_mouthWidthColumnName, _(L"Mouth width"), false });
+            features.push_back({ m_mouthWidthColumnName, FeatureId::MouthWidth, false });
             }
         if (!m_mouthCurvatureColumnName.empty())
             {
-            features.push_back({ m_mouthCurvatureColumnName, _(L"Smile/frown"), false });
+            features.push_back({ m_mouthCurvatureColumnName, FeatureId::SmileFrown, false });
             }
         if (!m_faceSaturationColumnName.empty())
             {
-            features.push_back({ m_faceSaturationColumnName, _(L"Face color"), false });
+            features.push_back({ m_faceSaturationColumnName, FeatureId::FaceColor, false });
             }
         if (!m_earSizeColumnName.empty())
             {
-            features.push_back({ m_earSizeColumnName, _(L"Ear size"), false });
+            features.push_back({ m_earSizeColumnName, FeatureId::EarSize, false });
             }
 
         legend->SetFeatures(std::move(features));
