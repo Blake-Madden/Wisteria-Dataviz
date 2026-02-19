@@ -75,6 +75,386 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         }
 
     //----------------------------------------------------------------
+    wxRect ChernoffFacesPlot::ChernoffLegend::GetBoundingBox([[maybe_unused]]
+                                                             wxDC &
+                                                             dc) const
+        {
+        return m_rect;
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::ChernoffLegend::SetBoundingBox(
+        const wxRect& rect, [[maybe_unused]] wxDC& dc, [[maybe_unused]] double parentScaling)
+        {
+        m_rect = rect;
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::ChernoffLegend::RecalcSizes(wxDC & dc)
+        {
+        // calculate minimum size needed for the legend, preserving current position
+        const wxPoint currentPos = m_rect.GetPosition();
+
+        const auto lineGap = ScaleToScreenAndCanvas(5);
+        // face is elongated: height = 1.5 * width, and we want it 2x larger
+        const auto minFaceHeight = ScaleToScreenAndCanvas(160);
+        const auto minFaceWidth = minFaceHeight * math_constants::two_thirds;
+
+        // measure label widths at reduced scaling (labels will be scaled to fit)
+        const double labelScaling = GetScaling() * 0.6;
+        int maxLeftLabelWidth = 0;
+        int maxRightLabelWidth = 0;
+        int leftCount = 0;
+        int rightCount = 0;
+
+        for (const auto& feature : m_features)
+            {
+            if (!feature.columnName.empty())
+                {
+                GraphItems::Label label(
+                    GraphItems::GraphItemInfo(feature.displayName + L": " + feature.columnName)
+                        .Pen(wxNullPen)
+                        .Scaling(labelScaling)
+                        .DPIScaling(GetDPIScaleFactor()));
+                const auto labelSize = label.GetBoundingBox(dc).GetSize();
+
+                if (feature.leftSide)
+                    {
+                    maxLeftLabelWidth = std::max(maxLeftLabelWidth, labelSize.GetWidth());
+                    ++leftCount;
+                    }
+                else
+                    {
+                    maxRightLabelWidth = std::max(maxRightLabelWidth, labelSize.GetWidth());
+                    ++rightCount;
+                    }
+                }
+            }
+
+        // calculate minimum dimensions
+        // width: left labels + gap + face + gap + right labels
+        const int minWidth =
+            maxLeftLabelWidth + lineGap + minFaceWidth + lineGap + maxRightLabelWidth;
+
+        // height: face uses 2/3 of height, so total = faceHeight * 3/2
+        const auto labelHeight = ScaleToScreenAndCanvas(14);
+        const int labelsHeight = std::max(leftCount, rightCount) * labelHeight + (labelHeight / 2);
+        const auto minHeight = std::max<int>(minFaceHeight * 3 / 2, labelsHeight);
+
+        m_rect = wxRect{ currentPos, wxSize{ minWidth, minHeight } };
+        }
+
+    //----------------------------------------------------------------
+    wxRect ChernoffFacesPlot::ChernoffLegend::Draw(wxDC & dc) const
+        {
+        if (!IsShown() || m_rect.IsEmpty())
+            {
+            return {};
+            }
+
+        // collect features for each side with their display names for connection points
+        struct FeatureInfo
+            {
+            wxString labelText;
+            wxString displayName;
+            };
+
+        std::vector<FeatureInfo> leftFeatures;
+        leftFeatures.reserve(m_features.size());
+        std::vector<FeatureInfo> rightFeatures;
+        rightFeatures.reserve(m_features.size());
+        for (const auto& feature : m_features)
+            {
+            if (!feature.columnName.empty())
+                {
+                FeatureInfo info{ feature.displayName + L": " + feature.columnName,
+                                  feature.displayName };
+                if (feature.leftSide)
+                    {
+                    leftFeatures.push_back(info);
+                    }
+                else
+                    {
+                    rightFeatures.push_back(info);
+                    }
+                }
+            }
+
+        // calculate face size - elongated (height = 1.5 * width), use 2/3 of available height
+        const auto faceHeight = m_rect.GetHeight() * math_constants::two_thirds;
+        const auto faceWidth = faceHeight * math_constants::two_thirds;
+        const auto lineGap = ScaleToScreenAndCanvas(5);
+
+        if (faceHeight <= 0)
+            {
+            return m_rect;
+            }
+
+        // position face: if no right features, move face to the right to
+        // give left labels more space
+        int faceX{ 0 };
+        if (rightFeatures.empty() && !leftFeatures.empty())
+            {
+            // position face on the right side (with small margin)
+            faceX = m_rect.GetRight() - faceWidth - lineGap;
+            }
+        else
+            {
+            // center the face horizontally
+            faceX = m_rect.GetX() + safe_divide<int>(m_rect.GetWidth() - faceWidth, 2);
+            }
+        const wxRect faceRect(faceX,
+                              m_rect.GetY() + safe_divide<int>(m_rect.GetHeight() - faceHeight, 2),
+                              faceWidth, faceHeight);
+
+        // calculate label areas
+        const int leftLabelAreaWidth = faceRect.GetX() - m_rect.GetX() - lineGap;
+        const int rightLabelAreaWidth = m_rect.GetRight() - faceRect.GetRight() - lineGap;
+
+        // determine uniform label scaling to fit all labels
+        double labelScaling = GetScaling() * 0.6;
+
+        // measure and scale labels to fit
+        auto measureLabelWidth = [&](const wxString& text, double scaling)
+        {
+            GraphItems::Label lbl(
+                GraphItems::GraphItemInfo(text).Pen(wxNullPen).Scaling(scaling).DPIScaling(
+                    GetDPIScaleFactor()));
+            lbl.SetFontColor(m_outlineColor);
+            return lbl.GetBoundingBox(dc).GetWidth();
+        };
+
+        int maxLeftWidth{ 0 };
+        int maxRightWidth{ 0 };
+        for (const auto& f : leftFeatures)
+            {
+            maxLeftWidth = std::max(maxLeftWidth, measureLabelWidth(f.labelText, labelScaling));
+            }
+        for (const auto& f : rightFeatures)
+            {
+            maxRightWidth = std::max(maxRightWidth, measureLabelWidth(f.labelText, labelScaling));
+            }
+
+        if (maxLeftWidth > leftLabelAreaWidth && leftLabelAreaWidth > 0)
+            {
+            labelScaling *= safe_divide<double>(leftLabelAreaWidth, maxLeftWidth);
+            }
+        if (maxRightWidth > rightLabelAreaWidth && rightLabelAreaWidth > 0)
+            {
+            const double rightScale = safe_divide<double>(rightLabelAreaWidth, maxRightWidth);
+            labelScaling = std::min(labelScaling, GetScaling() * 0.6 * rightScale);
+            }
+
+        // draw the face
+        GraphItems::GraphicsContextFallback gcf{ &dc, faceRect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc != nullptr)
+            {
+            FaceFeatures defaultFeatures;
+            ChernoffFacesPlot::DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter,
+                                        m_faceColorDarker, m_outlineColor, m_lipstickColor,
+                                        m_eyeColor, m_hairColor, m_hairStyle, m_gender,
+                                        m_facialHair);
+            }
+
+        // calculate face geometry for feature connection points
+        const double cx = faceRect.GetX() + faceRect.GetWidth() * math_constants::half;
+        const double cy = faceRect.GetY() + faceRect.GetHeight() * math_constants::half;
+        const double baseRadius = std::min(faceRect.GetWidth(), faceRect.GetHeight()) * 0.4;
+        const double ellipseWidth = baseRadius * 1.0;
+        const double ellipseHeight = baseRadius * 1.0;
+        const double eyeY = cy - ellipseHeight * 0.25;
+        const double eyeSpacing = ellipseWidth * 0.4;
+        const double eyeRadius = ellipseHeight * 0.1;
+        const double browY = eyeY - eyeRadius * 1.8;
+        const double mouthY = cy + ellipseHeight * 0.45;
+        const double noseY = cy + ellipseHeight * 0.1;
+
+        // helper to get feature point on face
+        auto getFeaturePoint = [&](const wxString& displayName) -> wxPoint
+        {
+            if (displayName == _(L"Face width"))
+                {
+                return wxPoint{ static_cast<int>(cx - ellipseWidth), static_cast<int>(cy) };
+                }
+            if (displayName == _(L"Face height"))
+                {
+                return wxPoint{ static_cast<int>(cx), static_cast<int>(cy - ellipseHeight) };
+                }
+            if (displayName == _(L"Eye size") || displayName == _(L"Pupil direction"))
+                {
+                return wxPoint{ static_cast<int>(cx - eyeSpacing), static_cast<int>(eyeY) };
+                }
+            if (displayName == _(L"Eye position"))
+                {
+                return wxPoint{ static_cast<int>(cx - eyeSpacing), static_cast<int>(eyeY) };
+                }
+            if (displayName == _(L"Eyebrow slant"))
+                {
+                return wxPoint{ static_cast<int>(cx - eyeSpacing), static_cast<int>(browY) };
+                }
+            if (displayName == _(L"Nose size"))
+                {
+                return wxPoint{ static_cast<int>(cx), static_cast<int>(noseY) };
+                }
+            if (displayName == _(L"Mouth width"))
+                {
+                return wxPoint{ static_cast<int>(cx), static_cast<int>(mouthY) };
+                }
+            if (displayName == _(L"Smile/frown"))
+                {
+                return wxPoint{ static_cast<int>(cx + ellipseWidth * 0.2),
+                                static_cast<int>(mouthY) };
+                }
+            if (displayName == _(L"Face color"))
+                {
+                return wxPoint{ static_cast<int>(cx + ellipseWidth * 0.5),
+                                static_cast<int>(cy + ellipseHeight * 0.3) };
+                }
+            if (displayName == _(L"Ear size"))
+                {
+                return wxPoint{ static_cast<int>(cx + ellipseWidth), static_cast<int>(cy) };
+                }
+            return wxPoint{ static_cast<int>(cx), static_cast<int>(cy) };
+        };
+
+        // calculate contrasting color for labels (same approach as Axis)
+        const wxColour contrastingLabelColor{ Colors::ColorContrast::BlackOrWhiteContrast(
+            m_canvasBackgroundColor) };
+
+        const wxPen arrowPen{ Colors::ColorContrast::IsDark(m_canvasBackgroundColor) ?
+                                  Colors::ColorBrewer::GetColor(Colors::Color::BlizzardBlue) :
+                                  Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue) };
+
+        // create Lines object for arrow connections
+        GraphItems::Lines arrowLines(arrowPen, GetScaling());
+        arrowLines.SetDPIScaleFactor(GetDPIScaleFactor());
+
+        // create Lines object for Face width dimension line (with ticks, not arrows)
+        GraphItems::Lines dimensionLines(arrowPen, GetScaling());
+        dimensionLines.SetLineStyle(LineStyle::Lines);
+        dimensionLines.SetDPIScaleFactor(GetDPIScaleFactor());
+
+        const auto tickLength = ScaleToScreenAndCanvas(8);
+        const auto topMargin = ScaleToScreenAndCanvas(12);
+
+        // separate "Face width" from other left features - it always goes at top
+        // because it draws a line across the top with ticks to convey the idea
+        // of shape width
+        std::vector<FeatureInfo> otherLeftFeatures;
+        bool hasFaceWidth{ false };
+        wxString faceWidthLabelText;
+        for (const auto& f : leftFeatures)
+            {
+            if (f.displayName == _(L"Face width"))
+                {
+                hasFaceWidth = true;
+                faceWidthLabelText = f.labelText;
+                }
+            else
+                {
+                otherLeftFeatures.push_back(f);
+                }
+            }
+
+        // always draw "Face width" at the top if present
+        if (hasFaceWidth)
+            {
+            const auto labelY = m_rect.GetY() + topMargin;
+
+            GraphItems::Label label(GraphItems::GraphItemInfo{ faceWidthLabelText }
+                                        .Pen(wxNullPen)
+                                        .Scaling(labelScaling)
+                                        .DPIScaling(GetDPIScaleFactor())
+                                        .Padding(0, 4, 0, 0));
+            label.SetFontColor(contrastingLabelColor);
+            label.SetAnchoring(Anchoring::BottomLeftCorner);
+            label.SetAnchorPoint(wxPoint(m_rect.GetX(), labelY));
+            const auto labelBox = label.GetBoundingBox(dc);
+            const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
+            const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
+
+            // horizontal line straight from label to right edge of face
+            dimensionLines.AddLine(wxPoint(labelCenterX, labelCenterY),
+                                   wxPoint(faceRect.GetRight(), labelCenterY));
+            // tick marks at face bounding box edges (half tick length)
+            const auto shortTick = tickLength / 2;
+            dimensionLines.AddLine(wxPoint(faceRect.GetX(), labelCenterY),
+                                   wxPoint(faceRect.GetX(), labelCenterY + shortTick));
+            dimensionLines.AddLine(wxPoint(faceRect.GetRight(), labelCenterY),
+                                   wxPoint(faceRect.GetRight(), labelCenterY + shortTick));
+
+            dimensionLines.Draw(dc);
+            label.Draw(dc);
+            }
+
+        // draw remaining left labels with lines connecting to feature points
+        const auto leftStartY = m_rect.GetY() + faceRect.GetY() - m_rect.GetY();
+        const auto leftAvailableHeight = m_rect.GetHeight() - (faceRect.GetY() - m_rect.GetY());
+        const auto leftLabelSpacing =
+            (otherLeftFeatures.size() > 1) ?
+                safe_divide(leftAvailableHeight, static_cast<int>(otherLeftFeatures.size() + 1)) :
+                safe_divide(leftAvailableHeight, 2);
+
+        for (size_t i = 0; i < otherLeftFeatures.size(); ++i)
+            {
+            const auto labelY = leftStartY + static_cast<int>(i + 1) * leftLabelSpacing;
+
+            GraphItems::Label label(GraphItems::GraphItemInfo(otherLeftFeatures[i].labelText)
+                                        .Pen(wxNullPen)
+                                        .Scaling(labelScaling)
+                                        .DPIScaling(GetDPIScaleFactor())
+                                        .Padding(0, 4, 0, 0));
+            label.SetFontColor(contrastingLabelColor);
+            label.SetAnchoring(Anchoring::BottomLeftCorner);
+            label.SetAnchorPoint(wxPoint(m_rect.GetX(), labelY));
+            const auto labelBox = label.GetBoundingBox(dc);
+            const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
+            const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
+
+            const wxPoint featurePt = getFeaturePoint(otherLeftFeatures[i].displayName);
+            arrowLines.AddLine(wxPoint{ labelCenterX, labelCenterY }, featurePt);
+
+            label.Draw(dc);
+            }
+
+        // draw right labels with lines connecting to feature points
+        const auto rightLabelSpacing =
+            (rightFeatures.size() > 1) ?
+                safe_divide(m_rect.GetHeight(), static_cast<int>(rightFeatures.size() + 1)) :
+                safe_divide(m_rect.GetHeight(), 2);
+
+        for (size_t i = 0; i < rightFeatures.size(); ++i)
+            {
+            const auto labelY = m_rect.GetY() + static_cast<int>(i + 1) * rightLabelSpacing;
+            const wxPoint featurePt = getFeaturePoint(rightFeatures[i].displayName);
+
+            // create and measure label to find its center (with left padding for line gap)
+            GraphItems::Label label(GraphItems::GraphItemInfo(rightFeatures[i].labelText)
+                                        .Pen(wxNullPen)
+                                        .Scaling(labelScaling)
+                                        .DPIScaling(GetDPIScaleFactor())
+                                        .Padding(0, 0, 0, 4));
+            label.SetFontColor(contrastingLabelColor);
+            label.SetAnchoring(Anchoring::BottomLeftCorner);
+            label.SetAnchorPoint(wxPoint(faceRect.GetRight() + lineGap, labelY));
+            const auto labelBox = label.GetBoundingBox(dc);
+            const int labelCenterX = labelBox.GetX();
+            const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
+
+            // add arrow line from label to feature point
+            arrowLines.AddLine(wxPoint{ labelCenterX, labelCenterY }, featurePt);
+
+            label.Draw(dc);
+            }
+
+        // draw all arrow lines
+        arrowLines.Draw(dc);
+
+        return m_rect;
+        }
+
+    //----------------------------------------------------------------
     ChernoffFacesPlot::ChernoffFacesPlot(Canvas * canvas,
                                          const wxColour& faceColor /*= wxColour(255, 224, 189)*/)
         : Graph2D(canvas)
@@ -1257,6 +1637,92 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         legend->SetText(legendText.Trim());
         AdjustLegendSettings(*legend, options.GetPlacementHint());
+
+        return legend;
+        }
+
+    //----------------------------------------------------------------
+    std::unique_ptr<ChernoffFacesPlot::ChernoffLegend> ChernoffFacesPlot::CreateExtendedLegend(
+        const LegendOptions& options)
+        {
+        auto legend = std::make_unique<ChernoffLegend>(
+            GraphItems::GraphItemInfo{}.DPIScaling(GetDPIScaleFactor()).Pen(wxNullPen));
+
+        std::vector<ChernoffLegend::FeatureLabel> features;
+
+        // left side features
+        if (!m_faceWidthColumnName.empty())
+            {
+            features.push_back({ m_faceWidthColumnName, _(L"Face width"), true });
+            }
+        if (!m_faceHeightColumnName.empty())
+            {
+            features.push_back({ m_faceHeightColumnName, _(L"Face height"), true });
+            }
+        if (!m_eyeSizeColumnName.empty())
+            {
+            features.push_back({ m_eyeSizeColumnName, _(L"Eye size"), true });
+            }
+        if (!m_eyePositionColumnName.empty())
+            {
+            features.push_back({ m_eyePositionColumnName, _(L"Eye position"), true });
+            }
+        if (!m_eyebrowSlantColumnName.empty())
+            {
+            features.push_back({ m_eyebrowSlantColumnName, _(L"Eyebrow slant"), true });
+            }
+        if (!m_pupilPositionColumnName.empty())
+            {
+            features.push_back({ m_pupilPositionColumnName, _(L"Pupil direction"), true });
+            }
+
+        // right side features
+        if (!m_noseSizeColumnName.empty())
+            {
+            features.push_back({ m_noseSizeColumnName, _(L"Nose size"), false });
+            }
+        if (!m_mouthWidthColumnName.empty())
+            {
+            features.push_back({ m_mouthWidthColumnName, _(L"Mouth width"), false });
+            }
+        if (!m_mouthCurvatureColumnName.empty())
+            {
+            features.push_back({ m_mouthCurvatureColumnName, _(L"Smile/frown"), false });
+            }
+        if (!m_faceSaturationColumnName.empty())
+            {
+            features.push_back({ m_faceSaturationColumnName, _(L"Face color"), false });
+            }
+        if (!m_earSizeColumnName.empty())
+            {
+            features.push_back({ m_earSizeColumnName, _(L"Ear size"), false });
+            }
+
+        legend->SetFeatures(std::move(features));
+        legend->SetFaceColors(m_faceColorLighter, m_faceColor);
+        legend->SetOutlineColor(m_outlineColor);
+        legend->SetGender(m_gender);
+        legend->SetHairStyle(m_hairStyle);
+        legend->SetHairColor(m_hairColor);
+        legend->SetEyeColor(m_eyeColor);
+        legend->SetLipstickColor(m_lipstickColor);
+        legend->SetFacialHair(m_facialHair);
+        legend->SetCanvasBackgroundColor(GetPlotOrCanvasColor());
+
+        // apply canvas settings based on placement hint
+        if (GetCanvas() != nullptr)
+            {
+            const auto hint = options.GetPlacementHint();
+            if (hint == LegendCanvasPlacementHint::RightOfGraph ||
+                hint == LegendCanvasPlacementHint::LeftOfGraph)
+                {
+                legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(*legend));
+                legend->SetPageHorizontalAlignment(hint == LegendCanvasPlacementHint::RightOfGraph ?
+                                                       PageHorizontalAlignment::RightAligned :
+                                                       PageHorizontalAlignment::LeftAligned);
+                legend->GetGraphItemInfo().CanvasPadding(4, 4, 4, 4).FixedWidthOnCanvas(true);
+                }
+            }
 
         return legend;
         }

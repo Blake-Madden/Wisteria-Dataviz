@@ -1343,7 +1343,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas->SetFixedObject(0, 0, chernoffPlot);
             subframe->m_canvas->SetFixedObject(
                 0, 1,
-                chernoffPlot->CreateLegend(
+                chernoffPlot->CreateExtendedLegend(
                     Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
                         Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
             }

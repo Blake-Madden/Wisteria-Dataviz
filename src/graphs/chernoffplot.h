@@ -290,12 +290,141 @@ namespace Wisteria::Graphs
 
         /// @}
 
+        /// @name Legend
+        /// @brief Legend-related classes and functions.
+        /// @{
+
+        /// @brief A legend object showing a face with labeled connection lines to features.
+        class ChernoffLegend final : public GraphItems::GraphItemBase
+            {
+          public:
+            /// @brief Structure describing a feature label and its position.
+            struct FeatureLabel
+                {
+                wxString columnName;   ///< data column name (empty = not in use)
+                wxString displayName;  ///< display name, e.g., "Face width"
+                bool leftSide{ true }; ///< whether label is on left or right side
+                };
+
+            /** @brief Constructor.
+                @param itemInfo The base item information.*/
+            explicit ChernoffLegend(const GraphItems::GraphItemInfo& itemInfo)
+                : GraphItemBase(itemInfo)
+                {
+                }
+
+            /// @private
+            ChernoffLegend(const ChernoffLegend&) = delete;
+            /// @private
+            ChernoffLegend& operator=(const ChernoffLegend&) = delete;
+
+            [[nodiscard]]
+            wxRect Draw(wxDC& dc) const final;
+            [[nodiscard]]
+            wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+            void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                                [[maybe_unused]] double parentScaling) final;
+            void RecalcSizes(wxDC& dc) final;
+
+            /// @brief Sets the features to display in the legend.
+            /// @param features The feature labels to show.
+            void SetFeatures(std::vector<FeatureLabel> features) noexcept
+                {
+                m_features = std::move(features);
+                }
+
+            /// @brief Sets the face skin colors.
+            /// @param lighter The lighter skin color.
+            /// @param darker The darker skin color.
+            void SetFaceColors(const wxColour& lighter, const wxColour& darker) noexcept
+                {
+                m_faceColorLighter = lighter;
+                m_faceColorDarker = darker;
+                }
+
+            /// @brief Sets the outline color.
+            /// @param color The outline color.
+            void SetOutlineColor(const wxColour& color) noexcept { m_outlineColor = color; }
+
+            /// @brief Sets the gender for face styling.
+            /// @param gender The gender.
+            void SetGender(Gender gender) noexcept { m_gender = gender; }
+
+            /// @brief Sets the hair style.
+            /// @param style The hair style.
+            void SetHairStyle(HairStyle style) noexcept { m_hairStyle = style; }
+
+            /// @brief Sets the hair color.
+            /// @param color The hair color.
+            void SetHairColor(const wxColour& color) noexcept { m_hairColor = color; }
+
+            /// @brief Sets the eye color.
+            /// @param color The eye color.
+            void SetEyeColor(const wxColour& color) noexcept { m_eyeColor = color; }
+
+            /// @brief Sets the lipstick color (female faces only).
+            /// @param color The lipstick color.
+            void SetLipstickColor(const wxColour& color) noexcept { m_lipstickColor = color; }
+
+            /// @brief Sets the facial hair style (male faces only).
+            /// @param style The facial hair style.
+            void SetFacialHair(FacialHair style) noexcept { m_facialHair = style; }
+
+            /// @brief Sets the pen for connection lines.
+            /// @param pen The pen.
+            void SetConnectionLinePen(const wxPen& pen) noexcept { m_connectionLinePen = pen; }
+
+            /// @brief Sets the canvas background color used for calculating contrast.
+            /// @details This color is not drawn; it is only used to determine appropriate
+            ///     tinting for connection line arrows and label font colors.
+            /// @param color The canvas background color.
+            void SetCanvasBackgroundColor(const wxColour& color) noexcept
+                {
+                m_canvasBackgroundColor = color;
+                }
+
+          private:
+            void Offset(const int xToMove, const int yToMove) final
+                {
+                m_rect.Offset(xToMove, yToMove);
+                }
+
+            [[nodiscard]]
+            bool HitTest([[maybe_unused]] const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
+                {
+                return false;
+                }
+
+            std::vector<FeatureLabel> m_features;
+            wxColour m_faceColorLighter{ 255, 239, 219 };
+            wxColour m_faceColorDarker{ 255, 224, 189 };
+            wxColour m_outlineColor{ *wxBLACK };
+            wxColour m_lipstickColor{ 178, 34, 34 };
+            wxColour m_eyeColor{ 143, 188, 143 };
+            wxColour m_hairColor{ 183, 82, 46 };
+            Gender m_gender{ Gender::Female };
+            HairStyle m_hairStyle{ HairStyle::Bob };
+            FacialHair m_facialHair{ FacialHair::CleanShaven };
+            wxPen m_connectionLinePen{ *wxBLACK, 1 };
+            wxColour m_canvasBackgroundColor{ *wxWHITE };
+            wxRect m_rect;
+            };
+
         /** @brief Builds and returns a legend explaining the feature mappings.
             @details The legend lists each facial feature and the column it maps to.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+
+        /** @brief Builds and returns an extended legend with a face graphic and labeled features.
+            @details The legend shows a face with connection lines pointing to each feature.
+            @param options The options for how to build the legend.
+            @returns The graphical legend for the chart.*/
+        [[nodiscard]]
+        std::unique_ptr<ChernoffLegend> CreateExtendedLegend(const LegendOptions& options);
+
+        /// @}
 
       private:
         /// @brief Internal structure holding normalized feature values for one face.
@@ -370,6 +499,7 @@ namespace Wisteria::Graphs
             FacialHair m_facialHair{ FacialHair::CleanShaven };
             };
 
+      private:
         void RecalcSizes(wxDC& dc) final;
 
         /// @brief Draws a single face within the specified rectangle.
