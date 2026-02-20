@@ -105,7 +105,7 @@ namespace Wisteria::Graphs
             @param faceColor The base color for the faces.\n
                 Leave as default for a flesh-tone color.*/
         explicit ChernoffFacesPlot(Canvas* canvas,
-                                   const wxColour& faceColor = wxColour(255, 224, 189));
+                                   const wxColour& faceColor = wxColour{ 255, 224, 189 });
 
         /** @brief Sets the data for the Chernoff faces plot.
             @param data The data to use.
@@ -120,8 +120,8 @@ namespace Wisteria::Graphs
             @param mouthCurvatureColumn Column controlling smile/frown (optional).
             @param faceSaturationColumn Column controlling face color saturation (optional).
             @param earSizeColumn Column controlling ear size (optional).
-            @warning If the dataset contains more than MAX_FACES observations,
-                only the first MAX_FACES will be displayed and a warning will be logged.
+            @warning If the dataset contains more than @c MAX_FACES observations,
+                only the first @c MAX_FACES will be displayed and a warning will be logged.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset
                 to re-plot the data.
             @throws std::runtime_error If the required column can't be found by name.\n
@@ -557,7 +557,7 @@ namespace Wisteria::Graphs
         /// @param value The raw value.
         /// @param minVal The minimum value in the column.
         /// @param maxVal The maximum value in the column.
-        /// @returns The normalized value, or DEFAULT_FEATURE_VALUE if invalid.
+        /// @returns The normalized value, or @c DEFAULT_FEATURE_VALUE if invalid.
         [[nodiscard]]
         static double NormalizeValue(double value, double minVal, double maxVal) noexcept;
 

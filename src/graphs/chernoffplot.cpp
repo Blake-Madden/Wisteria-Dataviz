@@ -654,6 +654,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             wxLogWarning(L"Chernoff plot limited to %zu observations; "
                          "%zu observations truncated.",
                          MAX_FACES, GetDataset()->GetRowCount() - MAX_FACES);
+            GetCaption().SetText(wxString::Format(
+                _(L"Note: only the first %zu observations are being displayed."), MAX_FACES));
             }
 
         m_faces.reserve(rowCount);
