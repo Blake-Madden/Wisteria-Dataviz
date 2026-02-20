@@ -570,6 +570,33 @@ namespace Wisteria::UI
             return wxString{};
         };
 
+        // check if we're inside a single-line comment - skip autocomplete if so
+        const auto isInLineComment = [this]()
+        {
+            const int currentPos = GetCurrentPos();
+            const int currentLine = LineFromPosition(currentPos);
+            const int lineStart = PositionFromLine(currentLine);
+            const wxString lineText = GetTextRange(lineStart, currentPos);
+
+            if (wxSTC_LEX_LUA == m_lexer)
+                {
+                // Lua uses -- for line comments
+                return lineText.find(L"--") != wxString::npos;
+                }
+            else if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
+                {
+                // C++ uses // for line comments
+                return lineText.find(L"//") != wxString::npos;
+                }
+            return false;
+        };
+
+        if (isInLineComment())
+            {
+            event.Skip();
+            return;
+            }
+
         if (event.GetKey() == GetLibraryAccessor())
             {
             const int wordStart = WordStartPosition(GetCurrentPos() - 1, true);
@@ -726,7 +753,7 @@ namespace Wisteria::UI
                     if (pos != m_libraryCollection.cend())
                         {
                         m_activeFunctionsAndSignaturesMap = &pos->second.second;
-                        // widdle the list of functions down to the ones that
+                        // whittle the list of functions down to the ones that
                         // contain the current word
                         const auto [funcStartsWith, matchedFuncs] =
                             matchFromList(lastWord, pos->second.first);
@@ -778,7 +805,7 @@ namespace Wisteria::UI
                         if (classPos != m_classCollection.cend())
                             {
                             m_activeFunctionsAndSignaturesMap = &classPos->second.second;
-                            // widdle the list of functions down to the ones that
+                            // whittle the list of functions down to the ones that
                             // contain the current word
                             const auto [funcStartsWith, matchedFuncs] =
                                 matchFromList(lastWord, classPos->second.first);
