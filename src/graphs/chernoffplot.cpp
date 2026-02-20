@@ -278,16 +278,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             labelScaling = std::min(labelScaling, GetScaling() * 0.6 * rightScale);
             }
 
-        // draw the face
-        GraphItems::GraphicsContextFallback gcf{ &dc, faceRect };
-        auto* gc = gcf.GetGraphicsContext();
-        if (gc != nullptr)
+            // draw the face (scoped so GraphicsContext is flushed before drawing lines)
             {
-            FaceFeatures defaultFeatures;
-            ChernoffFacesPlot::DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter,
-                                        m_faceColorDarker, m_outlineColor, m_lipstickColor,
-                                        m_eyeColor, m_hairColor, m_hairStyle, m_gender,
-                                        m_facialHair);
+            GraphItems::GraphicsContextFallback gcf{ &dc, faceRect };
+            auto* gc = gcf.GetGraphicsContext();
+            if (gc != nullptr)
+                {
+                FaceFeatures defaultFeatures;
+                ChernoffFacesPlot::DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter,
+                                            m_faceColorDarker, m_outlineColor, m_lipstickColor,
+                                            m_eyeColor, m_hairColor, m_hairStyle, m_gender,
+                                            m_facialHair);
+                }
             }
 
         // calculate face geometry for feature connection points
