@@ -59,6 +59,10 @@ namespace Wisteria::Graphs
             "The Use of Faces to Represent Points in K-Dimensional Space Graphically."
             Journal of the American Statistical Association, vol. 68, no. 342, 1973, pp. 361-368.
 
+        | Chernoff Faces (Female) | Chernoff Faces (Male) |
+        | :-------------- | :-------------- |
+        | @image html chernoff-female.svg width=90% | @image html chernoff-male.svg width=90% |
+
         @par Example:
         @code
          auto canvas = new Wisteria::Canvas(this);
@@ -175,6 +179,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns Whether labels are shown beneath each face.
+        /// @note The dataset must have an ID column to pull the labels from;
+        ///     otherwise, this will have no effect.
         [[nodiscard]]
         bool IsShowingLabels() const noexcept
             {
@@ -183,6 +189,8 @@ namespace Wisteria::Graphs
 
         /// @brief Sets whether to show ID labels beneath each face.
         /// @param show @c true to show labels.
+        /// @note The dataset must have an ID column to pull the labels from;
+        ///     otherwise, this will have no effect.
         void ShowLabels(const bool show) noexcept { m_showLabels = show; }
 
         /// @returns The outline color for facial features.

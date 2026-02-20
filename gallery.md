@@ -46,6 +46,12 @@ Basic
 | :-------------- | :-------------------------------- |
 | ![](docs/images/scatterplot.svg) | ![](docs/images/bubbleplot.svg) |
 
+| Chernoff Faces (Female) (Wisteria::Graphs::ChernoffFacesPlot) | Chernoff Faces (Male) (Wisteria::Graphs::ChernoffFacesPlot) |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/chernoff-female.svg) | ![](docs/images/chernoff-male.svg) |
+
+Fully customizable with options for skin tone, hair color, and hair style!
+
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
 | ![](docs/images/TableMajors.svg) |

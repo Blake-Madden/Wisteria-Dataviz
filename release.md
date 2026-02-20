@@ -1,5 +1,9 @@
 # Releases
 
+## 1.1.1 Release
+
+- New graph type: Chernoff Faces Plot
+
 ## 1.1.0 Release
 
 - New graph type: Scatter Plot

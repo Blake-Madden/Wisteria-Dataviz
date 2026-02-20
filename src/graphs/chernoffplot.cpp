@@ -449,7 +449,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             const wxPoint featurePt = getFeaturePoint(rightFeatures[i].featureId);
 
             // create and measure label to find its center (with left padding for line gap)
-            GraphItems::Label label(GraphItems::GraphItemInfo(rightFeatures[i].labelText)
+            GraphItems::Label label(GraphItems::GraphItemInfo{ rightFeatures[i].labelText }
                                         .Pen(wxNullPen)
                                         .Scaling(labelScaling)
                                         .DPIScaling(GetDPIScaleFactor())
@@ -756,7 +756,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // add each face as a drawable object
         std::vector<std::unique_ptr<GraphItems::Label>> faceLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
-        size_t faceIndex = 0;
+        size_t faceIndex{ 0 };
         for (size_t row = 0; row < rows && faceIndex < faceCount; ++row)
             {
             for (size_t col = 0; col < cols && faceIndex < faceCount; ++col)
