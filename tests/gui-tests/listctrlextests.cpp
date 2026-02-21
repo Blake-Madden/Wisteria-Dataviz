@@ -1,8 +1,11 @@
 #include "../../src/ui/controls/listctrlex.h"
-#include "../../src/ui/controls/listctrlexdataprovider.h"
 #include "../../src/ui/controls/listctrlexcelexporter.h"
+#include "../../src/ui/controls/listctrlexdataprovider.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <wx/sstream.h>
+#include <wx/wfstream.h>
+#include <wx/zipstrm.h>
 
 using namespace Catch::Matchers;
 using namespace Wisteria::UI;
@@ -2123,7 +2126,8 @@ TEST_CASE("ListCtrlEx Find", "[listctrlex]")
 // ParseFormattedNumber uses the system locale to resolve ambiguous cases.
 // When both period and comma are present, the last one is the decimal separator.
 // These tests assume a US/English locale (decimal separator = period).
-TEST_CASE("ListCtrlExcelExporter ParseFormattedNumber", "[listctrlexcelexporter][parseformattednumber]")
+TEST_CASE("ListCtrlExcelExporter ParseFormattedNumber",
+          "[listctrlexcelexporter][parseformattednumber]")
     {
     double value = 0.0;
 
@@ -2185,37 +2189,20 @@ TEST_CASE("ListCtrlExcelExporter ParseFormattedNumber", "[listctrlexcelexporter]
         CHECK_THAT(value, WithinAbs(-1234.56, 0.0001));
         }
 
-    SECTION("Currency symbols stripped")
+    SECTION("Currency symbols rejected (exported as text)")
         {
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"$1234.56", value));
-        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
-
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"$1,234.56", value));
-        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
-
-        // Euro symbol
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"\u20AC1.234,56", value));
-        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
-
-        // Pound symbol
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"\u00A31,234.56", value));
-        CHECK_THAT(value, WithinAbs(1234.56, 0.0001));
-
-        // Yen symbol
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"\u00A51234", value));
-        CHECK_THAT(value, WithinAbs(1234.0, 0.0001));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"$1234.56", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"$1,234.56", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"\u20AC1.234,56", value)); // Euro
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"\u00A31,234.56", value)); // Pound
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"\u00A51234", value));     // Yen
         }
 
-    SECTION("Percent signs stripped")
+    SECTION("Percent signs rejected (exported as text)")
         {
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"50%", value));
-        CHECK_THAT(value, WithinAbs(50.0, 0.0001));
-
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"12.5%", value));
-        CHECK_THAT(value, WithinAbs(12.5, 0.0001));
-
-        CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"-3.14%", value));
-        CHECK_THAT(value, WithinAbs(-3.14, 0.0001));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"50%", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"12.5%", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"-3.14%", value));
         }
 
     SECTION("Spaces stripped")
@@ -2236,6 +2223,35 @@ TEST_CASE("ListCtrlExcelExporter ParseFormattedNumber", "[listctrlexcelexporter]
         CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"-", value));
         CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"+", value));
         CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"$", value));
+        }
+
+    SECTION("Text labels with embedded numbers should not parse as numbers")
+        {
+        // labels with numbers in parentheses
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(
+            L"Number of difficult sentences (more than 20 words)", value));
+
+        // percentage text descriptions
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"33.3% of all words", value));
+
+        // date/time strings
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(
+            L"Last modified    Friday, February 24, 2006 at 06:16 PM", value));
+
+        // common label patterns
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Row 1", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Item #42", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Page 5 of 10", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Score: 95", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Test123", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"123Test", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"v2.0", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"2nd place", value));
+
+        // non-Latin alphabetic characters
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"日本語 123", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Ελληνικά 456", value));
+        CHECK_FALSE(ListCtrlExcelExporter::ParseFormattedNumber(L"Кириллица 789", value));
         }
 
     SECTION("Edge cases")
@@ -2286,4 +2302,309 @@ TEST_CASE("ListCtrlExcelExporter ParseFormattedNumber", "[listctrlexcelexporter]
         CHECK(ListCtrlExcelExporter::ParseFormattedNumber(L"1.234.567", value));
         CHECK_THAT(value, WithinAbs(1234567.0, 0.0001));
         }
+    }
+
+TEST_CASE("ListCtrlExcelExporter preserves text labels with embedded numbers",
+          "[listctrlexcelexporter]")
+    {
+    // create list control
+    auto listCtrl = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition,
+                                   wxDefaultSize, wxLC_REPORT | wxBORDER_SUNKEN);
+    listCtrl->Hide();
+    listCtrl->InsertColumn(0, L"Label");
+    listCtrl->InsertColumn(1, L"Value");
+
+    // add rows with text that contains numbers but should NOT be parsed as numbers
+    const std::vector<wxString> testLabels = {
+        L"Number of difficult sentences (more than 20 words)",
+        L"33.3% of all words",
+        L"Last modified    Friday, February 24, 2006 at 06:16 PM",
+        L"Row 1",
+        L"Page 5 of 10",
+        L"v2.0"
+    };
+
+    for (size_t i = 0; i < testLabels.size(); ++i)
+        {
+        const long idx = listCtrl->InsertItem(static_cast<long>(i), testLabels[i]);
+        listCtrl->SetItem(idx, 1, wxString::Format(L"%zu", i + 1));
+        }
+
+    // export to a temp file
+    wxFileName tempFile(wxFileName::GetTempDir(), L"test_export.xlsx");
+    ListCtrlExcelExporter exporter;
+    REQUIRE(exporter.Export(listCtrl, tempFile, true));
+
+    // read the XLSX (ZIP) and extract sharedStrings.xml
+    wxFFileInputStream fileStream(tempFile.GetFullPath());
+    REQUIRE(fileStream.IsOk());
+
+    wxZipInputStream zipStream(fileStream);
+    REQUIRE(zipStream.IsOk());
+
+    wxString sharedStringsContent;
+    wxString allEntryNames;
+    wxZipEntry* entry = nullptr;
+    while ((entry = zipStream.GetNextEntry()) != nullptr)
+        {
+        allEntryNames += L"[" + entry->GetName() + L"] ";
+        // use Contains for path matching (handles path separator differences)
+        if (entry->GetName().Contains(L"sharedStrings.xml"))
+            {
+            wxStringOutputStream strStream(&sharedStringsContent);
+            zipStream.Read(strStream);
+            }
+        delete entry;
+        }
+
+    // debug info
+    INFO("All entries: " << allEntryNames.ToStdString());
+    INFO("sharedStringsContent length: " << sharedStringsContent.length());
+
+    // verify that each original label appears in the shared strings
+    for (const auto& label : testLabels)
+        {
+        INFO("Checking label: " << label.ToStdString());
+        CHECK(sharedStringsContent.Contains(label));
+        }
+
+    // clean up
+    wxRemoveFile(tempFile.GetFullPath());
+    listCtrl->Destroy();
+    }
+
+TEST_CASE("ListCtrlExcelExporter exports percentages with format", "[listctrlexcelexporter]")
+    {
+    // create virtual list control with numeric data provider
+    auto dataProvider = std::make_shared<ListCtrlExNumericDataProvider>();
+    auto listCtrl = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition,
+                                   wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxBORDER_SUNKEN);
+    listCtrl->Hide();
+
+    // set up numeric data provider
+    dataProvider->SetSize(3, 2);
+
+    // row 0: regular number and percentage
+    dataProvider->SetItemValue(0, 0, 100);
+    dataProvider->SetItemValue(
+        0, 1, 75,
+        Wisteria::NumberFormatInfo(
+            Wisteria::NumberFormatInfo::NumberFormatType::PercentageFormatting, 0));
+
+    // row 1: decimal percentage
+    dataProvider->SetItemValue(1, 0, 200);
+    dataProvider->SetItemValue(
+        1, 1, 12.5,
+        Wisteria::NumberFormatInfo(
+            Wisteria::NumberFormatInfo::NumberFormatType::PercentageFormatting, 1));
+
+    // row 2: another percentage
+    dataProvider->SetItemValue(2, 0, 300);
+    dataProvider->SetItemValue(
+        2, 1, 33.33,
+        Wisteria::NumberFormatInfo(
+            Wisteria::NumberFormatInfo::NumberFormatType::PercentageFormatting, 2));
+
+    listCtrl->SetVirtualDataProvider(dataProvider);
+    listCtrl->SetVirtualDataSize(3, 2);
+    listCtrl->InsertColumn(0, L"Value");
+    listCtrl->InsertColumn(1, L"Percentage");
+
+    // export to a temp file
+    wxFileName tempFile(wxFileName::GetTempDir(), L"test_percent_export.xlsx");
+    ListCtrlExcelExporter exporter;
+    REQUIRE(exporter.Export(listCtrl, tempFile, true));
+
+    // read the XLSX and extract sheet1.xml
+    wxFFileInputStream fileStream(tempFile.GetFullPath());
+    REQUIRE(fileStream.IsOk());
+
+    wxZipInputStream zipStream(fileStream);
+    REQUIRE(zipStream.IsOk());
+
+    wxString sheetContent;
+    wxString allEntryNames;
+    wxZipEntry* entry = nullptr;
+    while ((entry = zipStream.GetNextEntry()) != nullptr)
+        {
+        allEntryNames += L"[" + entry->GetName() + L"] ";
+        // use Contains for path matching
+        if (entry->GetName().Contains(L"sheet1.xml"))
+            {
+            wxStringOutputStream strStream(&sheetContent);
+            zipStream.Read(strStream);
+            }
+        delete entry;
+        }
+
+    // debug info
+    INFO("All entries: " << allEntryNames.ToStdString());
+    INFO("sheetContent length: " << sheetContent.length());
+
+    // verify the percentage values are stored as decimals (divided by 100)
+    // 75% should be stored as 0.75
+    CHECK(sheetContent.Contains(L"<v>0.75</v>"));
+    // 12.5% should be stored as 0.125
+    CHECK(sheetContent.Contains(L"<v>0.125</v>"));
+    // 33.33% should be stored as 0.3333
+    CHECK(sheetContent.Contains(L"<v>0.3333</v>"));
+
+    // verify the regular numbers are stored as-is
+    CHECK(sheetContent.Contains(L"<v>100</v>"));
+    CHECK(sheetContent.Contains(L"<v>200</v>"));
+    CHECK(sheetContent.Contains(L"<v>300</v>"));
+
+    // clean up
+    wxRemoveFile(tempFile.GetFullPath());
+    listCtrl->Destroy();
+    }
+
+TEST_CASE("ListCtrlExcelExporter exports string percentages with format", "[listctrlexcelexporter]")
+    {
+    // create virtual list control with string data provider
+    auto dataProvider = std::make_shared<ListCtrlExDataProvider>();
+    auto listCtrl = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition,
+                                   wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxBORDER_SUNKEN);
+    listCtrl->Hide();
+
+    // set up string data provider with percentage formatting
+    dataProvider->SetSize(2, 2);
+
+    // row 0: text "12.5%" with PercentageFormatting
+    dataProvider->SetItemText(
+        0, 0, L"12.5%",
+        Wisteria::NumberFormatInfo(
+            Wisteria::NumberFormatInfo::NumberFormatType::PercentageFormatting, 1),
+        std::numeric_limits<double>::quiet_NaN());
+    dataProvider->SetItemText(0, 1, L"Label",
+                              Wisteria::NumberFormatInfo(
+                                  Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting),
+                              std::numeric_limits<double>::quiet_NaN());
+
+    // row 1: text "50%" with StandardFormatting (should stay as text)
+    dataProvider->SetItemText(1, 0, L"50%",
+                              Wisteria::NumberFormatInfo(
+                                  Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting),
+                              std::numeric_limits<double>::quiet_NaN());
+    dataProvider->SetItemText(1, 1, L"Another label",
+                              Wisteria::NumberFormatInfo(
+                                  Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting),
+                              std::numeric_limits<double>::quiet_NaN());
+
+    listCtrl->SetVirtualDataProvider(dataProvider);
+    listCtrl->SetVirtualDataSize(2, 2);
+    listCtrl->InsertColumn(0, L"Percent");
+    listCtrl->InsertColumn(1, L"Text");
+
+    // export to a temp file
+    wxFileName tempFile(wxFileName::GetTempDir(), L"test_string_percent_export.xlsx");
+    ListCtrlExcelExporter exporter;
+    REQUIRE(exporter.Export(listCtrl, tempFile, true));
+
+    // read the XLSX and extract sheet and sharedStrings
+    wxFFileInputStream fileStream(tempFile.GetFullPath());
+    REQUIRE(fileStream.IsOk());
+
+    wxZipInputStream zipStream(fileStream);
+    REQUIRE(zipStream.IsOk());
+
+    wxString sheetContent;
+    wxString sharedStringsContent;
+    wxZipEntry* entry = nullptr;
+    while ((entry = zipStream.GetNextEntry()) != nullptr)
+        {
+        // use Contains for path matching
+        if (entry->GetName().Contains(L"sheet1.xml"))
+            {
+            wxStringOutputStream strStream(&sheetContent);
+            zipStream.Read(strStream);
+            }
+        else if (entry->GetName().Contains(L"sharedStrings.xml"))
+            {
+            wxStringOutputStream strStream(&sharedStringsContent);
+            zipStream.Read(strStream);
+            }
+        delete entry;
+        }
+
+    INFO("sheetContent length: " << sheetContent.length());
+    INFO("sharedStringsContent length: " << sharedStringsContent.length());
+
+    // "12.5%" with PercentageFormatting should be stored as 0.125
+    CHECK(sheetContent.Contains(L"<v>0.125</v>"));
+
+    // "50%" with StandardFormatting should be in shared strings (as text)
+    CHECK(sharedStringsContent.Contains(L"50%"));
+
+    // clean up
+    wxRemoveFile(tempFile.GetFullPath());
+    listCtrl->Destroy();
+    }
+
+TEST_CASE("ListCtrlExcelExporter exports pure numbers as numeric", "[listctrlexcelexporter]")
+    {
+    // create non-virtual list control
+    auto listCtrl = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition,
+                                   wxDefaultSize, wxLC_REPORT | wxBORDER_SUNKEN);
+    listCtrl->Hide();
+    listCtrl->InsertColumn(0, L"Number");
+    listCtrl->InsertColumn(1, L"Text");
+
+    // add rows with pure numbers and text with numbers
+    listCtrl->InsertItem(0, L"123.45");
+    listCtrl->SetItem(0, 1, L"Not a number: 123");
+
+    listCtrl->InsertItem(1, L"-456.78");
+    listCtrl->SetItem(1, 1, L"Also text: -456");
+
+    listCtrl->InsertItem(2, L"0.5");
+    listCtrl->SetItem(2, 1, L"50%"); // contains %, should be text
+
+    // export to a temp file
+    wxFileName tempFile(wxFileName::GetTempDir(), L"test_numeric_export.xlsx");
+    ListCtrlExcelExporter exporter;
+    REQUIRE(exporter.Export(listCtrl, tempFile, true));
+
+    // read the XLSX and extract both sheet and sharedStrings
+    wxFFileInputStream fileStream(tempFile.GetFullPath());
+    REQUIRE(fileStream.IsOk());
+
+    wxZipInputStream zipStream(fileStream);
+    REQUIRE(zipStream.IsOk());
+
+    wxString sheetContent;
+    wxString sharedStringsContent;
+    wxZipEntry* entry = nullptr;
+    while ((entry = zipStream.GetNextEntry()) != nullptr)
+        {
+        // use Contains for path matching
+        if (entry->GetName().Contains(L"sheet1.xml"))
+            {
+            wxStringOutputStream strStream(&sheetContent);
+            zipStream.Read(strStream);
+            }
+        else if (entry->GetName().Contains(L"sharedStrings.xml"))
+            {
+            wxStringOutputStream strStream(&sharedStringsContent);
+            zipStream.Read(strStream);
+            }
+        delete entry;
+        }
+
+    INFO("sheetContent length: " << sheetContent.length());
+    INFO("sharedStringsContent length: " << sharedStringsContent.length());
+
+    // verify pure numbers are in the sheet as numeric values (not in shared strings)
+    CHECK(sheetContent.Contains(L"<v>123.45</v>"));
+    CHECK(sheetContent.Contains(L"<v>-456.78</v>"));
+    CHECK(sheetContent.Contains(L"<v>0.5</v>"));
+
+    // verify text with numbers is in shared strings
+    CHECK(sharedStringsContent.Contains(L"Not a number: 123"));
+    CHECK(sharedStringsContent.Contains(L"Also text: -456"));
+    CHECK(sharedStringsContent.Contains(L"50%")); // preserved as text
+
+    // clean up
+    wxRemoveFile(tempFile.GetFullPath());
+    listCtrl->Destroy();
     }

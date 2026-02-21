@@ -68,13 +68,17 @@ namespace Wisteria::UI
         static bool ParseFormattedNumber(const wxString& text, double& value);
 
       private:
-        /// @brief Style information for a cell (colors).
+        /// @brief Style information for a cell (colors and number format).
         struct CellStyle
             {
             /// @brief Background color.
             wxColour m_backgroundColor;
             /// @brief Font color.
             wxColour m_textColor;
+            /// @brief Number format info.
+            Wisteria::NumberFormatInfo m_numberFormat{
+                Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting
+            };
 
             /// @private
             bool operator<(const CellStyle& other) const
@@ -98,7 +102,25 @@ namespace Wisteria::UI
                     }
                 if (m_textColor.IsOk() && other.m_textColor.IsOk())
                     {
-                    return m_textColor.GetRGBA() < other.m_textColor.GetRGBA();
+                    if (m_textColor.GetRGBA() != other.m_textColor.GetRGBA())
+                        {
+                        return m_textColor.GetRGBA() < other.m_textColor.GetRGBA();
+                        }
+                    }
+                // compare number format
+                if (m_numberFormat.m_type != other.m_numberFormat.m_type)
+                    {
+                    return m_numberFormat.m_type < other.m_numberFormat.m_type;
+                    }
+                if (m_numberFormat.m_precision != other.m_numberFormat.m_precision)
+                    {
+                    return m_numberFormat.m_precision < other.m_numberFormat.m_precision;
+                    }
+                if (m_numberFormat.m_displayThousandsSeparator !=
+                    other.m_numberFormat.m_displayThousandsSeparator)
+                    {
+                    return m_numberFormat.m_displayThousandsSeparator <
+                           other.m_numberFormat.m_displayThousandsSeparator;
                     }
                 return false;
                 }
@@ -117,6 +139,9 @@ namespace Wisteria::UI
             double m_numericValue{ 0.0 };
             size_t m_stringIndex{ 0 };
             size_t m_styleIndex{ 0 };
+            Wisteria::NumberFormatInfo m_numberFormat{
+                Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting
+            };
             };
 
         /// @brief Builds the content for "[Content_Types].xml."
@@ -184,6 +209,15 @@ namespace Wisteria::UI
         /// @brief Gets the row style (colors) for a specific row.
         [[nodiscard]]
         CellStyle GetRowStyle(long row);
+
+        /// @brief Gets the cell style including number format for a specific cell.
+        [[nodiscard]]
+        CellStyle GetCellStyle(long row, long column);
+
+        /// @brief Gets the Excel number format ID for a given format.
+        /// @details Returns 0 for general format, or a custom format ID for percentages, etc.
+        [[nodiscard]]
+        static size_t GetExcelNumberFormatId(const Wisteria::NumberFormatInfo& format);
 
         /// @brief Checks if a cell contains a numeric value.
         [[nodiscard]]

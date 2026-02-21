@@ -8,6 +8,7 @@
 
 #include "listctrlexcelexporter.h"
 #include <cmath>
+#include <cwctype>
 #include <wx/intl.h>
 
 namespace Wisteria::UI
@@ -112,12 +113,12 @@ namespace Wisteria::UI
         // collect data cells
         for (long row = 0; row < m_listCtrl->GetItemCount(); ++row)
             {
-            // get row style
-            const CellStyle rowStyle = GetRowStyle(row);
-            GetOrAddStyle(rowStyle);
-
             for (long col = 0; col < m_listCtrl->GetColumnCount(); ++col)
                 {
+                // get cell style (includes colors and number format)
+                const CellStyle cellStyle = GetCellStyle(row, col);
+                GetOrAddStyle(cellStyle);
+
                 // if not numeric, add to shared strings
                 if (!IsCellNumeric(row, col))
                     {
@@ -268,6 +269,70 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
+    ListCtrlExcelExporter::CellStyle ListCtrlExcelExporter::GetCellStyle(const long row,
+                                                                         const long column)
+        {
+        // start with row style (colors)
+        CellStyle style = GetRowStyle(row);
+
+        // get number format from data provider if available
+        if (m_listCtrl->IsVirtual())
+            {
+            const auto& dataProvider = m_listCtrl->GetVirtualDataProvider();
+            if (dataProvider != nullptr)
+                {
+                if (dataProvider->IsKindOf(wxCLASSINFO(ListCtrlExNumericDataProvider)))
+                    {
+                    const auto* numericProvider =
+                        dynamic_cast<const ListCtrlExNumericDataProvider*>(dataProvider.get());
+                    const auto& matrix = numericProvider->GetMatrix();
+                    if (static_cast<size_t>(row) < matrix.size() &&
+                        static_cast<size_t>(column) < matrix[row].size())
+                        {
+                        style.m_numberFormat = matrix[row][column].GetNumberFormatType();
+                        }
+                    }
+                else if (dataProvider->IsKindOf(wxCLASSINFO(ListCtrlExDataProvider)))
+                    {
+                    const auto* stringProvider =
+                        dynamic_cast<const ListCtrlExDataProvider*>(dataProvider.get());
+                    const auto& matrix = stringProvider->GetMatrix();
+                    if (static_cast<size_t>(row) < matrix.size() &&
+                        static_cast<size_t>(column) < matrix[row].size())
+                        {
+                        style.m_numberFormat = matrix[row][column].GetNumberFormatType();
+                        }
+                    }
+                }
+            }
+
+        return style;
+        }
+
+    //------------------------------------------------------
+    size_t ListCtrlExcelExporter::GetExcelNumberFormatId(const Wisteria::NumberFormatInfo& format)
+        {
+        // Excel built-in number format IDs:
+        // 0 = General
+        // 1 = 0
+        // 2 = 0.00
+        // 3 = #,##0
+        // 4 = #,##0.00
+        // 9 = 0%
+        // 10 = 0.00%
+        // We'll use built-in IDs where possible
+
+        if (format.m_type == NumberFormatInfo::NumberFormatType::PercentageFormatting)
+            {
+            // use 0% or 0.00% depending on precision
+            return (format.m_precision == 0) ? 9 : 10;
+            }
+
+        // for standard formatting, use general (0)
+        return 0;
+        }
+
+    //------------------------------------------------------
     bool ListCtrlExcelExporter::IsCellNumeric(const long row, const long column)
         {
         // for virtual lists, check the data provider type
@@ -303,11 +368,25 @@ namespace Wisteria::UI
                     if (static_cast<size_t>(row) < matrix.size() &&
                         static_cast<size_t>(column) < matrix[row].size())
                         {
-                        const wxString& text = matrix[row][column].m_strVal;
+                        const auto& cell = matrix[row][column];
+                        const wxString& text = cell.m_strVal;
                         if (text.empty())
                             {
                             return false;
                             }
+
+                        // if format is PercentageFormatting, strip % and try to parse
+                        if (cell.GetNumberFormatType().m_type ==
+                            NumberFormatInfo::NumberFormatType::PercentageFormatting)
+                            {
+                            wxString cleanedText = text;
+                            cleanedText.Replace(L"%", wxString{});
+                            cleanedText.Trim().Trim(false);
+                            double value{ 0.0 };
+                            return cleanedText.ToDouble(&value);
+                            }
+
+                        // for other formats, use standard parsing (rejects % and $)
                         double value{ 0.0 };
                         return ParseFormattedNumber(text, value);
                         }
@@ -316,7 +395,7 @@ namespace Wisteria::UI
                 }
             }
 
-        // for non-virtual lists, try to parse as number
+        // for non-virtual lists, try to parse as formatted number
         const wxString text = m_listCtrl->GetItemTextEx(row, column);
         if (text.empty())
             {
@@ -350,11 +429,29 @@ namespace Wisteria::UI
                     if (static_cast<size_t>(row) < matrix.size() &&
                         static_cast<size_t>(column) < matrix[row].size())
                         {
-                        const wxString& text = matrix[row][column].m_strVal;
-                        double value{ 0.0 };
-                        if (ParseFormattedNumber(text, value))
+                        const auto& cell = matrix[row][column];
+                        const wxString& text = cell.m_strVal;
+
+                        // if format is PercentageFormatting, strip % and parse
+                        if (cell.GetNumberFormatType().m_type ==
+                            NumberFormatInfo::NumberFormatType::PercentageFormatting)
                             {
-                            return value;
+                            wxString cleanedText = text;
+                            cleanedText.Replace(L"%", wxString{});
+                            cleanedText.Trim().Trim(false);
+                            double value{ 0.0 };
+                            if (cleanedText.ToDouble(&value))
+                                {
+                                return value;
+                                }
+                            }
+                        else
+                            {
+                            double value{ 0.0 };
+                            if (ParseFormattedNumber(text, value))
+                                {
+                                return value;
+                                }
                             }
                         }
                     return std::numeric_limits<double>::quiet_NaN();
@@ -384,6 +481,18 @@ namespace Wisteria::UI
         if (text.ToDouble(&value))
             {
             return true;
+            }
+
+        // reject strings containing alphabetic characters or symbols that indicate
+        // this is not a pure formatted number (letters, percent, currency, etc.)
+        for (const auto ch : text)
+            {
+            if (std::iswalpha(static_cast<wint_t>(ch)) || ch == L'%' || ch == L'$' ||
+                ch == L'€' ||             // euro €
+                ch == L'£' || ch == L'¥') // pound £, yen ¥
+                {
+                return false;
+                }
             }
 
         // strip common formatting characters
@@ -501,12 +610,22 @@ namespace Wisteria::UI
                                                                        const long column)
         {
         CellData data;
-        data.m_styleIndex = GetOrAddStyle(GetRowStyle(row));
+        const CellStyle cellStyle = GetCellStyle(row, column);
+        data.m_styleIndex = GetOrAddStyle(cellStyle);
+        data.m_numberFormat = cellStyle.m_numberFormat;
 
         if (IsCellNumeric(row, column))
             {
             data.m_type = CellData::CellType::Number;
             data.m_numericValue = GetCellNumericValue(row, column);
+
+            // convert percentage values for Excel
+            // (Excel's % format multiplies by 100, so we need to divide by 100)
+            if (cellStyle.m_numberFormat.m_type ==
+                NumberFormatInfo::NumberFormatType::PercentageFormatting)
+                {
+                data.m_numericValue /= 100.0;
+                }
             }
         else
             {
@@ -852,10 +971,17 @@ namespace Wisteria::UI
                     }
                 }
 
-            xml += wxString::Format(L"    <xf numFmtId=\"0\" fontId=\"%zu\" fillId=\"%zu\" "
-                                    "borderId=\"0\" xfId=\"0\"",
-                                    fontIndex, fillIndex);
+            // get number format ID for this style
+            const size_t numFmtId = GetExcelNumberFormatId(style.m_numberFormat);
 
+            xml += wxString::Format(L"    <xf numFmtId=\"%zu\" fontId=\"%zu\" fillId=\"%zu\" "
+                                    "borderId=\"0\" xfId=\"0\"",
+                                    numFmtId, fontIndex, fillIndex);
+
+            if (numFmtId > 0)
+                {
+                xml += L" applyNumberFormat=\"1\"";
+                }
             if (fontIndex > 0)
                 {
                 xml += L" applyFont=\"1\"";
