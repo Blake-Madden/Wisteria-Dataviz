@@ -305,3 +305,38 @@ in the same size value. This can be useful when lining up a series of labels to 
 Note that this uniform width will be more noticeable  if the labels are either showing a
 background color (via `Label::GetGraphItemInfo().FontBackgroundColor()`) or outline
 (via `Label::GetGraphItemInfo().Pen()`).
+
+Basic Markup Support
+=============================
+
+Labels support basic HTML markup using the `<span>` element with the `style` attribute.
+Standard CSS properties are used for styling.
+
+| Property | Values | Description |
+|----------|--------|-------------|
+| `color` | color value | Text foreground color |
+| `background-color` | color value | Text background color |
+| `font-style` | `italic`, `oblique`, `normal` | Font style |
+| `text-decoration` | `underline`, `line-through` | Text decoration (can be combined) |
+
+Example:
+
+```cpp
+label.SetText(L"Normal text with <span style='color: red;'>red</span> and "
+               "<span style='background-color: lightblue; font-style: italic;'>styled</span> words.");
+```
+
+**Color Formats:**
+
+Colors can be specified as:
+- Named colors from the library's color map (e.g., `red`, `cornflowerblue`).
+  See `Wisteria::Colors::Color` for available names.
+- Hex format: `#RRGGBB` (e.g., `#FF0000`)
+- RGB format: `rgb(r,g,b)` (e.g., `rgb(255,0,0)`)
+
+**Limitations:**
+
+- Only horizontal, non-tilted text with standard alignments (flush left, centered, flush right) supports markup rendering.
+  Justified and tilted text will display without markup styles.
+- Vertical text does not support markup rendering.
+- Text manipulation functions (e.g., `SplitTextToFitBoundingBox()`) may not preserve markup.

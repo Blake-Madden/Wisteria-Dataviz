@@ -3,6 +3,7 @@
 ## 1.1.1 Release
 
 - New graph type: Chernoff Faces Plot
+- Added basic CSS markup support to labels
 
 ## 1.1.0 Release
 

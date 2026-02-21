@@ -2531,9 +2531,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // (into the second row, beneath the donut chart)
         auto note = std::make_shared<Wisteria::GraphItems::Label>(
             Wisteria::GraphItems::GraphItemInfo(
+                // example of basic markup support (see Label class documentation)
                 _(L"NOTE\n"
-                  "Should we consider dropping VB.NET from the catalog?\n"
-                  "Enrollment has been really low the last few years."))
+                  "Should we consider dropping "
+                  "<span style='background-color: rgb(173,216,230); font-style: "
+                  "italic;'>VB.NET</span>"
+                  " from the catalog?\n"
+                  "Enrollment has been <span style='color: scarlet; text-decoration: "
+                  "underline'>really low</span> the last few years."))
                 .Padding(4, 4, 4, 4)
                 .Scaling(2)
                 .DPIScaling(subframe->m_canvas->GetDPIScaleFactor())

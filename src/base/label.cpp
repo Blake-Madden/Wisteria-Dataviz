@@ -8,6 +8,7 @@
 
 #include "label.h"
 #include "polygon.h"
+#include "reportbuilder.h"
 #include <algorithm>
 #include <wx/fontenum.h>
 #include <wx/regex.h>
@@ -97,8 +98,11 @@ namespace Wisteria::GraphItems
             return;
             }
 
+        // strip markup for character counting (markup tags don't contribute to display width)
+        const wxString strippedText = StripMarkup(GetText());
+
         // if multi-line, then see which line is the longest
-        wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
+        wxStringTokenizer lineTokenizer(strippedText, L"\r\n", wxTOKEN_RET_EMPTY);
         if (lineTokenizer.CountTokens() > 1)
             {
             m_lineCount = 0;
@@ -114,7 +118,7 @@ namespace Wisteria::GraphItems
         else
             {
             m_lineCount = 1;
-            m_longestLineLength = GetText().length();
+            m_longestLineLength = strippedText.length();
             }
         }
 
@@ -402,7 +406,10 @@ namespace Wisteria::GraphItems
 
         const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
 
-        const wxStringTokenizer tokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
+        // strip markup for measuring (markup doesn't affect text dimensions)
+        const wxString strippedText = StripMarkup(GetText());
+
+        const wxStringTokenizer tokenizer(strippedText, L"\r\n", wxTOKEN_RET_EMPTY);
         const wxCoord spaceBetweenLines =
             ((tokenizer.CountTokens() == 0) ?
                  0 :
@@ -414,8 +421,8 @@ namespace Wisteria::GraphItems
             // If top line is a header, then we need to not include that in the initial measure,
             // just measure the rest of the text. (This is because headers have their own
             // left/right margins.)
-            const auto firstLineEnd = GetText().find_first_of(L"\r\n", 0, 2);
-            const auto secondLineStart = GetText().find_first_not_of(
+            const auto firstLineEnd = strippedText.find_first_of(L"\r\n", 0, 2);
+            const auto secondLineStart = strippedText.find_first_not_of(
                 L"\r\n", ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
             if (GetHeaderInfo().IsEnabled() && firstLineEnd == std::wstring::npos)
                 {
@@ -424,11 +431,11 @@ namespace Wisteria::GraphItems
 
             if (GetHeaderInfo().IsEnabled() && secondLineStart != std::wstring::npos)
                 {
-                dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &width, &height);
+                dc.GetMultiLineTextExtent(strippedText.substr(secondLineStart), &width, &height);
                 }
-            else if (!GetText().empty())
+            else if (!strippedText.empty())
                 {
-                dc.GetMultiLineTextExtent(GetText(), &width, &height);
+                dc.GetMultiLineTextExtent(strippedText, &width, &height);
                 }
             // add padding around text
             width += ScaleToScreenAndCanvas(GetLeftPadding()) +
@@ -445,7 +452,7 @@ namespace Wisteria::GraphItems
                             GetHeaderInfo().GetFont().Scaled(GetScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             dc.GetFont());
-                auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
+                auto topLineSize = dc.GetMultiLineTextExtent(strippedText.substr(0, firstLineEnd));
                 topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
                                  ScaleToScreenAndCanvas(GetRightPadding());
                 width = std::max(topLineSize.GetWidth(), width);
@@ -482,8 +489,8 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            const auto firstLineEnd = GetText().find_first_of(L"\r\n", 0, 2);
-            const auto secondLineStart = GetText().find_first_not_of(
+            const auto firstLineEnd = strippedText.find_first_of(L"\r\n", 0, 2);
+            const auto secondLineStart = strippedText.find_first_not_of(
                 L"\r\n", ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
             if (GetHeaderInfo().IsEnabled() && firstLineEnd == std::wstring::npos)
                 {
@@ -492,11 +499,11 @@ namespace Wisteria::GraphItems
 
             if (GetHeaderInfo().IsEnabled() && secondLineStart != std::wstring::npos)
                 {
-                dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &height, &width);
+                dc.GetMultiLineTextExtent(strippedText.substr(secondLineStart), &height, &width);
                 }
             else
                 {
-                dc.GetMultiLineTextExtent(GetText(), &height, &width);
+                dc.GetMultiLineTextExtent(strippedText, &height, &width);
                 }
             height += ScaleToScreenAndCanvas(GetLeftPadding()) +
                       ScaleToScreenAndCanvas(GetRightPadding());
@@ -510,7 +517,7 @@ namespace Wisteria::GraphItems
                             GetHeaderInfo().GetFont().Scaled(GetScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             dc.GetFont());
-                auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
+                auto topLineSize = dc.GetMultiLineTextExtent(strippedText.substr(0, firstLineEnd));
                 topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
                                  ScaleToScreenAndCanvas(GetRightPadding());
                 height = std::max(topLineSize.GetWidth(), height);
@@ -1662,7 +1669,8 @@ namespace Wisteria::GraphItems
         while (lineTokenizer.HasMoreTokens())
             {
             // draw the next line
-            wxString token = lineTokenizer.GetNextToken();
+            // strip markup for measuring and rendering (rotated text doesn't support markup)
+            wxString token = StripMarkup(lineTokenizer.GetNextToken());
             dc.GetTextExtent(token, &lineX, &lineY);
 
             if (GetHeaderInfo().IsEnabled() && currentLineNumber == 0 && GetLineCount() > 1)
@@ -1906,7 +1914,9 @@ namespace Wisteria::GraphItems
         while (lineTokenizer.HasMoreTokens())
             {
             // draw the next line
-            wxString token = lineTokenizer.GetNextToken();
+            const wxString originalToken = lineTokenizer.GetNextToken();
+            // strip markup for measuring (styles don't affect dimensions)
+            wxString token = StripMarkup(originalToken);
             dc.GetTextExtent(token, &lineX, &lineY);
 
             if (GetHeaderInfo().IsEnabled() && currentLineNumber == 0 && GetLineCount() > 1)
@@ -1998,13 +2008,26 @@ namespace Wisteria::GraphItems
                 CalcTopGraphicSize(GetCachedContentBoundingBox().GetWidth()).GetHeight() -
                     m_topImageOffset,
                 0);
-            const DCFontChangerIfDifferent fc(
-                dc, isHeader ? GetHeaderInfo().GetFont().Scaled(
-                                   GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
-                               dc.GetFont());
+            const wxFont baseFont = isHeader ?
+                                        GetHeaderInfo().GetFont().Scaled(
+                                            GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
+                                        dc.GetFont();
+            const DCFontChangerIfDifferent fc(dc, baseFont);
             const DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
                                                                     dc.GetTextForeground());
-            if (m_tiltAngle.has_value() && m_tiltAngle.value() != 0)
+
+            // determine if we should use markup rendering
+            // (only for non-tilted text with standard alignments)
+            const bool isTilted = m_tiltAngle.has_value() && m_tiltAngle.value() != 0;
+            const bool isJustified =
+                (isHeader ?
+                     (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter ||
+                      GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord) :
+                     (GetTextAlignment() == TextAlignment::JustifiedAtCharacter ||
+                      GetTextAlignment() == TextAlignment::JustifiedAtWord));
+            const bool useMarkupRendering = !isTilted && !isJustified && (originalToken != token);
+
+            if (isTilted)
                 {
                 const double angleRad = geometry::degrees_to_radians(m_tiltAngle.value());
                 const auto totalOffset = offset + currentLineOffset;
@@ -2016,6 +2039,16 @@ namespace Wisteria::GraphItems
                     lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
                 pt.x += lineAdvance * std::sin(angleRad);
                 pt.y += lineAdvance * std::cos(angleRad);
+                }
+            else if (useMarkupRendering)
+                {
+                // parse and render with markup styles
+                const auto segments = ParseMarkupLine(originalToken);
+                DrawTextSegments(dc, segments,
+                                 wxPoint{ pt.x + offset + currentLineOffset, pt.y + yOffset },
+                                 baseFont);
+                // move down for next line
+                pt.y += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
                 }
             else
                 {
@@ -2184,5 +2217,249 @@ namespace Wisteria::GraphItems
                 }
             }
         return resizedFont.GetFractionalPointSize();
+        }
+
+    //------------------------------------------------------
+    wxString Label::StripMarkup(const wxString& text)
+        {
+        wxString result = text;
+        // remove <span ...> opening tags (case insensitive)
+        wxRegEx reSpanOpen(L"<span[^>]*>", wxRE_ICASE);
+        if (reSpanOpen.IsValid())
+            {
+            reSpanOpen.ReplaceAll(&result, wxEmptyString);
+            }
+        // remove </span> closing tags (case insensitive)
+        wxRegEx reSpanClose(L"</span>", wxRE_ICASE);
+        if (reSpanClose.IsValid())
+            {
+            reSpanClose.ReplaceAll(&result, wxEmptyString);
+            }
+        return result;
+        }
+
+    //------------------------------------------------------
+    wxColour Label::ParseColorAttribute(const wxString& value)
+        {
+        wxString colorStr = value;
+        colorStr.Trim(true).Trim(false);
+
+        // handle hex color values like #RRGGBB or #RGB
+        if (colorStr.StartsWith(L"#"))
+            {
+            return wxColour(colorStr);
+            }
+
+        // handle rgb(r,g,b) format
+        if (colorStr.Lower().StartsWith(L"rgb("))
+            {
+            wxRegEx reRgb(L"rgb\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)", wxRE_ICASE);
+            if (reRgb.IsValid() && reRgb.Matches(colorStr))
+                {
+                long r = 0, g = 0, b = 0;
+                reRgb.GetMatch(colorStr, 1).ToLong(&r);
+                reRgb.GetMatch(colorStr, 2).ToLong(&g);
+                reRgb.GetMatch(colorStr, 3).ToLong(&b);
+                return wxColour(static_cast<unsigned char>(std::clamp(r, 0L, 255L)),
+                                static_cast<unsigned char>(std::clamp(g, 0L, 255L)),
+                                static_cast<unsigned char>(std::clamp(b, 0L, 255L)));
+                }
+            }
+
+        // look up color name in the color map
+        wxString lowerColor = colorStr.Lower();
+        // remove spaces for lookup (e.g., "alice blue" -> "aliceblue")
+        lowerColor.Replace(L" ", wxString{});
+
+        const auto& colorMap = Wisteria::ReportBuilder::GetColorMap();
+        const auto colorIt =
+            colorMap.find(std::wstring_view(lowerColor.wc_str(), lowerColor.length()));
+        if (colorIt != colorMap.cend())
+            {
+            return Colors::ColorBrewer::GetColor(colorIt->second);
+            }
+
+        // return invalid color if not found
+        return wxColour();
+        }
+
+    //------------------------------------------------------
+    std::vector<Label::TextSegment> Label::ParseMarkupLine(const wxString& line)
+        {
+        std::vector<TextSegment> segments;
+
+        if (line.empty())
+            {
+            return segments;
+            }
+
+        // pattern to match <span ...>content</span>
+        // captures: (1) attributes, (2) content
+        wxRegEx reSpan(L"<span([^>]*)>([^<]*)</span>", wxRE_ICASE);
+
+        wxString remaining = line;
+
+        while (!remaining.empty())
+            {
+            if (reSpan.IsValid() && reSpan.Matches(remaining))
+                {
+                size_t matchStart = 0, matchLen = 0;
+                reSpan.GetMatch(&matchStart, &matchLen, 0);
+
+                // add any text before the span as a plain segment
+                if (matchStart > 0)
+                    {
+                    TextSegment plainSeg;
+                    plainSeg.m_text = remaining.Left(matchStart);
+                    segments.push_back(std::move(plainSeg));
+                    }
+
+                // parse the span attributes and content
+                const wxString attributes = reSpan.GetMatch(remaining, 1);
+                const wxString content = reSpan.GetMatch(remaining, 2);
+
+                TextSegment styledSeg;
+                styledSeg.m_text = content;
+
+                // extract the style attribute value: style="..."
+                wxRegEx reStyleAttr(L"style\\s*=\\s*['\"]([^'\"]+)['\"]", wxRE_ICASE);
+                if (reStyleAttr.IsValid() && reStyleAttr.Matches(attributes))
+                    {
+                    const wxString styleValue = reStyleAttr.GetMatch(attributes, 1);
+
+                    // parse CSS properties from the style value
+                    // color property (text foreground)
+                    wxRegEx reColor(L"(?:^|;)\\s*color\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    if (reColor.IsValid() && reColor.Matches(styleValue))
+                        {
+                        wxString colorVal = reColor.GetMatch(styleValue, 1);
+                        colorVal.Trim(true).Trim(false);
+                        const wxColour fgColor = ParseColorAttribute(colorVal);
+                        if (fgColor.IsOk())
+                            {
+                            styledSeg.m_foreground = fgColor;
+                            }
+                        }
+
+                    // background-color property
+                    wxRegEx reBgColor(L"background-color\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    if (reBgColor.IsValid() && reBgColor.Matches(styleValue))
+                        {
+                        wxString bgVal = reBgColor.GetMatch(styleValue, 1);
+                        bgVal.Trim(true).Trim(false);
+                        const wxColour bgColor = ParseColorAttribute(bgVal);
+                        if (bgColor.IsOk())
+                            {
+                            styledSeg.m_background = bgColor;
+                            }
+                        }
+
+                    // font-style property (italic, oblique, normal)
+                    wxRegEx reFontStyle(L"font-style\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    if (reFontStyle.IsValid() && reFontStyle.Matches(styleValue))
+                        {
+                        wxString fontStyleVal = reFontStyle.GetMatch(styleValue, 1).Lower();
+                        fontStyleVal.Trim(true).Trim(false);
+                        if (fontStyleVal == L"italic" || fontStyleVal == L"oblique")
+                            {
+                            styledSeg.m_fontStyle = wxFONTSTYLE_ITALIC;
+                            }
+                        else if (fontStyleVal == L"normal")
+                            {
+                            styledSeg.m_fontStyle = wxFONTSTYLE_NORMAL;
+                            }
+                        }
+
+                    // text-decoration property (underline, line-through)
+                    wxRegEx reTextDecor(L"text-decoration\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    if (reTextDecor.IsValid() && reTextDecor.Matches(styleValue))
+                        {
+                        wxString decorVal = reTextDecor.GetMatch(styleValue, 1).Lower();
+                        decorVal.Trim(true).Trim(false);
+                        if (decorVal.Contains(L"underline"))
+                            {
+                            styledSeg.m_underline = true;
+                            }
+                        if (decorVal.Contains(L"line-through"))
+                            {
+                            styledSeg.m_strikethrough = true;
+                            }
+                        }
+                    }
+
+                segments.push_back(std::move(styledSeg));
+
+                // continue with remaining text after the span
+                remaining = remaining.Mid(matchStart + matchLen);
+                }
+            else
+                {
+                // no more spans, add remaining as plain text
+                if (!remaining.empty())
+                    {
+                    TextSegment plainSeg;
+                    plainSeg.m_text = remaining;
+                    segments.push_back(std::move(plainSeg));
+                    }
+                break;
+                }
+            }
+
+        return segments;
+        }
+
+    //------------------------------------------------------
+    wxCoord Label::DrawTextSegments(wxDC& dc, const std::vector<TextSegment>& segments, wxPoint pt,
+                                    const wxFont& baseFont) const
+        {
+        wxCoord totalWidth{ 0 };
+
+        for (const auto& segment : segments)
+            {
+            if (segment.m_text.empty())
+                {
+                continue;
+                }
+
+            // prepare font with style, underline, and strikethrough if specified
+            wxFont segFont = baseFont;
+            if (segment.m_fontStyle.has_value())
+                {
+                segFont.SetStyle(segment.m_fontStyle.value());
+                }
+            if (segment.m_underline)
+                {
+                segFont.SetUnderlined(true);
+                }
+            if (segment.m_strikethrough)
+                {
+                segFont.SetStrikethrough(true);
+                }
+
+            const DCFontChangerIfDifferent fc(dc, segFont);
+
+            // get segment dimensions
+            const wxSize extent = dc.GetTextExtent(segment.m_text);
+
+            // draw background if specified
+            if (segment.m_background.has_value() && segment.m_background.value().IsOk())
+                {
+                const DCBrushChangerIfDifferent bc(dc, segment.m_background.value());
+                const DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
+                dc.DrawRectangle(pt.x + totalWidth, pt.y, extent.GetWidth(), extent.GetHeight());
+                }
+
+            // set foreground color if specified
+            const DCTextColourChangerIfDifferent tcc(dc, segment.m_foreground.has_value() ?
+                                                             segment.m_foreground.value() :
+                                                             dc.GetTextForeground());
+
+            // draw the text
+            dc.DrawText(segment.m_text, pt.x + totalWidth, pt.y);
+
+            totalWidth += extent.GetWidth();
+            }
+
+        return totalWidth;
         }
     } // namespace Wisteria::GraphItems

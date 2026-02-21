@@ -42,7 +42,41 @@ namespace Wisteria::GraphItems
     /** @brief A text box that can be placed on a canvas. Can also be used as a legend.
         @note Call @c GetGraphItemInfo() to edit most of the appearance and layout
             functionality for a label.
-        @sa The [label](../../labels.md) overview for more information.*/
+        @sa The [label](../../labels.md) overview for more information.
+
+        @par Basic Markup Support
+        Labels support basic HTML markup using the `<span>` element with the `style` attribute.
+        Standard CSS properties are used for styling.
+
+        @par Supported CSS Properties
+        | Property | Values | Description |
+        |----------|--------|-------------|
+        | `color` | color value | Text foreground color |
+        | `background-color` | color value | Text background color |
+        | `font-style` | `italic`, `oblique`, `normal` | Font style |
+        | `text-decoration` | `underline`, `line-through` | Text decoration (can be combined) |
+
+        @par Example
+        @code
+        label.SetText(L"Normal text with <span style='color: red;'>red</span> and "
+                      "<span style='background-color: lightblue; font-style: italic;'>"
+                      "styled</span> words.");
+        @endcode
+
+        @par Color Formats
+        Colors can be specified as:
+        - Named colors from the library's color map (e.g., `red`, `cornflowerblue`).
+          See `Wisteria::Colors::Color` for available names.
+        - Hex format: `#RRGGBB` (e.g., `#FF0000`)
+        - RGB format: `rgb(r,g,b)` (e.g., `rgb(255,0,0)`)
+
+        @par Limitations
+        - Only horizontal, non-tilted text with standard alignments
+          (flush left, centered, flush right)
+          supports markup rendering. Justified and tilted text will display without markup styles.
+        - Vertical text does not support markup rendering.
+        - Text manipulation functions (e.g., `SplitTextToFitBoundingBox()`)
+          may not preserve markup.*/
     class Label final : public GraphItemBase
         {
         friend class Graphs::Graph2D;
@@ -559,6 +593,45 @@ namespace Wisteria::GraphItems
         ///     wider than the measured size.
         [[nodiscard]]
         wxCoord CalcPageHorizontalOffset() const;
+
+        /// @private
+        /// @brief A text segment with optional styling for markup rendering.
+        struct TextSegment
+            {
+            wxString m_text;
+            std::optional<wxColour> m_foreground;
+            std::optional<wxColour> m_background;
+            std::optional<wxFontStyle> m_fontStyle;
+            bool m_underline{ false };
+            bool m_strikethrough{ false };
+            };
+
+        /** @brief Strips markup tags from text for measuring.
+            @param text The text containing markup.
+            @returns The plain text without markup tags.*/
+        [[nodiscard]]
+        static wxString StripMarkup(const wxString& text);
+
+        /** @brief Parses a color attribute value.
+            @param value The color value (name like "red" or hex like "#FF0000").
+            @returns The parsed color, or invalid color if parsing fails.*/
+        [[nodiscard]]
+        static wxColour ParseColorAttribute(const wxString& value);
+
+        /** @brief Parses a single line of text into styled segments.
+            @param line The line containing markup.
+            @returns Vector of text segments with styling information.*/
+        [[nodiscard]]
+        static std::vector<TextSegment> ParseMarkupLine(const wxString& line);
+
+        /** @brief Draws text segments with their respective styles.
+            @param dc The device context to draw on.
+            @param segments The styled text segments to draw.
+            @param pt The starting point for drawing.
+            @param baseFont The base font to use (before style modifications).
+            @returns The total width of drawn text.*/
+        wxCoord DrawTextSegments(wxDC& dc, const std::vector<TextSegment>& segments, wxPoint pt,
+                                 const wxFont& baseFont) const;
 
         std::optional<double> m_tiltAngle{ std::nullopt };
         double m_spacingBetweenLines{ 1 };
