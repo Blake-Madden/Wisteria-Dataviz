@@ -228,7 +228,7 @@ message(STATUS "Copying demo resources...")
 add_custom_command(TARGET ${DEMO_APP}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/demo/res $<TARGET_FILE_DIR:${DEMO_APP}>/res)
+                   ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${DEMO_APP}>/res)
 add_custom_command(TARGET ${DEMO_APP}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -279,7 +279,7 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteria
     ADD_CUSTOM_COMMAND(TARGET ${WISTERIA_APP}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/app/res $<TARGET_FILE_DIR:${WISTERIA_APP}>/res)
+                       ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${WISTERIA_APP}>/res)
     ADD_CUSTOM_COMMAND(TARGET ${WISTERIA_APP}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy_directory
