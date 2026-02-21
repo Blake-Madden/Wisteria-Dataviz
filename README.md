@@ -202,6 +202,7 @@ Linux
 Install the following from your repository manager (or build from source):
 
 - *GTK3* development files (version 3.3 or higher)
+- *WebKitGTK* development files (*libwebkit2gtk-4.1-dev* or *webkit2gtk3-devel*)
 - *OpenMP* (*libomp*) and its development files
 - *Threading Building Blocks* (*libtbb*) and its development files
 - *Doxygen* (if wanting the API documentation)
