@@ -9,8 +9,10 @@
 #include "reportbuilder.h"
 #include "../data/pivot.h"
 #include "../data/subset.h"
+#include "../graphs/bubbleplot.h"
 #include "../graphs/candlestickplot.h"
 #include "../graphs/categoricalbarchart.h"
+#include "../graphs/chernoffplot.h"
 #include "../graphs/heatmap.h"
 #include "../graphs/histogram.h"
 #include "../graphs/likertchart.h"
@@ -335,6 +337,24 @@ namespace Wisteria
                                                          L"categorical-bar-chart") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadCategoricalBarChart(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
+                                                         L"scatter-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadScatterPlot(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
+                                                         L"bubble-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadBubblePlot(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
+                                                         L"chernoff-faces") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadChernoffFaces(
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(L"label") ==
@@ -2921,6 +2941,224 @@ namespace Wisteria
             }
 
         throw std::runtime_error(_(L"Variables not defined for multi-series line plot.").ToUTF8());
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadScatterPlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                   size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(_DT(L"dataset"))->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for scatter plot."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(_DT(L"variables"));
+        if (variablesNode->IsOk())
+            {
+            const auto groupVarName =
+                ExpandConstants(variablesNode->GetProperty(_DT(L"group"))->AsString());
+
+            auto scatterPlot = std::make_shared<Graphs::ScatterPlot>(
+                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
+                LoadLineStyleScheme(graphNode->GetProperty(L"regression-line-scheme")));
+            scatterPlot->SetData(
+                foundPos->second, ExpandConstants(variablesNode->GetProperty(L"y")->AsString()),
+                ExpandConstants(variablesNode->GetProperty(L"x")->AsString()),
+                (!groupVarName.empty() ? std::optional<wxString>(groupVarName) : std::nullopt));
+
+            // regression line options
+            if (graphNode->HasProperty(L"show-regression-lines"))
+                {
+                scatterPlot->ShowRegressionLines(
+                    graphNode->GetProperty(L"show-regression-lines")->AsBool(true));
+                }
+            if (graphNode->HasProperty(L"show-confidence-bands"))
+                {
+                scatterPlot->ShowConfidenceBands(
+                    graphNode->GetProperty(L"show-confidence-bands")->AsBool(true));
+                }
+            if (graphNode->HasProperty(L"confidence-level"))
+                {
+                scatterPlot->SetConfidenceLevel(
+                    graphNode->GetProperty(L"confidence-level")->AsDouble(0.95));
+                }
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, scatterPlot);
+            return scatterPlot;
+            }
+
+        throw std::runtime_error(_(L"Variables not defined for scatter plot.").ToUTF8());
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadBubblePlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                  size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(_DT(L"dataset"))->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for bubble plot."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(_DT(L"variables"));
+        if (variablesNode->IsOk())
+            {
+            const auto groupVarName =
+                ExpandConstants(variablesNode->GetProperty(_DT(L"group"))->AsString());
+
+            auto bubblePlot = std::make_shared<Graphs::BubblePlot>(
+                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
+                LoadLineStyleScheme(graphNode->GetProperty(L"regression-line-scheme")));
+            bubblePlot->SetData(
+                foundPos->second, ExpandConstants(variablesNode->GetProperty(L"y")->AsString()),
+                ExpandConstants(variablesNode->GetProperty(L"x")->AsString()),
+                ExpandConstants(variablesNode->GetProperty(_DT(L"size"))->AsString()),
+                (!groupVarName.empty() ? std::optional<wxString>(groupVarName) : std::nullopt));
+
+            // bubble size options
+            if (graphNode->HasProperty(L"min-bubble-radius"))
+                {
+                bubblePlot->SetMinBubbleRadius(
+                    static_cast<size_t>(graphNode->GetProperty(L"min-bubble-radius")->AsDouble(4)));
+                }
+            if (graphNode->HasProperty(L"max-bubble-radius"))
+                {
+                bubblePlot->SetMaxBubbleRadius(static_cast<size_t>(
+                    graphNode->GetProperty(L"max-bubble-radius")->AsDouble(30)));
+                }
+
+            // regression line options (inherited from ScatterPlot)
+            if (graphNode->HasProperty(L"show-regression-lines"))
+                {
+                bubblePlot->ShowRegressionLines(
+                    graphNode->GetProperty(L"show-regression-lines")->AsBool(true));
+                }
+            if (graphNode->HasProperty(L"show-confidence-bands"))
+                {
+                bubblePlot->ShowConfidenceBands(
+                    graphNode->GetProperty(L"show-confidence-bands")->AsBool(true));
+                }
+            if (graphNode->HasProperty(L"confidence-level"))
+                {
+                bubblePlot->SetConfidenceLevel(
+                    graphNode->GetProperty(L"confidence-level")->AsDouble(0.95));
+                }
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, bubblePlot);
+            return bubblePlot;
+            }
+
+        throw std::runtime_error(_(L"Variables not defined for bubble plot.").ToUTF8());
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadChernoffFaces(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                     size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(_DT(L"dataset"))->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Chernoff faces."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(_DT(L"variables"));
+        if (variablesNode->IsOk())
+            {
+            // helper to get optional column name
+            const auto getOptionalColumn =
+                [this, &variablesNode](const wxString& propName) -> std::optional<wxString>
+            {
+                const wxString colName =
+                    ExpandConstants(variablesNode->GetProperty(propName)->AsString());
+                return (!colName.empty() ? std::optional<wxString>(colName) : std::nullopt);
+            };
+
+            // face color (optional)
+            wxColour faceColor{ 255, 224, 189 }; // default flesh tone
+            if (graphNode->HasProperty(L"face-color"))
+                {
+                faceColor = ConvertColor(graphNode->GetProperty(L"face-color"));
+                }
+
+            auto chernoffPlot = std::make_shared<Graphs::ChernoffFacesPlot>(canvas, faceColor);
+
+            chernoffPlot->SetData(
+                foundPos->second,
+                ExpandConstants(variablesNode->GetProperty(L"face-width")->AsString()),
+                getOptionalColumn(L"face-height"), getOptionalColumn(L"eye-size"),
+                getOptionalColumn(L"eye-position"), getOptionalColumn(L"eyebrow-slant"),
+                getOptionalColumn(L"pupil-position"), getOptionalColumn(L"nose-size"),
+                getOptionalColumn(L"mouth-width"), getOptionalColumn(L"mouth-curvature"),
+                getOptionalColumn(L"face-saturation"), getOptionalColumn(L"ear-size"));
+
+            // appearance options
+            if (graphNode->HasProperty(L"show-labels"))
+                {
+                chernoffPlot->ShowLabels(graphNode->GetProperty(L"show-labels")->AsBool(true));
+                }
+            if (graphNode->HasProperty(L"outline-color"))
+                {
+                chernoffPlot->SetOutlineColor(
+                    ConvertColor(graphNode->GetProperty(L"outline-color")));
+                }
+            if (graphNode->HasProperty(L"gender"))
+                {
+                const auto gender =
+                    ReportEnumConvert::ConvertGender(graphNode->GetProperty(L"gender")->AsString());
+                if (gender.has_value())
+                    {
+                    chernoffPlot->SetGender(gender.value());
+                    }
+                }
+            if (graphNode->HasProperty(L"eye-color"))
+                {
+                chernoffPlot->SetEyeColor(ConvertColor(graphNode->GetProperty(L"eye-color")));
+                }
+            if (graphNode->HasProperty(L"hair-color"))
+                {
+                chernoffPlot->SetHairColor(ConvertColor(graphNode->GetProperty(L"hair-color")));
+                }
+            if (graphNode->HasProperty(L"lipstick-color"))
+                {
+                chernoffPlot->SetLipstickColor(
+                    ConvertColor(graphNode->GetProperty(L"lipstick-color")));
+                }
+            if (graphNode->HasProperty(L"hair-style"))
+                {
+                const auto hairStyle = ReportEnumConvert::ConvertHairStyle(
+                    graphNode->GetProperty(L"hair-style")->AsString());
+                if (hairStyle.has_value())
+                    {
+                    chernoffPlot->SetHairStyle(hairStyle.value());
+                    }
+                }
+            if (graphNode->HasProperty(L"facial-hair"))
+                {
+                const auto facialHair = ReportEnumConvert::ConvertFacialHair(
+                    graphNode->GetProperty(L"facial-hair")->AsString());
+                if (facialHair.has_value())
+                    {
+                    chernoffPlot->SetFacialHair(facialHair.value());
+                    }
+                }
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, chernoffPlot);
+            return chernoffPlot;
+            }
+
+        throw std::runtime_error(_(L"Variables not defined for Chernoff faces.").ToUTF8());
         }
 
     //---------------------------------------------------

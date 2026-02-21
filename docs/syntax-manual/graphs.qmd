@@ -216,6 +216,107 @@ Properties for `"multi-series-line-plot"` nodes:
 - Some base properties available to [graphs](#graph-properties) and [line plots](#line-plot-properties).
 :::
 
+::: {.minipage data-latex="{\textwidth}"}
+## Scatter Plot {#scatter-plot-properties .unnumbered}
+
+Properties for `"scatter-plot"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"x"`: The X column (independent variable).
+  - `"y"`: The Y column (dependent variable).
+  - `"group"`: The grouping column (this is optional). \
+    This will split the data into separate series with individual regression lines.
+- `"show-regression-lines"`: `true` to show regression lines (default is `true`).
+- `"show-confidence-bands"`: `true` to show confidence bands around the regression lines (default is `true`).
+- `"confidence-level"`: A number between `0.01` and `0.99` specifying the confidence level for the bands (default is `0.95`).
+- `"color-scheme"`: A [color scheme](#color-scheme-properties) specification for the data points and regression lines.
+- `"icon-scheme"`: An [icon scheme](#icon-scheme-properties) specification for the marker shapes.
+- `"regression-line-scheme"`: A [line style scheme](#line-style-scheme-properties) specification for the regression lines.
+- Some base properties available to [graphs](#graph-properties).
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
+## Bubble Plot {#bubble-plot-properties .unnumbered}
+
+Properties for `"bubble-plot"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"x"`: The X column (independent variable).
+  - `"y"`: The Y column (dependent variable).
+  - `"size"`: The size column (larger values result in larger bubble areas).
+  - `"group"`: The grouping column (this is optional). \
+    This will split the data into separate series with individual regression lines.
+- `"min-bubble-radius"`: The minimum bubble radius in DIPs (default is `4`).
+- `"max-bubble-radius"`: The maximum bubble radius in DIPs (default is `30`).
+- `"show-regression-lines"`: `true` to show regression lines (default is `true`).
+- `"show-confidence-bands"`: `true` to show confidence bands around the regression lines (default is `true`).
+- `"confidence-level"`: A number between `0.01` and `0.99` specifying the confidence level for the bands (default is `0.95`).
+- `"color-scheme"`: A [color scheme](#color-scheme-properties) specification for the data points and regression lines.
+- `"icon-scheme"`: An [icon scheme](#icon-scheme-properties) specification for the marker shapes.
+- `"regression-line-scheme"`: A [line style scheme](#line-style-scheme-properties) specification for the regression lines.
+- Some base properties available to [graphs](#graph-properties).
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
+## Chernoff Faces {#chernoff-faces-properties .unnumbered}
+
+Properties for `"chernoff-faces"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"face-width"`: The column controlling face width (required).
+  - `"face-height"`: The column controlling face height (optional).
+  - `"eye-size"`: The column controlling eye size (optional).
+  - `"eye-position"`: The column controlling eye vertical position (optional).
+  - `"eyebrow-slant"`: The column controlling eyebrow angle (optional).
+  - `"pupil-position"`: The column controlling pupil horizontal position (optional).
+  - `"nose-size"`: The column controlling nose size (optional).
+  - `"mouth-width"`: The column controlling mouth width (optional).
+  - `"mouth-curvature"`: The column controlling smile/frown (optional).
+  - `"face-saturation"`: The column controlling face color saturation (optional).
+  - `"ear-size"`: The column controlling ear size (optional).
+- `"face-color"`: The base face color (default is a flesh tone).
+- `"outline-color"`: The outline color for facial features (default is black).
+- `"show-labels"`: `true` to show ID labels beneath each face (default is `true`). \
+  Note that the dataset must have an ID column to pull the labels from.
+- `"gender"`: A string specifying the gender used for face styling. \
+  Available options are:
+  - `"female"`: Female face styling (the default).
+  - `"male"`: Male face styling.
+- `"eye-color"`: The eye/iris color (default is light green).
+- `"hair-color"`: The hair color (default is auburn).
+- `"lipstick-color"`: The lipstick color, only used for female faces (default is firebrick red).
+- `"hair-style"`: A string specifying the hair style. \
+  Available options are:
+  - `"bald"`: No hair (male or female).
+  - `"bob"`: Short bob cut at jaw level (the default, female).
+  - `"pixie"`: Very short cropped style (female).
+  - `"bun"`: Hair pulled into a bun (female).
+  - `"long-straight"`: Long straight hair past shoulders (female).
+  - `"high-top-fade"`: High top fade style (male or female).
+- `"facial-hair"`: A string specifying the facial hair style (male faces only). \
+  Available options are:
+  - `"clean-shaven"`: No facial hair (the default).
+  - `"five-o-clock-shadow"`: Light stubble.
+- Some base properties available to [graphs](#graph-properties).
+
+Note: For effective visualization, this chart is limited to 36 observations (6x6 grid). \
+All continuous values are internally normalized to a [0,1] range, where:
+
+| Parameter | Effect (0 → 1) |
+| :-- | :-- |
+| Face width | Narrow → Wide |
+| Face height | Short → Tall |
+| Eye size | Small → Large |
+| Eye position | Low → High on face |
+| Eyebrow slant | Angled down → Angled up |
+| Pupil position | Looking left → Looking right |
+| Nose size | Small → Large |
+| Mouth width | Narrow → Wide |
+| Mouth curvature | Frown → Smile |
+| Face color | Pale → Saturated |
+| Ear size | Small → Large |
+:::
+
 ## Pie Chart {#pie-chart-properties .unnumbered}
 
 Properties for `"pie-chart"` nodes:

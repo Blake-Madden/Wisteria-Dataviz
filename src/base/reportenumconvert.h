@@ -806,6 +806,54 @@ namespace Wisteria
                         std::optional<ImageEffect>(foundValue->second) :
                         std::nullopt);
             }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Gender> ConvertGender(const wxString& value)
+            {
+            static const std::map<std::wstring, Gender> genderValues = {
+                { L"female", Gender::Female }, { L"male", Gender::Male }
+            };
+
+            const auto foundValue = genderValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != genderValues.cend()) ?
+                        std::optional<Gender>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<HairStyle> ConvertHairStyle(const wxString& value)
+            {
+            static const std::map<std::wstring, HairStyle> hairStyleValues = {
+                { L"bald", HairStyle::Bald },
+                { L"bob", HairStyle::Bob },
+                { L"pixie", HairStyle::Pixie },
+                { L"bun", HairStyle::Bun },
+                { L"long-straight", HairStyle::LongStraight },
+                { L"high-top-fade", HairStyle::HighTopFade }
+            };
+
+            const auto foundValue = hairStyleValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != hairStyleValues.cend()) ?
+                        std::optional<HairStyle>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<FacialHair> ConvertFacialHair(const wxString& value)
+            {
+            static const std::map<std::wstring, FacialHair> facialHairValues = {
+                { L"clean-shaven", FacialHair::CleanShaven },
+                { L"five-o-clock-shadow", FacialHair::FiveOClockShadow }
+            };
+
+            const auto foundValue = facialHairValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != facialHairValues.cend()) ?
+                        std::optional<FacialHair>(foundValue->second) :
+                        std::nullopt);
+            }
         };
     } // namespace Wisteria
 
