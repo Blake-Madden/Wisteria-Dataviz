@@ -4,6 +4,8 @@
 
 - New graph type: Chernoff Faces Plot
 - Added basic CSS markup support to labels
+- Added new shapes:
+    - Tractor
 
 ## 1.1.0 Release
 

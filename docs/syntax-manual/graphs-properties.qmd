@@ -172,6 +172,7 @@ Properties common to all graphs:
   - `"chocolate-chip-cookie"`
   - `"coffee-shop-cup"`
   - `"pill"`
+  - `"tractor"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

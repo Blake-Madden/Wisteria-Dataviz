@@ -489,6 +489,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawPill(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a side-view of a tractor.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawTractor(wxRect rect, wxDC& dc) const;
 
         /// @}
 
@@ -520,6 +524,7 @@ namespace Wisteria::GraphItems
         void DrawSword(wxRect rect, wxDC& dc, ClippingSection clippingSection) const;
         void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
         void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
+        void DrawTractorTire(wxRect rect, wxGraphicsContext* gc, bool isRear) const;
 
         static void FillCarvedFeature(wxGraphicsContext* gc, const wxGraphicsPath& path,
                                       const wxRect2DDouble& bounds);

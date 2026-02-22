@@ -126,7 +126,8 @@ namespace Wisteria::Icons
         HawaiianPizza,            /*!< A Hawaiian pizza (pepperoni and pineapple).*/
         ChocolateChipCookie,      /*!< A chocolate chip cookie.*/
         CoffeeShopCup,            /*!< A takeaway coffee cup with sleeve and logo.*/
-        Pill                      /*!< A medicine pill/capsule.*/
+        Pill,                     /*!< A medicine pill/capsule.*/
+        Tractor                   /*!< A side-view of a tractor.*/
         };
 
     /// @brief Item to draw on a legend.
