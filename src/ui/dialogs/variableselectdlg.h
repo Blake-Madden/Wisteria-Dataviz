@@ -110,7 +110,7 @@ namespace Wisteria::UI
         VariableSelectDlg& operator=(const VariableSelectDlg&) = delete;
 
         /// @private
-        ~VariableSelectDlg() { delete m_listImages; }
+        ~VariableSelectDlg() override { delete m_listImages; }
 
         /// @brief Gets the variables that a user has moved into a given list.
         /// @details The list is accessed by index, in the order that the variable definitions

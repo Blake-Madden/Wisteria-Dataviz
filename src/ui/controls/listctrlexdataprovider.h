@@ -36,7 +36,7 @@ namespace Wisteria::UI
         ListCtrlExDataProviderBase& operator=(ListCtrlExDataProviderBase&) = delete;
 
         /// @private
-        virtual ~ListCtrlExDataProviderBase() = default;
+        ~ListCtrlExDataProviderBase() override = default;
 
         /// @brief Base class for a cell in a list control.
         struct ListCell

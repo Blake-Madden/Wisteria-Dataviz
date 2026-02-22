@@ -142,7 +142,7 @@ namespace Wisteria::UI
             }
         const size_t index = m_sharedStringsList.size();
         m_sharedStrings[str] = index;
-        m_sharedStringsList.push_back(str);
+        m_sharedStringsList.emplace_back(str);
         return index;
         }
 
@@ -156,7 +156,7 @@ namespace Wisteria::UI
             }
         const size_t index = m_stylesList.size();
         m_styles[style] = index;
-        m_stylesList.push_back(style);
+        m_stylesList.emplace_back(style);
         return index;
         }
 
@@ -360,7 +360,7 @@ namespace Wisteria::UI
                     // numeric provider but cell is a label, not a number
                     return false;
                     }
-                else if (dataProvider->IsKindOf(wxCLASSINFO(ListCtrlExDataProvider)))
+                if (dataProvider->IsKindOf(wxCLASSINFO(ListCtrlExDataProvider)))
                     {
                     const auto* stringProvider =
                         dynamic_cast<const ListCtrlExDataProvider*>(dataProvider.get());
@@ -845,7 +845,7 @@ namespace Wisteria::UI
 
         // fonts: collect unique text colors
         std::vector<wxColour> fontColors;
-        fontColors.push_back(wxColour{}); // default (index 0) - no color specified
+        fontColors.emplace_back(wxColour{}); // default (index 0) - no color specified
 
         for (const auto& style : m_stylesList)
             {
@@ -863,7 +863,7 @@ namespace Wisteria::UI
                     }
                 if (!found)
                     {
-                    fontColors.push_back(style.m_textColor);
+                    fontColors.emplace_back(style.m_textColor);
                     }
                 }
             }
@@ -886,8 +886,8 @@ namespace Wisteria::UI
 
         // fills - collect unique background colors
         std::vector<wxColour> fillColors;
-        fillColors.push_back(wxColour{}); // default (index 0) - no fill
-        fillColors.push_back(wxColour{}); // gray125 pattern (index 1) - required by Excel
+        fillColors.emplace_back(wxColour{}); // default (index 0) - no fill
+        fillColors.emplace_back(wxColour{}); // gray125 pattern (index 1) - required by Excel
 
         for (const auto& style : m_stylesList)
             {
@@ -905,7 +905,7 @@ namespace Wisteria::UI
                     }
                 if (!found)
                     {
-                    fillColors.push_back(style.m_backgroundColor);
+                    fillColors.emplace_back(style.m_backgroundColor);
                     }
                 }
             }

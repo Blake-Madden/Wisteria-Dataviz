@@ -173,9 +173,10 @@ namespace Wisteria::UI
         mainSizer->Add(varsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         // split var groups into columns of 5
-        constexpr size_t maxGroupsPerColumn{ 5 };
-        const size_t numColumnSets = (varInfo.size() + maxGroupsPerColumn - 1) / maxGroupsPerColumn;
-        const size_t rowsNeeded = std::min(varInfo.size(), maxGroupsPerColumn) * 2;
+        constexpr size_t MAXGROUPSPERCOLUMN{ 5 };
+        const auto numColumnSets =
+            safe_divide(varInfo.size() + MAXGROUPSPERCOLUMN - 1, MAXGROUPSPERCOLUMN);
+        const size_t rowsNeeded = std::min(varInfo.size(), MAXGROUPSPERCOLUMN) * 2;
 
         // fill the main list of variables
         varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables:")), wxGBPosition{ 0, 0 },

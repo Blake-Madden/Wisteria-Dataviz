@@ -66,7 +66,7 @@ wxBitmap ResourceManager::GetBitmap(wxString filePath, const wxBitmapType bitmap
         // if not an absolute path, then see if using a resource folder and look in there
         if (!wxFile::Exists(filePath))
             {
-            wxFileName fn{ m_resourceFile };
+            const wxFileName fn{ m_resourceFile };
             if (!fn.HasExt())
                 {
                 filePath = GetResourceFilePath(filePath);
@@ -104,7 +104,7 @@ wxBitmapBundle ResourceManager::GetSVG(wxString path)
         // not an absolute path, then see if using a resource folder and look in there
         if (!wxFile::Exists(path))
             {
-            wxFileName fn{ m_resourceFile };
+            const wxFileName fn{ m_resourceFile };
             if (!fn.HasExt())
                 {
                 path = GetResourceFilePath(path);

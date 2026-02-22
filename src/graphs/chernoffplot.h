@@ -530,7 +530,6 @@ namespace Wisteria::Graphs
             FacialHair m_facialHair{ FacialHair::CleanShaven };
             };
 
-      private:
         void RecalcSizes(wxDC& dc) final;
 
         /// @brief Draws a single face within the specified rectangle.

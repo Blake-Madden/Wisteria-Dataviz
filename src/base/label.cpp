@@ -2226,13 +2226,13 @@ namespace Wisteria::GraphItems
         {
         wxString result = text;
         // remove <span ...> opening tags (case insensitive)
-        wxRegEx reSpanOpen(L"<span[^>]*>", wxRE_ICASE);
+        const wxRegEx reSpanOpen(L"<span[^>]*>", wxRE_ICASE);
         if (reSpanOpen.IsValid())
             {
             reSpanOpen.ReplaceAll(&result, wxEmptyString);
             }
         // remove </span> closing tags (case insensitive)
-        wxRegEx reSpanClose(L"</span>", wxRE_ICASE);
+        const wxRegEx reSpanClose(L"</span>", wxRE_ICASE);
         if (reSpanClose.IsValid())
             {
             reSpanClose.ReplaceAll(&result, wxEmptyString);
@@ -2249,13 +2249,13 @@ namespace Wisteria::GraphItems
         // handle hex color values like #RRGGBB or #RGB
         if (colorStr.StartsWith(L"#"))
             {
-            return wxColour(colorStr);
+            return { colorStr };
             }
 
         // handle rgb(r,g,b) format
         if (colorStr.Lower().StartsWith(L"rgb("))
             {
-            wxRegEx reRgb(L"rgb\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)", wxRE_ICASE);
+            const wxRegEx reRgb(L"rgb\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)", wxRE_ICASE);
             if (reRgb.IsValid() && reRgb.Matches(colorStr))
                 {
                 long r = 0, g = 0, b = 0;
@@ -2282,7 +2282,7 @@ namespace Wisteria::GraphItems
             }
 
         // return invalid color if not found
-        return wxColour();
+        return {};
         }
 
     //------------------------------------------------------
@@ -2331,7 +2331,7 @@ namespace Wisteria::GraphItems
 
                     // parse CSS properties from the style value
                     // color property (text foreground)
-                    wxRegEx reColor(L"(?:^|;)\\s*color\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    const wxRegEx reColor(L"(?:^|;)\\s*color\\s*:\\s*([^;]+)", wxRE_ICASE);
                     if (reColor.IsValid() && reColor.Matches(styleValue))
                         {
                         wxString colorVal = reColor.GetMatch(styleValue, 1);
@@ -2344,7 +2344,7 @@ namespace Wisteria::GraphItems
                         }
 
                     // background-color property
-                    wxRegEx reBgColor(L"background-color\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    const wxRegEx reBgColor(L"background-color\\s*:\\s*([^;]+)", wxRE_ICASE);
                     if (reBgColor.IsValid() && reBgColor.Matches(styleValue))
                         {
                         wxString bgVal = reBgColor.GetMatch(styleValue, 1);
@@ -2357,7 +2357,7 @@ namespace Wisteria::GraphItems
                         }
 
                     // font-style property (italic, oblique, normal)
-                    wxRegEx reFontStyle(L"font-style\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    const wxRegEx reFontStyle(L"font-style\\s*:\\s*([^;]+)", wxRE_ICASE);
                     if (reFontStyle.IsValid() && reFontStyle.Matches(styleValue))
                         {
                         wxString fontStyleVal = reFontStyle.GetMatch(styleValue, 1).Lower();
@@ -2373,7 +2373,7 @@ namespace Wisteria::GraphItems
                         }
 
                     // text-decoration property (underline, line-through)
-                    wxRegEx reTextDecor(L"text-decoration\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    const wxRegEx reTextDecor(L"text-decoration\\s*:\\s*([^;]+)", wxRE_ICASE);
                     if (reTextDecor.IsValid() && reTextDecor.Matches(styleValue))
                         {
                         wxString decorVal = reTextDecor.GetMatch(styleValue, 1).Lower();

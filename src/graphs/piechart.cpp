@@ -1806,8 +1806,6 @@ namespace Wisteria::Graphs
 
         const wxColour cookieEdgeColor{ 160, 115, 65 };
 
-        wxRect edgeRect = drawAreas.m_pieDrawArea;
-
         std::vector<wxPoint> edgePoints;
         edgePoints.reserve(SAMPLE_COUNT);
 
@@ -1818,7 +1816,7 @@ namespace Wisteria::Graphs
             const double cookieNoise = RingIrregularity(angleDegrees, COOKIE_SEED);
             const int inflationOffset = wxRound(cookieNoise * irregularityAmplitude);
 
-            wxRect adjustedRect = edgeRect;
+            wxRect adjustedRect = drawAreas.m_pieDrawArea;
             adjustedRect.Inflate(inflationOffset, inflationOffset);
 
             edgePoints.push_back(GetEllipsePointFromRect(adjustedRect, angleDegrees));

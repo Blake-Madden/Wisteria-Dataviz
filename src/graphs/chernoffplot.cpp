@@ -55,23 +55,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         switch (GetAnchoring())
             {
         case Anchoring::TopLeftCorner:
-            return wxRect(GetAnchorPoint(), scaledSize);
+            return { GetAnchorPoint(), scaledSize };
         case Anchoring::TopRightCorner:
-            return wxRect(wxPoint(GetAnchorPoint().x - scaledSize.GetWidth(), GetAnchorPoint().y),
-                          scaledSize);
+            return { wxPoint(GetAnchorPoint().x - scaledSize.GetWidth(), GetAnchorPoint().y),
+                     scaledSize };
         case Anchoring::BottomLeftCorner:
-            return wxRect(wxPoint(GetAnchorPoint().x, GetAnchorPoint().y - scaledSize.GetHeight()),
-                          scaledSize);
+            return { wxPoint(GetAnchorPoint().x, GetAnchorPoint().y - scaledSize.GetHeight()),
+                     scaledSize };
         case Anchoring::BottomRightCorner:
-            return wxRect(wxPoint(GetAnchorPoint().x - scaledSize.GetWidth(),
-                                  GetAnchorPoint().y - scaledSize.GetHeight()),
-                          scaledSize);
+            return { wxPoint(GetAnchorPoint().x - scaledSize.GetWidth(),
+                             GetAnchorPoint().y - scaledSize.GetHeight()),
+                     scaledSize };
         case Anchoring::Center:
             [[fallthrough]];
         default:
-            return wxRect(wxPoint(GetAnchorPoint().x - scaledSize.GetWidth() / 2,
-                                  GetAnchorPoint().y - scaledSize.GetHeight() / 2),
-                          scaledSize);
+            return { wxPoint(GetAnchorPoint().x - scaledSize.GetWidth() / 2,
+                             GetAnchorPoint().y - scaledSize.GetHeight() / 2),
+                     scaledSize };
             }
         }
 
@@ -94,7 +94,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         const wxRect boundingBox = GetBoundingBox(dc);
 
-        GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
+        const GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
         auto* gc = gcf.GetGraphicsContext();
         if (gc != nullptr)
             {
@@ -143,7 +143,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             if (!feature.columnName.empty())
                 {
-                GraphItems::Label label(
+                const GraphItems::Label label(
                     GraphItems::GraphItemInfo(GetFeatureDisplayName(feature.featureId) + L": " +
                                               feature.columnName)
                         .Pen(wxNullPen)
@@ -201,7 +201,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             if (!feature.columnName.empty())
                 {
                 const wxString displayName = GetFeatureDisplayName(feature.featureId);
-                FeatureInfo info{ displayName + L": " + feature.columnName, feature.featureId };
+                const FeatureInfo info{ displayName + L": " + feature.columnName,
+                                        feature.featureId };
                 if (feature.leftSide)
                     {
                     leftFeatures.push_back(info);
@@ -280,11 +281,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
             // draw the face (scoped so GraphicsContext is flushed before drawing lines)
             {
-            GraphItems::GraphicsContextFallback gcf{ &dc, faceRect };
+            const GraphItems::GraphicsContextFallback gcf{ &dc, faceRect };
             auto* gc = gcf.GetGraphicsContext();
             if (gc != nullptr)
                 {
-                FaceFeatures defaultFeatures;
+                const FaceFeatures defaultFeatures;
                 ChernoffFacesPlot::DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter,
                                             m_faceColorDarker, m_outlineColor, m_lipstickColor,
                                             m_eyeColor, m_hairColor, m_hairStyle, m_gender,
@@ -734,9 +735,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         // calculate grid dimensions
         const size_t faceCount = m_faces.size();
-        const size_t cols =
+        const auto cols =
             static_cast<size_t>(std::ceil(std::sqrt(static_cast<double>(faceCount))));
-        const size_t rows = static_cast<size_t>(
+        const auto rows = static_cast<size_t>(
             std::ceil(safe_divide<double>(faceCount, static_cast<double>(cols))));
 
         // calculate cell size, leaving room for labels

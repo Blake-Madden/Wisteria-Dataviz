@@ -34,7 +34,7 @@ class ResourceManager
             the resources to load.*/
     explicit ResourceManager(const wxString& resourceArchivePath)
         {
-        wxFileName fn{ resourceArchivePath };
+        const wxFileName fn{ resourceArchivePath };
         if (!fn.HasExt())
             {
             SetDirectory(resourceArchivePath);
@@ -75,7 +75,7 @@ class ResourceManager
             }
 
         // if not an archive file, then may be a folder
-        wxFileName fn{ m_resourceFile };
+        const wxFileName fn{ m_resourceFile };
         if (!fn.HasExt())
             {
             return fn.GetFullPath() + wxFileName::GetPathSeparator() + subFile;
