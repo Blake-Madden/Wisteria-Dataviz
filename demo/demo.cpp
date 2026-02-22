@@ -2960,7 +2960,7 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_TABLE, _(L"Table"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/spreadsheet.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/table.svg", iconSize),
                      _(L"Table"));
 
     toolBar->Realize();
