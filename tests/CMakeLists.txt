@@ -42,6 +42,9 @@ endif()
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+# Generate file lists
+include(${CMAKE_SOURCE_DIR}/../cmake/ListFiles.cmake)
+
 message(STATUS "Finding Catch2...")
 include(../cmake/folders.cmake)
 # place Catch2 at the same folder level as this repo or somewhere above it
@@ -55,7 +58,7 @@ endif()
 
 # Define the build target for the executable
 message(STATUS "Preparing the test runner...")
-include(${CMAKE_SOURCE_DIR}/../tools/testfiles.cmake)
+include(${CMAKE_SOURCE_DIR}/../cmake/includes/testfiles.cmake)
 set(LIB_SRC_FILES
     ../src/import/cpp_extract_text.cpp
     ../src/import/doc_extract_text.cpp

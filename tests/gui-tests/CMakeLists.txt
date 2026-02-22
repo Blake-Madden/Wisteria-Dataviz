@@ -70,12 +70,14 @@ endif()
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+# Generate file lists
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/ListFiles.cmake)
+
 # Build Wisteria GUI test runner
 ########################
 set(TEST_APP WisteriaGuiTestRunner)
-# (run "tools/build_cmake_files_list.R" to update this)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/guilibfiles_testing.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/guitestfiles.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/includes/guilibfiles_testing.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/includes/guitestfiles.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 add_executable(${TEST_APP} WIN32 MACOSX_BUNDLE ${WISTERIA_SRC} ${TEST_SRC_FILES})
 

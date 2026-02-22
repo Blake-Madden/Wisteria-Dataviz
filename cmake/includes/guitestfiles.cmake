@@ -1,4 +1,4 @@
-# Automatically generated from 'build_cmake_files_list.R'
+# Automatically generated from 'ListFiles.cmake'
 # This should be used for the unit test runner.
 # DO NOT MODIFY MANUALLY!
 

@@ -1,4 +1,4 @@
-# Automatically generated from 'build_cmake_files_list.R'
+# Automatically generated from 'ListFiles.cmake'
 # DO NOT MODIFY MANUALLY!
 
 SET(WISTERIA_SRC

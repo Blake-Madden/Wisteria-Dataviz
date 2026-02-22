@@ -142,10 +142,12 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+# Build source file lists
+include(cmake/ListFiles.cmake)
+
 # Build Wisteria library
 ########################
-# (run "tools/build_cmake_files_list.R" to update this)
-include(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/includes/libfiles.cmake)
 set(WISTIER_LIB wisteria)
 add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
 if(WIN32 OR APPLE)
