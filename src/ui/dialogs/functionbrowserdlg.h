@@ -19,8 +19,8 @@
 #include <set>
 #include <utility>
 #include <vector>
-#include <wx/html/htmlwin.h>
 #include <wx/listbox.h>
+#include <wx/webview.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -116,6 +116,13 @@ namespace Wisteria::UI
         constexpr static int ID_CATEGORY_LIST = wxID_HIGHEST;
         constexpr static int ID_FUNCTION_LIST = wxID_HIGHEST + 1;
 
+        [[nodiscard]]
+        static const wxString& GetUrlScheme()
+            {
+            static const wxString scheme = L"funcbrowser://";
+            return scheme;
+            }
+
         /** @brief Creates the class/function lists and description window controls.*/
         void CreateControls(const wxString& firstWindowCaption,
                             const wxString& secondWindowCaption);
@@ -151,7 +158,7 @@ namespace Wisteria::UI
             }
 
         void OnListSelected(wxCommandEvent& event);
-        void OnHyperlinkClicked(const wxHtmlLinkEvent& event);
+        void OnNavigating(wxWebViewEvent& event);
 
         struct CategoryInfo
             {
@@ -188,7 +195,7 @@ namespace Wisteria::UI
         wxWindow* m_editWindow{ nullptr };
         Wisteria::UI::SideBar* m_categoryList{ nullptr };
         wxListBox* m_functionList{ nullptr };
-        wxHtmlWindow* m_functionDescriptionWindow{ nullptr };
+        wxWebView* m_functionDescriptionWindow{ nullptr };
         };
 
     /** @brief A function/object model browsing dialog.
