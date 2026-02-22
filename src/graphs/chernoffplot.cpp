@@ -735,8 +735,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         // calculate grid dimensions
         const size_t faceCount = m_faces.size();
-        const auto cols =
-            static_cast<size_t>(std::ceil(std::sqrt(static_cast<double>(faceCount))));
+        const auto cols = static_cast<size_t>(std::ceil(std::sqrt(static_cast<double>(faceCount))));
         const auto rows = static_cast<size_t>(
             std::ceil(safe_divide<double>(faceCount, static_cast<double>(cols))));
 

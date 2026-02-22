@@ -128,7 +128,7 @@ if(UNIX AND NOT APPLE)
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
     # WebKitGTK dependency (required for wxWebView)
-    pkg_check_modules(WEBKIT2 REQUIRED webkit2gtk-4.0)
+    pkg_check_modules(WEBKIT2 REQUIRED webkit2gtk-4.1)
 
     # Setup CMake to use GTK+ and WebKitGTK, tell the compiler where to look for headers
     # and to the linker where to look for libraries

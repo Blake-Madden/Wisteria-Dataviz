@@ -2255,7 +2255,8 @@ namespace Wisteria::GraphItems
         // handle rgb(r,g,b) format
         if (colorStr.Lower().StartsWith(L"rgb("))
             {
-            const wxRegEx reRgb(L"rgb\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)", wxRE_ICASE);
+            const wxRegEx reRgb(L"rgb\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)",
+                                wxRE_ICASE);
             if (reRgb.IsValid() && reRgb.Matches(colorStr))
                 {
                 long r = 0, g = 0, b = 0;
