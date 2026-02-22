@@ -479,13 +479,13 @@ namespace Wisteria::Graphs
         class FaceObject final : public GraphItems::GraphItemBase
             {
           public:
-            FaceObject(const GraphItems::GraphItemInfo& itemInfo, const FaceFeatures& features,
+            FaceObject(const GraphItems::GraphItemInfo& itemInfo, FaceFeatures features,
                        const wxSize& sz, const wxColour& faceColorLighter,
                        const wxColour& faceColorDarker, const wxColour& outlineColor,
                        const wxColour& lipstickColor, const wxColour& eyeColor,
                        const wxColour& hairColor, const HairStyle hairStyle, const Gender gender,
                        const FacialHair facialHair)
-                : GraphItemBase(itemInfo), m_features(features), m_size(sz),
+                : GraphItemBase(itemInfo), m_features(std::move(features)), m_size(sz),
                   m_faceColorLighter(faceColorLighter), m_faceColorDarker(faceColorDarker),
                   m_outlineColor(outlineColor), m_lipstickColor(lipstickColor),
                   m_eyeColor(eyeColor), m_hairColor(hairColor), m_hairStyle(hairStyle),

@@ -7320,7 +7320,6 @@ namespace Wisteria::GraphItems
 
         const auto penWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.5));
         const wxColour rubberBlack{ wxColour{ 25, 25, 25 } };
-        const wxColour rubberDark{ wxColour{ 45, 45, 45 } };
         const wxColour rubberMid{ wxColour{ 65, 65, 65 } };
         const wxColour hubFace{ wxColour{ 195, 195, 200 } };
         const wxColour hubEdge{ wxColour{ 135, 135, 142 } };

@@ -257,8 +257,8 @@ namespace Wisteria::UI
         for (size_t i = 0; i < varInfo.size(); ++i)
             {
             const auto& var = varInfo[i];
-            const size_t columnSet = i / maxGroupsPerColumn;
-            const size_t rowWithinSet = i % maxGroupsPerColumn;
+            const size_t columnSet = safe_divide(i, MAXGROUPSPERCOLUMN);
+            const size_t rowWithinSet = safe_modulus(i, MAXGROUPSPERCOLUMN);
 
             const int buttonCol = 1 + static_cast<int>(columnSet) * 2;
             const int listCol = 2 + static_cast<int>(columnSet) * 2;
