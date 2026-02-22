@@ -99,7 +99,7 @@ namespace Wisteria::GraphItems
             }
 
         // strip markup for character counting (markup tags don't contribute to display width)
-        const wxString strippedText = StripMarkup(GetText());
+        const wxString strippedText = IsMarkupEnabled() ? StripMarkup(GetText()) : GetText();
 
         // if multi-line, then see which line is the longest
         wxStringTokenizer lineTokenizer(strippedText, L"\r\n", wxTOKEN_RET_EMPTY);
@@ -407,7 +407,7 @@ namespace Wisteria::GraphItems
         const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
 
         // strip markup for measuring (markup doesn't affect text dimensions)
-        const wxString strippedText = StripMarkup(GetText());
+        const wxString strippedText = IsMarkupEnabled() ? StripMarkup(GetText()) : GetText();
 
         const wxStringTokenizer tokenizer(strippedText, L"\r\n", wxTOKEN_RET_EMPTY);
         const wxCoord spaceBetweenLines =
@@ -1670,7 +1670,8 @@ namespace Wisteria::GraphItems
             {
             // draw the next line
             // strip markup for measuring and rendering (rotated text doesn't support markup)
-            wxString token = StripMarkup(lineTokenizer.GetNextToken());
+            wxString token = IsMarkupEnabled() ? StripMarkup(lineTokenizer.GetNextToken()) :
+                                                 lineTokenizer.GetNextToken();
             dc.GetTextExtent(token, &lineX, &lineY);
 
             if (GetHeaderInfo().IsEnabled() && currentLineNumber == 0 && GetLineCount() > 1)
@@ -1916,7 +1917,7 @@ namespace Wisteria::GraphItems
             // draw the next line
             const wxString originalToken = lineTokenizer.GetNextToken();
             // strip markup for measuring (styles don't affect dimensions)
-            wxString token = StripMarkup(originalToken);
+            wxString token = IsMarkupEnabled() ? StripMarkup(originalToken) : originalToken;
             dc.GetTextExtent(token, &lineX, &lineY);
 
             if (GetHeaderInfo().IsEnabled() && currentLineNumber == 0 && GetLineCount() > 1)
@@ -2025,7 +2026,8 @@ namespace Wisteria::GraphItems
                       GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord) :
                      (GetTextAlignment() == TextAlignment::JustifiedAtCharacter ||
                       GetTextAlignment() == TextAlignment::JustifiedAtWord));
-            const bool useMarkupRendering = !isTilted && !isJustified && (originalToken != token);
+            const bool useMarkupRendering =
+                IsMarkupEnabled() && !isTilted && !isJustified && (originalToken != token);
 
             if (isTilted)
                 {

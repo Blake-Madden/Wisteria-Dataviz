@@ -2546,6 +2546,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             // will set the proportions of the note's row based on how tall the note is
             FitCanvasHeightToContent(true)
                 .Pen(wxNullPen));
+        note->EnableMarkup(true);
         // make the font smaller, and customize the header's appearance
         note->GetFont().MakeSmaller().MakeSmaller();
         note->GetHeaderInfo().Enable(true).FontColor(*wxBLUE).GetFont().MakeBold();

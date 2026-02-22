@@ -513,9 +513,9 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxString GetFirstAvailableWordProcessorFont()
             {
-            return GetFirstAvailableFont({ L"Aptos", L"Bierstadt", L"Grandview", L"Seaford",
-                                           L"Skeena", L"Tenorite", L"Calibri", L"Garamond",
-                                           L"Franklin Gothic", L"Helvetica Neue" });
+            return GetFirstAvailableFont({ L"Inter", L"Aptos", L"Bierstadt", L"Grandview",
+                                           L"Seaford", L"Skeena", L"Tenorite", L"Calibri",
+                                           L"Garamond", L"Franklin Gothic", L"Helvetica Neue" });
             }
 
         /** @returns The first available monospace font (face name) found on the system,
@@ -524,12 +524,38 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxString GetFirstAvailableMonospaceFont()
             {
-            return GetFirstAvailableFont({ L"Cascadia Mono", L"Consolas", L"Times New Roman" });
+            return GetFirstAvailableFont(
+                { L"Inconsolata", L"Cascadia Mono", L"Consolas", L"Times New Roman" });
             }
 
         /// @brief Corrects issues with fonts such as bogus face names and point sizes.
         /// @param theFont The font to review and correct.
         static void FixFont(wxFont& theFont);
+
+        /// @}
+
+        /// @name Markup Functions
+        /// @brief Functions for controlling markup rendering.
+        /// @{
+
+        /// @returns @c true if markup rendering is enabled.
+        [[nodiscard]]
+        bool IsMarkupEnabled() const noexcept
+            {
+            return m_markupEnabled;
+            }
+
+        /** @brief Enables or disables markup rendering.
+            @details When disabled, all text is rendered as-is without
+                interpreting any markup tags (e.g., `<span>`).
+                Markup is disabled by default.
+            @param enable @c true to enable markup rendering.*/
+        void EnableMarkup(const bool enable) noexcept
+            {
+            m_markupEnabled = enable;
+            InvalidateCachedBoundingBox();
+            }
+
         /// @}
 
       private:
@@ -647,6 +673,7 @@ namespace Wisteria::GraphItems
         std::optional<std::vector<ShapeInfo>> m_topShape{ std::nullopt };
         size_t m_topImageOffset{ 0 };
         bool m_boundingBoxScalingLocked{ false };
+        bool m_markupEnabled{ false };
         };
     } // namespace Wisteria::GraphItems
 
