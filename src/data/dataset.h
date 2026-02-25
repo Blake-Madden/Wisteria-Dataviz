@@ -247,7 +247,7 @@ namespace Wisteria::Data
                 }
             else if constexpr (std::is_same_v<T, wxString>)
                 {
-                Fill(wxEmptyString);
+                Fill(wxString{});
                 }
             else if constexpr (std::is_same_v<T, wxDateTime>)
                 {
@@ -316,6 +316,9 @@ namespace Wisteria::Data
         /// @brief The string table type (i.e., an integer key and string value).
         using StringTableType = std::map<GroupIdType, wxString>;
 
+        /// @brief The sentinel value used to represent missing data in categorical columns.
+        constexpr static GroupIdType MISSING_DATA_CODE{ std::numeric_limits<GroupIdType>::max() };
+
         /** @brief Constructor.
             @param title The title of the column.
                 This is useful for identifying the column in a dataset.*/
@@ -347,7 +350,7 @@ namespace Wisteria::Data
         /// @param sTable The new string table for the column.
         /// @warning If the column already contains data, then it is the caller's responsibility
         ///     to recode any of the existing data. This includes missing data in the column,
-        ///     which by default will be mapped to @c 0.
+        ///     which by default will be mapped to @c MISSING_DATA_CODE.
         ///     (The new string table may have a different code for MD,
         ///     so the existing values in the column will need to be recoded in that case.)
         void SetStringTable(const StringTableType& sTable) { m_stringTable = sTable; }
@@ -669,12 +672,16 @@ namespace Wisteria::Data
         };
 
     /// @brief How categorical column data should be read while importing.
+    /// @details Categorical columns store unsigned integers (@c uint64_t) as discrete codes.
+    ///     These are meant for discrete, non-negative values (e.g., group codes, survey responses).
+    ///     Columns containing negative numbers or continuous values should be imported
+    ///     as continuous columns instead.
     /// @sa ImportInfo.
     enum class CategoricalImportMethod
         {
-        ReadAsIntegers, /*!< Read the column as integral codes.\n
+        ReadAsIntegers, /*!< Read the column as unsigned integer codes.\n
                              Caller should set the respective string values after the import.*/
-        ReadAsStrings   /*!< Read the column as strings. Respective integer codes will be
+        ReadAsStrings   /*!< Read the column as strings. Respective unsigned integer codes will be
                              arbitrarily assigned in the order that strings appear.*/
         };
 
@@ -716,7 +723,7 @@ namespace Wisteria::Data
             ///     to it.\n
             ///     Caller is responsible for assigning an empty string to this code when
             ///     connecting a string table to this column after import.
-            GroupIdType m_mdCode{ 0 };
+            GroupIdType m_mdCode{ ColumnWithStringTable::MISSING_DATA_CODE };
             };
 
         /** @brief Sets the names of the input columns to import for the date columns.
@@ -768,10 +775,12 @@ namespace Wisteria::Data
              This will result in `AGE RANGE` being imported as the first categorical column and
              `GENDER` as the second categorical column. Also, note that `GENDER` will be read as
              discrete numbers, while `AGE RANGE` will use the default of being imported as strings.
-            @param categoricalColumns The column names and their respective important methods.\n
+            @param categoricalColumns The column names and their respective import methods.\n
              For the import methods, you can either import the column as strings
-             and have integer codes automatically (and arbitrarily) assigned to them, or import
-             integer codes that you later assign strings to.
+             and have unsigned integer codes automatically (and arbitrarily) assigned to them,
+             or import unsigned integer codes that you later assign strings to.\n
+             Note that categorical columns use unsigned integers for discrete codes.
+             Columns with negative numbers should be imported as continuous instead.
             @sa Data::CategoricalImportMethod for more info.
             @returns A self reference.*/
         ImportInfo& CategoricalColumns(const std::vector<CategoricalImportInfo>& categoricalColumns)
@@ -1100,9 +1109,9 @@ namespace Wisteria::Data
                     column.GetStringTable().insert(
                         std::make_pair(column.GetNextKey(), wxEmptyString));
                     mdCode = column.FindMissingDataCode();
-                    assert(mdCode && L"Error creating MD label when resizing column!");
+                    wxASSERT_MSG(mdCode, L"Error creating MD label when resizing column!");
                     }
-                column.Resize(rowCount, mdCode.value_or(0));
+                column.Resize(rowCount, mdCode.value_or(ColumnWithStringTable::MISSING_DATA_CODE));
                 }
             for (auto& column : m_continuousColumns)
                 {
@@ -1157,8 +1166,8 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddContinuousColumn(const wxString& columnName)
             {
-            assert(!columnName.empty() &&
-                   L"Column name is empty in call to AddContinuousColumn()!");
+            wxASSERT_MSG(!columnName.empty(),
+                         L"Column name is empty in call to AddContinuousColumn()!");
             // see if already in the dataset
             auto foundColumn = GetContinuousColumn(columnName);
             if (foundColumn != GetContinuousColumns().end())

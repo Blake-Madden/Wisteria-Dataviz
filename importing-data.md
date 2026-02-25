@@ -12,7 +12,7 @@ Below is a summary of the column types and how *Wisteria* handles them during im
 | Column Type | Import Function | Missing Data Handling | Notes |
 |--------------|-----------------|------------------------|--------|
 | **Continuous** | `ContinuousColumns()` | Imported as `NaN` | Parsed using `wxString::ToCDouble()` (requires `.` as radix) |
-| **Categorical** | `CategoricalColumns()` | Defaults to `0` (customizable) | Can be read as strings or integers; uses lookup table for labels |
+| **Categorical** | `CategoricalColumns()` | `MISSING_DATA_CODE` (`UINT64_MAX`) | Can be read as strings or integers; uses lookup table for labels |
 | **Date/Time** | `DateColumns()` | `wxInvalidDateTime` | Auto-detects or uses `DateImportMethod`; errors logged via `wxLogWarning()` |
 | **Other (ID or ignored)** | Omit from `ImportInfo` | — | Columns not classified are ignored during import |
 
@@ -67,8 +67,11 @@ Categorical and Grouping Data
 =============================
 
 For the grouping/categorical columns, you can control how these are read. They can either
-be read as integer codes (which should start at 1 for most graphs), or read as strings. This allows
-for importing a grouping column in either of these formats:
+be read as unsigned integer codes (which can start at 0), or read as strings.
+These are meant for discrete, non-negative values (e.g., group codes, survey responses).
+Columns containing negative numbers or continuous values should be imported as continuous instead.
+
+This allows for importing a grouping column in either of these formats:
 
 | GENDER |
 | --:    |
@@ -109,9 +112,10 @@ in the order that they appear in the file. Because of this, the numeric code ass
 first empty value is encountered in the column. `ColumnWithStringTable::FindMissingDataCode()`
 can be used to find this code after import.
 
-Otherwise, if the file contains integers, then you can import the column as such using
-`CategoricalImportMethod::ReadAsIntegers`. If you want strings to be connected to these
-codes/integers, then this can be done by accessing the column's string table, like so:
+Otherwise, if the file contains unsigned integers (i.e., discrete, non-negative codes),
+then you can import the column as such using `CategoricalImportMethod::ReadAsIntegers`.
+If you want strings to be connected to these codes, then this can be done by accessing
+the column's string table, like so:
 
 ```cpp
 yData->GetCategoricalColumn(0).GetStringTable() =
@@ -120,8 +124,8 @@ yData->GetCategoricalColumn(0).GetStringTable() =
 
 Note that this step is optional, as some graphs only require integer codes for these columns (e.g., Likert charts).
 
-If imported as integers, missing data in the column will be coded to `0` by default.
-This can be overridden by specifying a different code as the third argument to `CategoricalImportInfo`:
+If imported as integers, missing data in the column will be coded to `MISSING_DATA_CODE`
+(`UINT64_MAX`) by default:
 
 ```cpp
 auto patientData = std::make_shared<Data::Dataset>();

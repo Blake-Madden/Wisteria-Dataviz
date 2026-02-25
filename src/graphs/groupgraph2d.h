@@ -153,13 +153,17 @@ namespace Wisteria::Graphs
             m_groupColumn = groupColumnName;
             }
 
-      private:
+        /// @returns The active group IDs
+        ///     (categorical ID mapped to its alphabetical string order index). Basically:\n
+        /// - Key = the categorical group ID (the numeric code from the string table).
+        /// - Value = the alphabetical position of that group's label among all groups.
         [[nodiscard]]
         const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
             {
             return m_groupIds;
             }
 
+      private:
         Wisteria::Icons::IconShape m_defaultLegendShape{ Wisteria::Icons::IconShape::Square };
 
         // cat ID and string order

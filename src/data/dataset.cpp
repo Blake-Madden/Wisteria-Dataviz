@@ -48,10 +48,10 @@ namespace Wisteria::Data
         auto mdCode = FindMissingDataCode();
         if (!mdCode.has_value())
             {
-            GetStringTable().insert(std::make_pair(GetNextKey(), wxEmptyString));
+            GetStringTable().insert(std::make_pair(MISSING_DATA_CODE, wxString{}));
             mdCode = FindMissingDataCode();
             }
-        assert(mdCode && L"Error creating MD code for categorical column!");
+        wxASSERT_MSG(mdCode, L"Error creating MD code for categorical column!");
         if (mdCode.has_value())
             {
             Fill(mdCode.value());
@@ -85,7 +85,7 @@ namespace Wisteria::Data
     //----------------------------------------------
     bool ColumnWithStringTable::IsMissingData(const size_t index) const
         {
-        assert(index < GetRowCount() && L"Invalid index in call to Column::IsMissingData()");
+        wxASSERT_MSG(index < GetRowCount(), L"Invalid index in call to Column::IsMissingData()");
         if (index >= GetRowCount())
             {
             return false;
@@ -142,7 +142,7 @@ namespace Wisteria::Data
             }
 
         // prep target string table
-        constexpr GroupIdType MD_CODE{ 0 };
+        constexpr GroupIdType MD_CODE{ ColumnWithStringTable::MISSING_DATA_CODE };
         targetVar->GetStringTable().clear();
         targetVar->GetStringTable().insert(std::make_pair(MD_CODE, wxString{}));
         std::map<wxString, GroupIdType, wxStringLessNoCase> idMap;
@@ -279,8 +279,8 @@ namespace Wisteria::Data
                 {
                 const auto foundPos = GetStringTable().find(id);
                 // cppcheck-suppress assertWithSideEffect
-                assert(foundPos != GetStringTable().cend() &&
-                       L"Unable to find key in string table!");
+                wxASSERT_MSG(foundPos != GetStringTable().cend(),
+                             L"Unable to find key in string table!");
                 if (foundPos != GetStringTable().cend())
                     {
                     foundPos->second = otherLabel;
@@ -608,7 +608,7 @@ namespace Wisteria::Data
         const wchar_t* const start = input.c_str();
         wchar_t* end{ nullptr };
         const GroupIdType value = std::wcstoull(start, &end, 10);
-        return (start == end) ? 0 : value;
+        return (start == end) ? mdCode : value;
         }
 
     //----------------------------------------------
@@ -734,8 +734,9 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+        wxASSERT_MSG(
+            (!groupColumn || groupId),
+            L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -755,7 +756,7 @@ namespace Wisteria::Data
         // No rows or all empty? Then return a range of empties
         if (GetCategoricalColumnValidN(column, groupColumn, groupId) == 0)
             {
-            return std::make_pair(wxEmptyString, wxEmptyString);
+            return std::make_pair(wxString{}, wxString{});
             }
 
         const auto mdCode =
@@ -772,7 +773,7 @@ namespace Wisteria::Data
             }
         if (strings.empty())
             {
-            return std::make_pair(wxEmptyString, wxEmptyString);
+            return std::make_pair(wxString{}, wxString{});
             }
 
         // if there are strings, then return their min and max
@@ -798,8 +799,9 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetCategoricalColumnValidN()!");
+        wxASSERT_MSG(
+            (!groupColumn || groupId),
+            L"Group ID must be provided if using grouping for GetCategoricalColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -856,8 +858,8 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetContinuousMinMax()!");
+        wxASSERT_MSG((!groupColumn || groupId),
+                     L"Group ID must be provided if using grouping for GetContinuousMinMax()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -911,8 +913,8 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetContinuousMedian()!");
+        wxASSERT_MSG((!groupColumn || groupId),
+                     L"Group ID must be provided if using grouping for GetContinuousMedian()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -964,8 +966,9 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+        wxASSERT_MSG(
+            (!groupColumn || groupId),
+            L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -1016,8 +1019,9 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+        wxASSERT_MSG(
+            (!groupColumn || groupId),
+            L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -1128,7 +1132,8 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::AddCategoricalColumn(const wxString& columnName)
         {
-        assert(!columnName.empty() && L"Column name is empty in call to AddCategoricalColumn()!");
+        wxASSERT_MSG(!columnName.empty(),
+                     L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         if (auto foundColumn = GetCategoricalColumn(columnName);
             foundColumn != GetCategoricalColumns().end())
@@ -1142,8 +1147,10 @@ namespace Wisteria::Data
         // if there are existing rows in the data
         if (GetRowCount() != 0)
             {
-            m_categoricalColumns.back().GetStringTable().insert(std::make_pair(0, wxString{}));
-            m_categoricalColumns.back().Resize(GetRowCount(), 0);
+            m_categoricalColumns.back().GetStringTable().insert(
+                std::make_pair(ColumnWithStringTable::MISSING_DATA_CODE, wxString{}));
+            m_categoricalColumns.back().Resize(GetRowCount(),
+                                               ColumnWithStringTable::MISSING_DATA_CODE);
             }
         }
 
@@ -1151,7 +1158,8 @@ namespace Wisteria::Data
     void Dataset::AddCategoricalColumn(const wxString& columnName,
                                        const ColumnWithStringTable::StringTableType& stringTable)
         {
-        assert(!columnName.empty() && L"Column name is empty in call to AddCategoricalColumn()!");
+        wxASSERT_MSG(!columnName.empty(),
+                     L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         if (auto foundColumn = GetCategoricalColumn(columnName);
             foundColumn != GetCategoricalColumns().end())
@@ -1168,8 +1176,10 @@ namespace Wisteria::Data
             {
             if (stringTable.empty())
                 {
-                m_categoricalColumns.back().GetStringTable().insert(std::make_pair(0, wxString{}));
-                m_categoricalColumns.back().Resize(GetRowCount(), 0);
+                m_categoricalColumns.back().GetStringTable().insert(
+                    std::make_pair(ColumnWithStringTable::MISSING_DATA_CODE, wxString{}));
+                m_categoricalColumns.back().Resize(GetRowCount(),
+                                                   ColumnWithStringTable::MISSING_DATA_CODE);
                 }
             else
                 {
@@ -1398,12 +1408,11 @@ namespace Wisteria::Data
                     break;
                     }
                 if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
-                    // Numbers outside 1-7 probably aren't a discrete code.
-                    // (Don't allow 0 because we use that for the default missing data value
-                    //  for categorical columns.)
+                    // numbers outside 0-7 (or max value provided by client) probably
+                    // aren't a discrete code
                     !is_within(
                         std::make_pair(
-                            1.0, std::max(static_cast<double>(importInfo.m_maxDiscreteValue), 1.0)),
+                            0.0, std::max(static_cast<double>(importInfo.m_maxDiscreteValue), 1.0)),
                         parsedNumber))
                     {
                     currentColumnType = ColumnImportType::Numeric;
@@ -1620,7 +1629,7 @@ namespace Wisteria::Data
             size_t m_index{ 0 };
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
             // cppcheck-suppress unusedStructMember
-            GroupIdType m_mdCode{ 0 };
+            GroupIdType m_mdCode{ ColumnWithStringTable::MISSING_DATA_CODE };
             };
 
         // column index with specialized import method
