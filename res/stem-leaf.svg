@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Larger leaf (right, behind) -->
+  <path d="M128 228 C128 228 108 180 108 140 C108 80 148 40 200 20 C200 20 210 90 210 130 C210 190 170 228 128 228Z" fill="#7DB840"/>
+  <!-- Larger leaf vein -->
+  <path d="M200 20 C180 60 150 120 128 228" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Smaller leaf (left, in front) -->
+  <path d="M118 170 C118 170 100 130 80 110 C50 80 20 70 50 30 C50 30 100 40 120 70 C145 108 138 150 118 170Z" fill="#6BA832"/>
+  <!-- Smaller leaf vein -->
+  <path d="M50 30 C70 55 95 100 118 170" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <!-- Stem -->
+  <rect x="124" y="210" width="6" height="26" rx="3" fill="#6BA832"/>
+</svg>

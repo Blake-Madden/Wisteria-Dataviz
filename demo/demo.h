@@ -39,6 +39,7 @@
 #include "../src/graphs/sankeydiagram.h"
 #include "../src/graphs/scalechart.h"
 #include "../src/graphs/scatterplot.h"
+#include "../src/graphs/stemandleafplot.h"
 #include "../src/graphs/table.h"
 #include "../src/graphs/waffle_chart.h"
 #include "../src/graphs/wcurveplot.h"
@@ -117,7 +118,8 @@ class MyApp final : public wxApp
         ID_NEW_SCALE_CHART,
         ID_NEW_SCATTERPLOT,
         ID_NEW_BUBBLEPLOT,
-        ID_NEW_CHERNOFFPLOT
+        ID_NEW_CHERNOFFPLOT,
+        ID_NEW_STEMANDLEAF
         };
 
   private:

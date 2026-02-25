@@ -54,6 +54,7 @@ SET(WISTERIA_SRC
     src/graphs/sankeydiagram.cpp
     src/graphs/scalechart.cpp
     src/graphs/scatterplot.cpp
+    src/graphs/stemandleafplot.cpp
     src/graphs/table.cpp
     src/graphs/waffle_chart.cpp
     src/graphs/wcurveplot.cpp

@@ -179,6 +179,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SCATTERPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BUBBLEPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CHERNOFFPLOT);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -221,6 +222,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"));
+    fileMenu->Append(MyApp::ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot"));
     fileMenu->Append(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"));
     fileMenu->Append(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"));
     fileMenu->AppendSeparator();
@@ -570,6 +572,69 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->ShowAllPoints(true);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
+    // Stem-and-Leaf Plot
+    else if (event.GetId() == MyApp::ID_NEW_STEMANDLEAF)
+        {
+        subframe->SetTitle(_(L"Stem-and-Leaf Plot"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+
+        wxFileDialog fileDlg(this, _(L"Select Dataset"), wxString{}, wxString{},
+                             Wisteria::Data::Dataset::GetDataFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        try
+            {
+            auto columnInfo = Wisteria::Data::Dataset::ReadColumnInfo(fileDlg.GetPath());
+            auto stemLeafData = std::make_shared<Wisteria::Data::Dataset>();
+
+            Wisteria::UI::VariableSelectDlg selectVarsDlg(
+                this, columnInfo,
+                { Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Continuous variable"))
+                      .SingleSelection(true)
+                      .Required(true),
+                  Wisteria::UI::VariableSelectDlg::VariableListInfo{}
+                      .Label(_(L"Grouping variable (optional, 2 groups)"))
+                      .SingleSelection(true)
+                      .Required(false) });
+            if (selectVarsDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+
+            const auto getOptionalVar = [&](size_t index) -> std::optional<wxString>
+            {
+                const auto vars = selectVarsDlg.GetSelectedVariables(index);
+                return !vars.empty() ? std::optional<wxString>{ vars[0] } : std::nullopt;
+            };
+
+            auto importInfo = Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo);
+            stemLeafData->Import(fileDlg.GetPath(), importInfo);
+
+            auto plot = std::make_shared<Wisteria::Graphs::StemAndLeafPlot>(subframe->m_canvas);
+            plot->SetData(stemLeafData, selectVarsDlg.GetSelectedVariables(0)[0],
+                          getOptionalVar(1));
+            plot->SetCanvasMargins(5, 5, 5, 5);
+
+            subframe->m_canvas->SetFixedObject(0, 0, plot);
+            subframe->m_canvas->SetFixedObject(
+                0, 1,
+                plot->CreateLegend(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(
+                        Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
         }
     // scale chart
     else if (event.GetId() == MyApp::ID_NEW_SCALE_CHART)
@@ -2903,6 +2968,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/boxplot.svg", iconSize),
                      _(L"Box Plot"));
+    toolBar->AddTool(MyApp::ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/stem-leaf.svg", iconSize),
+                     _(L"Stem-and-Leaf Plot"));
     toolBar->AddTool(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap.svg", iconSize),
                      _(L"Heat Map"));
