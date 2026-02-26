@@ -95,6 +95,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
 
         // build stems and leaves
         std::map<int64_t, StemData> stemMap;
+        bool hasRoundedValues{ false };
 
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
@@ -105,6 +106,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
                 }
 
             const auto intVal = static_cast<int64_t>(std::floor(val));
+            if (!hasRoundedValues && val != std::floor(val))
+                {
+                hasRoundedValues = true;
+                }
             const auto stem = intVal / 10;
             const auto leaf = static_cast<int>(std::abs(intVal % 10));
 
@@ -138,6 +143,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
             m_maxLeftLeafCount = std::max(m_maxLeftLeafCount, sd.m_leftLeaves.size());
             m_maxRightLeafCount = std::max(m_maxRightLeafCount, sd.m_rightLeaves.size());
             m_stems.push_back(std::move(sd));
+            }
+
+        // warn about rounding if any values had fractional parts
+        if (hasRoundedValues)
+            {
+            GetCaption().SetText(_(L"Note: values have been rounded down to "
+                                   "whole numbers for this display."));
             }
         }
 
@@ -233,10 +245,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
         // ensure minimum widths for headers
         if (isBackToBack)
             {
-            measuringLabel.SetText(wxString::Format(_(L"Leaf (%s)"), m_leftGroupLabel));
+            const auto italicLeft =
+                wxString::Format(L"<span style='font-style: italic;'>%s</span>", m_leftGroupLabel);
+            const auto italicRight =
+                wxString::Format(L"<span style='font-style: italic;'>%s</span>", m_rightGroupLabel);
+            // TRANSLATORS: %s is the group name in a stem & leaf plot header.
+            measuringLabel.SetText(wxString::Format(_(L"Leaf (%s)"), italicLeft));
+            measuringLabel.EnableMarkup(true);
             leftLeafColWidth = std::max<wxCoord>(
                 leftLeafColWidth, measuringLabel.GetBoundingBox(dc).GetWidth() + padding * 2);
-            measuringLabel.SetText(wxString::Format(_(L"Leaf (%s)"), m_rightGroupLabel));
+            // TRANSLATORS: %s is the group name in a stem & leaf plot header.
+            measuringLabel.SetText(wxString::Format(_(L"Leaf (%s)"), italicRight));
             rightLeafColWidth = std::max<wxCoord>(
                 rightLeafColWidth, measuringLabel.GetBoundingBox(dc).GetWidth() + padding * 2);
             }
@@ -279,8 +298,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
             std::min(safe_divide<double>(drawArea.GetHeight(), naturalHeight), 1.0);
         const auto scaledRowHeight = static_cast<wxCoord>(rowHeight * heightScale);
         const auto scaledHeaderDataGap = static_cast<wxCoord>(headerDataGap * heightScale);
-        const wxCoord totalHeight =
-            scaledRowHeight * static_cast<wxCoord>(m_stems.size() + 1) + scaledHeaderDataGap;
 
         // center the table horizontally in the draw area
         const wxCoord tableX =
@@ -329,6 +346,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
                         fontColor.value_or(Colors::ColorContrast::BlackOrWhiteContrast(bgColor)))
                     .Anchoring(Anchoring::TopLeftCorner)
                     .AnchorPoint(cellRect.GetTopLeft()));
+            label->EnableMarkup(true);
             label->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
             label->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
             label->SetBoundingBox(cellRect, dc, GetScaling());
@@ -360,8 +378,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
 
         // column X positions
         wxCoord leftLeafX{ tableX };
-        wxCoord stemX{ tableX };
-        wxCoord rightLeafX{ tableX };
+        wxCoord stemX{};
+        wxCoord rightLeafX{};
 
         if (isBackToBack)
             {
@@ -380,12 +398,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
 
         if (isBackToBack)
             {
-            addHeaderLabel(wxString::Format(_(L"Leaf (%s)"), m_leftGroupLabel),
+            const auto italicLeftHeader =
+                wxString::Format(L"<span style='font-style: italic;'>%s</span>", m_leftGroupLabel);
+            const auto italicRightHeader =
+                wxString::Format(L"<span style='font-style: italic;'>%s</span>", m_rightGroupLabel);
+            // TRANSLATORS: %s is the group name in a stem & leaf plot header.
+            addHeaderLabel(wxString::Format(_(L"Leaf (%s)"), italicLeftHeader),
                            wxRect(leftLeafX, headerY, scaledLeftWidth, scaledRowHeight),
                            GetLeafHeaderColor(), GetLeafHeaderFontColor());
             addHeaderLabel(_(L"Stem"), wxRect(stemX, headerY, scaledStemWidth, scaledRowHeight),
                            GetStemHeaderColor(), GetStemHeaderFontColor());
-            addHeaderLabel(wxString::Format(_(L"Leaf (%s)"), m_rightGroupLabel),
+            // TRANSLATORS: %s is the group name in a stem & leaf plot header.
+            addHeaderLabel(wxString::Format(_(L"Leaf (%s)"), italicRightHeader),
                            wxRect(rightLeafX, headerY, scaledRightWidth, scaledRowHeight),
                            GetLeafHeaderColor(), GetLeafHeaderFontColor());
             }
@@ -449,8 +473,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
                 }
 
             addDataLabel(std::to_wstring(sd.m_stem),
-                         wxRect(stemX + columnPadding, currentY,
-                                scaledStemWidth - columnPadding * 2, scaledRowHeight),
+                         wxRect(stemX, currentY, scaledStemWidth, scaledRowHeight),
                          PageHorizontalAlignment::Centered, GetStemValueFontColor());
 
             addDataLabel(FormatLeaves(sd.m_rightLeaves),
@@ -574,7 +597,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
                 wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 2 },
                 wxColour{ 0, 0, 0, 0 });
             }
-
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;

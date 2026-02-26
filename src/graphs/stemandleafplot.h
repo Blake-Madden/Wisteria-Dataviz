@@ -248,13 +248,13 @@ namespace Wisteria::Graphs
         size_t m_maxRightLeafCount{ 0 };
 
         // header colors
-        wxColour m_stemHeaderColor{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#25B2A7") };
+        wxColour m_stemHeaderColor{ Colors::ColorBrewer::GetColor(Colors::Color::CafeAuLait) };
         wxColour m_leafHeaderColor{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#74B447") };
 
         std::optional<wxColour> m_stemHeaderFontColor{ *wxWHITE };
         std::optional<wxColour> m_leafHeaderFontColor{ *wxWHITE };
-        std::optional<wxColour> m_stemValueFontColor{ Colors::ColorBrewer::CSS_HEX_TO_LONG(
-            L"#25B2A7") };
+        std::optional<wxColour> m_stemValueFontColor{ Colors::ColorBrewer::GetColor(
+            Colors::Color::CafeAuLait) };
         std::optional<wxColour> m_leafValueFontColor{ Colors::ColorBrewer::CSS_HEX_TO_LONG(
             L"#74B447") };
         };
