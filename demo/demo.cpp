@@ -35,7 +35,9 @@ WisteriaArtProvider::WisteriaArtProvider()
     m_idFileMap = { { L"ID_CONTINUOUS", L"scale.svg" },
                     { L"ID_CATEGORICAL", L"categorical.svg" },
                     { L"ID_DISCRETE", L"discrete.svg" },
-                    { L"ID_DATE", L"date.svg" } };
+                    { L"ID_DATE", L"date.svg" },
+                    { L"ID_DICHOTOMOUS_CATEGORICAL", L"dichotomous-categorical.svg" },
+                    { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" } };
     }
 
 //-------------------------------------------

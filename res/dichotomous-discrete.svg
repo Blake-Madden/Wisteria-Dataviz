@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Dichotomous discrete: 0 upper-left, 1 lower-right -->
+
+  <!-- Upper-left circle with "0" -->
+  <circle cx="72" cy="72" r="48" fill="#5c6bc0" stroke="#707070" stroke-width="3"/>
+  <text x="72" y="88" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff" text-anchor="middle">0</text>
+
+  <!-- Lower-right circle with "1" -->
+  <circle cx="184" cy="184" r="48" fill="#5c6bc0" stroke="#707070" stroke-width="3"/>
+  <text x="184" y="200" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff" text-anchor="middle">1</text>
+</svg>

@@ -193,6 +193,10 @@ namespace Wisteria::UI
                               .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
         m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DATE").GetBitmap(
             wxSize{ FromDIP(16), FromDIP(16) }));
+        m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DICHOTOMOUS_CATEGORICAL")
+                              .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
+        m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DICHOTOMOUS_DISCRETE")
+                              .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
         m_mainVarlist->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
         for (const auto& [name, type] : m_columnInfo)
             {
@@ -208,9 +212,17 @@ namespace Wisteria::UI
                 {
                 m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 2);
                 }
-            else if (type == Data::Dataset::ColumnImportType::String)
+            else if (type == Data::Dataset::ColumnImportType::Date)
                 {
                 m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 3);
+                }
+            else if (type == Data::Dataset::ColumnImportType::DichotomousString)
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 4);
+                }
+            else if (type == Data::Dataset::ColumnImportType::DichotomousDiscrete)
+                {
+                m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 5);
                 }
             else
                 {

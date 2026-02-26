@@ -1211,11 +1211,13 @@ namespace Wisteria::Data
         std::vector<Data::ImportInfo::DateImportInfo> dateInfo;
         for (const auto& colInfo : previewInfo)
             {
-            if (colInfo.second == Data::Dataset::ColumnImportType::Discrete)
+            if (colInfo.second == Data::Dataset::ColumnImportType::Discrete ||
+                colInfo.second == Data::Dataset::ColumnImportType::DichotomousDiscrete)
                 {
                 catInfo.push_back({ colInfo.first, CategoricalImportMethod::ReadAsIntegers });
                 }
-            else if (colInfo.second == Data::Dataset::ColumnImportType::String)
+            else if (colInfo.second == Data::Dataset::ColumnImportType::String ||
+                     colInfo.second == Data::Dataset::ColumnImportType::DichotomousString)
                 {
                 catInfo.push_back({ colInfo.first, CategoricalImportMethod::ReadAsStrings });
                 }
@@ -1298,8 +1300,10 @@ namespace Wisteria::Data
         lily_of_the_valley::text_preview preview;
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
+        const size_t totalFileRowCount =
+            preview(fileText.wc_str(), delimiter, false, false, importInfo.m_skipRows);
         size_t rowCount = std::min<size_t>(
-            preview(fileText.wc_str(), delimiter, false, false, importInfo.m_skipRows),
+            totalFileRowCount,
             rowPreviewCount.has_value() ? (rowPreviewCount.value() + 1 /*header*/) : 100);
 
         // see if there are any duplicate column names
@@ -1333,6 +1337,8 @@ namespace Wisteria::Data
             }
 
         const wxLogNull suppressLogMessages;
+        // totalFileRowCount includes the header row, rowCount is data-only
+        const bool readAllRows = (totalFileRowCount > 0 && rowCount + 1 >= totalFileRowCount);
         const wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
         const wxRegEx mdRegex(L"(?i)^(NA|N/A|NULL)$");
         wxDateTime dTime;
@@ -1344,6 +1350,8 @@ namespace Wisteria::Data
             // few rows looks like a string
             ColumnImportType currentColumnType{ ColumnImportType::Discrete };
             std::optional<size_t> minCellLength{ std::nullopt }, maxCellLength{ std::nullopt };
+            std::set<double> distinctDiscreteValues;
+            std::set<wxString, wxStringLessNoCase> distinctStringValues;
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
@@ -1364,6 +1372,15 @@ namespace Wisteria::Data
                 if (currentCell.empty() || mdRegex.Matches(currentCell))
                     {
                     ++mdCount;
+                    continue;
+                    }
+                // already known to be a string column; just collect distinct values
+                if (currentColumnType == ColumnImportType::String)
+                    {
+                    if (distinctStringValues.size() <= 2)
+                        {
+                        distinctStringValues.insert(currentCell);
+                        }
                     continue;
                     }
                 /* "23.06" can be converted to a date, so for that pattern mark it as a
@@ -1405,7 +1422,20 @@ namespace Wisteria::Data
                 if (std::isnan(parsedNumber))
                     {
                     currentColumnType = ColumnImportType::String;
-                    break;
+                    if (readAllRows && distinctStringValues.size() <= 2)
+                        {
+                        distinctStringValues.insert(currentCell);
+                        }
+                    if (!readAllRows)
+                        {
+                        break;
+                        }
+                    continue;
+                    }
+                if (currentColumnType == ColumnImportType::Discrete &&
+                    distinctDiscreteValues.size() <= 2)
+                    {
+                    distinctDiscreteValues.insert(parsedNumber);
                     }
                 if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
                     // numbers outside 0-7 (or max value provided by client) probably
@@ -1430,6 +1460,23 @@ namespace Wisteria::Data
                 {
                 currentColumnType = ColumnImportType::String;
                 }
+
+            // If all rows in the file were scanned and exactly two distinct
+            // non-missing values were found, reclassify as dichotomous.
+            if (readAllRows)
+                {
+                if (currentColumnType == ColumnImportType::Discrete &&
+                    distinctDiscreteValues.size() == 2)
+                    {
+                    currentColumnType = ColumnImportType::DichotomousDiscrete;
+                    }
+                else if (currentColumnType == ColumnImportType::String &&
+                         distinctStringValues.size() == 2)
+                    {
+                    currentColumnType = ColumnImportType::DichotomousString;
+                    }
+                }
+
             // silently ignore columns with no name (missing header)
             if (!preview.get_header_names().at(colIndex).empty())
                 {

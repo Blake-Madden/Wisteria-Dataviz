@@ -1011,10 +1011,14 @@ namespace Wisteria::Data
         /// @details This is used by ReadColumnInfo().
         enum class ColumnImportType
             {
-            String,   /*!< %Column is text.*/
-            Discrete, /*!< %Column is integral (small range, representing codes).*/
-            Numeric,  /*!< %Column is floating point or wide range of integers.*/
-            Date      /*!< %Column is a date.*/
+            String,             /*!< %Column is text.*/
+            Discrete,           /*!< %Column is integral (small range, representing codes).*/
+            Numeric,            /*!< %Column is floating point or wide range of integers.*/
+            Date,               /*!< %Column is a date.*/
+            DichotomousString,  /*!< %Column is text with exactly two distinct values.
+                                     Only deduced when all rows are scanned.*/
+            DichotomousDiscrete /*!< %Column is integral with exactly two distinct values.
+                                     Only deduced when all rows are scanned.*/
             };
 
         /// @brief The names and data types of columns in a dataset.
