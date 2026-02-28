@@ -42,16 +42,6 @@ Basic
 | ![](docs/images/clock.svg) | ![](docs/images/pizza.svg) |
 | ![](docs/images/coffee.svg) |  |
 
-| Scatter Plot (Wisteria::Graphs::ScatterPlot) | Bubble Plot (Wisteria::Graphs::BubblePlot) |
-| :-------------- | :-------------------------------- |
-| ![](docs/images/scatterplot.svg) | ![](docs/images/bubbleplot.svg) |
-
-| Chernoff Faces (Female) (Wisteria::Graphs::ChernoffFacesPlot) | Chernoff Faces (Male) (Wisteria::Graphs::ChernoffFacesPlot) |
-| :-------------- | :-------------------------------- |
-| ![](docs/images/chernoff-female.svg) | ![](docs/images/chernoff-male.svg) |
-
-Fully customizable with options for skin tone, hair color, and hair style!
-
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
 | ![](docs/images/TableMajors.svg) |
@@ -93,6 +83,20 @@ Statistical
 | Discrete Heat Map (Wisteria::Graphs::HeatMap) | Grouped Discrete Heat Map (Wisteria::Graphs::HeatMap) |
 | :-------------- | :-------------------------------- |
 | ![](docs/images/Heatmap.svg) | ![](docs/images/HeatmapGrouped.svg) |
+
+| Scatter Plot (Wisteria::Graphs::ScatterPlot) | Bubble Plot (Wisteria::Graphs::BubblePlot) |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/scatterplot.svg) | ![](docs/images/bubbleplot.svg) |
+
+| Chernoff Faces (Female) (Wisteria::Graphs::ChernoffFacesPlot) | Chernoff Faces (Male) (Wisteria::Graphs::ChernoffFacesPlot) |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/chernoff-female.svg) | ![](docs/images/chernoff-male.svg) |
+
+Fully customizable with options for skin tone, hair color, and hair style!
+
+| Stem & Leaf Plot (Wisteria::Graphs::StemAndLeafPlot) | Stem & Leaf Plot (Back-to-back) (Wisteria::Graphs::StemAndLeafPlot) |
+| :-------------- | :-------------------------------- |
+| ![](docs/images/stem-leaf.svg) | ![](docs/images/stem-leaf-grouped.svg) |
 
 Survey Data
 -----------------------------

@@ -26,7 +26,7 @@ namespace Wisteria::Graphs
 
          | Single Series   | Back-to-Back |
          | :-------------- | :----------- |
-         | @image html stem-leaf.svg width=90% | @image html stem-leaf.svg width=90% |
+         | @image html stem-leaf.svg width=90% | @image html stem-leaf-grouped.svg width=90% |
 
         @par %Data:
          This plot accepts a Data::Dataset where a continuous column provides

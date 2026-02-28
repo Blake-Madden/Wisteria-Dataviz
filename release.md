@@ -3,6 +3,7 @@
 ## 1.1.1 Release
 
 - New graph type: Chernoff Faces Plot
+- New graph type: Stem & Leaf Plot
 - Added basic CSS markup support to labels
 - Added new shapes:
     - Tractor
