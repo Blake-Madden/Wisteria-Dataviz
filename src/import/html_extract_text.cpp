@@ -1012,9 +1012,21 @@ namespace lily_of_the_valley
                 }
             // this tag should not be count if it is really just part of a bigger tag
             // (e.g., "color" will not count if what we are really on is "bgcolor")
-            if ((std::iswspace(foundTag[-1]) != 0) || (foundTag[-1] == L';'))
+            if (foundTag[-1] == L';')
                 {
                 return foundTag;
+                }
+            if (std::iswspace(foundTag[-1]) != 0)
+                {
+                // also verify the character after the match isn't continuing
+                // the attribute name (e.g., "office:value" vs. "office:value-type")
+                const wchar_t* afterMatch = std::next(foundTag, tag.length());
+                if (afterMatch >= elementEnd || *afterMatch == L'=' || *afterMatch == L' ' ||
+                    *afterMatch == L'>' || *afterMatch == L'\'' || *afterMatch == L'"' ||
+                    *afterMatch == L':')
+                    {
+                    return foundTag;
+                    }
                 }
             foundTag += tag.length();
             }

@@ -2388,5 +2388,122 @@ TEST_CASE("HTML Parser Unquoted Attributes With Trailing Quote", "[html import]"
         }
     }
 
+TEST_CASE("find_tag prefix attribute boundary", "[html][find_tag]")
+    {
+    SECTION("Exact attribute name is found")
+        {
+        // "office:value" should match when followed by '='
+        const wchar_t* text =
+            L"table:table-cell office:value-type=\"float\" office:value=\"42\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        // should point to the standalone "office:value", not "office:value-type"
+        CHECK(std::wstring_view(result, 12) == L"office:value");
+        CHECK(result[12] == L'=');
+        }
+
+    SECTION("Prefix attribute is not matched when longer name exists first")
+        {
+        // when "office:value-type" comes before "office:value",
+        // searching for "office:value" must skip past the longer name
+        const wchar_t* text =
+            L"cell office:value-type=\"float\" office:value=\"7\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        // must point to the second occurrence (after "float\" ")
+        CHECK(result == std::next(text, 31));
+        CHECK(result[12] == L'=');
+        }
+
+    SECTION("Returns null when only the longer prefixed attribute exists")
+        {
+        const wchar_t* text = L"cell office:value-type=\"float\">";
+        CHECK(html_extract_text::find_tag(text, L"office:value", false) == nullptr);
+        }
+
+    SECTION("Exact match at end of element")
+        {
+        const wchar_t* text = L"cell office:value=\"99\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        CHECK(result[12] == L'=');
+        }
+
+    SECTION("Attribute name followed by space then equals")
+        {
+        const wchar_t* text = L"cell office:value =\"99\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        CHECK(result[12] == L' ');
+        }
+
+    SECTION("Attribute name followed by closing bracket")
+        {
+        // valueless attribute at end of tag
+        const wchar_t* text = L"input disabled>";
+        const wchar_t* result = html_extract_text::find_tag(text, L"disabled", false);
+        REQUIRE(result != nullptr);
+        CHECK(result[8] == L'>');
+        }
+
+    SECTION("Original bgcolor vs color test still works")
+        {
+        const wchar_t* text =
+            L"body bgcolor='#FF0000' color='#FF0000'>there";
+        // "color" must not match "bgcolor"
+        CHECK(html_extract_text::find_tag(text, L"color", false) == std::next(text, 23));
+        CHECK(html_extract_text::find_tag(text, L"bgcolor", false) == std::next(text, 5));
+        }
+
+    SECTION("Null and empty inputs")
+        {
+        CHECK(html_extract_text::find_tag(nullptr, L"value", false) == nullptr);
+        const wchar_t* text = L"cell office:value=\"1\">";
+        CHECK(html_extract_text::find_tag(text, L"", false) == nullptr);
+        }
+
+    SECTION("Multiple prefixed attributes before the real one")
+        {
+        // two longer names precede the exact match
+        const wchar_t* text =
+            L"cell office:value-type=\"float\" office:value-format=\"#.0\""
+            L" office:value=\"42\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        CHECK(result[12] == L'=');
+        CHECK(std::wstring_view(std::next(result, 14), 2) == L"42");
+        }
+
+    SECTION("Tab as whitespace between attributes")
+        {
+        const wchar_t* text =
+            L"cell\toffice:value-type=\"float\"\toffice:value=\"5\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        CHECK(result[12] == L'=');
+        CHECK(std::wstring_view(std::next(result, 14), 1) == L"5");
+        }
+
+    SECTION("Suffix check with multiple attributes no quoted mode")
+        {
+        // same prefix problem, verifying the fix works under normal (non-quoted) mode
+        const wchar_t* text =
+            L"cell office:value-type=\"float\" office:value=\"9\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"office:value", false);
+        REQUIRE(result != nullptr);
+        CHECK(result[12] == L'=');
+        CHECK(std::wstring_view(std::next(result, 14), 1) == L"9");
+        }
+
+    SECTION("Attribute name is entire element name at position zero")
+        {
+        // foundTag == text path; the element name itself matches the search tag
+        const wchar_t* text = L"color=\"red\">";
+        const wchar_t* result = html_extract_text::find_tag(text, L"color", false);
+        REQUIRE(result != nullptr);
+        CHECK(result == text);
+        }
+    }
+
 // NOLINTEND
 // clang-format on
