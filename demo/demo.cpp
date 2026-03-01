@@ -1254,8 +1254,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 return;
                 }
 
-            scatterData->ImportCSV(fileDlg.GetPath(),
-                                   Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
+            scatterData->Import(fileDlg.GetPath(),
+                                Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
 
             const auto groupingCols = selectVarsDlg.GetSelectedVariables(2);
             auto scatterPlot = std::make_shared<Wisteria::Graphs::ScatterPlot>(subframe->m_canvas);
@@ -1325,8 +1325,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 return;
                 }
 
-            bubbleData->ImportCSV(fileDlg.GetPath(),
-                                  Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
+            bubbleData->Import(fileDlg.GetPath(),
+                               Wisteria::Data::Dataset::ImportInfoFromPreview(columnInfo));
 
             const auto groupingCols = selectVarsDlg.GetSelectedVariables(3);
             auto bubblePlot = std::make_shared<Wisteria::Graphs::BubblePlot>(subframe->m_canvas);
@@ -1437,7 +1437,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 {
                 importInfo.IdColumn(idCol.value());
                 }
-            chernoffData->ImportCSV(fileDlg.GetPath(), importInfo);
+            chernoffData->Import(fileDlg.GetPath(), importInfo);
 
             auto chernoffPlot =
                 std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(subframe->m_canvas);
