@@ -15,10 +15,11 @@ Each dataset property will contain the following properties (loaded in the follo
   - `"tsv"`: A tab-delimited text file.
   - `"csv"`: A comma-delimited text file.
   - `"xlsx"`: An *Excel* worksheet.
+  - `"ods"`: An *OpenDocument Spreadsheet* worksheet.
 - `"skip-rows"`: The number of rows to skip in the file before parsing the text.
 - `"continuous-md-recode-value"`: The numeric value used to substitute missing data in continuous columns. \
   This property is optional.
-- `"worksheet"`: If importing an *Excel* worksheet, the name or 1-based index of the worksheet.
+- `"worksheet"`: If importing an *Excel* or *ODS* worksheet, the name or 1-based index of the worksheet.
 - `"md-codes"`: An array of string values to import as missing data during the import. \
   This property is optional.
 - `"treat-leading-zeros-as-text"`: Whether to import numeric columns with leading zeros as text. \
@@ -66,8 +67,9 @@ Each dataset property will contain the following properties (loaded in the follo
   - `"format"`: If `"parser"` is set to `"strptime-format"`,
     then this is the user-defined format to parse with.
 
-  The `"parser"` and `"format"` options are ignored if importing an *Excel* file.
-  *Excel* stores dates and times as serial dates, and these will be converted accordingly.
+  The `"parser"` and `"format"` options are ignored if importing an *Excel* or *ODS* file.
+  *Excel* stores dates and times as serial dates, and *ODS* stores them as ISO 8601 strings;
+  both will be converted accordingly.
 
 ::: {.notesection data-latex=""}
 If no columns are defined, then the importer will import all columns and deduce their types.

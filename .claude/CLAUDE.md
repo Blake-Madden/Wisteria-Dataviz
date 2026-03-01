@@ -80,7 +80,7 @@ GraphItemBase (wxObject)
 ### Typical Workflow
 
 1. Create a `Canvas` and embed it in a wxFrame/wxDialog
-2. Import data into a `Dataset` using `ImportCSV()`, `ImportXLSX()`, etc.
+2. Import data into a `Dataset` using `ImportCSV()`, `ImportExcel()`, `ImportOds()`, etc.
 3. Create a graph (e.g., `LinePlot`, `BarChart`) and call `SetData()` with the dataset
 4. Customize axes, colors, titles via graph methods
 5. Add graph to canvas via `SetFixedObject(row, col, graph)`

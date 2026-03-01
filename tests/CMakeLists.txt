@@ -67,6 +67,8 @@ set(LIB_SRC_FILES
     ../src/import/odt_odp_extract_text.cpp
     ../src/import/markdown_extract_text.cpp
     ../src/import/postscript_extract_text.cpp
+    ../src/import/spreadsheet_extract_text.cpp
+    ../src/import/ods_extract_text.cpp
     ../src/import/xlsx_extract_text.cpp
     ../src/import/rtf_extract_text.cpp)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

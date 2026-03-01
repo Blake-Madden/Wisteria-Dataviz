@@ -1252,6 +1252,11 @@ namespace Wisteria::Data
             Data::ExcelReader xlReader(filePath);
             fileText = xlReader.ReadWorksheet(worksheet);
             }
+        else if (fileExt.CmpNoCase(L"ods") == 0)
+            {
+            Data::OdsReader odsReader(filePath);
+            fileText = odsReader.ReadWorksheet(worksheet);
+            }
         else
             {
             if (wxFile theFile(filePath); !theFile.IsOpened() || !theFile.ReadAll(&fileText))
@@ -1598,6 +1603,14 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::ImportOds(const wxString& filePath,
+                            const std::variant<wxString, size_t>& worksheet, const ImportInfo& info)
+        {
+        Data::OdsReader odsReader(filePath);
+        ImportTextRaw(odsReader.ReadWorksheet(worksheet), info, L'\t');
+        }
+
+    //----------------------------------------------
     void Dataset::ImportTextRaw(const wxString& fileText, const ImportInfo& info,
                                 const wchar_t delimiter)
         {
@@ -1888,6 +1901,11 @@ namespace Wisteria::Data
             {
             Data::ExcelReader xlReader(filePath);
             ImportTextRaw(xlReader.ReadWorksheet(worksheet), info, L'\t');
+            }
+        else if (wxFileName{ filePath }.GetExt().CmpNoCase(L"ods") == 0)
+            {
+            Data::OdsReader odsReader(filePath);
+            ImportTextRaw(odsReader.ReadWorksheet(worksheet), info, L'\t');
             }
         else
             {

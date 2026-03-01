@@ -18,6 +18,7 @@
 #include "../util/donttranslate.h"
 #include "../util/frequencymap.h"
 #include "excelreader.h"
+#include "odsreader.h"
 #include <algorithm>
 #include <cinttypes>
 #include <limits>
@@ -1730,6 +1731,18 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ImportExcel(const wxString& filePath, const std::variant<wxString, size_t>& worksheet,
                          const ImportInfo& info);
+        /** @brief Imports an *ODS* (OpenDocument Spreadsheet) workbook into the dataset.
+            @param filePath The path to the data file.
+            @param worksheet The name or 1-based index of the worksheet.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
+            @throws std::runtime_error If the worksheet can't be read or named columns aren't found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        void ImportOds(const wxString& filePath, const std::variant<wxString, size_t>& worksheet,
+                       const ImportInfo& info);
         /** @brief Exports the dataset to a text file.
             @details Columns are exported in the following order:
                 - ID
@@ -1768,9 +1781,10 @@ namespace Wisteria::Data
         [[nodiscard]]
         static wxString GetDataFileFilter()
             {
-            return _(LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|"
+            return _(LR"(All Data Files (*.txt;*.csv;*.xlsx;*.ods)|*.txt;*.csv;*.xlsx;*.ods|"
                   "Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|"
-                  "Excel Files (*.xlsx)|*.xlsx)");
+                  "Excel Files (*.xlsx)|*.xlsx|"
+                  "OpenDocument Spreadsheet Files (*.ods)|*.ods)");
             }
 
         /// @}

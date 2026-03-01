@@ -2398,6 +2398,10 @@ namespace Wisteria
                         {
                         dataset->ImportExcel(path, worksheet, importDefines);
                         }
+                    else if (importer.CmpNoCase(L"ods") == 0 || fileExt.CmpNoCase(L"ods") == 0)
+                        {
+                        dataset->ImportOds(path, worksheet, importDefines);
+                        }
                     else
                         {
                         throw std::runtime_error(

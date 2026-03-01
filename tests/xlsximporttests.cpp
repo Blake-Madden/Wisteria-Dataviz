@@ -570,123 +570,123 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
               L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
               L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
               L"spécialisée dans les félins Enregistrement des patients dans une clinique "
               L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
               L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
               L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) ==
               L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -1446,123 +1446,123 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
             L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
-        CHECK(ext.get_cell_text(L"A1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
               L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
               L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
               L"spécialisée dans les félins Enregistrement des patients dans une clinique "
               L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
               L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
               L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) ==
               L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -1807,123 +1807,123 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
               L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
               L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
               L"spécialisée dans les félins Enregistrement des patients dans une clinique "
               L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
               L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
               L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) ==
               L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -2172,123 +2172,123 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
             L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
-        CHECK(ext.get_cell_text(L"A1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
               L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
               L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
               L"spécialisée dans les félins Enregistrement des patients dans une clinique "
               L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
               L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
               L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) ==
               L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -2530,118 +2530,118 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique "
                                                L"vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) ==
               L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         }
     }
@@ -2889,116 +2889,116 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) == L"");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
         }
@@ -3242,123 +3242,123 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
               L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
               L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
               L"spécialisée dans les félins Enregistrement des patients dans une clinique "
               L"vétérinaire fictive spécialisée dans les félins Enregistrement des patients dans "
               L"une clinique vétérinaire fictive spécialisée dans les félins Enregistrement des "
               L"patients dans une clinique vétérinaire fictive spécialisée dans les félins");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
         // failed to be read in string table because ill formatted.
-        CHECK(ext.get_cell_text(L"B1", wrk) == L"");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -3606,121 +3606,121 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
             L"s=\"17\" t=\"s\"><v>89</v></c><c r=\"N19\" s=\"17\" t=\"s\"><v>90</v></c><c "
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
-        CHECK(ext.get_cell_text(L"A1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
               L"Enregistrement des patients dans une clinique vétérinaire fictive spécialisée dans "
               L"les félins Enregistrement des patients dans une clinique vétérinaire fictive "
               L"spécialisée dans les félins Enregistrement des patients dans une clinique "
               L"vétérinaire fictive...");
-        CHECK(ext.get_cell_text(L"A3", wrk) == L"Tori");
-        CHECK(ext.get_cell_text(L"A4", wrk) == L"Chesire");
-        CHECK(ext.get_cell_text(L"A5", wrk) == L"Fluffy");
-        CHECK(ext.get_cell_text(L"A6", wrk) == L"Cotton");
-        CHECK(ext.get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
-        CHECK(ext.get_cell_text(L"A8", wrk) == L"Salem");
-        CHECK(ext.get_cell_text(L"A9", wrk) == L"Muffin");
-        CHECK(ext.get_cell_text(L"A10", wrk) == L"Hobbes");
-        CHECK(ext.get_cell_text(L"A11", wrk) == L"Sylvester");
-        CHECK(ext.get_cell_text(L"A12", wrk) == L"Emma Lu");
-        CHECK(ext.get_cell_text(L"A13", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A14", wrk) == L"Chester");
-        CHECK(ext.get_cell_text(L"A15", wrk) == L"Bigglesworth");
-        CHECK(ext.get_cell_text(L"A16", wrk) == L"Napoleon");
-        CHECK(ext.get_cell_text(L"A17", wrk) == L"Angel");
-        CHECK(ext.get_cell_text(L"A18", wrk) == L"Mr. Magoo");
-        CHECK(ext.get_cell_text(L"A19", wrk) == L"Azriel");
-        CHECK(ext.get_cell_text(L"B1", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A6", wrk) == L"Cotton");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A7", wrk) == L"Ms. Isabelle");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A8", wrk) == L"Salem");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A9", wrk) == L"Muffin");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A10", wrk) == L"Hobbes");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A11", wrk) == L"Sylvester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A12", wrk) == L"Emma Lu");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A13", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A14", wrk) == L"Chester");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A15", wrk) == L"Bigglesworth");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A16", wrk) == L"Napoleon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A17", wrk) == L"Angel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A18", wrk) == L"Mr. Magoo");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A19", wrk) == L"Azriel");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B1", wrk) ==
               L"Données fictives visant à illustrer le processus d'empilage.");
-        CHECK(ext.get_cell_text(L"B2", wrk) == L"ID Patient");
-        CHECK(ext.get_cell_text(L"C2", wrk) == L"Age (1998)");
-        CHECK(ext.get_cell_text(L"D2", wrk) == L"Poids (1998)");
-        CHECK(ext.get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
-        CHECK(ext.get_cell_text(L"F2", wrk) == L"Age (1999)");
-        CHECK(ext.get_cell_text(L"G2", wrk) == L"Poids (1999)");
-        CHECK(ext.get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
-        CHECK(ext.get_cell_text(L"I2", wrk) == L"Age (2000)");
-        CHECK(ext.get_cell_text(L"J2", wrk) == L"Poids (2000)");
-        CHECK(ext.get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
-        CHECK(ext.get_cell_text(L"L2", wrk) == L"Robe");
-        CHECK(ext.get_cell_text(L"M2", wrk) == L"Sexe");
-        CHECK(ext.get_cell_text(L"N2", wrk) == L"Race");
-        CHECK(ext.get_cell_text(L"O2", wrk) == L"Commentaires");
-        CHECK(ext.get_cell_text(L"L3", wrk) == L"Blanc et gris");
-        CHECK(ext.get_cell_text(L"L4", wrk) == L"Calico");
-        CHECK(ext.get_cell_text(L"L5", wrk) == L"Blanc et roux");
-        CHECK(ext.get_cell_text(L"L6", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L7", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L8", wrk) == L"Noir");
-        CHECK(ext.get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L10", wrk) == L"Roux et noir");
-        CHECK(ext.get_cell_text(L"L11", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L12", wrk) == L"Noir et blanc");
-        CHECK(ext.get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(ext.get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
-        CHECK(ext.get_cell_text(L"L15", wrk) == L"Sans poils");
-        CHECK(ext.get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
-        CHECK(ext.get_cell_text(L"L17", wrk) == L"Blanc et noir");
-        CHECK(ext.get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
-        CHECK(ext.get_cell_text(L"L19", wrk) == L"Roux");
-        CHECK(ext.get_cell_text(L"M3", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M4", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M5", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M6", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M7", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M8", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M9", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M10", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M11", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M12", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M13", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M14", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M15", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M16", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M17", wrk) == L"FEMELLE");
-        CHECK(ext.get_cell_text(L"M18", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"M19", wrk) == L"MALE");
-        CHECK(ext.get_cell_text(L"N3", wrk) == L"Rex du Devon");
-        CHECK(ext.get_cell_text(L"N4", wrk) == L"Persan");
-        CHECK(ext.get_cell_text(L"N5", wrk) == L"Himalayen");
-        CHECK(ext.get_cell_text(L"N6", wrk) == L"Siamois");
-        CHECK(ext.get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
-        CHECK(ext.get_cell_text(L"N9", wrk) == L"Bleu de Russie");
-        CHECK(ext.get_cell_text(L"N10", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N11", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
-        CHECK(ext.get_cell_text(L"N13", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
-        CHECK(ext.get_cell_text(L"N15", wrk) == L"Sphnyx");
-        CHECK(ext.get_cell_text(L"N16", wrk) == L"Chartreux");
-        CHECK(ext.get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(ext.get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
-        CHECK(ext.get_cell_text(L"N19", wrk) == L"Chat de Goutière");
-        CHECK(ext.get_cell_text(L"O3", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B2", wrk) == L"ID Patient");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"C2", wrk) == L"Age (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"D2", wrk) == L"Poids (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"E2", wrk) == L"Taille Corps (1998)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"F2", wrk) == L"Age (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"G2", wrk) == L"Poids (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"H2", wrk) == L"Taille Corps (1999)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"I2", wrk) == L"Age (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"J2", wrk) == L"Poids (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"K2", wrk) == L"Taille Corps (2000)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L2", wrk) == L"Robe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M2", wrk) == L"Sexe");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N2", wrk) == L"Race");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O2", wrk) == L"Commentaires");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L3", wrk) == L"Blanc et gris");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L4", wrk) == L"Calico");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L5", wrk) == L"Blanc et roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L6", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L7", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L8", wrk) == L"Noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L9", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L10", wrk) == L"Roux et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L18", wrk) == L"Ecailles de tortue");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L19", wrk) == L"Roux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M3", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M4", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M5", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M6", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M7", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M8", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M9", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M10", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M11", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M12", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M13", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M14", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M15", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M16", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M17", wrk) == L"FEMELLE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M18", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"M19", wrk) == L"MALE");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N3", wrk) == L"Rex du Devon");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N4", wrk) == L"Persan");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N5", wrk) == L"Himalayen");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N6", wrk) == L"Siamois");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N7", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N8", wrk) == L"Américan à Poil Court");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N9", wrk) == L"Bleu de Russie");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N10", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N11", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N12", wrk) == L"Terrier Jack Russell");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N13", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N14", wrk) == L"Bobtail Japonais");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
                                                L"plus souvent pour éviter les boules de poils.");
-        CHECK(ext.get_cell_text(L"O5", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O6", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
                                                L"aimer faire tomber les objets au sol.");
-        CHECK(ext.get_cell_text(L"O8", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
-        CHECK(ext.get_cell_text(L"O9", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O10", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O11", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O10", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O11", wrk) ==
               L"La propriétaire se plaint que Sylvester fait ses griffes sur ses meubles. Suggère "
               L"l'achat d'un griffoir.");
-        CHECK(ext.get_cell_text(L"O12", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O12", wrk) ==
               L"Emma est en réalité un chien qui a été apporté pour un contrôle en même temps que "
               L"ses soeurs félines.");
-        CHECK(ext.get_cell_text(L"O13", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O13", wrk) ==
               L"Angel semble très maigre, je recommande une marque spéciale de croquettes au thon "
               L"pour son régime.");
-        CHECK(ext.get_cell_text(L"O14", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O15", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
-        CHECK(ext.get_cell_text(L"O17", wrk) == L"");
-        CHECK(ext.get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
-        CHECK(ext.get_cell_text(L"O19", wrk) ==
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -3966,11 +3966,11 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"$0", wrk) == L"");
-        CHECK(ext.get_cell_text(L"A0", wrk) == L"");
-        CHECK(ext.get_cell_text(L"A", wrk) == L"");
-        CHECK(ext.get_cell_text(L"Z2", wrk) == L"");
-        CHECK(ext.get_cell_text(L"B999", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"$0", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A0", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"Z2", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"B999", wrk) == L"");
         }
     SECTION("Read Sheet Missing String Table")
         {
@@ -4127,7 +4127,7 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(ext.get_cell_text(L"A1", wrk) == L"");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) == L"");
         }
     }
 

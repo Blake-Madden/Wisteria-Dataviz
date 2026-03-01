@@ -23,6 +23,7 @@ SET(WISTERIA_SRC
     ../../src/data/dataset.cpp
     ../../src/data/excelreader.cpp
     ../../src/data/join.cpp
+    ../../src/data/odsreader.cpp
     ../../src/data/pivot.cpp
     ../../src/data/subset.cpp
     ../../src/data/textclassifier.cpp
@@ -66,9 +67,11 @@ SET(WISTERIA_SRC
     ../../src/import/docx_extract_text.cpp
     ../../src/import/html_extract_text.cpp
     ../../src/import/markdown_extract_text.cpp
+    ../../src/import/ods_extract_text.cpp
     ../../src/import/odt_odp_extract_text.cpp
     ../../src/import/postscript_extract_text.cpp
     ../../src/import/rtf_extract_text.cpp
+    ../../src/import/spreadsheet_extract_text.cpp
     ../../src/import/xlsx_extract_text.cpp
     ../../src/ui/app.cpp
     ../../src/ui/controls/htmltablewin.cpp

@@ -22,6 +22,7 @@ SET(WISTERIA_SRC
     src/data/dataset.cpp
     src/data/excelreader.cpp
     src/data/join.cpp
+    src/data/odsreader.cpp
     src/data/pivot.cpp
     src/data/subset.cpp
     src/data/textclassifier.cpp
@@ -62,6 +63,8 @@ SET(WISTERIA_SRC
     src/graphs/wordcloud.cpp
     src/import/html_extract_text.cpp
     src/import/markdown_extract_text.cpp
+    src/import/ods_extract_text.cpp
+    src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/ui/controls/listctrlexcelexporter.cpp
     src/ui/controls/thumbnail.cpp

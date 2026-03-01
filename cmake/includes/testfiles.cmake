@@ -17,6 +17,7 @@ SET(TEST_SRC_FILES
     intsplittests.cpp
     mapstests.cpp
     mdparsetests.cpp
+    odsimporttests.cpp
     odtparsetests.cpp
     postscriptimporttests.cpp
     pptxparsetests.cpp
