@@ -8,6 +8,7 @@
 
 #include "xlsx_extract_text.h"
 #include <algorithm>
+#include <format>
 
 namespace lily_of_the_valley
     {
@@ -502,9 +503,8 @@ namespace lily_of_the_valley
                                             if (dateTimeSepPos == std::wstring::npos)
                                                 {
                                                 // convert to YYYY-MM-DD
-                                                currentCell.set_value(std::to_wstring(year) + L"-" +
-                                                                      std::to_wstring(month) +
-                                                                      L"-" + std::to_wstring(day));
+                                                currentCell.set_value(std::format(
+                                                    L"{}-{:02d}-{:02d}", year, month, day));
                                                 }
                                             else
                                                 {
@@ -529,14 +529,10 @@ namespace lily_of_the_valley
                                                     std::floor(minutesOfHour * 60));
 
                                                 // convert to YYYY-MM-DD HH:MM:SS
-                                                currentCell.set_value(
-                                                    std::to_wstring(year) + L"-" +
-                                                    std::to_wstring(month) + L"-" +
-                                                    std::to_wstring(day) + L" " +
-                                                    std::to_wstring(hourOfDay) + L":" +
-                                                    std::to_wstring(minutesOfHour) + L":" +
-                                                    std::to_wstring(
-                                                        static_cast<int>(secondsFromTime)));
+                                                currentCell.set_value(std::format(
+                                                    L"{}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}", year,
+                                                    month, day, hourOfDay, minutesOfHour,
+                                                    static_cast<int>(secondsFromTime)));
                                                 }
                                             }
                                         else

@@ -37,10 +37,7 @@ namespace Wisteria::Data
             }
 
         // load the styles
-        if (!zipFileText.empty())
-            {
-            zipFileText = archive.ReadTextFile(L"xl/styles.xml");
-            }
+        zipFileText = archive.ReadTextFile(L"xl/styles.xml");
         m_xlsxTextExtractor.read_styles(zipFileText.c_str(), zipFileText.length());
         }
 
