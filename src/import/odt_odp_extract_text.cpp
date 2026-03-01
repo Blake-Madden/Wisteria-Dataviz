@@ -276,7 +276,7 @@ namespace lily_of_the_valley
                     {
                     /* copy over the text from the unterminated < to the currently found
                        < (that we will start from in the next loop*/
-                    parse_raw_text(start, end - start);
+                    parse_raw_text({ start, static_cast<size_t>(end - start) });
                     // set the starting point to the next < that we already found
                     start = end;
                     continue;
@@ -294,7 +294,7 @@ namespace lily_of_the_valley
             // copy over the text between the tags
             if (textSectionFound)
                 {
-                parse_raw_text(end, start - end);
+                parse_raw_text({ end, static_cast<size_t>(start - end) });
                 }
             }
 

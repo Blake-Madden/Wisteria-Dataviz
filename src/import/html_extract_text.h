@@ -873,20 +873,16 @@ namespace lily_of_the_valley
                 what you are searching for is not in quotes.
             @details This is specifically tailored for " and ' type of quotes used
                 for HTML attributes.
-            @param string The string to search in.
-            @param stringSize The length of string to search within.
-            @param strSearch The substring to search for.
-            @param strSearchSize The length of @c strSearch.
+            @param haystack The string to search in.
+            @param needle The substring to search for.
             @returns The pointer of where the character is, or null if not found.*/
         [[nodiscard]]
-        static const wchar_t* stristr_not_quoted(const wchar_t* string, size_t stringSize,
-                                                 const wchar_t* strSearch,
-                                                 size_t strSearchSize) noexcept;
+        static const wchar_t* stristr_not_quoted(std::wstring_view haystack,
+                                                 std::wstring_view needle) noexcept;
         /** @returns The charset from the meta section of an HTML buffer.
-            @param pageContent The meta section to analyze.
-            @param length The length of @c pageContent.*/
+            @param pageContent The meta section to analyze.*/
         [[nodiscard]]
-        static std::string parse_charset(const char* pageContent, size_t length);
+        static std::string parse_charset(std::string_view pageContent);
 
         /// @brief Whether text from `<noscript>` blocks should be included in the results.
         /// @details These are using warning messages that scripting should be enabled
@@ -947,9 +943,8 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::wstring convert_symbol_font_section(const std::wstring_view& symbolFontText);
         /** @brief Parses raw (HTML) text and loads its filtered content into the buffer.
-            @param text The text to parse.
-            @param textSize The size of the text being parsed.*/
-        void parse_raw_text(const wchar_t* text, size_t textSize);
+            @param text The text to parse.*/
+        void parse_raw_text(std::wstring_view text);
 
         /// @brief Resets the metadata (e.g., title, subject, etc.).
         void reset_meta_data() noexcept

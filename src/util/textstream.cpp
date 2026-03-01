@@ -182,7 +182,7 @@ namespace Wisteria
                 // if XML or HTML, then try to read the encoding from the header
                 // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
                 else if (!(srcCharSet =
-                               lily_of_the_valley::html_extract_text::parse_charset(text, length)
+                               lily_of_the_valley::html_extract_text::parse_charset({ text, length })
                                    .c_str())
                               .empty())
                     {

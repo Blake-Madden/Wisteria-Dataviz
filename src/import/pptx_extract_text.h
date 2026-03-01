@@ -165,7 +165,7 @@ namespace lily_of_the_valley
                         start = rowEnd;
                         continue;
                         }
-                    parse_raw_text(start, textEnd - start);
+                    parse_raw_text({ start, static_cast<size_t>(textEnd - start) });
                     }
                 // force bullet points to have two lines between them to show they are
                 // independent of each other

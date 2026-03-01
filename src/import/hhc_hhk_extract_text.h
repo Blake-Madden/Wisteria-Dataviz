@@ -55,7 +55,7 @@ namespace lily_of_the_valley
                         {
                         attribValue =
                             read_attribute_as_string(std::next(start, 6), L"value", false, true);
-                        parse_raw_text(attribValue.c_str(), attribValue.length());
+                        parse_raw_text(attribValue);
                         add_character(L'\n');
                         add_character(L'\n');
                         }

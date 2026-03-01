@@ -14,91 +14,91 @@ TEST_CASE("StrIStr Not Quoted", "[html import]")
     {
     SECTION("Nulls")
         {
-        CHECK(html_extract_text::stristr_not_quoted(nullptr, 0, L"HelLo", 5) == nullptr);
-        CHECK(html_extract_text::stristr_not_quoted(L"HelLo", 5, nullptr, 0) == nullptr);
-        CHECK(html_extract_text::stristr_not_quoted(nullptr, 0, nullptr, 0) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted({}, L"HelLo") == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(L"HelLo", {}) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted({}, {}) == nullptr);
         }
     SECTION("FindFirstItem")
         {
         // should find at the beginning
         const wchar_t* buffer = L"hello, world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"HelLo", 5) == buffer);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"HelLo") == buffer);
         buffer = L"\"\"hello, world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"HelLo", 5) == buffer+2);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"HelLo") == buffer+2);
         buffer = L"\"hello, world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"HelLo", 5) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"HelLo") == nullptr);
         }
     SECTION("Last Item In Sequence String")
         {
         // should find last item in sequence
         const wchar_t* buffer = L"hello, world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+7);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+7);
         buffer = L"hello, \"\"world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+9);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+9);
         buffer = L"hello, \"world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == nullptr);
         buffer = L"\"hello, \"\"world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == nullptr);
         buffer = L"hello, \"world\"";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == nullptr);
         }
     SECTION("Middle Item In Sequence String")
         {
         // should find middle item in sequence
         const wchar_t* buffer = L"hello, world!!! Goodbye, cruel world!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+7);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+7);
         buffer = L"\"hello, \"world!!! Goodbye, cruel world!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+9);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+9);
         buffer = L"hello, \"world!!!\" Goodbye!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == nullptr);
         }
     SECTION("Second Item In Sequence String")
         {
         const wchar_t* buffer = L"hello, \"world!!!\" Goodbye, cruel world!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         buffer = L"hello, \"world!!!\" Goodbye, cruel WORLD!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         buffer = L"hello, \"WORLD!!!\" Goodbye, cruel woRLd";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         }
     SECTION("Second Item In Sequence String Single Quote")
         {
         const wchar_t* buffer = L"hello, \'world!!!\' Goodbye, cruel world!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         buffer = L"hello, \'world!!!\' Goodbye, cruel WORLD!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         buffer = L"hello, \'WORLD!!!\' Goodbye, cruel woRLd";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         }
     SECTION("Item In Mixed Quotes")
         {
         const wchar_t* buffer = L"hello, \'world!!!\" Goodbye, cruel world!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+33);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+33);
         buffer = L"hello, \"wor'ld!!!\" Goodbye, cruel WORLD!";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+34);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+34);
         buffer = L"hello, \"WO'R'LD!!!\" Goodbye, cruel woRLd";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"WORLD", 5) == buffer+35);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"WORLD") == buffer+35);
         }
     SECTION("Item Letter Mix Up")
         {
         const wchar_t* buffer = L"a:r><a:rPr lang=\"en-US\" i=\"1\" smtClean=\"0\"/>";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"smtClean", 8) == buffer+30);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"smtClean") == buffer+30);
         }
     SECTION("Find Nothing")
         {
         // should find nothing and return null
         const wchar_t* buffer = L"hello, world";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"Help", 4) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"Help") == nullptr);
         }
     SECTION("Empty String")
         {
         //should find nothing and return null
-        CHECK(html_extract_text::stristr_not_quoted(L"", 0, L"Hello", 5) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(L"", L"Hello") == nullptr);
         }
     SECTION("Substring Too Big")
         {
         const wchar_t* buffer = L"Hello";
-        CHECK(html_extract_text::stristr_not_quoted(buffer, std::wcslen(buffer), L"Hello World", 11) == nullptr);
+        CHECK(html_extract_text::stristr_not_quoted(buffer, L"Hello World") == nullptr);
         }
     }
 
@@ -1259,31 +1259,31 @@ TEST_CASE("HTML Parser", "[html import]")
         {
         const char* text = "<meta http-equiv=\"Expires\" content=\"Sat, 16 Nov 2002 00:00:01 GMT\" />"
                             "<meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" />";
-        CHECK(html_extract_text::parse_charset(nullptr, 1) == "");
-        CHECK(html_extract_text::parse_charset("nothing in here", 15) == "");
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset({}) == "");
+        CHECK(html_extract_text::parse_charset("nothing in here") == "");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         text = "<meta http-equiv=\"Content-type\" content=\"text/html;charset='utf-8'\" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         text = "<meta http-equiv=\"Content-type\" content=\"text/html;charset= utf-8 \" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         text = "<meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-type\" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         text = "<meta http-equiv=\"Content-type\" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "");
+        CHECK(html_extract_text::parse_charset(text) == "");
         text = "<meta http-equiv=\"Content-type\" /><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         // missing "charset", which is wrong but it happens
         text = "<meta http-equiv=\"Content-type\" content=\"text/html; 'utf-8'\" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         text = "<meta http-equiv=\"Content-type\" content=\"text/html; utf-8\" />";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
+        CHECK(html_extract_text::parse_charset(text) == "utf-8");
         }
     SECTION("Charset XML")
         {
         const char* text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
-        CHECK(html_extract_text::parse_charset(text, strlen(text)) == "UTF-8");
+        CHECK(html_extract_text::parse_charset(text) == "UTF-8");
         const char* text2 = "<?xml version=\"1.0\" standalone=\"yes\"?>";
-        CHECK(html_extract_text::parse_charset(text2, strlen(text2)) == "");
+        CHECK(html_extract_text::parse_charset(text2) == "");
         }
     SECTION("Option List")
         {

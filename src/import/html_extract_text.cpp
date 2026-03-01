@@ -308,8 +308,10 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    void html_extract_text::parse_raw_text(const wchar_t* text, size_t textSize)
+    void html_extract_text::parse_raw_text(const std::wstring_view textView)
         {
+        auto text = textView.data();
+        auto textSize = textView.length();
         /* Note about superscripts and subscripts.
            Some pages apply this to entire paragraphs to make them appear in
            a smaller font, which is what browsers then render them as.
@@ -697,23 +699,24 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    std::string html_extract_text::parse_charset(const char* pageContent, const size_t length)
+    std::string html_extract_text::parse_charset(const std::string_view pageContent)
         {
         std::string charset;
-        if (pageContent == nullptr || length == 0)
+        if (pageContent.empty())
             {
             return charset;
             }
 
-        const char* const end = pageContent + length;
-        const char* start = string_util::strnistr(pageContent, "<meta", (end - pageContent));
+        const char* const end = pageContent.data() + pageContent.length();
+        const char* start =
+            string_util::strnistr(pageContent.data(), "<meta", pageContent.length());
         // No Meta section?
         if (start == nullptr)
             {
             // See if this XML and parse it that way. Otherwise, there is no charset.
-            if (std::strncmp(pageContent, "<?xml", 5) == 0)
+            if (std::strncmp(pageContent.data(), "<?xml", 5) == 0)
                 {
-                const char* encoding = std::strstr(pageContent, "encoding=\"");
+                const char* encoding = std::strstr(pageContent.data(), "encoding=\"");
                 if (encoding != nullptr)
                     {
                     encoding += 10;
@@ -829,30 +832,29 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    const wchar_t* html_extract_text::stristr_not_quoted(const wchar_t* string,
-                                                         const size_t stringSize,
-                                                         const wchar_t* strSearch,
-                                                         const size_t strSearchSize) noexcept
+    const wchar_t* html_extract_text::stristr_not_quoted(const std::wstring_view haystack,
+                                                         const std::wstring_view needle) noexcept
         {
-        if ((string == nullptr) || (strSearch == nullptr) || stringSize == 0 || strSearchSize == 0)
+        if (haystack.empty() || needle.empty())
             {
             return nullptr;
             }
 
+        auto currentPos = haystack.data();
         bool isInsideOfQuotes = false;
         bool isInsideOfSingleQuotes = false;
-        const wchar_t* const endSentinel = string + stringSize;
-        while ((string != nullptr) && (string + strSearchSize <= endSentinel))
+        const wchar_t* const endSentinel = haystack.data() + haystack.length();
+        while ((currentPos != nullptr) && (currentPos + needle.length() <= endSentinel))
             {
             // compare the characters one at a time
             size_t i = 0;
-            for (i = 0; i < strSearchSize; ++i)
+            for (i = 0; i < needle.length(); ++i)
                 {
-                if (string[i] == 0)
+                if (currentPos[i] == 0)
                     {
                     return nullptr;
                     }
-                if (string[i] == 0x22) // double quote
+                if (currentPos[i] == 0x22) // double quote
                     {
                     isInsideOfQuotes = !isInsideOfQuotes;
                     // whether this double quote ends a quote pair or starts a new one, turn this
@@ -862,30 +864,30 @@ namespace lily_of_the_valley
                 // if a single quote already started a quote pair (and this is closing it) or
                 // we are not inside a double quote then count single quotes
                 else if ((!isInsideOfQuotes || isInsideOfSingleQuotes) &&
-                         string[0] == 0x27) // single quote
+                         currentPos[0] == 0x27) // single quote
                     {
                     isInsideOfQuotes = !isInsideOfQuotes;
                     isInsideOfSingleQuotes = true;
                     }
-                if (std::towlower(strSearch[i]) != std::towlower(string[i]))
+                if (std::towlower(needle[i]) != std::towlower(currentPos[i]))
                     {
                     break;
                     }
                 }
             // if the substring loop completed then the substring was found.
-            if (i == strSearchSize)
+            if (i == needle.length())
                 {
                 // make sure we aren't inside quotes--if so, we need to skip it.
                 if (!isInsideOfQuotes)
                     {
-                    return string;
+                    return currentPos;
                     }
 
-                string += strSearchSize;
+                currentPos += needle.length();
                 }
             else
                 {
-                string += i + 1;
+                currentPos += i + 1;
                 }
             }
         return nullptr;
@@ -997,7 +999,8 @@ namespace lily_of_the_valley
             foundTag =
                 allowQuotedTags ?
                     string_util::strnistr<wchar_t>(foundTag, tag.data(), (elementEnd - foundTag)) :
-                    stristr_not_quoted(foundTag, (elementEnd - foundTag), tag.data(), tag.length());
+                    stristr_not_quoted({ foundTag, static_cast<size_t>(elementEnd - foundTag) },
+                                       tag);
             if ((foundTag == nullptr) || (foundTag > elementEnd))
                 {
                 return nullptr;
@@ -1070,13 +1073,13 @@ namespace lily_of_the_valley
             {
             if (include_outer_text)
                 {
-                parse_raw_text(html_text, text_length);
+                parse_raw_text({ html_text, text_length });
                 }
             }
         // if there is text outside the starting < section then just decode it
         else if (start > html_text && include_outer_text)
             {
-            parse_raw_text(html_text, std::min<size_t>((start - html_text), text_length));
+            parse_raw_text({ html_text, std::min<size_t>((start - html_text), text_length) });
             }
         const wchar_t* end = nullptr;
 
@@ -1444,12 +1447,12 @@ namespace lily_of_the_valley
                 end = std::wcschr(start + 1, L'<');
                 if (end == nullptr)
                     {
-                    parse_raw_text(start, endSentinel - start);
+                    parse_raw_text({ start, static_cast<size_t>(endSentinel - start) });
                     break;
                     }
                 /* copy over the text from the unterminated < to the currently found
                    < (that we will start from in the next loop*/
-                parse_raw_text(start, end - start);
+                parse_raw_text({ start, static_cast<size_t>(end - start) });
                 // set the starting point to the next < that we already found
                 start = end;
                 continue;
@@ -1462,7 +1465,7 @@ namespace lily_of_the_valley
                 if ((end == nullptr) || end > endSentinel)
                     {
                     ++m_is_in_preformatted_text_block_stack; // preserve newline formatting
-                    parse_raw_text(start, endSentinel - start);
+                    parse_raw_text({ start, static_cast<size_t>(endSentinel - start) });
                     --m_is_in_preformatted_text_block_stack;
                     break;
                     }
@@ -1683,7 +1686,7 @@ namespace lily_of_the_valley
                     {
                     /* copy over the text from the unterminated < to the currently found
                        < (that we will start from in the next loop*/
-                    parse_raw_text(start, end - start);
+                    parse_raw_text({ start, static_cast<size_t>(end - start) });
                     // set the starting point to the next < that we already found
                     start = end;
                     continue;
@@ -1701,7 +1704,7 @@ namespace lily_of_the_valley
             // cache length before reparsing
             const auto previousLength = get_filtered_text_length();
             // copy over the text between the tags
-            parse_raw_text(end, start - end);
+            parse_raw_text({ end, static_cast<size_t>(start - end) });
             /* Old HTML (or HTML generated from embarrassingly hackneyed WYSIWYG editors) uses the
                "Symbol" font to show various math/Greek symbols (instead of proper entities). So if
                the current block of text is using the font "Symbol," then we will convert it to the
@@ -1760,7 +1763,7 @@ namespace lily_of_the_valley
         // get any text lingering after the last >
         if ((end != nullptr) && end < endSentinel && include_outer_text)
             {
-            parse_raw_text(end, endSentinel - end);
+            parse_raw_text({ end, static_cast<size_t>(endSentinel - end) });
             }
 
         return get_filtered_text();
