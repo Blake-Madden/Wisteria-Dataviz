@@ -711,6 +711,52 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 face.earSize = NormalizeValue(earSizeCol->GetValue(i), erMin, erMax);
                 }
 
+                // check if all mapped columns have missing data for this row
+                {
+                bool allMissing{ !std::isfinite(faceWidthCol->GetValue(i)) };
+                if (allMissing && faceHeightCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(faceHeightCol->GetValue(i));
+                    }
+                if (allMissing && eyeSizeCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(eyeSizeCol->GetValue(i));
+                    }
+                if (allMissing && eyePositionCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(eyePositionCol->GetValue(i));
+                    }
+                if (allMissing && eyebrowSlantCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(eyebrowSlantCol->GetValue(i));
+                    }
+                if (allMissing && pupilPositionCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(pupilPositionCol->GetValue(i));
+                    }
+                if (allMissing && noseSizeCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(noseSizeCol->GetValue(i));
+                    }
+                if (allMissing && mouthWidthCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(mouthWidthCol->GetValue(i));
+                    }
+                if (allMissing && mouthCurvatureCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(mouthCurvatureCol->GetValue(i));
+                    }
+                if (allMissing && faceSaturationCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(faceSaturationCol->GetValue(i));
+                    }
+                if (allMissing && earSizeCol != colsEnd)
+                    {
+                    allMissing = !std::isfinite(earSizeCol->GetValue(i));
+                    }
+                face.allDataMissing = allMissing;
+                }
+
             // get label from ID column if available
             if (GetDataset()->GetIdColumn().GetRowCount() > i)
                 {
@@ -769,16 +815,33 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                safe_divide<int>(cellWidth - faceSize, 2);
                 const auto y = offsetY + static_cast<int>(row) * cellHeight;
 
-                // create face
-                AddObject(std::make_unique<FaceObject>(
-                    GraphItems::GraphItemInfo{}
-                        .Pen(wxNullPen)
-                        .Selectable(true)
-                        .Anchoring(Anchoring::TopLeftCorner)
-                        .AnchorPoint(wxPoint{ x, y }),
-                    m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
-                    m_faceColor, m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
-                    m_hairStyle, m_gender, m_facialHair));
+                if (m_faces[faceIndex].allDataMissing)
+                    {
+                    // show "No data" label centered where the face would be
+                    const auto faceCenterX = x + safe_divide(faceSize, 2);
+                    const auto faceCenterY = y + safe_divide(faceSize, 2);
+                    auto noDataLabel = std::make_unique<GraphItems::Label>(
+                        GraphItems::GraphItemInfo(_(L"No data"))
+                            .Pen(wxNullPen)
+                            .Scaling(GetScaling())
+                            .DPIScaling(GetDPIScaleFactor())
+                            .Anchoring(Anchoring::Center)
+                            .AnchorPoint(wxPoint{ faceCenterX, faceCenterY }));
+                    AddObject(std::move(noDataLabel));
+                    }
+                else
+                    {
+                    // create face
+                    AddObject(std::make_unique<FaceObject>(
+                        GraphItems::GraphItemInfo{}
+                            .Pen(wxNullPen)
+                            .Selectable(true)
+                            .Anchoring(Anchoring::TopLeftCorner)
+                            .AnchorPoint(wxPoint{ x, y }),
+                        m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
+                        m_faceColor, m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
+                        m_hairStyle, m_gender, m_facialHair));
+                    }
 
                 // add label below face if enabled
                 if (m_showLabels && !m_faces[faceIndex].label.empty())

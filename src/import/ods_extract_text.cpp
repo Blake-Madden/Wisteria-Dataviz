@@ -65,17 +65,16 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    void ods_extract_text::operator()(const wchar_t* text, const size_t text_length,
-                                      worksheet& data,
-                                      const std::variant<std::wstring, size_t>& worksheet)
+    void ods_extract_text::operator()(const wchar_t* text, const size_t textLength, worksheet& data,
+                                      const std::variant<std::wstring, size_t>& theWorksheet)
         {
         data.clear();
-        if (text == nullptr || text[0] == 0 || text_length == 0)
+        if (text == nullptr || text[0] == 0 || textLength == 0)
             {
             return;
             }
-        assert(text_length == std::wcslen(text));
-        const wchar_t* const textEnd = text + text_length;
+        assert(textLength == std::wcslen(text));
+        const wchar_t* const textEnd = text + textLength;
 
         // find <office:spreadsheet>
         const wchar_t* spreadsheet =
@@ -107,12 +106,12 @@ namespace lily_of_the_valley
                 html_extract_text::read_attribute_as_string(tableTag, L"table:name", false, true);
 
             bool isMatch{ false };
-            if (const auto* const namePtr = std::get_if<std::wstring>(&worksheet);
+            if (const auto* const namePtr = std::get_if<std::wstring>(&theWorksheet);
                 namePtr != nullptr)
                 {
                 isMatch = (tableName == *namePtr);
                 }
-            else if (const auto* const indexPtr = std::get_if<size_t>(&worksheet);
+            else if (const auto* const indexPtr = std::get_if<size_t>(&theWorksheet);
                      indexPtr != nullptr)
                 {
                 isMatch = (tableIndex == *indexPtr);

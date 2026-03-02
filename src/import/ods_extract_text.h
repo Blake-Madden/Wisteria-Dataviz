@@ -50,10 +50,10 @@ namespace lily_of_the_valley
                 an ODS file, which is a ZIP archive.
             @param text_length The length of the text.
             @param[out] data The data matrix (worksheet) to copy the sheet data into.
-            @param worksheet The worksheet to extract, identified by name or 1-based index.
+            @param theWorksheet The worksheet to extract, identified by name or 1-based index.
             @sa get_worksheet_text().*/
-        void operator()(const wchar_t* text, size_t text_length, worksheet& data,
-                        const std::variant<std::wstring, size_t>& worksheet);
+        void operator()(const wchar_t* text, size_t textLength, worksheet& data,
+                        const std::variant<std::wstring, size_t>& theWorksheet);
 
         /** @returns The list of worksheet names in the ODS file.
             @note You must call read_worksheet_names() first to load these names.*/

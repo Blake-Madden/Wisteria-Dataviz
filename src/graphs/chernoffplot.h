@@ -53,6 +53,8 @@ namespace Wisteria::Graphs
         @par Missing Data:
             - Missing data in the ID column results in no label beneath the face.
             - Missing data in feature columns uses a neutral/default value (0.5).
+              If all data for an observation is missing, however,
+              then the face will not be rendered.
 
         @par Citation:
             Chernoff, Herman.
@@ -473,6 +475,7 @@ namespace Wisteria::Graphs
             double faceSaturation{ DEFAULT_FEATURE_VALUE };
             double earSize{ DEFAULT_FEATURE_VALUE };
             wxString label;
+            bool allDataMissing{ false };
             };
 
         /// @brief A drawable face object.
