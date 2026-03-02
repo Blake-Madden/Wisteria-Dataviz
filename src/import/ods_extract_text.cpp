@@ -384,6 +384,6 @@ namespace lily_of_the_valley
             rowTag = rowEnd;
             }
 
-        fix_jagged_sheet(data);
+        fill_missing_cells(data);
         }
     } // namespace lily_of_the_valley

@@ -123,6 +123,10 @@ namespace lily_of_the_valley
                        std::to_wstring(m_row_position);
                 }
 
+            /// @returns The (1-based) column position of the cell.
+            [[nodiscard]]
+            size_t get_column_position() const noexcept { return m_column_position; }
+
             /// @brief Sets the string value of the cell.
             /// @param value The value for the cell.
             void set_value(const std::wstring& value) { m_value = value; }
@@ -259,12 +263,12 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::pair<column_info, size_t> get_column_and_row_info(const wchar_t* cell_name);
 
-        /** Adds cells to rows with missing cells. This may happen with files missing its
-            dimension specifications and has missing cells in its data section. This should
-            never happen, but just in case we are working with a very ill-formed file we
-            will try to fix it as best we can.
-            @param[in,out] data the Worksheet to correct.*/
-        static void fix_jagged_sheet(worksheet& data);
+        /** @brief Fills in blank cells at any missing column positions across all rows.
+            After parsing, rows may be sparse (e.g., a row with data at columns A, C, E
+            will be missing B and D). This finds the widest row and ensures every row
+            has a cell at every column position, inserting blank cells where needed.
+            @param[in,out] data The worksheet to fill in.*/
+        static void fill_missing_cells(worksheet& data);
 
         /** @brief Splits a cell name into the column name and row number.
             @param cell_name The cell name (e.g., "A2").

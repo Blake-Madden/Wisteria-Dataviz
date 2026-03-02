@@ -4399,81 +4399,17 @@ TEST_CASE("XLSX shared strings", "[xlsx]")
         CHECK(ext.column_index_to_column_name(1430) == L"BBZ");
         CHECK(ext.column_index_to_column_name(16384) == L"XFD");
         }
-    SECTION("Dimension Read")
+    SECTION("Dimension Read No Data")
         {
+        // dimension tag only, no actual row data;
+        // empty rows from pre-allocation should be trimmed
         xlsx_extract_text::worksheet wrk;
         xlsx_extract_text ext{ true };
         const wchar_t* text =
             L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><dimension "
             L"ref=\"A1:O19\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\">";
         ext(text, std::wcslen(text), wrk);
-        CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(wrk.size() == 19);
-        for (size_t i = 0; i < wrk.size(); ++i)
-            {
-            CHECK(wrk[i].size() == 15);
-            auto pos = wrk[i].begin();
-            std::wstringstream cellName;
-            cellName << L"A" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"B" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"C" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"D" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"E" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"F" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"G" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"H" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"I" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"J" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"K" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"L" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"M" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"N" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            cellName.str(L"");
-            cellName << L"O" << i + 1;
-            CHECK(pos->get_name() == cellName.str());
-            ++pos;
-            }
+        CHECK(wrk.empty());
         }
     SECTION("Get ColumnRow Info")
         {
@@ -4511,6 +4447,350 @@ TEST_CASE("XLSX shared strings", "[xlsx]")
         CHECK(xlsx_extract_text::column_index_to_column_name(info.first.m_position) == L"");
         CHECK(info.first.m_position == static_cast<size_t>(-1));
         CHECK(info.second == static_cast<size_t>(-1));
+        }
+    }
+
+TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
+    {
+    SECTION("Currency with Red and entity quotes")
+        {
+        // Style 0 is a currency format whose XML encoding contains &quot;
+        // (which has a 'q' in it) and [RED] (which has a 'd' in it).
+        // Neither should trigger date detection.
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"\\$#,##0_);[RED]&quot;($&quot;#,##0\\)\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        // Worksheet with a cell using style 0 and value 90222
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>90222</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        // should be the raw number, not a date like "2147-01-13"
+        CHECK(wrk[0][0].get_value() == L"90222");
+        }
+    SECTION("Backslash-escaped characters not treated as date markers")
+        {
+        // \\d in a format code is a literal 'd', not a day marker
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"165\" formatCode=\"#,##0.00\\d\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"165\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>500</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"500");
+        }
+    SECTION("Actual date format still detected")
+        {
+        // numFmtId 14 is a built-in date format (m/d/yyyy)
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"14\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>45000</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        // 45000 as a serial date is 2023-03-15
+        CHECK(wrk[0][0].get_value() == L"2023-03-15");
+        }
+    SECTION("Underscore skip-width not treated as date marker")
+        {
+        // _y means "skip width of y", not a year marker
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"166\" formatCode=\"#,##0.00_y\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"166\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>750</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"750");
+        }
+    SECTION("Multiple bracket sections not treated as date")
+        {
+        // [$$-409] and [Red] both in the same format
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"167\" formatCode=\"[$$-409]#,##0;[Red]-[$$-409]#,##0\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"167\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>90222</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"90222");
+        }
+    SECTION("Custom date format with yyyy still detected")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"170\" formatCode=\"yyyy-mm-dd\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"170\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>45000</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"2023-03-15");
+        }
+    }
+
+TEST_CASE("XLSX fill_missing_cells", "[xlsx][fill_missing_cells]")
+    {
+    SECTION("Interior blanks are filled")
+        {
+        // Row 1 has A, B, C; row 2 is missing B2
+        xlsx_extract_text ext{ true };
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:C2\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\"><v>1</v></c>"
+            L"<c r=\"B1\"><v>2</v></c>"
+            L"<c r=\"C1\"><v>3</v></c>"
+            L"</row>"
+            L"<row r=\"2\">"
+            L"<c r=\"A2\"><v>4</v></c>"
+            L"<c r=\"C2\"><v>6</v></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 2);
+        REQUIRE(wrk[0].size() == 3);
+        REQUIRE(wrk[1].size() == 3);
+        CHECK(wrk[1][0].get_value() == L"4");
+        CHECK(wrk[1][1].get_value().empty()); // filled blank at B2
+        CHECK(wrk[1][2].get_value() == L"6");
+        }
+    SECTION("Wide gap: all rows missing multiple interior cells")
+        {
+        // Both rows have data at A and D but are missing B and C.
+        // largestRow (cell count) is 2, but max column position is 4.
+        xlsx_extract_text ext{ true };
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:D2\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\"><v>1</v></c>"
+            L"<c r=\"D1\"><v>4</v></c>"
+            L"</row>"
+            L"<row r=\"2\">"
+            L"<c r=\"A2\"><v>5</v></c>"
+            L"<c r=\"D2\"><v>8</v></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 2);
+        // All 4 columns should be present: A, B (blank), C (blank), D
+        REQUIRE(wrk[0].size() == 4);
+        REQUIRE(wrk[1].size() == 4);
+        CHECK(wrk[0][0].get_value() == L"1");
+        CHECK(wrk[0][1].get_value().empty());
+        CHECK(wrk[0][2].get_value().empty());
+        CHECK(wrk[0][3].get_value() == L"4");
+        CHECK(wrk[1][0].get_value() == L"5");
+        CHECK(wrk[1][1].get_value().empty());
+        CHECK(wrk[1][2].get_value().empty());
+        CHECK(wrk[1][3].get_value() == L"8");
+        }
+    SECTION("All rows same length but missing interior cells")
+        {
+        // Both rows have data at A and C but are missing B
+        xlsx_extract_text ext{ true };
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:C2\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\"><v>1</v></c>"
+            L"<c r=\"C1\"><v>3</v></c>"
+            L"</row>"
+            L"<row r=\"2\">"
+            L"<c r=\"A2\"><v>4</v></c>"
+            L"<c r=\"C2\"><v>6</v></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk[0].size() == 3);
+        REQUIRE(wrk[1].size() == 3);
+        CHECK(wrk[0][0].get_value() == L"1");
+        CHECK(wrk[0][1].get_value().empty()); // filled blank at B1
+        CHECK(wrk[0][2].get_value() == L"3");
+        CHECK(wrk[1][0].get_value() == L"4");
+        CHECK(wrk[1][1].get_value().empty()); // filled blank at B2
+        CHECK(wrk[1][2].get_value() == L"6");
+        }
+    }
+
+TEST_CASE("XLSX rows beyond initial limit grow on demand", "[xlsx][grow]")
+    {
+    SECTION("Row beyond 1000 is still read")
+        {
+        // Dimension says A1:A2000, but only rows 1 and 1500 have data.
+        // Row 1500 is beyond the 1,000 initial allocation and should
+        // be appended via the grow-on-demand path.
+        xlsx_extract_text ext{ true };
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A2000\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\"><v>first</v></c></row>"
+            L"<row r=\"1500\"><c r=\"A1500\"><v>last</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        // Row 1500 grows the data to 1500 rows so it lands at its
+        // correct index. Trailing empty rows are trimmed, but the
+        // empty rows between 1 and 1500 remain.
+        REQUIRE(wrk.size() == 1500);
+        CHECK(wrk[0][0].get_value() == L"first");
+        CHECK(wrk[1499][0].get_value() == L"last");
+        }
+    }
+
+TEST_CASE("XLSX over-allocated rows are trimmed", "[xlsx][trim]")
+    {
+    SECTION("Dimension larger than actual data")
+        {
+        // Simulate a sheet where the dimension says A1:A1000 but only 3 rows have data
+        xlsx_extract_text ext{ true };
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1000\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\"><v>10</v></c></row>"
+            L"<row r=\"2\"><c r=\"A2\"><v>20</v></c></row>"
+            L"<row r=\"3\"><c r=\"A3\"><v>30</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        // Should be trimmed to 3 rows, not 1000
+        CHECK(wrk.size() == 3);
+        CHECK(wrk[0][0].get_value() == L"10");
+        CHECK(wrk[1][0].get_value() == L"20");
+        CHECK(wrk[2][0].get_value() == L"30");
         }
     }
 

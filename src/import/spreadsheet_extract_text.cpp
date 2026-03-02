@@ -174,53 +174,46 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    void spreadsheet_extract_text::fix_jagged_sheet(worksheet& data)
+    void spreadsheet_extract_text::fill_missing_cells(worksheet& data)
         {
         if (data.empty())
             {
             return;
             }
-        // See if the data is jagged and if so see which row has
-        // the most cells (that is what the other rows will be resized to).
-        size_t largestRow = data[0].size();
-        bool isJagged = false;
+        // Find the highest column position across all rows.
+        // This is the true column span, which may be larger than any
+        // row's cell count when interior cells are missing.
+        size_t maxColumnPosition{ 0 };
         for (const auto& datum : data)
             {
-            if (datum.size() != largestRow)
+            if (!datum.empty())
                 {
-                largestRow = std::max(datum.size(), largestRow);
-                isJagged = true;
+                maxColumnPosition = std::max(datum.back().get_column_position(), maxColumnPosition);
                 }
             }
-        // If we have jagged data, then try to fill in the blanks.
-        if (isJagged)
+            // Fill in blank cells at any missing column positions in each row.
             {
             for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
                 {
-                // Missing some cells in the row?
-                // Fill them in with blank ones, based on what cells seem to be missing.
-                if (data[rowCounter].size() < largestRow)
+                for (size_t columnCounter = 0; columnCounter < maxColumnPosition; ++columnCounter)
                     {
-                    for (size_t columnCounter = 0; columnCounter < largestRow; ++columnCounter)
+                    const worksheet_cell currentCell(
+                        column_index_to_column_name(columnCounter + 1) +
+                        std::to_wstring(rowCounter + 1));
+                    const auto cellPos = std::lower_bound(data[rowCounter].begin(),
+                                                          data[rowCounter].end(), currentCell);
+                    // if cell was already in the row, then move on
+                    if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
                         {
-                        const worksheet_cell currentCell(
-                            column_index_to_column_name(columnCounter + 1) +
-                            std::to_wstring(rowCounter + 1));
-                        const auto cellPos = std::lower_bound(data[rowCounter].begin(),
-                                                              data[rowCounter].end(), currentCell);
-                        // if cell was already in the row, then move on
-                        if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
-                            {
-                            continue;
-                            }
-                        if (cellPos != data[rowCounter].end())
-                            {
-                            data[rowCounter].insert(cellPos, currentCell);
-                            }
-                        else
-                            {
-                            data[rowCounter].push_back(currentCell);
-                            }
+                        continue;
+                        }
+                    if (cellPos != data[rowCounter].end())
+                        {
+                        data[rowCounter].insert(cellPos, currentCell);
+                        }
+                    else
+                        {
+                        data[rowCounter].push_back(currentCell);
                         }
                     }
                 }

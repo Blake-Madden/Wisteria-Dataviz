@@ -5,8 +5,10 @@
 - New graph type: Chernoff Faces Plot
 - New graph type: Stem & Leaf Plot
 - Added basic CSS markup support to labels
+- Added OpenDocument Spreadsheet importer
 - Added new shapes:
     - Tractor
+- Improved *Excel* importer performance
 
 ## 1.1.0 Release
 

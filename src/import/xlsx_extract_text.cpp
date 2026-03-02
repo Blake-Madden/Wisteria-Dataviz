@@ -242,24 +242,14 @@ namespace lily_of_the_valley
                     get_column_and_row_info(dimensionRef.substr(colonIndex + 1).c_str());
                 if (dataStart.second < dataEnd.second)
                     {
-                    data.resize(std::min((dataEnd.second - dataStart.second) + 1, EXCEL_MAX_ROWS));
-                    const size_t columnCount =
-                        std::min((dataEnd.first.m_position - dataStart.first.m_position) + 1,
-                                 EXCEL_MAX_COLUMNS);
-                    // fill the rows with empty data cells
-                    // (that will have the column names already set)
-                    if (dataStart.first.m_position <= dataEnd.first.m_position)
-                        {
-                        for (auto rowPos = data.begin(); rowPos != data.end(); ++rowPos)
-                            {
-                            rowPos->resize(columnCount);
-                            for (size_t i = 0; i < columnCount; ++i)
-                                {
-                                rowPos->operator[](i) =
-                                    worksheet_cell(i + 1, (rowPos - data.begin()) + 1);
-                                }
-                            }
-                        }
+                    const size_t rowCount =
+                        std::min((dataEnd.second - dataStart.second) + 1, EXCEL_MAX_ROWS);
+                    // Limit the upfront allocation; the dimension tag can
+                    // exaggerate the actual row count when entire columns are
+                    // formatted (e.g., applying currency to a whole column).
+                    // Rows beyond this are grown on demand during parsing.
+                    constexpr size_t INITIAL_ROW_LIMIT{ 1'000 };
+                    data.resize(std::min(rowCount, INITIAL_ROW_LIMIT));
                     }
                 }
             }
@@ -276,6 +266,11 @@ namespace lily_of_the_valley
             const size_t rowNum = static_cast<size_t>(std::wcstol(
                 html_extract_text::read_attribute_as_string(html_text, L"r", true, false).c_str(),
                 nullptr, 10));
+            // grow on demand so the row lands at its correct index
+            if (rowNum != 0 && rowNum > data.size() && rowNum <= EXCEL_MAX_ROWS)
+                {
+                data.resize(rowNum);
+                }
             worksheet_row& currentRow =
                 (rowNum != 0 && rowNum <= data.size()) ? data[rowNum - 1] : cRow;
             auto cellPos = currentRow.begin();
@@ -505,7 +500,13 @@ namespace lily_of_the_valley
             html_text = rowEnd + 5;
             }
 
-        fix_jagged_sheet(data);
+        // trim trailing empty rows from the initial over-allocation
+        while (!data.empty() && data.back().empty())
+            {
+            data.pop_back();
+            }
+
+        fill_missing_cells(data);
         }
 
     //------------------------------------------------------------------
@@ -578,15 +579,15 @@ namespace lily_of_the_valley
                 {
                     size_t consecutiveM{ 0 };
                     for (size_t i = 0; i < str.length(); ++i)
-                    {
+                        {
                         const auto ch = str[i];
                         // skip bracketed sections (e.g., [Red], [$$-409])
                         if (ch == L'[')
-                        {
+                            {
                             consecutiveM = 0;
                             const auto closeBrace = str.find(L']', i + 1);
-                        if (closeBrace != std::wstring::npos)
-                            {
+                            if (closeBrace != std::wstring::npos)
+                                {
                                 i = closeBrace;
                                 }
                             continue;
@@ -613,7 +614,7 @@ namespace lily_of_the_valley
                                 i = semiPos;
                                 }
                             continue;
-                        }
+                            }
                         // skip backslash-escaped literal characters (e.g., \$)
                         // and underscore skip-width characters (e.g., _))
                         if (ch == L'\\' || ch == L'_')
@@ -621,26 +622,26 @@ namespace lily_of_the_valley
                             consecutiveM = 0;
                             ++i;
                             continue;
-                    }
+                            }
                         // year, day, week, or quarter markers
                         if (ch == L'y' || ch == L'd' || ch == L'w' || ch == L'q')
-                    {
+                            {
                             return true;
                             }
                         // "mmm" means month (single 'm' can be minutes)
                         if (ch == L'm')
-                        {
+                            {
                             ++consecutiveM;
                             if (consecutiveM >= 3)
-                            {
+                                {
                                 return true;
                                 }
                             }
                         else
                             {
                             consecutiveM = 0;
+                            }
                         }
-                    }
                     return false;
                 };
 
