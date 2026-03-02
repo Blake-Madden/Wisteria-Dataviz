@@ -33,7 +33,7 @@ It includes features such as:
 - Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
 - Interface for displaying tabular data
 - Built-in [printing](printing.md), copying, and exporting support
-- Data [importing](importing-data.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
+- Data [importing](importing-data.md) (Excel, OpenDocument Spreadsheet, CSV, tab-delimited, or user-defined delimited files) support
 - Data [transformations](transforming-data.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
 - Data exporting (CSV, tab-delimited, or user-defined delimited files) support
 - [Image](images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers

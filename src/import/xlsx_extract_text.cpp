@@ -572,34 +572,76 @@ namespace lily_of_the_valley
                 {
                 const wchar_t* stringTag = customNumberFormats;
 
-                // strip [] and "" sections from the format string
-                // ("these are literal strings and color formatting codes")
-                const auto stripFormatString = [](std::wstring& str)
+                // single-pass check for date markers, skipping literal and
+                // non-format sections in the format code
+                const auto isDateFormat = [](const std::wstring& str) noexcept
                 {
-                    //[]
+                    size_t consecutiveM{ 0 };
+                    for (size_t i = 0; i < str.length(); ++i)
                     {
-                    const auto bracePos = str.find(L'[');
-                    if (bracePos != std::wstring::npos)
+                        const auto ch = str[i];
+                        // skip bracketed sections (e.g., [Red], [$$-409])
+                        if (ch == L'[')
                         {
-                        const auto closeBrace = str.find(L']', bracePos + 1);
+                            consecutiveM = 0;
+                            const auto closeBrace = str.find(L']', i + 1);
                         if (closeBrace != std::wstring::npos)
                             {
-                            str.erase(bracePos, (closeBrace - bracePos) + 1);
+                                i = closeBrace;
+                                }
+                            continue;
                             }
-                        }
-                    }
-                    //""
-                    {
-                    const auto bracePos = str.find(L'"');
-                    if (bracePos != std::wstring::npos)
-                        {
-                        const auto closeBrace = str.find(L'"', bracePos + 1);
-                        if (closeBrace != std::wstring::npos)
+                        // skip quoted sections (e.g., "$", "USD")
+                        if (ch == L'"')
                             {
-                            str.erase(bracePos, (closeBrace - bracePos) + 1);
+                            consecutiveM = 0;
+                            const auto closeQuote = str.find(L'"', i + 1);
+                            if (closeQuote != std::wstring::npos)
+                                {
+                                i = closeQuote;
+                                }
+                            continue;
                             }
+                        // skip XML entities (e.g., &quot;, &amp;);
+                        // read_attribute does not decode these
+                        if (ch == L'&')
+                            {
+                            consecutiveM = 0;
+                            const auto semiPos = str.find(L';', i + 1);
+                            if (semiPos != std::wstring::npos)
+                                {
+                                i = semiPos;
+                                }
+                            continue;
+                        }
+                        // skip backslash-escaped literal characters (e.g., \$)
+                        // and underscore skip-width characters (e.g., _))
+                        if (ch == L'\\' || ch == L'_')
+                            {
+                            consecutiveM = 0;
+                            ++i;
+                            continue;
+                    }
+                        // year, day, week, or quarter markers
+                        if (ch == L'y' || ch == L'd' || ch == L'w' || ch == L'q')
+                    {
+                            return true;
+                            }
+                        // "mmm" means month (single 'm' can be minutes)
+                        if (ch == L'm')
+                        {
+                            ++consecutiveM;
+                            if (consecutiveM >= 3)
+                            {
+                                return true;
+                                }
+                            }
+                        else
+                            {
+                            consecutiveM = 0;
                         }
                     }
+                    return false;
                 };
 
                 while ((stringTag != nullptr) && stringTag < endTag)
@@ -614,16 +656,9 @@ namespace lily_of_the_valley
                                                        stringTag, L"numFmtId", false, false)
                                                        .c_str(),
                                                    nullptr, 10);
-                    std::wstring formatStr = html_extract_text::read_attribute_as_string(
+                    const std::wstring formatStr = html_extract_text::read_attribute_as_string(
                         stringTag, L"formatCode", false, false);
-                    stripFormatString(formatStr);
-                    // Custom format is some sort of date if it contains
-                    // year, day, week, or quarter markers OR
-                    // "mmm" which means month usually when day isn't included.
-                    // (You can't simply look for 'm' as that can be minute when
-                    // the format is just a time.)
-                    if (formatStr.find_first_of(L"ydwq") != std::wstring::npos ||
-                        formatStr.find(L"mmm") != std::wstring::npos)
+                    if (isDateFormat(formatStr))
                         {
                         dateFormatIds.insert(fmtId);
                         }
