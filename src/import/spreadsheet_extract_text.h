@@ -125,7 +125,10 @@ namespace lily_of_the_valley
 
             /// @returns The (1-based) column position of the cell.
             [[nodiscard]]
-            size_t get_column_position() const noexcept { return m_column_position; }
+            size_t get_column_position() const noexcept
+                {
+                return m_column_position;
+                }
 
             /// @brief Sets the string value of the cell.
             /// @param value The value for the cell.
