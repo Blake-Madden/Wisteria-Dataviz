@@ -7,8 +7,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "variableselectdlg.h"
+#include <set>
+#include <tuple>
 #include <wx/artprov.h>
 #include <wx/gbsizer.h>
+#include <wx/statbmp.h>
 #include <wx/stattext.h>
 #include <wx/wupdlock.h>
 
@@ -308,6 +311,46 @@ namespace Wisteria::UI
         for (size_t i = 1; i < rowsNeeded; i += 2)
             {
             varsSizer->AddGrowableRow(i);
+            }
+
+            // build a legend showing only the variable types actually in the main list
+            {
+            std::set<Data::Dataset::ColumnImportType> usedTypes;
+            for (const auto& [name, type] : m_columnInfo)
+                {
+                usedTypes.insert(type);
+                }
+
+            const std::tuple<Data::Dataset::ColumnImportType, wxString, wxString> typeLegend[] = {
+                { Data::Dataset::ColumnImportType::Numeric, _(L"Continuous"), L"ID_CONTINUOUS" },
+                { Data::Dataset::ColumnImportType::String, _(L"Categorical"), L"ID_CATEGORICAL" },
+                { Data::Dataset::ColumnImportType::Discrete, _(L"Discrete"), L"ID_DISCRETE" },
+                { Data::Dataset::ColumnImportType::Date, _(L"Date"), L"ID_DATE" },
+                { Data::Dataset::ColumnImportType::DichotomousString,
+                  _(L"Dichotomous (Categorical)"), L"ID_DICHOTOMOUS_CATEGORICAL" },
+                { Data::Dataset::ColumnImportType::DichotomousDiscrete,
+                  _(L"Dichotomous (Discrete)"), L"ID_DICHOTOMOUS_DISCRETE" }
+            };
+
+            const auto iconSize = wxSize{ FromDIP(16), FromDIP(16) };
+            auto* legendSizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(8));
+            for (const auto& [colType, label, artId] : typeLegend)
+                {
+                if (usedTypes.find(colType) == usedTypes.end())
+                    {
+                    continue;
+                    }
+                auto* icon = new wxStaticBitmap(
+                    this, wxID_ANY, wxArtProvider::GetBitmapBundle(artId).GetBitmap(iconSize));
+                legendSizer->Add(icon, wxSizerFlags{}.CenterVertical());
+                legendSizer->Add(new wxStaticText(this, wxID_ANY, label),
+                                 wxSizerFlags{}.CenterVertical());
+                }
+
+            if (legendSizer->GetItemCount() > 0)
+                {
+                mainSizer->Add(legendSizer, wxSizerFlags{}.Border());
+                }
             }
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
