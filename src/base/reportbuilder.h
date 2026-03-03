@@ -48,6 +48,21 @@ namespace Wisteria
             return m_colorMap;
             }
 
+        /// @returns The datasets loaded from the configuration file.
+        [[nodiscard]]
+        const std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase>&
+        GetDatasets() const noexcept
+            {
+            return m_datasets;
+            }
+
+        /// @returns The name of the report.
+        [[nodiscard]]
+        const wxString& GetName() const noexcept
+            {
+            return m_name;
+            }
+
       private:
         using ValuesType = std::variant<wxString, double>;
 

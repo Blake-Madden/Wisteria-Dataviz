@@ -3,9 +3,18 @@
 # Purpose:     Build script for Wisteria Dataviz library and demo project
 # Author:      Blake Madden
 # Created:     2022-01-17
-# Copyright:   (c) 2005-2025 Blake Madden
+# Copyright:   (c) 2005-2026 Blake Madden
 # License:     3-Clause BSD license
 #############################################################################
+
+# Build targets:
+# all: builds the library, demo, application, and documentation targets
+# wisteria: builds the static library (included with ALL)
+# demo: builds the demo application (included with ALL)
+# WisteriaDV: builds the main application (not included with ALL;
+#             build explicitly with: cmake --build . --target WisteriaDV)
+# doxygen-docs: builds the API documentation (included with ALL if Doxygen is found)
+# quarto-docs: builds the JSON syntax documentation (included with ALL if Quarto is found)
 
 # Declare the minimum required CMake version
 cmake_minimum_required(VERSION 3.25)
@@ -258,55 +267,66 @@ if(APPLE)
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.demo")
 endif()
 
-# Build the app (not currently available)
+# Build the app (experimental)
 ########################
-IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteriaapp.cpp")
-    SET(APP_SRC_FILES ${CMAKE_SOURCE_DIR}/app/wisteriaapp.cpp
-        ${CMAKE_SOURCE_DIR}/app/wisteriaview.cpp
-        ${CMAKE_SOURCE_DIR}/app/wisteriadoc.cpp)
+include(${CMAKE_SOURCE_DIR}/cmake/includes/appfiles.cmake)
+set(APP_SRC_FILES ${APP_WISTERIA_SRC}
+    ${CMAKE_SOURCE_DIR}/src/app/wisteriaapp.cpp
+    ${CMAKE_SOURCE_DIR}/src/app/wisteriaview.cpp
+    ${CMAKE_SOURCE_DIR}/src/app/wisteriadoc.cpp)
 
-    IF(WIN32)
-        # Include an RC file and HiDPI manifest for Windows (provided by wxWidgets)
-        SET(wxUSE_DPI_AWARE_MANIFEST 1)
-        LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx.rc)
-        LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
-    ELSEIF(APPLE)
-        # Add an icon for the apple .app file
-        LIST(APPEND APP_SRC_FILES ${CMAKE_SOURCE_DIR}/wisteria-dv.icns)
-    ENDIF()
+if(WIN32)
+    # Include an RC file and HiDPI manifest for Windows (provided by wxWidgets)
+    set(wxUSE_DPI_AWARE_MANIFEST 1)
+    list(APPEND APP_SRC_FILES "${wxWidgets_BASEDIR}/include/wx/msw/wx.rc")
+    list(APPEND APP_SRC_FILES "${wxWidgets_BASEDIR}/include/wx/msw/wx_dpi_aware.manifest")
+elseif(APPLE)
+    # Add an icon for the apple .app file
+    list(APPEND APP_SRC_FILES ${CMAKE_SOURCE_DIR}/wisteria-dv.icns)
+endif()
 
-    # Define the build target for the executable and copy it into the "app" subfolder
-    MESSAGE(STATUS "Configuring the program...")
-    SET(WISTERIA_APP WisteriaDV)
-    ADD_EXECUTABLE(${WISTERIA_APP} WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
-    SET_TARGET_PROPERTIES(${WISTERIA_APP} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app")
+# Define the build target for the executable and copy it into the "app" subfolder
+message(STATUS "Configuring the program...")
+set(WISTERIA_APP WisteriaDV)
+add_executable(${WISTERIA_APP} EXCLUDE_FROM_ALL WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
+set_target_properties(${WISTERIA_APP} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app")
 
-    # Link required libraries to the executable
-    IF(WIN32)
-        TARGET_LINK_LIBRARIES(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
-    ELSEIF(UNIX)
-        FIND_LIBRARY(TBB_LIB tbb)
-        TARGET_LINK_LIBRARIES(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES} ${TBB_LIB})
-    ENDIF()
+# Link required libraries to the executable
+if(WIN32)
+    target_link_libraries(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
+elseif(UNIX)
+    find_library(TBB_LIB tbb)
+    target_link_libraries(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES} ${TBB_LIB})
+endif()
 
-    # Copy resources and datasets into build folder
-    MESSAGE(STATUS "Copying application resources...")
-    ADD_CUSTOM_COMMAND(TARGET ${WISTERIA_APP}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${WISTERIA_APP}>/res)
-    ADD_CUSTOM_COMMAND(TARGET ${WISTERIA_APP}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/datasets $<TARGET_FILE_DIR:${WISTERIA_APP}>/datasets)
+# Zip up the res folder into res.wad
+# Build list of resource files as dependencies so res.wad rebuilds when any change
+file(STRINGS "${CMAKE_SOURCE_DIR}/cmake/includes/resfiles.cmake" RES_FILE_LIST)
+list(TRANSFORM RES_FILE_LIST PREPEND "${CMAKE_SOURCE_DIR}/res/")
 
-    IF(APPLE)
-        SET_TARGET_PROPERTIES(${WISTERIA_APP} PROPERTIES
-            RESOURCE wisteria-dv.icns
-            MACOSX_BUNDLE_ICON_FILE wisteria-dv.icns
-            MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
-            MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.app")
-    ENDIF()
+set(RES_WAD_PATH "${CMAKE_BINARY_DIR}/app/res.wad")
+add_custom_command(OUTPUT "${RES_WAD_PATH}"
+                   COMMAND ${CMAKE_COMMAND} -E tar "cvf"
+                       "${RES_WAD_PATH}"
+                       --format=zip
+                       --files-from="${CMAKE_SOURCE_DIR}/cmake/includes/resfiles.cmake"
+                   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/res"
+                   DEPENDS ${RES_FILE_LIST}
+                   COMMENT "Building application resource bundle...")
+add_custom_target(${WISTERIA_APP}_resources DEPENDS "${RES_WAD_PATH}")
+add_dependencies(${WISTERIA_APP} ${WISTERIA_APP}_resources)
 
-ENDIF()
+# Copy datasets into build folder
+add_custom_command(TARGET ${WISTERIA_APP}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/datasets $<TARGET_FILE_DIR:${WISTERIA_APP}>/datasets)
+
+if(APPLE)
+    set_target_properties(${WISTERIA_APP} PROPERTIES
+        RESOURCE wisteria-dv.icns
+        MACOSX_BUNDLE_ICON_FILE wisteria-dv.icns
+        MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.app")
+endif()

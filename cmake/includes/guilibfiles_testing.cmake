@@ -94,6 +94,7 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/listctrlitemviewdlg.cpp
     ../../src/ui/dialogs/listctrlsortdlg.cpp
     ../../src/ui/dialogs/listdlg.cpp
+    ../../src/ui/dialogs/odspreviewdlg.cpp
     ../../src/ui/dialogs/opacitydlg.cpp
     ../../src/ui/dialogs/printerheaderfooterdlg.cpp
     ../../src/ui/dialogs/radioboxdlg.cpp
