@@ -143,12 +143,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             if (!feature.columnName.empty())
                 {
-                const GraphItems::Label label(
-                    GraphItems::GraphItemInfo(GetFeatureDisplayName(feature.featureId) + L": " +
-                                              feature.columnName)
-                        .Pen(wxNullPen)
-                        .Scaling(labelScaling)
-                        .DPIScaling(GetDPIScaleFactor()));
+                const GraphItems::Label label(GraphItems::GraphItemInfo{
+                    GetFeatureDisplayName(feature.featureId) +
+                    // make long variable names fit more nicely by pushing down to next line
+                    (feature.columnName.length() <= 8 ? L": " : L":\n") + feature.columnName }
+                                                  .Pen(wxNullPen)
+                                                  .Scaling(labelScaling)
+                                                  .DPIScaling(GetDPIScaleFactor()));
                 const auto labelSize = label.GetBoundingBox(dc).GetSize();
 
                 if (feature.leftSide)
@@ -201,7 +202,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             if (!feature.columnName.empty())
                 {
                 const wxString displayName = GetFeatureDisplayName(feature.featureId);
-                const FeatureInfo info{ displayName + L": " + feature.columnName,
+                const FeatureInfo info{ displayName +
+                                            (feature.columnName.length() <= 8 ? L": " : L":\n") +
+                                            feature.columnName,
                                         feature.featureId };
                 if (feature.leftSide)
                     {
@@ -224,17 +227,50 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             return m_rect;
             }
 
-        // position face: if no right features, move face to the right to
-        // give left labels more space
+        // determine uniform label scaling to fit all labels
+        double labelScaling = GetScaling() * 0.6;
+
+        // measure label widths before positioning the face so that the face
+        // can be placed based on actual label sizes (avoids extra whitespace
+        // when left and right labels have different widths)
+        auto measureLabelWidth = [&](const wxString& text, double scaling)
+        {
+            GraphItems::Label lbl(
+                GraphItems::GraphItemInfo{ text }.Pen(wxNullPen).Scaling(scaling).DPIScaling(
+                    GetDPIScaleFactor()));
+            lbl.SetFontColor(m_outlineColor);
+            return lbl.GetBoundingBox(dc).GetWidth();
+        };
+
+        int maxLeftWidth{ 0 };
+        int maxRightWidth{ 0 };
+        for (const auto& feature : leftFeatures)
+            {
+            maxLeftWidth =
+                std::max(maxLeftWidth, measureLabelWidth(feature.labelText, labelScaling));
+            }
+        for (const auto& feature : rightFeatures)
+            {
+            maxRightWidth =
+                std::max(maxRightWidth, measureLabelWidth(feature.labelText, labelScaling));
+            }
+
+        // position face based on measured label widths so that each side
+        // gets only the space it needs
         int faceX{ 0 };
         if (rightFeatures.empty() && !leftFeatures.empty())
             {
             // position face on the right side (with small margin)
             faceX = m_rect.GetRight() - faceWidth - lineGap;
             }
+        else if (!leftFeatures.empty() || !rightFeatures.empty())
+            {
+            // place face right after the left label area
+            faceX = m_rect.GetX() + maxLeftWidth + lineGap;
+            }
         else
             {
-            // center the face horizontally
+            // no labels on either side, center the face
             faceX = m_rect.GetX() + safe_divide<int>(m_rect.GetWidth() - faceWidth, 2);
             }
         const wxRect faceRect(faceX,
@@ -244,30 +280,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // calculate label areas
         const int leftLabelAreaWidth = faceRect.GetX() - m_rect.GetX() - lineGap;
         const int rightLabelAreaWidth = m_rect.GetRight() - faceRect.GetRight() - lineGap;
-
-        // determine uniform label scaling to fit all labels
-        double labelScaling = GetScaling() * 0.6;
-
-        // measure and scale labels to fit
-        auto measureLabelWidth = [&](const wxString& text, double scaling)
-        {
-            GraphItems::Label lbl(
-                GraphItems::GraphItemInfo(text).Pen(wxNullPen).Scaling(scaling).DPIScaling(
-                    GetDPIScaleFactor()));
-            lbl.SetFontColor(m_outlineColor);
-            return lbl.GetBoundingBox(dc).GetWidth();
-        };
-
-        int maxLeftWidth{ 0 };
-        int maxRightWidth{ 0 };
-        for (const auto& f : leftFeatures)
-            {
-            maxLeftWidth = std::max(maxLeftWidth, measureLabelWidth(f.labelText, labelScaling));
-            }
-        for (const auto& f : rightFeatures)
-            {
-            maxRightWidth = std::max(maxRightWidth, measureLabelWidth(f.labelText, labelScaling));
-            }
 
         if (maxLeftWidth > leftLabelAreaWidth && leftLabelAreaWidth > 0)
             {
@@ -366,32 +378,30 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         std::vector<FeatureInfo> otherLeftFeatures;
         bool hasFaceWidth{ false };
         wxString faceWidthLabelText;
-        for (const auto& f : leftFeatures)
+        for (const auto& feature : leftFeatures)
             {
-            if (f.featureId == FeatureId::FaceWidth)
+            if (feature.featureId == FeatureId::FaceWidth)
                 {
                 hasFaceWidth = true;
-                faceWidthLabelText = f.labelText;
+                faceWidthLabelText = feature.labelText;
                 }
             else
                 {
-                otherLeftFeatures.push_back(f);
+                otherLeftFeatures.push_back(feature);
                 }
             }
 
         // always draw "Face width" at the top if present
         if (hasFaceWidth)
             {
-            const auto labelY = m_rect.GetY() + topMargin;
-
             GraphItems::Label label(GraphItems::GraphItemInfo{ faceWidthLabelText }
                                         .Pen(wxNullPen)
                                         .Scaling(labelScaling)
                                         .DPIScaling(GetDPIScaleFactor())
                                         .Padding(0, 4, 0, 0));
             label.SetFontColor(contrastingLabelColor);
-            label.SetAnchoring(Anchoring::BottomLeftCorner);
-            label.SetAnchorPoint(wxPoint(m_rect.GetX(), labelY));
+            label.SetAnchoring(Anchoring::TopLeftCorner);
+            label.SetAnchorPoint(wxPoint(m_rect.GetX(), m_rect.GetY()));
             const auto labelBox = label.GetBoundingBox(dc);
             const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
             const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
@@ -429,7 +439,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                         .Padding(0, 4, 0, 0));
             label.SetFontColor(contrastingLabelColor);
             label.SetAnchoring(Anchoring::BottomLeftCorner);
-            label.SetAnchorPoint(wxPoint(m_rect.GetX(), labelY));
+            label.SetAnchorPoint(wxPoint{ m_rect.GetX(), labelY });
             const auto labelBox = label.GetBoundingBox(dc);
             const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
             const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
@@ -1740,49 +1750,57 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // left side features
         if (!m_faceWidthColumnName.empty())
             {
-            features.push_back({ m_faceWidthColumnName, FeatureId::FaceWidth, true });
+            features.push_back(
+                { TruncateLabel(m_faceWidthColumnName), FeatureId::FaceWidth, true });
             }
         if (!m_faceHeightColumnName.empty())
             {
-            features.push_back({ m_faceHeightColumnName, FeatureId::FaceHeight, true });
+            features.push_back(
+                { TruncateLabel(m_faceHeightColumnName), FeatureId::FaceHeight, true });
             }
         if (!m_eyeSizeColumnName.empty())
             {
-            features.push_back({ m_eyeSizeColumnName, FeatureId::EyeSize, true });
+            features.push_back({ TruncateLabel(m_eyeSizeColumnName), FeatureId::EyeSize, true });
             }
         if (!m_eyePositionColumnName.empty())
             {
-            features.push_back({ m_eyePositionColumnName, FeatureId::EyePosition, true });
+            features.push_back(
+                { TruncateLabel(m_eyePositionColumnName), FeatureId::EyePosition, true });
             }
         if (!m_eyebrowSlantColumnName.empty())
             {
-            features.push_back({ m_eyebrowSlantColumnName, FeatureId::EyebrowSlant, true });
+            features.push_back(
+                { TruncateLabel(m_eyebrowSlantColumnName), FeatureId::EyebrowSlant, true });
             }
         if (!m_pupilPositionColumnName.empty())
             {
-            features.push_back({ m_pupilPositionColumnName, FeatureId::PupilDirection, true });
+            features.push_back(
+                { TruncateLabel(m_pupilPositionColumnName), FeatureId::PupilDirection, true });
             }
 
         // right side features
         if (!m_noseSizeColumnName.empty())
             {
-            features.push_back({ m_noseSizeColumnName, FeatureId::NoseSize, false });
+            features.push_back({ TruncateLabel(m_noseSizeColumnName), FeatureId::NoseSize, false });
             }
         if (!m_mouthWidthColumnName.empty())
             {
-            features.push_back({ m_mouthWidthColumnName, FeatureId::MouthWidth, false });
+            features.push_back(
+                { TruncateLabel(m_mouthWidthColumnName), FeatureId::MouthWidth, false });
             }
         if (!m_mouthCurvatureColumnName.empty())
             {
-            features.push_back({ m_mouthCurvatureColumnName, FeatureId::SmileFrown, false });
+            features.push_back(
+                { TruncateLabel(m_mouthCurvatureColumnName), FeatureId::SmileFrown, false });
             }
         if (!m_faceSaturationColumnName.empty())
             {
-            features.push_back({ m_faceSaturationColumnName, FeatureId::FaceColor, false });
+            features.push_back(
+                { TruncateLabel(m_faceSaturationColumnName), FeatureId::FaceColor, false });
             }
         if (!m_earSizeColumnName.empty())
             {
-            features.push_back({ m_earSizeColumnName, FeatureId::EarSize, false });
+            features.push_back({ TruncateLabel(m_earSizeColumnName), FeatureId::EarSize, false });
             }
 
         legend->SetFeatures(std::move(features));

@@ -487,6 +487,24 @@ namespace Wisteria::Graphs
             @returns The legend for the plot.*/
         virtual std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) = 0;
 
+        /// @returns A label, truncated if it is more than 32 characters.
+        /// @param variableName The variable name to truncate.
+        /// @note This is useful for shortening long variable names being displayed on a legend.
+        [[nodiscard]]
+        static wxString TruncateLabel(wxString variableName)
+            {
+            if (variableName.length() <= 32)
+                {
+                return variableName;
+                }
+            const auto explanationSeparator = variableName.find_first_of(L"([-:");
+            if (explanationSeparator != wxString::npos && explanationSeparator < 31)
+                {
+                return variableName.substr(0, explanationSeparator);
+                }
+            return variableName.substr(0, 31) + L'…';
+            }
+
         /// @returns The image scheme used for various plots (e.g., bar charts and box plots).
         [[nodiscard]]
         const std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>&
