@@ -49,23 +49,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         m_longestWinningStreak = 0;
         m_hadShutoutWins = m_hadShutoutLosses = false;
 
-        const auto wonColIter = data->GetContinuousColumn(wonColumnName);
-        if (wonColIter == data->GetContinuousColumns().cend())
+        const auto wonColIter = data->GetCategoricalColumn(wonColumnName);
+        if (wonColIter == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
                 wxString::Format(_(L"'%s': column not found for graph."), wonColumnName).ToUTF8());
             }
 
-        const auto shutoutColIter = data->GetContinuousColumn(shutoutColumnName);
-        if (shutoutColIter == data->GetContinuousColumns().cend())
+        const auto shutoutColIter = data->GetCategoricalColumn(shutoutColumnName);
+        if (shutoutColIter == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
                 wxString::Format(_(L"'%s': column not found for graph."), shutoutColumnName)
                     .ToUTF8());
             }
 
-        const auto homeGameColIter = data->GetContinuousColumn(homeGameColumnName);
-        if (homeGameColIter == data->GetContinuousColumns().cend())
+        const auto homeGameColIter = data->GetCategoricalColumn(homeGameColumnName);
+        if (homeGameColIter == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
                 wxString::Format(_(L"'%s': column not found for graph."), homeGameColumnName)
@@ -76,8 +76,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         {
             if (postseasonColumnName)
                 {
-                const auto colIter = data->GetContinuousColumn(postseasonColumnName.value());
-                if (colIter == data->GetContinuousColumns().cend())
+                const auto colIter = data->GetCategoricalColumn(postseasonColumnName.value());
+                if (colIter == data->GetCategoricalColumns().cend())
                     {
                     throw std::runtime_error(
                         wxString::Format(_(L"'%s': column not found for graph."),
@@ -87,7 +87,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 m_hasPostseasonData = true;
                 return colIter;
                 }
-            return data->GetContinuousColumns().cend();
+            return data->GetCategoricalColumns().cend();
         }();
 
         const auto seasonColIter = data->GetCategoricalColumn(seasonColumnName);
@@ -157,25 +157,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 break;
                 }
             m_matrix[currentRow].first.m_seasonLabel = seasonColIter->GetValueAsLabel(i);
-            const auto wonVal = wonColIter->GetValue(i);
-            const auto shutoutVal = shutoutColIter->GetValue(i);
-            const auto homeGameVal = homeGameColIter->GetValue(i);
-            if (!std::isfinite(wonVal) || !std::isfinite(shutoutVal) || !std::isfinite(homeGameVal))
+
+            if (wonColIter->IsMissingData(i) || shutoutColIter->IsMissingData(i) ||
+                homeGameColIter->IsMissingData(i))
                 {
                 ++currentColumn;
                 continue;
                 }
-            m_matrix[currentRow].second[currentColumn].m_result = static_cast<GameResult>(wonVal);
-            m_matrix[currentRow].second[currentColumn].m_shutout = static_cast<bool>(shutoutVal);
-            m_matrix[currentRow].second[currentColumn].m_homeGame = static_cast<bool>(homeGameVal);
-            if (postseasonColumnName && postseasonColIter != data->GetContinuousColumns().cend())
+            m_matrix[currentRow].second[currentColumn].m_result =
+                static_cast<GameResult>(wonColIter->GetValue(i));
+            m_matrix[currentRow].second[currentColumn].m_shutout =
+                static_cast<bool>(shutoutColIter->GetValue(i));
+            m_matrix[currentRow].second[currentColumn].m_homeGame =
+                static_cast<bool>(homeGameColIter->GetValue(i));
+            if (postseasonColumnName && postseasonColIter != data->GetCategoricalColumns().cend() &&
+                !postseasonColIter->IsMissingData(i))
                 {
-                const auto postSeasonVal = postseasonColIter->GetValue(i);
-                if (std::isfinite(postSeasonVal))
-                    {
-                    m_matrix[currentRow].second[currentColumn].m_postseason =
-                        static_cast<bool>(postSeasonVal);
-                    }
+                m_matrix[currentRow].second[currentColumn].m_postseason =
+                    static_cast<bool>(postseasonColIter->GetValue(i));
                 }
             m_matrix[currentRow].second[currentColumn].m_valid = true;
 

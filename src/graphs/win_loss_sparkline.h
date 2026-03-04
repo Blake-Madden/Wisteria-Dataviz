@@ -36,7 +36,7 @@ namespace Wisteria::Graphs
 
         @par %Data:
          This plot accepts a Data::Dataset where a categorical column specifies the row labels
-         (e.g., teams' names, or season labels) and continuous (boolean) columns specifying the
+         (e.g., teams' names, or season labels) and categorical (boolean) columns specify the
           outcomes of the games and whether they were home games. (A postseason-game indicator
           column can optionally be included.)
 
@@ -101,7 +101,7 @@ namespace Wisteria::Graphs
             {
             volleyballData->ImportCSV(L"/home/daphne/data/volley-ball.csv",
                 ImportInfo()
-                    .ContinuousColumns({ L"RESULT", L"SHUTOUT", L"HOMEGAME" })
+                    .CategoricalColumns({ L"RESULT", L"SHUTOUT", L"HOMEGAME" })
                     .CategoricalColumns({ { L"SEASON", CategoricalImportMethod::ReadAsStrings } }));
             }
           catch (const std::exception& err)
@@ -141,8 +141,8 @@ namespace Wisteria::Graphs
             @param data The data.
             @param seasonColumnName The season column to split the data by row.\n
                 This will normally be a team's seasons, or multiple teams.
-            @param wonColumnName A boolean column indicating whether the
-                game was won or lost.
+            @param wonColumnName A categorical column indicating whether the
+                game was won or lost. (@c 0, @c 1, @c 2, or be empty.)
             @param shutoutColumnName A boolean column indicating whether one team was
                 held scoreless.
             @param homeGameColumnName A boolean column indicating whether the game was played
@@ -151,7 +151,7 @@ namespace Wisteria::Graphs
                 during the postseason.
             @warning Regarding the season column, the data must be sorted ahead of time
                 (given that ordering is important in a sparkline anyway).
-            @note Boolean columns should be continuous columns that contain
+            @note Boolean columns should be categorical columns that contain
                 @c 0, @c 1, or be empty. (Non-zero values will be read as @c true.)
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
