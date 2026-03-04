@@ -1881,10 +1881,21 @@ namespace Wisteria::Data
         for (size_t i = 0; i < categoricalVars.size(); ++i)
             {
             GetCategoricalColumn(i).GetStringTable().clear();
-            for (const auto& item : categoricalVars.at(i).GetStrings())
+            if (catColumnIndices[i] && catColumnIndices[i].value().m_importMethod ==
+                                           CategoricalImportMethod::ReadAsIntegers)
                 {
+                // Integer columns don't go through StringTableBuilder, so manually
+                // seed the string table with the MD code so FindMissingDataCode() works.
                 GetCategoricalColumn(i).GetStringTable().insert(
-                    std::make_pair(item.second, item.first));
+                    std::make_pair(catColumnIndices[i].value().m_mdCode, wxString{}));
+                }
+            else
+                {
+                for (const auto& item : categoricalVars.at(i).GetStrings())
+                    {
+                    GetCategoricalColumn(i).GetStringTable().insert(
+                        std::make_pair(item.second, item.first));
+                    }
                 }
             }
 
