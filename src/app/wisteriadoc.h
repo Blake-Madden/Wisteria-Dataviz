@@ -21,6 +21,7 @@ class WisteriaDoc : public wxDocument
     WisteriaDoc(const WisteriaDoc&) = delete;
     WisteriaDoc& operator=(const WisteriaDoc&) = delete;
 
+    bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
 
     wxDECLARE_DYNAMIC_CLASS(WisteriaDoc);

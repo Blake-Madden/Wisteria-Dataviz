@@ -20,6 +20,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         return false;
         }
 
+    // hide the main frame when a document window is opened
+    wxGetApp().GetMainFrame()->Hide();
+
     const wxSize windowSize(std::max(wxGetApp().GetMainFrame()->GetClientSize().GetWidth(),
                                      wxGetApp().GetMainFrame()->FromDIP(800)),
                             std::max(wxGetApp().GetMainFrame()->GetClientSize().GetHeight(),
@@ -96,6 +99,13 @@ bool WisteriaView::OnClose(bool deleteWindow)
         m_frame = nullptr;
         }
 
+    // show the main frame when the last document is being closed
+    if (wxGetApp().GetDocumentCount() == 1)
+        {
+        wxGetApp().GetMainFrame()->CenterOnScreen();
+        wxGetApp().GetMainFrame()->Show();
+        }
+
     return true;
     }
 
@@ -123,13 +133,6 @@ void WisteriaView::ShowSideBar(const bool show)
 void WisteriaView::LoadProject()
     {
     const wxString filename = GetDocument()->GetFilename();
-    if (filename.empty())
-        {
-        return;
-        }
-
-    // load the JSON configuration file
-    m_pages = m_reportBuilder.LoadConfigurationFile(filename, m_workArea);
 
     // set up sidebar image list from the app's persistent list
     m_sideBar->SetImageList(wxGetApp().GetProjectSideBarImageList());
@@ -141,13 +144,18 @@ void WisteriaView::LoadProject()
     const wxWindowID dataFolderId = wxNewId();
     wxWindowID nextId = wxNewId();
 
+    if (!filename.empty())
+        {
+        // load the JSON configuration file
+        m_pages = m_reportBuilder.LoadConfigurationFile(filename, m_workArea);
+        }
+
     // add the "Data" folder
     m_sideBar->InsertItem(0, _(L"Data"), dataFolderId, DATA_ICON_INDEX);
 
-    // add datasets as subitems under "Data"
-    const auto& datasets = m_reportBuilder.GetDatasets();
-    for (const auto& [dsName, dataset] : datasets)
+    if (filename.empty())
         {
+        // blank project: add an empty dataset placeholder
         const wxWindowID dsId = nextId;
         nextId = wxNewId();
 
@@ -158,24 +166,56 @@ void WisteriaView::LoadProject()
         m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
         m_workWindows.AddWindow(grid);
 
-        m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId, std::nullopt);
-        }
+        m_sideBar->InsertSubItemById(dataFolderId, _(L"dataset"), dsId, std::nullopt);
 
-    // add pages as top-level folders
-    size_t pageNum = 1;
-    for (auto* canvas : m_pages)
-        {
+        // blank project: add a single empty canvas as Page 1
         const wxWindowID pageId = nextId;
         nextId = wxNewId();
 
-        canvas->SetId(pageId);
+        auto* canvas = new Wisteria::Canvas(m_workArea, pageId);
         canvas->Hide();
         m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
         m_workWindows.AddWindow(canvas);
+        m_pages.push_back(canvas);
 
-        m_sideBar->InsertItem(m_sideBar->GetFolderCount(),
-                              wxString::Format(_(L"Page %zu"), pageNum), pageId, PAGE_ICON_INDEX);
-        ++pageNum;
+        m_sideBar->InsertItem(m_sideBar->GetFolderCount(), _(L"Page 1"), pageId, PAGE_ICON_INDEX);
+        }
+    else
+        {
+        // add datasets as subitems under "Data"
+        const auto& datasets = m_reportBuilder.GetDatasets();
+        for (const auto& [dsName, dataset] : datasets)
+            {
+            const wxWindowID dsId = nextId;
+            nextId = wxNewId();
+
+            auto* grid = new wxGrid(m_workArea, dsId);
+            grid->CreateGrid(0, 0);
+            grid->EnableEditing(false);
+            grid->Hide();
+            m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
+            m_workWindows.AddWindow(grid);
+
+            m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId, std::nullopt);
+            }
+
+        // add pages as top-level folders
+        size_t pageNum = 1;
+        for (auto* canvas : m_pages)
+            {
+            const wxWindowID pageId = nextId;
+            nextId = wxNewId();
+
+            canvas->SetId(pageId);
+            canvas->Hide();
+            m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
+            m_workWindows.AddWindow(canvas);
+
+            m_sideBar->InsertItem(m_sideBar->GetFolderCount(),
+                                  wxString::Format(_(L"Page %zu"), pageNum), pageId,
+                                  PAGE_ICON_INDEX);
+            ++pageNum;
+            }
         }
 
     // expand the Data folder
@@ -213,19 +253,8 @@ void WisteriaView::OnSidebarClick(wxCommandEvent& event)
             }
         }
 
-    // determine which ID was selected
-    const auto [folderId, subItemId] = m_sideBar->GetSelectedSubItemId();
-
-    wxWindowID selectedId = wxID_ANY;
-    if (subItemId.has_value())
-        {
-        selectedId = subItemId.value();
-        }
-    else if (folderId.has_value())
-        {
-        selectedId = folderId.value();
-        }
-
+    // show the window matching the selected sidebar item
+    const wxWindowID selectedId = event.GetInt();
     if (selectedId != wxID_ANY)
         {
         auto* window = m_workWindows.FindWindowById(selectedId);

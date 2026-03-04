@@ -35,9 +35,10 @@ bool WisteriaApp::OnInit()
 
     // create the document template
     [[maybe_unused]]
-    auto* docTemplate = new wxDocTemplate(GetDocManager(), _(L"Wisteria project"), L"*.json",
-                                          wxString{}, L"json", L"Wisteria Doc", L"WisteriaView",
-                                          wxCLASSINFO(WisteriaDoc), wxCLASSINFO(WisteriaView));
+    auto* docTemplate =
+        new wxDocTemplate(GetDocManager(), _(L"Wisteria project"), L"*.json", wxString{}, L"json",
+                          _DT(L"Wisteria Doc"), L"WisteriaView", wxCLASSINFO(WisteriaDoc),
+                          wxCLASSINFO(WisteriaView));
 
     SetAppFileExtension(L"json");
 
@@ -101,9 +102,14 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         ribbon, wxID_ANY, _(L"Home"),
         homeIcon.IsOk() ? homeIcon.GetBitmap(parent->FromDIP(wxSize{ 16, 16 })) : wxBitmap{});
 
-    // Project panel with Open button
+    // Project panel with New and Open buttons
     auto* projectPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Project"));
     auto* projectButtonBar = new wxRibbonButtonBar(projectPanel, wxID_ANY);
+
+    const auto newIcon = GetResourceManager().GetSVG(L"wisteria.svg");
+    projectButtonBar->AddButton(wxID_NEW, _(L"New"),
+                                newIcon.IsOk() ? newIcon.GetBitmap(iconSize) : wxBitmap{},
+                                _(L"Create a new project"));
 
     const auto openIcon = GetResourceManager().GetSVG(L"file-open.svg");
     projectButtonBar->AddButton(wxID_OPEN, _(L"Open"),

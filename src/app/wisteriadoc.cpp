@@ -11,6 +11,18 @@
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaDoc, wxDocument);
 
 //-------------------------------------------
+bool WisteriaDoc::OnNewDocument()
+    {
+    if (!wxDocument::OnNewDocument())
+        {
+        return false;
+        }
+
+    SetTitle(_(L"Untitled"));
+    return true;
+    }
+
+//-------------------------------------------
 bool WisteriaDoc::OnOpenDocument(const wxString& filename)
     {
     SetFilename(filename, true);
