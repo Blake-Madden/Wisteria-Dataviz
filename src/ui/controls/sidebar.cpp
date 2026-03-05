@@ -26,7 +26,15 @@ namespace Wisteria::UI
         // text and any loaded icons.
         m_itemHeight = FromDIP(wxSize(16, 16)).GetHeight() + GetPaddingHeight();
         wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-        wxWindow::SetBackgroundColour(wxColour(200, 211, 231));
+        if (wxSystemSettings::GetAppearance().IsDark())
+            {
+            wxWindow::SetBackgroundColour(wxColour{ 46, 46, 46 });
+            SetParentColour(wxColour{ 31, 31, 31 });
+            }
+        else
+            {
+            wxWindow::SetBackgroundColour(wxColour{ 200, 211, 231 });
+            }
         wxScrollHelper::SetScrollbars(FromDIP(wxSize(30, 30)).GetWidth(),
                                       FromDIP(wxSize(30, 30)).GetHeight(), 0, 0);
         ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
