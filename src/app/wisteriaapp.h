@@ -12,7 +12,9 @@
 #include "../base/version.h"
 #include "../ui/app.h"
 #include "../ui/controls/sidebar.h"
+#include <map>
 #include <vector>
+#include <wx/artprov.h>
 #include <wx/ribbon/art.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
@@ -46,6 +48,28 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     void InitProjectSidebar();
 
     std::vector<wxBitmapBundle> m_projectSideBarImageList;
+    };
+
+/// @brief Extended icon provider, which is connected to the
+///     application's custom icons.
+class WisteriaArtProvider final : public wxArtProvider
+    {
+  public:
+    WisteriaArtProvider();
+
+  protected:
+    [[nodiscard]]
+    wxBitmapBundle CreateBitmapBundle(const wxArtID& id, const wxArtClient& client,
+                                      const wxSize& size) final;
+
+  private:
+    std::map<wxArtID, wxString> m_idFileMap;
+    };
+
+/// @brief Custom command IDs for the application.
+enum
+    {
+    ID_INSERT_DATASET = wxID_HIGHEST + 1
     };
 
 wxDECLARE_APP(WisteriaApp);

@@ -87,6 +87,7 @@ SET(APP_WISTERIA_SRC
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/archivedlg.cpp
+    src/ui/dialogs/datasetimportdlg.cpp
     src/ui/dialogs/excelpreviewdlg.cpp
     src/ui/dialogs/filelistdlg.cpp
     src/ui/dialogs/getdirdlg.cpp

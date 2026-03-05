@@ -15,6 +15,28 @@
 wxIMPLEMENT_APP(WisteriaApp);
 
 //-------------------------------------------
+WisteriaArtProvider::WisteriaArtProvider()
+    {
+    // cppcheck-suppress useInitializationList
+    m_idFileMap = { { L"ID_CONTINUOUS", L"scale.svg" },
+                    { L"ID_CATEGORICAL", L"categorical.svg" },
+                    { L"ID_DISCRETE", L"discrete.svg" },
+                    { L"ID_DATE", L"date.svg" },
+                    { L"ID_DICHOTOMOUS_CATEGORICAL", L"dichotomous-categorical.svg" },
+                    { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" } };
+    }
+
+//-------------------------------------------
+wxBitmapBundle WisteriaArtProvider::CreateBitmapBundle(const wxArtID& id, const wxArtClient& client,
+                                                       const wxSize& size)
+    {
+    const auto filePath = m_idFileMap.find(id);
+    return (filePath != m_idFileMap.cend()) ?
+               wxGetApp().GetResourceManager().GetSVG(filePath->second) :
+               wxArtProvider::CreateBitmapBundle(id, client, size);
+    }
+
+//-------------------------------------------
 bool WisteriaApp::OnInit()
     {
     SetAppName(_WISTERIA_APP_NAME);
@@ -30,6 +52,7 @@ bool WisteriaApp::OnInit()
         }
 
     GetResourceManager().LoadArchive(FindResourceFile(L"res.wad"));
+    wxArtProvider::Push(new WisteriaArtProvider{});
 
     InitProjectSidebar();
 
@@ -126,6 +149,15 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         printButtonBar->AddButton(wxID_PRINT, _(L"Print"),
                                   printIcon.IsOk() ? printIcon.GetBitmap(iconSize) : wxBitmap{},
                                   _(L"Print all pages"));
+
+        // Insert panel
+        auto* insertPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Insert"));
+        auto* insertButtonBar = new wxRibbonButtonBar(insertPanel, wxID_ANY);
+
+        const auto dataIcon = GetResourceManager().GetSVG(L"data.svg");
+        insertButtonBar->AddButton(ID_INSERT_DATASET, _(L"Dataset"),
+                                   dataIcon.IsOk() ? dataIcon.GetBitmap(iconSize) : wxBitmap{},
+                                   _(L"Import a dataset into the project"));
         }
     else
         {

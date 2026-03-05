@@ -8,6 +8,8 @@
 
 #include "wisteriaview.h"
 #include "../base/reportprintout.h"
+#include "../ui/controls/datasetgridtable.h"
+#include "../ui/dialogs/datasetimportdlg.h"
 #include "wisteriaapp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
@@ -68,6 +70,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
+
+    // bind insert dataset button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
+                  ID_INSERT_DATASET);
 
     m_frame->CenterOnScreen();
     if (wxGetApp().GetMainFrame()->IsMaximized())
@@ -140,6 +146,8 @@ void WisteriaView::LoadProject()
     constexpr size_t DATA_ICON_INDEX = 0;
     constexpr size_t PAGE_ICON_INDEX = 1;
 
+    // helper uses member function ApplyColumnHeaderIcons()
+
     // IDs for sidebar items
     const wxWindowID dataFolderId = wxNewId();
     wxWindowID nextId = wxNewId();
@@ -159,9 +167,12 @@ void WisteriaView::LoadProject()
         const wxWindowID dsId = nextId;
         nextId = wxNewId();
 
+        auto emptyDataset = std::make_shared<Wisteria::Data::Dataset>();
+        auto* table = new Wisteria::UI::DatasetGridTable(emptyDataset);
         auto* grid = new wxGrid(m_workArea, dsId);
-        grid->CreateGrid(0, 0);
+        grid->SetTable(table, true);
         grid->EnableEditing(false);
+        ApplyColumnHeaderIcons(grid, table);
         grid->Hide();
         m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
         m_workWindows.AddWindow(grid);
@@ -189,9 +200,11 @@ void WisteriaView::LoadProject()
             const wxWindowID dsId = nextId;
             nextId = wxNewId();
 
+            auto* table = new Wisteria::UI::DatasetGridTable(dataset);
             auto* grid = new wxGrid(m_workArea, dsId);
-            grid->CreateGrid(0, 0);
+            grid->SetTable(table, true);
             grid->EnableEditing(false);
+            ApplyColumnHeaderIcons(grid, table);
             grid->Hide();
             m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
             m_workWindows.AddWindow(grid);
@@ -297,4 +310,98 @@ void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
                          _(L"Print"), wxOK | wxICON_WARNING);
             }
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table)
+    {
+    const auto iconSize = wxSize{ grid->FromDIP(16), grid->FromDIP(16) };
+
+    auto* attrProvider = new Wisteria::UI::DatasetGridAttrProvider();
+    for (int col = 0; col < table->GetNumberCols(); ++col)
+        {
+        wxString svgName;
+        switch (table->GetColumnType(col))
+            {
+        case Wisteria::UI::DatasetGridColumnType::Id:
+            svgName = L"categorical.svg";
+            break;
+        case Wisteria::UI::DatasetGridColumnType::Categorical:
+            svgName = L"categorical.svg";
+            break;
+        case Wisteria::UI::DatasetGridColumnType::Date:
+            svgName = L"date.svg";
+            break;
+        case Wisteria::UI::DatasetGridColumnType::Continuous:
+            svgName = L"scale.svg";
+            break;
+            }
+        const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
+        if (bmpBundle.IsOk())
+            {
+            attrProvider->SetColumnHeaderRenderer(
+                col, Wisteria::UI::DatasetColumnHeaderRenderer(bmpBundle.GetBitmap(iconSize)));
+            }
+        }
+    table->SetAttrProvider(attrProvider);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
+    {
+    wxFileDialog fileDlg(m_frame, _(L"Select Dataset"), wxString{}, wxString{},
+                         Wisteria::Data::Dataset::GetDataFileFilter(),
+                         wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const wxString filePath = fileDlg.GetPath();
+
+    Wisteria::UI::DatasetImportDlg importDlg(m_frame, filePath);
+    if (importDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto dataset = std::make_shared<Wisteria::Data::Dataset>();
+        dataset->Import(filePath, importDlg.GetImportInfo(), importDlg.GetWorksheet());
+
+        const wxString datasetName = wxFileName(filePath).GetName();
+        AddDatasetToProject(dataset, datasetName);
+        }
+    catch (const std::exception& e)
+        {
+        wxMessageBox(wxString::FromUTF8(e.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
+                     m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                                       const wxString& name)
+    {
+    const wxWindowID dsId = wxNewId();
+
+    auto* table = new Wisteria::UI::DatasetGridTable(dataset);
+    auto* grid = new wxGrid(m_workArea, dsId);
+    grid->SetTable(table, true);
+    grid->EnableEditing(false);
+    ApplyColumnHeaderIcons(grid, table);
+    grid->Hide();
+    m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
+    m_workWindows.AddWindow(grid);
+
+    // add as subitem under the "Data" folder (folder index 0)
+    if (m_sideBar->GetFolderCount() > 0)
+        {
+        m_sideBar->InsertSubItemById(m_sideBar->GetFolder(0).GetId(), name, dsId, std::nullopt);
+        }
+
+    m_workArea->Layout();
+    m_sideBar->ResetState();
     }

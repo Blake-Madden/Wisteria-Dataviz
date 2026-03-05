@@ -21,6 +21,11 @@
 #include <wx/splitter.h>
 #include <wx/wx.h>
 
+namespace Wisteria::UI
+    {
+    class DatasetGridTable;
+    }
+
 /// @brief View class for Wisteria Dataviz projects.
 class WisteriaView : public wxView
     {
@@ -66,6 +71,10 @@ class WisteriaView : public wxView
     void LoadProject();
     void OnSidebarClick(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
+    void OnInsertDataset(wxCommandEvent& event);
+    void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                             const wxString& name);
+    void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
 
     wxDocChildFrame* m_frame{ nullptr };
     wxSplitterWindow* m_splitter{ nullptr };
