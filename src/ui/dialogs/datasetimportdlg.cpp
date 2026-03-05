@@ -164,17 +164,21 @@ namespace Wisteria::UI
             auto* table = new DatasetGridTable(m_previewDataset);
             m_previewGrid->SetTable(table, true);
             ApplyColumnHeaderIcons(table);
+            m_previewGrid->AutoSizeColumns();
+            AdjustGridColumnsForIcons();
             m_previewGrid->ForceRefresh();
             }
-        catch (const std::exception& e)
+        catch (const std::exception& exc)
             {
             // on error, show empty grid
             m_previewDataset = std::make_shared<Data::Dataset>();
             auto* table = new DatasetGridTable(m_previewDataset);
             m_previewGrid->SetTable(table, true);
             ApplyColumnHeaderIcons(table);
+            m_previewGrid->AutoSizeColumns();
+            AdjustGridColumnsForIcons();
             m_previewGrid->ForceRefresh();
-            wxLogWarning(L"%s", wxString::FromUTF8(e.what()));
+            wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
             }
         }
 
@@ -209,6 +213,16 @@ namespace Wisteria::UI
                 }
             }
         table->SetAttrProvider(attrProvider);
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::AdjustGridColumnsForIcons()
+        {
+        const int iconOffset = m_previewGrid->FromDIP(16) + 8;
+        for (int col = 0; col < m_previewGrid->GetNumberCols(); ++col)
+            {
+            m_previewGrid->SetColSize(col, m_previewGrid->GetColSize(col) + iconOffset);
+            }
         }
 
     //----------------------------------------------

@@ -73,6 +73,7 @@ namespace Wisteria::UI
         void CreateControls();
         void RefreshPreview();
         void ApplyColumnHeaderIcons(DatasetGridTable* table);
+        void AdjustGridColumnsForIcons();
         void OnOptionChanged(wxCommandEvent& event);
         void OnSpinChanged(wxSpinEvent& event);
 

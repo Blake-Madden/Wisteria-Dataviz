@@ -143,9 +143,6 @@ void WisteriaView::LoadProject()
     // set up sidebar image list from the app's persistent list
     m_sideBar->SetImageList(wxGetApp().GetProjectSideBarImageList());
 
-    constexpr size_t DATA_ICON_INDEX = 0;
-    constexpr size_t PAGE_ICON_INDEX = 1;
-
     // helper uses member function ApplyColumnHeaderIcons()
 
     // IDs for sidebar items
@@ -161,37 +158,7 @@ void WisteriaView::LoadProject()
     // add the "Data" folder
     m_sideBar->InsertItem(0, _(L"Data"), dataFolderId, DATA_ICON_INDEX);
 
-    if (filename.empty())
-        {
-        // blank project: add an empty dataset placeholder
-        const wxWindowID dsId = nextId;
-        nextId = wxNewId();
-
-        auto emptyDataset = std::make_shared<Wisteria::Data::Dataset>();
-        auto* table = new Wisteria::UI::DatasetGridTable(emptyDataset);
-        auto* grid = new wxGrid(m_workArea, dsId);
-        grid->SetTable(table, true);
-        grid->EnableEditing(false);
-        ApplyColumnHeaderIcons(grid, table);
-        grid->Hide();
-        m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
-        m_workWindows.AddWindow(grid);
-
-        m_sideBar->InsertSubItemById(dataFolderId, _(L"dataset"), dsId, std::nullopt);
-
-        // blank project: add a single empty canvas as Page 1
-        const wxWindowID pageId = nextId;
-        nextId = wxNewId();
-
-        auto* canvas = new Wisteria::Canvas(m_workArea, pageId);
-        canvas->Hide();
-        m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
-        m_workWindows.AddWindow(canvas);
-        m_pages.push_back(canvas);
-
-        m_sideBar->InsertItem(m_sideBar->GetFolderCount(), _(L"Page 1"), pageId, PAGE_ICON_INDEX);
-        }
-    else
+    if (!filename.empty())
         {
         // add datasets as subitems under "Data"
         const auto& datasets = m_reportBuilder.GetDatasets();
@@ -205,6 +172,8 @@ void WisteriaView::LoadProject()
             grid->SetTable(table, true);
             grid->EnableEditing(false);
             ApplyColumnHeaderIcons(grid, table);
+            grid->AutoSizeColumns();
+            AdjustGridColumnsForIcons(grid);
             grid->Hide();
             m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
             m_workWindows.AddWindow(grid);
@@ -213,7 +182,7 @@ void WisteriaView::LoadProject()
             }
 
         // add pages as top-level folders
-        size_t pageNum = 1;
+        size_t pageNum{ 1 };
         for (auto* canvas : m_pages)
             {
             const wxWindowID pageId = nextId;
@@ -246,8 +215,8 @@ void WisteriaView::LoadProject()
             {
             firstPage->Show();
             }
-        // select the first page folder (folder index 1, after "Data")
-        m_sideBar->SelectFolder(1, true, false);
+        // select the first page folder
+        m_sideBar->SelectFolder(1, true);
         }
 
     m_workArea->Layout();
@@ -270,14 +239,18 @@ void WisteriaView::OnSidebarClick(wxCommandEvent& event)
     const wxWindowID selectedId = event.GetInt();
     if (selectedId != wxID_ANY)
         {
-        auto* window = m_workWindows.FindWindowById(selectedId);
-        if (window != nullptr)
+        if (auto* window = m_workWindows.FindWindowById(selectedId); window != nullptr)
             {
+            if (window->IsKindOf(wxCLASSINFO(Wisteria::Canvas)))
+                {
+                dynamic_cast<Wisteria::Canvas*>(window)->ResetResizeDelay();
+                }
             window->Show();
             }
         }
 
     m_workArea->Layout();
+    m_sideBar->Refresh();
     }
 
 //-------------------------------------------
@@ -347,6 +320,16 @@ void WisteriaView::ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGri
     }
 
 //-------------------------------------------
+void WisteriaView::AdjustGridColumnsForIcons(wxGrid* grid)
+    {
+    const int iconOffset = grid->FromDIP(16) + 8;
+    for (int col = 0; col < grid->GetNumberCols(); ++col)
+        {
+        grid->SetColSize(col, grid->GetColSize(col) + iconOffset);
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog fileDlg(m_frame, _(L"Select Dataset"), wxString{}, wxString{},
@@ -371,12 +354,11 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
         dataset->Import(filePath, importDlg.GetImportInfo(), importDlg.GetWorksheet());
 
-        const wxString datasetName = wxFileName(filePath).GetName();
-        AddDatasetToProject(dataset, datasetName);
+        AddDatasetToProject(dataset, wxFileName{ filePath }.GetName());
         }
-    catch (const std::exception& e)
+    catch (const std::exception& exc)
         {
-        wxMessageBox(wxString::FromUTF8(e.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
                      m_frame);
         }
     }
@@ -390,18 +372,22 @@ void WisteriaView::AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dat
     auto* table = new Wisteria::UI::DatasetGridTable(dataset);
     auto* grid = new wxGrid(m_workArea, dsId);
     grid->SetTable(table, true);
+    grid->Hide();
     grid->EnableEditing(false);
     ApplyColumnHeaderIcons(grid, table);
-    grid->Hide();
+    grid->AutoSizeColumns();
+    AdjustGridColumnsForIcons(grid);
     m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
     m_workWindows.AddWindow(grid);
 
-    // add as subitem under the "Data" folder (folder index 0)
+    // add as subitem under the "Data" folder
     if (m_sideBar->GetFolderCount() > 0)
         {
-        m_sideBar->InsertSubItemById(m_sideBar->GetFolder(0).GetId(), name, dsId, std::nullopt);
+        m_sideBar->InsertSubItemById(m_sideBar->GetFolder(0).GetId(), name, dsId, DATA_ICON_INDEX);
+        m_sideBar->SelectSubItemById(m_sideBar->GetFolder(0).GetId(), dsId);
         }
 
     m_workArea->Layout();
     m_sideBar->ResetState();
+    m_sideBar->Refresh();
     }

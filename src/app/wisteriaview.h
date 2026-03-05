@@ -75,6 +75,7 @@ class WisteriaView : public wxView
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name);
     void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
+    void AdjustGridColumnsForIcons(wxGrid* grid);
 
     wxDocChildFrame* m_frame{ nullptr };
     wxSplitterWindow* m_splitter{ nullptr };
@@ -85,6 +86,9 @@ class WisteriaView : public wxView
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;
     WindowContainer m_workWindows;
+
+    constexpr static size_t DATA_ICON_INDEX{ 0 };
+    constexpr static size_t PAGE_ICON_INDEX{ 1 };
 
     wxDECLARE_DYNAMIC_CLASS(WisteriaView);
     };

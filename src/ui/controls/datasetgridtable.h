@@ -114,7 +114,9 @@ namespace Wisteria::UI
                 return !std::isfinite(val) ?
                            wxString{} :
                            wxNumberFormatter::ToString(
-                               val, -1, wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                               val, 2,
+                               wxNumberFormatter::Style::Style_WithThousandsSep |
+                                   wxNumberFormatter::Style::Style_NoTrailingZeroes);
                 }
 
             return {};
