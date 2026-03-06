@@ -169,10 +169,13 @@ void WisteriaView::LoadProject()
 
             auto* table = new Wisteria::UI::DatasetGridTable(dataset);
             auto* grid = new wxGrid(m_workArea, dsId);
+            grid->SetDoubleBuffered(true);
+            grid->GetGridWindow()->SetDoubleBuffered(true);
             grid->SetTable(table, true);
+            grid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
             grid->EnableEditing(false);
             ApplyColumnHeaderIcons(grid, table);
-            grid->AutoSizeColumns();
+            grid->AutoSizeColumns(false);
             AdjustGridColumnsForIcons(grid);
             grid->Hide();
             m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
@@ -323,9 +326,19 @@ void WisteriaView::ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGri
 void WisteriaView::AdjustGridColumnsForIcons(wxGrid* grid)
     {
     const int iconOffset = grid->FromDIP(16) + 8;
+    int maxColWidth = grid->GetClientSize().GetWidth() / 4;
+    if (maxColWidth <= 0)
+        {
+        maxColWidth = grid->GetParent()->GetClientSize().GetWidth() / 4;
+        }
     for (int col = 0; col < grid->GetNumberCols(); ++col)
         {
-        grid->SetColSize(col, grid->GetColSize(col) + iconOffset);
+        int newWidth = grid->GetColSize(col) + iconOffset;
+        if (maxColWidth > 0)
+            {
+            newWidth = std::min(newWidth, maxColWidth);
+            }
+        grid->SetColSize(col, newWidth);
         }
     }
 
@@ -388,13 +401,17 @@ void WisteriaView::AddDatasetToProject(
         }
 
     auto* grid = new wxGrid(m_workArea, dsId);
+    grid->SetDoubleBuffered(true);
+    grid->GetGridWindow()->SetDoubleBuffered(true);
     grid->SetTable(table, true);
-    grid->Hide();
+    grid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
     grid->EnableEditing(false);
     ApplyColumnHeaderIcons(grid, table);
-    grid->AutoSizeColumns();
-    AdjustGridColumnsForIcons(grid);
     m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
+    m_workArea->Layout();
+    grid->AutoSizeColumns(false);
+    AdjustGridColumnsForIcons(grid);
+    grid->Hide();
     m_workWindows.AddWindow(grid);
 
     // add as subitem under the "Data" folder

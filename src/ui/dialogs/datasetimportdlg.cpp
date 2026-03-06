@@ -103,7 +103,10 @@ namespace Wisteria::UI
         mainSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Preview:")),
                        wxSizerFlags{}.Border(wxLEFT | wxBOTTOM, FromDIP(10)));
 
-        m_previewGrid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 600, 300 }));
+        m_previewGrid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 1000, 400 }));
+        m_previewGrid->SetDoubleBuffered(true);
+        m_previewGrid->GetGridWindow()->SetDoubleBuffered(true);
+        m_previewGrid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
         m_previewGrid->EnableEditing(false);
         mainSizer->Add(m_previewGrid,
                        wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxRIGHT, FromDIP(10)));
@@ -179,7 +182,7 @@ namespace Wisteria::UI
 
             m_previewGrid->SetTable(table, true);
             ApplyColumnHeaderIcons(table);
-            m_previewGrid->AutoSizeColumns();
+            m_previewGrid->AutoSizeColumns(false);
             AdjustGridColumnsForIcons();
             m_previewGrid->ForceRefresh();
             }
@@ -190,7 +193,7 @@ namespace Wisteria::UI
             auto* table = new DatasetGridTable(m_previewDataset);
             m_previewGrid->SetTable(table, true);
             ApplyColumnHeaderIcons(table);
-            m_previewGrid->AutoSizeColumns();
+            m_previewGrid->AutoSizeColumns(false);
             AdjustGridColumnsForIcons();
             m_previewGrid->ForceRefresh();
             wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
@@ -234,9 +237,19 @@ namespace Wisteria::UI
     void DatasetImportDlg::AdjustGridColumnsForIcons()
         {
         const int iconOffset = m_previewGrid->FromDIP(16) + 8;
+        int maxColWidth = m_previewGrid->GetClientSize().GetWidth() / 4;
+        if (maxColWidth <= 0)
+            {
+            maxColWidth = m_previewGrid->GetParent()->GetClientSize().GetWidth() / 4;
+            }
         for (int col = 0; col < m_previewGrid->GetNumberCols(); ++col)
             {
-            m_previewGrid->SetColSize(col, m_previewGrid->GetColSize(col) + iconOffset);
+            int newWidth = m_previewGrid->GetColSize(col) + iconOffset;
+            if (maxColWidth > 0)
+                {
+                newWidth = std::min(newWidth, maxColWidth);
+                }
+            m_previewGrid->SetColSize(col, newWidth);
             }
         }
 
