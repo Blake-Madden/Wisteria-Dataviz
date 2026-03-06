@@ -4484,8 +4484,8 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
 
         REQUIRE(wrk.size() == 1);
         REQUIRE(wrk[0].size() == 1);
-        // should be the raw number, not a date like "2147-01-13"
-        CHECK(wrk[0][0].get_value() == L"90222");
+        // should be the currency-prefixed number, not a date like "2147-01-13"
+        CHECK(wrk[0][0].get_value() == L"$90222");
         }
     SECTION("Backslash-escaped characters not treated as date markers")
         {
@@ -4607,7 +4607,8 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
 
         REQUIRE(wrk.size() == 1);
         REQUIRE(wrk[0].size() == 1);
-        CHECK(wrk[0][0].get_value() == L"90222");
+        // [$$-409] is a bracket currency notation for $
+        CHECK(wrk[0][0].get_value() == L"$90222");
         }
     SECTION("Custom date format with yyyy still detected")
         {
@@ -4638,6 +4639,618 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
         REQUIRE(wrk.size() == 1);
         REQUIRE(wrk[0].size() == 1);
         CHECK(wrk[0][0].get_value() == L"2023-03-15");
+        }
+    }
+
+TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
+    {
+    SECTION("Built-in currency format ID 5")
+        {
+        // numFmtId 5 is a built-in currency format ($#,##0_);($#,##0))
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"5\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.count(0) == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>1500</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"$1500");
+        }
+    SECTION("Built-in currency format ID 6")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"6\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Built-in currency format ID 7")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"7\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Built-in currency format ID 8")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"8\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Built-in accounting format ID 42")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"42\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Built-in accounting format ID 44")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"44\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Non-currency built-in format ID is not detected as currency")
+        {
+        // numFmtId 1 is "0" (integer), numFmtId 2 is "0.00" (decimal),
+        // numFmtId 9 is "0%" (percentage)
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"3\">"
+            L"<xf numFmtId=\"1\"/>"
+            L"<xf numFmtId=\"2\"/>"
+            L"<xf numFmtId=\"9\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.empty());
+        CHECK(ext.m_date_format_indices.empty());
+        }
+    SECTION("Custom format with bracket currency notation [$EUR-407]")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"[$\u20AC-407]#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"\u20AC");
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>42.5</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"\u20AC42.5");
+        }
+    SECTION("Custom format with bracket notation for pound [$\u00A3-809]")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"165\" formatCode=\"[$\u00A3-809]#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"165\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"\u00A3");
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>100</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"\u00A3100");
+        }
+    SECTION("Custom format with bracket notation for yen [$\u00A5-804]")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"166\" formatCode=\"[$\u00A5-804]#,##0\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"166\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"\u00A5");
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>5000</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"\u00A55000");
+        }
+    SECTION("Custom format with bracket notation without locale [$\u20AC]")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"[$\u20AC]#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"\u20AC");
+        }
+    SECTION("Custom format with literal dollar sign")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"$#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Custom format with quoted dollar sign")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" "
+            L"formatCode=\"&quot;$&quot;#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        // &quot; is not decoded by read_attribute, so the lambda sees
+        // the raw entity; the $ between the quotes is not reached.
+        // However, the &-skip logic will skip past the entities and
+        // a bare $ may or may not appear depending on encoding.
+        // The key point is no crash and no date detection.
+        CHECK(ext.m_date_format_indices.empty());
+        }
+    SECTION("Literal euro sign in custom format")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"\u20AC#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"\u20AC");
+        }
+    SECTION("Literal pound sign in custom format")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"\u00A3#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"\u00A3");
+        }
+    SECTION("Currency and date styles coexist correctly")
+        {
+        // Style 0 = currency (built-in 7), Style 1 = date (built-in 14)
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"2\">"
+            L"<xf numFmtId=\"7\"/>"
+            L"<xf numFmtId=\"14\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        CHECK(ext.m_date_format_indices.size() == 1);
+        CHECK(ext.m_date_format_indices.contains(1));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:B1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\" s=\"0\"><v>250.75</v></c>"
+            L"<c r=\"B1\" s=\"1\"><v>45000</v></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 2);
+        CHECK(wrk[0][0].get_value() == L"$250.75");
+        CHECK(wrk[0][1].get_value() == L"2023-03-15");
+        }
+    SECTION("Currency cell with no style tag is unaffected")
+        {
+        // cell has no s="" attribute, so even with currency styles loaded
+        // the value should be read as-is
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"7\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\"><v>42.5</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"42.5");
+        }
+    SECTION("String cell with currency style is not prefixed")
+        {
+        // type 's' (shared string) should not have currency prefix applied
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"7\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+        const wchar_t* sst = L"<sst><si><t>Price</t></si></sst>";
+        ext.read_shared_strings(sst, std::wcslen(sst));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" t=\"s\" s=\"0\"><v>0</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"Price");
+        }
+    SECTION("Multiple cells with different currency symbols")
+        {
+        // Style 0 = dollar (built-in 5), Style 1 = custom euro
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"[$\u20AC-407]#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"2\">"
+            L"<xf numFmtId=\"5\"/>"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 2);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        CHECK(ext.m_currency_format_indices.at(1) == L"\u20AC");
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:B1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\" s=\"0\"><v>100</v></c>"
+            L"<c r=\"B1\" s=\"1\"><v>200</v></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 2);
+        CHECK(wrk[0][0].get_value() == L"$100");
+        CHECK(wrk[0][1].get_value() == L"\u20AC200");
+        }
+    SECTION("Plain number format is not detected as currency")
+        {
+        // #,##0.00 has no currency symbol
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.empty());
+        CHECK(ext.m_date_format_indices.empty());
+        }
+    SECTION("Percentage format is not detected as currency")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"0.00%\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.empty());
+        }
+    SECTION("read_styles clears previous currency data")
+        {
+        const wchar_t* styles_xml1 =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"5\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml1, std::wcslen(styles_xml1));
+        CHECK(ext.m_currency_format_indices.size() == 1);
+
+        // second call with no currency should clear the previous results
+        const wchar_t* styles_xml2 =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"0\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        ext.read_styles(styles_xml2, std::wcslen(styles_xml2));
+        CHECK(ext.m_currency_format_indices.empty());
+        }
+    SECTION("Bracket notation [$$-409] extracts dollar symbol")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<numFmts count=\"1\">"
+            L"<numFmt numFmtId=\"164\" formatCode=\"[$$-409]#,##0.00\"/>"
+            L"</numFmts>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"164\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        CHECK(ext.m_currency_format_indices.size() == 1);
+        CHECK(ext.m_currency_format_indices.at(0) == L"$");
+        }
+    SECTION("Negative value with currency format")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"7\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>-42.5</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        // symbol is prepended to the raw value; negative sign stays
+        // in the number for locale independence
+        CHECK(wrk[0][0].get_value() == L"$-42.5");
+        }
+    SECTION("Empty cell with currency style stays empty")
+        {
+        const wchar_t* styles_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<styleSheet>"
+            L"<cellXfs count=\"1\">"
+            L"<xf numFmtId=\"5\"/>"
+            L"</cellXfs>"
+            L"</styleSheet>";
+
+        xlsx_extract_text ext{ true };
+        ext.read_styles(styles_xml, std::wcslen(styles_xml));
+
+        // cell has the style but <v> is empty
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v></v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value().empty());
         }
     }
 

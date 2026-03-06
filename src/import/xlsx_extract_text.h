@@ -13,6 +13,7 @@
 #define XLSX_TEXT_EXTRACT_H
 
 #include "spreadsheet_extract_text.h"
+#include <map>
 #include <ranges>
 
 namespace lily_of_the_valley
@@ -255,6 +256,8 @@ namespace lily_of_the_valley
         std::vector<std::pair<std::wstring, std::wstring>> m_worksheet_paths;
         // style indices that use a date format
         std::set<size_t> m_date_format_indices;
+        // style indices that use a currency format, mapped to their currency symbol
+        std::map<size_t, std::wstring> m_currency_format_indices;
         string_table m_shared_strings;
         };
     } // namespace lily_of_the_valley

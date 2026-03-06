@@ -1022,10 +1022,22 @@ namespace Wisteria::Data
                                      Only deduced when all rows are scanned.*/
             };
 
+        /// @brief Preview information for a single column.
+        /// @details Includes the column name, deduced data type, and an optional
+        ///     currency symbol detected from the source format.
+        struct ColumnPreview
+            {
+            wxString m_name;
+            ColumnImportType m_type{ ColumnImportType::String };
+            /// The currency symbol (e.g., L"$", L"€") if the column
+            /// was detected as currency-formatted, or empty otherwise.
+            wxString m_currencySymbol;
+            };
+
         /// @brief The names and data types of columns in a dataset.
         /// @details This is what is returned from ReadColumnInfo() and can be used
         ///     for selecting variables before importing a dataset.
-        using ColumnPreviewInfo = std::vector<std::pair<wxString, ColumnImportType>>;
+        using ColumnPreviewInfo = std::vector<ColumnPreview>;
 
         /// @returns The name of the dataset.
         [[nodiscard]]

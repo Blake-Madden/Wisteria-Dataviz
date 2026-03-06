@@ -73,7 +73,8 @@ class WisteriaView : public wxView
     void OnPrintAll(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
-                             const wxString& name);
+                             const wxString& name,
+                             const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo = {});
     void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     void AdjustGridColumnsForIcons(wxGrid* grid);
 

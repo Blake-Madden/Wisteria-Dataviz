@@ -572,7 +572,16 @@ namespace Wisteria::Data
             {
             return MDRecodeValue;
             }
-        const wchar_t* const start = input.c_str();
+        const wchar_t* start = input.c_str();
+        // skip a leading currency symbol ($, £, ¥, €)
+        if (*start == L'$' || *start == L'£' || *start == L'¥' || *start == L'€')
+            {
+            ++start;
+            if (*start == 0)
+                {
+                return MDRecodeValue;
+                }
+            }
         wchar_t* end{ nullptr };
         const double val = wxStrtod_l(start, &end, wxCLocale);
         // failed to even begin with a number
@@ -590,7 +599,7 @@ namespace Wisteria::Data
         wchar_t thousandsSep{ L' ' };
         if (wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousandsSep) && *end == thousandsSep)
             {
-            std::wstring strippedNumber{ input };
+            std::wstring strippedNumber{ start };
             string_util::remove_all(strippedNumber, thousandsSep);
             return ConvertToDouble(strippedNumber, MDRecodeValue);
             }
@@ -1211,23 +1220,23 @@ namespace Wisteria::Data
         std::vector<Data::ImportInfo::DateImportInfo> dateInfo;
         for (const auto& colInfo : previewInfo)
             {
-            if (colInfo.second == Data::Dataset::ColumnImportType::Discrete ||
-                colInfo.second == Data::Dataset::ColumnImportType::DichotomousDiscrete)
+            if (colInfo.m_type == Data::Dataset::ColumnImportType::Discrete ||
+                colInfo.m_type == Data::Dataset::ColumnImportType::DichotomousDiscrete)
                 {
-                catInfo.push_back({ colInfo.first, CategoricalImportMethod::ReadAsIntegers });
+                catInfo.push_back({ colInfo.m_name, CategoricalImportMethod::ReadAsIntegers });
                 }
-            else if (colInfo.second == Data::Dataset::ColumnImportType::String ||
-                     colInfo.second == Data::Dataset::ColumnImportType::DichotomousString)
+            else if (colInfo.m_type == Data::Dataset::ColumnImportType::String ||
+                     colInfo.m_type == Data::Dataset::ColumnImportType::DichotomousString)
                 {
-                catInfo.push_back({ colInfo.first, CategoricalImportMethod::ReadAsStrings });
+                catInfo.push_back({ colInfo.m_name, CategoricalImportMethod::ReadAsStrings });
                 }
-            else if (colInfo.second == Data::Dataset::ColumnImportType::Date)
+            else if (colInfo.m_type == Data::Dataset::ColumnImportType::Date)
                 {
-                dateInfo.push_back({ colInfo.first, DateImportMethod::Automatic, wxString{} });
+                dateInfo.push_back({ colInfo.m_name, DateImportMethod::Automatic, wxString{} });
                 }
-            else if (colInfo.second == Data::Dataset::ColumnImportType::Numeric)
+            else if (colInfo.m_type == Data::Dataset::ColumnImportType::Numeric)
                 {
-                continuousVars.push_back(colInfo.first);
+                continuousVars.push_back(colInfo.m_name);
                 }
             }
         return ImportInfo()
@@ -1303,7 +1312,7 @@ namespace Wisteria::Data
         importer.add_row_definition(row);
 
         lily_of_the_valley::text_preview preview;
-        std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
+        ColumnPreviewInfo columnInfo;
         // read either first few rows or entire file, whichever is less
         const size_t totalFileRowCount =
             preview(fileText.wc_str(), delimiter, false, false, importInfo.m_skipRows);
@@ -1354,6 +1363,7 @@ namespace Wisteria::Data
             // assume column's data is integral unless something in the first
             // few rows looks like a string
             ColumnImportType currentColumnType{ ColumnImportType::Discrete };
+            wxString detectedCurrencySymbol;
             std::optional<size_t> minCellLength{ std::nullopt }, maxCellLength{ std::nullopt };
             std::set<double> distinctDiscreteValues;
             std::set<wxString, wxStringLessNoCase> distinctStringValues;
@@ -1378,6 +1388,15 @@ namespace Wisteria::Data
                     {
                     ++mdCount;
                     continue;
+                    }
+                // detect a leading currency symbol from the first non-empty cell
+                if (detectedCurrencySymbol.empty() && !currentCell.empty())
+                    {
+                    const auto firstCh = currentCell.front();
+                    if (firstCh == L'$' || firstCh == L'£' || firstCh == L'¥' || firstCh == L'€')
+                        {
+                        detectedCurrencySymbol = firstCh;
+                        }
                     }
                 // already known to be a string column; just collect distinct values
                 if (currentColumnType == ColumnImportType::String)
@@ -1485,8 +1504,8 @@ namespace Wisteria::Data
             // silently ignore columns with no name (missing header)
             if (!preview.get_header_names().at(colIndex).empty())
                 {
-                columnInfo.emplace_back(preview.get_header_names().at(colIndex).c_str(),
-                                        currentColumnType);
+                columnInfo.push_back({ preview.get_header_names().at(colIndex).c_str(),
+                                       currentColumnType, detectedCurrencySymbol });
                 }
             }
         return columnInfo;

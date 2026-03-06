@@ -263,8 +263,337 @@ TEST_CASE("ODS read currency and percentage cells", "[ods][currency][percentage]
 
     REQUIRE(wrk.size() == 1);
     REQUIRE(wrk[0].size() == 2);
+    // no office:currency attribute, so no symbol prefix
     CHECK(wrk[0][0].get_value() == L"99.95");
     CHECK(wrk[0][1].get_value() == L"0.75");
+    }
+
+TEST_CASE("ODS currency with USD symbol", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Prices\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"USD\" office:value=\"42.5\">"
+        L"<text:p>$42.50</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"Prices" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"$42.5");
+    }
+
+TEST_CASE("ODS currency with EUR symbol", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"EU\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"EUR\" office:value=\"100.25\">"
+        L"<text:p>€100.25</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"EU" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"€100.25");
+    }
+
+TEST_CASE("ODS currency with GBP symbol", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"UK\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"GBP\" office:value=\"75\">"
+        L"<text:p>£75.00</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"UK" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"£75");
+    }
+
+TEST_CASE("ODS currency with JPY symbol", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"JP\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"JPY\" office:value=\"5000\">"
+        L"<text:p>¥5,000</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"JP" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"¥5000");
+    }
+
+TEST_CASE("ODS currency with unknown code uses ISO code as prefix", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Other\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"CHF\" office:value=\"250\">"
+        L"<text:p>CHF 250.00</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"Other" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"CHF250");
+    }
+
+TEST_CASE("ODS currency without office:currency attribute", "[ods][currency]")
+    {
+    // some ODS files may omit the office:currency attribute;
+    // the value should still be read without a prefix
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"NoCur\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\" office:value=\"10\">"
+        L"<text:p>10.00</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"NoCur" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"10");
+    }
+
+TEST_CASE("ODS mixed currency and non-currency cells", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Mix\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"string\">"
+        L"<text:p>Item</text:p></table:table-cell>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"USD\" office:value=\"19.99\">"
+        L"<text:p>$19.99</text:p></table:table-cell>"
+        L"<table:table-cell office:value-type=\"float\" office:value=\"3\">"
+        L"<text:p>3</text:p></table:table-cell>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"EUR\" office:value=\"24.5\">"
+        L"<text:p>€24.50</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"Mix" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 4);
+    CHECK(wrk[0][0].get_value() == L"Item");
+    CHECK(wrk[0][1].get_value() == L"$19.99");
+    CHECK(wrk[0][2].get_value() == L"3");
+    CHECK(wrk[0][3].get_value() == L"€24.5");
+    }
+
+TEST_CASE("ODS negative currency value", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Neg\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"currency\""
+        L" office:currency=\"USD\" office:value=\"-50.75\">"
+        L"<text:p>-$50.75</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"Neg" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    // symbol is prepended to the raw office:value ("-50.75"), not taken
+    // from text:p ("-$50.75"); this is intentional for locale independence
+    CHECK(wrk[0][0].get_value() == L"$-50.75");
+    }
+
+TEST_CASE("ODS float cell with currency in display text", "[ods][currency]")
+    {
+    // some ODS generators store currency as float with the symbol only in <text:p>
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Prices\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"float\" office:value=\"90222\">"
+        L"<text:p>$90,222 </text:p></table:table-cell>"
+        L"<table:table-cell office:value-type=\"float\" office:value=\"360888\">"
+        L"<text:p>$360,888 </text:p></table:table-cell>"
+        L"<table:table-cell office:value-type=\"float\" office:value=\"42.5\">"
+        L"<text:p>42.5</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"Prices" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 3);
+    // currency symbol detected from display text
+    CHECK(wrk[0][0].get_value() == L"$90222");
+    CHECK(wrk[0][1].get_value() == L"$360888");
+    // no currency symbol in display text, plain float
+    CHECK(wrk[0][2].get_value() == L"42.5");
+    }
+
+TEST_CASE("ODS float cell with euro in display text", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"EuroPrices\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"float\" office:value=\"1500\">"
+        L"<text:p>€1,500</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"EuroPrices" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    CHECK(wrk[0][0].get_value() == L"€1500");
+    }
+
+TEST_CASE("ODS percentage cell not treated as currency", "[ods][currency]")
+    {
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Rates\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"percentage\" office:value=\"0.12\">"
+        L"<text:p>12%</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, std::wstring{ L"Rates" });
+
+    REQUIRE(wrk.size() == 1);
+    REQUIRE(wrk[0].size() == 1);
+    // percentage should NOT get currency treatment
+    CHECK(wrk[0][0].get_value() == L"0.12");
     }
 
 TEST_CASE("ODS read time cells", "[ods][time]")

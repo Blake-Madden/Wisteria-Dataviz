@@ -162,6 +162,21 @@ namespace Wisteria::UI
 
             // update grid
             auto* table = new DatasetGridTable(m_previewDataset);
+
+            // apply currency symbols to continuous columns
+            size_t contIdx{ 0 };
+            for (const auto& col : columnInfo)
+                {
+                if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
+                    {
+                    if (!col.m_currencySymbol.empty())
+                        {
+                        table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                        }
+                    ++contIdx;
+                    }
+                }
+
             m_previewGrid->SetTable(table, true);
             ApplyColumnHeaderIcons(table);
             m_previewGrid->AutoSizeColumns();
@@ -226,17 +241,21 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
-    Data::ImportInfo DatasetImportDlg::GetImportInfo() const
+    Data::Dataset::ColumnPreviewInfo DatasetImportDlg::GetColumnPreviewInfo() const
         {
-        // re-read column info with current settings and build ImportInfo
         Data::ImportInfo scanInfo;
         scanInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
         scanInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
         scanInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
         scanInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
 
-        const auto columnInfo =
-            Data::Dataset::ReadColumnInfo(m_filePath, scanInfo, std::nullopt, GetWorksheet());
+        return Data::Dataset::ReadColumnInfo(m_filePath, scanInfo, std::nullopt, GetWorksheet());
+        }
+
+    //----------------------------------------------
+    Data::ImportInfo DatasetImportDlg::GetImportInfo() const
+        {
+        const auto columnInfo = GetColumnPreviewInfo();
 
         auto importInfo = Data::Dataset::ImportInfoFromPreview(columnInfo);
         importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));

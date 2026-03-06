@@ -444,6 +444,13 @@ namespace lily_of_the_valley
                                                     static_cast<int>(secondsFromTime)));
                                                 }
                                             }
+                                        // a currency format?
+                                        else if (const auto currIt =
+                                                     m_currency_format_indices.find(styleIndex);
+                                                 currIt != m_currency_format_indices.cend())
+                                            {
+                                            currentCell.set_value(currIt->second + valueStr);
+                                            }
                                         else
                                             {
                                             currentCell.set_value(valueStr);
@@ -556,6 +563,7 @@ namespace lily_of_the_valley
     void xlsx_extract_text::read_styles(const wchar_t* text, const size_t text_length)
         {
         m_date_format_indices.clear();
+        m_currency_format_indices.clear();
         if ((text == nullptr) || text_length == 0)
             {
             return;
@@ -563,6 +571,8 @@ namespace lily_of_the_valley
         assert(text_length == std::wcslen(text));
         // load the custom number formats
         std::set<size_t> dateFormatIds;
+        // custom currency format IDs mapped to their detected symbol
+        std::map<size_t, std::wstring> currencyFormatIds;
         const wchar_t* customNumberFormats =
             html_extract_text::find_element(text, (text + text_length), L"numFmts", true);
         if (customNumberFormats != nullptr)
@@ -645,6 +655,89 @@ namespace lily_of_the_valley
                     return false;
                 };
 
+                // extracts a currency symbol from a format code, returning
+                // the symbol if found or an empty string otherwise.
+                // Handles [$<symbol>-<locale>] bracket notation,
+                // quoted symbols (e.g., "$"), and common literal
+                // currency characters ($, £, ¥, €).
+                const auto getCurrencySymbol = [](std::wstring_view sv) -> std::wstring_view
+                {
+                    for (size_t i = 0; i < sv.length(); ++i)
+                        {
+                        const auto ch = sv[i];
+                        // [$<symbol>...] bracket currency notation
+                        if (ch == L'[' && i + 2 < sv.length() && sv[i + 1] == L'$')
+                            {
+                            const auto closeBrace = sv.find(L']', i + 2);
+                            if (closeBrace != std::wstring_view::npos)
+                                {
+                                // content between [$ and ] is "<symbol>-<locale>"
+                                // or just "<symbol>"
+                                auto content = sv.substr(i + 2, closeBrace - i - 2);
+                                const auto dashPos = content.find(L'-');
+                                if (dashPos != std::wstring_view::npos)
+                                    {
+                                    content = content.substr(0, dashPos);
+                                    }
+                                if (!content.empty())
+                                    {
+                                    return content;
+                                    }
+                                i = closeBrace;
+                                continue;
+                                }
+                            }
+                        // skip non-currency bracketed sections (e.g., [Red])
+                        if (ch == L'[' && i + 1 < sv.length())
+                            {
+                            const auto closeBrace = sv.find(L']', i + 1);
+                            if (closeBrace != std::wstring_view::npos)
+                                {
+                                i = closeBrace;
+                                }
+                            continue;
+                            }
+                        // quoted symbol (e.g., "$" or "EUR")
+                        if (ch == L'"' && i + 1 < sv.length())
+                            {
+                            const auto closeQuote = sv.find(L'"', i + 1);
+                            if (closeQuote != std::wstring_view::npos && closeQuote > i + 1)
+                                {
+                                const auto quoted = sv.substr(i + 1, closeQuote - i - 1);
+                                if (quoted == L"$" || quoted == L"£" || quoted == L"¥" ||
+                                    quoted == L"€")
+                                    {
+                                    return quoted;
+                                    }
+                                i = closeQuote;
+                                }
+                            continue;
+                            }
+                        // skip XML entities
+                        if (ch == L'&' && i + 1 < sv.length())
+                            {
+                            const auto semiPos = sv.find(L';', i + 1);
+                            if (semiPos != std::wstring_view::npos)
+                                {
+                                i = semiPos;
+                                }
+                            continue;
+                            }
+                        // skip escaped and skip-width characters
+                        if ((ch == L'\\' || ch == L'_') && i + 1 < sv.length())
+                            {
+                            ++i;
+                            continue;
+                            }
+                        // literal currency characters
+                        if (ch == L'$' || ch == L'£' || ch == L'¥' || ch == L'€')
+                            {
+                            return sv.substr(i, 1);
+                            }
+                        }
+                    return {};
+                };
+
                 while ((stringTag != nullptr) && stringTag < endTag)
                     {
                     stringTag = html_extract_text::find_element(stringTag, endTag, L"numFmt", true);
@@ -662,6 +755,14 @@ namespace lily_of_the_valley
                     if (isDateFormat(formatStr))
                         {
                         dateFormatIds.insert(fmtId);
+                        }
+                    else
+                        {
+                        const auto symbol = getCurrencySymbol(formatStr);
+                        if (!symbol.empty())
+                            {
+                            currencyFormatIds.emplace(fmtId, symbol);
+                            }
                         }
                     stringTag = html_extract_text::find_close_tag(stringTag);
                     }
@@ -695,6 +796,21 @@ namespace lily_of_the_valley
                         dateFormatIds.contains(fmtId))
                         {
                         m_date_format_indices.insert(currentIndex);
+                        }
+                    // built-in currency formats (5-8) and accounting formats (42, 44),
+                    // or a custom currency format
+                    else if (fmtId >= 5 && fmtId <= 8)
+                        {
+                        m_currency_format_indices.emplace(currentIndex, L"$");
+                        }
+                    else if (fmtId == 42 || fmtId == 44)
+                        {
+                        m_currency_format_indices.emplace(currentIndex, L"$");
+                        }
+                    else if (const auto it = currencyFormatIds.find(fmtId);
+                             it != currencyFormatIds.end())
+                        {
+                        m_currency_format_indices.emplace(currentIndex, it->second);
                         }
                     stringTag = html_extract_text::find_close_tag(stringTag);
                     ++currentIndex;

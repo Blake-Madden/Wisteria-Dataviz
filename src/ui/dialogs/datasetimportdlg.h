@@ -58,6 +58,10 @@ namespace Wisteria::UI
         [[nodiscard]]
         Data::ImportInfo GetImportInfo() const;
 
+        /// @returns The column preview information (names, types, and currency symbols).
+        [[nodiscard]]
+        Data::Dataset::ColumnPreviewInfo GetColumnPreviewInfo() const;
+
         /// @returns The selected worksheet (1-based index).
         [[nodiscard]]
         std::variant<wxString, size_t> GetWorksheet() const;

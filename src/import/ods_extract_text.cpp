@@ -285,11 +285,69 @@ namespace lily_of_the_valley
                                 }
                             }
                         }
-                    else if (valueType == L"float" || valueType == L"currency" ||
-                             valueType == L"percentage")
+                    else if (valueType == L"float" || valueType == L"percentage")
                         {
                         cellValue = html_extract_text::read_attribute_as_string(
                             cellTag, L"office:value", false, false);
+                        // Some ODS generators store currency cells as "float" with the
+                        // currency symbol only in the display text (<text:p>).
+                        // Check the display text for a leading currency symbol.
+                        if (!cellValue.empty() && valueType == L"float")
+                            {
+                            const wchar_t* closeTag = html_extract_text::find_close_tag(cellTag);
+                            if (closeTag != nullptr)
+                                {
+                                ++closeTag;
+                                const wchar_t* const tpTag = html_extract_text::find_element(
+                                    closeTag, rowEnd, L"text:p", true);
+                                if (tpTag != nullptr)
+                                    {
+                                    const wchar_t* tpContent =
+                                        html_extract_text::find_close_tag(tpTag);
+                                    if (tpContent != nullptr)
+                                        {
+                                        ++tpContent;
+                                        if (*tpContent == L'$' || *tpContent == L'£' ||
+                                            *tpContent == L'¥' || *tpContent == L'€')
+                                            {
+                                            cellValue.insert(cellValue.begin(), *tpContent);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    else if (valueType == L"currency")
+                        {
+                        const std::wstring currencyCode =
+                            html_extract_text::read_attribute_as_string(cellTag, L"office:currency",
+                                                                        false, false);
+                        cellValue = html_extract_text::read_attribute_as_string(
+                            cellTag, L"office:value", false, false);
+                        if (!cellValue.empty() && !currencyCode.empty())
+                            {
+                            // map common ISO 4217 codes to their symbols
+                            if (currencyCode == L"USD")
+                                {
+                                cellValue = L"$" + cellValue;
+                                }
+                            else if (currencyCode == L"EUR")
+                                {
+                                cellValue = L"€" + cellValue;
+                                }
+                            else if (currencyCode == L"GBP")
+                                {
+                                cellValue = L"£" + cellValue;
+                                }
+                            else if (currencyCode == L"JPY")
+                                {
+                                cellValue = L"¥" + cellValue;
+                                }
+                            else
+                                {
+                                cellValue = currencyCode + cellValue;
+                                }
+                            }
                         }
                     else if (valueType == L"date")
                         {

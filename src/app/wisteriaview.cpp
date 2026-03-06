@@ -351,10 +351,11 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
+        const auto columnPreview = importDlg.GetColumnPreviewInfo();
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
         dataset->Import(filePath, importDlg.GetImportInfo(), importDlg.GetWorksheet());
 
-        AddDatasetToProject(dataset, wxFileName{ filePath }.GetName());
+        AddDatasetToProject(dataset, wxFileName{ filePath }.GetName(), columnPreview);
         }
     catch (const std::exception& exc)
         {
@@ -364,12 +365,28 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
-                                       const wxString& name)
+void WisteriaView::AddDatasetToProject(
+    const std::shared_ptr<Wisteria::Data::Dataset>& dataset, const wxString& name,
+    const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo /*= {}*/)
     {
     const wxWindowID dsId = wxNewId();
 
     auto* table = new Wisteria::UI::DatasetGridTable(dataset);
+
+    // apply currency symbols from the column preview info
+    size_t contIdx{ 0 };
+    for (const auto& col : columnInfo)
+        {
+        if (col.m_type == Wisteria::Data::Dataset::ColumnImportType::Numeric)
+            {
+            if (!col.m_currencySymbol.empty())
+                {
+                table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                }
+            ++contIdx;
+            }
+        }
+
     auto* grid = new wxGrid(m_workArea, dsId);
     grid->SetTable(table, true);
     grid->Hide();

@@ -111,12 +111,20 @@ namespace Wisteria::UI
                 {
                 const auto val = m_dataset->GetContinuousColumns().at(colIndex).GetValue(
                     static_cast<size_t>(row));
-                return !std::isfinite(val) ?
-                           wxString{} :
-                           wxNumberFormatter::ToString(
-                               val, 2,
-                               wxNumberFormatter::Style::Style_WithThousandsSep |
-                                   wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                if (!std::isfinite(val))
+                    {
+                    return {};
+                    }
+                auto formatted = wxNumberFormatter::ToString(
+                    val, 2,
+                    wxNumberFormatter::Style::Style_WithThousandsSep |
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                const auto symIt = m_currencySymbols.find(colIndex);
+                if (symIt != m_currencySymbols.cend())
+                    {
+                    formatted.Prepend(symIt->second);
+                    }
+                return formatted;
                 }
 
             return {};
@@ -199,12 +207,26 @@ namespace Wisteria::UI
             return DatasetGridColumnType::Continuous;
             }
 
+        /// @brief Sets a currency symbol for a continuous column.
+        /// @details When set, the symbol is prepended to the formatted value
+        ///     in the grid display. The underlying numeric data is unchanged.
+        /// @param contColIndex The zero-based index into the continuous columns.
+        /// @param symbol The currency symbol (e.g., L"$", L"€").
+        void SetCurrencySymbol(size_t contColIndex, const wxString& symbol)
+            {
+            if (!symbol.empty())
+                {
+                m_currencySymbols[contColIndex] = symbol;
+                }
+            }
+
       private:
         std::shared_ptr<Data::Dataset> m_dataset;
         bool m_hasId{ false };
         size_t m_catCount{ 0 };
         size_t m_dateCount{ 0 };
         size_t m_contCount{ 0 };
+        std::map<size_t, wxString> m_currencySymbols;
         };
 
     /// @brief Column header renderer that draws an icon before the label text.
