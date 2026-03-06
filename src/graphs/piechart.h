@@ -231,7 +231,7 @@ namespace Wisteria::Graphs
 
         @par Missing Data:
         - Missing data in the group column(s) will be shown as an empty pie & legend label.
-        - Missing data in the value column will be ignored (listwise deletion).
+        - Missing data in the value column will be ignored (pairwise deletion).
 
         @par Example:
         @code

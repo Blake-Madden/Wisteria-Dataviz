@@ -43,7 +43,7 @@ namespace Wisteria::Graphs
          ...
 
         @par Missing Data:
-            Missing coefficients or p-values will result in list-wise deletion. Missing predictor
+            Missing coefficients or p-values will result in pairwise deletion. Missing predictor
             names will be displayed as empty strings.
 
         @par Example:

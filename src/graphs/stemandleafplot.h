@@ -36,7 +36,7 @@ namespace Wisteria::Graphs
         @par Missing Data:
          - Missing data in the group column will be shown as an empty label.
          - Missing data (NaN) in the value column will be ignored
-           (listwise deletion).
+           (pairwise deletion).
 
         @par Citation:
             Tukey, John W.

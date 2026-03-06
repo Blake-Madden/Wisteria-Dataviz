@@ -32,7 +32,7 @@ namespace Wisteria::Graphs
         @par Missing Data:
             - Missing data in the group column will be shown as an empty legend label.
             - If either the X or Y value is missing data (NaN), that point will be excluded
-              from both the plot and the regression calculation (i.e., pair-wise deletion).
+              from both the plot and the regression calculation (i.e., pairwise deletion).
 
         @par Example:
         @code

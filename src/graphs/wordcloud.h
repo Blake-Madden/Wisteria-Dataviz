@@ -32,7 +32,7 @@ namespace Wisteria::Graphs
 
         @par Missing Data:
          - Missing data in the word column will be ignored.
-         - If summing a continuous column, then missing data will be ignored (listwise deletion).*/
+         - If summing a continuous column, then missing data will be ignored (pairwise deletion).*/
     class WordCloud final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(WordCloud);

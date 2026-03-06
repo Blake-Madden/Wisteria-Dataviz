@@ -61,7 +61,7 @@ namespace Wisteria::Graphs
 
         @par Missing Data:
          - Any missing data in either the "from" or "to" weight columns will result in
-           listwise deletion.
+           pairwise deletion.
          - Missing data in other columns will result in empty labels.
 
         @par Example:

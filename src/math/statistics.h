@@ -840,7 +840,7 @@ namespace statistics
         @param yData The dependent variable values.
         @returns A linear_regression_results struct containing all computed statistics.\n
             Returns a default (invalid) result if fewer than 2 valid pairs exist.
-        @note Uses pair-wise deletion when NaN values are encountered.
+        @note Uses pairwise deletion when NaN values are encountered.
         @par Citations:
             Kutner, Michael H., et al. *Applied Linear Statistical Models*. 5th ed.,
             McGraw-Hill/Irwin, 2004.*/

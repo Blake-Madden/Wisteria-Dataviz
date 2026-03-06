@@ -31,7 +31,7 @@ namespace Wisteria::Graphs
         @par Missing Data:
             - Missing data in the group column will be shown as an empty legend label.
             - If any of the X, Y, or size values is missing data (NaN), that point will be
-              excluded from both the plot and the regression calculation (i.e., pair-wise deletion).
+              excluded from both the plot and the regression calculation (i.e., pairwise deletion).
 
         @par Bubble Sizing:
             Bubble sizes are scaled by area (not diameter) for perceptually accurate comparisons.

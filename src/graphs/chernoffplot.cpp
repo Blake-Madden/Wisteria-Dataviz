@@ -370,7 +370,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         dimensionLines.SetDPIScaleFactor(GetDPIScaleFactor());
 
         const auto tickLength = ScaleToScreenAndCanvas(8);
-        const auto topMargin = ScaleToScreenAndCanvas(12);
 
         // separate "Face width" from other left features - it always goes at top
         // because it draws a line across the top with ticks to convey the idea

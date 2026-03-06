@@ -39,7 +39,7 @@ namespace Wisteria::Graphs
          ...
 
          @par Missing Data:
-          - Any missing data in an observation will result in listwise deletion.
+          - Any missing data in an observation will result in pairwise deletion.
 
          @par Example:
          @code

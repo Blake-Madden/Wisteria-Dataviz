@@ -57,11 +57,13 @@ bool WisteriaApp::OnInit()
     InitProjectSidebar();
 
     // create the document template
+    // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
     [[maybe_unused]]
     auto* docTemplate =
         new wxDocTemplate(GetDocManager(), _(L"Wisteria project"), L"*.json", wxString{}, L"json",
                           _DT(L"Wisteria Doc"), L"WisteriaView", wxCLASSINFO(WisteriaDoc),
                           wxCLASSINFO(WisteriaView));
+    // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
     SetAppFileExtension(L"json");
 
@@ -92,7 +94,7 @@ void WisteriaApp::LoadInterface()
 
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this](wxCommandEvent& event)
+        [this]([[maybe_unused]] wxCommandEvent& event)
         {
             wxAboutDialogInfo aboutInfo;
             aboutInfo.SetCopyright(_(L"Copyright (c) 2005-2026 Blake Madden"));
