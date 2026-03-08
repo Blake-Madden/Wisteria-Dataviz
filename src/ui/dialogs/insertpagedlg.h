@@ -29,10 +29,12 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        InsertPageDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
-                      const wxString& caption = _(L"Insert Page"),
-                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                      long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+        explicit InsertPageDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
+                               const wxString& caption = _(L"Insert Page"),
+                               const wxPoint& pos = wxDefaultPosition,
+                               const wxSize& size = wxDefaultSize,
+                               long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
+                                            wxRESIZE_BORDER);
 
         /// @private
         InsertPageDlg() = delete;

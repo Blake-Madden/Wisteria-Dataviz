@@ -134,7 +134,7 @@ namespace Wisteria::UI
         m_skinColorLighterPicker =
             new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 255, 239, 219 });
         skinColorSizer->Add(m_skinColorLighterPicker, wxSizerFlags{}.CenterVertical());
-        skinColorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"\x2013")),
+        skinColorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, L"\x2013"),
                             wxSizerFlags{}.CenterVertical().Border(wxLEFT | wxRIGHT, FromDIP(4)));
         m_skinColorDarkerPicker =
             new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 255, 224, 189 });

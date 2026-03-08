@@ -538,6 +538,46 @@ namespace Wisteria::UI
         m_fixedWidthCheck->SetValue(false);
         pageSizer->Add(m_fixedWidthCheck, wxSizerFlags{}.Border());
 
+        // outline pen
+        auto* outlineBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Outline"));
+        auto* outlineGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_outlineColorPicker =
+            new wxColourPickerCtrl(outlineBox->GetStaticBox(), wxID_ANY, *wxBLACK);
+        outlineGrid->Add(m_outlineColorPicker);
+        outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_outlineWidthSpin = new wxSpinCtrl(outlineBox->GetStaticBox(), wxID_ANY);
+        m_outlineWidthSpin->SetRange(1, 20);
+        m_outlineWidthSpin->SetValue(1);
+        outlineGrid->Add(m_outlineWidthSpin);
+        outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_outlineStyleChoice = new wxChoice(outlineBox->GetStaticBox(), wxID_ANY);
+        m_outlineStyleChoice->Append(_(L"Solid"));
+        m_outlineStyleChoice->Append(_(L"Dot"));
+        m_outlineStyleChoice->Append(_(L"Long dash"));
+        m_outlineStyleChoice->Append(_(L"Short dash"));
+        m_outlineStyleChoice->Append(_(L"Dot dash"));
+        m_outlineStyleChoice->SetSelection(0);
+        outlineGrid->Add(m_outlineStyleChoice);
+        outlineBox->Add(outlineGrid, wxSizerFlags{}.Border());
+
+        // border sides
+        auto* borderSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_outlineTopCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Top"));
+        m_outlineRightCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Right"));
+        m_outlineBottomCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Bottom"));
+        m_outlineLeftCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Left"));
+        borderSizer->Add(m_outlineTopCheck, wxSizerFlags{}.Border(wxRIGHT));
+        borderSizer->Add(m_outlineRightCheck, wxSizerFlags{}.Border(wxRIGHT));
+        borderSizer->Add(m_outlineBottomCheck, wxSizerFlags{}.Border(wxRIGHT));
+        borderSizer->Add(m_outlineLeftCheck);
+        outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
+
+        pageSizer->Add(outlineBox, wxSizerFlags{}.Border());
+
         SetSizer(mainSizer);
         }
 
@@ -591,6 +631,48 @@ namespace Wisteria::UI
 
     //-------------------------------------------
     bool InsertItemDlg::GetFixedWidth() const { return m_fixedWidthCheck->GetValue(); }
+
+    //-------------------------------------------
+    wxPen InsertItemDlg::GetOutlinePen() const
+        {
+        constexpr wxPenStyle penStyles[] = { wxPENSTYLE_SOLID, wxPENSTYLE_DOT, wxPENSTYLE_LONG_DASH,
+                                             wxPENSTYLE_SHORT_DASH, wxPENSTYLE_DOT_DASH };
+        const auto styleIndex = static_cast<size_t>(m_outlineStyleChoice->GetSelection());
+        const auto penStyle =
+            (styleIndex < std::size(penStyles)) ? penStyles[styleIndex] : wxPENSTYLE_SOLID;
+        return wxPen(m_outlineColorPicker->GetColour(), m_outlineWidthSpin->GetValue(), penStyle);
+        }
+
+    //-------------------------------------------
+    std::bitset<4> InsertItemDlg::GetOutlineSides() const
+        {
+        std::bitset<4> sides;
+        sides.set(0, m_outlineTopCheck->GetValue());
+        sides.set(1, m_outlineRightCheck->GetValue());
+        sides.set(2, m_outlineBottomCheck->GetValue());
+        sides.set(3, m_outlineLeftCheck->GetValue());
+        return sides;
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::ApplyPageOptions(GraphItems::GraphItemBase& item) const
+        {
+        item.SetPageHorizontalAlignment(GetHorizontalPageAlignment());
+        item.SetPageVerticalAlignment(GetVerticalPageAlignment());
+        item.SetScaling(GetItemScaling());
+
+        const auto margins = GetCanvasMargins();
+        item.SetCanvasMargins(margins[0], margins[1], margins[2], margins[3]);
+
+        const auto padding = GetPadding();
+        item.SetPadding(padding[0], padding[1], padding[2], padding[3]);
+
+        item.SetFixedWidthOnCanvas(GetFixedWidth());
+
+        item.GetPen() = GetOutlinePen();
+        const auto sides = GetOutlineSides();
+        item.GetGraphItemInfo().Outline(sides[0], sides[1], sides[2], sides[3]);
+        }
 
     //-------------------------------------------
     void InsertItemDlg::FinalizeControls()

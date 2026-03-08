@@ -18,7 +18,9 @@
 #include "../controls/sidebarbook.h"
 #include "dialogwithhelp.h"
 #include <array>
+#include <bitset>
 #include <utility>
+#include <wx/clrpicker.h>
 #include <wx/dcbuffer.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
@@ -96,6 +98,16 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetFixedWidth() const;
 
+        /// @returns The outline pen (color and width).
+        [[nodiscard]]
+        wxPen GetOutlinePen() const;
+
+        /// @returns Which sides of the outline are shown
+        ///     (top, right, bottom, left), matching
+        ///     GraphItemInfo::Outline() order.
+        [[nodiscard]]
+        std::bitset<4> GetOutlineSides() const;
+
         /// @returns The number of rows in the grid.
         [[nodiscard]]
         size_t GetRowCount() const noexcept
@@ -125,6 +137,11 @@ namespace Wisteria::UI
                     }
                 }
             }
+
+        /// @brief Applies the page-level options (alignment, scaling, margins,
+        ///     padding, outline pen, and border sides) to a graph item.
+        /// @param item The item to configure.
+        void ApplyPageOptions(GraphItems::GraphItemBase& item) const;
 
       protected:
         /// @brief Creates the dialog controls.
@@ -192,6 +209,13 @@ namespace Wisteria::UI
         wxSpinCtrl* m_columnsSpin{ nullptr };
         wxCheckBox* m_fitRowToContentCheck{ nullptr };
         wxCheckBox* m_fixedWidthCheck{ nullptr };
+        wxColourPickerCtrl* m_outlineColorPicker{ nullptr };
+        wxSpinCtrl* m_outlineWidthSpin{ nullptr };
+        wxChoice* m_outlineStyleChoice{ nullptr };
+        wxCheckBox* m_outlineTopCheck{ nullptr };
+        wxCheckBox* m_outlineRightCheck{ nullptr };
+        wxCheckBox* m_outlineBottomCheck{ nullptr };
+        wxCheckBox* m_outlineLeftCheck{ nullptr };
         };
     } // namespace Wisteria::UI
 

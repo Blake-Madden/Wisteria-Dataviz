@@ -849,6 +849,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         auto plot =
             std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(canvas, dlg.GetSkinColorDarker());
         dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
         plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
         plot->SetGender(dlg.GetGender());
         plot->SetHairStyle(dlg.GetHairStyle());
@@ -910,6 +911,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         {
         auto plot = std::make_shared<Wisteria::Graphs::ScatterPlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
 

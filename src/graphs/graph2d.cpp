@@ -1338,6 +1338,31 @@ namespace Wisteria::Graphs
                 infoLabel.Draw(dc);
                 }
             }
+        // draw user-specified outline borders
+        if (GetPen().IsOk() && (GetGraphItemInfo().IsShowingTopOutline() ||
+                                GetGraphItemInfo().IsShowingRightOutline() ||
+                                GetGraphItemInfo().IsShowingBottomOutline() ||
+                                GetGraphItemInfo().IsShowingLeftOutline()))
+            {
+            const wxDCPenChanger pc{ dc, GetPen() };
+            const auto bBox = GetBoundingBox(dc);
+            if (GetGraphItemInfo().IsShowingTopOutline())
+                {
+                dc.DrawLine(bBox.GetTopLeft(), bBox.GetTopRight());
+                }
+            if (GetGraphItemInfo().IsShowingRightOutline())
+                {
+                dc.DrawLine(bBox.GetTopRight(), bBox.GetBottomRight());
+                }
+            if (GetGraphItemInfo().IsShowingBottomOutline())
+                {
+                dc.DrawLine(bBox.GetBottomLeft(), bBox.GetBottomRight());
+                }
+            if (GetGraphItemInfo().IsShowingLeftOutline())
+                {
+                dc.DrawLine(bBox.GetTopLeft(), bBox.GetBottomLeft());
+                }
+            }
         return GetBoundingBox(dc);
         }
 
