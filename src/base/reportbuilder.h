@@ -70,10 +70,18 @@ namespace Wisteria
         /// @param dataset The dataset to add.
         /// @param importOptions The import options used to load the dataset.
         void AddDataset(const wxString& name, const std::shared_ptr<Data::Dataset>& dataset,
-                        const DatasetImportOptions& importOptions = DatasetImportOptions{})
+                        const DatasetImportOptions& importOptions)
             {
             m_datasets[name] = dataset;
             m_datasetImportOptions[name] = importOptions;
+            }
+
+        /// @brief Adds a dataset to the report with default import options.
+        /// @param name The name for the dataset.
+        /// @param dataset The dataset to add.
+        void AddDataset(const wxString& name, const std::shared_ptr<Data::Dataset>& dataset)
+            {
+            AddDataset(name, dataset, DatasetImportOptions{});
             }
 
         /// @returns The import options for all datasets.
