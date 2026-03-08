@@ -32,11 +32,12 @@ namespace Wisteria::UI
     void InsertChernoffDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
+        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Options"), ID_OPTIONS_SECTION, false);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Chernoff Faces"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

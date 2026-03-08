@@ -47,6 +47,21 @@ namespace Wisteria::UI
         const auto gridSize = m_canvas->GetFixedObjectsGridSize();
         m_rows = std::max<size_t>(gridSize.first, 1);
         m_columns = std::max<size_t>(gridSize.second, 1);
+
+        // select the first empty cell (scanning in reading order),
+        // falling back to (0, 0) if all cells are occupied
+        for (size_t row = 0; row < gridSize.first; ++row)
+            {
+            for (size_t col = 0; col < gridSize.second; ++col)
+                {
+                if (m_canvas->GetFixedObject(row, col) == nullptr)
+                    {
+                    m_selectedRow = row;
+                    m_selectedColumn = col;
+                    return;
+                    }
+                }
+            }
         }
 
     //-------------------------------------------

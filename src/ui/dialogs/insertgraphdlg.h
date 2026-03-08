@@ -12,9 +12,17 @@
 #ifndef INSERT_GRAPH_DIALOG_H
 #define INSERT_GRAPH_DIALOG_H
 
+#include "../controls/thumbnail.h"
 #include "insertitemdlg.h"
 #include <wx/choice.h>
+#include <wx/clrpicker.h>
+#include <wx/spinctrl.h>
 #include <wx/wx.h>
+
+namespace Wisteria::Graphs
+    {
+    class Graph2D;
+    }
 
 namespace Wisteria::UI
     {
@@ -54,9 +62,49 @@ namespace Wisteria::UI
         /// @private
         InsertGraphDlg& operator=(const InsertGraphDlg&) = delete;
 
+        /** @brief Applies the common graph options to a Graph2D object.
+            @details Sets the title, subtitle, caption, background color,
+                background image (with opacity), and axis mirroring based on
+                the dialog's current control values.
+            @param graph The graph to apply the options to.*/
+        void ApplyGraphOptions(Graphs::Graph2D& graph) const;
+
         /// @returns The selected legend placement.
         [[nodiscard]]
         LegendPlacement GetLegendPlacement() const;
+
+        /// @returns The graph title text.
+        [[nodiscard]]
+        wxString GetGraphTitle() const;
+
+        /// @returns The graph subtitle text.
+        [[nodiscard]]
+        wxString GetGraphSubtitle() const;
+
+        /// @returns The graph caption text.
+        [[nodiscard]]
+        wxString GetGraphCaption() const;
+
+        /// @returns The selected plot background color.
+        ///     May be invalid if the user did not change it.
+        [[nodiscard]]
+        wxColour GetPlotBackgroundColor() const;
+
+        /// @returns The plot background image, or an invalid image if none was selected.
+        [[nodiscard]]
+        const GraphItems::Image& GetPlotBackgroundImage() const;
+
+        /// @returns The opacity for the plot background image (0–255).
+        [[nodiscard]]
+        uint8_t GetPlotBackgroundImageOpacity() const;
+
+        /// @returns Whether to mirror the X axis.
+        [[nodiscard]]
+        bool GetMirrorXAxis() const;
+
+        /// @returns Whether to mirror the Y axis.
+        [[nodiscard]]
+        bool GetMirrorYAxis() const;
 
       protected:
         /** @brief Creates a legend placement wxChoice and populates it.
@@ -69,8 +117,30 @@ namespace Wisteria::UI
         [[nodiscard]]
         static LegendPlacement SelectionToLegendPlacement(int selection);
 
+        /** @brief Creates and adds the "Graph Options" sidebar page.
+            @details This page contains controls common to all Graph2D types:
+                title, subtitle, caption, background color, background image,
+                and axis mirroring options.
+            @note Call this from derived CreateControls() after the base
+                InsertGraphDlg::CreateControls() and before adding
+                chart-specific pages.*/
+        void CreateGraphOptionsPage();
+
+        /// @brief ID for the Graph Options sidebar section.
+        constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
+
       private:
         wxChoice* m_legendPlacementChoice{ nullptr };
+
+        // graph options controls
+        wxTextCtrl* m_titleCtrl{ nullptr };
+        wxTextCtrl* m_subtitleCtrl{ nullptr };
+        wxTextCtrl* m_captionCtrl{ nullptr };
+        wxColourPickerCtrl* m_plotBgColorPicker{ nullptr };
+        Thumbnail* m_plotBgImageThumbnail{ nullptr };
+        wxSpinCtrl* m_plotBgImageOpacitySpin{ nullptr };
+        wxCheckBox* m_mirrorXAxisCheck{ nullptr };
+        wxCheckBox* m_mirrorYAxisCheck{ nullptr };
         };
     } // namespace Wisteria::UI
 
