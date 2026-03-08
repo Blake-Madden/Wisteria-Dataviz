@@ -3,6 +3,7 @@
 # DO NOT MODIFY MANUALLY!
 
 SET(APP_WISTERIA_SRC
+    src/app/appsettings.cpp
     src/app/wisteriaapp.cpp
     src/app/wisteriadoc.cpp
     src/app/wisteriaview.cpp

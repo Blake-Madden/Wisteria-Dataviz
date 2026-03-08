@@ -10,6 +10,7 @@
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
 #include <wx/aboutdlg.h>
+#include <wx/stdpaths.h>
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast,cppcoreguidelines-avoid-non-const-global-variables)
 wxIMPLEMENT_APP(WisteriaApp);
@@ -23,7 +24,16 @@ WisteriaArtProvider::WisteriaArtProvider()
                     { L"ID_DISCRETE", L"discrete.svg" },
                     { L"ID_DATE", L"date.svg" },
                     { L"ID_DICHOTOMOUS_CATEGORICAL", L"dichotomous-categorical.svg" },
-                    { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" } };
+                    { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" },
+                    { wxART_FILE_SAVE, L"file-save.svg" },
+                    { wxART_PRINT, L"print.svg" },
+                    { wxART_COPY, L"copy.svg" },
+                    { wxART_FIND, L"find.svg" },
+                    { L"ID_SELECT_ALL", L"select-all.svg" },
+                    { L"ID_LIST_SORT", L"sort.svg" },
+                    { L"ID_CLEAR", L"clear.svg" },
+                    { L"ID_REFRESH", L"reload.svg" },
+                    { L"ID_REALTIME_UPDATE", L"realtime.svg" } };
     }
 
 //-------------------------------------------
@@ -51,6 +61,17 @@ bool WisteriaApp::OnInit()
         return false;
         }
 
+    CreateAppSettings();
+
+    // load settings from the user's app data folder
+    wxString appSettingFolderPath =
+        wxStandardPaths::Get().GetUserDataDir() + wxFileName::GetPathSeparator();
+    if (!wxFileName::DirExists(appSettingFolderPath))
+        {
+        wxFileName::Mkdir(appSettingFolderPath, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+        }
+    GetAppSettings()->LoadSettingsFile(appSettingFolderPath + L"Settings.xml");
+
     GetResourceManager().LoadArchive(FindResourceFile(L"res.wad"));
     wxArtProvider::Push(new WisteriaArtProvider{});
 
@@ -77,9 +98,9 @@ void WisteriaApp::LoadInterface()
     {
     const wxArrayString extensions{ GetAppFileExtension() };
 
-    SetMainFrame(new Wisteria::UI::BaseMainFrame(GetDocManager(), nullptr, extensions,
-                                                 _WISTERIA_APP_NAME, wxPoint{ 0, 0 },
-                                                 wxSize{ 800, 600 }, wxDEFAULT_FRAME_STYLE));
+    SetMainFrame(new Wisteria::UI::BaseMainFrame(
+        GetDocManager(), nullptr, extensions, _WISTERIA_APP_NAME, wxPoint{ 0, 0 },
+        GetAppSettings()->GetAppWindowSize(), wxDEFAULT_FRAME_STYLE));
 
     GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()));
 
@@ -91,6 +112,12 @@ void WisteriaApp::LoadInterface()
         GetMainFrame()->SetIcon(appIcon);
         GetMainFrame()->SetLogo(appSvg);
         }
+
+    GetMainFrame()->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]]
+               wxRibbonButtonBarEvent& event) { OnViewLogReport(); },
+        ID_VIEW_LOG_REPORT);
 
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
@@ -108,9 +135,78 @@ void WisteriaApp::LoadInterface()
         },
         wxID_ABOUT);
 
+    // capture window state before the frame is destroyed
+    GetMainFrame()->Bind(
+        wxEVT_CLOSE_WINDOW,
+        [this](wxCloseEvent& event)
+        {
+            if (m_logWindow != nullptr)
+                {
+                m_logWindow->Destroy();
+                m_logWindow = nullptr;
+                }
+            GetAppSettings()->SetAppWindowMaximized(GetMainFrame()->IsMaximized());
+            GetAppSettings()->SetAppWindowWidth(GetMainFrame()->GetSize().GetWidth());
+            GetAppSettings()->SetAppWindowHeight(GetMainFrame()->GetSize().GetHeight());
+            event.Skip();
+        });
+
     GetMainFrame()->CenterOnScreen();
-    GetMainFrame()->Maximize();
+    if (GetAppSettings()->IsAppWindowMaximized())
+        {
+        GetMainFrame()->Maximize();
+        GetMainFrame()->SetSize(GetMainFrame()->GetSize());
+        }
     GetMainFrame()->Show(true);
+    }
+
+//-------------------------------------------
+void WisteriaApp::OnViewLogReport()
+    {
+    if (m_logWindow != nullptr && m_logWindow->IsShown())
+        {
+        m_logWindow->Hide();
+        return;
+        }
+
+    if (m_logWindow == nullptr)
+        {
+        const wxSize screenSize{ wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_SCREEN_X),
+                                 wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_SCREEN_Y) };
+        m_logWindow = new Wisteria::UI::ListDlg(
+            nullptr, wxNullColour, wxNullColour, wxNullColour,
+            Wisteria::UI::LD_SAVE_BUTTON | Wisteria::UI::LD_COPY_BUTTON |
+                Wisteria::UI::LD_PRINT_BUTTON | Wisteria::UI::LD_SELECT_ALL_BUTTON |
+                Wisteria::UI::LD_FIND_BUTTON | Wisteria::UI::LD_COLUMN_HEADERS |
+                Wisteria::UI::LD_SORT_BUTTON | Wisteria::UI::LD_CLEAR_BUTTON |
+                Wisteria::UI::LD_REFRESH_BUTTON | Wisteria::UI::LD_LOG_VERBOSE_BUTTON,
+            wxID_ANY, _(L"Log Report"), wxString{}, wxDefaultPosition,
+            wxSize{ screenSize.GetWidth() / 2, screenSize.GetHeight() / 2 });
+
+        // move over to the right side of the screen
+        const int screenWidth{ wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_SCREEN_X) };
+        int xPos{ 0 }, yPos{ 0 };
+        m_logWindow->GetScreenPosition(&xPos, &yPos);
+        m_logWindow->Move(
+            wxPoint{ xPos + (screenWidth - (xPos + m_logWindow->GetSize().GetWidth())), yPos });
+        }
+    m_logWindow->SetActiveLog(GetLogFile());
+    m_logWindow->ReadLog();
+    m_logWindow->GetListCtrl()->DistributeColumns(-1);
+
+    m_logWindow->Show();
+    m_logWindow->SetFocus();
+    }
+
+//-------------------------------------------
+int WisteriaApp::OnExit()
+    {
+    if (m_appSettings != nullptr)
+        {
+        GetAppSettings()->SaveSettingsFile();
+        }
+
+    return BaseApp::OnExit();
     }
 
 //-------------------------------------------
@@ -216,6 +312,15 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         {
         // TODO: main frame ribbon content
         }
+
+    // Tools panel
+    auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
+    auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
+
+    const auto logIcon = GetResourceManager().GetSVG(L"log-book.svg");
+    toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
+                              logIcon.IsOk() ? logIcon.GetBitmap(iconSize) : wxBitmap{},
+                              _(L"View the log report"));
 
     // Help tab
     auto* helpPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Help"));

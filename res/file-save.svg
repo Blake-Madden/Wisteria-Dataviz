@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   sodipodi:docname="file-save.svg"
+   viewBox="0 0 45 45"
+   sodipodi:version="0.32"
+   inkscape:export-xdpi="512"
+   version="1.0"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-ydpi="512"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   width="45"
+   height="45">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient2348"
+       y2="42.469002"
+       gradientUnits="userSpaceOnUse"
+       x2="28.562"
+       gradientTransform="matrix(1.0677,0,0,1.1215,0.87825002,-6.8384501)"
+       y1="21.844"
+       x1="20.125"
+       inkscape:collect="always">
+      <stop
+         id="stop2352"
+         style="stop-color:#858585"
+         offset="0" />
+      <stop
+         id="stop2356"
+         style="stop-color:#cbcbcb"
+         offset=".5" />
+      <stop
+         id="stop2354"
+         style="stop-color:#6b6b6b"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2283"
+       y2="55.702"
+       gradientUnits="userSpaceOnUse"
+       x2="33.075001"
+       gradientTransform="matrix(0.98543,0,0,1.1482,2.8882199,-4.1978501)"
+       y1="-0.99673003"
+       x1="13.784"
+       inkscape:collect="always">
+      <stop
+         id="stop2279"
+         style="stop-color:#ffffff"
+         offset="0" />
+      <stop
+         id="stop2281"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     bordercolor="#c86666"
+     inkscape:grid-points="false"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1024"
+     pagecolor="#efefef"
+     inkscape:showpageshadow="false"
+     inkscape:zoom="7.9999996"
+     inkscape:window-x="-8"
+     inkscape:window-height="705"
+     showgrid="false"
+     borderopacity="1"
+     inkscape:current-layer="layer1"
+     inkscape:cx="19.273281"
+     inkscape:cy="25.65812"
+     inkscape:window-y="-8"
+     borderlayer="top"
+     showborder="true"
+     inkscape:pageopacity="0"
+     inkscape:document-units="px"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:pagecheckerboard="true">
+    <inkscape:grid
+       id="GridFromPre046Settings"
+       opacity=".10196"
+       color="#9f9f9f"
+       originy="-3.80365"
+       originx="-3.7410499"
+       empspacing="10"
+       spacingy="1"
+       spacingx="1"
+       empopacity="0.25490196"
+       type="xygrid"
+       empcolor="#9f9f9f" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata979">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>tango media floppy</dc:title>
+        <dc:date>2010-03-27T10:19:49</dc:date>
+        <dc:description>&quot;Floppy disk&quot; icon from &lt;a href=&quot;http://tango.freedesktop.org/Tango_Desktop_Project&quot;&gt; Tango Project &lt;/a&gt; 
+\n&lt;br&gt;&lt;br&gt;
+\nSince version 0.8.90 Tango Project icons are Public Domain: &lt;a href=&quot;http://tango.freedesktop.org/Frequently_Asked_Questions#Terms_of_Use.3F&quot;&gt; Tango Project FAQ &lt;/a&gt;</dc:description>
+        <dc:source>https://openclipart.org/detail/34579/tango-media-floppy-by-warszawianka</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>warszawianka</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>device</rdf:li>
+            <rdf:li>externalsource</rdf:li>
+            <rdf:li>floppy</rdf:li>
+            <rdf:li>floppy disk</rdf:li>
+            <rdf:li>hardware</rdf:li>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>save</rdf:li>
+            <rdf:li>storage</rdf:li>
+            <rdf:li>tango</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Page"
+     transform="translate(-3.7410499,0.8036496)">
+    <path
+       id="rect2259"
+       style="fill:#4967a2;fill-opacity:1;stroke:#25375f;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       d="m 6.805503,2.3036499 c -0.5892999,0 -1.0644531,0.4754532 -1.0644531,1.0644531 v 35.763672 c 0,0 3.0642531,3.064453 3.0644531,3.064453 h 36.888672 c 0.589,0 1.064453,-0.474453 1.064453,-1.064453 V 3.368103 c 0,-0.5892999 -0.475453,-1.0644531 -1.064453,-1.0644531 z"
+       inkscape:connector-curvature="0" />
+    <rect
+       id="rect2328"
+       style="fill:#ffffff"
+       height="23"
+       width="30"
+       y="2.7360497"
+       x="11.24715" />
+    <rect
+       id="rect2330"
+       style="fill:#d31c00"
+       rx="0.12621"
+       ry="0.12621"
+       height="4"
+       width="30"
+       y="2.7360497"
+       x="11.24715" />
+    <rect
+       id="rect2332"
+       style="opacity:0.7386398;fill:#000000"
+       rx="0.12621"
+       ry="0.12621"
+       height="2"
+       width="2"
+       y="4.7360497"
+       x="8.2471504" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path2334"
+       style="opacity:0.13067998;fill:#000000;stroke:#000000"
+       d="m 13.24715,11.23605 h 26" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path2336"
+       style="opacity:0.13067998;fill:#000000;stroke:#000000"
+       d="m 13.24715,16.23605 h 26" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path2338"
+       style="opacity:0.13067998;fill:#000000;stroke:#000000"
+       d="m 13.24715,21.23605 h 26" />
+    <path
+       inkscape:connector-curvature="0"
+       id="rect2273"
+       sodipodi:nodetypes="ccccccccc"
+       style="opacity:0.59658999;fill:none;stroke:url(#linearGradient2283);stroke-linecap:round"
+       d="M 6.8660499,3.2637499 H 45.63405 c 0.07,0 0.127,0.0563 0.127,0.1262 V 41.03795 c 0,0.07 -0.057,0.126 -0.127,0.126 H 9.1750499 c 3e-4,0 -2.4353,-2.391 -2.4353,-2.391 V 3.3899499 c 0,-0.07 0.0563,-0.1263 0.1262,-0.1263 z" />
+    <path
+       inkscape:connector-curvature="0"
+       id="rect2340"
+       sodipodi:nodetypes="ccccccc"
+       style="fill:url(#linearGradient2348);stroke:#525252"
+       d="m 16.36115,27.29805 h 19.75 c 0.888,0 1.603,0.751 1.603,1.684 v 13.201 h -22.956 v -13.201 c 0,-0.933 0.715,-1.684 1.603,-1.684 z" />
+    <rect
+       id="rect2359"
+       style="fill:#4967a2;stroke:#525252"
+       rx="0.75120997"
+       ry="0.75120997"
+       height="10.066"
+       width="5.0297999"
+       y="29.19305"
+       x="18.711151" />
+  </g>
+</svg>

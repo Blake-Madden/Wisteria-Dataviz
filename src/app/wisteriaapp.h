@@ -12,6 +12,8 @@
 #include "../base/version.h"
 #include "../ui/app.h"
 #include "../ui/controls/sidebar.h"
+#include "../ui/dialogs/listdlg.h"
+#include "appsettings.h"
 #include <map>
 #include <vector>
 #include <wx/artprov.h>
@@ -28,6 +30,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     WisteriaApp() = default;
 
     bool OnInit() override;
+    int OnExit() override;
 
     /// @brief Creates the ribbon bar for a given parent window.
     /// @param parent The parent window.
@@ -43,10 +46,34 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         return m_projectSideBarImageList;
         }
 
+    /// @returns The log window.
+    [[nodiscard]]
+    Wisteria::UI::ListDlg* GetLogWindow() noexcept
+        {
+        return m_logWindow;
+        }
+
+    /// @brief Shows or hides the log report window.
+    void OnViewLogReport();
+
+    /// @brief Constructs the settings handler.
+    /// @warning This must be called after `BaseApp::OnInit()` has been called.
+    void CreateAppSettings() { m_appSettings = std::make_unique<AppSettings>(); }
+
+    /// @returns The application settings.
+    [[nodiscard]]
+    std::unique_ptr<AppSettings>& GetAppSettings() noexcept
+        {
+        wxASSERT_MSG(m_appSettings, L"Call CreateAppSettings() to construct this first!");
+        return m_appSettings;
+        }
+
   private:
     void LoadInterface();
     void InitProjectSidebar();
 
+    std::unique_ptr<AppSettings> m_appSettings{ nullptr };
+    Wisteria::UI::ListDlg* m_logWindow{ nullptr };
     std::vector<wxBitmapBundle> m_projectSideBarImageList;
     };
 
@@ -117,6 +144,9 @@ constexpr wxWindowID ID_NEW_LR_ROADMAP{ wxID_HIGHEST + 31 };
 
 // Sports graphs
 constexpr wxWindowID ID_NEW_WIN_LOSS_SPARKLINE{ wxID_HIGHEST + 32 };
+
+// Tools
+constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };
 
 wxDECLARE_APP(WisteriaApp);
 
