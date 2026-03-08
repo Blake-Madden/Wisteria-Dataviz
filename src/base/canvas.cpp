@@ -863,6 +863,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                             .GetHeightProportion(),
                         3, wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
+            // ensure column widths are normalized for this row
+            // (handles rows with unfilled null slots)
+            CalcColumnWidths(currentRowIndex);
             size_t currentXPos{ 0 };
             int extraSpaceFromPreviousItemsForThisItem{ 0 };
             for (size_t i = 0; i < currentRow.size(); ++i)
