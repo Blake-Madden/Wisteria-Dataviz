@@ -13,6 +13,7 @@
 #include "../ui/app.h"
 #include "../ui/controls/sidebar.h"
 #include "../ui/dialogs/listdlg.h"
+#include "../wxStartPage/startpage.h"
 #include "appsettings.h"
 #include <map>
 #include <vector>
@@ -56,6 +57,13 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @brief Shows or hides the log report window.
     void OnViewLogReport();
 
+    /// @returns The start page.
+    [[nodiscard]]
+    wxStartPage* GetStartPage() const noexcept
+        {
+        return m_startPage;
+        }
+
     /// @brief Constructs the settings handler.
     /// @warning This must be called after `BaseApp::OnInit()` has been called.
     void CreateAppSettings() { m_appSettings = std::make_unique<AppSettings>(); }
@@ -74,6 +82,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
 
     std::unique_ptr<AppSettings> m_appSettings{ nullptr };
     Wisteria::UI::ListDlg* m_logWindow{ nullptr };
+    wxStartPage* m_startPage{ nullptr };
     std::vector<wxBitmapBundle> m_projectSideBarImageList;
     };
 

@@ -25,6 +25,8 @@ WisteriaArtProvider::WisteriaArtProvider()
                     { L"ID_DATE", L"date.svg" },
                     { L"ID_DICHOTOMOUS_CATEGORICAL", L"dichotomous-categorical.svg" },
                     { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" },
+                    { wxART_NEW, L"wisteria.svg" },
+                    { wxART_FILE_OPEN, L"file-open.svg" },
                     { wxART_FILE_SAVE, L"file-save.svg" },
                     { wxART_PRINT, L"print.svg" },
                     { wxART_COPY, L"copy.svg" },
@@ -103,6 +105,45 @@ void WisteriaApp::LoadInterface()
         GetAppSettings()->GetAppWindowSize(), wxDEFAULT_FRAME_STYLE));
 
     GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()));
+
+    // add start page
+    wxArrayString mruFiles;
+    for (size_t i = 0; i < GetDocManager()->GetFileHistory()->GetCount(); ++i)
+        {
+        mruFiles.Add(GetDocManager()->GetFileHistory()->GetHistoryFile(i));
+        }
+    m_startPage = new wxStartPage(GetMainFrame(), wxID_ANY, mruFiles,
+                                  GetResourceManager().GetSVG(L"wisteria.svg"));
+    m_startPage->AddButton(wxArtProvider::GetBitmapBundle(wxART_NEW, wxART_BUTTON),
+                           _(L"Create a New Project"));
+    m_startPage->AddButton(wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON),
+                           _(L"Open a Project"));
+    GetMainFrame()->GetSizer()->Add(m_startPage, wxSizerFlags{ 1 }.Expand());
+
+    GetMainFrame()->Bind(wxEVT_STARTPAGE_CLICKED,
+                         [this](wxCommandEvent& event)
+                         {
+                             if (m_startPage->IsCustomButtonId(event.GetId()))
+                                 {
+                                 if (event.GetId() == m_startPage->GetButtonID(0))
+                                     {
+                                     GetDocManager()->CreateNewDocument();
+                                     }
+                                 else if (event.GetId() == m_startPage->GetButtonID(1))
+                                     {
+                                     wxCommandEvent openEvent(wxEVT_MENU, wxID_OPEN);
+                                     GetMainFrame()->ProcessWindowEvent(openEvent);
+                                     }
+                                 }
+                             else if (wxStartPage::IsFileId(event.GetId()))
+                                 {
+                                 GetDocManager()->CreateDocument(event.GetString(), wxDOC_SILENT);
+                                 }
+                             else if (wxStartPage::IsFileListClearId(event.GetId()))
+                                 {
+                                 ClearFileHistoryMenu();
+                                 }
+                         });
 
     wxIcon appIcon;
     const auto appSvg = GetResourceManager().GetSVG(L"wisteria.svg");

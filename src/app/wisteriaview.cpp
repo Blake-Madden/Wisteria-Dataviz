@@ -26,9 +26,6 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         return false;
         }
 
-    // hide the main frame when a document window is opened
-    wxGetApp().GetMainFrame()->Hide();
-
     const wxSize windowSize(std::max(wxGetApp().GetMainFrame()->GetClientSize().GetWidth(),
                                      wxGetApp().GetMainFrame()->FromDIP(800)),
                             std::max(wxGetApp().GetMainFrame()->GetClientSize().GetHeight(),
@@ -133,7 +130,6 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             {
             m_frame->Destroy();
             m_frame = nullptr;
-            wxGetApp().GetMainFrame()->Show();
             return false;
             }
 
@@ -144,7 +140,6 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             {
             m_frame->Destroy();
             m_frame = nullptr;
-            wxGetApp().GetMainFrame()->Show();
             return false;
             }
 
@@ -164,7 +159,6 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                          wxGetApp().GetMainFrame());
             m_frame->Destroy();
             m_frame = nullptr;
-            wxGetApp().GetMainFrame()->Show();
             return false;
             }
         }
@@ -179,6 +173,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         }
 
     UpdateGraphButtonStates();
+
+    // hide the main frame when a document window is opened
+    wxGetApp().GetMainFrame()->Hide();
 
     m_frame->Show(true);
     Activate(true);
