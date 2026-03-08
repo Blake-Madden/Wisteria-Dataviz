@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="trophyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5d442;stop-opacity:1"/>
+      <stop offset="40%" style="stop-color:#daa520;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#b8860b;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="trophyShineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3"/>
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="baseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c8960e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#8b6508;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#dropShadow)">
+    <!-- Trophy cup -->
+    <path d="M80,40 L176,40 L170,130 Q165,160 128,170 Q91,160 86,130 Z"
+          fill="url(#trophyGrad)"/>
+
+    <!-- Cup rim -->
+    <ellipse cx="128" cy="42" rx="50" ry="8" fill="#f0d060"/>
+    <ellipse cx="128" cy="42" rx="48" ry="6" fill="#e8c030"/>
+
+    <!-- Shine on cup -->
+    <path d="M90,48 L92,130 Q94,148 105,158 L100,155 Q88,140 87,125 Z"
+          fill="url(#trophyShineGrad)"/>
+
+    <!-- Left handle -->
+    <path d="M80,60 Q42,60 40,95 Q38,130 72,130"
+          fill="none" stroke="url(#trophyGrad)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M80,60 Q48,60 46,95 Q44,126 72,128"
+          fill="none" stroke="#f0d060" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Right handle -->
+    <path d="M176,60 Q214,60 216,95 Q218,130 184,130"
+          fill="none" stroke="url(#trophyGrad)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M176,60 Q208,60 210,95 Q212,126 184,128"
+          fill="none" stroke="#f0d060" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Stem -->
+    <rect x="118" y="170" width="20" height="28" rx="2" fill="url(#baseGrad)"/>
+
+    <!-- Base -->
+    <rect x="88" y="198" width="80" height="12" rx="4" fill="url(#baseGrad)"/>
+    <rect x="78" y="210" width="100" height="14" rx="5" fill="url(#baseGrad)"/>
+    <!-- Base highlight -->
+    <rect x="82" y="212" width="92" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+
+    <!-- Star on cup -->
+    <polygon points="128,70 133,85 148,85 136,95 140,110 128,101 116,110 120,95 108,85 123,85"
+             fill="#f5e680" fill-opacity="0.7"/>
+  </g>
+</svg>

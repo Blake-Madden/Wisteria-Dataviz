@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.25)
 set(WISTERIA_LIB_EXCLUDE_FILTER "(testmainc|xml_format|rtf_extract|postscript_extract|cpp_extract|\
 odt_odp_extract|doc_extract|docx_extract|ui/app[.]cpp|codeeditor[.]cpp|htmltablewin[.]cpp|\
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
-screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
+screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
 htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdlg[.]cpp|\
 listctrlsortdlg[.]cpp|artmetro[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\

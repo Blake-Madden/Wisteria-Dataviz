@@ -13,6 +13,8 @@
 #include <array>
 #include <wx/rawbmp.h>
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Image, Wisteria::GraphItems::GraphItemBase);
+
 namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------

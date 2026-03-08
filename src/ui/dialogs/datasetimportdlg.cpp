@@ -66,7 +66,7 @@ namespace Wisteria::UI
             {
             m_worksheetChoice->SetSelection(0);
             }
-        optionsSizer->Add(m_worksheetChoice, wxSizerFlags{}.Expand());
+        optionsSizer->Add(m_worksheetChoice, wxSizerFlags{});
 
         m_worksheetLabel->Show(isSpreadsheet);
         m_worksheetChoice->Show(isSpreadsheet);
@@ -85,6 +85,14 @@ namespace Wisteria::UI
         m_maxDiscreteSpin = new wxSpinCtrl(this, wxID_ANY, L"7", wxDefaultPosition, spinSize,
                                            wxSP_ARROW_KEYS, 1, 100, 7);
         optionsSizer->Add(m_maxDiscreteSpin, wxSizerFlags{});
+
+        // ID column
+        optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"ID column:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_idColumnChoice = new wxChoice(this, wxID_ANY);
+        m_idColumnChoice->Append(_(L"(None)"));
+        m_idColumnChoice->SetSelection(0);
+        optionsSizer->Add(m_idColumnChoice, wxSizerFlags{});
 
         mainSizer->Add(optionsSizer, wxSizerFlags{}.Expand().Border(wxALL, FromDIP(10)));
 
@@ -123,6 +131,7 @@ namespace Wisteria::UI
         m_maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
         m_leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
+        m_idColumnChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
         }
 
     //----------------------------------------------
@@ -152,12 +161,36 @@ namespace Wisteria::UI
             const auto columnInfo = Data::Dataset::ReadColumnInfo(m_filePath, previewInfo,
                                                                   PREVIEW_ROW_COUNT, worksheet);
 
+            // update the ID column choice with discovered column names
+            const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
+                                            m_idColumnChoice->GetStringSelection() :
+                                            wxString{};
+            m_idColumnChoice->Clear();
+            m_idColumnChoice->Append(_(L"(None)"));
+            for (const auto& col : columnInfo)
+                {
+                m_idColumnChoice->Append(col.m_name);
+                }
+            if (!previousId.empty())
+                {
+                const int idx = m_idColumnChoice->FindString(previousId);
+                m_idColumnChoice->SetSelection(idx != wxNOT_FOUND ? idx : 0);
+                }
+            else
+                {
+                m_idColumnChoice->SetSelection(0);
+                }
+
             // convert to full ImportInfo
             auto importInfo = Data::Dataset::ImportInfoFromPreview(columnInfo);
             importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
             importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
             importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
             importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
+            if (m_idColumnChoice->GetSelection() > 0)
+                {
+                importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
+                }
 
             // import data for preview
             m_previewDataset = std::make_shared<Data::Dataset>();
@@ -275,6 +308,11 @@ namespace Wisteria::UI
         importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
         importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
+
+        if (m_idColumnChoice->GetSelection() > 0)
+            {
+            importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
+            }
 
         return importInfo;
         }

@@ -79,6 +79,7 @@ namespace Wisteria::GraphItems
           may not preserve markup.*/
     class Label final : public GraphItemBase
         {
+        wxDECLARE_DYNAMIC_CLASS(Label);
         friend class Graphs::Graph2D;
         friend class Graphs::HeatMap;
         friend class Wisteria::Canvas;

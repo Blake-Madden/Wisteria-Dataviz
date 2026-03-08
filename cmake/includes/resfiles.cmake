@@ -5,6 +5,13 @@ boxplot.svg
 bubbleplot.svg
 candlestick.svg
 categorical.svg
+chart-basic.svg
+chart-business.svg
+chart-education.svg
+chart-social.svg
+chart-sports.svg
+chart-statistical.svg
+chart-survey.svg
 chernoffplot.svg
 data.svg
 date.svg
@@ -18,6 +25,7 @@ gantt.svg
 heatmap-grouped.svg
 heatmap.svg
 histogram.svg
+home-dark-mode.svg
 home.svg
 likert3.svg
 likert7.svg
@@ -33,8 +41,10 @@ roadmap.svg
 sankey.svg
 scale.svg
 scatterplot.svg
+sparkline.svg
 stem-leaf.svg
 table.svg
+waffle.svg
 wcurve.svg
 wisteria.svg
 wordcloud.svg

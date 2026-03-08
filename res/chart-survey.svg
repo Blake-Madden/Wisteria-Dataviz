@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="boardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4a855;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#b8893a;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="paperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#f0ece4;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="clipGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8a8a8a;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#606060;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#dropShadow)">
+    <!-- Clipboard board -->
+    <rect x="48" y="36" width="160" height="200" rx="8" ry="8" fill="url(#boardGrad)"/>
+    <rect x="50" y="38" width="156" height="4" rx="2" fill="#ffffff" fill-opacity="0.2"/>
+
+    <!-- Clip at top -->
+    <rect x="98" y="22" width="60" height="28" rx="5" ry="5" fill="url(#clipGrad)"/>
+    <rect x="108" y="30" width="40" height="14" rx="4" ry="4" fill="#a0a0a0"/>
+
+    <!-- Paper -->
+    <rect x="60" y="56" width="136" height="168" rx="3" ry="3" fill="url(#paperGrad)"/>
+
+    <!-- Checklist items -->
+    <!-- Item 1 - checked -->
+    <rect x="74" y="72" width="18" height="18" rx="3" stroke="#5b9bd5" stroke-width="2" fill="#e8f0fa"/>
+    <polyline points="78,82 82,87 90,75" fill="none" stroke="#3a7bbf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="100" y="76" width="80" height="8" rx="2" fill="#c0c0c0"/>
+
+    <!-- Item 2 - checked -->
+    <rect x="74" y="102" width="18" height="18" rx="3" stroke="#5b9bd5" stroke-width="2" fill="#e8f0fa"/>
+    <polyline points="78,112 82,117 90,105" fill="none" stroke="#3a7bbf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="100" y="106" width="65" height="8" rx="2" fill="#c0c0c0"/>
+
+    <!-- Item 3 - checked -->
+    <rect x="74" y="132" width="18" height="18" rx="3" stroke="#70ad47" stroke-width="2" fill="#eef5e8"/>
+    <polyline points="78,142 82,147 90,135" fill="none" stroke="#548c34" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="100" y="136" width="75" height="8" rx="2" fill="#c0c0c0"/>
+
+    <!-- Item 4 - unchecked -->
+    <rect x="74" y="162" width="18" height="18" rx="3" stroke="#b0b0b0" stroke-width="2" fill="#f8f8f8"/>
+    <rect x="100" y="166" width="55" height="8" rx="2" fill="#d8d8d8"/>
+
+    <!-- Item 5 - unchecked -->
+    <rect x="74" y="192" width="18" height="18" rx="3" stroke="#b0b0b0" stroke-width="2" fill="#f8f8f8"/>
+    <rect x="100" y="196" width="70" height="8" rx="2" fill="#d8d8d8"/>
+  </g>
+</svg>

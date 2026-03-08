@@ -14,6 +14,8 @@
 #include <wx/regex.h>
 #include <wx/tokenzr.h>
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Label, Wisteria::GraphItems::GraphItemBase);
+
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------

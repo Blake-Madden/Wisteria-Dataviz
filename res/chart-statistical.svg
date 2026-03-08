@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5b9bd5;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#3a7bbf;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5b9bd5;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="fillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5b9bd5;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#5b9bd5;stop-opacity:0.05"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#dropShadow)">
+    <!-- Axes -->
+    <line x1="38" y1="28" x2="38" y2="218" stroke="#808080" stroke-width="3" stroke-linecap="round"/>
+    <line x1="38" y1="218" x2="238" y2="218" stroke="#808080" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Gridlines -->
+    <g stroke="#d0d0d0" stroke-width="1" stroke-dasharray="4,3">
+      <line x1="38" y1="178" x2="238" y2="178"/>
+      <line x1="38" y1="138" x2="238" y2="138"/>
+      <line x1="38" y1="98" x2="238" y2="98"/>
+      <line x1="38" y1="58" x2="238" y2="58"/>
+    </g>
+
+    <!-- Bell curve filled area -->
+    <path d="M38,218 Q48,218 68,215 Q88,210 108,185 Q118,168 128,120 Q138,60 138,48
+             Q138,60 138,120 Q148,168 158,185 Q178,210 198,215 Q218,218 238,218 Z"
+          fill="url(#fillGrad)"/>
+
+    <!-- Bell curve line -->
+    <path d="M38,216 Q58,216 78,210 Q98,198 118,160 Q128,125 138,48
+             Q148,125 158,160 Q178,198 198,210 Q218,216 238,216"
+          fill="none" stroke="url(#curveGrad)" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Mean line (dashed) -->
+    <line x1="138" y1="38" x2="138" y2="218" stroke="#c04040" stroke-width="2" stroke-dasharray="6,4"/>
+
+    <!-- Standard deviation markers -->
+    <line x1="98" y1="190" x2="98" y2="218" stroke="#808080" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <line x1="178" y1="190" x2="178" y2="218" stroke="#808080" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+    <!-- Sigma labels as small marks -->
+    <g fill="#909090" font-size="14" font-family="sans-serif" text-anchor="middle">
+      <text x="98" y="234">-σ</text>
+      <text x="138" y="234">μ</text>
+      <text x="178" y="234">σ</text>
+    </g>
+
+    <!-- Tick marks -->
+    <g stroke="#808080" stroke-width="2">
+      <line x1="34" y1="178" x2="38" y2="178"/>
+      <line x1="34" y1="138" x2="38" y2="138"/>
+      <line x1="34" y1="98" x2="38" y2="98"/>
+      <line x1="34" y1="58" x2="38" y2="58"/>
+    </g>
+  </g>
+</svg>

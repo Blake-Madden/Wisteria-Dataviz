@@ -91,6 +91,7 @@ namespace Wisteria::UI
         wxSpinCtrl* m_maxDiscreteSpin{ nullptr };
         wxCheckBox* m_leadingZerosCheck{ nullptr };
         wxCheckBox* m_yearsAsTextCheck{ nullptr };
+        wxChoice* m_idColumnChoice{ nullptr };
         wxGrid* m_previewGrid{ nullptr };
 
         // preview data

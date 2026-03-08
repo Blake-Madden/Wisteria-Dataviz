@@ -60,6 +60,7 @@ namespace Wisteria::GraphItems
         @sa The [image](../../images.md) overview for more information.*/
     class Image final : public GraphItems::GraphItemBase
         {
+        wxDECLARE_DYNAMIC_CLASS(Image);
         friend class Wisteria::Canvas;
         friend class Wisteria::Graphs::Graph2D;
         friend class Wisteria::UI::Thumbnail;

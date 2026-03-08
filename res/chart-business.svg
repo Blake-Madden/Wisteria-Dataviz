@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="caseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b5b3a;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4a3c25;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="caseFrontGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c9a96e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#a07d45;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="chartUpGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#70ad47;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4e8a2f;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#dropShadow)">
+    <!-- Briefcase body -->
+    <rect x="38" y="88" width="180" height="120" rx="10" ry="10" fill="url(#caseFrontGrad)"/>
+    <!-- Briefcase top darker strip -->
+    <rect x="38" y="88" width="180" height="30" rx="10" ry="10" fill="url(#caseGrad)"/>
+    <rect x="38" y="103" width="180" height="15" fill="url(#caseGrad)"/>
+
+    <!-- Handle -->
+    <path d="M98,88 L98,68 Q98,52 114,52 L142,52 Q158,52 158,68 L158,88"
+          fill="none" stroke="#7a6a4a" stroke-width="8" stroke-linecap="round"/>
+    <path d="M98,88 L98,68 Q98,52 114,52 L142,52 Q158,52 158,68 L158,88"
+          fill="none" stroke="#6b5b3a" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Clasp -->
+    <rect x="118" y="112" width="20" height="14" rx="3" fill="#dbb774"/>
+    <rect x="120" y="114" width="16" height="10" rx="2" fill="#e8cc8e"/>
+
+    <!-- Highlight -->
+    <rect x="44" y="92" width="168" height="6" rx="3" fill="#ffffff" fill-opacity="0.15"/>
+
+    <!-- Rising chart arrow overlay -->
+    <g transform="translate(55, 130)">
+      <polyline points="0,60 35,42 75,50 110,18 145,5"
+                fill="none" stroke="#70ad47" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Arrow head -->
+      <polygon points="145,5 130,2 137,16" fill="#70ad47"/>
+      <!-- Data dots -->
+      <circle cx="0" cy="60" r="5" fill="#5a9438"/>
+      <circle cx="35" cy="42" r="5" fill="#5a9438"/>
+      <circle cx="75" cy="50" r="5" fill="#5a9438"/>
+      <circle cx="110" cy="18" r="5" fill="#5a9438"/>
+    </g>
+  </g>
+</svg>

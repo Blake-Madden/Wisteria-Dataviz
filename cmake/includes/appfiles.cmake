@@ -95,6 +95,11 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/htmltablepanel.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp
+    src/ui/dialogs/insertchernoffdlg.cpp
+    src/ui/dialogs/insertgraphdlg.cpp
+    src/ui/dialogs/insertitemdlg.cpp
+    src/ui/dialogs/insertpagedlg.cpp
+    src/ui/dialogs/insertscatterplotdlg.cpp
     src/ui/dialogs/listctrlitemviewdlg.cpp
     src/ui/dialogs/listctrlsortdlg.cpp
     src/ui/dialogs/listdlg.cpp

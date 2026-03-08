@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="wallGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8dcc8;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#d4c4a8;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="columnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#d8cbb4;stop-opacity:1"/>
+      <stop offset="30%" style="stop-color:#f0e8d8;stop-opacity:1"/>
+      <stop offset="70%" style="stop-color:#e8dcc8;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#c8b898;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="pedimentGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d0c0a0;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#c4b494;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8a9aaa;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#6a7a8a;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="stepsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d8cbb4;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#c0b098;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#dropShadow)">
+    <!-- Steps -->
+    <rect x="28" y="206" width="200" height="10" rx="1" fill="url(#stepsGrad)"
+          stroke="#b0a080" stroke-width="0.5"/>
+    <rect x="36" y="196" width="184" height="10" rx="1" fill="url(#stepsGrad)"
+          stroke="#b0a080" stroke-width="0.5"/>
+
+    <!-- Main wall behind columns -->
+    <rect x="50" y="100" width="156" height="96" fill="url(#wallGrad)"
+          stroke="#b8a888" stroke-width="0.5"/>
+
+    <!-- Door -->
+    <rect x="108" y="140" width="40" height="56" rx="2" fill="#5a4a35"/>
+    <path d="M108,160 Q128,135 148,160" fill="#6a5a42"/>
+    <circle cx="142" cy="170" r="2.5" fill="#c8a860"/>
+
+    <!-- Windows -->
+    <rect x="62" y="120" width="24" height="30" rx="1" fill="#7a9ab8" stroke="#a09070" stroke-width="1.5"/>
+    <line x1="74" y1="120" x2="74" y2="150" stroke="#a09070" stroke-width="1"/>
+    <line x1="62" y1="135" x2="86" y2="135" stroke="#a09070" stroke-width="1"/>
+
+    <rect x="170" y="120" width="24" height="30" rx="1" fill="#7a9ab8" stroke="#a09070" stroke-width="1.5"/>
+    <line x1="182" y1="120" x2="182" y2="150" stroke="#a09070" stroke-width="1"/>
+    <line x1="170" y1="135" x2="194" y2="135" stroke="#a09070" stroke-width="1"/>
+
+    <!-- Columns -->
+    <!-- Column 1 -->
+    <rect x="54" y="98" width="16" height="98" fill="url(#columnGrad)"/>
+    <rect x="52" y="94" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+    <rect x="52" y="192" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+
+    <!-- Column 2 -->
+    <rect x="88" y="98" width="16" height="98" fill="url(#columnGrad)"/>
+    <rect x="86" y="94" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+    <rect x="86" y="192" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+
+    <!-- Column 3 -->
+    <rect x="152" y="98" width="16" height="98" fill="url(#columnGrad)"/>
+    <rect x="150" y="94" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+    <rect x="150" y="192" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+
+    <!-- Column 4 -->
+    <rect x="186" y="98" width="16" height="98" fill="url(#columnGrad)"/>
+    <rect x="184" y="94" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+    <rect x="184" y="192" width="20" height="6" rx="1" fill="#d0c0a4" stroke="#b8a888" stroke-width="0.5"/>
+
+    <!-- Entablature (beam above columns) -->
+    <rect x="44" y="86" width="168" height="10" rx="1" fill="#d4c4a8"
+          stroke="#b8a888" stroke-width="1"/>
+    <rect x="44" y="88" width="168" height="3" fill="#ffffff" fill-opacity="0.12"/>
+
+    <!-- Pediment (triangle) -->
+    <polygon points="36,86 128,38 220,86" fill="url(#pedimentGrad)"
+             stroke="#b8a888" stroke-width="1"/>
+    <!-- Pediment highlight -->
+    <polygon points="44,84 128,42 212,84" fill="#ffffff" fill-opacity="0.06"/>
+
+    <!-- Tympanum circle decoration -->
+    <circle cx="128" cy="68" r="12" fill="none" stroke="#b8a888" stroke-width="1.5"/>
+    <circle cx="128" cy="68" r="8" fill="none" stroke="#c8b898" stroke-width="1"/>
+
+    <!-- Roof cap line -->
+    <line x1="36" y1="86" x2="220" y2="86" stroke="#a09478" stroke-width="1.5"/>
+
+    <!-- Flag pole -->
+    <line x1="128" y1="18" x2="128" y2="38" stroke="#808080" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Flag -->
+    <path d="M130,20 L156,27 L130,34 Z" fill="#c04040"/>
+    <path d="M130,20 L156,27 L143,23.5 L130,27 Z" fill="#d05050"/>
+  </g>
+</svg>

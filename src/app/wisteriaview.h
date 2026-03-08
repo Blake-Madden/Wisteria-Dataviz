@@ -11,10 +11,12 @@
 
 #include "../base/reportbuilder.h"
 #include "../ui/controls/sidebar.h"
+#include "../ui/dialogs/insertgraphdlg.h"
 #include "../util/windowcontainer.h"
 #include <vector>
 #include <wx/docview.h>
 #include <wx/grid.h>
+#include <wx/menu.h>
 #include <wx/ribbon/art.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
@@ -72,21 +74,49 @@ class WisteriaView : public wxView
     void OnSidebarClick(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
-    void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
-                             const wxString& name,
-                             const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo = {});
+    void OnInsertPage(wxCommandEvent& event);
+    void
+    AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                        const wxString& name,
+                        const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo = {},
+                        const Wisteria::ReportBuilder::DatasetImportOptions& importOptions = {});
+    void AddPageToProject(size_t rows, size_t columns, const wxString& name);
     void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     void AdjustGridColumnsForIcons(wxGrid* grid);
+
+    void BuildGraphMenus();
+    void OnGraphDropdown(wxCommandEvent& event);
+    void OnInsertChernoffPlot(wxCommandEvent& event);
+    void OnInsertScatterPlot(wxCommandEvent& event);
+    void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
+                              const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+                              std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
+                              size_t graphRow, size_t graphCol,
+                              Wisteria::UI::LegendPlacement legendPlacement);
+    void UpdateGraphButtonStates();
+    [[nodiscard]]
+    Wisteria::Canvas* GetActiveCanvas() noexcept;
+    [[nodiscard]]
+    bool IsPageSelected() const noexcept;
 
     wxDocChildFrame* m_frame{ nullptr };
     wxSplitterWindow* m_splitter{ nullptr };
     Wisteria::UI::SideBar* m_sideBar{ nullptr };
     wxPanel* m_workArea{ nullptr };
+    wxRibbonButtonBar* m_graphButtonBar{ nullptr };
     bool m_sidebarShown{ true };
 
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;
     WindowContainer m_workWindows;
+
+    wxMenu m_basicGraphMenu;
+    wxMenu m_businessGraphMenu;
+    wxMenu m_statisticalGraphMenu;
+    wxMenu m_surveyGraphMenu;
+    wxMenu m_educationGraphMenu;
+    wxMenu m_socialGraphMenu;
+    wxMenu m_sportsGraphMenu;
 
     constexpr static size_t DATA_ICON_INDEX{ 0 };
     constexpr static size_t PAGE_ICON_INDEX{ 1 };

@@ -94,7 +94,8 @@ void WisteriaApp::LoadInterface()
 
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]] wxCommandEvent& event)
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
         {
             wxAboutDialogInfo aboutInfo;
             aboutInfo.SetCopyright(_(L"Copyright (c) 2005-2026 Blake Madden"));
@@ -122,7 +123,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                    wxRIBBON_BAR_SHOW_PAGE_ICONS | wxRIBBON_BAR_DEFAULT_STYLE);
 
     // Home tab
-    const auto homeIcon = GetResourceManager().GetSVG(L"home.svg");
+    const auto homeIcon = GetResourceManager().GetSVG(
+        wxSystemSettings::GetAppearance().IsDark() ? L"home-dark-mode.svg" : L"home.svg");
     auto* homePage = new wxRibbonPage(
         ribbon, wxID_ANY, _(L"Home"),
         homeIcon.IsOk() ? homeIcon.GetBitmap(parent->FromDIP(wxSize{ 16, 16 })) : wxBitmap{});
@@ -160,6 +162,55 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         insertButtonBar->AddButton(ID_INSERT_DATASET, _(L"Dataset"),
                                    dataIcon.IsOk() ? dataIcon.GetBitmap(iconSize) : wxBitmap{},
                                    _(L"Import a dataset into the project"));
+
+        const auto pageIcon = GetResourceManager().GetSVG(L"page.svg");
+        insertButtonBar->AddButton(ID_INSERT_PAGE, _(L"Page"),
+                                   pageIcon.IsOk() ? pageIcon.GetBitmap(iconSize) : wxBitmap{},
+                                   _(L"Add a new page to the project"));
+
+        // Graph category panel
+        auto* graphPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Graphs"));
+        auto* graphButtonBar = new wxRibbonButtonBar(graphPanel, ID_GRAPH_BUTTONBAR);
+
+        const auto basicIcon = GetResourceManager().GetSVG(L"chart-basic.svg");
+        graphButtonBar->AddDropdownButton(
+            ID_INSERT_GRAPH_BASIC, _(L"Basic"),
+            basicIcon.IsOk() ? basicIcon.GetBitmap(iconSize) : wxBitmap{}, _(L"Basic graphs"));
+
+        const auto businessIcon = GetResourceManager().GetSVG(L"chart-business.svg");
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BUSINESS, _(L"Business"),
+                                          businessIcon.IsOk() ? businessIcon.GetBitmap(iconSize) :
+                                                                wxBitmap{},
+                                          _(L"Business graphs"));
+
+        const auto statisticalIcon = GetResourceManager().GetSVG(L"chart-statistical.svg");
+        graphButtonBar->AddDropdownButton(
+            ID_INSERT_GRAPH_STATISTICAL, _(L"Statistical"),
+            statisticalIcon.IsOk() ? statisticalIcon.GetBitmap(iconSize) : wxBitmap{},
+            _(L"Statistical graphs"));
+
+        const auto surveyIcon = GetResourceManager().GetSVG(L"chart-survey.svg");
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SURVEY, _(L"Survey"),
+                                          surveyIcon.IsOk() ? surveyIcon.GetBitmap(iconSize) :
+                                                              wxBitmap{},
+                                          _(L"Survey data graphs"));
+
+        const auto educationIcon = GetResourceManager().GetSVG(L"chart-education.svg");
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_EDUCATION, _(L"Education"),
+                                          educationIcon.IsOk() ? educationIcon.GetBitmap(iconSize) :
+                                                                 wxBitmap{},
+                                          _(L"Education graphs"));
+
+        const auto socialIcon = GetResourceManager().GetSVG(L"chart-social.svg");
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SOCIAL, _(L"Social Sciences"),
+                                          socialIcon.IsOk() ? socialIcon.GetBitmap(iconSize) :
+                                                              wxBitmap{},
+                                          _(L"Social sciences graphs"));
+
+        const auto sportsIcon = GetResourceManager().GetSVG(L"chart-sports.svg");
+        graphButtonBar->AddDropdownButton(
+            ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
+            sportsIcon.IsOk() ? sportsIcon.GetBitmap(iconSize) : wxBitmap{}, _(L"Sports graphs"));
         }
     else
         {

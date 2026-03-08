@@ -48,12 +48,40 @@ namespace Wisteria
             return m_colorMap;
             }
 
-        /// @returns The datasets loaded from the configuration file.
+        /// @brief Import options associated with a dataset.
+        struct DatasetImportOptions
+            {
+            wxString m_filePath;
+            std::variant<wxString, size_t> m_worksheet{ static_cast<size_t>(1) };
+            Data::Dataset::ColumnPreviewInfo m_columnPreviewInfo;
+            Data::ImportInfo m_importInfo;
+            };
+
+        /// @returns The datasets in the report.
         [[nodiscard]]
         const std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase>&
         GetDatasets() const noexcept
             {
             return m_datasets;
+            }
+
+        /// @brief Adds a dataset to the report.
+        /// @param name The name for the dataset.
+        /// @param dataset The dataset to add.
+        /// @param importOptions The import options used to load the dataset.
+        void AddDataset(const wxString& name, const std::shared_ptr<Data::Dataset>& dataset,
+                        const DatasetImportOptions& importOptions = {})
+            {
+            m_datasets[name] = dataset;
+            m_datasetImportOptions[name] = importOptions;
+            }
+
+        /// @returns The import options for all datasets.
+        [[nodiscard]]
+        const std::map<wxString, DatasetImportOptions, Data::wxStringLessNoCase>&
+        GetDatasetImportOptions() const noexcept
+            {
+            return m_datasetImportOptions;
             }
 
         /// @returns The name of the report.
@@ -667,6 +695,7 @@ namespace Wisteria
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;
+        std::map<wxString, DatasetImportOptions, Data::wxStringLessNoCase> m_datasetImportOptions;
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
 

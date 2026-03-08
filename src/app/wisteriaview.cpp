@@ -8,8 +8,12 @@
 
 #include "wisteriaview.h"
 #include "../base/reportprintout.h"
+#include "../graphs/scatterplot.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
+#include "../ui/dialogs/insertchernoffdlg.h"
+#include "../ui/dialogs/insertpagedlg.h"
+#include "../ui/dialogs/insertscatterplotdlg.h"
 #include "wisteriaapp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
@@ -65,6 +69,13 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     sizer->Add(m_splitter, wxSizerFlags{ 1 }.Expand());
     m_frame->SetSizer(sizer);
 
+    // find the graph button bar for enabling/disabling
+    m_graphButtonBar =
+        dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_GRAPH_BUTTONBAR));
+
+    // build the graph dropdown menus
+    BuildGraphMenus();
+
     // bind sidebar click event
     m_sideBar->Bind(Wisteria::UI::wxEVT_SIDEBAR_CLICK, &WisteriaView::OnSidebarClick, this);
 
@@ -75,16 +86,102 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
                   ID_INSERT_DATASET);
 
+    // bind insert page button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
+
+    // bind graph category dropdown buttons
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_BASIC);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_BUSINESS);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_STATISTICAL);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_SURVEY);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_EDUCATION);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_SOCIAL);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_SPORTS);
+
+    // bind individual graph menu items
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertChernoffPlot, this, ID_NEW_CHERNOFFPLOT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScatterPlot, this, ID_NEW_SCATTERPLOT);
+
     m_frame->CenterOnScreen();
     if (wxGetApp().GetMainFrame()->IsMaximized())
         {
         m_frame->Maximize();
         m_frame->SetSize(m_frame->GetSize());
         }
-    m_frame->Show(true);
-    Activate(true);
+
+    // for new projects, prompt for an initial dataset before continuing
+    std::shared_ptr<Wisteria::Data::Dataset> initialDataset;
+    wxString initialDatasetName;
+    wxString initialFilePath;
+    Wisteria::Data::Dataset::ColumnPreviewInfo initialColumnInfo;
+    Wisteria::Data::ImportInfo initialImportInfo;
+    std::variant<wxString, size_t> initialWorksheet{ static_cast<size_t>(1) };
+    if (doc->GetFilename().empty())
+        {
+        wxFileDialog fileDlg(wxGetApp().GetMainFrame(), _(L"Select Dataset"), wxString{},
+                             wxString{}, Wisteria::Data::Dataset::GetDataFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            m_frame->Destroy();
+            m_frame = nullptr;
+            wxGetApp().GetMainFrame()->Show();
+            return false;
+            }
+
+        const wxString filePath = fileDlg.GetPath();
+
+        Wisteria::UI::DatasetImportDlg importDlg(wxGetApp().GetMainFrame(), filePath);
+        if (importDlg.ShowModal() != wxID_OK)
+            {
+            m_frame->Destroy();
+            m_frame = nullptr;
+            wxGetApp().GetMainFrame()->Show();
+            return false;
+            }
+
+        try
+            {
+            initialColumnInfo = importDlg.GetColumnPreviewInfo();
+            initialImportInfo = importDlg.GetImportInfo();
+            initialWorksheet = importDlg.GetWorksheet();
+            initialDataset = std::make_shared<Wisteria::Data::Dataset>();
+            initialDataset->Import(filePath, initialImportInfo, initialWorksheet);
+            initialDatasetName = wxFileName{ filePath }.GetName();
+            initialFilePath = filePath;
+            }
+        catch (const std::exception& exc)
+            {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
+                         wxGetApp().GetMainFrame());
+            m_frame->Destroy();
+            m_frame = nullptr;
+            wxGetApp().GetMainFrame()->Show();
+            return false;
+            }
+        }
 
     LoadProject();
+
+    if (initialDataset != nullptr)
+        {
+        AddDatasetToProject(
+            initialDataset, initialDatasetName, initialColumnInfo,
+            { initialFilePath, initialWorksheet, initialColumnInfo, initialImportInfo });
+        }
+
+    UpdateGraphButtonStates();
+
+    m_frame->Show(true);
+    Activate(true);
 
     return true;
     }
@@ -254,6 +351,7 @@ void WisteriaView::OnSidebarClick(wxCommandEvent& event)
 
     m_workArea->Layout();
     m_sideBar->Refresh();
+    UpdateGraphButtonStates();
     }
 
 //-------------------------------------------
@@ -365,10 +463,13 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
     try
         {
         const auto columnPreview = importDlg.GetColumnPreviewInfo();
+        const auto importInfo = importDlg.GetImportInfo();
+        const auto worksheet = importDlg.GetWorksheet();
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
-        dataset->Import(filePath, importDlg.GetImportInfo(), importDlg.GetWorksheet());
+        dataset->Import(filePath, importInfo, worksheet);
 
-        AddDatasetToProject(dataset, wxFileName{ filePath }.GetName(), columnPreview);
+        AddDatasetToProject(dataset, wxFileName{ filePath }.GetName(), columnPreview,
+                            { filePath, worksheet, columnPreview, importInfo });
         }
     catch (const std::exception& exc)
         {
@@ -380,8 +481,11 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::AddDatasetToProject(
     const std::shared_ptr<Wisteria::Data::Dataset>& dataset, const wxString& name,
-    const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo /*= {}*/)
+    const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo /*= {}*/,
+    const Wisteria::ReportBuilder::DatasetImportOptions& importOptions /*= {}*/)
     {
+    m_reportBuilder.AddDataset(name, dataset, importOptions);
+
     const wxWindowID dsId = wxNewId();
 
     auto* table = new Wisteria::UI::DatasetGridTable(dataset);
@@ -424,4 +528,370 @@ void WisteriaView::AddDatasetToProject(
     m_workArea->Layout();
     m_sideBar->ResetState();
     m_sideBar->Refresh();
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
+    {
+    Wisteria::UI::InsertPageDlg dlg(m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName());
+    }
+
+//-------------------------------------------
+void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, const wxString& name)
+    {
+    const wxWindowID pageId = wxNewId();
+
+    auto* canvas = new Wisteria::Canvas(m_workArea, pageId);
+    canvas->SetFixedObjectsGridSize(rows, columns);
+    if (!name.empty())
+        {
+        canvas->SetLabel(name);
+        }
+
+    canvas->Hide();
+    m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
+    m_workWindows.AddWindow(canvas);
+    m_pages.push_back(canvas);
+
+    const wxString displayName =
+        !name.empty() ? name : wxString::Format(_(L"Page %zu"), m_pages.size());
+    m_sideBar->InsertItem(m_sideBar->GetFolderCount(), displayName, pageId, PAGE_ICON_INDEX);
+    m_sideBar->SelectFolder(m_sideBar->GetFolderCount() - 1, true);
+    m_sideBar->SaveState();
+
+    m_workArea->Layout();
+    m_sideBar->Refresh();
+    UpdateGraphButtonStates();
+    }
+
+//-------------------------------------------
+bool WisteriaView::IsPageSelected() const noexcept
+    {
+    return std::any_of(m_pages.cbegin(), m_pages.cend(),
+                       [](const auto* canvas) { return canvas != nullptr && canvas->IsShown(); });
+    }
+
+//-------------------------------------------
+void WisteriaView::UpdateGraphButtonStates()
+    {
+    if (m_graphButtonBar == nullptr)
+        {
+        return;
+        }
+
+    const bool enabled = IsPageSelected();
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, enabled);
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, enabled);
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, enabled);
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SURVEY, enabled);
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, enabled);
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, enabled);
+    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, enabled);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnGraphDropdown(wxCommandEvent& event)
+    {
+    const auto id = event.GetId();
+    if (id == ID_INSERT_GRAPH_BASIC)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_basicGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_BUSINESS)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_businessGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_STATISTICAL)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_statisticalGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_SURVEY)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_surveyGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_EDUCATION)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_educationGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_SOCIAL)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_socialGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_SPORTS)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_sportsGraphMenu);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::BuildGraphMenus()
+    {
+    const auto iconSize = wxSize{ m_frame->FromDIP(16), m_frame->FromDIP(16) };
+
+    // helper to append a menu item with an icon
+    const auto appendItem =
+        [&](wxMenu& menu, wxWindowID id, const wxString& label, const wxString& svgName)
+    {
+        auto* item = new wxMenuItem(&menu, id, label);
+        const auto bmp = wxGetApp().GetResourceManager().GetSVG(svgName);
+        if (bmp.IsOk())
+            {
+            item->SetBitmap(bmp.GetBitmap(iconSize));
+            }
+        menu.Append(item);
+    };
+
+    // Basic graphs
+    appendItem(m_basicGraphMenu, ID_NEW_BARCHART, _(L"Bar Chart..."), L"barchart.svg");
+    m_basicGraphMenu.AppendSeparator();
+    appendItem(m_basicGraphMenu, ID_NEW_PIECHART, _(L"Pie Chart..."), L"piechart.svg");
+    m_basicGraphMenu.AppendSeparator();
+    appendItem(m_basicGraphMenu, ID_NEW_LINEPLOT, _(L"Line Plot..."), L"lineplot.svg");
+    m_basicGraphMenu.AppendSeparator();
+    appendItem(m_basicGraphMenu, ID_NEW_TABLE, _(L"Table..."), L"table.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram..."), L"sankey.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_WAFFLE_CHART, _(L"Waffle Chart..."), L"waffle.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_WORD_CLOUD, _(L"Word Cloud..."), L"wordcloud.svg");
+
+    // Business graphs
+    appendItem(m_businessGraphMenu, ID_NEW_GANTT, _(L"Gantt Chart..."), L"gantt.svg");
+    appendItem(m_businessGraphMenu, ID_NEW_CANDLESTICK, _(L"Candlestick Plot..."),
+               L"candlestick.svg");
+
+    // Statistical graphs
+    appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."), L"histogram.svg");
+    m_statisticalGraphMenu.AppendSeparator();
+    appendItem(m_statisticalGraphMenu, ID_NEW_BOXPLOT, _(L"Box Plot..."), L"boxplot.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot..."),
+               L"stem-leaf.svg");
+    m_statisticalGraphMenu.AppendSeparator();
+    appendItem(m_statisticalGraphMenu, ID_NEW_HEATMAP, _(L"Heat Map..."), L"heatmap.svg");
+    m_statisticalGraphMenu.AppendSeparator();
+    appendItem(m_statisticalGraphMenu, ID_NEW_SCATTERPLOT, _(L"Scatter Plot..."),
+               L"scatterplot.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_BUBBLEPLOT, _(L"Bubble Plot..."), L"bubbleplot.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot..."),
+               L"chernoffplot.svg");
+
+    // Survey graphs
+    appendItem(m_surveyGraphMenu, ID_NEW_LIKERT, _(L"Likert Chart..."), L"likert7.svg");
+    m_surveyGraphMenu.AppendSeparator();
+    appendItem(m_surveyGraphMenu, ID_NEW_PROCON_ROADMAP, _(L"Pro && Con Roadmap..."),
+               L"roadmap.svg");
+
+    // Education graphs
+    appendItem(m_educationGraphMenu, ID_NEW_SCALE_CHART, _(L"Scale Chart..."), L"scale.svg");
+
+    // Social Sciences graphs
+    appendItem(m_socialGraphMenu, ID_NEW_WCURVE, _(L"W-Curve Plot..."), L"wcurve.svg");
+    appendItem(m_socialGraphMenu, ID_NEW_LR_ROADMAP, _(L"Linear Regression Roadmap..."),
+               L"roadmap.svg");
+
+    // Sports graphs
+    appendItem(m_sportsGraphMenu, ID_NEW_WIN_LOSS_SPARKLINE, _(L"Win/Loss Sparkline..."),
+               L"sparkline.svg");
+    }
+
+//-------------------------------------------
+Wisteria::Canvas* WisteriaView::GetActiveCanvas() noexcept
+    {
+    for (auto* canvas : m_pages)
+        {
+        if (canvas != nullptr && canvas->IsShown())
+            {
+            return canvas;
+            }
+        }
+    return nullptr;
+    }
+
+//-------------------------------------------
+void WisteriaView::PlaceGraphWithLegend(
+    Wisteria::Canvas* canvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+    std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
+    const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement)
+    {
+    using LP = Wisteria::UI::LegendPlacement;
+    auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+
+    // The legend occupies its own cell in the canvas grid, adjacent to the graph.
+    // If the grid doesn't have room for the legend in the requested direction,
+    // we expand it by adding a column (for left/right) or row (for top/bottom).
+    //
+    // When the legend goes to the left and the graph is in column 0, there is
+    // no column to the left, so we add one and shift the graph to column 1.
+    // Similarly, when the legend goes on top and the graph is in row 0,
+    // we add a row and shift the graph down to row 1.
+    if (legendPlacement == LP::Right)
+        {
+        if (graphCol + 1 >= gridCols)
+            {
+            canvas->SetFixedObjectsGridSize(gridRows, gridCols + 1);
+            }
+        }
+    else if (legendPlacement == LP::Left)
+        {
+        if (graphCol == 0)
+            {
+            canvas->SetFixedObjectsGridSize(gridRows, gridCols + 1);
+            }
+        }
+    else if (legendPlacement == LP::Bottom)
+        {
+        if (graphRow + 1 >= gridRows)
+            {
+            canvas->SetFixedObjectsGridSize(gridRows + 1, gridCols);
+            }
+        }
+    else if (legendPlacement == LP::Top)
+        {
+        if (graphRow == 0)
+            {
+            canvas->SetFixedObjectsGridSize(gridRows + 1, gridCols);
+            }
+        }
+
+    const auto plotRow = (legendPlacement == LP::Top && graphRow == 0) ? graphRow + 1 : graphRow;
+    const auto plotCol = (legendPlacement == LP::Left && graphCol == 0) ? graphCol + 1 : graphCol;
+    canvas->SetFixedObject(plotRow, plotCol, plot);
+
+    if (legend != nullptr)
+        {
+        if (legendPlacement == LP::Right)
+            {
+            canvas->SetFixedObject(plotRow, plotCol + 1, std::move(legend));
+            }
+        else if (legendPlacement == LP::Left)
+            {
+            canvas->SetFixedObject(plotRow, plotCol - 1, std::move(legend));
+            }
+        else if (legendPlacement == LP::Bottom)
+            {
+            legend->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::LeftAligned);
+            canvas->SetFixedObject(plotRow + 1, plotCol, std::move(legend));
+            }
+        else if (legendPlacement == LP::Top)
+            {
+            legend->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::LeftAligned);
+            canvas->SetFixedObject(plotRow - 1, plotCol, std::move(legend));
+            }
+        }
+
+    wxClientDC dc(canvas);
+    canvas->CalcAllSizes(dc);
+    canvas->Refresh();
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot =
+            std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(canvas, dlg.GetSkinColorDarker());
+        plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
+        plot->SetGender(dlg.GetGender());
+        plot->SetHairStyle(dlg.GetHairStyle());
+        plot->SetFacialHair(dlg.GetFacialHair());
+        plot->SetEyeColor(dlg.GetEyeColor());
+        plot->SetHairColor(dlg.GetHairColor());
+        plot->ShowLabels(dlg.GetShowLabels());
+
+        using FID = Wisteria::Graphs::ChernoffFacesPlot::FeatureId;
+        const auto optVar = [&dlg](FID id) -> std::optional<wxString>
+        {
+            const auto var = dlg.GetFeatureVariable(id);
+            return var.empty() ? std::nullopt : std::optional<wxString>(var);
+        };
+
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFeatureVariable(FID::FaceWidth),
+                      optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
+                      optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
+                      optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
+                      optVar(FID::EarSize));
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+
+        PlaceGraphWithLegend(
+            canvas, plot,
+            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(plot->CreateExtendedLegend(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(hint))) :
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertScatterPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::ScatterPlot>(canvas);
+        plot->ShowRegressionLines(dlg.GetShowRegressionLines());
+        plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+
+        PlaceGraphWithLegend(
+            canvas, plot,
+            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(plot->CreateLegend(
+                    Wisteria::Graphs::LegendOptions{}.IncludeHeader(true).PlacementHint(hint))) :
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
     }
