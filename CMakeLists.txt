@@ -11,8 +11,7 @@
 # all: builds the library, demo, application, and documentation targets
 # wisteria: builds the static library (included with ALL)
 # demo: builds the demo application (included with ALL)
-# WisteriaDV: builds the main application (not included with ALL;
-#             build explicitly with: cmake --build . --target WisteriaDV)
+# WisteriaDV: builds the stand-alone (experimental) application (included with ALL)
 # doxygen-docs: builds the API documentation (included with ALL if Doxygen is found)
 # quarto-docs: builds the JSON syntax documentation (included with ALL if Quarto is found)
 
@@ -267,7 +266,7 @@ if(APPLE)
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.demo")
 endif()
 
-# Build the app (experimental)
+# Build the stand-alone application (experimental)
 ########################
 include(${CMAKE_SOURCE_DIR}/cmake/includes/appfiles.cmake)
 set(APP_SRC_FILES ${APP_WISTERIA_SRC}
@@ -288,7 +287,7 @@ endif()
 # Define the build target for the executable and copy it into the "app" subfolder
 message(STATUS "Configuring the program...")
 set(WISTERIA_APP WisteriaDV)
-add_executable(${WISTERIA_APP} EXCLUDE_FROM_ALL WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
+add_executable(${WISTERIA_APP} WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
 set_target_properties(${WISTERIA_APP} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app")
 
@@ -305,17 +304,15 @@ endif()
 file(STRINGS "${CMAKE_SOURCE_DIR}/cmake/includes/resfiles.cmake" RES_FILE_LIST)
 list(TRANSFORM RES_FILE_LIST PREPEND "${CMAKE_SOURCE_DIR}/res/")
 
-set(RES_WAD_PATH "${CMAKE_BINARY_DIR}/app/res.wad")
-add_custom_command(OUTPUT "${RES_WAD_PATH}"
+set(RES_WAD_PATH "$<TARGET_FILE_DIR:${WISTERIA_APP}>/res.wad")
+add_custom_command(TARGET ${WISTERIA_APP}
+                   POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E tar "cvf"
                        "${RES_WAD_PATH}"
                        --format=zip
                        --files-from="${CMAKE_SOURCE_DIR}/cmake/includes/resfiles.cmake"
                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/res"
-                   DEPENDS ${RES_FILE_LIST}
                    COMMENT "Building application resource bundle...")
-add_custom_target(${WISTERIA_APP}_resources DEPENDS "${RES_WAD_PATH}")
-add_dependencies(${WISTERIA_APP} ${WISTERIA_APP}_resources)
 
 # Copy datasets into build folder
 add_custom_command(TARGET ${WISTERIA_APP}
