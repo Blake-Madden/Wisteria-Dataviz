@@ -96,6 +96,36 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetFixedWidth() const;
 
+        /// @returns The number of rows in the grid.
+        [[nodiscard]]
+        size_t GetRowCount() const noexcept
+            {
+            return m_rows;
+            }
+
+        /// @returns The number of columns in the grid.
+        [[nodiscard]]
+        size_t GetColumnCount() const noexcept
+            {
+            return m_columns;
+            }
+
+        /// @brief Resizes the canvas grid to match the dialog's grid dimensions.
+        /// @details Call after the dialog returns wxID_OK and before placing
+        ///     any items. This is a no-op if the grid is already large enough.
+        void ApplyGridSize()
+            {
+            if (m_canvas != nullptr)
+                {
+                const auto [currentRows, currentCols] = m_canvas->GetFixedObjectsGridSize();
+                if (m_rows > currentRows || m_columns > currentCols)
+                    {
+                    m_canvas->SetFixedObjectsGridSize(std::max(currentRows, m_rows),
+                                                      std::max(currentCols, m_columns));
+                    }
+                }
+            }
+
       protected:
         /// @brief Creates the dialog controls.
         /// @details Override in derived classes to add additional sidebar pages.
@@ -158,6 +188,8 @@ namespace Wisteria::UI
         wxSpinCtrl* m_paddingRightSpin{ nullptr };
         wxSpinCtrl* m_paddingBottomSpin{ nullptr };
         wxSpinCtrl* m_paddingLeftSpin{ nullptr };
+        wxSpinCtrl* m_rowsSpin{ nullptr };
+        wxSpinCtrl* m_columnsSpin{ nullptr };
         wxCheckBox* m_fitRowToContentCheck{ nullptr };
         wxCheckBox* m_fixedWidthCheck{ nullptr };
         };

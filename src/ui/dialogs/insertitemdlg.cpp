@@ -194,8 +194,44 @@ namespace Wisteria::UI
         pagePage->SetSizer(pageSizer);
         m_sideBarBook->AddPage(pagePage, _(L"Page"), ID_PAGE_SECTION, true);
 
-        // grid preview (only when there are multiple cells to choose from)
-        if (m_rows > 1 || m_columns > 1)
+            // grid size controls
+            {
+            auto* gridSizeSizer = new wxFlexGridSizer(4, wxSize{ FromDIP(8), FromDIP(4) });
+            gridSizeSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Rows:")),
+                               wxSizerFlags{}.CenterVertical());
+            m_rowsSpin = new wxSpinCtrl(pagePage, wxID_ANY);
+            m_rowsSpin->SetRange(static_cast<int>(m_rows), 50);
+            m_rowsSpin->SetValue(static_cast<int>(m_rows));
+            gridSizeSizer->Add(m_rowsSpin);
+            gridSizeSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Columns:")),
+                               wxSizerFlags{}.CenterVertical());
+            m_columnsSpin = new wxSpinCtrl(pagePage, wxID_ANY);
+            m_columnsSpin->SetRange(static_cast<int>(m_columns), 50);
+            m_columnsSpin->SetValue(static_cast<int>(m_columns));
+            gridSizeSizer->Add(m_columnsSpin);
+            pageSizer->Add(gridSizeSizer, wxSizerFlags{}.Border());
+
+            m_rowsSpin->Bind(wxEVT_SPINCTRL,
+                             [this]([[maybe_unused]] wxSpinEvent&)
+                             {
+                                 m_rows = static_cast<size_t>(m_rowsSpin->GetValue());
+                                 if (m_gridPanel != nullptr)
+                                     {
+                                     m_gridPanel->Refresh();
+                                     }
+                             });
+            m_columnsSpin->Bind(wxEVT_SPINCTRL,
+                                [this]([[maybe_unused]] wxSpinEvent&)
+                                {
+                                    m_columns = static_cast<size_t>(m_columnsSpin->GetValue());
+                                    if (m_gridPanel != nullptr)
+                                        {
+                                        m_gridPanel->Refresh();
+                                        }
+                                });
+            }
+
+            // grid preview
             {
             pageSizer->Add(new wxStaticText(pagePage, wxID_ANY,
                                             _(L"Select the cell where the item will be placed:")),
@@ -241,7 +277,11 @@ namespace Wisteria::UI
                             const auto cellW = static_cast<int>((col + 1) * cellWidth) - cellLeft;
                             const auto cellH = static_cast<int>((row + 1) * cellHeight) - cellTop;
 
-                            const auto item = (m_canvas != nullptr) ?
+                            const auto canvasGrid = (m_canvas != nullptr) ?
+                                                        m_canvas->GetFixedObjectsGridSize() :
+                                                        std::make_pair<size_t, size_t>(0, 0);
+                            const auto item = (m_canvas != nullptr && row < canvasGrid.first &&
+                                               col < canvasGrid.second) ?
                                                   m_canvas->GetFixedObject(row, col) :
                                                   nullptr;
                             const bool isOccupied = (item != nullptr);
@@ -543,5 +583,14 @@ namespace Wisteria::UI
         GetSizer()->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                         wxSizerFlags{}.Expand().Border());
         GetSizer()->SetSizeHints(this);
+
+        Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent& evt)
+            {
+                ApplyGridSize();
+                evt.Skip();
+            },
+            wxID_OK);
         }
     } // namespace Wisteria::UI
