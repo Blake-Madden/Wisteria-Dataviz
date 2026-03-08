@@ -66,9 +66,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     sizer->Add(m_splitter, wxSizerFlags{ 1 }.Expand());
     m_frame->SetSizer(sizer);
 
-    // find the graph button bar for enabling/disabling
+    // find button bars for enabling/disabling
     m_graphButtonBar =
         dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_GRAPH_BUTTONBAR));
+    m_pagesButtonBar =
+        dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_PAGES_BUTTONBAR));
 
     // build the graph dropdown menus
     BuildGraphMenus();
@@ -83,8 +85,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
                   ID_INSERT_DATASET);
 
-    // bind insert page button
+    // bind page buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditPage, this, ID_EDIT_PAGE);
 
     // bind graph category dropdown buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
@@ -523,7 +526,7 @@ void WisteriaView::AddDatasetToProject(
         }
 
     m_workArea->Layout();
-    m_sideBar->ResetState();
+    m_sideBar->SaveState();
     m_sideBar->Refresh();
     }
 
@@ -540,16 +543,50 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    const auto [currentRows, currentCols] = canvas->GetFixedObjectsGridSize();
+
+    Wisteria::UI::InsertPageDlg dlg(m_frame, wxID_ANY, _(L"Edit Page"));
+    dlg.SetRows(currentRows);
+    dlg.SetColumns(currentCols);
+    dlg.SetPageName(canvas->GetLabel());
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
+    canvas->SetLabel(dlg.GetPageName());
+
+    // update the sidebar label for this page
+    const auto selectedFolder = m_sideBar->GetSelectedFolder();
+    if (selectedFolder.has_value())
+        {
+        const wxString displayName = !dlg.GetPageName().empty() ?
+                                         dlg.GetPageName() :
+                                         m_sideBar->GetFolderText(selectedFolder.value());
+        m_sideBar->SetFolderText(selectedFolder.value(), displayName);
+
+        // adjust the splitter sash to match the sidebar's new min width
+        const int minWidth = m_sideBar->GetMinSize().GetWidth();
+        m_splitter->SetSashPosition(minWidth);
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, const wxString& name)
     {
     const wxWindowID pageId = wxNewId();
 
     auto* canvas = new Wisteria::Canvas(m_workArea, pageId);
     canvas->SetFixedObjectsGridSize(rows, columns);
-    if (!name.empty())
-        {
-        canvas->SetLabel(name);
-        }
 
     canvas->Hide();
     m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
@@ -558,6 +595,7 @@ void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, con
 
     const wxString displayName =
         !name.empty() ? name : wxString::Format(_(L"Page %zu"), m_pages.size());
+    canvas->SetLabel(displayName);
     m_sideBar->InsertItem(m_sideBar->GetFolderCount(), displayName, pageId, PAGE_ICON_INDEX);
     m_sideBar->SelectFolder(m_sideBar->GetFolderCount() - 1, true);
     m_sideBar->SaveState();
@@ -577,12 +615,18 @@ bool WisteriaView::IsPageSelected() const noexcept
 //-------------------------------------------
 void WisteriaView::UpdateGraphButtonStates()
     {
+    const bool enabled = IsPageSelected();
+
+    if (m_pagesButtonBar != nullptr)
+        {
+        m_pagesButtonBar->EnableButton(ID_EDIT_PAGE, enabled);
+        }
+
     if (m_graphButtonBar == nullptr)
         {
         return;
         }
 
-    const bool enabled = IsPageSelected();
     m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, enabled);
     m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, enabled);
     m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, enabled);

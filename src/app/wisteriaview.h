@@ -75,6 +75,7 @@ class WisteriaView : public wxView
     void OnPrintAll(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
+    void OnEditPage(wxCommandEvent& event);
     void
     AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                         const wxString& name,
@@ -104,6 +105,7 @@ class WisteriaView : public wxView
     Wisteria::UI::SideBar* m_sideBar{ nullptr };
     wxPanel* m_workArea{ nullptr };
     wxRibbonButtonBar* m_graphButtonBar{ nullptr };
+    wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
     bool m_sidebarShown{ true };
 
     Wisteria::ReportBuilder m_reportBuilder;

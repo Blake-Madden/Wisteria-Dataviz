@@ -269,6 +269,20 @@ namespace Wisteria::UI
             return m_folders[item].m_label;
             }
 
+        /** @brief Sets the label of a given root item.
+            @param item The index of the item in the list of root items.
+            @param label The new label text.*/
+        void SetFolderText(const size_t item, const wxString& label)
+            {
+            if (item < GetFolderCount())
+                {
+                m_folders[item].m_label = label;
+                AdjustWidthToFitItems();
+                RecalcSizes();
+                Refresh();
+                }
+            }
+
         /** @brief Scrolls to folder (by index) if not fully visible.
             @param index The index of the folder to make visible.*/
         void EnsureFolderVisible(const size_t index);

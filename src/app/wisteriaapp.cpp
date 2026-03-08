@@ -291,19 +291,29 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   printIcon.IsOk() ? printIcon.GetBitmap(iconSize) : wxBitmap{},
                                   _(L"Print all pages"));
 
-        // Insert panel
-        auto* insertPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Insert"));
-        auto* insertButtonBar = new wxRibbonButtonBar(insertPanel, wxID_ANY);
+        // Data panel
+        auto* dataPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Data"));
+        auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, wxID_ANY);
 
         const auto dataIcon = GetResourceManager().GetSVG(L"data.svg");
-        insertButtonBar->AddButton(ID_INSERT_DATASET, _(L"Dataset"),
-                                   dataIcon.IsOk() ? dataIcon.GetBitmap(iconSize) : wxBitmap{},
-                                   _(L"Import a dataset into the project"));
+        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"),
+                                 dataIcon.IsOk() ? dataIcon.GetBitmap(iconSize) : wxBitmap{},
+                                 _(L"Import a dataset into the project"));
+
+        // Pages panel
+        auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
+        auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
         const auto pageIcon = GetResourceManager().GetSVG(L"page.svg");
-        insertButtonBar->AddButton(ID_INSERT_PAGE, _(L"Page"),
-                                   pageIcon.IsOk() ? pageIcon.GetBitmap(iconSize) : wxBitmap{},
-                                   _(L"Add a new page to the project"));
+        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"),
+                                  pageIcon.IsOk() ? pageIcon.GetBitmap(iconSize) : wxBitmap{},
+                                  _(L"Add a new page to the project"));
+
+        const auto pageEditIcon = GetResourceManager().GetSVG(L"page-edit.svg");
+        pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"),
+                                  pageEditIcon.IsOk() ? pageEditIcon.GetBitmap(iconSize) :
+                                                        wxBitmap{},
+                                  _(L"Edit the current page"));
 
         // Graph category panel
         auto* graphPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Graphs"));

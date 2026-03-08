@@ -12,9 +12,9 @@
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertPageDlg::InsertPageDlg(wxWindow* parent, const wxWindowID id, const wxPoint& pos,
-                                 const wxSize& size, const long style)
-        : DialogWithHelp(parent, id, _(L"Insert Page"), pos, size, style)
+    InsertPageDlg::InsertPageDlg(wxWindow* parent, const wxWindowID id, const wxString& caption,
+                                 const wxPoint& pos, const wxSize& size, const long style)
+        : DialogWithHelp(parent, id, caption, pos, size, style)
         {
         CreateControls();
         GetSizer()->SetSizeHints(this);

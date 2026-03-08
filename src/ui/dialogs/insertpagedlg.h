@@ -25,10 +25,12 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param parent The parent window.
             @param id The window ID.
+            @param caption The dialog caption.
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
         InsertPageDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
+                      const wxString& caption = _(L"Insert Page"),
                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                       long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
 
@@ -52,6 +54,21 @@ namespace Wisteria::UI
             {
             return static_cast<size_t>(m_columnsSpin->GetValue());
             }
+
+        /// @brief Sets the number of rows.
+        /// @param rows The number of rows.
+        void SetRows(const size_t rows) { m_rowsSpin->SetValue(static_cast<int>(rows)); }
+
+        /// @brief Sets the number of columns.
+        /// @param columns The number of columns.
+        void SetColumns(const size_t columns)
+            {
+            m_columnsSpin->SetValue(static_cast<int>(columns));
+            }
+
+        /// @brief Sets the page name.
+        /// @param name The page name.
+        void SetPageName(const wxString& name) { m_nameCtrl->SetValue(name); }
 
         /// @returns The name for the new page (may be empty).
         [[nodiscard]]

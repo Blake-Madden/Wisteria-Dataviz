@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Paper background -->
+  <rect x="38" y="18" width="180" height="220" rx="4" ry="4"
+        fill="#f8f8f8" stroke="#b0b8c0" stroke-width="1.5"/>
+
+  <!-- Mini table (upper portion) -->
+  <!-- Table header row -->
+  <rect x="56" y="38" width="144" height="18" fill="#89b4e0"/>
+  <!-- Table body -->
+  <rect x="56" y="56" width="144" height="72" fill="#f5f8fc" stroke="#c8d0d8" stroke-width="0.75"/>
+  <!-- Table grid lines -->
+  <line x1="56" y1="74" x2="200" y2="74" stroke="#c8d0d8" stroke-width="0.75"/>
+  <line x1="56" y1="92" x2="200" y2="92" stroke="#c8d0d8" stroke-width="0.75"/>
+  <line x1="56" y1="110" x2="200" y2="110" stroke="#c8d0d8" stroke-width="0.75"/>
+  <line x1="92" y1="38" x2="92" y2="128" stroke="#c8d0d8" stroke-width="0.75"/>
+  <line x1="128" y1="38" x2="128" y2="128" stroke="#c8d0d8" stroke-width="0.75"/>
+  <line x1="164" y1="38" x2="164" y2="128" stroke="#c8d0d8" stroke-width="0.75"/>
+  <!-- Table outer border -->
+  <rect x="56" y="38" width="144" height="90" fill="none" stroke="#b0b8c0" stroke-width="1"/>
+
+  <!-- Paragraph text lines (left side, below table) -->
+  <rect x="56" y="145" width="70" height="5" rx="2" fill="#b0b8c0"/>
+  <rect x="56" y="156" width="65" height="5" rx="2" fill="#b0b8c0"/>
+  <rect x="56" y="167" width="72" height="5" rx="2" fill="#b0b8c0"/>
+  <rect x="56" y="178" width="60" height="5" rx="2" fill="#b0b8c0"/>
+  <rect x="56" y="189" width="68" height="5" rx="2" fill="#b0b8c0"/>
+  <rect x="56" y="200" width="45" height="5" rx="2" fill="#b0b8c0"/>
+
+  <!-- Mini pie chart (right-aligned, below table) -->
+  <circle cx="170" cy="178" r="30" fill="#aecbeb"/>
+  <path d="M170,178 L170,148 A30,30 0 0,1 196,165 Z" fill="#5a8abd"/>
+  <path d="M170,178 L196,165 A30,30 0 0,1 179,207 Z" fill="#4db6ac"/>
+  <path d="M170,178 L179,207 A30,30 0 0,1 148,196 Z" fill="#e8685d"/>
+  <path d="M170,178 L148,196 A30,30 0 0,1 140,178 Z" fill="#ffb74d"/>
+
+  <!-- Pencil (diagonal, bottom-right area) -->
+  <g transform="translate(195, 245) rotate(-45)">
+    <!-- Pencil body -->
+    <rect x="-8" y="-120" width="16" height="100" rx="2" ry="2" fill="#f0c040" stroke="#c89820" stroke-width="1.5"/>
+    <!-- Pencil stripe -->
+    <rect x="-8" y="-70" width="16" height="6" fill="#e8a020"/>
+    <!-- Pencil ferrule (metal band) -->
+    <rect x="-9" y="-20" width="18" height="14" rx="1" fill="#c0c0c0" stroke="#a0a0a0" stroke-width="0.75"/>
+    <!-- Pencil eraser -->
+    <rect x="-7" y="-120" width="14" height="12" rx="3" fill="#e87070"/>
+    <!-- Pencil tip -->
+    <polygon points="-8,-6 8,-6 0,14" fill="#f5deb3" stroke="#c89820" stroke-width="0.75"/>
+    <!-- Pencil lead -->
+    <polygon points="-2,4 2,4 0,14" fill="#404040"/>
+  </g>
+</svg>

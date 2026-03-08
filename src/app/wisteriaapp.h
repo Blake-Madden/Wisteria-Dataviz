@@ -154,6 +154,10 @@ constexpr wxWindowID ID_NEW_LR_ROADMAP{ wxID_HIGHEST + 31 };
 // Sports graphs
 constexpr wxWindowID ID_NEW_WIN_LOSS_SPARKLINE{ wxID_HIGHEST + 32 };
 
+// Pages
+constexpr wxWindowID ID_EDIT_PAGE{ wxID_HIGHEST + 34 };
+constexpr wxWindowID ID_PAGES_BUTTONBAR{ wxID_HIGHEST + 35 };
+
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };
 
