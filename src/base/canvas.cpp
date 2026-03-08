@@ -953,6 +953,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                  --backCounter)
                                 {
                                 auto& backItem = currentRow[backCounter];
+                                if (backItem == nullptr)
+                                    {
+                                    continue;
+                                    }
                                 auto backItemBoundingBox = backItem->GetBoundingBox(dc);
                                 backItemBoundingBox.x += averageWidthToAdd * backCounter;
                                 backItemBoundingBox.SetWidth(backItemBoundingBox.GetWidth() +
