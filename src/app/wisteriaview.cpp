@@ -266,12 +266,18 @@ void WisteriaView::LoadProject()
         {
         // add datasets as subitems under "Data"
         const auto& datasets = m_reportBuilder.GetDatasets();
+        const auto& importOpts = m_reportBuilder.GetDatasetImportOptions();
         for (const auto& [dsName, dataset] : datasets)
             {
             const wxWindowID dsId = nextId;
             nextId = wxNewId();
 
-            auto* table = new Wisteria::UI::DatasetGridTable(dataset);
+            const auto optIt = importOpts.find(dsName);
+            const auto& colInfo = (optIt != importOpts.cend()) ?
+                                      optIt->second.m_columnPreviewInfo :
+                                      Wisteria::Data::Dataset::ColumnPreviewInfo{};
+            auto* table = colInfo.empty() ? new Wisteria::UI::DatasetGridTable(dataset) :
+                                            new Wisteria::UI::DatasetGridTable(dataset, colInfo);
             auto* grid = new wxGrid(m_workArea, dsId);
             grid->SetDoubleBuffered(true);
             grid->GetGridWindow()->SetDoubleBuffered(true);
@@ -564,7 +570,7 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
         wxMessageBox(_(L"Please import a dataset first."), _(L"No Datasets"),
                      wxOK | wxICON_INFORMATION, m_frame);
         return;
-    }
+        }
 
     Wisteria::UI::PivotLongerDlg dlg(&m_reportBuilder, m_frame);
     if (dlg.ShowModal() != wxID_OK)
@@ -605,7 +611,8 @@ void WisteriaView::AddDatasetToProject(
 
     const wxWindowID dsId = wxNewId();
 
-    auto* table = new Wisteria::UI::DatasetGridTable(dataset);
+    auto* table = columnInfo.empty() ? new Wisteria::UI::DatasetGridTable(dataset) :
+                                       new Wisteria::UI::DatasetGridTable(dataset, columnInfo);
 
     // apply currency symbols from the column preview info
     size_t contIdx{ 0 };

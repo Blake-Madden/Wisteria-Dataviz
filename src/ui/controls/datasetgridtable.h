@@ -31,7 +31,9 @@ namespace Wisteria::UI
         };
 
     /// @brief Data provider that adapts a Dataset for display in a wxGrid.
-    /// @details Column order: ID (if valid) | Categorical | Date | Continuous.
+    /// @details When constructed with ColumnPreviewInfo, columns are displayed
+    ///     in the same order as they appeared in the original data file.
+    ///     Otherwise, column order is: ID (if valid) | Categorical | Date | Continuous.
     class DatasetGridTable final : public wxGridTableBase
         {
       public:
@@ -52,6 +54,15 @@ namespace Wisteria::UI
                 }
             }
 
+        /// @brief Constructor that preserves original column order.
+        /// @param dataset The dataset to display.
+        /// @param columnInfo The column preview info from the original data file.
+        DatasetGridTable(std::shared_ptr<Data::Dataset> dataset,
+                         const Data::Dataset::ColumnPreviewInfo& columnInfo)
+            : DatasetGridTable(std::move(dataset))
+            {
+            BuildColumnOrder(columnInfo);
+            }
 
         /// @brief Sets the maximum number of rows to display.
         /// @param maxRows The maximum row count (0 means unlimited).
@@ -71,7 +82,7 @@ namespace Wisteria::UI
             if (m_dataset == nullptr)
                 {
                 return 0;
-            }
+                }
             const auto rows = static_cast<int>(m_dataset->GetRowCount());
             return (m_maxRows > 0 && rows > m_maxRows) ? m_maxRows : rows;
             }
@@ -80,6 +91,10 @@ namespace Wisteria::UI
         [[nodiscard]]
         int GetNumberCols() final
             {
+            if (!m_columnOrder.empty())
+                {
+                return static_cast<int>(m_columnOrder.size());
+                }
             return static_cast<int>((m_hasId ? 1 : 0) + m_catCount + m_dateCount + m_contCount);
             }
 
@@ -94,6 +109,14 @@ namespace Wisteria::UI
                 return {};
                 }
 
+            const auto rowIdx = static_cast<size_t>(row);
+
+            if (!m_columnOrder.empty())
+                {
+                const auto& mapping = m_columnOrder[static_cast<size_t>(col)];
+                return GetValueByMapping(rowIdx, mapping);
+                }
+
             size_t colIndex = static_cast<size_t>(col);
 
             // ID column
@@ -101,7 +124,7 @@ namespace Wisteria::UI
                 {
                 if (colIndex == 0)
                     {
-                    return m_dataset->GetIdColumn().GetValue(static_cast<size_t>(row));
+                    return m_dataset->GetIdColumn().GetValue(rowIdx);
                     }
                 --colIndex;
                 }
@@ -109,16 +132,14 @@ namespace Wisteria::UI
             // categorical columns
             if (colIndex < m_catCount)
                 {
-                return m_dataset->GetCategoricalColumns().at(colIndex).GetValueAsLabel(
-                    static_cast<size_t>(row));
+                return m_dataset->GetCategoricalColumns().at(colIndex).GetValueAsLabel(rowIdx);
                 }
             colIndex -= m_catCount;
 
             // date columns
             if (colIndex < m_dateCount)
                 {
-                const auto& dt =
-                    m_dataset->GetDateColumns().at(colIndex).GetValue(static_cast<size_t>(row));
+                const auto& dt = m_dataset->GetDateColumns().at(colIndex).GetValue(rowIdx);
                 return dt.IsValid() ? dt.FormatDate() : wxString{};
                 }
             colIndex -= m_dateCount;
@@ -126,22 +147,7 @@ namespace Wisteria::UI
             // continuous columns
             if (colIndex < m_contCount)
                 {
-                const auto val = m_dataset->GetContinuousColumns().at(colIndex).GetValue(
-                    static_cast<size_t>(row));
-                if (!std::isfinite(val))
-                    {
-                    return {};
-                    }
-                auto formatted = wxNumberFormatter::ToString(
-                    val, 2,
-                    wxNumberFormatter::Style::Style_WithThousandsSep |
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
-                const auto symIt = m_currencySymbols.find(colIndex);
-                if (symIt != m_currencySymbols.cend())
-                    {
-                    formatted.Prepend(symIt->second);
-                    }
-                return formatted;
+                return FormatContinuousValue(colIndex, rowIdx);
                 }
 
             return {};
@@ -160,6 +166,12 @@ namespace Wisteria::UI
             if (m_dataset == nullptr || col < 0 || col >= GetNumberCols())
                 {
                 return {};
+                }
+
+            if (!m_columnOrder.empty())
+                {
+                const auto& mapping = m_columnOrder[static_cast<size_t>(col)];
+                return GetNameByMapping(mapping);
                 }
 
             size_t colIndex = static_cast<size_t>(col);
@@ -199,6 +211,15 @@ namespace Wisteria::UI
         [[nodiscard]]
         DatasetGridColumnType GetColumnType(int col) const
             {
+            if (!m_columnOrder.empty())
+                {
+                if (col >= 0 && static_cast<size_t>(col) < m_columnOrder.size())
+                    {
+                    return m_columnOrder[static_cast<size_t>(col)].m_type;
+                    }
+                return DatasetGridColumnType::Continuous;
+                }
+
             size_t colIndex = static_cast<size_t>(col);
 
             if (m_hasId)
@@ -238,6 +259,140 @@ namespace Wisteria::UI
             }
 
       private:
+        /// @brief Maps a grid column to its dataset column type and index.
+        struct ColumnMapping
+            {
+            DatasetGridColumnType m_type{ DatasetGridColumnType::Continuous };
+            size_t m_index{ 0 };
+            };
+
+        /// @brief Builds the column order mapping from ColumnPreviewInfo.
+        void BuildColumnOrder(const Data::Dataset::ColumnPreviewInfo& columnInfo)
+            {
+            if (m_dataset == nullptr || columnInfo.empty())
+                {
+                return;
+                }
+
+            m_columnOrder.reserve(columnInfo.size());
+
+            for (const auto& col : columnInfo)
+                {
+                // check ID column
+                if (m_hasId && m_dataset->GetIdColumn().GetName().CmpNoCase(col.m_name) == 0)
+                    {
+                    m_columnOrder.push_back({ DatasetGridColumnType::Id, 0 /* unused default */ });
+                    continue;
+                    }
+                // check categorical columns
+                bool found{ false };
+                for (size_t i = 0; i < m_catCount; ++i)
+                    {
+                    if (m_dataset->GetCategoricalColumns().at(i).GetName().CmpNoCase(col.m_name) ==
+                        0)
+                        {
+                        m_columnOrder.push_back({ DatasetGridColumnType::Categorical, i });
+                        found = true;
+                        break;
+                        }
+                    }
+                if (found)
+                    {
+                    continue;
+                    }
+                // check date columns
+                for (size_t i = 0; i < m_dateCount; ++i)
+                    {
+                    if (m_dataset->GetDateColumns().at(i).GetName().CmpNoCase(col.m_name) == 0)
+                        {
+                        m_columnOrder.push_back({ DatasetGridColumnType::Date, i });
+                        found = true;
+                        break;
+                        }
+                    }
+                if (found)
+                    {
+                    continue;
+                    }
+                // check continuous columns
+                for (size_t i = 0; i < m_contCount; ++i)
+                    {
+                    if (m_dataset->GetContinuousColumns().at(i).GetName().CmpNoCase(col.m_name) ==
+                        0)
+                        {
+                        m_columnOrder.push_back({ DatasetGridColumnType::Continuous, i });
+                        found = true;
+                        break;
+                        }
+                    }
+                if (!found)
+                    {
+                    wxLogWarning(L"'%s': column not found in dataset for grid display.",
+                                 col.m_name);
+                    }
+                }
+            }
+
+        /// @brief Returns the formatted value for a continuous column.
+        [[nodiscard]]
+        wxString FormatContinuousValue(size_t contIndex, size_t row) const
+            {
+            const auto val = m_dataset->GetContinuousColumns().at(contIndex).GetValue(row);
+            if (!std::isfinite(val))
+                {
+                return {};
+                }
+            auto formatted =
+                wxNumberFormatter::ToString(val, 2,
+                                            wxNumberFormatter::Style::Style_WithThousandsSep |
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes);
+            const auto symIt = m_currencySymbols.find(contIndex);
+            if (symIt != m_currencySymbols.cend())
+                {
+                formatted.Prepend(symIt->second);
+                }
+            return formatted;
+            }
+
+        /// @brief Returns the value for a column identified by its mapping.
+        [[nodiscard]]
+        wxString GetValueByMapping(size_t row, const ColumnMapping& mapping) const
+            {
+            switch (mapping.m_type)
+                {
+            case DatasetGridColumnType::Id:
+                return m_dataset->GetIdColumn().GetValue(row);
+            case DatasetGridColumnType::Categorical:
+                return m_dataset->GetCategoricalColumns().at(mapping.m_index).GetValueAsLabel(row);
+            case DatasetGridColumnType::Date:
+                {
+                const auto& dt = m_dataset->GetDateColumns().at(mapping.m_index).GetValue(row);
+                return dt.IsValid() ? dt.FormatDate() : wxString{};
+                }
+            case DatasetGridColumnType::Continuous:
+                return FormatContinuousValue(mapping.m_index, row);
+                }
+            return {};
+            }
+
+        /// @brief Returns the column name for a column identified by its mapping.
+        [[nodiscard]]
+        wxString GetNameByMapping(const ColumnMapping& mapping) const
+            {
+            switch (mapping.m_type)
+                {
+            case DatasetGridColumnType::Id:
+                return m_dataset->GetIdColumn().GetName();
+            case DatasetGridColumnType::Categorical:
+                return m_dataset->GetCategoricalColumns().at(mapping.m_index).GetName();
+            case DatasetGridColumnType::Date:
+                return m_dataset->GetDateColumns().at(mapping.m_index).GetName();
+            case DatasetGridColumnType::Continuous:
+                return m_dataset->GetContinuousColumns().at(mapping.m_index).GetName();
+                }
+            return {};
+            }
+
         std::shared_ptr<Data::Dataset> m_dataset;
         int m_maxRows{ 0 };
         bool m_hasId{ false };
@@ -245,6 +400,7 @@ namespace Wisteria::UI
         size_t m_dateCount{ 0 };
         size_t m_contCount{ 0 };
         std::map<size_t, wxString> m_currencySymbols;
+        std::vector<ColumnMapping> m_columnOrder;
         };
 
     /// @brief Column header renderer that draws an icon before the label text.

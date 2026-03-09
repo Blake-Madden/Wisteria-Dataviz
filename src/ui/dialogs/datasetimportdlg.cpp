@@ -197,7 +197,7 @@ namespace Wisteria::UI
             m_previewDataset->Import(m_filePath, importInfo, worksheet);
 
             // update grid
-            auto* table = new DatasetGridTable(m_previewDataset);
+            auto* table = new DatasetGridTable(m_previewDataset, columnInfo);
 
             // apply currency symbols to continuous columns
             size_t contIdx{ 0 };
