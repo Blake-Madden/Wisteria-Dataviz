@@ -107,10 +107,23 @@ namespace Wisteria::UI
 
         mainSizer->Add(checkSizer, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
 
-        // preview grid
-        mainSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Preview:")),
-                       wxSizerFlags{}.Border(wxLEFT | wxBOTTOM, FromDIP(10)));
+        // column type controls
+        auto* columnTypeSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Selected column:"));
+        columnTypeSizer->Add(m_selectedColumnLabel,
+                             wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
+        m_columnTypeChoice = new wxChoice(this, wxID_ANY);
+        m_columnTypeChoice->Append(_(L"Text"));
+        m_columnTypeChoice->Append(_(L"Categorical"));
+        m_columnTypeChoice->Append(_(L"Numeric"));
+        m_columnTypeChoice->Append(_(L"Date"));
+        m_columnTypeChoice->Append(_(L"Do not import"));
+        m_columnTypeChoice->Disable();
+        columnTypeSizer->Add(m_columnTypeChoice, wxSizerFlags{}.CenterVertical());
+        mainSizer->Add(columnTypeSizer,
+                       wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
 
+        // preview grid
         m_previewGrid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 1000, 400 }));
         m_previewGrid->SetDoubleBuffered(true);
         m_previewGrid->GetGridWindow()->SetDoubleBuffered(true);
@@ -132,6 +145,10 @@ namespace Wisteria::UI
         m_leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_idColumnChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
+        m_previewGrid->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, &DatasetImportDlg::OnColumnHeaderClick,
+                            this);
+        m_previewGrid->Bind(wxEVT_GRID_SELECT_CELL, &DatasetImportDlg::OnColumnSelected, this);
+        m_columnTypeChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnColumnTypeChanged, this);
         }
 
     //----------------------------------------------
@@ -158,8 +175,22 @@ namespace Wisteria::UI
             const auto worksheet = GetWorksheet();
 
             // read column info from file
-            const auto columnInfo = Data::Dataset::ReadColumnInfo(m_filePath, previewInfo,
-                                                                  PREVIEW_ROW_COUNT, worksheet);
+            const auto freshColumnInfo = Data::Dataset::ReadColumnInfo(
+                m_filePath, previewInfo, PREVIEW_ROW_COUNT, worksheet);
+
+            // preserve user overrides (exclusion, type) from previous m_columnInfo
+            const auto previousColumnInfo = std::move(m_columnInfo);
+            m_columnInfo = freshColumnInfo;
+            for (auto& col : m_columnInfo)
+                {
+                const auto prevIt =
+                    std::ranges::find_if(previousColumnInfo, [&col](const auto& prev)
+                                         { return prev.m_name.CmpNoCase(col.m_name) == 0; });
+                if (prevIt != previousColumnInfo.cend())
+                    {
+                    col.m_excluded = prevIt->m_excluded;
+                    }
+                }
 
             // update the ID column choice with discovered column names
             const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
@@ -167,7 +198,7 @@ namespace Wisteria::UI
                                             wxString{};
             m_idColumnChoice->Clear();
             m_idColumnChoice->Append(_(L"(None)"));
-            for (const auto& col : columnInfo)
+            for (const auto& col : m_columnInfo)
                 {
                 m_idColumnChoice->Append(col.m_name);
                 }
@@ -181,56 +212,81 @@ namespace Wisteria::UI
                 m_idColumnChoice->SetSelection(0);
                 }
 
-            // convert to full ImportInfo
-            auto importInfo = Data::Dataset::ImportInfoFromPreview(columnInfo);
-            importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
-            importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
-            importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
-            importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
-            if (m_idColumnChoice->GetSelection() > 0)
-                {
-                importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
-                }
-
-            // import data for preview
-            m_previewDataset = std::make_shared<Data::Dataset>();
-            m_previewDataset->Import(m_filePath, importInfo, worksheet);
-
-            // update grid
-            auto* table = new DatasetGridTable(m_previewDataset, columnInfo);
-
-            // apply currency symbols to continuous columns
-            size_t contIdx{ 0 };
-            for (const auto& col : columnInfo)
-                {
-                if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
-                    {
-                    if (!col.m_currencySymbol.empty())
-                        {
-                        table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
-                        }
-                    ++contIdx;
-                    }
-                }
-
-            m_previewGrid->SetTable(table, true);
-            ApplyColumnHeaderIcons(table);
-            m_previewGrid->AutoSizeColumns(false);
-            AdjustGridColumnsForIcons();
-            m_previewGrid->ForceRefresh();
+            UpdateGrid();
             }
         catch (const std::exception& exc)
             {
             // on error, show empty grid
             m_previewDataset = std::make_shared<Data::Dataset>();
+            m_columnInfo.clear();
             auto* table = new DatasetGridTable(m_previewDataset);
             m_previewGrid->SetTable(table, true);
+            m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
             ApplyColumnHeaderIcons(table);
             m_previewGrid->AutoSizeColumns(false);
             AdjustGridColumnsForIcons();
             m_previewGrid->ForceRefresh();
             wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
             }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::RefreshPreviewFromColumnInfo()
+        {
+        try
+            {
+            UpdateGrid();
+            }
+        catch (const std::exception& exc)
+            {
+            wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
+            }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::UpdateGrid()
+        {
+        // convert to full ImportInfo from current m_columnInfo
+        auto importInfo = Data::Dataset::ImportInfoFromPreview(m_columnInfo);
+        importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
+        importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
+        importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
+        importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
+        if (m_idColumnChoice->GetSelection() > 0)
+            {
+            importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
+            }
+
+        const auto worksheet = GetWorksheet();
+
+        // import data for preview
+        m_previewDataset = std::make_shared<Data::Dataset>();
+        m_previewDataset->Import(m_filePath, importInfo, worksheet);
+
+        // update grid
+        auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);
+
+        // apply currency symbols to continuous columns
+        size_t contIdx{ 0 };
+        for (const auto& col : m_columnInfo)
+            {
+            if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
+                {
+                if (!col.m_currencySymbol.empty())
+                    {
+                    table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                    }
+                ++contIdx;
+                }
+            }
+
+        m_previewGrid->SetTable(table, true);
+        m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
+        ApplyColumnHeaderIcons(table);
+        m_previewGrid->AutoSizeColumns(false);
+        AdjustGridColumnsForIcons();
+        ApplyExcludedColumnStyling();
+        m_previewGrid->ForceRefresh();
         }
 
     //----------------------------------------------
@@ -287,15 +343,189 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
+    void DatasetImportDlg::OnColumnHeaderClick(wxGridEvent& event)
+        {
+        const int col = event.GetCol();
+        if (col < 0 || static_cast<size_t>(col) >= m_columnInfo.size())
+            {
+            event.Skip();
+            return;
+            }
+
+        m_previewGrid->SelectCol(col);
+        UpdateColumnTypeControls();
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnColumnSelected(wxGridEvent& event)
+        {
+        event.Skip();
+        // defer so the grid's selection state is updated first
+        CallAfter([this]() { UpdateColumnTypeControls(); });
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::UpdateColumnTypeControls()
+        {
+        const auto selectedCols = m_previewGrid->GetSelectedCols();
+        if (selectedCols.empty() || static_cast<size_t>(selectedCols[0]) >= m_columnInfo.size())
+            {
+            m_selectedColumnLabel->SetLabel(_(L"Selected column:"));
+            m_columnTypeChoice->SetSelection(wxNOT_FOUND);
+            m_columnTypeChoice->Disable();
+            return;
+            }
+
+        const auto col = static_cast<size_t>(selectedCols[0]);
+        const auto& colInfo = m_columnInfo[col];
+
+        m_columnTypeChoice->Enable();
+        if (colInfo.m_excluded)
+            {
+            m_columnTypeChoice->SetSelection(4); // "Do not import"
+            }
+        else
+            {
+            switch (colInfo.m_type)
+                {
+            case Data::Dataset::ColumnImportType::String:
+                [[fallthrough]];
+            case Data::Dataset::ColumnImportType::DichotomousString:
+                m_columnTypeChoice->SetSelection(0);
+                break;
+            case Data::Dataset::ColumnImportType::Discrete:
+                [[fallthrough]];
+            case Data::Dataset::ColumnImportType::DichotomousDiscrete:
+                m_columnTypeChoice->SetSelection(1);
+                break;
+            case Data::Dataset::ColumnImportType::Numeric:
+                m_columnTypeChoice->SetSelection(2);
+                break;
+            case Data::Dataset::ColumnImportType::Date:
+                m_columnTypeChoice->SetSelection(3);
+                break;
+                }
+            }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnColumnTypeChanged([[maybe_unused]] wxCommandEvent& event)
+        {
+        const auto selectedCols = m_previewGrid->GetSelectedCols();
+        if (selectedCols.empty())
+            {
+            return;
+            }
+
+        const int sel = m_columnTypeChoice->GetSelection();
+        if (sel == wxNOT_FOUND)
+            {
+            return;
+            }
+
+        bool needsReimport{ false };
+        bool needsStyleRefresh{ false };
+
+        for (const auto colIdx : selectedCols)
+            {
+            if (colIdx < 0 || static_cast<size_t>(colIdx) >= m_columnInfo.size())
+                {
+                continue;
+                }
+
+            auto& colInfo = m_columnInfo[static_cast<size_t>(colIdx)];
+
+            if (sel == 4) // "Do not import"
+                {
+                if (!colInfo.m_excluded)
+                    {
+                    colInfo.m_excluded = true;
+                    needsStyleRefresh = true;
+                    }
+                continue;
+                }
+
+            const bool wasExcluded = colInfo.m_excluded;
+            colInfo.m_excluded = false;
+
+            Data::Dataset::ColumnImportType newType = colInfo.m_type;
+            switch (sel)
+                {
+            case 0:
+                newType = Data::Dataset::ColumnImportType::String;
+                break;
+            case 1:
+                newType = Data::Dataset::ColumnImportType::Discrete;
+                break;
+            case 2:
+                newType = Data::Dataset::ColumnImportType::Numeric;
+                break;
+            case 3:
+                newType = Data::Dataset::ColumnImportType::Date;
+                break;
+                }
+
+            if (newType != colInfo.m_type)
+                {
+                colInfo.m_type = newType;
+                needsReimport = true;
+                }
+            else if (wasExcluded)
+                {
+                needsStyleRefresh = true;
+                }
+            }
+
+        if (needsReimport)
+            {
+            RefreshPreviewFromColumnInfo();
+            }
+        else if (needsStyleRefresh)
+            {
+            ApplyExcludedColumnStyling();
+            m_previewGrid->ForceRefresh();
+            }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::ApplyExcludedColumnStyling()
+        {
+        const wxColour excludedBg{ 220, 220, 220 };
+        const wxColour excludedFg{ 160, 160, 160 };
+        const int numRows = m_previewGrid->GetNumberRows();
+        for (size_t col = 0; col < m_columnInfo.size(); ++col)
+            {
+            if (m_columnInfo[col].m_excluded)
+                {
+                for (int row = 0; row < numRows; ++row)
+                    {
+                    m_previewGrid->SetCellBackgroundColour(row, static_cast<int>(col), excludedBg);
+                    m_previewGrid->SetCellTextColour(row, static_cast<int>(col), excludedFg);
+                    }
+                }
+            else
+                {
+                for (int row = 0; row < numRows; ++row)
+                    {
+                    m_previewGrid->SetCellBackgroundColour(
+                        row, static_cast<int>(col),
+                        m_previewGrid->GetDefaultCellBackgroundColour());
+                    m_previewGrid->SetCellTextColour(row, static_cast<int>(col),
+                                                     m_previewGrid->GetDefaultCellTextColour());
+                    }
+                }
+            }
+        }
+
+    //----------------------------------------------
     Data::Dataset::ColumnPreviewInfo DatasetImportDlg::GetColumnPreviewInfo() const
         {
-        Data::ImportInfo scanInfo;
-        scanInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
-        scanInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
-        scanInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
-        scanInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
-
-        return Data::Dataset::ReadColumnInfo(m_filePath, scanInfo, std::nullopt, GetWorksheet());
+        // return only non-excluded columns
+        Data::Dataset::ColumnPreviewInfo result;
+        result.reserve(m_columnInfo.size());
+        std::ranges::copy_if(m_columnInfo, std::back_inserter(result),
+                             [](const auto& col) { return !col.m_excluded; });
+        return result;
         }
 
     //----------------------------------------------

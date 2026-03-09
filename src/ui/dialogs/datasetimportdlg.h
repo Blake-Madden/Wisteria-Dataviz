@@ -58,9 +58,17 @@ namespace Wisteria::UI
         [[nodiscard]]
         Data::ImportInfo GetImportInfo() const;
 
-        /// @returns The column preview information (names, types, and currency symbols).
+        /// @returns The column preview information for non-excluded columns only.
         [[nodiscard]]
         Data::Dataset::ColumnPreviewInfo GetColumnPreviewInfo() const;
+
+        /// @returns The full column preview information, including excluded columns
+        ///     and any user type overrides.
+        [[nodiscard]]
+        const Data::Dataset::ColumnPreviewInfo& GetFullColumnPreviewInfo() const noexcept
+            {
+            return m_columnInfo;
+            }
 
         /// @returns The selected worksheet (1-based index).
         [[nodiscard]]
@@ -76,10 +84,17 @@ namespace Wisteria::UI
       private:
         void CreateControls();
         void RefreshPreview();
+        void RefreshPreviewFromColumnInfo();
+        void UpdateGrid();
         void ApplyColumnHeaderIcons(DatasetGridTable* table);
+        void ApplyExcludedColumnStyling();
         void AdjustGridColumnsForIcons();
         void OnOptionChanged(wxCommandEvent& event);
         void OnSpinChanged(wxSpinEvent& event);
+        void OnColumnHeaderClick(wxGridEvent& event);
+        void OnColumnSelected(wxGridEvent& event);
+        void OnColumnTypeChanged(wxCommandEvent& event);
+        void UpdateColumnTypeControls();
 
         wxString m_filePath;
         wxString m_fileExt;
@@ -92,10 +107,15 @@ namespace Wisteria::UI
         wxCheckBox* m_leadingZerosCheck{ nullptr };
         wxCheckBox* m_yearsAsTextCheck{ nullptr };
         wxChoice* m_idColumnChoice{ nullptr };
+        wxStaticText* m_selectedColumnLabel{ nullptr };
+        wxChoice* m_columnTypeChoice{ nullptr };
         wxGrid* m_previewGrid{ nullptr };
 
         // preview data
         std::shared_ptr<Data::Dataset> m_previewDataset;
+
+        // column info with user overrides (exclude, type changes, etc.)
+        Data::Dataset::ColumnPreviewInfo m_columnInfo;
 
         // worksheet names (for XLSX/ODS)
         std::vector<std::wstring> m_worksheetNames;

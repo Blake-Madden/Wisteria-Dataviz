@@ -201,8 +201,12 @@ namespace Wisteria::UI
         m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DICHOTOMOUS_DISCRETE")
                               .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
         m_mainVarlist->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
-        for (const auto& [name, type, currencySymbol] : m_columnInfo)
+        for (const auto& [name, type, currencySymbol, excluded] : m_columnInfo)
             {
+            if (excluded)
+                {
+                continue;
+                }
             if (type == Data::Dataset::ColumnImportType::Numeric)
                 {
                 m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name, 0);
@@ -316,9 +320,12 @@ namespace Wisteria::UI
             // build a legend showing only the variable types actually in the main list
             {
             std::set<Data::Dataset::ColumnImportType> usedTypes;
-            for (const auto& [name, type, currencySymbol] : m_columnInfo)
+            for (const auto& [name, type, currencySymbol, excluded] : m_columnInfo)
                 {
-                usedTypes.insert(type);
+                if (!excluded)
+                    {
+                    usedTypes.insert(type);
+                    }
                 }
 
             const std::tuple<Data::Dataset::ColumnImportType, wxString, wxString> typeLegend[] = {

@@ -1032,6 +1032,8 @@ namespace Wisteria::Data
             /// The currency symbol (e.g., L"$", L"€") if the column
             /// was detected as currency-formatted, or empty otherwise.
             wxString m_currencySymbol;
+            /// Whether the column should be excluded from import.
+            bool m_excluded{ false };
             };
 
         /// @brief The names and data types of columns in a dataset.

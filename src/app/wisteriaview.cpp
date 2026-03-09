@@ -128,6 +128,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     wxString initialDatasetName;
     wxString initialFilePath;
     Wisteria::Data::Dataset::ColumnPreviewInfo initialColumnInfo;
+    Wisteria::Data::Dataset::ColumnPreviewInfo initialFullColumnInfo;
     Wisteria::Data::ImportInfo initialImportInfo;
     std::variant<wxString, size_t> initialWorksheet{ static_cast<size_t>(1) };
     if (doc->GetFilename().empty())
@@ -162,6 +163,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             initialDataset->Import(filePath, initialImportInfo, initialWorksheet);
             initialDatasetName = wxFileName{ filePath }.GetName();
             initialFilePath = filePath;
+            initialFullColumnInfo = importDlg.GetFullColumnPreviewInfo();
             }
         catch (const std::exception& exc)
             {
@@ -179,7 +181,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         {
         AddDatasetToProject(
             initialDataset, initialDatasetName, initialColumnInfo,
-            { initialFilePath, initialWorksheet, initialColumnInfo, initialImportInfo });
+            { initialFilePath, initialWorksheet, initialFullColumnInfo, initialImportInfo });
         }
 
     UpdateGraphButtonStates();
@@ -476,6 +478,7 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
     try
         {
         const auto columnPreview = importDlg.GetColumnPreviewInfo();
+        const auto fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
         const auto importInfo = importDlg.GetImportInfo();
         const auto worksheet = importDlg.GetWorksheet();
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
@@ -513,7 +516,7 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
             }
 
         AddDatasetToProject(dataset, dsName, columnPreview,
-                            { filePath, worksheet, columnPreview, importInfo });
+                            { filePath, worksheet, fullColumnPreview, importInfo });
         }
     catch (const std::exception& exc)
         {
