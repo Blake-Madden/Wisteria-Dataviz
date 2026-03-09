@@ -475,7 +475,38 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
         dataset->Import(filePath, importInfo, worksheet);
 
-        AddDatasetToProject(dataset, wxFileName{ filePath }.GetName(), columnPreview,
+        wxString dsName =
+            m_reportBuilder.GenerateUniqueDatasetName(wxFileName{ filePath }.GetName());
+        if (m_reportBuilder.GetDatasets().contains(wxFileName{ filePath }.GetName()))
+            {
+            wxTextEntryDialog nameDlg(m_frame,
+                                      _(L"A dataset with this name already exists.\n"
+                                        "Please enter a different name:"),
+                                      _(L"Dataset Name"), dsName);
+            while (nameDlg.ShowModal() == wxID_OK)
+                {
+                dsName = nameDlg.GetValue().Strip(wxString::both);
+                if (dsName.empty())
+                    {
+                    wxMessageBox(_(L"The name cannot be empty."), _(L"Name Required"),
+                                 wxOK | wxICON_WARNING, m_frame);
+                    continue;
+                    }
+                if (m_reportBuilder.GetDatasets().contains(dsName))
+                    {
+                    wxMessageBox(_(L"A dataset with this name already exists."),
+                                 _(L"Duplicate Name"), wxOK | wxICON_WARNING, m_frame);
+                    continue;
+                    }
+                break;
+                }
+            if (dsName.empty() || m_reportBuilder.GetDatasets().contains(dsName))
+                {
+                return;
+                }
+            }
+
+        AddDatasetToProject(dataset, dsName, columnPreview,
                             { filePath, worksheet, columnPreview, importInfo });
         }
     catch (const std::exception& exc)
