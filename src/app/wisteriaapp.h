@@ -158,6 +158,10 @@ constexpr wxWindowID ID_NEW_WIN_LOSS_SPARKLINE{ wxID_HIGHEST + 32 };
 constexpr wxWindowID ID_EDIT_PAGE{ wxID_HIGHEST + 34 };
 constexpr wxWindowID ID_PAGES_BUTTONBAR{ wxID_HIGHEST + 35 };
 
+// Data transformations
+constexpr wxWindowID ID_PIVOT_WIDER{ wxID_HIGHEST + 36 };
+constexpr wxWindowID ID_PIVOT_LONGER{ wxID_HIGHEST + 37 };
+
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };
 

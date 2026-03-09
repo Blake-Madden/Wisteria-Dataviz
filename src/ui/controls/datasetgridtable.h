@@ -52,11 +52,28 @@ namespace Wisteria::UI
                 }
             }
 
+
+        /// @brief Sets the maximum number of rows to display.
+        /// @param maxRows The maximum row count (0 means unlimited).
+        void SetMaxRows(int maxRows) noexcept { m_maxRows = maxRows; }
+
+        /// @returns The maximum number of rows to display (0 means unlimited).
+        [[nodiscard]]
+        int GetMaxRows() const noexcept
+            {
+            return m_maxRows;
+            }
+
         /// @private
         [[nodiscard]]
         int GetNumberRows() final
             {
-            return (m_dataset != nullptr) ? static_cast<int>(m_dataset->GetRowCount()) : 0;
+            if (m_dataset == nullptr)
+                {
+                return 0;
+            }
+            const auto rows = static_cast<int>(m_dataset->GetRowCount());
+            return (m_maxRows > 0 && rows > m_maxRows) ? m_maxRows : rows;
             }
 
         /// @private
@@ -222,6 +239,7 @@ namespace Wisteria::UI
 
       private:
         std::shared_ptr<Data::Dataset> m_dataset;
+        int m_maxRows{ 0 };
         bool m_hasId{ false };
         size_t m_catCount{ 0 };
         size_t m_dateCount{ 0 };

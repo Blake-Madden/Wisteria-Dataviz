@@ -42,6 +42,8 @@ page-edit.svg
 page.svg
 piechart-subgrouped.svg
 piechart.svg
+pivot-longer.svg
+pivot-wider.svg
 print.svg
 realtime.svg
 reload.svg

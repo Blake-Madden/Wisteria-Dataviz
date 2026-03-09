@@ -38,7 +38,7 @@ class WisteriaView : public wxView
 
     bool OnCreate(wxDocument* doc, long flags) override;
 
-    void OnDraw(wxDC* dc) override {}
+    void OnDraw([[maybe_unused]] wxDC* dc) override {}
 
     bool OnClose(bool deleteWindow) override;
 
@@ -74,6 +74,8 @@ class WisteriaView : public wxView
     void OnSidebarClick(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
+    void OnPivotWider(wxCommandEvent& event);
+    void OnPivotLonger(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
     void OnEditPage(wxCommandEvent& event);
     void

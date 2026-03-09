@@ -57,6 +57,37 @@ namespace Wisteria
             Data::ImportInfo m_importInfo;
             };
 
+        /// @brief The type of pivot transformation.
+        enum class PivotType
+            {
+            Wider,
+            Longer
+            };
+
+        /// @brief Options describing how a pivoted dataset was created
+        ///     from a source dataset.
+        struct DatasetPivotOptions
+            {
+            PivotType m_type{ PivotType::Wider };
+            /// the name of the source dataset that was pivoted
+            wxString m_sourceDatasetName;
+
+            // wider options
+            std::vector<wxString> m_idColumns;
+            wxString m_namesFromColumn;
+            std::vector<wxString> m_valuesFromColumns;
+            wxString m_namesSep{ L"_" };
+            wxString m_namesPrefix;
+            double m_fillValue{ std::numeric_limits<double>::quiet_NaN() };
+
+            // longer options
+            std::vector<wxString> m_columnsToKeep;
+            std::vector<wxString> m_fromColumns;
+            std::vector<wxString> m_namesTo;
+            wxString m_valuesTo;
+            wxString m_namesPattern;
+            };
+
         /// @returns The datasets in the report.
         [[nodiscard]]
         const std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase>&
@@ -90,6 +121,47 @@ namespace Wisteria
         GetDatasetImportOptions() const noexcept
             {
             return m_datasetImportOptions;
+            }
+
+        /// @brief Associates pivot options with a named dataset.
+        /// @param name The name of the pivoted dataset.
+        /// @param pivotOptions The options describing how it was created.
+        void SetDatasetPivotOptions(const wxString& name, const DatasetPivotOptions& pivotOptions)
+            {
+            m_datasetPivotOptions[name] = pivotOptions;
+            }
+
+        /// @returns The pivot options for all pivoted datasets.
+        [[nodiscard]]
+        const std::map<wxString, DatasetPivotOptions, Data::wxStringLessNoCase>&
+        GetDatasetPivotOptions() const noexcept
+            {
+            return m_datasetPivotOptions;
+            }
+
+        /// @brief Generates a dataset name that does not collide with any
+        ///     existing dataset in the report.
+        /// @param baseName The preferred name.
+        /// @returns @c baseName if it is not already taken, otherwise
+        ///     @c baseName appended with a numeric suffix (e.g., "(2)").
+        [[nodiscard]]
+        wxString GenerateUniqueDatasetName(const wxString& baseName) const
+            {
+            if (!m_datasets.contains(baseName))
+                {
+                return baseName;
+                }
+
+            for (int i = 2; i <= 1'000; ++i)
+                {
+                const wxString candidate = wxString::Format(L"%s (%d)", baseName, i);
+                if (!m_datasets.contains(candidate))
+                    {
+                    return candidate;
+                    }
+                }
+
+            return baseName;
             }
 
         /// @returns The name of the report.
@@ -704,6 +776,7 @@ namespace Wisteria
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;
         std::map<wxString, DatasetImportOptions, Data::wxStringLessNoCase> m_datasetImportOptions;
+        std::map<wxString, DatasetPivotOptions, Data::wxStringLessNoCase> m_datasetPivotOptions;
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
 

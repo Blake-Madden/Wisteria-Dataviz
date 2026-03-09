@@ -14,6 +14,8 @@
 #include "../ui/dialogs/insertchernoffdlg.h"
 #include "../ui/dialogs/insertpagedlg.h"
 #include "../ui/dialogs/insertscatterplotdlg.h"
+#include "../ui/dialogs/pivotlongerdlg.h"
+#include "../ui/dialogs/pivotwiderrdlg.h"
 #include "wisteriaapp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
@@ -84,6 +86,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind insert dataset button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
                   ID_INSERT_DATASET);
+
+    // bind pivot buttons
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotWider, this, ID_PIVOT_WIDER);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotLonger, this,
+                  ID_PIVOT_LONGER);
 
     // bind page buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
@@ -476,6 +483,85 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
                      m_frame);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnPivotWider([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_reportBuilder.GetDatasets().empty())
+        {
+        wxMessageBox(_(L"Please import a dataset first."), _(L"No Datasets"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    Wisteria::UI::PivotWiderDlg dlg(&m_reportBuilder, m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const auto pivotedDataset = dlg.GetPivotedDataset();
+    if (pivotedDataset == nullptr)
+        {
+        return;
+        }
+
+    const auto outputName = dlg.GetOutputName();
+    AddDatasetToProject(pivotedDataset, outputName);
+
+    const auto dlgOpts = dlg.GetPivotOptions();
+    Wisteria::ReportBuilder::DatasetPivotOptions pivotOpts;
+    pivotOpts.m_type = Wisteria::ReportBuilder::PivotType::Wider;
+    pivotOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+    pivotOpts.m_idColumns = dlgOpts.m_idColumns;
+    pivotOpts.m_namesFromColumn = dlgOpts.m_namesFromColumn;
+    pivotOpts.m_valuesFromColumns = dlgOpts.m_valuesFromColumns;
+    pivotOpts.m_namesSep = dlgOpts.m_namesSep;
+    pivotOpts.m_namesPrefix = dlgOpts.m_namesPrefix;
+    pivotOpts.m_fillValue = dlgOpts.m_fillValue;
+    m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_reportBuilder.GetDatasets().empty())
+        {
+        wxMessageBox(_(L"Please import a dataset first."), _(L"No Datasets"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+    }
+
+    Wisteria::UI::PivotLongerDlg dlg(&m_reportBuilder, m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const auto pivotedDataset = dlg.GetPivotedDataset();
+    if (pivotedDataset == nullptr)
+        {
+        return;
+        }
+
+    const auto outputName = dlg.GetOutputName();
+    AddDatasetToProject(pivotedDataset, outputName);
+
+    const auto dlgOpts = dlg.GetPivotOptions();
+    Wisteria::ReportBuilder::DatasetPivotOptions pivotOpts;
+    pivotOpts.m_type = Wisteria::ReportBuilder::PivotType::Longer;
+    pivotOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+    pivotOpts.m_columnsToKeep = dlgOpts.m_columnsToKeep;
+    pivotOpts.m_fromColumns = dlgOpts.m_fromColumns;
+    pivotOpts.m_namesTo = dlgOpts.m_namesTo;
+    pivotOpts.m_valuesTo = dlgOpts.m_valuesTo;
+    pivotOpts.m_namesPattern = dlgOpts.m_namesPattern;
+    m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------

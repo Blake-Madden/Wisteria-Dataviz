@@ -106,6 +106,8 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/listdlg.cpp
     src/ui/dialogs/odspreviewdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
+    src/ui/dialogs/pivotlongerdlg.cpp
+    src/ui/dialogs/pivotwiderrdlg.cpp
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp
     src/ui/dialogs/variableselectdlg.cpp

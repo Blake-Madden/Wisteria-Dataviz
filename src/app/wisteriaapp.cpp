@@ -300,6 +300,18 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                  dataIcon.IsOk() ? dataIcon.GetBitmap(iconSize) : wxBitmap{},
                                  _(L"Import a dataset into the project"));
 
+        const auto pivotWiderIcon = GetResourceManager().GetSVG(L"pivot-wider.svg");
+        dataButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"),
+                                 pivotWiderIcon.IsOk() ? pivotWiderIcon.GetBitmap(iconSize) :
+                                                         wxBitmap{},
+                                 _(L"Pivot a dataset wider (unstack)"));
+
+        const auto pivotLongerIcon = GetResourceManager().GetSVG(L"pivot-longer.svg");
+        dataButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
+                                 pivotLongerIcon.IsOk() ? pivotLongerIcon.GetBitmap(iconSize) :
+                                                          wxBitmap{},
+                                 _(L"Pivot a dataset longer (stack)"));
+
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);

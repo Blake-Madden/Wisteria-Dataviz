@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Pivot Longer: wide table (few rows, many cols) → tall table (many rows, few cols) -->
+
+  <!-- Source: wide table (top-left) -->
+  <rect x="16" y="24" width="108" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
+  <rect x="16" y="44" width="108" height="16" rx="2" fill="#A9D18E" opacity="0.7"/>
+  <rect x="16" y="64" width="108" height="16" rx="2" fill="#A9D18E" opacity="0.7"/>
+  <!-- Column dividers on source -->
+  <line x1="52" y1="24" x2="52" y2="80" stroke="white" stroke-width="1.5"/>
+  <line x1="88" y1="24" x2="88" y2="80" stroke="white" stroke-width="1.5"/>
+
+  <!-- Arrow curving down-right -->
+  <path d="M 128 52 C 148 52, 156 72, 156 92 L 156 120" fill="none" stroke="#404040" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="156,126 150,116 162,116" fill="#404040"/>
+
+  <!-- Result: tall table (bottom-right) -->
+  <rect x="132" y="136" width="64" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
+  <rect x="132" y="156" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="132" y="176" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="132" y="196" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="132" y="216" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <!-- Column divider on result -->
+  <line x1="164" y1="136" x2="164" y2="232" stroke="white" stroke-width="1.5"/>
+
+  <!-- Label -->
+  <text x="128" y="250" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#404040" text-anchor="middle" font-weight="600">Pivot Longer</text>
+</svg>

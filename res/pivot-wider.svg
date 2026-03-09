@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Pivot Wider: tall table (many rows, few cols) → wide table (few rows, many cols) -->
+
+  <!-- Source: tall table (top-left) -->
+  <rect x="16" y="24" width="64" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
+  <rect x="16" y="44" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="16" y="64" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="16" y="84" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="16" y="104" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <!-- Column divider on source -->
+  <line x1="48" y1="24" x2="48" y2="120" stroke="white" stroke-width="1.5"/>
+
+  <!-- Arrow curving down-right -->
+  <path d="M 84 72 C 104 72, 120 92, 120 112 L 120 140" fill="none" stroke="#404040" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="120,146 114,136 126,136" fill="#404040"/>
+
+  <!-- Result: wide table (bottom-right) -->
+  <rect x="96" y="156" width="144" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
+  <rect x="96" y="176" width="144" height="16" rx="2" fill="#A9D18E" opacity="0.7"/>
+  <rect x="96" y="196" width="144" height="16" rx="2" fill="#A9D18E" opacity="0.7"/>
+  <!-- Column dividers on result -->
+  <line x1="144" y1="156" x2="144" y2="212" stroke="white" stroke-width="1.5"/>
+  <line x1="192" y1="156" x2="192" y2="212" stroke="white" stroke-width="1.5"/>
+
+  <!-- Label -->
+  <text x="128" y="250" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#404040" text-anchor="middle" font-weight="600">Pivot Wider</text>
+</svg>
