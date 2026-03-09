@@ -1867,8 +1867,14 @@ namespace Wisteria
 
                         if (mergedData)
                             {
-                            m_datasets.insert_or_assign(
-                                merge->GetProperty(_DT(L"name"))->AsString(), mergedData);
+                            const auto mergeName = merge->GetProperty(_DT(L"name"))->AsString();
+                            if (m_datasets.contains(mergeName))
+                                {
+                                wxLogWarning(L"Dataset '%s' already exists "
+                                             "and will be overwritten by a merge.",
+                                             mergeName);
+                                }
+                            m_datasets.insert_or_assign(mergeName, mergedData);
                             LoadDatasetTransformations(merge, mergedData);
                             }
                         }
@@ -1909,8 +1915,14 @@ namespace Wisteria
 
                         if (pivotedData)
                             {
-                            m_datasets.insert_or_assign(
-                                pivot->GetProperty(_DT(L"name"))->AsString(), pivotedData);
+                            const auto pivotName = pivot->GetProperty(_DT(L"name"))->AsString();
+                            if (m_datasets.contains(pivotName))
+                                {
+                                wxLogWarning(L"Dataset '%s' already exists "
+                                             "and will be overwritten by a pivot.",
+                                             pivotName);
+                                }
+                            m_datasets.insert_or_assign(pivotName, pivotedData);
                             LoadDatasetTransformations(pivot, pivotedData);
                             }
                         }
@@ -1925,8 +1937,14 @@ namespace Wisteria
 
                         if (pivotedData)
                             {
-                            m_datasets.insert_or_assign(
-                                pivot->GetProperty(_DT(L"name"))->AsString(), pivotedData);
+                            const auto pivotName = pivot->GetProperty(_DT(L"name"))->AsString();
+                            if (m_datasets.contains(pivotName))
+                                {
+                                wxLogWarning(L"Dataset '%s' already exists "
+                                             "and will be overwritten by a pivot.",
+                                             pivotName);
+                                }
+                            m_datasets.insert_or_assign(pivotName, pivotedData);
                             LoadDatasetTransformations(pivot, pivotedData);
                             }
                         }
@@ -2074,8 +2092,14 @@ namespace Wisteria
 
                     if (subsettedDataset)
                         {
-                        m_datasets.insert_or_assign(subset->GetProperty(_DT(L"name"))->AsString(),
-                                                    subsettedDataset);
+                        const auto subsetName = subset->GetProperty(_DT(L"name"))->AsString();
+                        if (m_datasets.contains(subsetName))
+                            {
+                            wxLogWarning(L"Dataset '%s' already exists "
+                                         "and will be overwritten by a subset.",
+                                         subsetName);
+                            }
+                        m_datasets.insert_or_assign(subsetName, subsettedDataset);
                         LoadDatasetTransformations(subset, subsettedDataset);
                         }
                     }
@@ -2408,6 +2432,12 @@ namespace Wisteria
                             wxString(_(L"Dataset must have a valid importer specified.")).ToUTF8());
                         }
 
+                    if (m_datasets.contains(dsName))
+                        {
+                        wxLogWarning(L"Dataset '%s' already exists "
+                                     "and will be overwritten.",
+                                     dsName);
+                        }
                     m_datasets.insert_or_assign(dsName, dataset);
                     // recode values, build subsets and pivots, etc.
                     LoadDatasetTransformations(datasetNode, dataset);
