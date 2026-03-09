@@ -1892,7 +1892,8 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadPivots(const wxSimpleJSON::Ptr_t& pivotsNode,
-                                   const std::shared_ptr<const Data::Dataset>& parentToPivot)
+                                   const std::shared_ptr<const Data::Dataset>& parentToPivot,
+                                   const wxString& parentName)
         {
         if (pivotsNode->IsOk())
             {
@@ -1904,14 +1905,21 @@ namespace Wisteria
                     const auto pivotType = pivot->GetProperty(L"type")->AsString(L"wider");
                     if (pivotType.CmpNoCase(L"wider") == 0)
                         {
-                        auto pivotedData = Data::Pivot::PivotWider(
-                            parentToPivot, pivot->GetProperty(L"id-columns")->AsStrings(),
-                            pivot->GetProperty(L"names-from-column")->AsString(),
-                            pivot->GetProperty(L"values-from-columns")->AsStrings(),
-                            pivot->GetProperty(L"names-separator")->AsString(L"_"),
-                            pivot->GetProperty(L"names-prefix")->AsString(),
+                        const auto idColumns = pivot->GetProperty(L"id-columns")->AsStrings();
+                        const auto namesFromColumn =
+                            pivot->GetProperty(L"names-from-column")->AsString();
+                        const auto valuesFromColumns =
+                            pivot->GetProperty(L"values-from-columns")->AsStrings();
+                        const auto namesSep =
+                            pivot->GetProperty(L"names-separator")->AsString(L"_");
+                        const auto namesPrefix = pivot->GetProperty(L"names-prefix")->AsString();
+                        const auto fillValue =
                             pivot->GetProperty(L"fill-value")
-                                ->AsDouble(std::numeric_limits<double>::quiet_NaN()));
+                                ->AsDouble(std::numeric_limits<double>::quiet_NaN());
+
+                        auto pivotedData = Data::Pivot::PivotWider(
+                            parentToPivot, idColumns, namesFromColumn, valuesFromColumns, namesSep,
+                            namesPrefix, fillValue);
 
                         if (pivotedData)
                             {
@@ -1923,17 +1931,33 @@ namespace Wisteria
                                              pivotName);
                                 }
                             m_datasets.insert_or_assign(pivotName, pivotedData);
+
+                            DatasetPivotOptions pivotOpts;
+                            pivotOpts.m_type = PivotType::Wider;
+                            pivotOpts.m_sourceDatasetName = parentName;
+                            pivotOpts.m_idColumns = idColumns;
+                            pivotOpts.m_namesFromColumn = namesFromColumn;
+                            pivotOpts.m_valuesFromColumns = valuesFromColumns;
+                            pivotOpts.m_namesSep = namesSep;
+                            pivotOpts.m_namesPrefix = namesPrefix;
+                            pivotOpts.m_fillValue = fillValue;
+                            SetDatasetPivotOptions(pivotName, pivotOpts);
+
                             LoadDatasetTransformations(pivot, pivotedData);
                             }
                         }
                     else if (pivotType.CmpNoCase(L"longer") == 0)
                         {
-                        auto pivotedData = Data::Pivot::PivotLonger(
-                            parentToPivot, pivot->GetProperty(L"columns-to-keep")->AsStrings(),
-                            pivot->GetProperty(L"from-columns")->AsStrings(),
-                            pivot->GetProperty(L"names-to")->AsStrings(),
-                            pivot->GetProperty(L"values-to")->AsString(),
-                            pivot->GetProperty(L"names-pattern")->AsString());
+                        const auto columnsToKeep =
+                            pivot->GetProperty(L"columns-to-keep")->AsStrings();
+                        const auto fromColumns = pivot->GetProperty(L"from-columns")->AsStrings();
+                        const auto namesTo = pivot->GetProperty(L"names-to")->AsStrings();
+                        const auto valuesTo = pivot->GetProperty(L"values-to")->AsString();
+                        const auto namesPattern = pivot->GetProperty(L"names-pattern")->AsString();
+
+                        auto pivotedData =
+                            Data::Pivot::PivotLonger(parentToPivot, columnsToKeep, fromColumns,
+                                                     namesTo, valuesTo, namesPattern);
 
                         if (pivotedData)
                             {
@@ -1945,6 +1969,17 @@ namespace Wisteria
                                              pivotName);
                                 }
                             m_datasets.insert_or_assign(pivotName, pivotedData);
+
+                            DatasetPivotOptions pivotOpts;
+                            pivotOpts.m_type = PivotType::Longer;
+                            pivotOpts.m_sourceDatasetName = parentName;
+                            pivotOpts.m_columnsToKeep = columnsToKeep;
+                            pivotOpts.m_fromColumns = fromColumns;
+                            pivotOpts.m_namesTo = namesTo;
+                            pivotOpts.m_valuesTo = valuesTo;
+                            pivotOpts.m_namesPattern = namesPattern;
+                            SetDatasetPivotOptions(pivotName, pivotOpts);
+
                             LoadDatasetTransformations(pivot, pivotedData);
                             }
                         }
@@ -2190,7 +2225,17 @@ namespace Wisteria
             LoadSubsets(dsNode->GetProperty(L"subsets"), dataset);
 
             // load any pivots of this dataset
-            LoadPivots(dsNode->GetProperty(L"pivots"), dataset);
+            // find the parent dataset name by looking up the pointer
+            wxString parentDsName;
+            for (const auto& [name, ds] : m_datasets)
+                {
+                if (ds == dataset)
+                    {
+                    parentDsName = name;
+                    break;
+                    }
+                }
+            LoadPivots(dsNode->GetProperty(L"pivots"), dataset, parentDsName);
 
             // load any merges of this dataset
             LoadMerges(dsNode->GetProperty(L"merges"), dataset);

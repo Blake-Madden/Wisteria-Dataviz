@@ -204,8 +204,10 @@ namespace Wisteria
         ///     referencing them by name.
         /// @param pivotsNode The pivots node.
         /// @param parentToPivot The dataset connected to the current dataset node.
+        /// @param parentName The name of the source dataset being pivoted.
         void LoadPivots(const wxSimpleJSON::Ptr_t& pivotsNode,
-                        const std::shared_ptr<const Data::Dataset>& parentToPivot);
+                        const std::shared_ptr<const Data::Dataset>& parentToPivot,
+                        const wxString& parentName);
         /// @brief Loads the merges node into @c m_datasets.
         /// @details These (merged) datasets are used by objects throughout the report,
         ///     referencing them by name.
