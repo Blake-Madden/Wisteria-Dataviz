@@ -2385,14 +2385,15 @@ namespace Wisteria
                             std::variant<wxString, size_t>(
                                 datasetNode->GetProperty(L"worksheet")->AsString());
                     // if no columns are defined, then deduce them ourselves
+                    Data::Dataset::ColumnPreviewInfo columnPreviewInfo;
                     if (!datasetNode->HasProperty(L"id-column") &&
                         !datasetNode->HasProperty(L"date-columns") &&
                         !datasetNode->HasProperty(L"continuous-columns") &&
                         !datasetNode->HasProperty(L"categorical-columns"))
                         {
-                        importDefines =
-                            Data::Dataset::ImportInfoFromPreview(Data::Dataset::ReadColumnInfo(
-                                path, importDefines, std::nullopt, worksheet));
+                        columnPreviewInfo = Data::Dataset::ReadColumnInfo(path, importDefines,
+                                                                          std::nullopt, worksheet);
+                        importDefines = Data::Dataset::ImportInfoFromPreview(columnPreviewInfo);
                         fillImportDefines();
                         }
                     else
@@ -2405,6 +2406,28 @@ namespace Wisteria
                             .DateColumns(dateInfo)
                             .ContinuousColumns(continuousVars)
                             .CategoricalColumns(catInfo);
+
+                        // build ColumnPreviewInfo from explicit column definitions
+                        if (!idColumn.empty())
+                            {
+                            columnPreviewInfo.push_back(
+                                { idColumn, Data::Dataset::ColumnImportType::String });
+                            }
+                        for (const auto& di : dateInfo)
+                            {
+                            columnPreviewInfo.push_back(
+                                { di.m_columnName, Data::Dataset::ColumnImportType::Date });
+                            }
+                        for (const auto& cv : continuousVars)
+                            {
+                            columnPreviewInfo.push_back(
+                                { cv, Data::Dataset::ColumnImportType::Numeric });
+                            }
+                        for (const auto& ci : catInfo)
+                            {
+                            columnPreviewInfo.push_back(
+                                { ci.m_columnName, Data::Dataset::ColumnImportType::Discrete });
+                            }
                         }
 
                     // import using the user-provided parser or deduce from the file extension
@@ -2438,7 +2461,9 @@ namespace Wisteria
                                      "and will be overwritten.",
                                      dsName);
                         }
-                    m_datasets.insert_or_assign(dsName, dataset);
+                    AddDataset(
+                        dsName, dataset,
+                        DatasetImportOptions{ path, worksheet, columnPreviewInfo, importDefines });
                     // recode values, build subsets and pivots, etc.
                     LoadDatasetTransformations(datasetNode, dataset);
                     }
