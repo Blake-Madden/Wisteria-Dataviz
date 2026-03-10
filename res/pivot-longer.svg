@@ -10,8 +10,8 @@
   <line x1="88" y1="24" x2="88" y2="80" stroke="white" stroke-width="1.5"/>
 
   <!-- Arrow curving down-right -->
-  <path d="M 128 52 C 148 52, 156 72, 156 92 L 156 120" fill="none" stroke="#404040" stroke-width="3" stroke-linecap="round"/>
-  <polygon points="156,126 150,116 162,116" fill="#404040"/>
+  <path d="M 128 52 C 148 52, 156 72, 156 92 L 156 120" fill="none" stroke="#808080" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="156,126 150,116 162,116" fill="#808080"/>
 
   <!-- Result: tall table (bottom-right) -->
   <rect x="132" y="136" width="64" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
@@ -23,5 +23,5 @@
   <line x1="164" y1="136" x2="164" y2="232" stroke="white" stroke-width="1.5"/>
 
   <!-- Label -->
-  <text x="128" y="250" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#404040" text-anchor="middle" font-weight="600">Pivot Longer</text>
+  <text x="128" y="250" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#808080" text-anchor="middle" font-weight="600">Pivot Longer</text>
 </svg>

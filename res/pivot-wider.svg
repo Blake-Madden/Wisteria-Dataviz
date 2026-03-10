@@ -11,8 +11,8 @@
   <line x1="48" y1="24" x2="48" y2="120" stroke="white" stroke-width="1.5"/>
 
   <!-- Arrow curving down-right -->
-  <path d="M 84 72 C 104 72, 120 92, 120 112 L 120 140" fill="none" stroke="#404040" stroke-width="3" stroke-linecap="round"/>
-  <polygon points="120,146 114,136 126,136" fill="#404040"/>
+  <path d="M 84 72 C 104 72, 120 92, 120 112 L 120 140" fill="none" stroke="#808080" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="120,146 114,136 126,136" fill="#808080"/>
 
   <!-- Result: wide table (bottom-right) -->
   <rect x="96" y="156" width="144" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
@@ -23,5 +23,5 @@
   <line x1="192" y1="156" x2="192" y2="212" stroke="white" stroke-width="1.5"/>
 
   <!-- Label -->
-  <text x="128" y="250" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#404040" text-anchor="middle" font-weight="600">Pivot Wider</text>
+  <text x="128" y="250" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#808080" text-anchor="middle" font-weight="600">Pivot Wider</text>
 </svg>
