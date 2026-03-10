@@ -234,6 +234,9 @@ namespace Wisteria
         /// @brief The default opacity when ghosting items.
         constexpr static uint8_t GHOST_OPACITY = 32;
 
+        /// @brief Number of rows shown in data preview windows.
+        constexpr static int PREVIEW_MAX_ROWS{ 1'000 };
+
       private:
         inline static wxSize m_imageResolutionDPI{ 300, 300 };
         inline static uint8_t m_translucencyValue{ 100 };
@@ -243,6 +246,7 @@ namespace Wisteria
         inline static double m_roundedCornerRadius{ 5 };
         inline static size_t m_maxObservationsInBin{ 25 };
         inline static wxString m_currencySymbol{ L"$" };
+
         // clang-format off
         constexpr static int m_debugSettings
             {

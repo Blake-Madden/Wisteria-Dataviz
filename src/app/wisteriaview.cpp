@@ -244,6 +244,7 @@ void WisteriaView::ShowSideBar(const bool show)
 //-------------------------------------------
 void WisteriaView::LoadProject()
     {
+    wxBusyInfo busy{ wxBusyInfoFlags{}.Text(_(L"Loading project...")) };
     const wxString filename = GetDocument()->GetFilename();
 
     // set up sidebar image list from the app's persistent list
@@ -267,9 +268,8 @@ void WisteriaView::LoadProject()
     if (!filename.empty())
         {
         // add datasets as subitems under "Data"
-        const auto& datasets = m_reportBuilder.GetDatasets();
         const auto& importOpts = m_reportBuilder.GetDatasetImportOptions();
-        for (const auto& [dsName, dataset] : datasets)
+        for (const auto& [dsName, dataset] : m_reportBuilder.GetDatasets())
             {
             const wxWindowID dsId = nextId;
             nextId = wxNewId();
@@ -287,13 +287,14 @@ void WisteriaView::LoadProject()
             grid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
             grid->EnableEditing(false);
             ApplyColumnHeaderIcons(grid, table);
+            m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
+            m_workArea->Layout();
             grid->AutoSizeColumns(false);
             AdjustGridColumnsForIcons(grid);
             grid->Hide();
-            m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
             m_workWindows.AddWindow(grid);
 
-            m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId, std::nullopt);
+            m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId, DATA_ICON_INDEX);
             }
 
         // add pages as top-level folders
@@ -562,6 +563,10 @@ void WisteriaView::OnPivotWider([[maybe_unused]] wxCommandEvent& event)
     pivotOpts.m_fillValue = dlgOpts.m_fillValue;
     m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
 
+    // adjust the splitter sash to match the sidebar's new min width
+    const auto minWidth = m_sideBar->GetMinSize().GetWidth();
+    m_splitter->SetSashPosition(minWidth);
+
     GetDocument()->Modify(true);
     }
 
@@ -600,6 +605,10 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
     pivotOpts.m_valuesTo = dlgOpts.m_valuesTo;
     pivotOpts.m_namesPattern = dlgOpts.m_namesPattern;
     m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
+
+    // adjust the splitter sash to match the sidebar's new min width
+    const auto minWidth = m_sideBar->GetMinSize().GetWidth();
+    m_splitter->SetSashPosition(minWidth);
 
     GetDocument()->Modify(true);
     }
@@ -683,14 +692,16 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
     Wisteria::UI::InsertPageDlg dlg(m_frame, wxID_ANY, _(L"Edit Page"));
     dlg.SetRows(currentRows);
     dlg.SetColumns(currentCols);
-    dlg.SetPageName(canvas->GetLabel());
+    if (m_sideBar->GetSelectedFolder())
+        {
+        dlg.SetPageName(m_sideBar->GetFolderText(m_sideBar->GetSelectedFolder().value()));
+        }
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
-    canvas->SetLabel(dlg.GetPageName());
 
     // update the sidebar label for this page
     const auto selectedFolder = m_sideBar->GetSelectedFolder();
@@ -700,9 +711,10 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
                                          dlg.GetPageName() :
                                          m_sideBar->GetFolderText(selectedFolder.value());
         m_sideBar->SetFolderText(selectedFolder.value(), displayName);
+        canvas->SetLabel(displayName);
 
         // adjust the splitter sash to match the sidebar's new min width
-        const int minWidth = m_sideBar->GetMinSize().GetWidth();
+        const auto minWidth = m_sideBar->GetMinSize().GetWidth();
         m_splitter->SetSashPosition(minWidth);
         }
     }

@@ -13,6 +13,7 @@
 #define PIVOT_WIDER_DLG_H
 
 #include "../../base/reportbuilder.h"
+#include "../../base/settings.h"
 #include "../../data/pivot.h"
 #include "../controls/datasetgridtable.h"
 #include "variableselectdlg.h"

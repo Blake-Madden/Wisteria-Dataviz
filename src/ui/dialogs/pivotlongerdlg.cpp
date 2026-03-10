@@ -11,8 +11,6 @@
 
 namespace Wisteria::UI
     {
-    constexpr static int PREVIEW_MAX_ROWS{ 1'000 };
-
     //-------------------------------------------
     PivotLongerDlg::PivotLongerDlg(const ReportBuilder* reportBuilder, wxWindow* parent,
                                    const wxWindowID id, const wxPoint& pos, const wxSize& size,
@@ -122,10 +120,11 @@ namespace Wisteria::UI
         m_previewGrid->EnableEditing(false);
         m_previewGrid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
         previewBox->Add(m_previewGrid, wxSizerFlags{ 1 }.Expand().Border());
-        auto* previewNote = new wxStaticText(
-            previewBox->GetStaticBox(), wxID_ANY,
-            wxString::Format(_(L"Preview is limited to the first %s rows."),
-                             wxNumberFormatter::ToString(static_cast<long>(PREVIEW_MAX_ROWS))));
+        auto* previewNote =
+            new wxStaticText(previewBox->GetStaticBox(), wxID_ANY,
+                             wxString::Format(_(L"Preview is limited to the first %s rows."),
+                                              wxNumberFormatter::ToString(
+                                                  static_cast<long>(Settings::PREVIEW_MAX_ROWS))));
         previewNote->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
         previewBox->Add(previewNote, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
         mainSizer->Add(previewBox, wxSizerFlags{ 1 }.Expand().Border());
@@ -289,7 +288,7 @@ namespace Wisteria::UI
 
         // fill preview grid (up to 50 rows)
         auto* table = new DatasetGridTable(m_pivotedDataset);
-        table->SetMaxRows(PREVIEW_MAX_ROWS);
+        table->SetMaxRows(Settings::PREVIEW_MAX_ROWS);
         m_previewGrid->SetTable(table, true);
         m_previewGrid->AutoSizeColumns(false);
         m_previewGrid->ForceRefresh();

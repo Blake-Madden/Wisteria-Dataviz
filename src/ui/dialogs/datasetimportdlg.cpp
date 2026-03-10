@@ -124,13 +124,22 @@ namespace Wisteria::UI
                        wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
 
         // preview grid
-        m_previewGrid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 1000, 400 }));
+        auto* previewBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
+        m_previewGrid = new wxGrid(previewBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                                   FromDIP(wxSize{ 1000, 400 }));
         m_previewGrid->SetDoubleBuffered(true);
         m_previewGrid->GetGridWindow()->SetDoubleBuffered(true);
         m_previewGrid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
         m_previewGrid->EnableEditing(false);
-        mainSizer->Add(m_previewGrid,
-                       wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxRIGHT, FromDIP(10)));
+        previewBox->Add(m_previewGrid, wxSizerFlags{ 1 }.Expand().Border());
+        auto* previewNote =
+            new wxStaticText(previewBox->GetStaticBox(), wxID_ANY,
+                             wxString::Format(_(L"Preview is limited to the first %s rows."),
+                                              wxNumberFormatter::ToString(
+                                                  static_cast<long>(Settings::PREVIEW_MAX_ROWS))));
+        previewNote->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
+        previewBox->Add(previewNote, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+        mainSizer->Add(previewBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // OK/Cancel
         mainSizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL),
@@ -200,7 +209,10 @@ namespace Wisteria::UI
             m_idColumnChoice->Append(_(L"(None)"));
             for (const auto& col : m_columnInfo)
                 {
-                m_idColumnChoice->Append(col.m_name);
+                if (col.m_type == Data::Dataset::ColumnImportType::String)
+                    {
+                    m_idColumnChoice->Append(col.m_name);
+                    }
                 }
             if (!previousId.empty())
                 {
@@ -265,6 +277,7 @@ namespace Wisteria::UI
 
         // update grid
         auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);
+        table->SetMaxRows(Settings::PREVIEW_MAX_ROWS);
 
         // apply currency symbols to continuous columns
         size_t contIdx{ 0 };

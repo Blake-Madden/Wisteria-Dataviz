@@ -10,8 +10,6 @@
 
 namespace Wisteria::UI
     {
-    constexpr static int PREVIEW_MAX_ROWS{ 1'000 };
-
     [[nodiscard]]
     static wxString NaNLabel()
         {
@@ -27,7 +25,7 @@ namespace Wisteria::UI
         CreateControls();
 
         SetMinSize(FromDIP(wxSize{ 500, 550 }));
-        SetSize(FromDIP(wxSize{ 550, 600 }));
+        SetSize(FromDIP(wxSize{ 550, 800 }));
         Centre();
 
         SetDefaultOutputName();
@@ -128,10 +126,11 @@ namespace Wisteria::UI
         m_previewGrid->EnableEditing(false);
         m_previewGrid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
         previewBox->Add(m_previewGrid, wxSizerFlags{ 1 }.Expand().Border());
-        auto* previewNote = new wxStaticText(
-            previewBox->GetStaticBox(), wxID_ANY,
-            wxString::Format(_(L"Preview is limited to the first %s rows."),
-                             wxNumberFormatter::ToString(static_cast<long>(PREVIEW_MAX_ROWS))));
+        auto* previewNote =
+            new wxStaticText(previewBox->GetStaticBox(), wxID_ANY,
+                             wxString::Format(_(L"Preview is limited to the first %s rows."),
+                                              wxNumberFormatter::ToString(
+                                                  static_cast<long>(Settings::PREVIEW_MAX_ROWS))));
         previewNote->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
         previewBox->Add(previewNote, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
         mainSizer->Add(previewBox, wxSizerFlags{ 1 }.Expand().Border());
@@ -287,7 +286,7 @@ namespace Wisteria::UI
 
         // fill preview grid
         auto* table = new DatasetGridTable(m_pivotedDataset);
-        table->SetMaxRows(PREVIEW_MAX_ROWS);
+        table->SetMaxRows(Settings::PREVIEW_MAX_ROWS);
         m_previewGrid->SetTable(table, true);
         m_previewGrid->AutoSizeColumns(false);
         m_previewGrid->ForceRefresh();

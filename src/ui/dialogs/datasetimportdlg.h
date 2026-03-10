@@ -12,6 +12,7 @@
 #ifndef DATASET_IMPORT_DIALOG_H
 #define DATASET_IMPORT_DIALOG_H
 
+#include "../../base/settings.h"
 #include "../../data/dataset.h"
 #include "../../data/excelreader.h"
 #include "../../data/odsreader.h"

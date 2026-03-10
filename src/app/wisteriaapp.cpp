@@ -86,13 +86,12 @@ bool WisteriaApp::OnInit()
         new wxDocTemplate(GetDocManager(), _(L"Wisteria project"), L"*.json", wxString{}, L"json",
                           _DT(L"Wisteria Doc"), L"WisteriaView", wxCLASSINFO(WisteriaDoc),
                           wxCLASSINFO(WisteriaView));
-    // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
-
     SetAppFileExtension(L"json");
 
     LoadInterface();
 
     return true;
+    // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
 
 //-------------------------------------------

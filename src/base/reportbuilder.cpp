@@ -2455,23 +2455,27 @@ namespace Wisteria
                         // build ColumnPreviewInfo from explicit column definitions
                         if (!idColumn.empty())
                             {
-                            columnPreviewInfo.push_back(
-                                { idColumn, Data::Dataset::ColumnImportType::String });
+                            columnPreviewInfo.push_back({ idColumn,
+                                                          Data::Dataset::ColumnImportType::String,
+                                                          wxString{}, false });
                             }
                         for (const auto& di : dateInfo)
                             {
-                            columnPreviewInfo.push_back(
-                                { di.m_columnName, Data::Dataset::ColumnImportType::Date });
+                            columnPreviewInfo.push_back({ di.m_columnName,
+                                                          Data::Dataset::ColumnImportType::Date,
+                                                          wxString{}, false });
                             }
                         for (const auto& cv : continuousVars)
                             {
-                            columnPreviewInfo.push_back(
-                                { cv, Data::Dataset::ColumnImportType::Numeric });
+                            columnPreviewInfo.push_back({ cv,
+                                                          Data::Dataset::ColumnImportType::Numeric,
+                                                          wxString{}, false });
                             }
                         for (const auto& ci : catInfo)
                             {
-                            columnPreviewInfo.push_back(
-                                { ci.m_columnName, Data::Dataset::ColumnImportType::Discrete });
+                            columnPreviewInfo.push_back({ ci.m_columnName,
+                                                          Data::Dataset::ColumnImportType::Discrete,
+                                                          wxString{}, false });
                             }
                         }
 
