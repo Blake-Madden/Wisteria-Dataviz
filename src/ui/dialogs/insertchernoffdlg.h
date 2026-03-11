@@ -124,6 +124,7 @@ namespace Wisteria::UI
         std::array<wxStaticText*, FEATURE_COUNT> m_featureVarLabels{};
         wxChoice* m_genderChoice{ nullptr };
         wxChoice* m_hairStyleChoice{ nullptr };
+        wxStaticText* m_facialHairLabel{ nullptr };
         wxChoice* m_facialHairChoice{ nullptr };
         wxColourPickerCtrl* m_skinColorLighterPicker{ nullptr };
         wxColourPickerCtrl* m_skinColorDarkerPicker{ nullptr };

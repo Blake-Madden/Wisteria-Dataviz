@@ -23,7 +23,7 @@ namespace Wisteria::UI
 
         const auto currentSize = GetSize();
         SetSize(currentSize.GetWidth() * 2, currentSize.GetHeight());
-        SetMinSize(wxSize(currentSize.GetWidth() * 2, currentSize.GetHeight()));
+        SetMinSize(wxSize{ currentSize.GetWidth() * 2, currentSize.GetHeight() });
 
         Centre();
         }
@@ -120,8 +120,8 @@ namespace Wisteria::UI
         appearanceSizer->Add(m_hairStyleChoice);
 
         // facial hair
-        appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Facial hair:")),
-                             wxSizerFlags{}.CenterVertical());
+        m_facialHairLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Facial hair:"));
+        appearanceSizer->Add(m_facialHairLabel, wxSizerFlags{}.CenterVertical());
         m_facialHairChoice = new wxChoice(optionsPage, wxID_ANY);
         m_facialHairChoice->Append(_(L"Clean shaven"));
         m_facialHairChoice->Append(_(L"Five o'clock shadow"));
@@ -172,6 +172,13 @@ namespace Wisteria::UI
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
+        m_genderChoice->Bind(wxEVT_CHOICE,
+                             [this]([[maybe_unused]] wxCommandEvent&)
+                             {
+                                 m_facialHairLabel->Enable(m_genderChoice->GetSelection() == 1);
+                                 m_facialHairChoice->Enable(m_genderChoice->GetSelection() == 1);
+                                 Refresh();
+                             });
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
@@ -283,15 +290,15 @@ namespace Wisteria::UI
 
         for (const auto& col : dataset.GetContinuousColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{});
             }
         for (const auto& col : dataset.GetCategoricalColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::String, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::String, wxString{});
             }
         for (const auto& col : dataset.GetDateColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{});
             }
 
         return info;
