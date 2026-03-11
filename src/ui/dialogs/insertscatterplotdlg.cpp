@@ -205,15 +205,15 @@ namespace Wisteria::UI
 
         for (const auto& col : dataset.GetContinuousColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{});
             }
         for (const auto& col : dataset.GetCategoricalColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::String, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::String, wxString{});
             }
         for (const auto& col : dataset.GetDateColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{});
             }
 
         return info;

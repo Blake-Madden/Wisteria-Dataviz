@@ -9,8 +9,10 @@
 #include "chernoffplot.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs::Graph2D)
+    wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend,
+                              GraphItems::GraphItemBase)
 
-    namespace Wisteria::Graphs
+        namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     wxString ChernoffFacesPlot::GetFeatureDisplayName(FeatureId id)
@@ -1749,57 +1751,56 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // left side features
         if (!m_faceWidthColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_faceWidthColumnName), FeatureId::FaceWidth, true });
+            features.emplace_back(TruncateLabel(m_faceWidthColumnName), FeatureId::FaceWidth, true);
             }
         if (!m_faceHeightColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_faceHeightColumnName), FeatureId::FaceHeight, true });
+            features.emplace_back(TruncateLabel(m_faceHeightColumnName), FeatureId::FaceHeight,
+                                  true);
             }
         if (!m_eyeSizeColumnName.empty())
             {
-            features.push_back({ TruncateLabel(m_eyeSizeColumnName), FeatureId::EyeSize, true });
+            features.emplace_back(TruncateLabel(m_eyeSizeColumnName), FeatureId::EyeSize, true);
             }
         if (!m_eyePositionColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_eyePositionColumnName), FeatureId::EyePosition, true });
+            features.emplace_back(TruncateLabel(m_eyePositionColumnName), FeatureId::EyePosition,
+                                  true);
             }
         if (!m_eyebrowSlantColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_eyebrowSlantColumnName), FeatureId::EyebrowSlant, true });
+            features.emplace_back(TruncateLabel(m_eyebrowSlantColumnName), FeatureId::EyebrowSlant,
+                                  true);
             }
         if (!m_pupilPositionColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_pupilPositionColumnName), FeatureId::PupilDirection, true });
+            features.emplace_back(TruncateLabel(m_pupilPositionColumnName),
+                                  FeatureId::PupilDirection, true);
             }
 
         // right side features
         if (!m_noseSizeColumnName.empty())
             {
-            features.push_back({ TruncateLabel(m_noseSizeColumnName), FeatureId::NoseSize, false });
+            features.emplace_back(TruncateLabel(m_noseSizeColumnName), FeatureId::NoseSize, false);
             }
         if (!m_mouthWidthColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_mouthWidthColumnName), FeatureId::MouthWidth, false });
+            features.emplace_back(TruncateLabel(m_mouthWidthColumnName), FeatureId::MouthWidth,
+                                  false);
             }
         if (!m_mouthCurvatureColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_mouthCurvatureColumnName), FeatureId::SmileFrown, false });
+            features.emplace_back(TruncateLabel(m_mouthCurvatureColumnName), FeatureId::SmileFrown,
+                                  false);
             }
         if (!m_faceSaturationColumnName.empty())
             {
-            features.push_back(
-                { TruncateLabel(m_faceSaturationColumnName), FeatureId::FaceColor, false });
+            features.emplace_back(TruncateLabel(m_faceSaturationColumnName), FeatureId::FaceColor,
+                                  false);
             }
         if (!m_earSizeColumnName.empty())
             {
-            features.push_back({ TruncateLabel(m_earSizeColumnName), FeatureId::EarSize, false });
+            features.emplace_back(TruncateLabel(m_earSizeColumnName), FeatureId::EarSize, false);
             }
 
         legend->SetFeatures(std::move(features));

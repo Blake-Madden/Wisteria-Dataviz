@@ -331,13 +331,7 @@ namespace Wisteria::Graphs
         class ChernoffLegend final : public GraphItems::GraphItemBase
             {
           public:
-            /// @brief Structure describing a feature label and its position.
-            struct FeatureLabel
-                {
-                wxString columnName; ///< data column name (empty = not in use)
-                FeatureId featureId{ FeatureId::FaceWidth }; ///< feature identifier
-                bool leftSide{ true }; ///< whether label is on left or right side
-                };
+            wxDECLARE_DYNAMIC_CLASS(ChernoffLegend);
 
             /** @brief Constructor.
                 @param itemInfo The base item information.*/
@@ -347,9 +341,19 @@ namespace Wisteria::Graphs
                 }
 
             /// @private
+            ChernoffLegend() = default;
+            /// @private
             ChernoffLegend(const ChernoffLegend&) = delete;
             /// @private
             ChernoffLegend& operator=(const ChernoffLegend&) = delete;
+
+            /// @brief Structure describing a feature label and its position.
+            struct FeatureLabel
+                {
+                wxString columnName; ///< data column name (empty = not in use)
+                FeatureId featureId{ FeatureId::FaceWidth }; ///< feature identifier
+                bool leftSide{ true }; ///< whether label is on left or right side
+                };
 
             [[nodiscard]]
             wxRect Draw(wxDC& dc) const final;

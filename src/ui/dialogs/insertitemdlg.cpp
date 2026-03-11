@@ -155,6 +155,10 @@ namespace Wisteria::UI
             {
             return _(L"[Chernoff Faces]");
             }
+        if (item->IsKindOf(wxCLASSINFO(Graphs::ChernoffFacesPlot::ChernoffLegend)))
+            {
+            return _(L"[Chernoff Legend]");
+            }
         if (item->IsKindOf(wxCLASSINFO(Graphs::WaffleChart)))
             {
             return _(L"[Waffle Chart]");
