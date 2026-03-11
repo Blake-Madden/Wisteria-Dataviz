@@ -871,16 +871,16 @@ namespace Wisteria::Data
             }
 
         /// @brief Returns a list of string values that commonly should be treated as missing data.
-        /// @details This can be passed as the missing data codes for this object when calling
+        /// @details This can be passed as the missing data codes when calling
         ///     the various import functions.\n
-        ///     These codes include: `"NULL"`, `"NA"`, and `"NULL"`.
+        ///     These codes include: `"NA"`, `"N/A"`, `"NULL"`, and `"."`.
         /// @note The default for import functions is to only treat empty strings as missing data.
         /// @returns A list of common missing data codes.
         /// @sa MDCodes().
         [[nodiscard]]
         static std::vector<std::wstring> GetCommonMDCodes()
             {
-            return std::vector<std::wstring>{ _DT(L"NA"), _DT(L"N/A"), _DT(L"NULL") };
+            return std::vector<std::wstring>{ _DT(L"NA"), _DT(L"N/A"), _DT(L"NULL"), _DT(L".") };
             }
 
         /** @brief Set whether to import numeric columns with leading zeros as text.

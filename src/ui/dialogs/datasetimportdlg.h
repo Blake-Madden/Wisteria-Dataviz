@@ -27,6 +27,8 @@
 #include <wx/grid.h>
 #include <wx/spinctrl.h>
 #include <wx/stattext.h>
+#include <wx/textctrl.h>
+#include <wx/tokenzr.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -99,6 +101,7 @@ namespace Wisteria::UI
 
         wxString m_filePath;
         wxString m_fileExt;
+        wxString m_mdValues;
 
         // controls
         wxStaticText* m_worksheetLabel{ nullptr };
@@ -110,6 +113,9 @@ namespace Wisteria::UI
         wxChoice* m_idColumnChoice{ nullptr };
         wxStaticText* m_selectedColumnLabel{ nullptr };
         wxChoice* m_columnTypeChoice{ nullptr };
+        wxStaticText* m_mdValuesLabel{ nullptr };
+        wxTextCtrl* m_mdValuesText{ nullptr };
+
         wxGrid* m_previewGrid{ nullptr };
 
         // preview data
@@ -120,8 +126,6 @@ namespace Wisteria::UI
 
         // worksheet names (for XLSX/ODS)
         std::vector<std::wstring> m_worksheetNames;
-
-        constexpr static size_t PREVIEW_ROW_COUNT = 100;
         };
     } // namespace Wisteria::UI
 

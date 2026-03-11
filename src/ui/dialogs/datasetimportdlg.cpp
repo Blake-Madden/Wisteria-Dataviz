@@ -107,6 +107,22 @@ namespace Wisteria::UI
 
         mainSizer->Add(checkSizer, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
 
+        // MD codes
+        auto* mdCodesSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_mdValuesLabel = new wxStaticText(this, wxID_ANY, _(L"Missing data codes:"));
+        mdCodesSizer->Add(m_mdValuesLabel,
+                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
+        for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
+            {
+            m_mdValues.append(code).append(L' ');
+            }
+        m_mdValues.Trim();
+        m_mdValuesText = new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
+                                        wxDefaultSize, 0, wxGenericValidator(&m_mdValues));
+        mdCodesSizer->Add(m_mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
+        mainSizer->Add(mdCodesSizer,
+                       wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
+
         // column type controls
         auto* columnTypeSizer = new wxBoxSizer(wxHORIZONTAL);
         m_selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Selected column:"));
@@ -154,6 +170,7 @@ namespace Wisteria::UI
         m_leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_idColumnChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
+        m_mdValuesText->Bind(wxEVT_TEXT, &DatasetImportDlg::OnOptionChanged, this);
         m_previewGrid->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, &DatasetImportDlg::OnColumnHeaderClick,
                             this);
         m_previewGrid->Bind(wxEVT_GRID_SELECT_CELL, &DatasetImportDlg::OnColumnSelected, this);
@@ -172,6 +189,7 @@ namespace Wisteria::UI
     //----------------------------------------------
     void DatasetImportDlg::RefreshPreview()
         {
+        TransferDataFromWindow();
         try
             {
             // build partial ImportInfo for column deduction
@@ -180,12 +198,26 @@ namespace Wisteria::UI
             previewInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
             previewInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
             previewInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
+            if (m_mdValues.empty())
+                {
+                previewInfo.MDCodes(std::nullopt);
+                }
+            else
+                {
+                std::vector<std::wstring> mdCodes;
+                wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_RET_EMPTY);
+                while (mdTokenizer.HasMoreTokens())
+                    {
+                    mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
+                    }
+                previewInfo.MDCodes(mdCodes);
+                }
 
             const auto worksheet = GetWorksheet();
 
             // read column info from file
             const auto freshColumnInfo = Data::Dataset::ReadColumnInfo(
-                m_filePath, previewInfo, PREVIEW_ROW_COUNT, worksheet);
+                m_filePath, previewInfo, Settings::PREVIEW_MAX_ROWS, worksheet);
 
             // preserve user overrides (exclusion, type) from previous m_columnInfo
             const auto previousColumnInfo = std::move(m_columnInfo);
@@ -258,12 +290,27 @@ namespace Wisteria::UI
     //----------------------------------------------
     void DatasetImportDlg::UpdateGrid()
         {
+        TransferDataFromWindow();
         // convert to full ImportInfo from current m_columnInfo
         auto importInfo = Data::Dataset::ImportInfoFromPreview(m_columnInfo);
         importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
         importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
         importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
+        if (m_mdValues.empty())
+            {
+            importInfo.MDCodes(std::nullopt);
+            }
+        else
+            {
+            std::vector<std::wstring> mdCodes;
+            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_RET_EMPTY);
+            while (mdTokenizer.HasMoreTokens())
+                {
+                mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
+                }
+            importInfo.MDCodes(mdCodes);
+            }
         if (m_idColumnChoice->GetSelection() > 0)
             {
             importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
