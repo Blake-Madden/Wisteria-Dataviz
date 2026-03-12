@@ -125,7 +125,7 @@ namespace Wisteria::UI
 
         // column type controls
         auto* columnTypeSizer = new wxBoxSizer(wxHORIZONTAL);
-        m_selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Selected column:"));
+        m_selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Column data type:"));
         columnTypeSizer->Add(m_selectedColumnLabel,
                              wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
         m_columnTypeChoice = new wxChoice(this, wxID_ANY);
@@ -230,6 +230,7 @@ namespace Wisteria::UI
                 if (prevIt != previousColumnInfo.cend())
                     {
                     col.m_excluded = prevIt->m_excluded;
+                    col.m_type = prevIt->m_type;
                     }
                 }
 
@@ -428,9 +429,8 @@ namespace Wisteria::UI
     void DatasetImportDlg::UpdateColumnTypeControls()
         {
         const auto selectedCols = m_previewGrid->GetSelectedCols();
-        if (selectedCols.empty() || static_cast<size_t>(selectedCols[0]) >= m_columnInfo.size())
+        if (selectedCols.empty() || std::cmp_greater_equal(selectedCols[0], m_columnInfo.size()))
             {
-            m_selectedColumnLabel->SetLabel(_(L"Selected column:"));
             m_columnTypeChoice->SetSelection(wxNOT_FOUND);
             m_columnTypeChoice->Disable();
             return;
