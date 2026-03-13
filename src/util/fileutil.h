@@ -235,11 +235,6 @@ wxString ParseTitleFromFileName(wxString filename);
 /// @param fileToFind The file name to search for.
 [[nodiscard]]
 wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxString& fileToFind);
-/** @brief Sends a file to the recycle bin.
-    @param fileToDelete The file to delete.
-    @returns @c true on success.
-    @todo Currently only works on MSW; other platforms will just permanently delete the file.*/
-bool SendToRecycleBinOrDelete(const wxString& fileToDelete);
 /** @brief Compares two files, based on the OS's filename case sensitivity.
     @param file1 The first file.
     @param file2 The second file.

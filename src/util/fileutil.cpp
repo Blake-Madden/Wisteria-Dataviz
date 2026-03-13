@@ -465,33 +465,6 @@ wxString StripIllegalFileCharacters(const wxString& filePath)
     }
 
 //------------------------------------------------------------------
-bool SendToRecycleBinOrDelete(const wxString& fileToDelete)
-    {
-    if (!wxFile::Exists(fileToDelete))
-        {
-        return false;
-        }
-#ifdef __WXMSW__
-    /* file path needs to have TWO null terminators for SHFileOperation,
-       so we need to use a different filepath buffer with two NULLs at the end.*/
-    const size_t fileBufferLength = fileToDelete.length() + 2;
-    auto filePath = std::make_unique<wchar_t[]>(fileBufferLength);
-    std::copy(fileToDelete.cbegin(), fileToDelete.cend(), filePath.get());
-
-    SHFILEOPSTRUCT SHFileOp;
-    std::memset(&SHFileOp, 0, sizeof(SHFILEOPSTRUCT));
-    SHFileOp.wFunc = FO_DELETE;
-    SHFileOp.pFrom = filePath.get();
-    SHFileOp.fFlags = FOF_ALLOWUNDO;
-
-    // SHFileOperation returns 0 on success, so negate it
-    return !::SHFileOperation(&SHFileOp);
-#else
-    return wxRemoveFile(fileToDelete);
-#endif
-    }
-
-//------------------------------------------------------------------
 int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs)
     {
     const wxDir dir(rootDirectory);

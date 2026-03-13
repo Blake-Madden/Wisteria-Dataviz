@@ -534,7 +534,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     if (wxMessageBox(m_deletePrompt, _(L"Delete Item"),
                                      wxYES_NO | wxICON_WARNING) == wxYES)
                         {
-                        SendToRecycleBinOrDelete(filePath);
+                        wxMoveToTrash(filePath);
                         DeleteItem(item--);
                         }
                     }
