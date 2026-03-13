@@ -345,7 +345,7 @@ namespace Wisteria::UI
                     m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                     }
                 }
-            m_ribbon->SetArtProvider(new wxRibbonMSWArtProvider);
+            m_ribbon->SetArtProvider(new wxRibbonMSWFlatArtProvider);
             mainSizer->Add(m_ribbon, wxSizerFlags{}.Expand().Border());
             m_ribbon->Realise();
             }

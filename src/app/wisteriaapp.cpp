@@ -395,7 +395,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                               appIcon.IsOk() ? appIcon.GetBitmap(iconSize) : wxBitmap{},
                               _(L"About Wisteria Dataviz"));
 
-    ribbon->SetArtProvider(new wxRibbonMSWArtProvider);
+    ribbon->SetArtProvider(new wxRibbonMSWFlatArtProvider);
     ribbon->Realize();
 
     return ribbon;
