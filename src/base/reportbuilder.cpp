@@ -991,6 +991,19 @@ namespace Wisteria
                         vName, value->GetProperty(L"value")->IsValueString() ?
                                    ValuesType(value->GetProperty(L"value")->AsString()) :
                                    ValuesType(value->GetProperty(L"value")->AsDouble()));
+
+                    DatasetFormulaInfo constInfo;
+                    constInfo.m_name = vName;
+                    if (value->GetProperty(L"value")->IsValueString())
+                        {
+                        constInfo.m_value = value->GetProperty(L"value")->AsString();
+                        }
+                    else if (value->GetProperty(L"value")->IsValueNumber())
+                        {
+                        constInfo.m_value =
+                            std::to_wstring(value->GetProperty(L"value")->AsDouble());
+                        }
+                    m_constants.push_back(std::move(constInfo));
                     }
                 }
             }
@@ -1834,18 +1847,29 @@ namespace Wisteria
         {
         if (mergesNode->IsOk())
             {
+            // find the parent dataset name
+            wxString parentDsName;
+            for (const auto& [name, ds] : m_datasets)
+                {
+                if (ds == datasetToMerge)
+                    {
+                    parentDsName = name;
+                    break;
+                    }
+                }
+
             auto merges = mergesNode->AsNodes();
             for (const auto& merge : merges)
                 {
                 if (merge->IsOk())
                     {
-                    const wxString dsName = merge->GetProperty(L"other-dataset")->AsString();
-                    const auto foundPos = m_datasets.find(dsName);
+                    const wxString otherDsName = merge->GetProperty(L"other-dataset")->AsString();
+                    const auto foundPos = m_datasets.find(otherDsName);
                     if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
                         {
                         throw std::runtime_error(
                             wxString::Format(_(L"%s: dataset not found for dataset merging."),
-                                             dsName)
+                                             otherDsName)
                                 .ToUTF8());
                         }
 
@@ -1861,9 +1885,9 @@ namespace Wisteria
                             bys.emplace_back(byCol->GetProperty(L"left-column")->AsString(),
                                              byCol->GetProperty(L"right-column")->AsString());
                             }
+                        const auto suffix = merge->GetProperty(L"suffix")->AsString(L".x");
                         auto mergedData = Data::DatasetJoin::LeftJoinUnique(
-                            datasetToMerge, foundPos->second, bys,
-                            merge->GetProperty(L"suffix")->AsString(L".x"));
+                            datasetToMerge, foundPos->second, bys, suffix);
 
                         if (mergedData)
                             {
@@ -1875,6 +1899,15 @@ namespace Wisteria
                                              mergeName);
                                 }
                             m_datasets.insert_or_assign(mergeName, mergedData);
+
+                            DatasetMergeOptions mergeOpts;
+                            mergeOpts.m_sourceDatasetName = parentDsName;
+                            mergeOpts.m_otherDatasetName = otherDsName;
+                            mergeOpts.m_type = mergeType;
+                            mergeOpts.m_byColumns = bys;
+                            mergeOpts.m_suffix = suffix;
+                            SetDatasetMergeOptions(mergeName, mergeOpts);
+
                             LoadDatasetTransformations(merge, mergedData);
                             }
                         }
@@ -2005,6 +2038,27 @@ namespace Wisteria
             { L">", Comparison::GreaterThan }, { L">=", Comparison::GreaterThanOrEqualTo }
         };
 
+        // caches the raw filter info from a JSON filter node
+        const auto cacheFilterInfo = [](const auto& filterNode)
+        {
+            DatasetFilterInfo info;
+            info.m_column = filterNode->GetProperty(L"column")->AsString();
+            info.m_operator = filterNode->GetProperty(L"operator")->AsString(L"=");
+            const auto filterValues = filterNode->GetProperty(L"values")->AsNodes();
+            for (const auto& filterValue : filterValues)
+                {
+                if (filterValue->IsValueString())
+                    {
+                    info.m_values.push_back(filterValue->AsString());
+                    }
+                else if (filterValue->IsValueNumber())
+                    {
+                    info.m_values.push_back(std::to_wstring(filterValue->AsDouble()));
+                    }
+                }
+            return info;
+        };
+
         const auto loadColumnFilter = [this, &parentToSubset](const auto& filterNode)
         {
             const auto foundPos = cmpOperators.find(std::wstring_view(
@@ -2051,6 +2105,17 @@ namespace Wisteria
 
         if (subsetsNode->IsOk())
             {
+            // find the parent dataset name
+            wxString parentDsName;
+            for (const auto& [name, ds] : m_datasets)
+                {
+                if (ds == parentToSubset)
+                    {
+                    parentDsName = name;
+                    break;
+                    }
+                }
+
             auto subsets = subsetsNode->AsNodes();
             for (const auto& subset : subsets)
                 {
@@ -2074,17 +2139,23 @@ namespace Wisteria
                             _(L"Subset missing filters or section definition.").ToUTF8());
                         }
 
+                    DatasetSubsetOptions subsetOpts;
+                    subsetOpts.m_sourceDatasetName = parentDsName;
+
                     Data::Subset dataSubsetter;
                     std::shared_ptr<Data::Dataset> subsettedDataset{ nullptr };
                     // single column filter
                     if (filterNode->IsOk())
                         {
+                        subsetOpts.m_filterType = DatasetSubsetOptions::FilterType::Single;
+                        subsetOpts.m_filters.push_back(cacheFilterInfo(filterNode));
                         subsettedDataset = dataSubsetter.SubsetSimple(parentToSubset,
                                                                       loadColumnFilter(filterNode));
                         }
                     // ANDed filters
                     else if (filterAndNode->IsOk())
                         {
+                        subsetOpts.m_filterType = DatasetSubsetOptions::FilterType::And;
                         std::vector<Data::ColumnFilterInfo> cf;
                         const auto filterAndNodes = filterAndNode->AsNodes();
                         if (filterAndNodes.empty())
@@ -2094,6 +2165,7 @@ namespace Wisteria
                         cf.reserve(filterAndNodes.size());
                         for (const auto& fAndNode : filterAndNodes)
                             {
+                            subsetOpts.m_filters.push_back(cacheFilterInfo(fAndNode));
                             cf.push_back(loadColumnFilter(fAndNode));
                             }
 
@@ -2102,6 +2174,7 @@ namespace Wisteria
                     // ORed filters
                     else if (filterOrNode->IsOk())
                         {
+                        subsetOpts.m_filterType = DatasetSubsetOptions::FilterType::Or;
                         std::vector<Data::ColumnFilterInfo> cf;
                         const auto filterOrNodes = filterOrNode->AsNodes();
                         if (filterOrNodes.empty())
@@ -2111,6 +2184,7 @@ namespace Wisteria
                         cf.reserve(filterOrNodes.size());
                         for (const auto& fOrNode : filterOrNodes)
                             {
+                            subsetOpts.m_filters.push_back(cacheFilterInfo(fOrNode));
                             cf.push_back(loadColumnFilter(fOrNode));
                             }
 
@@ -2118,11 +2192,19 @@ namespace Wisteria
                         }
                     else if (sectionNode->IsOk())
                         {
+                        subsetOpts.m_filterType = DatasetSubsetOptions::FilterType::Section;
+                        subsetOpts.m_sectionColumn =
+                            sectionNode->GetProperty(_DT(L"column"))->AsString();
+                        subsetOpts.m_sectionStartLabel =
+                            sectionNode->GetProperty(L"start-label")->AsString();
+                        subsetOpts.m_sectionEndLabel =
+                            sectionNode->GetProperty(L"end-label")->AsString();
+                        subsetOpts.m_sectionIncludeSentinelLabels =
+                            sectionNode->GetProperty(L"include-sentinel-labels")->AsBool(true);
                         subsettedDataset = dataSubsetter.SubsetSection(
-                            parentToSubset, sectionNode->GetProperty(_DT(L"column"))->AsString(),
-                            sectionNode->GetProperty(L"start-label")->AsString(),
-                            sectionNode->GetProperty(L"end-label")->AsString(),
-                            sectionNode->GetProperty(L"include-sentinel-labels")->AsBool(true));
+                            parentToSubset, subsetOpts.m_sectionColumn,
+                            subsetOpts.m_sectionStartLabel, subsetOpts.m_sectionEndLabel,
+                            subsetOpts.m_sectionIncludeSentinelLabels);
                         }
 
                     if (subsettedDataset)
@@ -2135,6 +2217,7 @@ namespace Wisteria
                                          subsetName);
                             }
                         m_datasets.insert_or_assign(subsetName, subsettedDataset);
+                        SetDatasetSubsetOptions(subsetName, subsetOpts);
                         LoadDatasetTransformations(subset, subsettedDataset);
                         }
                     }
@@ -2148,44 +2231,67 @@ namespace Wisteria
         {
         if (dsNode->IsOk())
             {
+            // find the dataset name by looking up the pointer
+            wxString dsName;
+            for (const auto& [name, ds] : m_datasets)
+                {
+                if (ds == dataset)
+                    {
+                    dsName = name;
+                    break;
+                    }
+                }
+
+            DatasetTransformOptions transformOpts;
+
             // column renaming
             auto colRenames = dsNode->GetProperty(L"columns-rename")->AsNodes();
             for (const auto& colRename : colRenames)
                 {
+                DatasetColumnRename renameOpt;
                 if (colRename->HasProperty(_DT(L"name")))
                     {
-                    dataset->RenameColumn(colRename->GetProperty(_DT(L"name"))->AsString(),
-                                          colRename->GetProperty(L"new-name")->AsString());
+                    renameOpt.m_name = colRename->GetProperty(_DT(L"name"))->AsString();
+                    renameOpt.m_newName = colRename->GetProperty(L"new-name")->AsString();
+                    dataset->RenameColumn(renameOpt.m_name, renameOpt.m_newName);
                     }
                 if (colRename->HasProperty(L"name-re"))
                     {
-                    dataset->RenameColumnRE(colRename->GetProperty(L"name-re")->AsString(),
-                                            colRename->GetProperty(L"new-name-re")->AsString());
+                    renameOpt.m_nameRe = colRename->GetProperty(L"name-re")->AsString();
+                    renameOpt.m_newNameRe = colRename->GetProperty(L"new-name-re")->AsString();
+                    dataset->RenameColumnRE(renameOpt.m_nameRe, renameOpt.m_newNameRe);
                     }
+                transformOpts.m_columnRenames.push_back(std::move(renameOpt));
                 }
 
             // column mutations
             auto mutateCats = dsNode->GetProperty(L"mutate-categorical-columns")->AsNodes();
             for (const auto& mutateCat : mutateCats)
                 {
+                DatasetMutateCategoricalColumn mutateOpt;
+                mutateOpt.m_sourceColumn = mutateCat->GetProperty(L"source-column")->AsString();
+                mutateOpt.m_targetColumn = mutateCat->GetProperty(L"target-column")->AsString();
+
                 Data::RegExMap reMap;
                 const auto replacements = mutateCat->GetProperty(L"replacements")->AsNodes();
                 for (const auto& replacement : replacements)
                     {
-                    reMap.emplace_back(
-                        std::make_unique<wxRegEx>(replacement->GetProperty(L"pattern")->AsString()),
-                        replacement->GetProperty(L"replacement")->AsString());
+                    const auto pattern = replacement->GetProperty(L"pattern")->AsString();
+                    const auto repl = replacement->GetProperty(L"replacement")->AsString();
+                    mutateOpt.m_replacements.emplace_back(pattern, repl);
+                    reMap.emplace_back(std::make_unique<wxRegEx>(pattern), repl);
                     }
 
-                dataset->MutateCategoricalColumn(
-                    mutateCat->GetProperty(L"source-column")->AsString(),
-                    mutateCat->GetProperty(L"target-column")->AsString(), reMap);
+                dataset->MutateCategoricalColumn(mutateOpt.m_sourceColumn, mutateOpt.m_targetColumn,
+                                                 reMap);
+                transformOpts.m_mutateCategoricalColumns.push_back(std::move(mutateOpt));
                 }
 
             // column SELECT
             auto selectPattern = dsNode->GetProperty(L"columns-select")->AsString();
             if (!selectPattern.empty())
                 {
+                transformOpts.m_columnsSelect = selectPattern;
                 dataset->SelectColumnsRE(selectPattern);
                 }
 
@@ -2193,56 +2299,89 @@ namespace Wisteria
             auto recodeREs = dsNode->GetProperty(L"recode-re")->AsNodes();
             for (const auto& recodeRE : recodeREs)
                 {
-                dataset->RecodeRE(recodeRE->GetProperty(L"column")->AsString(),
-                                  recodeRE->GetProperty(L"pattern")->AsString(),
-                                  recodeRE->GetProperty(L"replacement")->AsString());
+                DatasetRecodeRe recodeOpt;
+                recodeOpt.m_column = recodeRE->GetProperty(L"column")->AsString();
+                recodeOpt.m_pattern = recodeRE->GetProperty(L"pattern")->AsString();
+                recodeOpt.m_replacement = recodeRE->GetProperty(L"replacement")->AsString();
+                dataset->RecodeRE(recodeOpt.m_column, recodeOpt.m_pattern, recodeOpt.m_replacement);
+                transformOpts.m_recodeREs.push_back(std::move(recodeOpt));
                 }
 
             // category collapsing (min)
             auto collapseMins = dsNode->GetProperty(L"collapse-min")->AsNodes();
             for (const auto& collapseMin : collapseMins)
                 {
-                dataset->CollapseMin(
-                    collapseMin->GetProperty(L"column")->AsString(),
-                    collapseMin->GetProperty(L"min")->AsDouble(2),
-                    collapseMin->GetProperty(L"other-label")->AsString(_(L"Other")));
+                DatasetCollapseMin collapseOpt;
+                collapseOpt.m_column = collapseMin->GetProperty(L"column")->AsString();
+                collapseOpt.m_min = collapseMin->GetProperty(L"min")->AsDouble(2);
+                const auto otherLabel = collapseMin->GetProperty(L"other-label")->AsString();
+                collapseOpt.m_otherLabel = otherLabel;
+                dataset->CollapseMin(collapseOpt.m_column, collapseOpt.m_min,
+                                     otherLabel.empty() ? _(L"Other") : otherLabel);
+                transformOpts.m_collapseMins.push_back(std::move(collapseOpt));
                 }
 
             // category collapsing (except)
             auto collapseExcepts = dsNode->GetProperty(L"collapse-except")->AsNodes();
             for (const auto& collapseExcept : collapseExcepts)
                 {
-                dataset->CollapseExcept(
-                    collapseExcept->GetProperty(L"column")->AsString(),
-                    collapseExcept->GetProperty(L"labels-to-keep")->AsStrings(),
-                    collapseExcept->GetProperty(L"other-label")->AsString(_(L"Other")));
+                DatasetCollapseExcept collapseOpt;
+                collapseOpt.m_column = collapseExcept->GetProperty(L"column")->AsString();
+                collapseOpt.m_labelsToKeep =
+                    collapseExcept->GetProperty(L"labels-to-keep")->AsStrings();
+                const auto otherLabel = collapseExcept->GetProperty(L"other-label")->AsString();
+                collapseOpt.m_otherLabel = otherLabel;
+                dataset->CollapseExcept(collapseOpt.m_column, collapseOpt.m_labelsToKeep,
+                                        otherLabel.empty() ? _(L"Other") : otherLabel);
+                transformOpts.m_collapseExcepts.push_back(std::move(collapseOpt));
+                }
+
+            // cache formula raw strings before evaluation
+            const auto formulasNode = dsNode->GetProperty(L"formulas");
+            if (formulasNode->IsOk())
+                {
+                const auto formulas = formulasNode->AsNodes();
+                for (const auto& formula : formulas)
+                    {
+                    if (formula->IsOk())
+                        {
+                        DatasetFormulaInfo formulaOpt;
+                        formulaOpt.m_name = formula->GetProperty(_DT(L"name"))->AsString();
+                        if (formula->GetProperty(L"value")->IsValueString())
+                            {
+                            formulaOpt.m_value = formula->GetProperty(L"value")->AsString();
+                            }
+                        else if (formula->GetProperty(L"value")->IsValueNumber())
+                            {
+                            formulaOpt.m_value =
+                                std::to_wstring(formula->GetProperty(L"value")->AsDouble());
+                            }
+                        transformOpts.m_formulas.push_back(std::move(formulaOpt));
+                        }
+                    }
                 }
 
             // load any constants defined with this dataset
-            CalcFormulas(dsNode->GetProperty(L"formulas"), dataset);
+            CalcFormulas(formulasNode, dataset);
 
             // load any subsets of this dataset
             LoadSubsets(dsNode->GetProperty(L"subsets"), dataset);
 
             // load any pivots of this dataset
-            // find the parent dataset name by looking up the pointer
-            wxString parentDsName;
-            for (const auto& [name, ds] : m_datasets)
-                {
-                if (ds == dataset)
-                    {
-                    parentDsName = name;
-                    break;
-                    }
-                }
-            LoadPivots(dsNode->GetProperty(L"pivots"), dataset, parentDsName);
+            LoadPivots(dsNode->GetProperty(L"pivots"), dataset, dsName);
 
             // load any merges of this dataset
             LoadMerges(dsNode->GetProperty(L"merges"), dataset);
 
-            if (dsNode->GetProperty(L"column-names-sort")->AsBool())
+            transformOpts.m_columnNamesSort = dsNode->GetProperty(L"column-names-sort")->AsBool();
+            if (transformOpts.m_columnNamesSort)
                 {
                 dataset->SortColumnNames();
+                }
+
+            if (!dsName.empty())
+                {
+                SetDatasetTransformOptions(dsName, transformOpts);
                 }
 
             const auto exportPath = dsNode->GetProperty(L"export-path")->AsString();
@@ -2510,9 +2649,9 @@ namespace Wisteria
                                      "and will be overwritten.",
                                      dsName);
                         }
-                    AddDataset(
-                        dsName, dataset,
-                        DatasetImportOptions{ path, worksheet, columnPreviewInfo, importDefines });
+                    AddDataset(dsName, dataset,
+                               DatasetImportOptions{ path, importer, worksheet, columnPreviewInfo,
+                                                     importDefines });
                     // recode values, build subsets and pivots, etc.
                     LoadDatasetTransformations(datasetNode, dataset);
                     }

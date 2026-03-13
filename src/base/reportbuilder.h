@@ -52,6 +52,9 @@ namespace Wisteria
         struct DatasetImportOptions
             {
             wxString m_filePath;
+            /// Explicit importer override (e.g., "csv", "tsv", "xlsx", "ods").
+            /// Empty means deduce from the file extension.
+            wxString m_importer;
             std::variant<wxString, size_t> m_worksheet{ static_cast<size_t>(1) };
             Data::Dataset::ColumnPreviewInfo m_columnPreviewInfo;
             Data::ImportInfo m_importInfo;
@@ -86,6 +89,123 @@ namespace Wisteria
             std::vector<wxString> m_namesTo;
             wxString m_valuesTo;
             wxString m_namesPattern;
+            };
+
+        /// @brief A column rename specification.
+        struct DatasetColumnRename
+            {
+            // literal rename (one or the other pair is used)
+            wxString m_name;
+            wxString m_newName;
+            // regex rename
+            wxString m_nameRe;
+            wxString m_newNameRe;
+            };
+
+        /// @brief A categorical column mutation specification.
+        struct DatasetMutateCategoricalColumn
+            {
+            wxString m_sourceColumn;
+            wxString m_targetColumn;
+            /// pattern/replacement pairs
+            std::vector<std::pair<wxString, wxString>> m_replacements;
+            };
+
+        /// @brief A regular expression recode specification.
+        struct DatasetRecodeRe
+            {
+            wxString m_column;
+            wxString m_pattern;
+            wxString m_replacement;
+            };
+
+        /// @brief A collapse-by-minimum-frequency specification.
+        struct DatasetCollapseMin
+            {
+            wxString m_column;
+            double m_min{ 2 };
+            wxString m_otherLabel;
+            };
+
+        /// @brief A collapse-except specification.
+        struct DatasetCollapseExcept
+            {
+            wxString m_column;
+            std::vector<wxString> m_labelsToKeep;
+            wxString m_otherLabel;
+            };
+
+        /// @brief A formula name/value pair (stored as raw strings
+        ///     for round-trip serialization).
+        struct DatasetFormulaInfo
+            {
+            wxString m_name;
+            /// The original formula string (e.g., "MAX(`Semester`)")
+            /// or numeric literal as string.
+            wxString m_value;
+            };
+
+        /// @brief All transformation options for a single named dataset.
+        /// @details Mirrors everything that can appear at any level
+        ///     of the JSON dataset tree.
+        struct DatasetTransformOptions
+            {
+            std::vector<DatasetColumnRename> m_columnRenames;
+            std::vector<DatasetMutateCategoricalColumn> m_mutateCategoricalColumns;
+            wxString m_columnsSelect;
+            std::vector<DatasetRecodeRe> m_recodeREs;
+            std::vector<DatasetCollapseMin> m_collapseMins;
+            std::vector<DatasetCollapseExcept> m_collapseExcepts;
+            std::vector<DatasetFormulaInfo> m_formulas;
+            bool m_columnNamesSort{ false };
+            };
+
+        /// @brief A single column filter specification.
+        struct DatasetFilterInfo
+            {
+            wxString m_column;
+            wxString m_operator{ L"=" };
+            /// Raw string representations of the filter values
+            /// (constants like "{{MaxFall}}" are preserved unexpanded).
+            std::vector<wxString> m_values;
+            };
+
+        /// @brief Options describing how a subset was created.
+        struct DatasetSubsetOptions
+            {
+            /// the name of the parent dataset this was subsetted from
+            wxString m_sourceDatasetName;
+
+            /// which filter type is active
+            enum class FilterType
+                {
+                Single,
+                And,
+                Or,
+                Section
+                };
+
+            FilterType m_filterType{ FilterType::Single };
+
+            /// for Single / And / Or filter types
+            std::vector<DatasetFilterInfo> m_filters;
+
+            /// for Section filter type
+            wxString m_sectionColumn;
+            wxString m_sectionStartLabel;
+            wxString m_sectionEndLabel;
+            bool m_sectionIncludeSentinelLabels{ true };
+            };
+
+        /// @brief Options describing how a merge was created.
+        struct DatasetMergeOptions
+            {
+            wxString m_sourceDatasetName;
+            wxString m_otherDatasetName;
+            wxString m_type{ L"left-join-unique" };
+            /// left-column / right-column pairs
+            std::vector<std::pair<wxString, wxString>> m_byColumns;
+            wxString m_suffix{ L".x" };
             };
 
         /// @returns The datasets in the report.
@@ -137,6 +257,64 @@ namespace Wisteria
         GetDatasetPivotOptions() const noexcept
             {
             return m_datasetPivotOptions;
+            }
+
+        /// @brief Associates transform options with a named dataset.
+        /// @param name The name of the dataset.
+        /// @param transformOptions The options describing the transformations.
+        void SetDatasetTransformOptions(const wxString& name,
+                                        const DatasetTransformOptions& transformOptions)
+            {
+            m_datasetTransformOptions[name] = transformOptions;
+            }
+
+        /// @returns The transform options for all datasets.
+        [[nodiscard]]
+        const std::map<wxString, DatasetTransformOptions, Data::wxStringLessNoCase>&
+        GetDatasetTransformOptions() const noexcept
+            {
+            return m_datasetTransformOptions;
+            }
+
+        /// @brief Associates subset options with a named dataset.
+        /// @param name The name of the subsetted dataset.
+        /// @param subsetOptions The options describing how it was created.
+        void SetDatasetSubsetOptions(const wxString& name,
+                                     const DatasetSubsetOptions& subsetOptions)
+            {
+            m_datasetSubsetOptions[name] = subsetOptions;
+            }
+
+        /// @returns The subset options for all subsetted datasets.
+        [[nodiscard]]
+        const std::map<wxString, DatasetSubsetOptions, Data::wxStringLessNoCase>&
+        GetDatasetSubsetOptions() const noexcept
+            {
+            return m_datasetSubsetOptions;
+            }
+
+        /// @brief Associates merge options with a named dataset.
+        /// @param name The name of the merged dataset.
+        /// @param mergeOptions The options describing how it was created.
+        void SetDatasetMergeOptions(const wxString& name, const DatasetMergeOptions& mergeOptions)
+            {
+            m_datasetMergeOptions[name] = mergeOptions;
+            }
+
+        /// @returns The merge options for all merged datasets.
+        [[nodiscard]]
+        const std::map<wxString, DatasetMergeOptions, Data::wxStringLessNoCase>&
+        GetDatasetMergeOptions() const noexcept
+            {
+            return m_datasetMergeOptions;
+            }
+
+        /// @returns The top-level constants (name/value pairs from the
+        ///     "constants" JSON section).
+        [[nodiscard]]
+        const std::vector<DatasetFormulaInfo>& GetConstants() const noexcept
+            {
+            return m_constants;
             }
 
         /// @brief Generates a dataset name that does not collide with any
@@ -779,6 +957,11 @@ namespace Wisteria
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;
         std::map<wxString, DatasetImportOptions, Data::wxStringLessNoCase> m_datasetImportOptions;
         std::map<wxString, DatasetPivotOptions, Data::wxStringLessNoCase> m_datasetPivotOptions;
+        std::map<wxString, DatasetTransformOptions, Data::wxStringLessNoCase>
+            m_datasetTransformOptions;
+        std::map<wxString, DatasetSubsetOptions, Data::wxStringLessNoCase> m_datasetSubsetOptions;
+        std::map<wxString, DatasetMergeOptions, Data::wxStringLessNoCase> m_datasetMergeOptions;
+        std::vector<DatasetFormulaInfo> m_constants;
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
 

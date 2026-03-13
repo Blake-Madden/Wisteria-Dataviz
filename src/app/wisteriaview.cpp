@@ -181,7 +181,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         {
         AddDatasetToProject(
             initialDataset, initialDatasetName, initialColumnInfo,
-            { initialFilePath, initialWorksheet, initialFullColumnInfo, initialImportInfo });
+            { initialFilePath, wxString{}, initialWorksheet,
+              initialFullColumnInfo, initialImportInfo });
         }
 
     UpdateGraphButtonStates();
@@ -517,7 +518,8 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
             }
 
         AddDatasetToProject(dataset, dsName, columnPreview,
-                            { filePath, worksheet, fullColumnPreview, importInfo });
+                            { filePath, wxString{}, worksheet,
+                              fullColumnPreview, importInfo });
         }
     catch (const std::exception& exc)
         {
