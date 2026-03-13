@@ -27,13 +27,21 @@ namespace Wisteria::UI
         @details Stored alongside the dataset for future serialization.*/
     struct PivotWiderOptions
         {
+        /// @brief The name of the source dataset that was pivoted.
         wxString m_sourceDatasetName;
+        /// @brief The user-specified name for the output dataset.
         wxString m_outputName;
+        /// @brief Columns used as row identifiers in the wide layout.
         std::vector<wxString> m_idColumns;
+        /// @brief The categorical column whose values become new column names.
         wxString m_namesFromColumn;
+        /// @brief Columns whose values fill the new wide-format cells.
         std::vector<wxString> m_valuesFromColumns;
+        /// @brief Separator inserted between combined column name parts.
         wxString m_namesSep{ L"_" };
+        /// @brief Prefix prepended to generated column names.
         wxString m_namesPrefix;
+        /// @brief Value used to fill cells with no corresponding data.
         double m_fillValue{ std::numeric_limits<double>::quiet_NaN() };
         };
 

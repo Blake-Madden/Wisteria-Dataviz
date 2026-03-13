@@ -27,12 +27,19 @@ namespace Wisteria::UI
         @details Stored alongside the dataset for future serialization.*/
     struct PivotLongerOptions
         {
+        /// @brief The name of the source dataset that was pivoted.
         wxString m_sourceDatasetName;
+        /// @brief The user-specified name for the output dataset.
         wxString m_outputName;
+        /// @brief Columns carried through unchanged (ID/grouping columns).
         std::vector<wxString> m_columnsToKeep;
+        /// @brief Columns whose values were stacked into rows.
         std::vector<wxString> m_fromColumns;
+        /// @brief Target grouping column name(s) receiving the original column names.
         std::vector<wxString> m_namesTo;
+        /// @brief Target value column name receiving the stacked values.
         wxString m_valuesTo;
+        /// @brief Optional regex pattern for splitting column names.
         wxString m_namesPattern;
         };
 

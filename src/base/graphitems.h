@@ -20,6 +20,7 @@
 #include <array>
 #include <bitset>
 #include <initializer_list>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -1861,6 +1862,31 @@ namespace Wisteria
                 return m_itemInfo.m_clippingRect;
                 }
 
+            /// @brief Stores an original template string for a property.
+            /// @param property The property path (e.g., "text", "pen.color").
+            /// @param templateStr The original unexpanded string containing
+            ///     \{\{\}\} placeholders.
+            void SetPropertyTemplate(const wxString& property, const wxString& templateStr)
+                {
+                m_propertyTemplates[property] = templateStr;
+                }
+
+            /// @returns The original template string for the given property,
+            ///     or an empty string if no template was stored.
+            [[nodiscard]]
+            wxString GetPropertyTemplate(const wxString& property) const
+                {
+                const auto it = m_propertyTemplates.find(property);
+                return (it != m_propertyTemplates.cend()) ? it->second : wxString{};
+                }
+
+            /// @returns All stored property templates.
+            [[nodiscard]]
+            const std::map<wxString, wxString>& GetPropertyTemplates() const noexcept
+                {
+                return m_propertyTemplates;
+                }
+
           protected:
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.
@@ -2127,6 +2153,8 @@ namespace Wisteria
             bool m_inDragState{ false };
             mutable wxRect m_cachedBoundingBox;
             mutable wxRect m_cachedContentBoundingBox;
+
+            std::map<wxString, wxString> m_propertyTemplates;
             };
         } // namespace GraphItems
     } // namespace Wisteria

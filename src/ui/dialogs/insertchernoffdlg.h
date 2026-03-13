@@ -100,6 +100,7 @@ namespace Wisteria::UI
             }
 
         /// @returns The variable name for a given feature, or empty if unassigned.
+        /// @param feature The facial feature to look up.
         [[nodiscard]]
         wxString GetFeatureVariable(Graphs::ChernoffFacesPlot::FeatureId feature) const;
 

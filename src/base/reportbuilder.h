@@ -51,12 +51,16 @@ namespace Wisteria
         /// @brief Import options associated with a dataset.
         struct DatasetImportOptions
             {
+            /// @brief The file path the dataset was imported from.
             wxString m_filePath;
-            /// Explicit importer override (e.g., "csv", "tsv", "xlsx", "ods").
-            /// Empty means deduce from the file extension.
+            /// @brief Explicit importer override (e.g., "csv", "tsv", "xlsx", "ods").
+            ///     Empty means deduce from the file extension.
             wxString m_importer;
+            /// @brief The worksheet to import (name or 1-based index).
             std::variant<wxString, size_t> m_worksheet{ static_cast<size_t>(1) };
+            /// @brief Column type overrides and selections for the import.
             Data::Dataset::ColumnPreviewInfo m_columnPreviewInfo;
+            /// @brief Additional import settings (delimiters, locale, etc.).
             Data::ImportInfo m_importInfo;
             };
 
@@ -71,34 +75,48 @@ namespace Wisteria
         ///     from a source dataset.
         struct DatasetPivotOptions
             {
+            /// @brief The type of pivot (wider or longer).
             PivotType m_type{ PivotType::Wider };
-            /// the name of the source dataset that was pivoted
+            /// @brief The name of the source dataset that was pivoted.
             wxString m_sourceDatasetName;
 
             // wider options
+            /// @brief Columns used as row identifiers (wider pivot).
             std::vector<wxString> m_idColumns;
+            /// @brief Categorical column whose values become new column names (wider pivot).
             wxString m_namesFromColumn;
+            /// @brief Columns whose values fill the new wide-format cells (wider pivot).
             std::vector<wxString> m_valuesFromColumns;
+            /// @brief Separator between combined column name parts (wider pivot).
             wxString m_namesSep{ L"_" };
+            /// @brief Prefix prepended to generated column names (wider pivot).
             wxString m_namesPrefix;
+            /// @brief Fill value for cells with no corresponding data (wider pivot).
             double m_fillValue{ std::numeric_limits<double>::quiet_NaN() };
 
             // longer options
+            /// @brief Columns carried through unchanged (longer pivot).
             std::vector<wxString> m_columnsToKeep;
+            /// @brief Columns whose values were stacked into rows (longer pivot).
             std::vector<wxString> m_fromColumns;
+            /// @brief Target grouping column name(s) (longer pivot).
             std::vector<wxString> m_namesTo;
+            /// @brief Target value column name (longer pivot).
             wxString m_valuesTo;
+            /// @brief Optional regex pattern for splitting column names (longer pivot).
             wxString m_namesPattern;
             };
 
         /// @brief A column rename specification.
         struct DatasetColumnRename
             {
-            // literal rename (one or the other pair is used)
+            /// @brief The original column name (for literal rename).
             wxString m_name;
+            /// @brief The new column name (for literal rename).
             wxString m_newName;
-            // regex rename
+            /// @brief A regex pattern matching column names (for regex rename).
             wxString m_nameRe;
+            /// @brief The replacement string (for regex rename).
             wxString m_newNameRe;
             };
 
@@ -658,12 +676,21 @@ namespace Wisteria
         /// @brief Loads properties from a JSON node into a pen.
         /// @param penNode The node to parse.
         /// @param pen[in,out] The pen to apply the loaded settings to.
-        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen) const;
+        /// @param item Optional item to cache color templates on.
+        /// @param propertyPrefix Optional property prefix for caching
+        ///     (e.g., "pen"). If empty, defaults to "pen.color".
+        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen,
+                     GraphItems::GraphItemBase* item = nullptr,
+                     const wxString& propertyPrefix = wxString{}) const;
 
         /// @brief Loads properties from a JSON node into a brush.
         /// @param brushNode The node to parse.
         /// @param brush[in,out] The brush to apply the loaded settings to.
-        void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush) const;
+        /// @param item Optional item to cache color templates on.
+        /// @param propertyPrefix Optional property prefix for caching.
+        void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush,
+                       GraphItems::GraphItemBase* item = nullptr,
+                       const wxString& propertyPrefix = wxString{}) const;
 
         /// @brief Loads a row or column position for a table from a node.
         /// @details This support loading the @c origin and @c offset properties.
@@ -794,10 +821,14 @@ namespace Wisteria
 
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and convert into a color.
+        /// @param item Optional item to cache the color template on.
+        /// @param property Optional property name for caching
+        ///     (e.g., "pen.color", "brush.color").
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]]
-        wxColour ConvertColor(wxString colorStr) const;
+        wxColour ConvertColor(wxString colorStr, GraphItems::GraphItemBase* item = nullptr,
+                              const wxString& property = wxString{}) const;
 
         /// @brief Loads a color from a string.
         /// @param colorNode A color node to parse.
@@ -835,6 +866,46 @@ namespace Wisteria
                 str = ExpandConstants(str);
                 }
             return strs;
+            }
+
+        /** @brief Expands constants in a string and caches the original
+                template on the item if it contained placeholders.
+            @param item The item to cache the template on (can be @c nullptr).
+            @param property The property name to cache under.
+            @param rawValue The raw string that may contain \{\{\}\} placeholders.
+            @returns The expanded string.*/
+        [[nodiscard]]
+        wxString ExpandAndCache(GraphItems::GraphItemBase* item, const wxString& property,
+                                const wxString& rawValue) const
+            {
+            const wxString expanded = ExpandConstants(rawValue);
+            if (expanded != rawValue && item != nullptr)
+                {
+                item->SetPropertyTemplate(property, rawValue);
+                }
+            return expanded;
+            }
+
+        /** @brief Expands constants in a vector of strings and caches
+                the original templates on the item with indexed property names.
+            @param item The item to cache the templates on (can be @c nullptr).
+            @param property The property base name (elements cached as
+                "property[0]", "property[1]", etc.).
+            @param rawValues The raw strings that may contain \{\{\}\} placeholders.
+            @returns The expanded strings.*/
+        [[nodiscard]]
+        std::vector<wxString> ExpandAndCache(GraphItems::GraphItemBase* item,
+                                             const wxString& property,
+                                             const std::vector<wxString>& rawValues) const
+            {
+            std::vector<wxString> expanded;
+            expanded.reserve(rawValues.size());
+            for (size_t i = 0; i < rawValues.size(); ++i)
+                {
+                expanded.push_back(ExpandAndCache(item, property + L"[" + std::to_wstring(i) + L"]",
+                                                  rawValues[i]));
+                }
+            return expanded;
             }
 
         [[nodiscard]]

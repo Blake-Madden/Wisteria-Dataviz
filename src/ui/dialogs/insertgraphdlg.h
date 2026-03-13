@@ -114,6 +114,8 @@ namespace Wisteria::UI
         wxChoice* CreateLegendPlacementChoice(wxWindow* parent, int defaultSelection = 1);
 
         /// @brief Converts a legend wxChoice selection index to a LegendPlacement value.
+        /// @param selection The zero-based index from the wxChoice control.
+        /// @returns The corresponding LegendPlacement value.
         [[nodiscard]]
         static LegendPlacement SelectionToLegendPlacement(int selection);
 
