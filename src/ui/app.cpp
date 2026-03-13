@@ -49,6 +49,11 @@ namespace Wisteria::UI
             return false;
             }
 
+#ifdef __WXGTK__
+        // fixes blank wxWebView in WebKitGTK 2.42+ (affects both Wayland and X11)
+        wxSetEnv("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+#endif
+
         [[maybe_unused]]
         const auto wxStringToFsPath = [](const wxString& str)
         {
