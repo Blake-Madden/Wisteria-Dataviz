@@ -1668,9 +1668,57 @@ void WisteriaView::SaveProject(const wxString& filePath)
                                      m_reportBuilder.GetName();
 
     auto root = wxSimpleJSON::Create(
-        wxString::Format(L"{\"name\": \"%s\", \"datasets\": [], \"constants\": [], \"pages\": []}",
-                         EscapeJsonStr(projectName)),
+        wxString::Format(
+            L"{\"name\": \"%s\", \"watermark\": {}, \"print\": {}, "
+            L"\"datasets\": [], \"constants\": [], \"pages\": []}",
+            EscapeJsonStr(projectName)),
         true);
+
+    // watermark
+    //----------
+    const auto& wmLabel = m_reportBuilder.GetWatermarkLabel();
+    const auto& wmColor = m_reportBuilder.GetWatermarkColor();
+    if (!wmLabel.empty())
+        {
+        auto wmObj = root->GetProperty(L"watermark");
+        wmObj->Add(L"label", wmLabel);
+        if (wmColor.IsOk())
+            {
+            wmObj->Add(L"color", wmColor.GetAsString(wxC2S_HTML_SYNTAX));
+            }
+        }
+    else
+        {
+        root->DeleteProperty(L"watermark");
+        }
+
+    // print settings
+    //---------------
+    const auto printOrientation = m_reportBuilder.GetPrintOrientation();
+    const auto paperSize = m_reportBuilder.GetPaperSize();
+    if (printOrientation != wxPrintOrientation::wxPORTRAIT ||
+        paperSize != wxPaperSize::wxPAPER_NONE)
+        {
+        auto printObj = root->GetProperty(L"print");
+        if (printOrientation == wxPrintOrientation::wxLANDSCAPE)
+            {
+            printObj->Add(L"orientation", wxString{ L"landscape" });
+            }
+        else
+            {
+            printObj->Add(L"orientation", wxString{ L"portrait" });
+            }
+        const auto paperStr =
+            Wisteria::ReportEnumConvert::ConvertPaperSizeToString(paperSize);
+        if (paperStr.has_value())
+            {
+            printObj->Add(L"paper-size", paperStr.value());
+            }
+        }
+    else
+        {
+        root->DeleteProperty(L"print");
+        }
 
     // datasets
     //---------

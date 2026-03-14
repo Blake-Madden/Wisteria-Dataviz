@@ -367,6 +367,34 @@ namespace Wisteria
             return m_name;
             }
 
+        /// @returns The watermark label.
+        [[nodiscard]]
+        const wxString& GetWatermarkLabel() const noexcept
+            {
+            return m_watermarkLabel;
+            }
+
+        /// @returns The watermark color.
+        [[nodiscard]]
+        const wxColour& GetWatermarkColor() const noexcept
+            {
+            return m_watermarkColor;
+            }
+
+        /// @returns The print orientation.
+        [[nodiscard]]
+        wxPrintOrientation GetPrintOrientation() const noexcept
+            {
+            return m_printOrientation;
+            }
+
+        /// @returns The print paper size.
+        [[nodiscard]]
+        wxPaperSize GetPaperSize() const noexcept
+            {
+            return m_paperSize;
+            }
+
       private:
         using ValuesType = std::variant<wxString, double>;
 
@@ -1035,6 +1063,10 @@ namespace Wisteria
         std::vector<DatasetFormulaInfo> m_constants;
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
+        wxString m_watermarkLabel;
+        wxColour m_watermarkColor;
+        wxPrintOrientation m_printOrientation{ wxPrintOrientation::wxPORTRAIT };
+        wxPaperSize m_paperSize{ wxPaperSize::wxPAPER_NONE };
 
         size_t m_pageNumber{ 1 };
 

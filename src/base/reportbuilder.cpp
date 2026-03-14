@@ -73,11 +73,13 @@ namespace Wisteria
             if (orientation.CmpNoCase(L"horizontal") == 0 ||
                 orientation.CmpNoCase(L"landscape") == 0)
                 {
+                m_printOrientation = wxPrintOrientation::wxLANDSCAPE;
                 reportPrintSettings.SetOrientation(wxPrintOrientation::wxLANDSCAPE);
                 }
             else if (orientation.CmpNoCase(L"vertical") == 0 ||
                      orientation.CmpNoCase(L"portrait") == 0)
                 {
+                m_printOrientation = wxPrintOrientation::wxPORTRAIT;
                 reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT);
                 }
 
@@ -85,6 +87,7 @@ namespace Wisteria
                 printNode->GetProperty(L"paper-size")->AsString(L"paper-letter"));
             if (paperSize.has_value())
                 {
+                m_paperSize = paperSize.value();
                 reportPrintSettings.SetPaperId(paperSize.value());
                 }
             }
@@ -122,6 +125,8 @@ namespace Wisteria
             {
             reportWatermark = ExpandConstants(watermarkProperty->GetProperty(L"label")->AsString());
             reportWatermarkColor = ConvertColor(watermarkProperty->GetProperty(L"color"));
+            m_watermarkLabel = reportWatermark;
+            m_watermarkColor = reportWatermarkColor;
             }
 
         // start loading the pages
