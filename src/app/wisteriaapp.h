@@ -93,6 +93,11 @@ class WisteriaArtProvider final : public wxArtProvider
     WisteriaArtProvider();
 
   protected:
+    /// @brief Creates a bitmap bundle for the given art ID.
+    /// @param id The art ID to look up.
+    /// @param client The art client requesting the bundle.
+    /// @param size The preferred size of the bitmap.
+    /// @returns The bitmap bundle for the given art ID.
     [[nodiscard]]
     wxBitmapBundle CreateBitmapBundle(const wxArtID& id, const wxArtClient& client,
                                       const wxSize& size) final;

@@ -36,8 +36,11 @@ class WisteriaView : public wxView
     WisteriaView(const WisteriaView&) = delete;
     WisteriaView& operator=(const WisteriaView&) = delete;
 
+    /// @brief Shows or hides the sidebar.
+    /// @param show @c true to show the sidebar, @c false to hide it.
     void ShowSideBar(const bool show = true);
 
+    /// @returns @c true if the sidebar is currently shown.
     [[nodiscard]]
     bool IsSideBarShown() const noexcept
         {

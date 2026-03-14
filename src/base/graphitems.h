@@ -1865,7 +1865,7 @@ namespace Wisteria
             /// @brief Stores an original template string for a property.
             /// @param property The property path (e.g., "text", "pen.color").
             /// @param templateStr The original unexpanded string containing
-            ///     \{\{\}\} placeholders.
+            ///     `{{}}` placeholders.
             void SetPropertyTemplate(const wxString& property, const wxString& templateStr)
                 {
                 m_propertyTemplates[property] = templateStr;

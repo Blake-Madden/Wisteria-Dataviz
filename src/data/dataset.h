@@ -1103,7 +1103,9 @@ namespace Wisteria::Data
         ///     currency symbol detected from the source format.
         struct ColumnPreview
             {
+            /// the column name.
             wxString m_name;
+            /// the deduced data type for the column.
             ColumnImportType m_type{ ColumnImportType::String };
             /// The currency symbol (e.g., L"$", L"€") if the column
             /// was detected as currency-formatted, or empty otherwise.

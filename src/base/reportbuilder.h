@@ -123,7 +123,9 @@ namespace Wisteria
         /// @brief A categorical column mutation specification.
         struct DatasetMutateCategoricalColumn
             {
+            /// the source column to read values from.
             wxString m_sourceColumn;
+            /// the target column to write mutated values to.
             wxString m_targetColumn;
             /// pattern/replacement pairs
             std::vector<std::pair<wxString, wxString>> m_replacements;
@@ -132,24 +134,33 @@ namespace Wisteria
         /// @brief A regular expression recode specification.
         struct DatasetRecodeRe
             {
+            /// the column to apply the recode to.
             wxString m_column;
+            /// the regular expression pattern to match.
             wxString m_pattern;
+            /// the replacement string for matched patterns.
             wxString m_replacement;
             };
 
         /// @brief A collapse-by-minimum-frequency specification.
         struct DatasetCollapseMin
             {
+            /// the column to collapse.
             wxString m_column;
+            /// the minimum frequency threshold; categories below this are collapsed.
             double m_min{ 2 };
+            /// the label to assign to collapsed categories.
             wxString m_otherLabel;
             };
 
         /// @brief A collapse-except specification.
         struct DatasetCollapseExcept
             {
+            /// the column to collapse.
             wxString m_column;
+            /// the labels to keep as-is (all others are collapsed).
             std::vector<wxString> m_labelsToKeep;
+            /// the label to assign to collapsed categories.
             wxString m_otherLabel;
             };
 
@@ -157,6 +168,7 @@ namespace Wisteria
         ///     for round-trip serialization).
         struct DatasetFormulaInfo
             {
+            /// the name of the formula (used as the constant name).
             wxString m_name;
             /// The original formula string (e.g., "MAX(`Semester`)")
             /// or numeric literal as string.
@@ -168,20 +180,30 @@ namespace Wisteria
         ///     of the JSON dataset tree.
         struct DatasetTransformOptions
             {
+            /// column rename specifications.
             std::vector<DatasetColumnRename> m_columnRenames;
+            /// categorical column mutation specifications.
             std::vector<DatasetMutateCategoricalColumn> m_mutateCategoricalColumns;
+            /// column selection expression (regex or comma-separated names).
             wxString m_columnsSelect;
+            /// regular expression recode specifications.
             std::vector<DatasetRecodeRe> m_recodeREs;
+            /// collapse-by-minimum-frequency specifications.
             std::vector<DatasetCollapseMin> m_collapseMins;
+            /// collapse-except specifications.
             std::vector<DatasetCollapseExcept> m_collapseExcepts;
+            /// formula definitions for computed constants.
             std::vector<DatasetFormulaInfo> m_formulas;
+            /// whether to sort column names alphabetically after transforms.
             bool m_columnNamesSort{ false };
             };
 
         /// @brief A single column filter specification.
         struct DatasetFilterInfo
             {
+            /// the column to filter on.
             wxString m_column;
+            /// the comparison operator (e.g., "=", "!=", "<", ">").
             wxString m_operator{ L"=" };
             /// Raw string representations of the filter values
             /// (constants like "{{MaxFall}}" are preserved unexpanded).
@@ -203,6 +225,7 @@ namespace Wisteria
                 Section
                 };
 
+            /// which filter type is active.
             FilterType m_filterType{ FilterType::Single };
 
             /// for Single / And / Or filter types
@@ -210,19 +233,26 @@ namespace Wisteria
 
             /// for Section filter type
             wxString m_sectionColumn;
+            /// the label marking the start of the section.
             wxString m_sectionStartLabel;
+            /// the label marking the end of the section.
             wxString m_sectionEndLabel;
+            /// whether to include the sentinel (start/end) labels in the subset.
             bool m_sectionIncludeSentinelLabels{ true };
             };
 
         /// @brief Options describing how a merge was created.
         struct DatasetMergeOptions
             {
+            /// the name of the primary (left) dataset.
             wxString m_sourceDatasetName;
+            /// the name of the secondary (right) dataset to merge with.
             wxString m_otherDatasetName;
+            /// the merge type (e.g., "left-join-unique", "inner-join").
             wxString m_type{ L"left-join-unique" };
             /// left-column / right-column pairs
             std::vector<std::pair<wxString, wxString>> m_byColumns;
+            /// the suffix appended to disambiguate duplicate column names.
             wxString m_suffix{ L".x" };
             };
 

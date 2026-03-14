@@ -1080,7 +1080,8 @@ EXCLUDE                = ../../src/easyexif \
                          ../../wxWidgets_lib \
                          ../../tests \
                          ../../cmake-build-debug \
-                         ../../cmake-build-release
+                         ../../cmake-build-release \
+                         ../../demo
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
