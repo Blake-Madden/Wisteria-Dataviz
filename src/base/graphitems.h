@@ -1873,6 +1873,7 @@ namespace Wisteria
 
             /// @returns The original template string for the given property,
             ///     or an empty string if no template was stored.
+            /// @param property The property path (e.g., "text", "pen.color").
             [[nodiscard]]
             wxString GetPropertyTemplate(const wxString& property) const
                 {

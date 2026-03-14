@@ -330,9 +330,9 @@ namespace Wisteria::Graphs
         /// @brief A legend object showing a face with labeled connection lines to features.
         class ChernoffLegend final : public GraphItems::GraphItemBase
             {
-          public:
             wxDECLARE_DYNAMIC_CLASS(ChernoffLegend);
 
+          public:
             /** @brief Constructor.
                 @param itemInfo The base item information.*/
             explicit ChernoffLegend(const GraphItems::GraphItemInfo& itemInfo)

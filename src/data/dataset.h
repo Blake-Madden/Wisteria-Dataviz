@@ -981,6 +981,82 @@ namespace Wisteria::Data
                                           const wxString& regexColumnName,
                                           const wxString& replacementColumnName);
 
+        /// @name Accessors
+        /// @brief Read-only accessors for serialization support.
+        /// @{
+
+        /// @returns The date columns.
+        [[nodiscard]]
+        const std::vector<DateImportInfo>& GetDateColumns() const noexcept
+            {
+            return m_dateColumns;
+            }
+
+        /// @returns The categorical columns.
+        [[nodiscard]]
+        const std::vector<CategoricalImportInfo>& GetCategoricalColumns() const noexcept
+            {
+            return m_categoricalColumns;
+            }
+
+        /// @returns The continuous column names.
+        [[nodiscard]]
+        const std::vector<wxString>& GetContinuousColumns() const noexcept
+            {
+            return m_continuousColumns;
+            }
+
+        /// @returns The ID column name.
+        [[nodiscard]]
+        const wxString& GetIdColumn() const noexcept
+            {
+            return m_idColumn;
+            }
+
+        /// @returns The missing data recode value for continuous columns.
+        [[nodiscard]]
+        double GetContinuousMDRecodeValue() const noexcept
+            {
+            return m_continuousMDRecodeValue;
+            }
+
+        /// @returns The missing data codes.
+        [[nodiscard]]
+        const std::optional<std::vector<std::wstring>>& GetMDCodes() const noexcept
+            {
+            return m_mdCodes;
+            }
+
+        /// @returns The number of rows to skip before reading.
+        [[nodiscard]]
+        size_t GetSkipRows() const noexcept
+            {
+            return m_skipRows;
+            }
+
+        /// @returns Whether numeric columns with leading zeros are imported as text.
+        [[nodiscard]]
+        bool GetTreatLeadingZerosAsText() const noexcept
+            {
+            return m_treatLeadingZerosAsText;
+            }
+
+        /// @returns Whether four-digit numbers are imported as text (years).
+        [[nodiscard]]
+        bool GetTreatYearsAsText() const noexcept
+            {
+            return m_treatYearsAsText;
+            }
+
+        /// @returns The maximum discrete value threshold.
+        [[nodiscard]]
+        uint16_t GetMaxDiscreteValue() const noexcept
+            {
+            return m_maxDiscreteValue;
+            }
+
+        /// @}
+
       private:
         std::vector<DateImportInfo> m_dateColumns;
         std::vector<CategoricalImportInfo> m_categoricalColumns;

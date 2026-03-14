@@ -36,12 +36,6 @@ class WisteriaView : public wxView
     WisteriaView(const WisteriaView&) = delete;
     WisteriaView& operator=(const WisteriaView&) = delete;
 
-    bool OnCreate(wxDocument* doc, long flags) override;
-
-    void OnDraw([[maybe_unused]] wxDC* dc) override {}
-
-    bool OnClose(bool deleteWindow) override;
-
     void ShowSideBar(const bool show = true);
 
     [[nodiscard]]
@@ -49,6 +43,16 @@ class WisteriaView : public wxView
         {
         return m_sidebarShown;
         }
+
+    /// @returns The canvases/pages in the project.
+    [[nodiscard]]
+    const std::vector<Wisteria::Canvas*>& GetPages() const noexcept
+        {
+        return m_pages;
+        }
+
+  private:
+    void LoadProject();
 
     [[nodiscard]]
     Wisteria::UI::SideBar* GetSideBar() noexcept
@@ -62,17 +66,33 @@ class WisteriaView : public wxView
         return m_splitter;
         }
 
-    /// @returns The canvases/pages in the project.
-    [[nodiscard]]
-    const std::vector<Wisteria::Canvas*>& GetPages() const noexcept
-        {
-        return m_pages;
-        }
+    bool OnCreate(wxDocument* doc, long flags) override;
 
-  private:
-    void LoadProject();
+    void OnDraw([[maybe_unused]] wxDC* dc) override {}
+
+    bool OnClose(bool deleteWindow) override;
     void OnSidebarClick(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
+    void OnSaveProject(wxCommandEvent& event);
+    void SaveProject(const wxString& filePath);
+
+    // save helpers
+    [[nodiscard]]
+    static wxString EscapeJsonStr(const wxString& str);
+    static void SaveDatasetImportOptions(wxSimpleJSON::Ptr_t& dsNode,
+                                         const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
+                                         const Wisteria::Data::ImportInfo& info);
+    static void
+    SaveTransformOptions(wxSimpleJSON::Ptr_t& dsNode,
+                         const Wisteria::ReportBuilder::DatasetTransformOptions& txOpts);
+    static void
+    SaveFormulas(wxSimpleJSON::Ptr_t& dsNode,
+                 const std::vector<Wisteria::ReportBuilder::DatasetFormulaInfo>& formulas);
+    static void SaveSubsetFilters(wxSimpleJSON::Ptr_t& subsetNode,
+                                  const Wisteria::ReportBuilder::DatasetSubsetOptions& sOpts);
+    void SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
+    void SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
+    void SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
     void OnInsertDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);

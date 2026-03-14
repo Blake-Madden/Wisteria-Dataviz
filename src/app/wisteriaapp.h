@@ -30,9 +30,6 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
   public:
     WisteriaApp() = default;
 
-    bool OnInit() override;
-    int OnExit() override;
-
     /// @brief Creates the ribbon bar for a given parent window.
     /// @param parent The parent window.
     /// @param doc The document associated with the ribbon, or @c nullptr
@@ -77,6 +74,8 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         }
 
   private:
+    bool OnInit() override;
+    int OnExit() override;
     void LoadInterface();
     void InitProjectSidebar();
 
@@ -161,6 +160,9 @@ constexpr wxWindowID ID_PAGES_BUTTONBAR{ wxID_HIGHEST + 35 };
 // Data transformations
 constexpr wxWindowID ID_PIVOT_WIDER{ wxID_HIGHEST + 36 };
 constexpr wxWindowID ID_PIVOT_LONGER{ wxID_HIGHEST + 37 };
+
+// Project
+constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };
 
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };

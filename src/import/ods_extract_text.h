@@ -48,7 +48,7 @@ namespace lily_of_the_valley
                 worksheet names are available.
             @param text The "content.xml" text to parse. "content.xml" is extracted from
                 an ODS file, which is a ZIP archive.
-            @param text_length The length of the text.
+            @param textLength The length of the text.
             @param[out] data The data matrix (worksheet) to copy the sheet data into.
             @param theWorksheet The worksheet to extract, identified by name or 1-based index.
             @sa get_worksheet_text().*/

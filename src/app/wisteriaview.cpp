@@ -83,6 +83,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
 
+    // bind save button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSaveProject, this,
+                  ID_SAVE_PROJECT);
+
     // bind insert dataset button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
                   ID_INSERT_DATASET);
@@ -179,10 +183,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     if (initialDataset != nullptr)
         {
-        AddDatasetToProject(
-            initialDataset, initialDatasetName, initialColumnInfo,
-            { initialFilePath, wxString{}, initialWorksheet,
-              initialFullColumnInfo, initialImportInfo });
+        AddDatasetToProject(initialDataset, initialDatasetName, initialColumnInfo,
+                            { initialFilePath, wxString{}, initialWorksheet, initialFullColumnInfo,
+                              initialImportInfo });
         }
 
     UpdateGraphButtonStates();
@@ -323,18 +326,8 @@ void WisteriaView::LoadProject()
         m_sideBar->GetFolder(0).Expand();
         }
 
-    // select and show the first page if available
-    if (!m_pages.empty())
-        {
-        const auto firstPageId = m_pages[0]->GetId();
-        auto* firstPage = m_workWindows.FindWindowById(firstPageId);
-        if (firstPage != nullptr)
-            {
-            firstPage->Show();
-            }
-        // select the first page folder
-        m_sideBar->SelectFolder(1, true);
-        }
+    // select and show the dataset area
+    m_sideBar->SelectFolder(0, true);
 
     m_workArea->Layout();
     m_sideBar->Refresh();
@@ -518,8 +511,7 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
             }
 
         AddDatasetToProject(dataset, dsName, columnPreview,
-                            { filePath, wxString{}, worksheet,
-                              fullColumnPreview, importInfo });
+                            { filePath, wxString{}, worksheet, fullColumnPreview, importInfo });
         }
     catch (const std::exception& exc)
         {
@@ -1079,5 +1071,764 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     catch (const std::exception& exc)
         {
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnSaveProject([[maybe_unused]] wxCommandEvent& event)
+    {
+    wxString filePath = GetDocument()->GetFilename();
+
+    if (filePath.empty())
+        {
+        wxFileDialog saveDlg(m_frame, _(L"Save Project"), wxString{}, wxString{},
+                             _(L"Wisteria Project Files (*.json)|*.json"),
+                             wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (saveDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        filePath = saveDlg.GetPath();
+        }
+
+    try
+        {
+        SaveProject(filePath);
+        GetDocument()->SetFilename(filePath, true);
+        GetDocument()->Modify(false);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Save Error"), wxOK | wxICON_ERROR,
+                     m_frame);
+        }
+    }
+
+//-------------------------------------------
+wxString WisteriaView::EscapeJsonStr(const wxString& str)
+    {
+    wxString escaped = str;
+    escaped.Replace(L"\\", L"\\\\");
+    escaped.Replace(L"\"", L"\\\"");
+    return escaped;
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveDatasetImportOptions(
+    wxSimpleJSON::Ptr_t& dsNode, const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
+    const Wisteria::Data::ImportInfo& info)
+    {
+    using CIT = Wisteria::Data::Dataset::ColumnImportType;
+
+    // import settings
+    if (info.GetSkipRows() > 0)
+        {
+        dsNode->Add(L"skip-rows", static_cast<double>(info.GetSkipRows()));
+        }
+    if (!std::isnan(info.GetContinuousMDRecodeValue()))
+        {
+        dsNode->Add(L"continuous-md-recode-value", info.GetContinuousMDRecodeValue());
+        }
+    if (info.GetMDCodes().has_value())
+        {
+        wxArrayString mdArr;
+        for (const auto& code : info.GetMDCodes().value())
+            {
+            mdArr.Add(wxString{ code });
+            }
+        dsNode->Add(L"md-codes", mdArr);
+        }
+    if (info.GetTreatLeadingZerosAsText())
+        {
+        dsNode->Add(L"treat-leading-zeros-as-text", true);
+        }
+    if (info.GetTreatYearsAsText())
+        {
+        dsNode->Add(L"treat-years-as-text", true);
+        }
+    if (info.GetMaxDiscreteValue() != 7)
+        {
+        dsNode->Add(L"max-discrete-value", static_cast<double>(info.GetMaxDiscreteValue()));
+        }
+
+    // id column
+    if (!info.GetIdColumn().empty())
+        {
+        dsNode->Add(L"id-column", info.GetIdColumn());
+        }
+
+    // continuous columns
+    wxArrayString contCols;
+    for (const auto& col : colInfo)
+        {
+        if (!col.m_excluded && col.m_type == CIT::Numeric)
+            {
+            contCols.Add(col.m_name);
+            }
+        }
+    if (!contCols.empty())
+        {
+        dsNode->Add(L"continuous-columns", contCols);
+        }
+
+    // categorical columns
+    auto catArray = dsNode->GetProperty(L"categorical-columns");
+    for (const auto& col : colInfo)
+        {
+        if (col.m_excluded)
+            {
+            continue;
+            }
+        if (col.m_type == CIT::String || col.m_type == CIT::Discrete ||
+            col.m_type == CIT::DichotomousString || col.m_type == CIT::DichotomousDiscrete)
+            {
+            auto catObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            catObj->Add(L"name", col.m_name);
+            const auto catIt = std::find_if(
+                info.GetCategoricalColumns().cbegin(), info.GetCategoricalColumns().cend(),
+                [&col](const auto& ci) { return ci.m_columnName == col.m_name; });
+            if (catIt != info.GetCategoricalColumns().cend() &&
+                catIt->m_importMethod == Wisteria::Data::CategoricalImportMethod::ReadAsIntegers)
+                {
+                catObj->Add(L"parser", wxString{ L"as-integers" });
+                }
+            catArray->ArrayAdd(catObj);
+            }
+        }
+
+    // date columns
+    auto dateArray = dsNode->GetProperty(L"date-columns");
+    for (const auto& col : colInfo)
+        {
+        if (!col.m_excluded && col.m_type == CIT::Date)
+            {
+            auto dateObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            dateObj->Add(L"name", col.m_name);
+            for (const auto& di : info.GetDateColumns())
+                {
+                if (di.m_columnName == col.m_name)
+                    {
+                    switch (di.m_importMethod)
+                        {
+                    case Wisteria::Data::DateImportMethod::IsoDate:
+                        dateObj->Add(L"parser", wxString{ L"iso-date" });
+                        break;
+                    case Wisteria::Data::DateImportMethod::IsoCombined:
+                        dateObj->Add(L"parser", wxString{ L"iso-combined" });
+                        break;
+                    case Wisteria::Data::DateImportMethod::Rfc822:
+                        dateObj->Add(L"parser", wxString{ L"rfc822" });
+                        break;
+                    case Wisteria::Data::DateImportMethod::StrptimeFormatString:
+                        dateObj->Add(L"parser", wxString{ L"strptime-format" });
+                        if (!di.m_strptimeFormatString.empty())
+                            {
+                            dateObj->Add(L"format", di.m_strptimeFormatString);
+                            }
+                        break;
+                    case Wisteria::Data::DateImportMethod::Time:
+                        dateObj->Add(L"parser", wxString{ L"time" });
+                        break;
+                    case Wisteria::Data::DateImportMethod::Automatic:
+                        [[fallthrough]];
+                    default:
+                        break;
+                        }
+                    break;
+                    }
+                }
+            dateArray->ArrayAdd(dateObj);
+            }
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveTransformOptions(
+    wxSimpleJSON::Ptr_t& dsNode, const Wisteria::ReportBuilder::DatasetTransformOptions& txOpts)
+    {
+    if (!txOpts.m_recodeREs.empty())
+        {
+        auto recodeArray = dsNode->GetProperty(L"recode-re");
+        for (const auto& rr : txOpts.m_recodeREs)
+            {
+            auto rrObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            rrObj->Add(L"column", rr.m_column);
+            rrObj->Add(L"pattern", rr.m_pattern);
+            rrObj->Add(L"replacement", rr.m_replacement);
+            recodeArray->ArrayAdd(rrObj);
+            }
+        }
+
+    if (!txOpts.m_columnRenames.empty())
+        {
+        auto renameArray = dsNode->GetProperty(L"columns-rename");
+        for (const auto& cr : txOpts.m_columnRenames)
+            {
+            auto crObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            if (!cr.m_nameRe.empty())
+                {
+                crObj->Add(L"name-re", cr.m_nameRe);
+                crObj->Add(L"new-name-re", cr.m_newNameRe);
+                }
+            else
+                {
+                crObj->Add(L"name", cr.m_name);
+                crObj->Add(L"new-name", cr.m_newName);
+                }
+            renameArray->ArrayAdd(crObj);
+            }
+        }
+
+    if (!txOpts.m_mutateCategoricalColumns.empty())
+        {
+        auto mutArray = dsNode->GetProperty(L"mutate-categorical-columns");
+        for (const auto& mc : txOpts.m_mutateCategoricalColumns)
+            {
+            auto mcObj = wxSimpleJSON::Create(L"{\"replacements\": []}");
+            mcObj->Add(L"source-column", mc.m_sourceColumn);
+            mcObj->Add(L"target-column", mc.m_targetColumn);
+            auto replArray = mcObj->GetProperty(L"replacements");
+            for (const auto& [pattern, replacement] : mc.m_replacements)
+                {
+                auto rObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                rObj->Add(L"pattern", pattern);
+                rObj->Add(L"replacement", replacement);
+                replArray->ArrayAdd(rObj);
+                }
+            mutArray->ArrayAdd(mcObj);
+            }
+        }
+
+    if (!txOpts.m_columnsSelect.empty())
+        {
+        dsNode->Add(L"columns-select", txOpts.m_columnsSelect);
+        }
+
+    if (!txOpts.m_collapseMins.empty())
+        {
+        auto cmArray = dsNode->GetProperty(L"collapse-min");
+        for (const auto& cm : txOpts.m_collapseMins)
+            {
+            auto cmObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            cmObj->Add(L"column", cm.m_column);
+            cmObj->Add(L"min", cm.m_min);
+            if (!cm.m_otherLabel.empty())
+                {
+                cmObj->Add(L"other-label", cm.m_otherLabel);
+                }
+            cmArray->ArrayAdd(cmObj);
+            }
+        }
+
+    if (!txOpts.m_collapseExcepts.empty())
+        {
+        auto ceArray = dsNode->GetProperty(L"collapse-except");
+        for (const auto& ce : txOpts.m_collapseExcepts)
+            {
+            auto ceObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            ceObj->Add(L"column", ce.m_column);
+            wxArrayString labels;
+            for (const auto& lbl : ce.m_labelsToKeep)
+                {
+                labels.Add(lbl);
+                }
+            ceObj->Add(L"labels-to-keep", labels);
+            if (!ce.m_otherLabel.empty())
+                {
+                ceObj->Add(L"other-label", ce.m_otherLabel);
+                }
+            ceArray->ArrayAdd(ceObj);
+            }
+        }
+
+    if (txOpts.m_columnNamesSort)
+        {
+        dsNode->Add(L"column-names-sort", true);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveFormulas(
+    wxSimpleJSON::Ptr_t& dsNode,
+    const std::vector<Wisteria::ReportBuilder::DatasetFormulaInfo>& formulas)
+    {
+    if (formulas.empty())
+        {
+        return;
+        }
+    auto formulaArray = dsNode->GetProperty(L"formulas");
+    for (const auto& f : formulas)
+        {
+        auto fObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        fObj->Add(L"name", f.m_name);
+        fObj->Add(L"value", f.m_value);
+        formulaArray->ArrayAdd(fObj);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveSubsetFilters(wxSimpleJSON::Ptr_t& subsetNode,
+                                     const Wisteria::ReportBuilder::DatasetSubsetOptions& sOpts)
+    {
+    using FT = Wisteria::ReportBuilder::DatasetSubsetOptions::FilterType;
+
+    const auto saveFilterObj = [](const Wisteria::ReportBuilder::DatasetFilterInfo& fi)
+    {
+        auto fObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        fObj->Add(L"column", fi.m_column);
+        if (fi.m_operator != L"=")
+            {
+            fObj->Add(L"operator", fi.m_operator);
+            }
+        wxArrayString vals;
+        for (const auto& v : fi.m_values)
+            {
+            vals.Add(v);
+            }
+        fObj->Add(L"values", vals);
+        return fObj;
+    };
+
+    if (sOpts.m_filterType == FT::Section)
+        {
+        auto secObj = subsetNode->GetProperty(L"section");
+        secObj->Add(L"column", sOpts.m_sectionColumn);
+        secObj->Add(L"start-label", sOpts.m_sectionStartLabel);
+        secObj->Add(L"end-label", sOpts.m_sectionEndLabel);
+        if (!sOpts.m_sectionIncludeSentinelLabels)
+            {
+            secObj->Add(L"include-sentinel-labels", false);
+            }
+        subsetNode->DeleteProperty(L"filter");
+        subsetNode->DeleteProperty(L"filter-and");
+        subsetNode->DeleteProperty(L"filter-or");
+        }
+    else if (sOpts.m_filterType == FT::Single && sOpts.m_filters.size() == 1)
+        {
+        const auto& fi = sOpts.m_filters[0];
+        auto filterObj = subsetNode->GetProperty(L"filter");
+        filterObj->Add(L"column", fi.m_column);
+        if (fi.m_operator != L"=")
+            {
+            filterObj->Add(L"operator", fi.m_operator);
+            }
+        wxArrayString vals;
+        for (const auto& v : fi.m_values)
+            {
+            vals.Add(v);
+            }
+        filterObj->Add(L"values", vals);
+        subsetNode->DeleteProperty(L"section");
+        subsetNode->DeleteProperty(L"filter-and");
+        subsetNode->DeleteProperty(L"filter-or");
+        }
+    else if (sOpts.m_filterType == FT::And)
+        {
+        auto andArray = subsetNode->GetProperty(L"filter-and");
+        for (const auto& fi : sOpts.m_filters)
+            {
+            andArray->ArrayAdd(saveFilterObj(fi));
+            }
+        subsetNode->DeleteProperty(L"section");
+        subsetNode->DeleteProperty(L"filter");
+        subsetNode->DeleteProperty(L"filter-or");
+        }
+    else if (sOpts.m_filterType == FT::Or)
+        {
+        auto orArray = subsetNode->GetProperty(L"filter-or");
+        for (const auto& fi : sOpts.m_filters)
+            {
+            orArray->ArrayAdd(saveFilterObj(fi));
+            }
+        subsetNode->DeleteProperty(L"section");
+        subsetNode->DeleteProperty(L"filter");
+        subsetNode->DeleteProperty(L"filter-and");
+        }
+    else
+        {
+        subsetNode->DeleteProperty(L"section");
+        subsetNode->DeleteProperty(L"filter");
+        subsetNode->DeleteProperty(L"filter-and");
+        subsetNode->DeleteProperty(L"filter-or");
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
+    {
+    const auto& subsetOpts = m_reportBuilder.GetDatasetSubsetOptions();
+    const auto& transformOpts = m_reportBuilder.GetDatasetTransformOptions();
+
+    auto subArray = parentNode->GetProperty(L"subsets");
+    for (const auto& [subName, sOpts] : subsetOpts)
+        {
+        if (sOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0)
+            {
+            auto subObj = wxSimpleJSON::Create(wxString::Format(
+                L"{\"name\": \"%s\", "
+                L"\"section\": {}, \"filter\": {}, \"filter-and\": [], \"filter-or\": [], "
+                L"\"recode-re\": [], \"columns-rename\": [], "
+                L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
+                L"\"collapse-except\": [], \"formulas\": []}",
+                EscapeJsonStr(subName)));
+            SaveSubsetFilters(subObj, sOpts);
+
+            const auto txIt = transformOpts.find(subName);
+            if (txIt != transformOpts.cend())
+                {
+                SaveTransformOptions(subObj, txIt->second);
+                SaveFormulas(subObj, txIt->second.m_formulas);
+                }
+
+            // clean up empty arrays
+            for (const auto& key : { L"recode-re", L"columns-rename", L"mutate-categorical-columns",
+                                     L"collapse-min", L"collapse-except", L"formulas" })
+                {
+                if (subObj->GetProperty(key)->ArraySize() == 0)
+                    {
+                    subObj->DeleteProperty(key);
+                    }
+                }
+
+            subArray->ArrayAdd(subObj);
+            }
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
+    {
+    const auto& pivotOpts = m_reportBuilder.GetDatasetPivotOptions();
+    const auto& transformOpts = m_reportBuilder.GetDatasetTransformOptions();
+
+    auto pivArray = parentNode->GetProperty(L"pivots");
+    for (const auto& [pivName, pOpts] : pivotOpts)
+        {
+        if (pOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0)
+            {
+            auto pivObj = wxSimpleJSON::Create(
+                wxString::Format(L"{\"name\": \"%s\", "
+                                 L"\"subsets\": [], \"recode-re\": [], \"columns-rename\": [], "
+                                 L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
+                                 L"\"collapse-except\": []}",
+                                 EscapeJsonStr(pivName)));
+
+            if (pOpts.m_type == Wisteria::ReportBuilder::PivotType::Wider)
+                {
+                pivObj->Add(L"type", wxString{ L"wider" });
+                if (!pOpts.m_idColumns.empty())
+                    {
+                    wxArrayString ids;
+                    for (const auto& id : pOpts.m_idColumns)
+                        {
+                        ids.Add(id);
+                        }
+                    pivObj->Add(L"id-columns", ids);
+                    }
+                if (!pOpts.m_namesFromColumn.empty())
+                    {
+                    pivObj->Add(L"names-from-column", pOpts.m_namesFromColumn);
+                    }
+                if (!pOpts.m_valuesFromColumns.empty())
+                    {
+                    wxArrayString vals;
+                    for (const auto& v : pOpts.m_valuesFromColumns)
+                        {
+                        vals.Add(v);
+                        }
+                    pivObj->Add(L"values-from-columns", vals);
+                    }
+                if (!pOpts.m_namesSep.empty() && pOpts.m_namesSep != L"_")
+                    {
+                    pivObj->Add(L"names-separator", pOpts.m_namesSep);
+                    }
+                if (!pOpts.m_namesPrefix.empty())
+                    {
+                    pivObj->Add(L"names-prefix", pOpts.m_namesPrefix);
+                    }
+                if (!std::isnan(pOpts.m_fillValue))
+                    {
+                    pivObj->Add(L"fill-value", pOpts.m_fillValue);
+                    }
+                }
+            else
+                {
+                pivObj->Add(L"type", wxString{ L"longer" });
+                if (!pOpts.m_columnsToKeep.empty())
+                    {
+                    wxArrayString cols;
+                    for (const auto& c : pOpts.m_columnsToKeep)
+                        {
+                        cols.Add(c);
+                        }
+                    pivObj->Add(L"columns-to-keep", cols);
+                    }
+                if (!pOpts.m_fromColumns.empty())
+                    {
+                    wxArrayString cols;
+                    for (const auto& c : pOpts.m_fromColumns)
+                        {
+                        cols.Add(c);
+                        }
+                    pivObj->Add(L"from-columns", cols);
+                    }
+                if (!pOpts.m_namesTo.empty())
+                    {
+                    wxArrayString cols;
+                    for (const auto& c : pOpts.m_namesTo)
+                        {
+                        cols.Add(c);
+                        }
+                    pivObj->Add(L"names-to", cols);
+                    }
+                if (!pOpts.m_valuesTo.empty())
+                    {
+                    pivObj->Add(L"values-to", pOpts.m_valuesTo);
+                    }
+                if (!pOpts.m_namesPattern.empty())
+                    {
+                    pivObj->Add(L"names-pattern", pOpts.m_namesPattern);
+                    }
+                }
+
+            SaveSubsets(pivObj, pivName);
+
+            const auto txIt = transformOpts.find(pivName);
+            if (txIt != transformOpts.cend())
+                {
+                SaveTransformOptions(pivObj, txIt->second);
+                }
+
+            // clean up empty arrays
+            for (const auto& key :
+                 { L"subsets", L"recode-re", L"columns-rename", L"mutate-categorical-columns",
+                   L"collapse-min", L"collapse-except" })
+                {
+                if (pivObj->GetProperty(key)->ArraySize() == 0)
+                    {
+                    pivObj->DeleteProperty(key);
+                    }
+                }
+
+            pivArray->ArrayAdd(pivObj);
+            }
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
+    {
+    const auto& mergeOpts = m_reportBuilder.GetDatasetMergeOptions();
+
+    auto mrgArray = parentNode->GetProperty(L"merges");
+    for (const auto& [mrgName, mOpts] : mergeOpts)
+        {
+        if (mOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0)
+            {
+            auto mrgObj = wxSimpleJSON::Create(
+                wxString::Format(L"{\"name\": \"%s\", \"by\": []}", EscapeJsonStr(mrgName)));
+            if (!mOpts.m_type.empty() && mOpts.m_type != L"left-join-unique")
+                {
+                mrgObj->Add(L"type", mOpts.m_type);
+                }
+            mrgObj->Add(L"other-dataset", mOpts.m_otherDatasetName);
+            if (!mOpts.m_byColumns.empty())
+                {
+                auto byArray = mrgObj->GetProperty(L"by");
+                for (const auto& [left, right] : mOpts.m_byColumns)
+                    {
+                    auto byObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                    byObj->Add(L"left-column", left);
+                    byObj->Add(L"right-column", right);
+                    byArray->ArrayAdd(byObj);
+                    }
+                }
+            else
+                {
+                mrgObj->DeleteProperty(L"by");
+                }
+            if (!mOpts.m_suffix.empty() && mOpts.m_suffix != L".x")
+                {
+                mrgObj->Add(L"suffix", mOpts.m_suffix);
+                }
+
+            mrgArray->ArrayAdd(mrgObj);
+            }
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveProject(const wxString& filePath)
+    {
+    const wxFileName projectDir(filePath);
+
+    // project name
+    const wxString projectName = m_reportBuilder.GetName().empty() ?
+                                     wxFileName(filePath).GetName() :
+                                     m_reportBuilder.GetName();
+
+    auto root = wxSimpleJSON::Create(
+        wxString::Format(L"{\"name\": \"%s\", \"datasets\": [], \"constants\": [], \"pages\": []}",
+                         EscapeJsonStr(projectName)),
+        true);
+
+    // datasets
+    //---------
+    const auto& datasets = m_reportBuilder.GetDatasets();
+    const auto& importOpts = m_reportBuilder.GetDatasetImportOptions();
+    const auto& pivotOpts = m_reportBuilder.GetDatasetPivotOptions();
+    const auto& transformOpts = m_reportBuilder.GetDatasetTransformOptions();
+    const auto& subsetOpts = m_reportBuilder.GetDatasetSubsetOptions();
+    const auto& mergeOpts = m_reportBuilder.GetDatasetMergeOptions();
+
+    // build a lookup of derived dataset names
+    // (pivot, subset, and merge datasets reference a parent)
+    std::set<wxString, Wisteria::Data::wxStringLessNoCase> derivedDatasets;
+    for (const auto& [name, opts] : pivotOpts)
+        {
+        derivedDatasets.insert(name);
+        }
+    for (const auto& [name, opts] : subsetOpts)
+        {
+        derivedDatasets.insert(name);
+        }
+    for (const auto& [name, opts] : mergeOpts)
+        {
+        derivedDatasets.insert(name);
+        }
+
+    auto datasetsArray = root->GetProperty(L"datasets");
+    for (const auto& [dsName, dataset] : datasets)
+        {
+        // skip derived datasets; they are nested under their parent
+        if (derivedDatasets.contains(dsName))
+            {
+            continue;
+            }
+
+        const auto optIt = importOpts.find(dsName);
+
+        // build dataset template with name and path up front
+        wxString dsTmpl = L"{";
+        dsTmpl += wxString::Format(L"\"name\": \"%s\", ", EscapeJsonStr(dsName));
+        if (optIt != importOpts.cend())
+            {
+            const auto& optsTmpl = optIt->second;
+            if (!optsTmpl.m_filePath.empty())
+                {
+                wxFileName dataPath(optsTmpl.m_filePath);
+                dataPath.MakeRelativeTo(projectDir.GetPath());
+                dsTmpl += wxString::Format(L"\"path\": \"%s\", ",
+                                           EscapeJsonStr(dataPath.GetFullPath(wxPATH_UNIX)));
+                }
+            }
+        dsTmpl += L"\"categorical-columns\": [], \"date-columns\": [], "
+                  L"\"recode-re\": [], \"columns-rename\": [], "
+                  L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
+                  L"\"collapse-except\": [], \"formulas\": [], "
+                  L"\"subsets\": [], \"pivots\": [], \"merges\": []}";
+        auto dsNode = wxSimpleJSON::Create(dsTmpl);
+
+        if (optIt != importOpts.cend())
+            {
+            const auto& opts = optIt->second;
+
+            // importer override
+            if (!opts.m_importer.empty())
+                {
+                dsNode->Add(L"importer", opts.m_importer);
+                }
+
+            // worksheet
+            if (std::holds_alternative<wxString>(opts.m_worksheet))
+                {
+                const auto& ws = std::get<wxString>(opts.m_worksheet);
+                if (!ws.empty())
+                    {
+                    dsNode->Add(L"worksheet", ws);
+                    }
+                }
+            else
+                {
+                const auto wsIdx = std::get<size_t>(opts.m_worksheet);
+                if (wsIdx != 1)
+                    {
+                    dsNode->Add(L"worksheet", static_cast<double>(wsIdx));
+                    }
+                }
+
+            SaveDatasetImportOptions(dsNode, opts.m_columnPreviewInfo, opts.m_importInfo);
+            }
+
+        // transform options and formulas
+        const auto txIt = transformOpts.find(dsName);
+        if (txIt != transformOpts.cend())
+            {
+            SaveTransformOptions(dsNode, txIt->second);
+            SaveFormulas(dsNode, txIt->second.m_formulas);
+            }
+
+        // nested pivots, subsets, and merges
+        SavePivots(dsNode, dsName);
+        SaveSubsets(dsNode, dsName);
+        SaveMerges(dsNode, dsName);
+
+        // clean up empty arrays
+        for (const auto& key :
+             { L"categorical-columns", L"date-columns", L"recode-re", L"columns-rename",
+               L"mutate-categorical-columns", L"collapse-min", L"collapse-except", L"formulas",
+               L"subsets", L"pivots", L"merges" })
+            {
+            if (dsNode->GetProperty(key)->ArraySize() == 0)
+                {
+                dsNode->DeleteProperty(key);
+                }
+            }
+
+        datasetsArray->ArrayAdd(dsNode);
+        }
+
+    // constants
+    //----------
+    const auto& constants = m_reportBuilder.GetConstants();
+    if (!constants.empty())
+        {
+        auto constArray = root->GetProperty(L"constants");
+        for (const auto& c : constants)
+            {
+            auto cObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            cObj->Add(L"name", c.m_name);
+            cObj->Add(L"value", c.m_value);
+            constArray->ArrayAdd(cObj);
+            }
+        }
+    else
+        {
+        root->DeleteProperty(L"constants");
+        }
+
+    // pages
+    //------
+    auto pagesArray = root->GetProperty(L"pages");
+    for (const auto* canvas : m_pages)
+        {
+        auto pageObj = wxSimpleJSON::Create(L"{\"rows\": []}");
+        if (canvas != nullptr && !canvas->GetLabel().empty())
+            {
+            pageObj->Add(L"name", canvas->GetLabel());
+            }
+        auto rowsArray = pageObj->GetProperty(L"rows");
+        auto rowObj = wxSimpleJSON::Create(L"{\"items\": []}");
+        rowsArray->ArrayAdd(rowObj);
+        pagesArray->ArrayAdd(pageObj);
+        }
+
+    wxString output = root->Print();
+    output.Replace(L"\t", L" ");
+    wxFile outFile(filePath, wxFile::write);
+    if (outFile.IsOpened())
+        {
+        const auto utf8 = output.utf8_string();
+        outFile.Write(utf8.c_str(), utf8.length());
         }
     }

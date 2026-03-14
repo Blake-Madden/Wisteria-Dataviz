@@ -16,15 +16,16 @@
 /// @brief Document class for Wisteria Dataviz projects.
 class WisteriaDoc : public wxDocument
     {
+    wxDECLARE_DYNAMIC_CLASS(WisteriaDoc);
+
   public:
     WisteriaDoc() = default;
     WisteriaDoc(const WisteriaDoc&) = delete;
     WisteriaDoc& operator=(const WisteriaDoc&) = delete;
 
+  private:
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
-
-    wxDECLARE_DYNAMIC_CLASS(WisteriaDoc);
     };
 
 #endif // WISTERIA_DOC_H

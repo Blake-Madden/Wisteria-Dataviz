@@ -281,6 +281,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
     if (isProjectRibbon)
         {
+        const auto saveIcon = GetResourceManager().GetSVG(L"file-save.svg");
+        projectButtonBar->AddButton(ID_SAVE_PROJECT, _(L"Save"),
+                                    saveIcon.IsOk() ? saveIcon.GetBitmap(iconSize) : wxBitmap{},
+                                    _(L"Save the project"));
+
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
