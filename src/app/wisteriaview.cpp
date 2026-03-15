@@ -1003,6 +1003,29 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
                       optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
                       optVar(FID::EarSize));
 
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        const std::pair<FID, wxString> featureProps[] = { { FID::FaceWidth, L"face-width" },
+                                                          { FID::FaceHeight, L"face-height" },
+                                                          { FID::EyeSize, L"eye-size" },
+                                                          { FID::EyePosition, L"eye-position" },
+                                                          { FID::EyebrowSlant, L"eyebrow-slant" },
+                                                          { FID::PupilDirection,
+                                                            L"pupil-position" },
+                                                          { FID::NoseSize, L"nose-size" },
+                                                          { FID::MouthWidth, L"mouth-width" },
+                                                          { FID::SmileFrown, L"mouth-curvature" },
+                                                          { FID::FaceColor, L"face-saturation" },
+                                                          { FID::EarSize, L"ear-size" } };
+        for (const auto& [fid, propName] : featureProps)
+            {
+            const auto var = dlg.GetFeatureVariable(fid);
+            if (!var.empty())
+                {
+                plot->SetPropertyTemplate(L"variables." + propName, var);
+                }
+            }
+
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
                               Wisteria::LegendCanvasPlacementHint::RightOfGraph :
@@ -1051,6 +1074,15 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
+        plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
+            }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
@@ -2576,12 +2608,545 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveCommonAxis(const Wisteria::GraphItems::Axi
     }
 
 //-------------------------------------------
+wxString WisteriaView::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
+    {
+    if (graph == nullptr)
+        {
+        return {};
+        }
+
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
+        {
+        return _DT(L"line-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
+        {
+        return _DT(L"multi-series-line-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
+        {
+        return _DT(L"scatter-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
+        {
+        return _DT(L"bubble-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
+        {
+        return _DT(L"categorical-bar-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
+        {
+        return _DT(L"bar-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
+        {
+        return _DT(L"histogram");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
+        {
+        return _DT(L"box-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
+        {
+        return _DT(L"pie-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
+        {
+        return _DT(L"heatmap");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
+        {
+        return _DT(L"table");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
+        {
+        return _DT(L"gantt-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
+        {
+        return _DT(L"candlestick-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
+        {
+        return _DT(L"w-curve-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        return _DT(L"likert-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
+        {
+        return _DT(L"linear-regression-roadmap");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
+        {
+        return _DT(L"pro-con-roadmap");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
+        {
+        return _DT(L"waffle-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
+        {
+        return _DT(L"word-cloud");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
+        {
+        return _DT(L"sankey-diagram");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
+        {
+        return _DT(L"win-loss-sparkline");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
+        {
+        return _DT(L"chernoff-faces");
+        }
+    return {};
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON::Ptr_t& graphNode,
+                             const Wisteria::Canvas* canvas) const
+    {
+    if (graph == nullptr || canvas == nullptr)
+        {
+        return;
+        }
+
+    // dataset name (from cached property template)
+    const wxString datasetName = graph->GetPropertyTemplate(L"dataset");
+
+    // variables (from cached property templates)
+    const auto& templates = graph->GetPropertyTemplates();
+    wxString varsStr;
+    for (const auto& [prop, val] : templates)
+        {
+        if (prop.StartsWith(L"variables."))
+            {
+            const auto varName = prop.Mid(10); // skip "variables."
+            if (!varsStr.empty())
+                {
+                varsStr += L", ";
+                }
+            varsStr += L"\"" + varName + L"\": \"" + EscapeJsonStr(val) + L"\"";
+            }
+        }
+
+    // title
+    const auto& title = graph->GetTitle();
+    wxString titleStr;
+    if (!title.GetText().empty())
+        {
+        const auto textTmpl = title.GetPropertyTemplate(L"text");
+        const auto& titleText = textTmpl.empty() ? title.GetText() : textTmpl;
+        titleStr = L"\"title\": {\"text\": \"" + EscapeJsonStr(titleText) + L"\"}";
+        }
+
+    // subtitle
+    const auto& subtitle = graph->GetSubtitle();
+    wxString subtitleStr;
+    if (!subtitle.GetText().empty())
+        {
+        const auto textTmpl = subtitle.GetPropertyTemplate(L"text");
+        const auto& stText = textTmpl.empty() ? subtitle.GetText() : textTmpl;
+        subtitleStr = L"\"sub-title\": {\"text\": \"" + EscapeJsonStr(stText) + L"\"}";
+        }
+
+    // caption
+    const auto& caption = graph->GetCaption();
+    wxString captionStr;
+    if (!caption.GetText().empty())
+        {
+        const auto textTmpl = caption.GetPropertyTemplate(L"text");
+        const auto& capText = textTmpl.empty() ? caption.GetText() : textTmpl;
+        captionStr = L"\"caption\": {\"text\": \"" + EscapeJsonStr(capText) + L"\"}";
+        }
+
+    // background-color
+    const auto& bgColor = graph->GetPlotBackgroundColor();
+    if (bgColor.IsOk() && !bgColor.IsTransparent())
+        {
+        graphNode->Add(L"background-color", bgColor.GetAsString(wxC2S_HTML_SYNTAX));
+        }
+
+    // axes
+    const Wisteria::GraphItems::Axis* axes[] = { &graph->GetBottomXAxis(), &graph->GetTopXAxis(),
+                                                 &graph->GetLeftYAxis(), &graph->GetRightYAxis() };
+    wxString axesStr;
+    for (const auto* axis : axes)
+        {
+        // skip axes that are default/empty (not shown and have no custom settings)
+        const auto atStr =
+            Wisteria::ReportEnumConvert::ConvertAxisTypeToString(axis->GetAxisType());
+        if (!atStr.has_value())
+            {
+            continue;
+            }
+
+        // check if axis has any non-default properties worth writing
+        const bool hasTitle = !axis->GetTitle().GetText().empty();
+        const auto [rStart, rEnd] = axis->GetRange();
+        const bool hasRange = !compare_doubles(rStart, 0.0) || !compare_doubles(rEnd, 0.0);
+        const bool hasCustomLabels = !axis->GetCustomLabels().empty();
+        const bool hasBrackets = !axis->GetBrackets().empty();
+        const bool hasLabelDisplay =
+            axis->GetLabelDisplay() != Wisteria::AxisLabelDisplay::DisplayCustomLabelsOrValues;
+        const bool hasPenOverride = !axis->GetAxisLinePen().IsOk() ||
+                                    axis->GetAxisLinePen() == wxNullPen ||
+                                    !(axis->GetAxisLinePen().GetColour() == *wxBLACK &&
+                                      axis->GetAxisLinePen().GetWidth() <= 1 &&
+                                      axis->GetAxisLinePen().GetStyle() == wxPENSTYLE_SOLID);
+        const bool hasGridPenOverride = !axis->GetGridlinePen().IsOk() ||
+                                        axis->GetGridlinePen() == wxNullPen ||
+                                        !(axis->GetGridlinePen().GetColour() == *wxBLACK &&
+                                          axis->GetGridlinePen().GetWidth() <= 1 &&
+                                          axis->GetGridlinePen().GetStyle() == wxPENSTYLE_SOLID);
+        const bool hasTickOverride =
+            axis->GetTickMarkDisplay() != Wisteria::GraphItems::Axis::TickMark::DisplayType::Inner;
+        const bool isHidden = !axis->IsShown();
+
+        if (!hasTitle && !hasRange && !hasCustomLabels && !hasBrackets && !hasLabelDisplay &&
+            !hasPenOverride && !hasGridPenOverride && !hasTickOverride && !isHidden)
+            {
+            continue;
+            }
+
+        wxString axisObj = L"{\"axis-type\": \"" + atStr.value() + L"\"";
+
+        // title
+        if (hasTitle)
+            {
+            const auto ttTmpl = axis->GetTitle().GetPropertyTemplate(L"text");
+            const auto& ttText = ttTmpl.empty() ? axis->GetTitle().GetText() : ttTmpl;
+            axisObj += L", \"title\": {\"text\": \"" + EscapeJsonStr(ttText) + L"\"}";
+            }
+
+        // axis-pen
+        if (!axis->GetAxisLinePen().IsOk() || axis->GetAxisLinePen() == wxNullPen)
+            {
+            axisObj += L", \"axis-pen\": null";
+            }
+        else if (hasPenOverride)
+            {
+            axisObj += L", \"axis-pen\": " + SavePenToStr(axis->GetAxisLinePen());
+            }
+
+        // gridline-pen
+        if (!axis->GetGridlinePen().IsOk() || axis->GetGridlinePen() == wxNullPen)
+            {
+            axisObj += L", \"gridline-pen\": null";
+            }
+        else if (hasGridPenOverride)
+            {
+            axisObj += L", \"gridline-pen\": " + SavePenToStr(axis->GetGridlinePen());
+            }
+
+        // label-display
+        if (hasLabelDisplay)
+            {
+            const auto ldStr = Wisteria::ReportEnumConvert::ConvertAxisLabelDisplayToString(
+                axis->GetLabelDisplay());
+            if (ldStr.has_value())
+                {
+                axisObj += L", \"label-display\": \"" + ldStr.value() + L"\"";
+                }
+            }
+
+        // tickmarks
+        if (hasTickOverride)
+            {
+            const auto tdStr = Wisteria::ReportEnumConvert::ConvertTickMarkDisplayToString(
+                axis->GetTickMarkDisplay());
+            if (tdStr.has_value())
+                {
+                axisObj += L", \"tickmarks\": {\"display\": \"" + tdStr.value() + L"\"}";
+                }
+            }
+
+        // range
+        if (hasRange)
+            {
+            axisObj += wxString::Format(L", \"range\": {\"start\": %g, \"end\": %g", rStart, rEnd);
+            if (axis->GetPrecision() != 0)
+                {
+                axisObj += wxString::Format(L", \"precision\": %d",
+                                            static_cast<int>(axis->GetPrecision()));
+                }
+            if (!compare_doubles(axis->GetInterval(), 0.0))
+                {
+                axisObj += wxString::Format(L", \"interval\": %g", axis->GetInterval());
+                }
+            if (axis->GetDisplayInterval() != 1)
+                {
+                axisObj +=
+                    wxString::Format(L", \"display-interval\": %zu", axis->GetDisplayInterval());
+                }
+            axisObj += L"}";
+            }
+
+        // custom-labels
+        if (hasCustomLabels)
+            {
+            axisObj += L", \"custom-labels\": [";
+            bool first = true;
+            for (const auto& [value, label] : axis->GetCustomLabels())
+                {
+                if (!first)
+                    {
+                    axisObj += L", ";
+                    }
+                first = false;
+                const auto ltTmpl = label.GetPropertyTemplate(L"text");
+                const auto& ltText = ltTmpl.empty() ? label.GetText() : ltTmpl;
+                axisObj += wxString::Format(L"{\"value\": %g, \"label\": \"%s\"}", value,
+                                            EscapeJsonStr(ltText));
+                }
+            axisObj += L"]";
+            }
+
+        // brackets
+        if (hasBrackets)
+            {
+            const auto& brackets = axis->GetBrackets();
+            const auto bracketDsName = axis->GetPropertyTemplate(L"brackets.dataset");
+            if (!bracketDsName.empty())
+                {
+                axisObj +=
+                    L", \"brackets\": {\"dataset\": \"" + EscapeJsonStr(bracketDsName) + L"\"";
+                const auto labelVar = axis->GetPropertyTemplate(L"bracket.label");
+                const auto valueVar = axis->GetPropertyTemplate(L"bracket.value");
+                if (!labelVar.empty() || !valueVar.empty())
+                    {
+                    axisObj += L", \"variables\": {";
+                    bool needComma = false;
+                    if (!labelVar.empty())
+                        {
+                        axisObj += L"\"label\": \"" + EscapeJsonStr(labelVar) + L"\"";
+                        needComma = true;
+                        }
+                    if (!valueVar.empty())
+                        {
+                        if (needComma)
+                            {
+                            axisObj += L", ";
+                            }
+                        axisObj += L"\"value\": \"" + EscapeJsonStr(valueVar) + L"\"";
+                        }
+                    axisObj += L"}";
+                    }
+                axisObj += L"}";
+                }
+            else
+                {
+                axisObj += L", \"brackets\": [";
+                for (size_t i = 0; i < brackets.size(); ++i)
+                    {
+                    if (i > 0)
+                        {
+                        axisObj += L", ";
+                        }
+                    const auto& b = brackets[i];
+                    axisObj += wxString::Format(L"{\"start\": %g, \"end\": %g",
+                                                b.GetStartPosition(), b.GetEndPosition());
+                    if (!b.GetLabel().GetText().empty())
+                        {
+                        axisObj +=
+                            L", \"label\": \"" + EscapeJsonStr(b.GetLabel().GetText()) + L"\"";
+                        }
+                    const auto bsStr = Wisteria::ReportEnumConvert::ConvertBracketLineStyleToString(
+                        b.GetBracketLineStyle());
+                    if (bsStr.has_value() &&
+                        b.GetBracketLineStyle() != Wisteria::BracketLineStyle::CurlyBraces)
+                        {
+                        axisObj += L", \"style\": \"" + bsStr.value() + L"\"";
+                        }
+                    axisObj += L"}";
+                    }
+                axisObj += L"]";
+                }
+            }
+
+        // show (default is true)
+        if (isHidden)
+            {
+            axisObj += L", \"show\": false";
+            }
+
+        axisObj += L"}";
+
+        if (!axesStr.empty())
+            {
+            axesStr += L", ";
+            }
+        axesStr += axisObj;
+        }
+
+    // reference-lines
+    const auto& refLines = graph->GetReferenceLines();
+    wxString refLinesStr;
+    for (const auto& rl : refLines)
+        {
+        const auto atStr = Wisteria::ReportEnumConvert::ConvertAxisTypeToString(rl.GetAxisType());
+        if (!atStr.has_value())
+            {
+            continue;
+            }
+        wxString rlObj = L"{\"axis-type\": \"" + atStr.value() + L"\"";
+        rlObj += wxString::Format(L", \"position\": %g", rl.GetAxisPosition());
+        if (!rl.GetLabel().empty())
+            {
+            rlObj += L", \"label\": \"" + EscapeJsonStr(rl.GetLabel()) + L"\"";
+            }
+        const auto& rlPen = rl.GetPen();
+        if (rlPen.IsOk() && rlPen != wxNullPen)
+            {
+            rlObj += L", \"pen\": " + SavePenToStr(rlPen);
+            }
+        if (rl.GetLabelPlacement() != Wisteria::ReferenceLabelPlacement::Legend)
+            {
+            const auto lpStr = Wisteria::ReportEnumConvert::ConvertReferenceLabelPlacementToString(
+                rl.GetLabelPlacement());
+            if (lpStr.has_value())
+                {
+                rlObj += L", \"reference-label-placement\": \"" + lpStr.value() + L"\"";
+                }
+            }
+        rlObj += L"}";
+        if (!refLinesStr.empty())
+            {
+            refLinesStr += L", ";
+            }
+        refLinesStr += rlObj;
+        }
+
+    // reference-areas
+    const auto& refAreas = graph->GetReferenceAreas();
+    wxString refAreasStr;
+    for (const auto& ra : refAreas)
+        {
+        const auto atStr = Wisteria::ReportEnumConvert::ConvertAxisTypeToString(ra.GetAxisType());
+        if (!atStr.has_value())
+            {
+            continue;
+            }
+        wxString raObj = L"{\"axis-type\": \"" + atStr.value() + L"\"";
+        raObj += wxString::Format(L", \"start\": %g, \"end\": %g", ra.GetAxisPosition(),
+                                  ra.GetAxisPosition2());
+        if (!ra.GetLabel().empty())
+            {
+            raObj += L", \"label\": \"" + EscapeJsonStr(ra.GetLabel()) + L"\"";
+            }
+        const auto& raPen = ra.GetPen();
+        if (raPen.IsOk() && raPen != wxNullPen)
+            {
+            raObj += L", \"pen\": " + SavePenToStr(raPen);
+            }
+        if (ra.GetReferenceAreaStyle() != Wisteria::ReferenceAreaStyle::Solid)
+            {
+            const auto rasStr = Wisteria::ReportEnumConvert::ConvertReferenceAreaStyleToString(
+                ra.GetReferenceAreaStyle());
+            if (rasStr.has_value())
+                {
+                raObj += L", \"style\": \"" + rasStr.value() + L"\"";
+                }
+            }
+        raObj += L"}";
+        if (!refAreasStr.empty())
+            {
+            refAreasStr += L", ";
+            }
+        refAreasStr += raObj;
+        }
+
+    // now build the template with sub-objects embedded
+    wxString additions;
+    if (!datasetName.empty())
+        {
+        additions += L", \"dataset\": \"" + EscapeJsonStr(datasetName) + L"\"";
+        }
+    if (!varsStr.empty())
+        {
+        additions += L", \"variables\": {" + varsStr + L"}";
+        }
+    if (!titleStr.empty())
+        {
+        additions += L", " + titleStr;
+        }
+    if (!subtitleStr.empty())
+        {
+        additions += L", " + subtitleStr;
+        }
+    if (!captionStr.empty())
+        {
+        additions += L", " + captionStr;
+        }
+    if (!axesStr.empty())
+        {
+        additions += L", \"axes\": [" + axesStr + L"]";
+        }
+    if (!refLinesStr.empty())
+        {
+        additions += L", \"reference-lines\": [" + refLinesStr + L"]";
+        }
+    if (!refAreasStr.empty())
+        {
+        additions += L", \"reference-areas\": [" + refAreasStr + L"]";
+        }
+
+    // rebuild node with sub-objects
+    if (!additions.empty())
+        {
+        // get existing JSON, inject additions before closing brace
+        auto printed = graphNode->Print(false);
+        if (printed.EndsWith(L"}"))
+            {
+            printed.RemoveLast();
+            printed += additions + L"}";
+            graphNode = wxSimpleJSON::Create(printed);
+            }
+        }
+
+    SaveItem(graphNode, graph, canvas);
+    }
+
+//-------------------------------------------
+wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2D* graph,
+                                                  const Wisteria::Canvas* canvas) const
+    {
+    if (graph == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    const auto typeStr = GetGraphTypeString(graph);
+    if (typeStr.empty())
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    auto node =
+        wxSimpleJSON::Create(L"{\"type\": \"" + typeStr +
+                             L"\", \"canvas-margins\": [], \"padding\": [], \"outline\": []}");
+
+    SaveGraph(graph, node, canvas);
+    return node;
+    }
+
+//-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaView::SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
                                                const Wisteria::Canvas* canvas) const
     {
     if (item == nullptr)
         {
         return wxSimpleJSON::Ptr_t{};
+        }
+
+    // Graph2D before other types (it inherits from GraphItemBase directly)
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)))
+        {
+        return SaveGraphByType(dynamic_cast<const Wisteria::Graphs::Graph2D*>(item), canvas);
         }
 
     // (FillableShape before Shape since it derives from Shape)

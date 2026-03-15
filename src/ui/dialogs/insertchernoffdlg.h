@@ -52,6 +52,16 @@ namespace Wisteria::UI
         [[nodiscard]]
         std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
 
+        /// @returns The name of the selected dataset, or empty if none.
+        [[nodiscard]]
+        wxString GetSelectedDatasetName() const
+            {
+            const int sel = m_datasetChoice->GetSelection();
+            return (sel != wxNOT_FOUND && static_cast<size_t>(sel) < m_datasetNames.size()) ?
+                       m_datasetNames[sel] :
+                       wxString{};
+            }
+
         /// @returns The selected gender.
         [[nodiscard]]
         Gender GetGender() const;

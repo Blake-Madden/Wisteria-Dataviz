@@ -2889,11 +2889,11 @@ namespace Wisteria
 
             auto lrRoadmap = std::make_shared<Graphs::LRRoadmap>(canvas);
             // cache templates for variables expanded before lrRoadmap was created
-            if (pValueColumn != pValueColumnRaw)
+            if (!pValueColumnRaw.empty())
                 {
                 lrRoadmap->SetPropertyTemplate(L"variables.p-value", pValueColumnRaw);
                 }
-            if (dvName != dvNameRaw)
+            if (!dvNameRaw.empty())
                 {
                 lrRoadmap->SetPropertyTemplate(L"variables.dependent-variable-name", dvNameRaw);
                 }
@@ -3023,13 +3023,13 @@ namespace Wisteria
             // cache templates for variables expanded before likertChart was created
             for (size_t i = 0; i < questionVarsRaw.size(); ++i)
                 {
-                if (questionVars[i] != questionVarsRaw[i])
+                if (!questionVarsRaw[i].empty())
                     {
                     likertChart->SetPropertyTemplate(
                         L"variables.questions[" + std::to_wstring(i) + L"]", questionVarsRaw[i]);
                     }
                 }
-            if (groupVarName != groupVarNameRaw)
+            if (!groupVarNameRaw.empty())
                 {
                 likertChart->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
                 }
@@ -3102,7 +3102,7 @@ namespace Wisteria
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
-            if (groupVarName != groupVarNameRaw)
+            if (!groupVarNameRaw.empty())
                 {
                 wcurvePlot->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
                 }
@@ -3198,7 +3198,7 @@ namespace Wisteria
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
-            if (groupVarName != groupVarNameRaw)
+            if (!groupVarNameRaw.empty())
                 {
                 linePlot->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
                 }
@@ -3295,7 +3295,7 @@ namespace Wisteria
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"regression-line-scheme")));
-            if (groupVarName != groupVarNameRaw)
+            if (!groupVarNameRaw.empty())
                 {
                 scatterPlot->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
                 }
@@ -3354,7 +3354,7 @@ namespace Wisteria
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"regression-line-scheme")));
-            if (groupVarName != groupVarNameRaw)
+            if (!groupVarNameRaw.empty())
                 {
                 bubblePlot->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
                 }
@@ -3427,7 +3427,7 @@ namespace Wisteria
             {
                 const wxString rawValue = variablesNode->GetProperty(propName)->AsString();
                 const wxString colName = ExpandConstants(rawValue);
-                if (colName != rawValue && chernoffPlot)
+                if (!rawValue.empty() && chernoffPlot)
                     {
                     chernoffPlot->SetPropertyTemplate(L"variables." + propName, rawValue);
                     }
@@ -3580,7 +3580,7 @@ namespace Wisteria
             const auto postSeasonRaw = variablesNode->GetProperty(L"postseason")->AsString();
             const auto postSeason = ExpandConstants(postSeasonRaw);
             auto wlSparkline = std::make_shared<Graphs::WinLossSparkline>(canvas);
-            if (postSeason != postSeasonRaw)
+            if (!postSeasonRaw.empty())
                 {
                 wlSparkline->SetPropertyTemplate(L"variables.postseason", postSeasonRaw);
                 }
@@ -3627,7 +3627,7 @@ namespace Wisteria
 
             auto heatmap = std::make_shared<Graphs::HeatMap>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-            if (groupVarName != groupVarNameRaw)
+            if (!groupVarNameRaw.empty())
                 {
                 heatmap->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
                 }
@@ -4282,11 +4282,11 @@ namespace Wisteria
             auto histo = std::make_shared<Graphs::Histogram>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-            if (contVarName != contVarNameRaw)
+            if (!contVarNameRaw.empty())
                 {
                 histo->SetPropertyTemplate(L"variables.aggregate", contVarNameRaw);
                 }
-            if (groupName != groupNameRaw)
+            if (!groupNameRaw.empty())
                 {
                 histo->SetPropertyTemplate(L"variables.group", groupNameRaw);
                 }
@@ -4347,15 +4347,15 @@ namespace Wisteria
             auto barChart = std::make_shared<Graphs::CategoricalBarChart>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-            if (aggVarName != aggVarNameRaw)
+            if (!aggVarNameRaw.empty())
                 {
                 barChart->SetPropertyTemplate(L"variables.aggregate", aggVarNameRaw);
                 }
-            if (groupName != groupNameRaw)
+            if (!groupNameRaw.empty())
                 {
                 barChart->SetPropertyTemplate(L"variables.group", groupNameRaw);
                 }
-            if (categoryName != categoryNameRaw)
+            if (!categoryNameRaw.empty())
                 {
                 barChart->SetPropertyTemplate(L"variables.category", categoryNameRaw);
                 }
@@ -4415,23 +4415,23 @@ namespace Wisteria
 
             auto sankey = std::make_shared<Graphs::SankeyDiagram>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")));
-            if (fromVarName != fromVarNameRaw)
+            if (!fromVarNameRaw.empty())
                 {
                 sankey->SetPropertyTemplate(L"variables.from", fromVarNameRaw);
                 }
-            if (toColName != toColNameRaw)
+            if (!toColNameRaw.empty())
                 {
                 sankey->SetPropertyTemplate(L"variables.to", toColNameRaw);
                 }
-            if (fromWeightVarName != fromWeightVarNameRaw)
+            if (!fromWeightVarNameRaw.empty())
                 {
                 sankey->SetPropertyTemplate(L"variables.from-weight", fromWeightVarNameRaw);
                 }
-            if (toWeightColName != toWeightColNameRaw)
+            if (!toWeightColNameRaw.empty())
                 {
                 sankey->SetPropertyTemplate(L"variables.to-weight", toWeightColNameRaw);
                 }
-            if (fromGroupVarName != fromGroupVarNameRaw)
+            if (!fromGroupVarNameRaw.empty())
                 {
                 sankey->SetPropertyTemplate(L"variables.from-group", fromGroupVarNameRaw);
                 }
@@ -4502,11 +4502,11 @@ namespace Wisteria
 
             auto wordCloud = std::make_shared<Graphs::WordCloud>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-            if (aggVarName != aggVarNameRaw)
+            if (!aggVarNameRaw.empty())
                 {
                 wordCloud->SetPropertyTemplate(L"variables.aggregate", aggVarNameRaw);
                 }
-            if (wordColName != wordColNameRaw)
+            if (!wordColNameRaw.empty())
                 {
                 wordCloud->SetPropertyTemplate(L"variables.words", wordColNameRaw);
                 }
@@ -4546,11 +4546,11 @@ namespace Wisteria
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
-            if (aggVarName != aggVarNameRaw)
+            if (!aggVarNameRaw.empty())
                 {
                 boxPlot->SetPropertyTemplate(L"variables.aggregate", aggVarNameRaw);
                 }
-            if (groupVar1Name != groupVar1NameRaw)
+            if (!groupVar1NameRaw.empty())
                 {
                 boxPlot->SetPropertyTemplate(L"variables.group-1", groupVar1NameRaw);
                 }
@@ -4600,15 +4600,15 @@ namespace Wisteria
             auto pieChart = std::make_shared<Graphs::PieChart>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-            if (aggVarName != aggVarNameRaw)
+            if (!aggVarNameRaw.empty())
                 {
                 pieChart->SetPropertyTemplate(L"variables.aggregate", aggVarNameRaw);
                 }
-            if (groupVar1Name != groupVar1NameRaw)
+            if (!groupVar1NameRaw.empty())
                 {
                 pieChart->SetPropertyTemplate(L"variables.group-1", groupVar1NameRaw);
                 }
-            if (groupVar2Name != groupVar2NameRaw)
+            if (!groupVar2NameRaw.empty())
                 {
                 pieChart->SetPropertyTemplate(L"variables.group-2", groupVar2NameRaw);
                 }
@@ -6069,7 +6069,7 @@ namespace Wisteria
         // in case the color is a user-defined constant in the file
         const wxString rawColorStr = colorStr;
         colorStr = ExpandConstants(colorStr);
-        if (colorStr != rawColorStr && item != nullptr && !property.empty())
+        if (!rawColorStr.empty() && item != nullptr && !property.empty())
             {
             item->SetPropertyTemplate(property, rawColorStr);
             }
@@ -6676,6 +6676,13 @@ namespace Wisteria
                                   const std::shared_ptr<Graphs::Graph2D>& graph)
         {
         LoadItem(graphNode, *graph);
+
+        // cache dataset name for round-tripping
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        if (!dsName.empty())
+            {
+            graph->SetPropertyTemplate(L"dataset", dsName);
+            }
 
         // title information
         const auto titleProperty = graphNode->GetProperty(L"title");

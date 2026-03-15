@@ -1126,6 +1126,13 @@ namespace Wisteria::Data
             return m_name;
             }
 
+        /// @brief Sets the name of the dataset.
+        /// @param name The name.
+        void SetName(const std::wstring& name)
+            {
+            m_name = name;
+            }
+
         /** @brief Removes a column name(s) from a list of columns.
             @details As an example, this is useful for removing a grouping column from a list
                 of other categoricals returned from GetCategoricalColumnNames().

@@ -289,6 +289,10 @@ namespace Wisteria
         void AddDataset(const wxString& name, const std::shared_ptr<Data::Dataset>& dataset,
                         const DatasetImportOptions& importOptions)
             {
+            if (dataset != nullptr)
+                {
+                dataset->SetName(name.ToStdWstring());
+                }
             m_datasets[name] = dataset;
             m_datasetImportOptions[name] = importOptions;
             }
