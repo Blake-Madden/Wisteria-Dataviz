@@ -84,6 +84,27 @@ namespace Wisteria::Graphs
                              const std::optional<GridRounding>& gridRound = std::nullopt,
                              const std::optional<size_t> rowCount = std::nullopt);
 
+        /// @returns The original shapes passed to the constructor.
+        [[nodiscard]]
+        const std::vector<GraphItems::ShapeInfo>& GetShapes() const noexcept
+            {
+            return m_originalShapes;
+            }
+
+        /// @returns The grid rounding settings, if any.
+        [[nodiscard]]
+        const std::optional<GridRounding>& GetGridRounding() const noexcept
+            {
+            return m_gridRounding;
+            }
+
+        /// @returns The row count, if explicitly specified.
+        [[nodiscard]]
+        const std::optional<size_t>& GetRowCount() const noexcept
+            {
+            return m_rowCount;
+            }
+
       private:
         void LoadShapeGrid(std::vector<GraphItems::ShapeInfo>& shapes,
                            const std::optional<GridRounding>& gridRound,
@@ -94,6 +115,9 @@ namespace Wisteria::Graphs
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         std::vector<std::vector<GraphItems::ShapeInfo>> m_matrix;
+        std::vector<GraphItems::ShapeInfo> m_originalShapes;
+        std::optional<GridRounding> m_gridRounding;
+        std::optional<size_t> m_rowCount;
         };
     } // namespace Wisteria::Graphs
 

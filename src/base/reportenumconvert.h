@@ -807,6 +807,23 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<wxString>
+        ConvertBarShapeToString(Graphs::BarChart::BarShape value)
+            {
+            static const std::map<Graphs::BarChart::BarShape, wxString> values = {
+                { Graphs::BarChart::BarShape::Rectangle, L"rectangle" },
+                { Graphs::BarChart::BarShape::Arrow, L"arrow" },
+                { Graphs::BarChart::BarShape::ReverseArrow, L"reverse-arrow" }
+            };
+
+            const auto foundValue = values.find(value);
+            return ((foundValue != values.cend()) ?
+                        std::optional<wxString>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<ImageEffect> ConvertImageEffect(const wxString& value)
             {
             static const std::map<std::wstring, ImageEffect> imgEffectValues = {
@@ -1377,6 +1394,225 @@ namespace Wisteria
             static const std::map<ReferenceLabelPlacement, wxString> values = {
                 { ReferenceLabelPlacement::OppositeAxis, L"opposite-axis" },
                 { ReferenceLabelPlacement::Legend, L"legend" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a PieSliceEffect enum to its JSON string representation.
+        /// @param value The pie slice effect enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertPieSliceEffectToString(PieSliceEffect value)
+            {
+            static const std::map<PieSliceEffect, wxString> values = {
+                { PieSliceEffect::Image, L"image" }, { PieSliceEffect::Solid, L"solid" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a PieStyle enum to its JSON string representation.
+        /// @param value The pie style enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertPieStyleToString(PieStyle value)
+            {
+            static const std::map<PieStyle, wxString> values = {
+                { PieStyle::None, L"none" },
+                { PieStyle::Clockface, L"clockface" },
+                { PieStyle::CheesePizza, L"cheese-pizza" },
+                { PieStyle::PepperoniPizza, L"pepperoni-pizza" },
+                { PieStyle::HawaiianPizza, L"hawaiian-pizza" },
+                { PieStyle::CoffeeRing, L"coffee-ring" },
+                { PieStyle::Venus, L"venus" },
+                { PieStyle::Mars, L"mars" },
+                { PieStyle::ChocolateChipCookie, L"chocolate-chip-cookie" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a BoxEffect enum to its JSON string representation.
+        /// @param value The box effect enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertBoxEffectToString(BoxEffect value)
+            {
+            static const std::map<BoxEffect, wxString> values = {
+                { BoxEffect::CommonImage, L"common-image" },
+                { BoxEffect::Image, L"image" },
+                { BoxEffect::FadeFromBottomToTop, L"fade-from-bottom-to-top" },
+                { BoxEffect::FadeFromLeftToRight, L"fade-from-left-to-right" },
+                { BoxEffect::FadeFromRightToLeft, L"fade-from-right-to-left" },
+                { BoxEffect::FadeFromTopToBottom, L"fade-from-top-to-bottom" },
+                { BoxEffect::Glassy, L"glassy" },
+                { BoxEffect::Solid, L"solid" },
+                { BoxEffect::StippleImage, L"stipple-image" },
+                { BoxEffect::StippleShape, L"stipple-shape" },
+                { BoxEffect::WaterColor, L"watercolor" },
+                { BoxEffect::Marker, L"marker" },
+                { BoxEffect::Pencil, L"pencil" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a BinningMethod enum to its JSON string representation.
+        /// @param value The binning method enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertBinningMethodToString(Graphs::Histogram::BinningMethod value)
+            {
+            static const std::map<Graphs::Histogram::BinningMethod, wxString> values = {
+                { Graphs::Histogram::BinningMethod::BinByIntegerRange, L"bin-by-integer-range" },
+                { Graphs::Histogram::BinningMethod::BinByRange, L"bin-by-range" },
+                { Graphs::Histogram::BinningMethod::BinUniqueValues, L"bin-unique-values" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts an IntervalDisplay enum to its JSON string representation.
+        /// @param value The interval display enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertIntervalDisplayToString(Graphs::Histogram::IntervalDisplay value)
+            {
+            static const std::map<Graphs::Histogram::IntervalDisplay, wxString> values = {
+                { Graphs::Histogram::IntervalDisplay::Cutpoints, L"cutpoints" },
+                { Graphs::Histogram::IntervalDisplay::Midpoints, L"midpoints" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a BinLabelDisplay enum to its JSON string representation.
+        /// @param value The bin label display enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertBinLabelDisplayToString(BinLabelDisplay value)
+            {
+            static const std::map<BinLabelDisplay, wxString> values = {
+                { BinLabelDisplay::BinPercentage, L"percentage" },
+                { BinLabelDisplay::BinValue, L"value" },
+                { BinLabelDisplay::BinValueAndPercentage, L"value-and-percentage" },
+                { BinLabelDisplay::NoDisplay, L"no-display" },
+                { BinLabelDisplay::BinName, L"bin-name" },
+                { BinLabelDisplay::BinNameAndValue, L"bin-name-and-value" },
+                { BinLabelDisplay::BinNameAndPercentage, L"bin-name-and-percentage" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a LabelPlacement enum to its JSON string representation.
+        /// @param value The label placement enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertLabelPlacementToString(LabelPlacement value)
+            {
+            static const std::map<LabelPlacement, wxString> values = {
+                { LabelPlacement::NextToParent, L"next-to-parent" },
+                { LabelPlacement::Flush, L"flush" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a RoundingMethod enum to its JSON string representation.
+        /// @param value The rounding method enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertRoundingMethodToString(RoundingMethod value)
+            {
+            static const std::map<RoundingMethod, wxString> values = {
+                { RoundingMethod::NoRounding, L"no-rounding" },
+                { RoundingMethod::Round, L"round" },
+                { RoundingMethod::RoundDown, L"round-down" },
+                { RoundingMethod::RoundUp, L"round-up" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a Perimeter enum to its JSON string representation.
+        /// @param value The perimeter enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertPerimeterToString(Perimeter value)
+            {
+            static const std::map<Perimeter, wxString> values = { { Perimeter::Inner, L"inner" },
+                                                                  { Perimeter::Outer, L"outer" } };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a Gender enum to its JSON string representation.
+        /// @param value The gender enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertGenderToString(Gender value)
+            {
+            static const std::map<Gender, wxString> values = { { Gender::Female, L"female" },
+                                                               { Gender::Male, L"male" } };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a HairStyle enum to its JSON string representation.
+        /// @param value The hair style enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertHairStyleToString(HairStyle value)
+            {
+            static const std::map<HairStyle, wxString> values = {
+                { HairStyle::Bald, L"bald" },
+                { HairStyle::Bob, L"bob" },
+                { HairStyle::Pixie, L"pixie" },
+                { HairStyle::Bun, L"bun" },
+                { HairStyle::LongStraight, L"long-straight" },
+                { HairStyle::HighTopFade, L"high-top-fade" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a FacialHair enum to its JSON string representation.
+        /// @param value The facial hair enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertFacialHairToString(FacialHair value)
+            {
+            static const std::map<FacialHair, wxString> values = {
+                { FacialHair::CleanShaven, L"clean-shaven" },
+                { FacialHair::FiveOClockShadow, L"five-o-clock-shadow" }
             };
 
             const auto foundValue = values.find(value);

@@ -16,7 +16,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     WaffleChart::WaffleChart(Canvas * canvas, std::vector<GraphItems::ShapeInfo> shapes,
                              const std::optional<GridRounding>& gridRound /*= std::nullopt*/,
                              const std::optional<size_t> rowCount /*= std::nullopt*/)
-        : Graph2D(canvas)
+        : Graph2D(canvas), m_originalShapes(shapes), m_gridRounding(gridRound), m_rowCount(rowCount)
         {
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);

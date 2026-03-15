@@ -436,6 +436,13 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
 
+        /// @returns The pen styles used for the line(s).
+        [[nodiscard]]
+        const std::shared_ptr<LineStyleScheme>& GetLineStyleScheme() const noexcept
+            {
+            return m_linePenStyles;
+            }
+
       protected:
         /// @brief X column iterators.
         struct XColumns

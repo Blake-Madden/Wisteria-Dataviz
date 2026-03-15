@@ -564,6 +564,17 @@ namespace Wisteria
                 {
                 pen = wxNullPen;
                 }
+            // shorthand string form: just a color (e.g., "#808080")
+            else if (penNode->IsValueString() && !penNode->HasProperty(L"color"))
+                {
+                const wxString penPropertyName =
+                    propertyPrefix.empty() ? wxString(L"pen.color") : propertyPrefix + L".color";
+                const wxColour penColor(ConvertColor(penNode->AsString(), item, penPropertyName));
+                if (penColor.IsOk())
+                    {
+                    pen.SetColour(penColor);
+                    }
+                }
             else
                 {
                 const wxString penPropertyName =
@@ -3664,6 +3675,8 @@ namespace Wisteria
         const auto sortNode = graphNode->GetProperty(L"bar-sort");
         if (sortNode->IsOk())
             {
+            // cache that bar-sort was explicitly specified
+            barChart->SetPropertyTemplate(L"bar-sort", L"true");
             const auto sortDirection =
                 sortNode->GetProperty(L"direction")->AsString().CmpNoCase(_DT(L"ascending")) == 0 ?
                     SortDirection::SortAscending :
@@ -3954,6 +3967,7 @@ namespace Wisteria
             !barChart->IsUsingGrouping() && barChart->GetBrushScheme() &&
             !barChart->GetBrushScheme()->GetBrushes().empty())
             {
+            barChart->SetApplyBrushesToUngroupedBars(true);
             if (barChart->GetBarOrientation() == Orientation::Vertical)
                 {
                 for (size_t i = 0; i < barChart->GetBars().size(); ++i)

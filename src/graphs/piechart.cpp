@@ -4025,6 +4025,8 @@ namespace Wisteria::Graphs
     void PieChart::ShowcaseLargestOuterPieSlices(
         const Perimeter outerLabelRingToShow /*= Perimeter::Outer*/)
         {
+        m_showcaseMode = ShowcaseMode::LargestOuter;
+        m_showcasedRingLabels = outerLabelRingToShow;
         const std::vector<wxString> highlightSlices = GetLargestOuterPieSlices();
         if (outerLabelRingToShow == Perimeter::Outer)
             {
@@ -4064,6 +4066,8 @@ namespace Wisteria::Graphs
     void PieChart::ShowcaseSmallestOuterPieSlices(
         const Perimeter outerLabelRingToShow /*= Perimeter::Outer*/)
         {
+        m_showcaseMode = ShowcaseMode::SmallestOuter;
+        m_showcasedRingLabels = outerLabelRingToShow;
         const std::vector<wxString> highlightSlices = GetSmallestOuterPieSlices();
         if (outerLabelRingToShow == Perimeter::Outer)
             {
@@ -4104,6 +4108,8 @@ namespace Wisteria::Graphs
     PieChart::ShowcaseOuterPieSlices(const std::vector<wxString>& pieSlices,
                                      const Perimeter outerLabelRingToShow /*= Perimeter::Outer*/)
         {
+        m_showcaseMode = ShowcaseMode::ExplicitList;
+        m_showcasedRingLabels = outerLabelRingToShow;
         if (outerLabelRingToShow == Perimeter::Outer)
             {
             ShowOuterPieLabels(true, pieSlices);
@@ -4156,6 +4162,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowOuterPieLabels(const bool show)
         {
+        m_showOuterPieLabels = show;
         std::ranges::for_each(GetOuterPie(),
                               [&](auto& slice) noexcept { slice.ShowGroupLabel(show); });
         }
@@ -4221,6 +4228,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show)
         {
+        m_showInnerPieLabels = show;
         std::ranges::for_each(GetInnerPie(),
                               [&show](auto& slice) noexcept { slice.ShowGroupLabel(show); });
         }

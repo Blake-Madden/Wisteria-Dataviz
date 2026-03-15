@@ -1067,6 +1067,13 @@ namespace Wisteria::Graphs
             AdjustScalingAxisFromBarGroups();
             }
 
+        /// @returns The bar groups.
+        [[nodiscard]]
+        const std::vector<BarGroup>& GetBarGroups() const noexcept
+            {
+            return m_barGroups;
+            }
+
         /// @brief Removes all bar groups from the bar chart.
         void ClearBarGroups() { m_barGroups.clear(); }
 
@@ -1207,6 +1214,7 @@ namespace Wisteria::Graphs
         ///     outside the plotting area.
         void ConstrainScalingAxisToBars()
             {
+            m_constrainScalingAxisToBars = true;
             GetScalingAxis().SetRange(GetScalingAxis().GetRange().first, m_longestBarLength,
                                       GetScalingAxis().GetPrecision(),
                                       GetScalingAxis().GetInterval(),
@@ -1255,6 +1263,50 @@ namespace Wisteria::Graphs
             return m_sortDirection;
             }
 
+        /// @returns The sort comparison method, or std::nullopt if
+        ///     sorting by a custom label list.
+        [[nodiscard]]
+        std::optional<BarSortComparison> GetSortComparison() const noexcept
+            {
+            return m_sortComparison;
+            }
+
+        /// @returns The custom label sort order, or an empty vector
+        ///     if not sorting by labels.
+        [[nodiscard]]
+        const std::vector<wxString>& GetSortLabels() const noexcept
+            {
+            return m_sortLabels;
+            }
+
+        /// @returns Whether labels on ghosted bars are hidden during showcasing.
+        [[nodiscard]]
+        bool IsHidingGhostedLabels() const noexcept
+            {
+            return m_hideGhostedLabels;
+            }
+
+        /// @returns Whether the scaling axis is constrained to the bar range.
+        [[nodiscard]]
+        bool IsConstrainingScalingAxisToBars() const noexcept
+            {
+            return m_constrainScalingAxisToBars;
+            }
+
+        /// @returns Whether brushes are applied to ungrouped bars.
+        [[nodiscard]]
+        bool IsApplyingBrushesToUngroupedBars() const noexcept
+            {
+            return m_applyBrushesToUngroupedBars;
+            }
+
+        /// @brief Sets whether brushes are applied to ungrouped bars.
+        /// @param apply @c true to apply brushes to ungrouped bars.
+        void SetApplyBrushesToUngroupedBars(const bool apply) noexcept
+            {
+            m_applyBrushesToUngroupedBars = apply;
+            }
+
         /// @brief Sets the direction that the bars should be sorted.
         /// @param direction The direction that the bars should be sorted.
         void SetSortDirection(const SortDirection direction) noexcept
@@ -1284,6 +1336,13 @@ namespace Wisteria::Graphs
         /// @name Label Functions
         /// @brief Functions relating to how labels and shadows are drawn.
         /// @{
+
+        /// @returns Whether spaces are being included between the bars.
+        [[nodiscard]]
+        bool IsIncludingSpacesBetweenBars() const noexcept
+            {
+            return m_includeSpacesBetweenBars;
+            }
 
         /** @brief Sets whether to include spaces between the bars when drawn.
             @param includeSpaces Whether to include spaces between the bars when drawn.
@@ -1482,6 +1541,11 @@ namespace Wisteria::Graphs
         LabelPlacement m_barGroupPlacement{ LabelPlacement::NextToParent };
         std::vector<BarGroup> m_barGroups;
         SortDirection m_sortDirection{ SortDirection::NoSort };
+        std::optional<BarSortComparison> m_sortComparison;
+        std::vector<wxString> m_sortLabels;
+        bool m_hideGhostedLabels{ true };
+        bool m_constrainScalingAxisToBars{ false };
+        bool m_applyBrushesToUngroupedBars{ false };
         Orientation m_barOrientation{ Orientation::Vertical };
         };
     } // namespace Wisteria::Graphs

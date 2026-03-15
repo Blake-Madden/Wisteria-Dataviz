@@ -600,6 +600,13 @@ namespace Wisteria::Graphs
         /// @returns A reference to the label.
         /// @sa SetDynamicMargins(), GetRightMarginNote().
         [[nodiscard]]
+        const GraphItems::Label& GetLeftMarginNote() const noexcept
+            {
+            return m_leftMarginNote;
+            }
+
+        /// @private
+        [[nodiscard]]
         GraphItems::Label& GetLeftMarginNote() noexcept
             {
             return m_leftMarginNote;
@@ -613,6 +620,13 @@ namespace Wisteria::Graphs
         ///     labels will be on the right side of the pie.
         /// @returns A reference to the label.
         /// @sa SetDynamicMargins(), GetLeftMarginNote().
+        [[nodiscard]]
+        const GraphItems::Label& GetRightMarginNote() const noexcept
+            {
+            return m_rightMarginNote;
+            }
+
+        /// @private
         [[nodiscard]]
         GraphItems::Label& GetRightMarginNote() noexcept
             {
@@ -684,6 +698,45 @@ namespace Wisteria::Graphs
             return m_labelPlacement;
             }
 
+        /// @brief The showcase mode applied to a pie chart.
+        enum class ShowcaseMode
+            {
+            None,           /*!< No showcasing.*/
+            ExplicitList,   /*!< Explicit list of slice names.*/
+            LargestOuter,   /*!< Largest outer pie slices.*/
+            SmallestOuter,  /*!< Smallest outer pie slices.*/
+            LargestInner,   /*!< Largest inner pie slices.*/
+            SmallestInner   /*!< Smallest inner pie slices.*/
+            };
+
+        /// @returns The showcase mode that was applied.
+        [[nodiscard]]
+        ShowcaseMode GetShowcaseMode() const noexcept
+            {
+            return m_showcaseMode;
+            }
+
+        /// @returns The perimeter shown for showcased ring labels.
+        [[nodiscard]]
+        Perimeter GetShowcasedRingLabels() const noexcept
+            {
+            return m_showcasedRingLabels;
+            }
+
+        /// @returns Whether showcased inner slices are grouped.
+        [[nodiscard]]
+        bool IsShowcaseByGroup() const noexcept
+            {
+            return m_showcaseByGroup;
+            }
+
+        /// @returns Whether outer pie midpoint labels are shown during inner showcasing.
+        [[nodiscard]]
+        bool IsShowcaseShowingOuterPieMidPointLabels() const noexcept
+            {
+            return m_showcaseShowOuterPieMidPointLabels;
+            }
+
         /// @brief Brings to focus the specified slice(s) along the outer pie and their
         ///     children inner slices.
         /// @param pieSlices The outer slices to showcase.
@@ -725,6 +778,13 @@ namespace Wisteria::Graphs
                 Slice labels not in this list will have the opposite of @c ghost applied to them.
             @note This should be called after SetData().*/
         void GhostOuterPieSlices(bool ghost, const std::vector<wxString>& slicesToGhost);
+
+        /// @returns @c true if the outer pie labels are being shown.
+        [[nodiscard]]
+        bool IsShowingOuterPieLabels() const noexcept
+            {
+            return m_showOuterPieLabels;
+            }
 
         /** @brief Shows or hides the outside labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
@@ -777,6 +837,15 @@ namespace Wisteria::Graphs
         PieInfo& GetInnerPie() noexcept
             {
             return m_innerPie;
+            }
+
+        /// @brief Gets the pen used for the lines connecting inner slices to their
+        ///     labels outside the pie.
+        /// @returns The inner pie connection line.
+        [[nodiscard]]
+        const wxPen& GetInnerPieConnectionLinePen() const noexcept
+            {
+            return m_connectionLinePen;
             }
 
         /// @brief Gets/sets the pen used for the lines connecting inner slices to their
@@ -842,6 +911,10 @@ namespace Wisteria::Graphs
         void ShowcaseLargestInnerPieSlices(const bool byGroup,
                                            const bool showOuterPieMidPointLabels)
             {
+            m_showcaseMode = ShowcaseMode::LargestInner;
+            m_showcaseByGroup = byGroup;
+            m_showcaseShowOuterPieMidPointLabels = showOuterPieMidPointLabels;
+
             ShowOuterPieLabels(false);
             ShowOuterPieMidPointLabels(showOuterPieMidPointLabels);
             GhostOuterPieSlices(true);
@@ -867,6 +940,10 @@ namespace Wisteria::Graphs
         void ShowcaseSmallestInnerPieSlices(const bool byGroup,
                                             const bool showOuterPieMidPointLabels)
             {
+            m_showcaseMode = ShowcaseMode::SmallestInner;
+            m_showcaseByGroup = byGroup;
+            m_showcaseShowOuterPieMidPointLabels = showOuterPieMidPointLabels;
+
             ShowOuterPieLabels(false);
             ShowOuterPieMidPointLabels(showOuterPieMidPointLabels);
             GhostOuterPieSlices(true);
@@ -928,6 +1005,13 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().*/
+        /// @returns @c true if the inner pie labels are being shown.
+        [[nodiscard]]
+        bool IsShowingInnerPieLabels() const noexcept
+            {
+            return m_showInnerPieLabels;
+            }
+
         void ShowInnerPieLabels(bool show);
         /** @brief Shows or hides the outside labels of the inner pie
                 (if using a secondary grouping variable).
@@ -1001,6 +1085,13 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The color of the donut hole.
+        [[nodiscard]]
+        const wxColour& GetDonutHoleColor() const noexcept
+            {
+            return m_donutHoleColor;
+            }
+
+        /// @private
         [[nodiscard]]
         wxColour& GetDonutHoleColor() noexcept
             {
@@ -1253,12 +1344,21 @@ namespace Wisteria::Graphs
         PieSliceEffect m_sliceEffect{ PieSliceEffect::Solid };
         PieStyle m_pieStyle{ PieStyle::None };
 
+        bool m_showOuterPieLabels{ true };
+        bool m_showInnerPieLabels{ true };
+
         bool m_useColorLabels{ false };
 
         uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
 
         std::shared_ptr<const TextReplace> m_abbreviate{ std::make_shared<AbbreviateEnglish>(
             true) };
+
+        // showcase tracking
+        ShowcaseMode m_showcaseMode{ ShowcaseMode::None };
+        Perimeter m_showcasedRingLabels{ Perimeter::Outer };
+        bool m_showcaseByGroup{ false };
+        bool m_showcaseShowOuterPieMidPointLabels{ false };
 
         // donut hole
         bool m_includeDonutHole{ false };

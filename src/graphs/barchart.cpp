@@ -602,6 +602,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::ShowcaseBars(const std::vector<wxString>& labels,
                                 const bool hideLabelsOnGhostedBars /*= true*/)
         {
+        m_hideGhostedLabels = hideLabelsOnGhostedBars;
         for (auto& bar : GetBars())
             {
             const auto foundPos = std::ranges::find_if(
@@ -616,6 +617,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::ShowcaseBars(const std::vector<double>& positions,
                                 const bool hideLabelsOnGhostedBars /*= true*/)
         {
+        m_hideGhostedLabels = hideLabelsOnGhostedBars;
         for (auto& bar : GetBars())
             {
             const auto foundPos =
@@ -631,6 +633,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         wxASSERT_MSG(IsSortable(), L"Bars are not sortable. "
                                    "Call SetSortable(true) prior to calling SortBars().");
+        m_sortComparison = std::nullopt;
+        m_sortLabels = labels;
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort || GetBarAxis().IsReversed())
             {
@@ -786,6 +790,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         wxASSERT_MSG(IsSortable(), L"Bars are not sortable. "
                                    "Call SetSortable(true) prior to calling SortBars().");
+        m_sortComparison = sortMethod;
+        m_sortLabels.clear();
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort || GetBarAxis().IsReversed())
             {
