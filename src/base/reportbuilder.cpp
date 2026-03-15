@@ -468,6 +468,25 @@ namespace Wisteria
                                                                       commonAxisInfo.m_axisType);
                                 LoadAxis(commonAxisInfo.m_node, *commonAxis);
                                 LoadItem(commonAxisInfo.m_node, *commonAxis);
+                                    // cache common-axis-specific properties for round-tripping
+                                    {
+                                    wxString childIdsStr;
+                                    for (size_t i = 0; i < commonAxisInfo.m_childrenIds.size(); ++i)
+                                        {
+                                        if (i > 0)
+                                            {
+                                            childIdsStr += L",";
+                                            }
+                                        childIdsStr += std::to_wstring(
+                                            static_cast<int>(commonAxisInfo.m_childrenIds[i]));
+                                        }
+                                    commonAxis->SetPropertyTemplate(L"child-ids", childIdsStr);
+                                    if (commonAxisInfo.m_commonPerpendicularAxis)
+                                        {
+                                        commonAxis->SetPropertyTemplate(
+                                            L"common-perpendicular-axis", L"true");
+                                        }
+                                    }
                                 // force the row to its height and no more
                                 commonAxis->FitCanvasRowHeightToContent(true);
                                 canvas->SetFixedObject(commonAxisInfo.m_gridPosition.first,
