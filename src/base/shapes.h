@@ -104,9 +104,6 @@ namespace Wisteria::GraphItems
             {
             }
 
-        /// @private
-        ShapeRenderer() = delete;
-
         /// @brief Gets/sets the shape's underlying information (e.g., brush color, pen, etc.).
         /// @details This is useful for changing the shape's settings when preparing to
         ///     draw different shapes.
@@ -652,6 +649,9 @@ namespace Wisteria::GraphItems
                        color;
             }
 
+        /// @private
+        ShapeRenderer() = default;
+
         GraphItemInfo m_graphInfo;
         std::shared_ptr<wxBitmapBundle> m_iconImage{ nullptr };
         mutable double m_xOffsetPercentage{ 0.0 };
@@ -835,6 +835,9 @@ namespace Wisteria::GraphItems
             }
 
       protected:
+        /// @private
+        Shape() = default;
+
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
@@ -899,6 +902,8 @@ namespace Wisteria::GraphItems
         mutable ShapeRenderer m_renderer;
         mutable bool m_rendererNeedsUpdating{ true };
         ShapeRenderer::DrawFunction m_drawFunction{ nullptr };
+
+        wxDECLARE_DYNAMIC_CLASS(Shape);
         };
     } // namespace Wisteria::GraphItems
 

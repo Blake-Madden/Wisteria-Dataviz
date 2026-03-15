@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <random>
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Axis, Wisteria::GraphItems::GraphItemBase);
+
 namespace Wisteria::GraphItems
     {
     //-----------------------------------------

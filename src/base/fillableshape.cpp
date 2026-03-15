@@ -9,12 +9,14 @@
 #include "fillableshape.h"
 #include "image.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::FillableShape, Wisteria::GraphItems::Shape);
+
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
     wxRect FillableShape::Draw(wxDC& dc) const
         {
-        assert(GetBrush().IsOk() && L"Fillable shape must have a valid brush!");
+        wxASSERT_MSG(GetBrush().IsOk(), L"Fillable shape must have a valid brush!");
         if (!GetBrush().IsOk())
             {
             return {};
@@ -105,8 +107,9 @@ namespace Wisteria::GraphItems
             // nothing to draw above the ghosted image if empty
             if (compare_doubles_greater(m_fillPercent, math_constants::empty))
                 {
-                const auto filledBmp = bmp.GetSubBitmap(wxRect(
-                    wxPoint(0, yCutOff), wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
+                const auto filledBmp = bmp.GetSubBitmap(
+                    wxRect(wxPoint{ 0, yCutOff },
+                           wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
                 dc.DrawBitmap(filledBmp,
                               drawRect.GetLeftTop() + wxPoint{ 0, static_cast<int>(yCutOff) },
                               true);
@@ -116,9 +119,9 @@ namespace Wisteria::GraphItems
         // draw the bounding box outline
         if (IsSelected())
             {
-            const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
-            const wxDCPenChanger pc(dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            const wxDCBrushChanger bc{ dc, wxColour{ 0, 0, 0, 0 } };
+            const wxDCPenChanger pc{ dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT) };
             dc.DrawRectangle(drawRect);
             }
 

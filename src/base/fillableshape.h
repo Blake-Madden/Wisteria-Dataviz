@@ -60,6 +60,9 @@ namespace Wisteria::GraphItems
 
       private:
         double m_fillPercent{ math_constants::empty };
+
+        FillableShape() = default;
+        wxDECLARE_DYNAMIC_CLASS(FillableShape);
         };
     } // namespace Wisteria::GraphItems
 

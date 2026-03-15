@@ -675,9 +675,6 @@ namespace Wisteria::GraphItems
         Axis(const Axis& that) = default;
         /// @private
         Axis(Axis&& that) noexcept = default;
-        /// @private
-        Axis() = delete;
-
         /** @private
             @brief Sets the DPI scaling for the axis.
             @param scaling The DPI scaling to use.*/
@@ -2292,6 +2289,9 @@ namespace Wisteria::GraphItems
         mutable Label m_tallestLabel{ Label(GraphItemInfo{}.Ok(false)) };
 
         wxSize m_outlineSize{ wxDefaultSize };
+
+        Axis() = default;
+        wxDECLARE_DYNAMIC_CLASS(Axis);
         };
     } // namespace Wisteria::GraphItems
 

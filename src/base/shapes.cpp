@@ -13,6 +13,8 @@
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Shape, Wisteria::GraphItems::GraphItemBase);
+
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
