@@ -126,6 +126,9 @@ class WisteriaView : public wxView
                                         const Wisteria::Canvas* canvas) const;
     [[nodiscard]]
     static wxString GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph);
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SaveCommonAxis(const Wisteria::GraphItems::Axis* axis,
+                                       const Wisteria::Canvas* canvas) const;
 
     void OnInsertDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);

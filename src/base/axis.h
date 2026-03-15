@@ -119,6 +119,34 @@ namespace Wisteria::GraphItems
             {
             }
 
+        /// @returns The parent axis type.
+        [[nodiscard]]
+        AxisType GetAxisType() const noexcept
+            {
+            return m_axisType;
+            }
+
+        /// @returns The position on the parent axis.
+        [[nodiscard]]
+        double GetAxisPosition() const noexcept
+            {
+            return m_axisPosition;
+            }
+
+        /// @returns The label text.
+        [[nodiscard]]
+        const wxString& GetLabel() const noexcept
+            {
+            return m_label;
+            }
+
+        /// @returns The pen used for the line.
+        [[nodiscard]]
+        const wxPen& GetPen() const noexcept
+            {
+            return m_pen;
+            }
+
         /// @returns Where the label for the reference line is being shown.
         [[nodiscard]]
         ReferenceLabelPlacement GetLabelPlacement() const noexcept
@@ -172,6 +200,20 @@ namespace Wisteria::GraphItems
             : ReferenceLine(axisType, axisPosition1, label, pen), m_refAreaStyle(refAreaStyle),
               m_axisPosition2(axisPosition2)
             {
+            }
+
+        /// @returns The end position on the parent axis.
+        [[nodiscard]]
+        double GetAxisPosition2() const noexcept
+            {
+            return m_axisPosition2;
+            }
+
+        /// @returns The visual style of the reference area.
+        [[nodiscard]]
+        ReferenceAreaStyle GetReferenceAreaStyle() const noexcept
+            {
+            return m_refAreaStyle;
             }
 
       private:
@@ -675,6 +717,7 @@ namespace Wisteria::GraphItems
         Axis(const Axis& that) = default;
         /// @private
         Axis(Axis&& that) noexcept = default;
+
         /** @private
             @brief Sets the DPI scaling for the axis.
             @param scaling The DPI scaling to use.*/
@@ -968,6 +1011,13 @@ namespace Wisteria::GraphItems
             @param value The tick value to retrieve the custom label for.*/
         [[nodiscard]]
         const Label& GetCustomLabel(double value) const;
+
+        /// @returns The custom labels map (value → Label).
+        [[nodiscard]]
+        const std::map<double, Label, double_less>& GetCustomLabels() const noexcept
+            {
+            return m_customAxisLabels;
+            }
 
         /** @brief Finds a custom label along the axis, returning its numeric position.
             @param label The string to look for.

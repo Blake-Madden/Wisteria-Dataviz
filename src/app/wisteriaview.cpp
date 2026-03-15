@@ -8,7 +8,6 @@
 
 #include "wisteriaview.h"
 #include "../base/reportprintout.h"
-#include "../graphs/scatterplot.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/insertchernoffdlg.h"
@@ -2312,6 +2311,271 @@ WisteriaView::SaveFillableShape(const Wisteria::GraphItems::FillableShape* shape
     }
 
 //-------------------------------------------
+wxSimpleJSON::Ptr_t WisteriaView::SaveCommonAxis(const Wisteria::GraphItems::Axis* axis,
+                                                 const Wisteria::Canvas* canvas) const
+    {
+    if (axis == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    wxString tmpl = L"{\"type\": \"common-axis\"";
+
+    // axis-type
+    const auto axisTypeStr =
+        Wisteria::ReportEnumConvert::ConvertAxisTypeToString(axis->GetAxisType());
+    if (axisTypeStr.has_value())
+        {
+        tmpl += L", \"axis-type\": \"" + axisTypeStr.value() + L"\"";
+        }
+
+    // child-ids (cached as comma-separated string)
+    const auto childIdsStr = axis->GetPropertyTemplate(L"child-ids");
+    if (!childIdsStr.empty())
+        {
+        tmpl += L", \"child-ids\": [" + childIdsStr + L"]";
+        }
+
+    // common-perpendicular-axis
+    const auto cpaStr = axis->GetPropertyTemplate(L"common-perpendicular-axis");
+    if (cpaStr == L"true")
+        {
+        tmpl += L", \"common-perpendicular-axis\": true";
+        }
+
+    // title
+    const auto& title = axis->GetTitle();
+    if (!title.GetText().empty() || title.IsShown())
+        {
+        const auto textTemplate = title.GetPropertyTemplate(L"text");
+        const auto& titleText = textTemplate.empty() ? title.GetText() : textTemplate;
+        tmpl += L", \"title\": {\"text\": \"" + EscapeJsonStr(titleText) + L"\"}";
+        }
+
+    // axis-pen
+    const auto& axisPen = axis->GetAxisLinePen();
+    if (!axisPen.IsOk() || axisPen == wxNullPen)
+        {
+        tmpl += L", \"axis-pen\": null";
+        }
+    else if (!(axisPen.GetColour() == *wxBLACK && axisPen.GetWidth() <= 1 &&
+               axisPen.GetStyle() == wxPENSTYLE_SOLID))
+        {
+        tmpl += L", \"axis-pen\": " + SavePenToStr(axisPen);
+        }
+
+    // gridline-pen
+    const auto& gridPen = axis->GetGridlinePen();
+    if (!gridPen.IsOk() || gridPen == wxNullPen)
+        {
+        tmpl += L", \"gridline-pen\": null";
+        }
+    else if (!(gridPen.GetColour() == *wxBLACK && gridPen.GetWidth() <= 1 &&
+               gridPen.GetStyle() == wxPENSTYLE_SOLID))
+        {
+        tmpl += L", \"gridline-pen\": " + SavePenToStr(gridPen);
+        }
+
+    // label-display
+    const auto ldStr =
+        Wisteria::ReportEnumConvert::ConvertAxisLabelDisplayToString(axis->GetLabelDisplay());
+    if (ldStr.has_value() &&
+        axis->GetLabelDisplay() != Wisteria::AxisLabelDisplay::DisplayCustomLabelsOrValues)
+        {
+        tmpl += L", \"label-display\": \"" + ldStr.value() + L"\"";
+        }
+
+    // number-display
+    const auto ndStr =
+        Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(axis->GetNumberDisplay());
+    if (ndStr.has_value() && axis->GetNumberDisplay() != Wisteria::NumberDisplay::Value)
+        {
+        tmpl += L", \"number-display\": \"" + ndStr.value() + L"\"";
+        }
+
+    // tickmarks
+    const auto tmStr =
+        Wisteria::ReportEnumConvert::ConvertTickMarkDisplayToString(axis->GetTickMarkDisplay());
+    if (tmStr.has_value() &&
+        axis->GetTickMarkDisplay() != Wisteria::GraphItems::Axis::TickMark::DisplayType::Inner)
+        {
+        tmpl += L", \"tickmarks\": {\"display\": \"" + tmStr.value() + L"\"}";
+        }
+
+    // double-sided-labels (default is false)
+    if (axis->HasDoubleSidedAxisLabels())
+        {
+        tmpl += L", \"double-sided-labels\": true";
+        }
+
+    // range
+    const auto [rangeStart, rangeEnd] = axis->GetRange();
+    if (!compare_doubles(rangeStart, 0.0) || !compare_doubles(rangeEnd, 0.0))
+        {
+        tmpl += wxString::Format(L", \"range\": {\"start\": %g, \"end\": %g", rangeStart, rangeEnd);
+        if (axis->GetPrecision() != 0)
+            {
+            tmpl +=
+                wxString::Format(L", \"precision\": %d", static_cast<int>(axis->GetPrecision()));
+            }
+        if (!compare_doubles(axis->GetInterval(), 0.0))
+            {
+            tmpl += wxString::Format(L", \"interval\": %g", axis->GetInterval());
+            }
+        if (axis->GetDisplayInterval() != 1)
+            {
+            tmpl += wxString::Format(L", \"display-interval\": %zu", axis->GetDisplayInterval());
+            }
+        tmpl += L"}";
+        }
+
+    // precision (outside of range)
+    if (axis->GetPrecision() != 0 &&
+        (compare_doubles(rangeStart, 0.0) && compare_doubles(rangeEnd, 0.0)))
+        {
+        tmpl += wxString::Format(L", \"precision\": %d", static_cast<int>(axis->GetPrecision()));
+        }
+
+    // label-length
+    if (axis->GetLabelLineLength() != 100)
+        {
+        tmpl += wxString::Format(L", \"label-length\": %zu", axis->GetLabelLineLength());
+        }
+
+    // custom-labels
+    const auto& customLabels = axis->GetCustomLabels();
+    if (!customLabels.empty())
+        {
+        tmpl += L", \"custom-labels\": [";
+        bool first = true;
+        for (const auto& [value, label] : customLabels)
+            {
+            if (!first)
+                {
+                tmpl += L", ";
+                }
+            first = false;
+            const auto labelTextTmpl = label.GetPropertyTemplate(L"text");
+            const auto& labelText = labelTextTmpl.empty() ? label.GetText() : labelTextTmpl;
+            tmpl += wxString::Format(L"{\"value\": %g, \"label\": \"%s\"}", value,
+                                     EscapeJsonStr(labelText));
+            }
+        tmpl += L"]";
+        }
+
+    // brackets
+    const auto& brackets = axis->GetBrackets();
+    if (!brackets.empty())
+        {
+        const auto bracketDsName = axis->GetPropertyTemplate(L"brackets.dataset");
+        if (!bracketDsName.empty())
+            {
+            // dataset-based brackets
+            tmpl += L", \"brackets\": {\"dataset\": \"" + EscapeJsonStr(bracketDsName) + L"\"";
+            const auto labelVar = axis->GetPropertyTemplate(L"bracket.label");
+            const auto valueVar = axis->GetPropertyTemplate(L"bracket.value");
+            if (!labelVar.empty() || !valueVar.empty())
+                {
+                tmpl += L", \"variables\": {";
+                bool needComma = false;
+                if (!labelVar.empty())
+                    {
+                    tmpl += L"\"label\": \"" + EscapeJsonStr(labelVar) + L"\"";
+                    needComma = true;
+                    }
+                if (!valueVar.empty())
+                    {
+                    if (needComma)
+                        {
+                        tmpl += L", ";
+                        }
+                    tmpl += L"\"value\": \"" + EscapeJsonStr(valueVar) + L"\"";
+                    }
+                tmpl += L"}";
+                }
+            // pen from first bracket
+            if (!brackets.empty())
+                {
+                const auto& bPen = brackets[0].GetLinePen();
+                if (bPen.IsOk() && bPen != wxNullPen &&
+                    !(bPen.GetColour() == *wxBLACK && bPen.GetWidth() <= 2 &&
+                      bPen.GetStyle() == wxPENSTYLE_SOLID))
+                    {
+                    tmpl += L", \"pen\": " + SavePenToStr(bPen);
+                    }
+                }
+            // style from first bracket
+            if (!brackets.empty())
+                {
+                const auto bsStr = Wisteria::ReportEnumConvert::ConvertBracketLineStyleToString(
+                    brackets[0].GetBracketLineStyle());
+                if (bsStr.has_value() &&
+                    brackets[0].GetBracketLineStyle() != Wisteria::BracketLineStyle::CurlyBraces)
+                    {
+                    tmpl += L", \"style\": \"" + bsStr.value() + L"\"";
+                    }
+                }
+            tmpl += L"}";
+            }
+        else
+            {
+            // individually defined brackets
+            tmpl += L", \"brackets\": [";
+            for (size_t i = 0; i < brackets.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    tmpl += L", ";
+                    }
+                const auto& b = brackets[i];
+                tmpl += wxString::Format(L"{\"start\": %g, \"end\": %g", b.GetStartPosition(),
+                                         b.GetEndPosition());
+                if (!b.GetLabel().GetText().empty())
+                    {
+                    tmpl += L", \"label\": \"" + EscapeJsonStr(b.GetLabel().GetText()) + L"\"";
+                    }
+                const auto& bPen = b.GetLinePen();
+                if (bPen.IsOk() && bPen != wxNullPen &&
+                    !(bPen.GetColour() == *wxBLACK && bPen.GetWidth() <= 2 &&
+                      bPen.GetStyle() == wxPENSTYLE_SOLID))
+                    {
+                    tmpl += L", \"pen\": " + SavePenToStr(bPen);
+                    }
+                const auto bsStr = Wisteria::ReportEnumConvert::ConvertBracketLineStyleToString(
+                    b.GetBracketLineStyle());
+                if (bsStr.has_value() &&
+                    b.GetBracketLineStyle() != Wisteria::BracketLineStyle::CurlyBraces)
+                    {
+                    tmpl += L", \"style\": \"" + bsStr.value() + L"\"";
+                    }
+                tmpl += L"}";
+                }
+            tmpl += L"]";
+            }
+        }
+
+    // show (default is true)
+    if (!axis->IsShown())
+        {
+        tmpl += L", \"show\": false";
+        }
+
+    // show-outer-labels (default is true)
+    if (!axis->IsShowingOuterLabels())
+        {
+        tmpl += L", \"show-outer-labels\": false";
+        }
+
+    tmpl += L", \"canvas-margins\": [], \"padding\": [], \"outline\": []";
+    tmpl += L"}";
+
+    auto node = wxSimpleJSON::Create(tmpl);
+
+    SaveItem(node, axis, canvas);
+    return node;
+    }
+
+//-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaView::SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
                                                const Wisteria::Canvas* canvas) const
     {
@@ -2333,6 +2597,10 @@ wxSimpleJSON::Ptr_t WisteriaView::SavePageItem(const Wisteria::GraphItems::Graph
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Image)))
         {
         return SaveImage(dynamic_cast<const Wisteria::GraphItems::Image*>(item), canvas);
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Axis)))
+        {
+        return SaveCommonAxis(dynamic_cast<const Wisteria::GraphItems::Axis*>(item), canvas);
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
         {

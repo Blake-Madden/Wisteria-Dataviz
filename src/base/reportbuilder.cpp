@@ -9,22 +9,6 @@
 #include "reportbuilder.h"
 #include "../data/pivot.h"
 #include "../data/subset.h"
-#include "../graphs/bubbleplot.h"
-#include "../graphs/candlestickplot.h"
-#include "../graphs/categoricalbarchart.h"
-#include "../graphs/chernoffplot.h"
-#include "../graphs/heatmap.h"
-#include "../graphs/histogram.h"
-#include "../graphs/likertchart.h"
-#include "../graphs/lrroadmap.h"
-#include "../graphs/multi_series_lineplot.h"
-#include "../graphs/piechart.h"
-#include "../graphs/proconroadmap.h"
-#include "../graphs/sankeydiagram.h"
-#include "../graphs/waffle_chart.h"
-#include "../graphs/wcurveplot.h"
-#include "../graphs/win_loss_sparkline.h"
-#include "../graphs/wordcloud.h"
 #include <utility>
 
 namespace Wisteria
@@ -757,6 +741,8 @@ namespace Wisteria
                             wxString::Format(_(L"%s: dataset not found for axis brackets."), dsName)
                                 .ToUTF8());
                         }
+                    // cache dataset name for round-tripping
+                    axis.SetPropertyTemplate(L"brackets.dataset", dsName);
 
                     const auto variablesNode = bracketsNode->GetProperty(L"variables");
                     if (variablesNode->IsOk())

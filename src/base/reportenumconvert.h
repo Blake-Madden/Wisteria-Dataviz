@@ -1336,6 +1336,53 @@ namespace Wisteria
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
                                                    std::nullopt;
             }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertAxisTypeToString(AxisType value)
+            {
+            static const std::map<AxisType, wxString> values = {
+                { AxisType::BottomXAxis, L"bottom-x" },
+                { AxisType::TopXAxis, L"top-x" },
+                { AxisType::LeftYAxis, L"left-y" },
+                { AxisType::RightYAxis, L"right-y" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertNumberDisplayToString(NumberDisplay value)
+            {
+            static const std::map<NumberDisplay, wxString> values = {
+                { NumberDisplay::Percentage, L"percentage" },
+                { NumberDisplay::Value, L"value" },
+                { NumberDisplay::Currency, L"currency" },
+                { NumberDisplay::ValueSimple, L"value-simple" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertReferenceLabelPlacementToString(ReferenceLabelPlacement value)
+            {
+            static const std::map<ReferenceLabelPlacement, wxString> values = {
+                { ReferenceLabelPlacement::OppositeAxis, L"opposite-axis" },
+                { ReferenceLabelPlacement::Legend, L"legend" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
         };
     } // namespace Wisteria
 
