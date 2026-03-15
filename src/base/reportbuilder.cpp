@@ -6201,6 +6201,12 @@ namespace Wisteria
                 return std::make_shared<Brushes::Schemes::BrushScheme>(brushStyles, *colorScheme);
                 }
             }
+        // object with just a color-scheme array (no brush-styles means solid)
+        else if (const auto colorScheme =
+                     LoadColorScheme(brushSchemeNode->GetProperty(L"color-scheme")))
+            {
+            return std::make_shared<Brushes::Schemes::BrushScheme>(*colorScheme);
+            }
         // just a named color scheme
         else if (brushSchemeNode->IsValueString())
             {
