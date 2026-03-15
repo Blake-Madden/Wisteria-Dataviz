@@ -555,17 +555,6 @@ namespace Wisteria
                                 GraphItems::GraphItemBase* item /*= nullptr*/,
                                 const wxString& propertyPrefix /*= wxString{}*/) const
         {
-        static const std::map<std::wstring, wxPenStyle> styleValues = {
-            { L"dot", wxPenStyle::wxPENSTYLE_DOT },
-            { L"dot-dash", wxPenStyle::wxPENSTYLE_DOT_DASH },
-            { L"long-dash", wxPenStyle::wxPENSTYLE_LONG_DASH },
-            { L"short-dash", wxPenStyle::wxPENSTYLE_SHORT_DASH },
-            { L"solid", wxPenStyle::wxPENSTYLE_SOLID },
-            { L"cross-hatch", wxPenStyle::wxPENSTYLE_CROSS_HATCH },
-            { L"horizontal-hatch", wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH },
-            { L"vertical-hatch", wxPenStyle::wxPENSTYLE_VERTICAL_HATCH }
-        };
-
         if (penNode->IsOk())
             {
             if (penNode->IsValueNull())
@@ -592,10 +581,10 @@ namespace Wisteria
                     }
 
                 const auto styleStr{ penNode->GetProperty(L"style")->AsString() };
-                const auto style = styleValues.find(styleStr.Lower().ToStdWstring());
-                if (style != styleValues.cend())
+                const auto foundStyle = ReportEnumConvert::ConvertPenStyle(styleStr);
+                if (foundStyle.has_value())
                     {
-                    pen.SetStyle(style->second);
+                    pen.SetStyle(foundStyle.value());
                     }
                 else if (!styleStr.empty())
                     {
@@ -609,29 +598,6 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
         {
-        static const std::map<std::wstring_view, GraphItems::Axis::TickMark::DisplayType>
-            tickmarkValues = { { L"inner", GraphItems::Axis::TickMark::DisplayType::Inner },
-                               { L"outer", GraphItems::Axis::TickMark::DisplayType::Outer },
-                               { L"crossed", GraphItems::Axis::TickMark::DisplayType::Crossed },
-                               { L"no-display",
-                                 GraphItems::Axis::TickMark::DisplayType::NoDisplay } };
-
-        static const std::map<std::wstring_view, AxisLabelDisplay> labelDisplayValues = {
-            { L"custom-labels-or-values", AxisLabelDisplay::DisplayCustomLabelsOrValues },
-            { L"only-custom-labels", AxisLabelDisplay::DisplayOnlyCustomLabels },
-            { L"custom-labels-and-values", AxisLabelDisplay::DisplayCustomLabelsAndValues },
-            { L"no-display", AxisLabelDisplay::NoDisplay },
-            { L"values", AxisLabelDisplay::DisplayValues }
-        };
-
-        static const std::map<std::wstring_view, BracketLineStyle> bracketLineValues = {
-            { L"arrow", BracketLineStyle::Arrow },
-            { L"lines", BracketLineStyle::Lines },
-            { L"reverse-arrow", BracketLineStyle::ReverseArrow },
-            { L"curly-braces", BracketLineStyle::CurlyBraces },
-            { L"no-connection-lines", BracketLineStyle::NoConnectionLines }
-        };
-
         const auto titleProperty = axisNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
@@ -644,18 +610,18 @@ namespace Wisteria
         const auto tickmarksProperty = axisNode->GetProperty(L"tickmarks");
         if (tickmarksProperty->IsOk())
             {
-            const auto display = tickmarksProperty->GetProperty(L"display")->AsString().Lower();
-            auto foundPos = tickmarkValues.find(std::wstring_view(display.wc_str()));
-            if (foundPos != tickmarkValues.cend())
+            const auto foundTickmark = ReportEnumConvert::ConvertTickMarkDisplay(
+                tickmarksProperty->GetProperty(L"display")->AsString());
+            if (foundTickmark.has_value())
                 {
-                axis.SetTickMarkDisplay(foundPos->second);
+                axis.SetTickMarkDisplay(foundTickmark.value());
                 }
             }
-        const auto display = axisNode->GetProperty(L"label-display")->AsString().Lower();
-        const auto foundPos = labelDisplayValues.find(std::wstring_view(display.wc_str()));
-        if (foundPos != labelDisplayValues.cend())
+        const auto foundLabelDisplay = ReportEnumConvert::ConvertAxisLabelDisplay(
+            axisNode->GetProperty(L"label-display")->AsString());
+        if (foundLabelDisplay.has_value())
             {
-            axis.SetLabelDisplay(foundPos->second);
+            axis.SetLabelDisplay(foundLabelDisplay.value());
             }
 
         const auto numDisplay = ReportEnumConvert::ConvertNumberDisplay(
@@ -737,8 +703,8 @@ namespace Wisteria
                     {
                     LoadPen(bracket->GetProperty(L"pen"), bracketPen);
 
-                    const auto foundBracketStyle = bracketLineValues.find(
-                        std::wstring_view(bracket->GetProperty(L"style")->AsString().wc_str()));
+                    const auto foundBracketStyle = ReportEnumConvert::ConvertBracketLineStyle(
+                        bracket->GetProperty(L"style")->AsString());
 
                     const std::optional<double> axisPos1 =
                         FindAxisPosition(axis, bracket->GetProperty(L"start"));
@@ -751,9 +717,7 @@ namespace Wisteria
                             axisPos1.value(), axisPos2.value(),
                             safe_divide<double>(axisPos1.value() + axisPos2.value(), 2),
                             bracket->GetProperty(L"label")->AsString(), bracketPen,
-                            (foundBracketStyle != bracketLineValues.cend()) ?
-                                foundBracketStyle->second :
-                                BracketLineStyle::CurlyBraces));
+                            foundBracketStyle.value_or(BracketLineStyle::CurlyBraces)));
                         }
                     }
                 }
@@ -761,8 +725,8 @@ namespace Wisteria
             else
                 {
                 LoadPen(bracketsNode->GetProperty(L"pen"), bracketPen);
-                const auto foundBracketStyle = bracketLineValues.find(
-                    std::wstring_view(bracketsNode->GetProperty(L"style")->AsString().wc_str()));
+                const auto foundBracketStyle = ReportEnumConvert::ConvertBracketLineStyle(
+                    bracketsNode->GetProperty(L"style")->AsString());
                 // if loading brackets based on the dataset
                 if (bracketsNode->HasProperty(L"dataset"))
                     {
@@ -793,11 +757,11 @@ namespace Wisteria
                                 bracket.GetLinePen() = bracketPen;
                                 }
                             }
-                        if (foundBracketStyle != bracketLineValues.cend())
+                        if (foundBracketStyle.has_value())
                             {
                             for (auto& bracket : axis.GetBrackets())
                                 {
-                                bracket.SetBracketLineStyle(foundBracketStyle->second);
+                                bracket.SetBracketLineStyle(foundBracketStyle.value());
                                 }
                             }
                         }
@@ -897,17 +861,44 @@ namespace Wisteria
             // an image to the left side of it
             if (const auto imgNode = labelNode->GetProperty(L"left-image"); imgNode->IsOk())
                 {
-                if (const auto img = LoadImageFile(imgNode->GetProperty(L"image-import"));
-                    img.IsOk())
+                const auto importNode = imgNode->GetProperty(L"image-import");
+                if (const auto img = LoadImageFile(importNode); img.IsOk())
                     {
                     label->SetLeftImage(img);
+                    // cache path for round-tripping
+                    if (importNode->IsValueString())
+                        {
+                        label->SetPropertyTemplate(L"left-image.path", importNode->AsString());
+                        }
+                    else if (importNode->IsOk())
+                        {
+                        const auto p = importNode->GetProperty(L"path")->AsString();
+                        if (!p.empty())
+                            {
+                            label->SetPropertyTemplate(L"left-image.path", p);
+                            }
+                        }
                     }
                 }
             // top image
             if (const auto imgNode = labelNode->GetProperty(L"top-image"); imgNode->IsOk())
                 {
-                label->SetTopImage(LoadImageFile(imgNode->GetProperty(L"image-import")),
+                const auto importNode = imgNode->GetProperty(L"image-import");
+                label->SetTopImage(LoadImageFile(importNode),
                                    imgNode->GetProperty(L"offset")->AsDouble(0));
+                // cache path for round-tripping
+                if (importNode->IsValueString())
+                    {
+                    label->SetPropertyTemplate(L"top-image.path", importNode->AsString());
+                    }
+                else if (importNode->IsOk())
+                    {
+                    const auto p = importNode->GetProperty(L"path")->AsString();
+                    if (!p.empty())
+                        {
+                        label->SetPropertyTemplate(L"top-image.path", p);
+                        }
+                    }
                 }
             // top shape
             if (const auto topShapeNode = labelNode->GetProperty(L"top-shape");
@@ -4050,6 +4041,38 @@ namespace Wisteria
 
         LoadItem(shapeNode, *sh);
 
+        // cache size for round-tripping
+        if (sizeNode->IsOk())
+            {
+            if (sizeNode->HasProperty(L"width"))
+                {
+                sh->SetPropertyTemplate(L"size.width", std::to_wstring(sz.x));
+                }
+            if (sizeNode->HasProperty(L"height"))
+                {
+                sh->SetPropertyTemplate(L"size.height", std::to_wstring(sz.y));
+                }
+            }
+        // cache fill-percent template for round-tripping
+        if (fillPercentNode->IsOk() && fillPercentNode->IsValueString())
+            {
+            sh->SetPropertyTemplate(L"fill-percent", fillPercentNode->AsString());
+            }
+        // cache label templates for round-tripping
+        if (shapeLabel != nullptr)
+            {
+            const auto textTmpl = shapeLabel->GetPropertyTemplate(L"text");
+            if (!textTmpl.empty())
+                {
+                sh->SetPropertyTemplate(L"label.text", textTmpl);
+                }
+            const auto colorTmpl = shapeLabel->GetPropertyTemplate(L"color");
+            if (!colorTmpl.empty())
+                {
+                sh->SetPropertyTemplate(L"label.color", colorTmpl);
+                }
+            }
+
         // fit the column area to this shape
         sh->SetFixedWidthOnCanvas(true);
         return sh;
@@ -4171,6 +4194,33 @@ namespace Wisteria
         sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
         LoadItem(shapeNode, *sh);
+
+        // cache size for round-tripping
+        if (sizeNode->IsOk())
+            {
+            if (sizeNode->HasProperty(L"width"))
+                {
+                sh->SetPropertyTemplate(L"size.width", std::to_wstring(sz.x));
+                }
+            if (sizeNode->HasProperty(L"height"))
+                {
+                sh->SetPropertyTemplate(L"size.height", std::to_wstring(sz.y));
+                }
+            }
+        // cache label templates for round-tripping
+        if (shapeLabel != nullptr)
+            {
+            const auto textTmpl = shapeLabel->GetPropertyTemplate(L"text");
+            if (!textTmpl.empty())
+                {
+                sh->SetPropertyTemplate(L"label.text", textTmpl);
+                }
+            const auto colorTmpl = shapeLabel->GetPropertyTemplate(L"color");
+            if (!colorTmpl.empty())
+                {
+                sh->SetPropertyTemplate(L"label.color", colorTmpl);
+                }
+            }
 
         // fit the column area to this shape
         sh->SetFixedWidthOnCanvas(true);
@@ -6192,13 +6242,6 @@ namespace Wisteria
     std::shared_ptr<LineStyleScheme>
     ReportBuilder::LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode) const
         {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring_view, LineStyle> lineStyleEnums = {
-            { L"arrows", LineStyle::Arrows },
-            { L"lines", LineStyle::Lines },
-            { L"spline", LineStyle::Spline }
-        };
-
         if (!lineStyleSchemeNode->IsOk())
             {
             return nullptr;
@@ -6213,11 +6256,11 @@ namespace Wisteria
                 wxPen pn(Colors::ColorBrewer::GetColor(Colors::Color::Black), 1,
                          wxPenStyle::wxPENSTYLE_SOLID);
                 LoadPen(lineStyle->GetProperty(L"pen-style"), pn);
-                const auto foundPos = lineStyleEnums.find(std::wstring_view(
-                    lineStyle->GetProperty(L"line-style")->AsString().MakeLower().wc_str()));
-                if (foundPos != lineStyleEnums.cend())
+                const auto foundLineStyle = ReportEnumConvert::ConvertLineStyle(
+                    lineStyle->GetProperty(L"line-style")->AsString());
+                if (foundLineStyle.has_value())
                     {
-                    lineStyles.emplace_back(pn.GetStyle(), foundPos->second);
+                    lineStyles.emplace_back(pn.GetStyle(), foundLineStyle.value());
                     }
                 }
             if (lineStyles.empty())
@@ -6320,25 +6363,45 @@ namespace Wisteria
     std::unique_ptr<GraphItems::Image>
     ReportBuilder::LoadImage(const wxSimpleJSON::Ptr_t& imageNode) const
         {
-        static const std::map<std::wstring_view, ResizeMethod> resizeValues = {
-            { L"downscale-only", ResizeMethod::DownscaleOnly },
-            { L"downscale-or-upscale", ResizeMethod::DownscaleOrUpscale },
-            { L"upscale-only", ResizeMethod::UpscaleOnly },
-            { L"no-resize", ResizeMethod::NoResize },
-        };
-
-        const auto bmp = LoadImageFile(imageNode->GetProperty(L"image-import"));
+        const auto importNode = imageNode->GetProperty(L"image-import");
+        const auto bmp = LoadImageFile(importNode);
         auto image = std::make_unique<GraphItems::Image>(bmp.ConvertToImage());
         if (image->IsOk())
             {
+            // cache the import path for round-tripping
+            if (importNode->IsValueString())
+                {
+                image->SetPropertyTemplate(L"image-import.path", importNode->AsString());
+                }
+            else if (importNode->IsOk())
+                {
+                const auto pathStr = importNode->GetProperty(L"path")->AsString();
+                if (!pathStr.empty())
+                    {
+                    image->SetPropertyTemplate(L"image-import.path", pathStr);
+                    }
+                }
+
             wxSize sz{ 32, 32 };
             const auto sizeNode = imageNode->GetProperty(L"size");
             if (sizeNode->IsOk())
                 {
+                const bool hasWidth = sizeNode->HasProperty(L"width");
+                const bool hasHeight = sizeNode->HasProperty(L"height");
                 sz.x = sizeNode->GetProperty(L"width")->AsDouble(bmp.GetScaledWidth());
                 sz.y = sizeNode->GetProperty(L"height")->AsDouble(bmp.GetScaledHeight());
 
                 image->SetSize(GraphItems::Image::ToBestSize(bmp.GetSize(), sz));
+
+                // cache original size values for round-tripping
+                if (hasWidth)
+                    {
+                    image->SetPropertyTemplate(L"size.width", std::to_wstring(sz.x));
+                    }
+                if (hasHeight)
+                    {
+                    image->SetPropertyTemplate(L"size.height", std::to_wstring(sz.y));
+                    }
                 }
 
             // center by default, but allow LoadItems (below) to override that
@@ -6346,11 +6409,11 @@ namespace Wisteria
             image->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
             image->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
-            auto foundPos = resizeValues.find(std::wstring_view(
-                imageNode->GetProperty(L"resize-method")->AsString().MakeLower().wc_str()));
-            if (foundPos != resizeValues.cend())
+            const auto foundResize = ReportEnumConvert::ConvertResizeMethod(
+                imageNode->GetProperty(L"resize-method")->AsString());
+            if (foundResize.has_value())
                 {
-                image->SetResizeMethod(foundPos->second);
+                image->SetResizeMethod(foundResize.value());
                 }
             LoadItem(imageNode, *image);
 
@@ -6443,25 +6506,17 @@ namespace Wisteria
             return;
             }
 
-        static const std::map<std::wstring_view, Anchoring> anchoringValues = {
-            { L"bottom-left-corner", Anchoring::BottomLeftCorner },
-            { L"bottom-right-corner", Anchoring::BottomRightCorner },
-            { L"center", Anchoring::Center },
-            { L"top-left-corner", Anchoring::TopLeftCorner },
-            { L"top-right-corner", Anchoring::TopRightCorner },
-        };
-
         item.SetDPIScaleFactor(m_dpiScaleFactor);
 
         // ID
         item.SetId(itemNode->GetProperty(L"id")->AsDouble(wxID_ANY));
 
         // anchoring
-        const auto foundPos = anchoringValues.find(std::wstring_view(
-            itemNode->GetProperty(L"anchoring")->AsString().MakeLower().wc_str()));
-        if (foundPos != anchoringValues.cend())
+        const auto foundAnchoring =
+            ReportEnumConvert::ConvertAnchoring(itemNode->GetProperty(L"anchoring")->AsString());
+        if (foundAnchoring.has_value())
             {
-            item.SetAnchoring(foundPos->second);
+            item.SetAnchoring(foundAnchoring.value());
             }
 
         // outline
@@ -6869,12 +6924,6 @@ namespace Wisteria
             }
 
         // reference areas
-        static const std::map<std::wstring_view, ReferenceAreaStyle> refAreaValues = {
-            { L"fade-from-left-to-right", ReferenceAreaStyle::FadeFromLeftToRight },
-            { L"fade-from-right-to-left", ReferenceAreaStyle::FadeFromRightToLeft },
-            { L"solid", ReferenceAreaStyle::Solid },
-        };
-
         const auto referenceAreasNode = graphNode->GetProperty(L"reference-areas");
         if (referenceAreasNode->IsOk())
             {
@@ -6891,13 +6940,10 @@ namespace Wisteria
 
                     auto& axis = graph->GetAxis(axisType.value_or(AxisType::BottomXAxis));
 
-                    ReferenceAreaStyle areaStyle{ ReferenceAreaStyle::Solid };
-                    const auto foundPos = refAreaValues.find(std::wstring_view(
-                        refArea->GetProperty(L"style")->AsString().MakeLower().wc_str()));
-                    if (foundPos != refAreaValues.cend())
-                        {
-                        areaStyle = foundPos->second;
-                        }
+                    const ReferenceAreaStyle areaStyle =
+                        ReportEnumConvert::ConvertReferenceAreaStyle(
+                            refArea->GetProperty(L"style")->AsString())
+                            .value_or(ReferenceAreaStyle::Solid);
 
                     const auto axisPos1 = FindAxisPosition(axis, refArea->GetProperty(L"start"));
 

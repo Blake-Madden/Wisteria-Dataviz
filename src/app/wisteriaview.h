@@ -96,6 +96,37 @@ class WisteriaView : public wxView
     void SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
     void SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
     void SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
+
+    // page item save helpers
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
+                                     const Wisteria::Canvas* canvas) const;
+    void SaveItem(wxSimpleJSON::Ptr_t& itemNode, const Wisteria::GraphItems::GraphItemBase* item,
+                  const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    static wxString SavePenToStr(const wxPen& pen);
+    [[nodiscard]]
+    static wxString SaveBrushToStr(const wxBrush& brush);
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SaveLabel(const Wisteria::GraphItems::Label* label,
+                                  const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SaveImage(const Wisteria::GraphItems::Image* image,
+                                  const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SaveShape(const Wisteria::GraphItems::Shape* shape,
+                                  const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SaveFillableShape(const Wisteria::GraphItems::FillableShape* shape,
+                                          const Wisteria::Canvas* canvas) const;
+    void SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON::Ptr_t& graphNode,
+                   const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t SaveGraphByType(const Wisteria::Graphs::Graph2D* graph,
+                                        const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    static wxString GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph);
+
     void OnInsertDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);

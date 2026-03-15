@@ -1658,6 +1658,691 @@ void WisteriaView::SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& s
     }
 
 //-------------------------------------------
+wxString WisteriaView::SavePenToStr(const wxPen& pen)
+    {
+    if (!pen.IsOk() || pen == wxNullPen)
+        {
+        return L"null";
+        }
+
+    const auto colorStr = pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX);
+    const auto styleStr = Wisteria::ReportEnumConvert::ConvertPenStyleToString(pen.GetStyle());
+
+    const bool isDefaultWidth = (pen.GetWidth() <= 1);
+    const bool isDefaultStyle = (!styleStr.has_value() || styleStr.value() == L"solid");
+
+    // if only a color with default width and style, just return the color string
+    if (isDefaultWidth && isDefaultStyle)
+        {
+        return wxString::Format(L"\"%s\"", colorStr);
+        }
+
+    wxString result = L"{";
+    result += wxString::Format(L"\"color\": \"%s\"", colorStr);
+    if (!isDefaultWidth)
+        {
+        result += wxString::Format(L", \"width\": %d", pen.GetWidth());
+        }
+    if (!isDefaultStyle)
+        {
+        result += wxString::Format(L", \"style\": \"%s\"", styleStr.value());
+        }
+    result += L"}";
+    return result;
+    }
+
+//-------------------------------------------
+wxString WisteriaView::SaveBrushToStr(const wxBrush& brush)
+    {
+    if (!brush.IsOk() || brush == wxNullBrush)
+        {
+        return L"null";
+        }
+
+    const auto colorStr = brush.GetColour().GetAsString(wxC2S_HTML_SYNTAX);
+    const auto styleStr = Wisteria::ReportEnumConvert::ConvertBrushStyleToString(brush.GetStyle());
+
+    const bool isDefaultStyle = (!styleStr.has_value() || styleStr.value() == L"solid");
+
+    // if solid style, just return the color string
+    if (isDefaultStyle)
+        {
+        return wxString::Format(L"\"%s\"", colorStr);
+        }
+
+    return wxString::Format(L"{\"color\": \"%s\", \"style\": \"%s\"}", colorStr, styleStr.value());
+    }
+
+//-------------------------------------------
+void WisteriaView::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
+                            const Wisteria::GraphItems::GraphItemBase* item,
+                            const Wisteria::Canvas* canvas) const
+    {
+    if (item == nullptr || canvas == nullptr)
+        {
+        return;
+        }
+
+    // ID
+    if (item->GetId() != wxID_ANY)
+        {
+        itemNode->Add(L"id", static_cast<double>(item->GetId()));
+        }
+
+    // scaling (relative to canvas)
+    const double relScale = std::round(item->GetScaling() / canvas->GetScaling() * 10.0) / 10.0;
+    if (!compare_doubles(relScale, 1.0))
+        {
+        itemNode->Add(L"scaling", relScale);
+        }
+
+    // canvas-margins [top, right, bottom, left]
+    const auto cmt = item->GetTopCanvasMargin();
+    const auto cmr = item->GetRightCanvasMargin();
+    const auto cmb = item->GetBottomCanvasMargin();
+    const auto cml = item->GetLeftCanvasMargin();
+    if (cmt != 0 || cmr != 0 || cmb != 0 || cml != 0)
+        {
+        auto cmArray = itemNode->GetProperty(L"canvas-margins");
+        cmArray->ArrayAdd(static_cast<double>(cmt));
+        cmArray->ArrayAdd(static_cast<double>(cmr));
+        cmArray->ArrayAdd(static_cast<double>(cmb));
+        cmArray->ArrayAdd(static_cast<double>(cml));
+        }
+    else
+        {
+        itemNode->DeleteProperty(L"canvas-margins");
+        }
+
+    // padding [top, right, bottom, left]
+    const auto pt = item->GetTopPadding();
+    const auto pr = item->GetRightPadding();
+    const auto pb = item->GetBottomPadding();
+    const auto pl = item->GetLeftPadding();
+    if (pt != 0 || pr != 0 || pb != 0 || pl != 0)
+        {
+        auto padArray = itemNode->GetProperty(L"padding");
+        padArray->ArrayAdd(static_cast<double>(pt));
+        padArray->ArrayAdd(static_cast<double>(pr));
+        padArray->ArrayAdd(static_cast<double>(pb));
+        padArray->ArrayAdd(static_cast<double>(pl));
+        }
+    else
+        {
+        itemNode->DeleteProperty(L"padding");
+        }
+
+    // outline [top, right, bottom, left]
+    const auto& info = item->GetGraphItemInfo();
+    const bool oTop = info.IsShowingTopOutline();
+    const bool oRight = info.IsShowingRightOutline();
+    const bool oBottom = info.IsShowingBottomOutline();
+    const bool oLeft = info.IsShowingLeftOutline();
+    if (oTop || oRight || oBottom || oLeft)
+        {
+        auto olArray = itemNode->GetProperty(L"outline");
+        olArray->ArrayAdd(oTop);
+        olArray->ArrayAdd(oRight);
+        olArray->ArrayAdd(oBottom);
+        olArray->ArrayAdd(oLeft);
+        }
+    else
+        {
+        itemNode->DeleteProperty(L"outline");
+        }
+
+    // show (default is true)
+    if (!item->IsShown())
+        {
+        itemNode->Add(L"show", false);
+        }
+
+    // anchoring (default is Center)
+    const auto anchoringStr =
+        Wisteria::ReportEnumConvert::ConvertAnchoringToString(item->GetAnchoring());
+    if (anchoringStr.has_value() && item->GetAnchoring() != Wisteria::Anchoring::Center)
+        {
+        itemNode->Add(L"anchoring", anchoringStr.value());
+        }
+
+    // horizontal-page-alignment (default is LeftAligned)
+    const auto hpaStr = Wisteria::ReportEnumConvert::ConvertPageHorizontalAlignmentToString(
+        item->GetPageHorizontalAlignment());
+    if (hpaStr.has_value() &&
+        item->GetPageHorizontalAlignment() != Wisteria::PageHorizontalAlignment::LeftAligned)
+        {
+        itemNode->Add(L"horizontal-page-alignment", hpaStr.value());
+        }
+
+    // vertical-page-alignment (default is Centered)
+    const auto vpaStr = Wisteria::ReportEnumConvert::ConvertPageVerticalAlignmentToString(
+        item->GetPageVerticalAlignment());
+    if (vpaStr.has_value() &&
+        item->GetPageVerticalAlignment() != Wisteria::PageVerticalAlignment::Centered)
+        {
+        itemNode->Add(L"vertical-page-alignment", vpaStr.value());
+        }
+
+    // relative-alignment (default is Centered)
+    const auto raStr =
+        Wisteria::ReportEnumConvert::ConvertRelativeAlignmentToString(item->GetRelativeAlignment());
+    if (raStr.has_value() && item->GetRelativeAlignment() != Wisteria::RelativeAlignment::Centered)
+        {
+        itemNode->Add(L"relative-alignment", raStr.value());
+        }
+
+    // fixed-width (default is false)
+    if (item->IsFixedWidthOnCanvas())
+        {
+        itemNode->Add(L"fixed-width", true);
+        }
+
+    // fit-row-to-content (default is false)
+    if (item->IsFittingCanvasRowHeightToContent())
+        {
+        itemNode->Add(L"fit-row-to-content", true);
+        }
+    }
+
+//-------------------------------------------
+wxSimpleJSON::Ptr_t WisteriaView::SaveLabel(const Wisteria::GraphItems::Label* label,
+                                            const Wisteria::Canvas* canvas) const
+    {
+    if (label == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    // empty-spacer: not shown, canvas height proportion is 0
+    if (!label->IsShown() && label->GetCanvasHeightProportion().has_value() &&
+        compare_doubles(label->GetCanvasHeightProportion().value(), 0.0))
+        {
+        return wxSimpleJSON::Create(L"{\"type\": \"empty-spacer\"}");
+        }
+
+    // spacer: not shown (but not an empty-spacer)
+    if (!label->IsShown())
+        {
+        return wxSimpleJSON::Create(L"{\"type\": \"spacer\"}");
+        }
+
+    // build header JSON string first (needed for template)
+    wxString headerStr;
+    const auto& header = label->GetHeaderInfo();
+    if (header.IsEnabled())
+        {
+        auto headerNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        if (header.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+            {
+            headerNode->Add(L"bold", true);
+            }
+        if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
+            {
+            headerNode->Add(L"color", header.GetFontColor().GetAsString(wxC2S_HTML_SYNTAX));
+            }
+        if (!compare_doubles(header.GetRelativeScaling(), 1.0))
+            {
+            headerNode->Add(L"relative-scaling", header.GetRelativeScaling());
+            }
+        if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
+            {
+            const auto htaStr = Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(
+                header.GetLabelAlignment());
+            if (htaStr.has_value())
+                {
+                headerNode->Add(L"text-alignment", htaStr.value());
+                }
+            }
+        const wxString printed = headerNode->Print(false);
+        if (printed != L"{}")
+            {
+            headerStr = printed;
+            }
+        }
+
+    // build template with all sub-objects embedded
+    wxString tmpl = L"{\"type\": \"label\"";
+    if (!headerStr.empty())
+        {
+        tmpl += L", \"header\": " + headerStr;
+        }
+    const auto& pen = label->GetPen();
+    if (pen.IsOk() && pen != wxNullPen)
+        {
+        tmpl += L", \"pen\": " + SavePenToStr(pen);
+        }
+
+    // left-image
+    const auto leftImgPath = label->GetPropertyTemplate(L"left-image.path");
+    if (!leftImgPath.empty())
+        {
+        tmpl += L", \"left-image\": {\"image-import\": {\"path\": \"" + EscapeJsonStr(leftImgPath) +
+                L"\"}}";
+        }
+
+    // top-image
+    const auto topImgPath = label->GetPropertyTemplate(L"top-image.path");
+    if (!topImgPath.empty())
+        {
+        tmpl += L", \"top-image\": {\"image-import\": {\"path\": \"" + EscapeJsonStr(topImgPath) +
+                L"\"}";
+        if (label->GetTopImageOffset() != 0)
+            {
+            tmpl += wxString::Format(L", \"offset\": %zu", label->GetTopImageOffset());
+            }
+        tmpl += L"}";
+        }
+
+    // top-shape
+    const auto& topShape = label->GetTopShape();
+    if (topShape.has_value() && !topShape->empty())
+        {
+        if (topShape->size() == 1)
+            {
+            tmpl += L", \"top-shape\": ";
+            }
+        else
+            {
+            tmpl += L", \"top-shape\": [";
+            }
+        for (size_t i = 0; i < topShape->size(); ++i)
+            {
+            if (i > 0)
+                {
+                tmpl += L", ";
+                }
+            const auto& si = topShape->at(i);
+            const auto siIconStr = Wisteria::ReportEnumConvert::ConvertIconToString(si.GetShape());
+            tmpl += L"{";
+            if (siIconStr.has_value())
+                {
+                tmpl += L"\"icon\": \"" + siIconStr.value() + L"\"";
+                }
+            const auto siSz = si.GetSizeDIPs();
+            tmpl += wxString::Format(L", \"size\": {\"width\": %d, \"height\": %d}",
+                                     siSz.GetWidth(), siSz.GetHeight());
+            const auto& siPen = si.GetPen();
+            if (siPen.IsOk() && siPen != wxNullPen)
+                {
+                tmpl += L", \"pen\": " + SavePenToStr(siPen);
+                }
+            const auto& siBrush = si.GetBrush();
+            if (siBrush.IsOk() && siBrush != wxNullBrush)
+                {
+                tmpl += L", \"brush\": " + SaveBrushToStr(siBrush);
+                }
+            if (!compare_doubles(si.GetFillPercent(), math_constants::full))
+                {
+                tmpl += wxString::Format(L", \"fill-percent\": %g", si.GetFillPercent());
+                }
+            if (!si.GetText().empty())
+                {
+                tmpl += L", \"label\": \"" + EscapeJsonStr(si.GetText()) + L"\"";
+                }
+            tmpl += L"}";
+            }
+        if (topShape->size() > 1)
+            {
+            tmpl += L"]";
+            }
+        if (label->GetTopImageOffset() != 0 && topImgPath.empty())
+            {
+            tmpl += wxString::Format(L", \"top-shape-offset\": %zu", label->GetTopImageOffset());
+            }
+        }
+
+    tmpl += L", \"canvas-margins\": [], \"padding\": [], \"outline\": []";
+    tmpl += L"}";
+
+    auto node = wxSimpleJSON::Create(tmpl);
+
+    // text (prefer template if it has {{constants}})
+    const auto textTemplate = label->GetPropertyTemplate(L"text");
+    const auto& text = textTemplate.empty() ? label->GetText() : textTemplate;
+    if (!text.empty())
+        {
+        node->Add(L"text", text);
+        }
+
+    // color (font color, if not default black)
+    const auto& fontColor = label->GetFontColor();
+    if (fontColor.IsOk() && fontColor != *wxBLACK)
+        {
+        const auto colorTemplate = label->GetPropertyTemplate(L"color");
+        node->Add(L"color",
+                  colorTemplate.empty() ? fontColor.GetAsString(wxC2S_HTML_SYNTAX) : colorTemplate);
+        }
+
+    // background color
+    const auto& bgColor = label->GetFontBackgroundColor();
+    if (bgColor.IsOk() && bgColor != wxTransparentColour)
+        {
+        node->Add(L"background", bgColor.GetAsString(wxC2S_HTML_SYNTAX));
+        }
+
+    // bold
+    if (label->GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+        {
+        node->Add(L"bold", true);
+        }
+
+    // orientation (default is horizontal)
+    if (label->GetTextOrientation() == Wisteria::Orientation::Vertical)
+        {
+        node->Add(L"orientation", L"vertical");
+        }
+
+    // line-spacing (default is 1)
+    if (!compare_doubles(label->GetLineSpacing(), 1.0))
+        {
+        node->Add(L"line-spacing", label->GetLineSpacing());
+        }
+
+    // text-alignment (default is flush-left)
+    if (label->GetTextAlignment() != Wisteria::TextAlignment::FlushLeft)
+        {
+        const auto taStr =
+            Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(label->GetTextAlignment());
+        if (taStr.has_value())
+            {
+            node->Add(L"text-alignment", taStr.value());
+            }
+        }
+
+    SaveItem(node, label, canvas);
+    return node;
+    }
+
+//-------------------------------------------
+wxSimpleJSON::Ptr_t WisteriaView::SaveImage(const Wisteria::GraphItems::Image* image,
+                                            const Wisteria::Canvas* canvas) const
+    {
+    if (image == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    wxString tmpl = L"{\"type\": \"image\"";
+
+    // image-import path from property template
+    const auto pathTemplate = image->GetPropertyTemplate(L"image-import.path");
+    if (!pathTemplate.empty())
+        {
+        tmpl += L", \"image-import\": {\"path\": \"" + EscapeJsonStr(pathTemplate) + L"\"}";
+        }
+
+    // size (from cached original values)
+    const auto widthStr = image->GetPropertyTemplate(L"size.width");
+    const auto heightStr = image->GetPropertyTemplate(L"size.height");
+    if (!widthStr.empty() || !heightStr.empty())
+        {
+        tmpl += L", \"size\": {";
+        bool needComma = false;
+        if (!widthStr.empty())
+            {
+            tmpl += L"\"width\": " + widthStr;
+            needComma = true;
+            }
+        if (!heightStr.empty())
+            {
+            if (needComma)
+                {
+                tmpl += L", ";
+                }
+            tmpl += L"\"height\": " + heightStr;
+            }
+        tmpl += L"}";
+        }
+
+    tmpl += L", \"canvas-margins\": [], \"padding\": [], \"outline\": []";
+    tmpl += L"}";
+    auto node = wxSimpleJSON::Create(tmpl);
+
+    // resize-method (default is DownscaleOrUpscale)
+    if (image->GetResizeMethod() != Wisteria::ResizeMethod::DownscaleOrUpscale)
+        {
+        const auto rmStr =
+            Wisteria::ReportEnumConvert::ConvertResizeMethodToString(image->GetResizeMethod());
+        if (rmStr.has_value())
+            {
+            node->Add(L"resize-method", rmStr.value());
+            }
+        }
+
+    SaveItem(node, image, canvas);
+    return node;
+    }
+
+//-------------------------------------------
+wxSimpleJSON::Ptr_t WisteriaView::SaveShape(const Wisteria::GraphItems::Shape* shape,
+                                            const Wisteria::Canvas* canvas) const
+    {
+    if (shape == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    const auto iconStr = Wisteria::ReportEnumConvert::ConvertIconToString(shape->GetShape());
+
+    wxString tmpl = L"{\"type\": \"shape\"";
+    if (iconStr.has_value())
+        {
+        tmpl += L", \"icon\": \"" + iconStr.value() + L"\"";
+        }
+
+    // size (prefer cached original values, fall back to current)
+    const auto widthStr = shape->GetPropertyTemplate(L"size.width");
+    const auto heightStr = shape->GetPropertyTemplate(L"size.height");
+    if (!widthStr.empty() || !heightStr.empty())
+        {
+        tmpl += L", \"size\": {";
+        bool needComma = false;
+        if (!widthStr.empty())
+            {
+            tmpl += L"\"width\": " + widthStr;
+            needComma = true;
+            }
+        if (!heightStr.empty())
+            {
+            if (needComma)
+                {
+                tmpl += L", ";
+                }
+            tmpl += L"\"height\": " + heightStr;
+            }
+        tmpl += L"}";
+        }
+    else
+        {
+        const auto sz = shape->GetSizeDIPS();
+        tmpl += wxString::Format(L", \"size\": {\"width\": %d, \"height\": %d}", sz.GetWidth(),
+                                 sz.GetHeight());
+        }
+
+    // pen (skip if default black solid width-1)
+    const auto& pen = shape->GetPen();
+    if (pen.IsOk() && pen != wxNullPen &&
+        !(pen.GetColour() == *wxBLACK && pen.GetWidth() <= 1 && pen.GetStyle() == wxPENSTYLE_SOLID))
+        {
+        tmpl += L", \"pen\": " + SavePenToStr(pen);
+        }
+
+    // brush (skip if default white solid for Shape)
+    const auto& brush = shape->GetBrush();
+    if (brush.IsOk() && brush != wxNullBrush &&
+        !(brush.GetColour() == *wxWHITE && brush.GetStyle() == wxBRUSHSTYLE_SOLID))
+        {
+        tmpl += L", \"brush\": " + SaveBrushToStr(brush);
+        }
+
+    // label (as sub-object if it has color/templates, otherwise plain string)
+    if (!shape->GetText().empty())
+        {
+        const auto labelTextTmpl = shape->GetPropertyTemplate(L"label.text");
+        const auto labelColorTmpl = shape->GetPropertyTemplate(L"label.color");
+        const auto& labelText = labelTextTmpl.empty() ? shape->GetText() : labelTextTmpl;
+
+        if (!labelColorTmpl.empty() ||
+            (shape->GetFontColor().IsOk() && shape->GetFontColor() != *wxBLACK))
+            {
+            const wxString colorVal = labelColorTmpl.empty() ?
+                                          shape->GetFontColor().GetAsString(wxC2S_HTML_SYNTAX) :
+                                          labelColorTmpl;
+            tmpl += L", \"label\": {\"text\": \"" + EscapeJsonStr(labelText) +
+                    L"\", \"color\": \"" + EscapeJsonStr(colorVal) + L"\"}";
+            }
+        else
+            {
+            tmpl += L", \"label\": \"" + EscapeJsonStr(labelText) + L"\"";
+            }
+        }
+
+    tmpl += L", \"canvas-margins\": [], \"padding\": [], \"outline\": []";
+    tmpl += L"}";
+
+    auto node = wxSimpleJSON::Create(tmpl);
+
+    SaveItem(node, shape, canvas);
+    return node;
+    }
+
+//-------------------------------------------
+wxSimpleJSON::Ptr_t
+WisteriaView::SaveFillableShape(const Wisteria::GraphItems::FillableShape* shape,
+                                const Wisteria::Canvas* canvas) const
+    {
+    if (shape == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    const auto iconStr = Wisteria::ReportEnumConvert::ConvertIconToString(shape->GetShape());
+
+    wxString tmpl = L"{\"type\": \"fillable-shape\"";
+    if (iconStr.has_value())
+        {
+        tmpl += L", \"icon\": \"" + iconStr.value() + L"\"";
+        }
+
+    // size (prefer cached original values, fall back to current)
+    const auto widthStr = shape->GetPropertyTemplate(L"size.width");
+    const auto heightStr = shape->GetPropertyTemplate(L"size.height");
+    if (!widthStr.empty() || !heightStr.empty())
+        {
+        tmpl += L", \"size\": {";
+        bool needComma = false;
+        if (!widthStr.empty())
+            {
+            tmpl += L"\"width\": " + widthStr;
+            needComma = true;
+            }
+        if (!heightStr.empty())
+            {
+            if (needComma)
+                {
+                tmpl += L", ";
+                }
+            tmpl += L"\"height\": " + heightStr;
+            }
+        tmpl += L"}";
+        }
+    else
+        {
+        const auto sz = shape->GetSizeDIPS();
+        tmpl += wxString::Format(L", \"size\": {\"width\": %d, \"height\": %d}", sz.GetWidth(),
+                                 sz.GetHeight());
+        }
+
+    // pen (skip if default black solid width-1)
+    const auto& pen = shape->GetPen();
+    if (pen.IsOk() && pen != wxNullPen &&
+        !(pen.GetColour() == *wxBLACK && pen.GetWidth() <= 1 && pen.GetStyle() == wxPENSTYLE_SOLID))
+        {
+        tmpl += L", \"pen\": " + SavePenToStr(pen);
+        }
+
+    // brush (skip if default black solid for FillableShape)
+    const auto& brush = shape->GetBrush();
+    if (brush.IsOk() && brush != wxNullBrush &&
+        !(brush.GetColour() == *wxBLACK && brush.GetStyle() == wxBRUSHSTYLE_SOLID))
+        {
+        tmpl += L", \"brush\": " + SaveBrushToStr(brush);
+        }
+
+    // label (as sub-object if it has color/templates, otherwise plain string)
+    if (!shape->GetText().empty())
+        {
+        const auto labelTextTmpl = shape->GetPropertyTemplate(L"label.text");
+        const auto labelColorTmpl = shape->GetPropertyTemplate(L"label.color");
+        const auto& labelText = labelTextTmpl.empty() ? shape->GetText() : labelTextTmpl;
+
+        if (!labelColorTmpl.empty() ||
+            (shape->GetFontColor().IsOk() && shape->GetFontColor() != *wxBLACK))
+            {
+            const wxString colorVal = labelColorTmpl.empty() ?
+                                          shape->GetFontColor().GetAsString(wxC2S_HTML_SYNTAX) :
+                                          labelColorTmpl;
+            tmpl += L", \"label\": {\"text\": \"" + EscapeJsonStr(labelText) +
+                    L"\", \"color\": \"" + EscapeJsonStr(colorVal) + L"\"}";
+            }
+        else
+            {
+            tmpl += L", \"label\": \"" + EscapeJsonStr(labelText) + L"\"";
+            }
+        }
+
+    tmpl += L", \"canvas-margins\": [], \"padding\": [], \"outline\": []";
+    tmpl += L"}";
+
+    auto node = wxSimpleJSON::Create(tmpl);
+
+    // fill-percent (prefer template for {{constants}})
+    const auto fpTemplate = shape->GetPropertyTemplate(L"fill-percent");
+    if (!fpTemplate.empty())
+        {
+        node->Add(L"fill-percent", fpTemplate);
+        }
+    else if (!compare_doubles(shape->GetFillPercent(), math_constants::empty))
+        {
+        node->Add(L"fill-percent", shape->GetFillPercent());
+        }
+
+    SaveItem(node, shape, canvas);
+    return node;
+    }
+
+//-------------------------------------------
+wxSimpleJSON::Ptr_t WisteriaView::SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
+                                               const Wisteria::Canvas* canvas) const
+    {
+    if (item == nullptr)
+        {
+        return wxSimpleJSON::Ptr_t{};
+        }
+
+    // (FillableShape before Shape since it derives from Shape)
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::FillableShape)))
+        {
+        return SaveFillableShape(dynamic_cast<const Wisteria::GraphItems::FillableShape*>(item),
+                                 canvas);
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Shape)))
+        {
+        return SaveShape(dynamic_cast<const Wisteria::GraphItems::Shape*>(item), canvas);
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Image)))
+        {
+        return SaveImage(dynamic_cast<const Wisteria::GraphItems::Image*>(item), canvas);
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
+        {
+        return SaveLabel(dynamic_cast<const Wisteria::GraphItems::Label*>(item), canvas);
+        }
+
+    return wxSimpleJSON::Ptr_t{};
+    }
+
+//-------------------------------------------
 void WisteriaView::SaveProject(const wxString& filePath)
     {
     const wxFileName projectDir(filePath);
@@ -1668,10 +2353,9 @@ void WisteriaView::SaveProject(const wxString& filePath)
                                      m_reportBuilder.GetName();
 
     auto root = wxSimpleJSON::Create(
-        wxString::Format(
-            L"{\"name\": \"%s\", \"watermark\": {}, \"print\": {}, "
-            L"\"datasets\": [], \"constants\": [], \"pages\": []}",
-            EscapeJsonStr(projectName)),
+        wxString::Format(L"{\"name\": \"%s\", \"watermark\": {}, \"print\": {}, "
+                         L"\"datasets\": [], \"constants\": [], \"pages\": []}",
+                         EscapeJsonStr(projectName)),
         true);
 
     // watermark
@@ -1708,8 +2392,7 @@ void WisteriaView::SaveProject(const wxString& filePath)
             {
             printObj->Add(L"orientation", wxString{ L"portrait" });
             }
-        const auto paperStr =
-            Wisteria::ReportEnumConvert::ConvertPaperSizeToString(paperSize);
+        const auto paperStr = Wisteria::ReportEnumConvert::ConvertPaperSizeToString(paperSize);
         if (paperStr.has_value())
             {
             printObj->Add(L"paper-size", paperStr.value());
@@ -1860,14 +2543,35 @@ void WisteriaView::SaveProject(const wxString& filePath)
     auto pagesArray = root->GetProperty(L"pages");
     for (const auto* canvas : m_pages)
         {
+        if (canvas == nullptr)
+            {
+            continue;
+            }
+
         auto pageObj = wxSimpleJSON::Create(L"{\"rows\": []}");
-        if (canvas != nullptr && !canvas->GetLabel().empty())
+        if (!canvas->GetLabel().empty())
             {
             pageObj->Add(L"name", canvas->GetLabel());
             }
+
         auto rowsArray = pageObj->GetProperty(L"rows");
-        auto rowObj = wxSimpleJSON::Create(L"{\"items\": []}");
-        rowsArray->ArrayAdd(rowObj);
+        const auto [rowCount, colCount] = canvas->GetFixedObjectsGridSize();
+        for (size_t row = 0; row < rowCount; ++row)
+            {
+            auto rowObj = wxSimpleJSON::Create(L"{\"items\": []}");
+            auto itemsArray = rowObj->GetProperty(L"items");
+            for (size_t col = 0; col < colCount; ++col)
+                {
+                const auto item = canvas->GetFixedObject(row, col);
+                auto itemNode = SavePageItem(item.get(), canvas);
+                if (itemNode != nullptr)
+                    {
+                    itemsArray->ArrayAdd(itemNode);
+                    }
+                }
+            rowsArray->ArrayAdd(rowObj);
+            }
+
         pagesArray->ArrayAdd(pageObj);
         }
 

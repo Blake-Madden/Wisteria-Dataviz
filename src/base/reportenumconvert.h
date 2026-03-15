@@ -872,6 +872,470 @@ namespace Wisteria
                         std::optional<FacialHair>(foundValue->second) :
                         std::nullopt);
             }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxPenStyle> ConvertPenStyle(const wxString& value)
+            {
+            static const std::map<std::wstring, wxPenStyle> styleValues = {
+                { L"dot", wxPenStyle::wxPENSTYLE_DOT },
+                { L"dot-dash", wxPenStyle::wxPENSTYLE_DOT_DASH },
+                { L"long-dash", wxPenStyle::wxPENSTYLE_LONG_DASH },
+                { L"short-dash", wxPenStyle::wxPENSTYLE_SHORT_DASH },
+                { L"solid", wxPenStyle::wxPENSTYLE_SOLID },
+                { L"cross-hatch", wxPenStyle::wxPENSTYLE_CROSS_HATCH },
+                { L"horizontal-hatch", wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH },
+                { L"vertical-hatch", wxPenStyle::wxPENSTYLE_VERTICAL_HATCH }
+            };
+
+            const auto foundValue = styleValues.find(value.Lower().ToStdWstring());
+            return (foundValue != styleValues.cend()) ?
+                       std::optional<wxPenStyle>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Anchoring> ConvertAnchoring(const wxString& value)
+            {
+            static const std::map<std::wstring, Anchoring> anchoringValues = {
+                { L"bottom-left-corner", Anchoring::BottomLeftCorner },
+                { L"bottom-right-corner", Anchoring::BottomRightCorner },
+                { L"center", Anchoring::Center },
+                { L"top-left-corner", Anchoring::TopLeftCorner },
+                { L"top-right-corner", Anchoring::TopRightCorner }
+            };
+
+            const auto foundValue = anchoringValues.find(value.Lower().ToStdWstring());
+            return (foundValue != anchoringValues.cend()) ?
+                       std::optional<Anchoring>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<GraphItems::Axis::TickMark::DisplayType>
+        ConvertTickMarkDisplay(const wxString& value)
+            {
+            static const std::map<std::wstring, GraphItems::Axis::TickMark::DisplayType>
+                tickmarkValues = { { L"inner", GraphItems::Axis::TickMark::DisplayType::Inner },
+                                   { L"outer", GraphItems::Axis::TickMark::DisplayType::Outer },
+                                   { L"crossed", GraphItems::Axis::TickMark::DisplayType::Crossed },
+                                   { L"no-display",
+                                     GraphItems::Axis::TickMark::DisplayType::NoDisplay } };
+
+            const auto foundValue = tickmarkValues.find(value.Lower().ToStdWstring());
+            return (foundValue != tickmarkValues.cend()) ?
+                       std::optional<GraphItems::Axis::TickMark::DisplayType>{
+                           foundValue->second
+                       } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<AxisLabelDisplay> ConvertAxisLabelDisplay(const wxString& value)
+            {
+            static const std::map<std::wstring, AxisLabelDisplay> labelDisplayValues = {
+                { L"custom-labels-or-values", AxisLabelDisplay::DisplayCustomLabelsOrValues },
+                { L"only-custom-labels", AxisLabelDisplay::DisplayOnlyCustomLabels },
+                { L"custom-labels-and-values", AxisLabelDisplay::DisplayCustomLabelsAndValues },
+                { L"no-display", AxisLabelDisplay::NoDisplay },
+                { L"values", AxisLabelDisplay::DisplayValues }
+            };
+
+            const auto foundValue = labelDisplayValues.find(value.Lower().ToStdWstring());
+            return (foundValue != labelDisplayValues.cend()) ?
+                       std::optional<AxisLabelDisplay>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<BracketLineStyle> ConvertBracketLineStyle(const wxString& value)
+            {
+            static const std::map<std::wstring, BracketLineStyle> bracketLineValues = {
+                { L"arrow", BracketLineStyle::Arrow },
+                { L"lines", BracketLineStyle::Lines },
+                { L"reverse-arrow", BracketLineStyle::ReverseArrow },
+                { L"curly-braces", BracketLineStyle::CurlyBraces },
+                { L"no-connection-lines", BracketLineStyle::NoConnectionLines }
+            };
+
+            const auto foundValue = bracketLineValues.find(value.Lower().ToStdWstring());
+            return (foundValue != bracketLineValues.cend()) ?
+                       std::optional<BracketLineStyle>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<LineStyle> ConvertLineStyle(const wxString& value)
+            {
+            static const std::map<std::wstring, LineStyle> lineStyleValues = {
+                { L"arrows", LineStyle::Arrows },
+                { L"lines", LineStyle::Lines },
+                { L"spline", LineStyle::Spline },
+                { L"pencil", LineStyle::Pencil }
+            };
+
+            const auto foundValue = lineStyleValues.find(value.Lower().ToStdWstring());
+            return (foundValue != lineStyleValues.cend()) ?
+                       std::optional<LineStyle>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<ResizeMethod> ConvertResizeMethod(const wxString& value)
+            {
+            static const std::map<std::wstring, ResizeMethod> resizeValues = {
+                { L"downscale-only", ResizeMethod::DownscaleOnly },
+                { L"downscale-or-upscale", ResizeMethod::DownscaleOrUpscale },
+                { L"upscale-only", ResizeMethod::UpscaleOnly },
+                { L"no-resize", ResizeMethod::NoResize }
+            };
+
+            const auto foundValue = resizeValues.find(value.Lower().ToStdWstring());
+            return (foundValue != resizeValues.cend()) ?
+                       std::optional<ResizeMethod>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<ReferenceAreaStyle> ConvertReferenceAreaStyle(const wxString& value)
+            {
+            static const std::map<std::wstring, ReferenceAreaStyle> refAreaValues = {
+                { L"fade-from-left-to-right", ReferenceAreaStyle::FadeFromLeftToRight },
+                { L"fade-from-right-to-left", ReferenceAreaStyle::FadeFromRightToLeft },
+                { L"solid", ReferenceAreaStyle::Solid }
+            };
+
+            const auto foundValue = refAreaValues.find(value.Lower().ToStdWstring());
+            return (foundValue != refAreaValues.cend()) ?
+                       std::optional<ReferenceAreaStyle>{ foundValue->second } :
+                       std::nullopt;
+            }
+
+        // reverse converters (enum → string)
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertAnchoringToString(Anchoring value)
+            {
+            static const std::map<Anchoring, wxString> values = {
+                { Anchoring::BottomLeftCorner, L"bottom-left-corner" },
+                { Anchoring::BottomRightCorner, L"bottom-right-corner" },
+                { Anchoring::Center, L"center" },
+                { Anchoring::TopLeftCorner, L"top-left-corner" },
+                { Anchoring::TopRightCorner, L"top-right-corner" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertPageHorizontalAlignmentToString(PageHorizontalAlignment value)
+            {
+            static const std::map<PageHorizontalAlignment, wxString> values = {
+                { PageHorizontalAlignment::LeftAligned, L"left-aligned" },
+                { PageHorizontalAlignment::RightAligned, L"right-aligned" },
+                { PageHorizontalAlignment::Centered, L"centered" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertPageVerticalAlignmentToString(PageVerticalAlignment value)
+            {
+            static const std::map<PageVerticalAlignment, wxString> values = {
+                { PageVerticalAlignment::TopAligned, L"top-aligned" },
+                { PageVerticalAlignment::BottomAligned, L"bottom-aligned" },
+                { PageVerticalAlignment::Centered, L"centered" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertRelativeAlignmentToString(RelativeAlignment value)
+            {
+            static const std::map<RelativeAlignment, wxString> values = {
+                { RelativeAlignment::FlushLeft, L"flush-left" },
+                { RelativeAlignment::FlushRight, L"flush-right" },
+                { RelativeAlignment::FlushTop, L"flush-top" },
+                { RelativeAlignment::FlushBottom, L"flush-bottom" },
+                { RelativeAlignment::Centered, L"centered" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertPenStyleToString(wxPenStyle value)
+            {
+            static const std::map<wxPenStyle, wxString> values = {
+                { wxPENSTYLE_DOT, L"dot" },
+                { wxPENSTYLE_DOT_DASH, L"dot-dash" },
+                { wxPENSTYLE_LONG_DASH, L"long-dash" },
+                { wxPENSTYLE_SHORT_DASH, L"short-dash" },
+                { wxPENSTYLE_SOLID, L"solid" },
+                { wxPENSTYLE_CROSS_HATCH, L"cross-hatch" },
+                { wxPENSTYLE_HORIZONTAL_HATCH, L"horizontal-hatch" },
+                { wxPENSTYLE_VERTICAL_HATCH, L"vertical-hatch" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertBrushStyleToString(wxBrushStyle value)
+            {
+            static const std::map<wxBrushStyle, wxString> values = {
+                { wxBRUSHSTYLE_BDIAGONAL_HATCH, L"backwards-diagonal-hatch" },
+                { wxBRUSHSTYLE_FDIAGONAL_HATCH, L"forward-diagonal-hatch" },
+                { wxBRUSHSTYLE_CROSSDIAG_HATCH, L"cross-diagonal-hatch" },
+                { wxBRUSHSTYLE_SOLID, L"solid" },
+                { wxBRUSHSTYLE_CROSS_HATCH, L"cross-hatch" },
+                { wxBRUSHSTYLE_HORIZONTAL_HATCH, L"horizontal-hatch" },
+                { wxBRUSHSTYLE_VERTICAL_HATCH, L"vertical-hatch" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertTextAlignmentToString(TextAlignment value)
+            {
+            static const std::map<TextAlignment, wxString> values = {
+                { TextAlignment::FlushLeft, L"flush-left" },
+                { TextAlignment::FlushRight, L"flush-right" },
+                { TextAlignment::RaggedRight, L"ragged-right" },
+                { TextAlignment::RaggedLeft, L"ragged-left" },
+                { TextAlignment::Centered, L"centered" },
+                { TextAlignment::Justified, L"justified" },
+                { TextAlignment::JustifiedAtCharacter, L"justified-at-character" },
+                { TextAlignment::JustifiedAtWord, L"justified-at-word" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertIconToString(Icons::IconShape value)
+            {
+            static const std::map<Icons::IconShape, wxString> values = {
+                { Icons::IconShape::Blank, L"blank" },
+                { Icons::IconShape::HorizontalLine, L"horizontal-line" },
+                { Icons::IconShape::VerticalLine, L"vertical-line" },
+                { Icons::IconShape::CrossedOut, L"crossed-out" },
+                { Icons::IconShape::ArrowRight, L"arrow-right" },
+                { Icons::IconShape::Circle, L"circle" },
+                { Icons::IconShape::Image, L"image" },
+                { Icons::IconShape::HorizontalSeparator, L"horizontal-separator" },
+                { Icons::IconShape::HorizontalArrowRightSeparator,
+                  L"horizontal-arrow-right-separator" },
+                { Icons::IconShape::ColorGradient, L"color-gradient" },
+                { Icons::IconShape::Square, L"square" },
+                { Icons::IconShape::TriangleUpward, L"triangle-upward" },
+                { Icons::IconShape::TriangleDownward, L"triangle-downward" },
+                { Icons::IconShape::TriangleRight, L"triangle-right" },
+                { Icons::IconShape::TriangleLeft, L"triangle-left" },
+                { Icons::IconShape::Diamond, L"diamond" },
+                { Icons::IconShape::Plus, L"plus" },
+                { Icons::IconShape::Asterisk, L"asterisk" },
+                { Icons::IconShape::Hexagon, L"hexagon" },
+                { Icons::IconShape::BoxPlot, L"box-plot" },
+                { Icons::IconShape::LocationMarker, L"location-marker" },
+                { Icons::IconShape::GoRoadSign, L"go-road-sign" },
+                { Icons::IconShape::WarningRoadSign, L"warning-road-sign" },
+                { Icons::IconShape::Sun, L"sun" },
+                { Icons::IconShape::Flower, L"flower" },
+                { Icons::IconShape::Sunflower, L"sunflower" },
+                { Icons::IconShape::FallLeaf, L"fall-leaf" },
+                { Icons::IconShape::TopCurlyBrace, L"top-curly-brace" },
+                { Icons::IconShape::RightCurlyBrace, L"right-curly-brace" },
+                { Icons::IconShape::BottomCurlyBrace, L"bottom-curly-brace" },
+                { Icons::IconShape::LeftCurlyBrace, L"left-curly-brace" },
+                { Icons::IconShape::Man, L"man" },
+                { Icons::IconShape::Woman, L"woman" },
+                { Icons::IconShape::BusinessWoman, L"business-woman" },
+                { Icons::IconShape::ChevronDownward, L"chevron-downward" },
+                { Icons::IconShape::ChevronUpward, L"chevron-upward" },
+                { Icons::IconShape::Text, L"text" },
+                { Icons::IconShape::Tack, L"tack" },
+                { Icons::IconShape::Banner, L"banner" },
+                { Icons::IconShape::WaterColorRectangle, L"watercolor-rectangle" },
+                { Icons::IconShape::ThickWaterColorRectangle, L"thick-watercolor-rectangle" },
+                { Icons::IconShape::MarkerRectangle, L"marker-rectangle" },
+                { Icons::IconShape::PencilRectangle, L"pencil-rectangle" },
+                { Icons::IconShape::GraduationCap, L"graduation-cap" },
+                { Icons::IconShape::Book, L"book" },
+                { Icons::IconShape::Tire, L"tire" },
+                { Icons::IconShape::Snowflake, L"snowflake" },
+                { Icons::IconShape::Newspaper, L"newspaper" },
+                { Icons::IconShape::Car, L"car" },
+                { Icons::IconShape::Blackboard, L"blackboard" },
+                { Icons::IconShape::Clock, L"clock" },
+                { Icons::IconShape::Ruler, L"ruler" },
+                { Icons::IconShape::IVBag, L"ivbag" },
+                { Icons::IconShape::ColdThermometer, L"cold-thermometer" },
+                { Icons::IconShape::HotThermometer, L"hot-thermometer" },
+                { Icons::IconShape::Apple, L"apple" },
+                { Icons::IconShape::GrannySmithApple, L"granny-smith-apple" },
+                { Icons::IconShape::Flame, L"flame" },
+                { Icons::IconShape::Heart, L"heart" },
+                { Icons::IconShape::ImmaculateHeart, L"immaculate-heart" },
+                { Icons::IconShape::ImmaculateHeartWithSword, L"immaculate-heart-with-sword" },
+                { Icons::IconShape::Office, L"office" },
+                { Icons::IconShape::Factory, L"factory" },
+                { Icons::IconShape::House, L"house" },
+                { Icons::IconShape::Barn, L"barn" },
+                { Icons::IconShape::Farm, L"farm" },
+                { Icons::IconShape::HundredDollarBill, L"hundred-dollar-bill" },
+                { Icons::IconShape::Monitor, L"monitor" },
+                { Icons::IconShape::Sword, L"sword" },
+                { Icons::IconShape::CrescentTop, L"crescent-top" },
+                { Icons::IconShape::CrescentBottom, L"crescent-bottom" },
+                { Icons::IconShape::CrescentRight, L"crescent-right" },
+                { Icons::IconShape::CurvingRoad, L"curving-road" },
+                { Icons::IconShape::Pumpkin, L"pumpkin" },
+                { Icons::IconShape::JackOLantern, L"jack-o-lantern" },
+                { Icons::IconShape::NumberRange, L"number-range" },
+                { Icons::IconShape::CheesePizza, L"cheese-pizza" },
+                { Icons::IconShape::PepperoniPizza, L"pepperoni-pizza" },
+                { Icons::IconShape::HawaiianPizza, L"hawaiian-pizza" },
+                { Icons::IconShape::ChocolateChipCookie, L"chocolate-chip-cookie" },
+                { Icons::IconShape::CoffeeShopCup, L"coffee-shop-cup" },
+                { Icons::IconShape::Pill, L"pill" },
+                { Icons::IconShape::Tractor, L"tractor" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertTickMarkDisplayToString(GraphItems::Axis::TickMark::DisplayType value)
+            {
+            static const std::map<GraphItems::Axis::TickMark::DisplayType, wxString> values = {
+                { GraphItems::Axis::TickMark::DisplayType::Inner, L"inner" },
+                { GraphItems::Axis::TickMark::DisplayType::Outer, L"outer" },
+                { GraphItems::Axis::TickMark::DisplayType::Crossed, L"crossed" },
+                { GraphItems::Axis::TickMark::DisplayType::NoDisplay, L"no-display" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertAxisLabelDisplayToString(AxisLabelDisplay value)
+            {
+            static const std::map<AxisLabelDisplay, wxString> values = {
+                { AxisLabelDisplay::DisplayCustomLabelsOrValues, L"custom-labels-or-values" },
+                { AxisLabelDisplay::DisplayOnlyCustomLabels, L"only-custom-labels" },
+                { AxisLabelDisplay::DisplayCustomLabelsAndValues, L"custom-labels-and-values" },
+                { AxisLabelDisplay::NoDisplay, L"no-display" },
+                { AxisLabelDisplay::DisplayValues, L"values" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertBracketLineStyleToString(BracketLineStyle value)
+            {
+            static const std::map<BracketLineStyle, wxString> values = {
+                { BracketLineStyle::Arrow, L"arrow" },
+                { BracketLineStyle::Lines, L"lines" },
+                { BracketLineStyle::ReverseArrow, L"reverse-arrow" },
+                { BracketLineStyle::CurlyBraces, L"curly-braces" },
+                { BracketLineStyle::NoConnectionLines, L"no-connection-lines" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertLineStyleToString(LineStyle value)
+            {
+            static const std::map<LineStyle, wxString> values = { { LineStyle::Arrows, L"arrows" },
+                                                                  { LineStyle::Lines, L"lines" },
+                                                                  { LineStyle::Spline, L"spline" },
+                                                                  { LineStyle::Pencil,
+                                                                    L"pencil" } };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertResizeMethodToString(ResizeMethod value)
+            {
+            static const std::map<ResizeMethod, wxString> values = {
+                { ResizeMethod::DownscaleOnly, L"downscale-only" },
+                { ResizeMethod::DownscaleOrUpscale, L"downscale-or-upscale" },
+                { ResizeMethod::UpscaleOnly, L"upscale-only" },
+                { ResizeMethod::NoResize, L"no-resize" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertReferenceAreaStyleToString(ReferenceAreaStyle value)
+            {
+            static const std::map<ReferenceAreaStyle, wxString> values = {
+                { ReferenceAreaStyle::FadeFromLeftToRight, L"fade-from-left-to-right" },
+                { ReferenceAreaStyle::FadeFromRightToLeft, L"fade-from-right-to-left" },
+                { ReferenceAreaStyle::Solid, L"solid" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
         };
     } // namespace Wisteria
 

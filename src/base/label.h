@@ -327,6 +327,34 @@ namespace Wisteria::GraphItems
             m_topImageOffset = offset;
             }
 
+        /// @returns The left-side image (may be invalid if not set).
+        [[nodiscard]]
+        const wxBitmapBundle& GetLeftImage() const noexcept
+            {
+            return m_leftImage;
+            }
+
+        /// @returns The top-side image (may be invalid if not set).
+        [[nodiscard]]
+        const wxBitmapBundle& GetTopImage() const noexcept
+            {
+            return m_topImage;
+            }
+
+        /// @returns The top-side shape(s), or @c std::nullopt if not set.
+        [[nodiscard]]
+        const std::optional<std::vector<ShapeInfo>>& GetTopShape() const noexcept
+            {
+            return m_topShape;
+            }
+
+        /// @returns The offset (in DIPs) for the top image or shape.
+        [[nodiscard]]
+        size_t GetTopImageOffset() const noexcept
+            {
+            return m_topImageOffset;
+            }
+
         /// @}
 
         /// @name Bounding Box Functions
