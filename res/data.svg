@@ -2,14 +2,14 @@
   <!-- Colorful data table icon, pivot-longer style -->
 
   <!-- Header row -->
-  <rect x="28" y="28" width="200" height="24" rx="3" fill="#5B9BD5" opacity="0.9"/>
+  <rect x="28" y="28" width="200" height="24" rx="3" fill="#2E86DE" opacity="0.95"/>
   <!-- Data rows -->
-  <rect x="28" y="56" width="200" height="24" rx="2" fill="#A9D18E" opacity="0.7"/>
-  <rect x="28" y="84" width="200" height="24" rx="2" fill="#F4B183" opacity="0.7"/>
-  <rect x="28" y="112" width="200" height="24" rx="2" fill="#A9D18E" opacity="0.7"/>
-  <rect x="28" y="140" width="200" height="24" rx="2" fill="#F4B183" opacity="0.7"/>
-  <rect x="28" y="168" width="200" height="24" rx="2" fill="#A9D18E" opacity="0.7"/>
-  <rect x="28" y="196" width="200" height="24" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="28" y="56" width="200" height="24" rx="2" fill="#27AE60" opacity="0.85"/>
+  <rect x="28" y="84" width="200" height="24" rx="2" fill="#F0A68C" opacity="0.9"/>
+  <rect x="28" y="112" width="200" height="24" rx="2" fill="#27AE60" opacity="0.85"/>
+  <rect x="28" y="140" width="200" height="24" rx="2" fill="#F0A68C" opacity="0.9"/>
+  <rect x="28" y="168" width="200" height="24" rx="2" fill="#27AE60" opacity="0.85"/>
+  <rect x="28" y="196" width="200" height="24" rx="2" fill="#F0A68C" opacity="0.9"/>
 
   <!-- Column dividers (white) -->
   <line x1="78" y1="28" x2="78" y2="220" stroke="white" stroke-width="2"/>

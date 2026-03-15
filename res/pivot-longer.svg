@@ -2,9 +2,9 @@
   <!-- Pivot Longer: wide table (few rows, many cols) → tall table (many rows, few cols) -->
 
   <!-- Source: wide table (top-left) -->
-  <rect x="16" y="24" width="108" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
-  <rect x="16" y="44" width="108" height="16" rx="2" fill="#A9D18E" opacity="0.7"/>
-  <rect x="16" y="64" width="108" height="16" rx="2" fill="#A9D18E" opacity="0.7"/>
+  <rect x="16" y="24" width="108" height="16" rx="2" fill="#2E86DE" opacity="0.95"/>
+  <rect x="16" y="44" width="108" height="16" rx="2" fill="#27AE60" opacity="0.85"/>
+  <rect x="16" y="64" width="108" height="16" rx="2" fill="#27AE60" opacity="0.85"/>
   <!-- Column dividers on source -->
   <line x1="52" y1="24" x2="52" y2="80" stroke="white" stroke-width="1.5"/>
   <line x1="88" y1="24" x2="88" y2="80" stroke="white" stroke-width="1.5"/>
@@ -14,11 +14,11 @@
   <polygon points="156,126 150,116 162,116" fill="#808080"/>
 
   <!-- Result: tall table (bottom-right) -->
-  <rect x="132" y="136" width="64" height="16" rx="2" fill="#5B9BD5" opacity="0.85"/>
-  <rect x="132" y="156" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
-  <rect x="132" y="176" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
-  <rect x="132" y="196" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
-  <rect x="132" y="216" width="64" height="16" rx="2" fill="#F4B183" opacity="0.7"/>
+  <rect x="132" y="136" width="64" height="16" rx="2" fill="#2E86DE" opacity="0.95"/>
+  <rect x="132" y="156" width="64" height="16" rx="2" fill="#F0A68C" opacity="0.9"/>
+  <rect x="132" y="176" width="64" height="16" rx="2" fill="#F0A68C" opacity="0.9"/>
+  <rect x="132" y="196" width="64" height="16" rx="2" fill="#F0A68C" opacity="0.9"/>
+  <rect x="132" y="216" width="64" height="16" rx="2" fill="#F0A68C" opacity="0.9"/>
   <!-- Column divider on result -->
   <line x1="164" y1="136" x2="164" y2="232" stroke="white" stroke-width="1.5"/>
 
