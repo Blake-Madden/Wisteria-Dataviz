@@ -64,7 +64,7 @@ namespace Wisteria::UI
         const wxColour varLabelColor{ 0, 102, 204 };
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* idLabel = new wxStaticText(this, wxID_ANY, _(L"ID column(s):"));
+        auto* idLabel = new wxStaticText(this, wxID_ANY, _(L"ID columns:"));
         idLabel->SetFont(idLabel->GetFont().Bold());
         varGrid->Add(idLabel, wxSizerFlags{}.CenterVertical());
         m_idColumnsLabel = new wxStaticText(this, wxID_ANY, wxString{});
@@ -189,7 +189,7 @@ namespace Wisteria::UI
 
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(this, columnInfo,
-                              { VLI{}.Label(_(L"ID Column(s)")),
+                              { VLI{}.Label(_(L"ID Columns")),
                                 VLI{}.Label(_(L"Names From (categorical)")).SingleSelection(true),
                                 VLI{}.Label(_(L"Values From (continuous)")).Required(false) });
 
@@ -301,7 +301,7 @@ namespace Wisteria::UI
             m_outputNameCtrl->SetValue(wxString{});
             return;
             }
-        const wxString baseName = dsName + _(L" (Pivoted Wider)");
+        const wxString baseName = wxString::Format(_(L"%s (Pivoted Wider)"), dsName);
         m_outputNameCtrl->SetValue((m_reportBuilder != nullptr) ?
                                        m_reportBuilder->GenerateUniqueDatasetName(baseName) :
                                        baseName);

@@ -84,7 +84,7 @@ namespace Wisteria::UI
                         wxSizerFlags{}.CenterVertical());
         m_namesToCtrl = new wxTextCtrl(targetBox->GetStaticBox(), wxID_ANY, DefaultNamesTo());
         m_namesToCtrl->SetToolTip(
-            _(L"Name(s) for the new grouping column(s), comma-separated if multiple."));
+            _(L"Names for the new grouping columns, comma-separated if multiple."));
         targetGrid->Add(m_namesToCtrl, wxSizerFlags{}.Expand());
 
         targetGrid->Add(new wxStaticText(targetBox->GetStaticBox(), wxID_ANY, _(L"Values to:")),
@@ -303,7 +303,7 @@ namespace Wisteria::UI
             m_outputNameCtrl->SetValue(wxString{});
             return;
             }
-        const wxString baseName = dsName + _(L" (Pivoted Longer)");
+        const wxString baseName = wxString::Format(_(L"%s (Pivoted Longer)"), dsName);
         m_outputNameCtrl->SetValue((m_reportBuilder != nullptr) ?
                                        m_reportBuilder->GenerateUniqueDatasetName(baseName) :
                                        baseName);
