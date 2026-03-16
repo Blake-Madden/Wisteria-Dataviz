@@ -1633,6 +1633,19 @@ namespace Wisteria::GraphItems
                 Note that this should be the same column that the axis was built from.*/
         void AddBrackets(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
                          const wxString& labelColumn, const wxString& valueColumn);
+        /** @brief Adds brackets using an explicit label-to-position map
+                for the value column.
+            @details Use this when the axis positions differ from the raw
+                category IDs in the dataset (e.g., on a common axis where
+                child bar charts have sorted their bars).
+            @param data The dataset to read the columns from.
+            @param labelColumn The column containing the bracket labels.
+            @param valueColumn The column containing the category values.
+            @param labelPositions Maps category labels (from @c valueColumn)
+                to their actual axis positions.*/
+        void AddBrackets(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
+                         const wxString& labelColumn, const wxString& valueColumn,
+                         const std::map<wxString, double>& labelPositions);
 
         /// @brief Removes all the brackets.
         void ClearBrackets() noexcept { m_brackets.clear(); }
@@ -1676,10 +1689,13 @@ namespace Wisteria::GraphItems
               shortened to `'79-80`.
               (This will only be applied if all dates are in the same century.)*/
         void SimplifyBrackets();
+
         /// @returns @c true if SimplifyBrackets() has been called.
         [[nodiscard]]
         bool AreBracketsSimplified() const noexcept
-            { return m_bracketsSimplified; }
+            {
+            return m_bracketsSimplified;
+            }
 
         /// @}
 

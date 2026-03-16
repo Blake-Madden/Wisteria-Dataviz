@@ -4113,6 +4113,64 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    void Axis::AddBrackets(const std::shared_ptr<const Data::Dataset>& data,
+                           const wxString& labelColumn, const wxString& valueColumn,
+                           const std::map<wxString, double>& labelPositions)
+        {
+        const auto labelCol = data->GetCategoricalColumn(labelColumn);
+        if (labelCol == data->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': label column not found for axis brackets."), labelColumn)
+                    .ToUTF8());
+            }
+
+        const auto valueCatCol = data->GetCategoricalColumn(valueColumn);
+        if (valueCatCol == data->GetCategoricalColumns().cend())
+            {
+            // fall back to the standard overload for non-categorical columns
+            AddBrackets(data, labelColumn, valueColumn);
+            return;
+            }
+
+        // build a map of bracket labels to the category labels they span
+        multi_value_aggregate_map<wxString, wxString> brackets;
+        for (size_t i = 0; i < data->GetRowCount(); ++i)
+            {
+            brackets.insert(labelCol->GetLabelFromID(labelCol->GetValue(i)),
+                            valueCatCol->GetLabelFromID(valueCatCol->GetValue(i)), 1);
+            }
+        for (const auto& [bracketLabel, bracketValues] : brackets.get_data())
+            {
+            if (bracketValues.first.empty())
+                {
+                continue;
+                }
+            // look up the axis positions for each category in this bracket
+            std::vector<double> positions;
+            for (const auto& catLabel : bracketValues.first)
+                {
+                const auto posIt = labelPositions.find(catLabel);
+                if (posIt != labelPositions.cend())
+                    {
+                    positions.push_back(posIt->second);
+                    }
+                }
+            if (!positions.empty())
+                {
+                const auto [minPos, maxPos] =
+                    std::minmax_element(positions.cbegin(), positions.cend());
+                AddBracket(AxisBracket(*minPos, *maxPos, safe_divide<double>(*minPos + *maxPos, 2),
+                                       bracketLabel));
+                }
+            }
+        // sort brackets by position so that SimplifyYearBrackets
+        // processes them in the correct visual order
+        std::ranges::sort(GetBrackets(), [](const auto& left, const auto& right)
+                          { return left.GetStartPosition() < right.GetStartPosition(); });
+        }
+
+    //-------------------------------------------
     bool Axis::SimplifyYearBrackets()
         {
         if (GetBrackets().size() < 2)

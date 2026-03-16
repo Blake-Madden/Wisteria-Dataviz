@@ -452,7 +452,19 @@ namespace Wisteria
                                             commonAxisInfo.m_commonPerpendicularAxis) :
                                         CommonAxisBuilder::BuildYAxis(canvas, childGraphs,
                                                                       commonAxisInfo.m_axisType);
-                                LoadAxis(commonAxisInfo.m_node, *commonAxis);
+                                // build a label-to-position map from the common
+                                // axis's custom labels; this maps category labels
+                                // to their sorted positions so that brackets use
+                                // the correct positions instead of raw category IDs
+                                std::map<wxString, double> labelPosMap;
+                                    {
+                                    const auto& axisLabels = commonAxis->GetCustomLabels();
+                                    for (const auto& [pos, label] : axisLabels)
+                                        {
+                                        labelPosMap[label.GetText()] = pos;
+                                        }
+                                    }
+                                LoadAxis(commonAxisInfo.m_node, *commonAxis, labelPosMap);
                                 LoadItem(commonAxisInfo.m_node, *commonAxis);
                                     // cache common-axis-specific properties for round-tripping
                                     {
@@ -612,7 +624,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
+    void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis,
+                                 const std::map<wxString, double>& labelPositions)
         {
         const auto titleProperty = axisNode->GetProperty(L"title");
         if (titleProperty->IsOk())
@@ -767,7 +780,17 @@ namespace Wisteria
                             ExpandAndCache(&axis, L"bracket.value",
                                            variablesNode->GetProperty(L"value")->AsString());
 
-                        axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
+                        // use label-position map if provided (for common axes
+                        // where child graphs have sorted their bars)
+                        if (!labelPositions.empty())
+                            {
+                            axis.AddBrackets(foundDataset->second, labelVarName, valueVarName,
+                                             labelPositions);
+                            }
+                        else
+                            {
+                            axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
+                            }
                         if (bracketPen.IsOk())
                             {
                             for (auto& bracket : axis.GetBrackets())

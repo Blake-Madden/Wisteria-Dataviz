@@ -759,7 +759,10 @@ namespace Wisteria
         /// @brief Loads properties from a JSON node into an axis.
         /// @param axisNode The node to parse.
         /// @param axis[in,out] The axis to apply the loaded settings to.
-        void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis);
+        /// @param labelPositions Optional map of category labels to axis positions.
+        ///     Used for common axes where child graphs have sorted their bars.
+        void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis,
+                      const std::map<wxString, double>& labelPositions = {});
 
         /// @brief Loads properties from a JSON node into a pen.
         /// @param penNode The node to parse.
