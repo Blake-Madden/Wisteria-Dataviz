@@ -232,9 +232,9 @@ void WisteriaApp::OnViewLogReport()
         }
     m_logWindow->SetActiveLog(GetLogFile());
     m_logWindow->ReadLog();
-    m_logWindow->GetListCtrl()->DistributeColumns(-1);
 
     m_logWindow->Show();
+    m_logWindow->GetListCtrl()->DistributeColumns(-1);
     m_logWindow->SetFocus();
     }
 
