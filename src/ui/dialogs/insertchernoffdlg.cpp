@@ -8,6 +8,7 @@
 
 #include "insertchernoffdlg.h"
 #include "variableselectdlg.h"
+#include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
@@ -100,32 +101,47 @@ namespace Wisteria::UI
         // gender
         appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Gender:")),
                              wxSizerFlags{}.CenterVertical());
-        m_genderChoice = new wxChoice(optionsPage, wxID_ANY);
-        m_genderChoice->Append(_(L"Female"));
-        m_genderChoice->Append(_(L"Male"));
-        m_genderChoice->SetSelection(0);
-        appearanceSizer->Add(m_genderChoice);
+            {
+            auto* genderChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_gender));
+            genderChoice->Append(_(L"Female"));
+            genderChoice->Append(_(L"Male"));
+            appearanceSizer->Add(genderChoice);
+
+            genderChoice->Bind(wxEVT_CHOICE,
+                               [this]([[maybe_unused]] wxCommandEvent&)
+                               {
+                                   TransferDataFromWindow();
+                                   m_facialHairLabel->Enable(m_gender == 1);
+                                   m_facialHairChoice->Enable(m_gender == 1);
+                                   Refresh();
+                               });
+            }
 
         // hair style
         appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Hair style:")),
                              wxSizerFlags{}.CenterVertical());
-        m_hairStyleChoice = new wxChoice(optionsPage, wxID_ANY);
-        m_hairStyleChoice->Append(_(L"Bald"));
-        m_hairStyleChoice->Append(_(L"Bob"));
-        m_hairStyleChoice->Append(_(L"Pixie"));
-        m_hairStyleChoice->Append(_(L"Bun"));
-        m_hairStyleChoice->Append(_(L"Long straight"));
-        m_hairStyleChoice->Append(_(L"High top fade"));
-        m_hairStyleChoice->SetSelection(1);
-        appearanceSizer->Add(m_hairStyleChoice);
+            {
+            auto* hairStyleChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_hairStyle));
+            hairStyleChoice->Append(_(L"Bald"));
+            hairStyleChoice->Append(_(L"Bob"));
+            hairStyleChoice->Append(_(L"Pixie"));
+            hairStyleChoice->Append(_(L"Bun"));
+            hairStyleChoice->Append(_(L"Long straight"));
+            hairStyleChoice->Append(_(L"High top fade"));
+            appearanceSizer->Add(hairStyleChoice);
+            }
 
         // facial hair
         m_facialHairLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Facial hair:"));
         appearanceSizer->Add(m_facialHairLabel, wxSizerFlags{}.CenterVertical());
-        m_facialHairChoice = new wxChoice(optionsPage, wxID_ANY);
+        m_facialHairChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                          0, nullptr, 0, wxGenericValidator(&m_facialHair));
         m_facialHairChoice->Append(_(L"Clean shaven"));
         m_facialHairChoice->Append(_(L"Five o'clock shadow"));
-        m_facialHairChoice->SetSelection(0);
         appearanceSizer->Add(m_facialHairChoice);
 
         // skin color range (lighter and darker side by side)
@@ -157,10 +173,10 @@ namespace Wisteria::UI
         optionsSizer->Add(appearanceSizer, wxSizerFlags{}.Border());
 
         // show labels
-        m_showLabelsCheck =
-            new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels (from ID column)"));
-        m_showLabelsCheck->SetValue(true);
-        optionsSizer->Add(m_showLabelsCheck, wxSizerFlags{}.Border(wxLEFT));
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels (from ID column)"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_showLabels)),
+                          wxSizerFlags{}.Border(wxLEFT));
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -172,13 +188,6 @@ namespace Wisteria::UI
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
-        m_genderChoice->Bind(wxEVT_CHOICE,
-                             [this]([[maybe_unused]] wxCommandEvent&)
-                             {
-                                 m_facialHairLabel->Enable(m_genderChoice->GetSelection() == 1);
-                                 m_facialHairChoice->Enable(m_genderChoice->GetSelection() == 1);
-                                 Refresh();
-                             });
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
@@ -326,7 +335,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     Gender InsertChernoffDlg::GetGender() const
         {
-        return (m_genderChoice->GetSelection() == 1) ? Gender::Male : Gender::Female;
+        return (m_gender == 1) ? Gender::Male : Gender::Female;
         }
 
     //-------------------------------------------
@@ -336,10 +345,9 @@ namespace Wisteria::UI
                                          HairStyle::Pixie,        HairStyle::Bun,
                                          HairStyle::LongStraight, HairStyle::HighTopFade };
 
-        const int sel = m_hairStyleChoice->GetSelection();
-        if (sel >= 0 && std::cmp_less(sel, std::size(styles)))
+        if (m_hairStyle >= 0 && std::cmp_less(m_hairStyle, std::size(styles)))
             {
-            return styles[sel];
+            return styles[m_hairStyle];
             }
         return HairStyle::Bob;
         }
@@ -347,8 +355,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     FacialHair InsertChernoffDlg::GetFacialHair() const
         {
-        return (m_facialHairChoice->GetSelection() == 1) ? FacialHair::FiveOClockShadow :
-                                                           FacialHair::CleanShaven;
+        return (m_facialHair == 1) ? FacialHair::FiveOClockShadow : FacialHair::CleanShaven;
         }
 
     //-------------------------------------------
@@ -378,5 +385,92 @@ namespace Wisteria::UI
             }
 
         return true;
+        }
+
+    //-------------------------------------------
+    void InsertChernoffDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+        {
+        const auto* chernoff = dynamic_cast<const Graphs::ChernoffFacesPlot*>(&graph);
+        if (chernoff == nullptr)
+            {
+            return;
+            }
+
+        // load graph and page options from the base classes
+        LoadGraphOptions(graph, canvas);
+
+        // select the dataset by name from the property template
+        const auto dsName = chernoff->GetPropertyTemplate(L"dataset");
+        if (!dsName.empty() && m_datasetChoice != nullptr)
+            {
+            for (size_t i = 0; i < m_datasetNames.size(); ++i)
+                {
+                if (m_datasetNames[i] == dsName)
+                    {
+                    m_datasetChoice->SetSelection(static_cast<int>(i));
+                    break;
+                    }
+                }
+            }
+
+        // load actual column names from the graph
+        // (property templates may contain unexpanded {{placeholders}})
+        using FID = Graphs::ChernoffFacesPlot::FeatureId;
+        const FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
+                                    FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
+                                    FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
+                                    FID::FaceColor,   FID::EarSize };
+        m_featureVariables.clear();
+        for (const auto fid : allFeatures)
+            {
+            const auto var = chernoff->GetFeatureColumnName(fid);
+            if (!var.empty())
+                {
+                m_featureVariables[fid] = var;
+                }
+            }
+        UpdateFeatureLabels();
+
+        // appearance options
+        m_gender = (chernoff->GetGender() == Gender::Male) ? 1 : 0;
+        m_facialHairLabel->Enable(m_gender == 1);
+        m_facialHairChoice->Enable(m_gender == 1);
+
+        switch (chernoff->GetHairStyle())
+            {
+        case HairStyle::Bald:
+            m_hairStyle = 0;
+            break;
+        case HairStyle::Bob:
+            m_hairStyle = 1;
+            break;
+        case HairStyle::Pixie:
+            m_hairStyle = 2;
+            break;
+        case HairStyle::Bun:
+            m_hairStyle = 3;
+            break;
+        case HairStyle::LongStraight:
+            m_hairStyle = 4;
+            break;
+        case HairStyle::HighTopFade:
+            m_hairStyle = 5;
+            break;
+        default:
+            m_hairStyle = 1;
+            break;
+            }
+
+        m_facialHair = (chernoff->GetFacialHair() == FacialHair::FiveOClockShadow) ? 1 : 0;
+
+        // color pickers
+        m_skinColorLighterPicker->SetColour(chernoff->GetFaceColorLighter());
+        m_skinColorDarkerPicker->SetColour(chernoff->GetFaceColor());
+        m_eyeColorPicker->SetColour(chernoff->GetEyeColor());
+        m_hairColorPicker->SetColour(chernoff->GetHairColor());
+
+        m_showLabels = chernoff->IsShowingLabels();
+
+        TransferDataToWindow();
         }
     } // namespace Wisteria::UI

@@ -7,7 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertscatterplotdlg.h"
+#include "../../graphs/scatterplot.h"
 #include "variableselectdlg.h"
+#include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
@@ -98,15 +100,15 @@ namespace Wisteria::UI
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
         // regression options
-        m_showRegressionLinesCheck =
-            new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"));
-        m_showRegressionLinesCheck->SetValue(true);
-        optionsSizer->Add(m_showRegressionLinesCheck, wxSizerFlags{}.Border());
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_showRegressionLines)),
+                          wxSizerFlags{}.Border());
 
-        m_showConfidenceBandsCheck =
-            new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"));
-        m_showConfidenceBandsCheck->SetValue(true);
-        optionsSizer->Add(m_showConfidenceBandsCheck, wxSizerFlags{}.Border());
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_showConfidenceBands)),
+                          wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -263,5 +265,49 @@ namespace Wisteria::UI
             }
 
         return true;
+        }
+
+    //-------------------------------------------
+    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+        {
+        const auto* scatter = dynamic_cast<const Graphs::ScatterPlot*>(&graph);
+        if (scatter == nullptr)
+            {
+            return;
+            }
+
+        // load graph and page options from the base classes
+        LoadGraphOptions(graph, canvas);
+
+        // select the dataset by name from the property template
+        const auto dsName = scatter->GetPropertyTemplate(L"dataset");
+        if (!dsName.empty() && m_datasetChoice != nullptr)
+            {
+            for (size_t i = 0; i < m_datasetNames.size(); ++i)
+                {
+                if (m_datasetNames[i] == dsName)
+                    {
+                    m_datasetChoice->SetSelection(static_cast<int>(i));
+                    break;
+                    }
+                }
+            }
+
+        // load the actual column names used by the graph
+        // (property templates may contain unexpanded {{placeholders}})
+        m_xVariable = scatter->GetXColumnName();
+        m_yVariable = scatter->GetYColumnName();
+        const auto& series = scatter->GetSeriesList();
+        if (!series.empty())
+            {
+            m_groupVariable = series.front().GetGroupColumnName().value_or(wxString{});
+            }
+        UpdateVariableLabels();
+
+        // scatter-specific options
+        m_showRegressionLines = scatter->IsShowingRegressionLines();
+        m_showConfidenceBands = scatter->IsShowingConfidenceBands();
+
+        TransferDataToWindow();
         }
     } // namespace Wisteria::UI

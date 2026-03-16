@@ -47,6 +47,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         }
 
     //----------------------------------------------------------------
+    wxString ChernoffFacesPlot::GetFeatureColumnName(const FeatureId id) const
+        {
+        switch (id)
+            {
+        case FeatureId::FaceWidth:
+            return m_faceWidthColumnName;
+        case FeatureId::FaceHeight:
+            return m_faceHeightColumnName;
+        case FeatureId::EyeSize:
+            return m_eyeSizeColumnName;
+        case FeatureId::EyePosition:
+            return m_eyePositionColumnName;
+        case FeatureId::EyebrowSlant:
+            return m_eyebrowSlantColumnName;
+        case FeatureId::PupilDirection:
+            return m_pupilPositionColumnName;
+        case FeatureId::NoseSize:
+            return m_noseSizeColumnName;
+        case FeatureId::MouthWidth:
+            return m_mouthWidthColumnName;
+        case FeatureId::SmileFrown:
+            return m_mouthCurvatureColumnName;
+        case FeatureId::FaceColor:
+            return m_faceSaturationColumnName;
+        case FeatureId::EarSize:
+            return m_earSizeColumnName;
+        default:
+            return {};
+            }
+        }
+
+    //----------------------------------------------------------------
     wxRect ChernoffFacesPlot::FaceObject::GetBoundingBox([[maybe_unused]]
                                                          wxDC &
                                                          dc) const

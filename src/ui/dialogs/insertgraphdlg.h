@@ -17,6 +17,8 @@
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
+#include <wx/valgen.h>
+#include <wx/valtext.h>
 #include <wx/wx.h>
 
 namespace Wisteria::Graphs
@@ -106,6 +108,11 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetMirrorYAxis() const;
 
+        /// @brief Populates the graph options controls from an existing Graph2D.
+        /// @param graph The graph to read options from.
+        /// @param canvas The canvas the graph belongs to.
+        void LoadGraphOptions(const Graphs::Graph2D& graph, const Canvas* canvas);
+
       protected:
         /** @brief Creates a legend placement wxChoice and populates it.
             @param parent The parent window for the control.
@@ -132,17 +139,27 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
 
       private:
-        wxChoice* m_legendPlacementChoice{ nullptr };
+        // DDX data members
+        int m_legendPlacement{ 1 };
+        wxString m_title;
+        wxString m_subtitle;
+        wxString m_caption;
+        bool m_mirrorXAxis{ false };
+        bool m_mirrorYAxis{ false };
+        int m_plotBgImageOpacity{ 255 };
 
-        // graph options controls
-        wxTextCtrl* m_titleCtrl{ nullptr };
-        wxTextCtrl* m_subtitleCtrl{ nullptr };
-        wxTextCtrl* m_captionCtrl{ nullptr };
+        // original property templates (may contain {{placeholders}})
+        // and expanded text for detecting user changes
+        wxString m_titleTemplate;
+        wxString m_titleExpanded;
+        wxString m_subtitleTemplate;
+        wxString m_subtitleExpanded;
+        wxString m_captionTemplate;
+        wxString m_captionExpanded;
+
+        // controls without DDX validator support
         wxColourPickerCtrl* m_plotBgColorPicker{ nullptr };
         Thumbnail* m_plotBgImageThumbnail{ nullptr };
-        wxSpinCtrl* m_plotBgImageOpacitySpin{ nullptr };
-        wxCheckBox* m_mirrorXAxisCheck{ nullptr };
-        wxCheckBox* m_mirrorYAxisCheck{ nullptr };
         };
     } // namespace Wisteria::UI
 

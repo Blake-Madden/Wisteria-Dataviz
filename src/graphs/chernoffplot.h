@@ -146,11 +146,18 @@ namespace Wisteria::Graphs
         /// @brief Functions relating to the visual appearance of the faces.
         /// @{
 
-        /// @returns The base face color.
+        /// @returns The base (darker) face color.
         [[nodiscard]]
         wxColour GetFaceColor() const noexcept
             {
             return m_faceColor;
+            }
+
+        /// @returns The lighter face color used for low saturation values.
+        [[nodiscard]]
+        wxColour GetFaceColorLighter() const noexcept
+            {
+            return m_faceColorLighter;
             }
 
         /// @brief Sets the base face color.
@@ -322,6 +329,12 @@ namespace Wisteria::Graphs
         /// @returns The localized string for the feature.
         [[nodiscard]]
         static wxString GetFeatureDisplayName(FeatureId id);
+
+        /// @brief Returns the column name assigned to a feature.
+        /// @param id The feature identifier.
+        /// @returns The column name, or an empty string if not assigned.
+        [[nodiscard]]
+        wxString GetFeatureColumnName(FeatureId id) const;
 
         /// @name Legend
         /// @brief Legend-related classes and functions.

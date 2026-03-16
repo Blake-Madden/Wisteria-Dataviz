@@ -339,11 +339,6 @@ namespace Wisteria::Graphs
             return m_regressionLineStyles;
             }
 
-      protected:
-        /// @brief Recalculates the layout and plots the data.
-        /// @param dc The DC to draw to.
-        void RecalcSizes(wxDC& dc) override;
-
         /// @returns The X column name.
         [[nodiscard]]
         const wxString& GetXColumnName() const noexcept
@@ -357,6 +352,11 @@ namespace Wisteria::Graphs
             {
             return m_yColumnName;
             }
+
+      protected:
+        /// @brief Recalculates the layout and plots the data.
+        /// @param dc The DC to draw to.
+        void RecalcSizes(wxDC& dc) override;
 
       private:
         void CalculateRegression(Series& series);

@@ -152,6 +152,11 @@ class WisteriaView : public wxView
     void OnGraphDropdown(wxCommandEvent& event);
     void OnInsertChernoffPlot(wxCommandEvent& event);
     void OnInsertScatterPlot(wxCommandEvent& event);
+    void OnEditGraph(wxCommandEvent& event);
+    void EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol);
+    void EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                          size_t graphRow, size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,

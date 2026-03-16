@@ -23,6 +23,7 @@
 #include <wx/clrpicker.h>
 #include <wx/dcbuffer.h>
 #include <wx/spinctrl.h>
+#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -143,6 +144,16 @@ namespace Wisteria::UI
         /// @param item The item to configure.
         void ApplyPageOptions(GraphItems::GraphItemBase& item) const;
 
+        /// @brief Populates the page-level controls from an existing graph item.
+        /// @param item The item to read the options from.
+        /// @param canvas The canvas the item belongs to.
+        void LoadPageOptions(const GraphItems::GraphItemBase& item, const Canvas* canvas);
+
+        /// @brief Selects a specific cell in the grid preview.
+        /// @param row The row to select.
+        /// @param column The column to select.
+        void SetSelectedCell(size_t row, size_t column);
+
       protected:
         /// @brief Creates the dialog controls.
         /// @details Override in derived classes to add additional sidebar pages.
@@ -194,28 +205,33 @@ namespace Wisteria::UI
         size_t m_selectedRow{ 0 };
         size_t m_selectedColumn{ 0 };
 
-        wxChoice* m_horizontalAlignChoice{ nullptr };
-        wxChoice* m_verticalAlignChoice{ nullptr };
+        // DDX data members (bound to controls via wxGenericValidator)
+        int m_horizontalAlign{ 0 };
+        int m_verticalAlign{ 0 };
+        int m_marginTop{ 0 };
+        int m_marginRight{ 0 };
+        int m_marginBottom{ 0 };
+        int m_marginLeft{ 0 };
+        int m_paddingTop{ 0 };
+        int m_paddingRight{ 0 };
+        int m_paddingBottom{ 0 };
+        int m_paddingLeft{ 0 };
+        bool m_fitRowToContent{ false };
+        bool m_fixedWidth{ false };
+        int m_outlineWidth{ 1 };
+        int m_outlineStyle{ 0 };
+        bool m_outlineTop{ false };
+        bool m_outlineRight{ false };
+        bool m_outlineBottom{ false };
+        bool m_outlineLeft{ false };
+
+        // controls without DDX validator support
         wxSpinCtrlDouble* m_scalingSpin{ nullptr };
-        wxSpinCtrl* m_marginTopSpin{ nullptr };
-        wxSpinCtrl* m_marginRightSpin{ nullptr };
-        wxSpinCtrl* m_marginBottomSpin{ nullptr };
-        wxSpinCtrl* m_marginLeftSpin{ nullptr };
-        wxSpinCtrl* m_paddingTopSpin{ nullptr };
-        wxSpinCtrl* m_paddingRightSpin{ nullptr };
-        wxSpinCtrl* m_paddingBottomSpin{ nullptr };
-        wxSpinCtrl* m_paddingLeftSpin{ nullptr };
+        wxColourPickerCtrl* m_outlineColorPicker{ nullptr };
+
+        // controls needed for event handlers
         wxSpinCtrl* m_rowsSpin{ nullptr };
         wxSpinCtrl* m_columnsSpin{ nullptr };
-        wxCheckBox* m_fitRowToContentCheck{ nullptr };
-        wxCheckBox* m_fixedWidthCheck{ nullptr };
-        wxColourPickerCtrl* m_outlineColorPicker{ nullptr };
-        wxSpinCtrl* m_outlineWidthSpin{ nullptr };
-        wxChoice* m_outlineStyleChoice{ nullptr };
-        wxCheckBox* m_outlineTopCheck{ nullptr };
-        wxCheckBox* m_outlineRightCheck{ nullptr };
-        wxCheckBox* m_outlineBottomCheck{ nullptr };
-        wxCheckBox* m_outlineLeftCheck{ nullptr };
         };
     } // namespace Wisteria::UI
 

@@ -22,6 +22,7 @@ dichotomous-discrete.svg
 discrete.svg
 donut-subgrouped.svg
 donut.svg
+edit.svg
 file-open.svg
 file-save.svg
 find.svg

@@ -443,22 +443,27 @@ namespace Wisteria::UI
         // horizontal page alignment
         propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Horizontal alignment:")),
                         wxSizerFlags{}.CenterVertical());
-        m_horizontalAlignChoice = new wxChoice(pagePage, wxID_ANY);
-        m_horizontalAlignChoice->Append(_(L"Left"));
-        m_horizontalAlignChoice->Append(_(L"Centered"));
-        m_horizontalAlignChoice->Append(_(L"Right"));
-        m_horizontalAlignChoice->SetSelection(0);
-        propsSizer->Add(m_horizontalAlignChoice);
+            {
+            auto* hAlignChoice =
+                new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_horizontalAlign));
+            hAlignChoice->Append(_(L"Left"));
+            hAlignChoice->Append(_(L"Centered"));
+            hAlignChoice->Append(_(L"Right"));
+            propsSizer->Add(hAlignChoice);
+            }
 
         // vertical page alignment
         propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Vertical alignment:")),
                         wxSizerFlags{}.CenterVertical());
-        m_verticalAlignChoice = new wxChoice(pagePage, wxID_ANY);
-        m_verticalAlignChoice->Append(_(L"Top"));
-        m_verticalAlignChoice->Append(_(L"Centered"));
-        m_verticalAlignChoice->Append(_(L"Bottom"));
-        m_verticalAlignChoice->SetSelection(0);
-        propsSizer->Add(m_verticalAlignChoice);
+            {
+            auto* vAlignChoice = new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                              0, nullptr, 0, wxGenericValidator(&m_verticalAlign));
+            vAlignChoice->Append(_(L"Top"));
+            vAlignChoice->Append(_(L"Centered"));
+            vAlignChoice->Append(_(L"Bottom"));
+            propsSizer->Add(vAlignChoice);
+            }
 
         // scaling
         propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Scaling:")),
@@ -475,72 +480,55 @@ namespace Wisteria::UI
         // canvas margins (top, right, bottom, left)
         auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas margins"));
         auto* marginGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
-        marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, _(L"Top:")),
-                        wxSizerFlags{}.CenterVertical());
-        m_marginTopSpin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
-        m_marginTopSpin->SetRange(0, 100);
-        m_marginTopSpin->SetValue(0);
-        marginGrid->Add(m_marginTopSpin);
-        marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, _(L"Right:")),
-                        wxSizerFlags{}.CenterVertical());
-        m_marginRightSpin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
-        m_marginRightSpin->SetRange(0, 100);
-        m_marginRightSpin->SetValue(0);
-        marginGrid->Add(m_marginRightSpin);
-        marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, _(L"Bottom:")),
-                        wxSizerFlags{}.CenterVertical());
-        m_marginBottomSpin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
-        m_marginBottomSpin->SetRange(0, 100);
-        m_marginBottomSpin->SetValue(0);
-        marginGrid->Add(m_marginBottomSpin);
-        marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, _(L"Left:")),
-                        wxSizerFlags{}.CenterVertical());
-        m_marginLeftSpin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
-        m_marginLeftSpin->SetRange(0, 100);
-        m_marginLeftSpin->SetValue(0);
-        marginGrid->Add(m_marginLeftSpin);
+
+        const auto addMarginSpin = [&](const wxString& label, int* value)
+        {
+            marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, label),
+                            wxSizerFlags{}.CenterVertical());
+            auto* spin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
+            spin->SetRange(0, 100);
+            spin->SetValidator(wxGenericValidator(value));
+            marginGrid->Add(spin);
+        };
+        addMarginSpin(_(L"Top:"), &m_marginTop);
+        addMarginSpin(_(L"Right:"), &m_marginRight);
+        addMarginSpin(_(L"Bottom:"), &m_marginBottom);
+        addMarginSpin(_(L"Left:"), &m_marginLeft);
+
         marginBox->Add(marginGrid, wxSizerFlags{}.Border());
         pageSizer->Add(marginBox, wxSizerFlags{}.Border());
 
         // padding (top, right, bottom, left)
         auto* paddingBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Padding"));
         auto* paddingGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
-        paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, _(L"Top:")),
-                         wxSizerFlags{}.CenterVertical());
-        m_paddingTopSpin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
-        m_paddingTopSpin->SetRange(0, 100);
-        m_paddingTopSpin->SetValue(0);
-        paddingGrid->Add(m_paddingTopSpin);
-        paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, _(L"Right:")),
-                         wxSizerFlags{}.CenterVertical());
-        m_paddingRightSpin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
-        m_paddingRightSpin->SetRange(0, 100);
-        m_paddingRightSpin->SetValue(0);
-        paddingGrid->Add(m_paddingRightSpin);
-        paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, _(L"Bottom:")),
-                         wxSizerFlags{}.CenterVertical());
-        m_paddingBottomSpin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
-        m_paddingBottomSpin->SetRange(0, 100);
-        m_paddingBottomSpin->SetValue(0);
-        paddingGrid->Add(m_paddingBottomSpin);
-        paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, _(L"Left:")),
-                         wxSizerFlags{}.CenterVertical());
-        m_paddingLeftSpin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
-        m_paddingLeftSpin->SetRange(0, 100);
-        m_paddingLeftSpin->SetValue(0);
-        paddingGrid->Add(m_paddingLeftSpin);
+
+        const auto addPaddingSpin = [&](const wxString& label, int* value)
+        {
+            paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, label),
+                             wxSizerFlags{}.CenterVertical());
+            auto* spin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
+            spin->SetRange(0, 100);
+            spin->SetValidator(wxGenericValidator(value));
+            paddingGrid->Add(spin);
+        };
+        addPaddingSpin(_(L"Top:"), &m_paddingTop);
+        addPaddingSpin(_(L"Right:"), &m_paddingRight);
+        addPaddingSpin(_(L"Bottom:"), &m_paddingBottom);
+        addPaddingSpin(_(L"Left:"), &m_paddingLeft);
+
         paddingBox->Add(paddingGrid, wxSizerFlags{}.Border());
         pageSizer->Add(paddingBox, wxSizerFlags{}.Border());
 
         // fit row to content
-        m_fitRowToContentCheck = new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"));
-        m_fitRowToContentCheck->SetValue(false);
-        pageSizer->Add(m_fitRowToContentCheck, wxSizerFlags{}.Border());
+        pageSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"),
+                                      wxDefaultPosition, wxDefaultSize, 0,
+                                      wxGenericValidator(&m_fitRowToContent)),
+                       wxSizerFlags{}.Border());
 
         // fixed width
-        m_fixedWidthCheck = new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"));
-        m_fixedWidthCheck->SetValue(false);
-        pageSizer->Add(m_fixedWidthCheck, wxSizerFlags{}.Border());
+        pageSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"), wxDefaultPosition,
+                                      wxDefaultSize, 0, wxGenericValidator(&m_fixedWidth)),
+                       wxSizerFlags{}.Border());
 
         // outline pen
         auto* outlineBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Outline"));
@@ -552,32 +540,44 @@ namespace Wisteria::UI
         outlineGrid->Add(m_outlineColorPicker);
         outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
                          wxSizerFlags{}.CenterVertical());
-        m_outlineWidthSpin = new wxSpinCtrl(outlineBox->GetStaticBox(), wxID_ANY);
-        m_outlineWidthSpin->SetRange(1, 20);
-        m_outlineWidthSpin->SetValue(1);
-        outlineGrid->Add(m_outlineWidthSpin);
+            {
+            auto* outlineWidthSpin = new wxSpinCtrl(outlineBox->GetStaticBox(), wxID_ANY);
+            outlineWidthSpin->SetRange(1, 20);
+            outlineWidthSpin->SetValidator(wxGenericValidator(&m_outlineWidth));
+            outlineGrid->Add(outlineWidthSpin);
+            }
         outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
                          wxSizerFlags{}.CenterVertical());
-        m_outlineStyleChoice = new wxChoice(outlineBox->GetStaticBox(), wxID_ANY);
-        m_outlineStyleChoice->Append(_(L"Solid"));
-        m_outlineStyleChoice->Append(_(L"Dot"));
-        m_outlineStyleChoice->Append(_(L"Long dash"));
-        m_outlineStyleChoice->Append(_(L"Short dash"));
-        m_outlineStyleChoice->Append(_(L"Dot dash"));
-        m_outlineStyleChoice->SetSelection(0);
-        outlineGrid->Add(m_outlineStyleChoice);
+            {
+            auto* outlineStyleChoice =
+                new wxChoice(outlineBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                             0, nullptr, 0, wxGenericValidator(&m_outlineStyle));
+            outlineStyleChoice->Append(_(L"Solid"));
+            outlineStyleChoice->Append(_(L"Dot"));
+            outlineStyleChoice->Append(_(L"Long dash"));
+            outlineStyleChoice->Append(_(L"Short dash"));
+            outlineStyleChoice->Append(_(L"Dot dash"));
+            outlineGrid->Add(outlineStyleChoice);
+            }
         outlineBox->Add(outlineGrid, wxSizerFlags{}.Border());
 
         // border sides
         auto* borderSizer = new wxBoxSizer(wxHORIZONTAL);
-        m_outlineTopCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Top"));
-        m_outlineRightCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Right"));
-        m_outlineBottomCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Bottom"));
-        m_outlineLeftCheck = new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Left"));
-        borderSizer->Add(m_outlineTopCheck, wxSizerFlags{}.Border(wxRIGHT));
-        borderSizer->Add(m_outlineRightCheck, wxSizerFlags{}.Border(wxRIGHT));
-        borderSizer->Add(m_outlineBottomCheck, wxSizerFlags{}.Border(wxRIGHT));
-        borderSizer->Add(m_outlineLeftCheck);
+        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Top"),
+                                        wxDefaultPosition, wxDefaultSize, 0,
+                                        wxGenericValidator(&m_outlineTop)),
+                         wxSizerFlags{}.Border(wxRIGHT));
+        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Right"),
+                                        wxDefaultPosition, wxDefaultSize, 0,
+                                        wxGenericValidator(&m_outlineRight)),
+                         wxSizerFlags{}.Border(wxRIGHT));
+        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Bottom"),
+                                        wxDefaultPosition, wxDefaultSize, 0,
+                                        wxGenericValidator(&m_outlineBottom)),
+                         wxSizerFlags{}.Border(wxRIGHT));
+        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Left"),
+                                        wxDefaultPosition, wxDefaultSize, 0,
+                                        wxGenericValidator(&m_outlineLeft)));
         outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
 
         pageSizer->Add(outlineBox, wxSizerFlags{}.Border());
@@ -588,7 +588,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     PageHorizontalAlignment InsertItemDlg::GetHorizontalPageAlignment() const
         {
-        switch (m_horizontalAlignChoice->GetSelection())
+        switch (m_horizontalAlign)
             {
         case 1:
             return PageHorizontalAlignment::Centered;
@@ -602,7 +602,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     PageVerticalAlignment InsertItemDlg::GetVerticalPageAlignment() const
         {
-        switch (m_verticalAlignChoice->GetSelection())
+        switch (m_verticalAlign)
             {
         case 1:
             return PageVerticalAlignment::Centered;
@@ -619,42 +619,40 @@ namespace Wisteria::UI
     //-------------------------------------------
     std::array<int, 4> InsertItemDlg::GetCanvasMargins() const
         {
-        return { m_marginTopSpin->GetValue(), m_marginRightSpin->GetValue(),
-                 m_marginBottomSpin->GetValue(), m_marginLeftSpin->GetValue() };
+        return { m_marginTop, m_marginRight, m_marginBottom, m_marginLeft };
         }
 
     //-------------------------------------------
     std::array<int, 4> InsertItemDlg::GetPadding() const
         {
-        return { m_paddingTopSpin->GetValue(), m_paddingRightSpin->GetValue(),
-                 m_paddingBottomSpin->GetValue(), m_paddingLeftSpin->GetValue() };
+        return { m_paddingTop, m_paddingRight, m_paddingBottom, m_paddingLeft };
         }
 
     //-------------------------------------------
-    bool InsertItemDlg::GetFitRowToContent() const { return m_fitRowToContentCheck->GetValue(); }
+    bool InsertItemDlg::GetFitRowToContent() const { return m_fitRowToContent; }
 
     //-------------------------------------------
-    bool InsertItemDlg::GetFixedWidth() const { return m_fixedWidthCheck->GetValue(); }
+    bool InsertItemDlg::GetFixedWidth() const { return m_fixedWidth; }
 
     //-------------------------------------------
     wxPen InsertItemDlg::GetOutlinePen() const
         {
         constexpr wxPenStyle penStyles[] = { wxPENSTYLE_SOLID, wxPENSTYLE_DOT, wxPENSTYLE_LONG_DASH,
                                              wxPENSTYLE_SHORT_DASH, wxPENSTYLE_DOT_DASH };
-        const auto styleIndex = static_cast<size_t>(m_outlineStyleChoice->GetSelection());
+        const auto styleIndex = static_cast<size_t>(m_outlineStyle);
         const auto penStyle =
             (styleIndex < std::size(penStyles)) ? penStyles[styleIndex] : wxPENSTYLE_SOLID;
-        return wxPen(m_outlineColorPicker->GetColour(), m_outlineWidthSpin->GetValue(), penStyle);
+        return wxPen(m_outlineColorPicker->GetColour(), m_outlineWidth, penStyle);
         }
 
     //-------------------------------------------
     std::bitset<4> InsertItemDlg::GetOutlineSides() const
         {
         std::bitset<4> sides;
-        sides.set(0, m_outlineTopCheck->GetValue());
-        sides.set(1, m_outlineRightCheck->GetValue());
-        sides.set(2, m_outlineBottomCheck->GetValue());
-        sides.set(3, m_outlineLeftCheck->GetValue());
+        sides.set(0, m_outlineTop);
+        sides.set(1, m_outlineRight);
+        sides.set(2, m_outlineBottom);
+        sides.set(3, m_outlineLeft);
         return sides;
         }
 
@@ -676,6 +674,100 @@ namespace Wisteria::UI
         item.GetPen() = GetOutlinePen();
         const auto sides = GetOutlineSides();
         item.GetGraphItemInfo().Outline(sides[0], sides[1], sides[2], sides[3]);
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::SetSelectedCell(const size_t row, const size_t column)
+        {
+        SelectCell(row, column);
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::LoadPageOptions(const GraphItems::GraphItemBase& item, const Canvas* canvas)
+        {
+        // alignment
+        switch (item.GetPageHorizontalAlignment())
+            {
+        case PageHorizontalAlignment::Centered:
+            m_horizontalAlign = 1;
+            break;
+        case PageHorizontalAlignment::RightAligned:
+            m_horizontalAlign = 2;
+            break;
+        default:
+            m_horizontalAlign = 0;
+            break;
+            }
+        switch (item.GetPageVerticalAlignment())
+            {
+        case PageVerticalAlignment::Centered:
+            m_verticalAlign = 1;
+            break;
+        case PageVerticalAlignment::BottomAligned:
+            m_verticalAlign = 2;
+            break;
+        default:
+            m_verticalAlign = 0;
+            break;
+            }
+
+        // scaling (relative to canvas)
+        if (canvas != nullptr)
+            {
+            const double relScale = item.GetScaling() / canvas->GetScaling();
+            m_scalingSpin->SetValue(std::round(relScale * 10.0) / 10.0);
+            }
+
+        // canvas margins
+        m_marginTop = item.GetTopCanvasMargin();
+        m_marginRight = item.GetRightCanvasMargin();
+        m_marginBottom = item.GetBottomCanvasMargin();
+        m_marginLeft = item.GetLeftCanvasMargin();
+
+        // padding
+        m_paddingTop = item.GetTopPadding();
+        m_paddingRight = item.GetRightPadding();
+        m_paddingBottom = item.GetBottomPadding();
+        m_paddingLeft = item.GetLeftPadding();
+
+        // sizing options
+        m_fitRowToContent = item.IsFittingCanvasRowHeightToContent();
+        m_fixedWidth = item.IsFixedWidthOnCanvas();
+
+        // outline
+        const auto& pen = item.GetPen();
+        if (pen.IsOk() && pen != wxNullPen)
+            {
+            m_outlineColorPicker->SetColour(pen.GetColour());
+            m_outlineWidth = pen.GetWidth();
+
+            switch (pen.GetStyle())
+                {
+            case wxPENSTYLE_DOT:
+                m_outlineStyle = 1;
+                break;
+            case wxPENSTYLE_LONG_DASH:
+                m_outlineStyle = 2;
+                break;
+            case wxPENSTYLE_SHORT_DASH:
+                m_outlineStyle = 3;
+                break;
+            case wxPENSTYLE_DOT_DASH:
+                m_outlineStyle = 4;
+                break;
+            default:
+                m_outlineStyle = 0;
+                break;
+                }
+            }
+
+        const auto& info = item.GetGraphItemInfo();
+        m_outlineTop = info.IsShowingTopOutline();
+        m_outlineRight = info.IsShowingRightOutline();
+        m_outlineBottom = info.IsShowingBottomOutline();
+        m_outlineLeft = info.IsShowingLeftOutline();
+
+        TransferDataToWindow();
         }
 
     //-------------------------------------------

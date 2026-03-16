@@ -85,17 +85,22 @@ namespace Wisteria::UI
 
         /// @returns Whether to show regression lines.
         [[nodiscard]]
-        bool GetShowRegressionLines() const
+        bool GetShowRegressionLines() const noexcept
             {
-            return m_showRegressionLinesCheck->GetValue();
+            return m_showRegressionLines;
             }
 
         /// @returns Whether to show confidence bands.
         [[nodiscard]]
-        bool GetShowConfidenceBands() const
+        bool GetShowConfidenceBands() const noexcept
             {
-            return m_showConfidenceBandsCheck->GetValue();
+            return m_showConfidenceBands;
             }
+
+        /// @brief Populates all dialog controls from an existing scatter plot.
+        /// @param plot The scatter plot to read settings from.
+        /// @param canvas The canvas the plot belongs to.
+        void LoadFromGraph(const Graphs::Graph2D& plot, Canvas* canvas);
 
       protected:
         void CreateControls() override;
@@ -115,8 +120,10 @@ namespace Wisteria::UI
         wxStaticText* m_xVarLabel{ nullptr };
         wxStaticText* m_yVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
-        wxCheckBox* m_showRegressionLinesCheck{ nullptr };
-        wxCheckBox* m_showConfidenceBandsCheck{ nullptr };
+
+        // DDX data members
+        bool m_showRegressionLines{ true };
+        bool m_showConfidenceBands{ true };
 
         wxString m_xVariable;
         wxString m_yVariable;

@@ -17,6 +17,7 @@
 #include <array>
 #include <vector>
 #include <wx/clrpicker.h>
+#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -104,15 +105,20 @@ namespace Wisteria::UI
 
         /// @returns Whether to show labels beneath faces.
         [[nodiscard]]
-        bool GetShowLabels() const
+        bool GetShowLabels() const noexcept
             {
-            return m_showLabelsCheck->GetValue();
+            return m_showLabels;
             }
 
         /// @returns The variable name for a given feature, or empty if unassigned.
         /// @param feature The facial feature to look up.
         [[nodiscard]]
         wxString GetFeatureVariable(Graphs::ChernoffFacesPlot::FeatureId feature) const;
+
+        /// @brief Populates all dialog controls from an existing Chernoff Faces plot.
+        /// @param graph The graph to read settings from.
+        /// @param canvas The canvas the graph belongs to.
+        void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
 
       protected:
         void CreateControls() override;
@@ -133,15 +139,20 @@ namespace Wisteria::UI
 
         wxChoice* m_datasetChoice{ nullptr };
         std::array<wxStaticText*, FEATURE_COUNT> m_featureVarLabels{};
-        wxChoice* m_genderChoice{ nullptr };
-        wxChoice* m_hairStyleChoice{ nullptr };
+
+        // DDX data members
+        int m_gender{ 0 };
+        int m_hairStyle{ 1 };
+        int m_facialHair{ 0 };
+        bool m_showLabels{ true };
+
+        // controls needed for event handlers or without DDX support
         wxStaticText* m_facialHairLabel{ nullptr };
         wxChoice* m_facialHairChoice{ nullptr };
         wxColourPickerCtrl* m_skinColorLighterPicker{ nullptr };
         wxColourPickerCtrl* m_skinColorDarkerPicker{ nullptr };
         wxColourPickerCtrl* m_eyeColorPicker{ nullptr };
         wxColourPickerCtrl* m_hairColorPicker{ nullptr };
-        wxCheckBox* m_showLabelsCheck{ nullptr };
 
         // feature-to-variable mappings (indexed by FeatureId)
         std::map<Graphs::ChernoffFacesPlot::FeatureId, wxString> m_featureVariables;

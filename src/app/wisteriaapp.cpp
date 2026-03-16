@@ -35,7 +35,8 @@ WisteriaArtProvider::WisteriaArtProvider()
                     { L"ID_LIST_SORT", L"sort.svg" },
                     { L"ID_CLEAR", L"clear.svg" },
                     { L"ID_REFRESH", L"reload.svg" },
-                    { L"ID_REALTIME_UPDATE", L"realtime.svg" } };
+                    { L"ID_REALTIME_UPDATE", L"realtime.svg" },
+                    { wxART_EDIT, L"edit.svg" } };
     }
 
 //-------------------------------------------
@@ -374,6 +375,12 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         graphButtonBar->AddDropdownButton(
             ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
             sportsIcon.IsOk() ? sportsIcon.GetBitmap(iconSize) : wxBitmap{}, _(L"Sports graphs"));
+
+        const auto editGraphIcon = GetResourceManager().GetSVG(L"edit.svg");
+        graphButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"),
+                                  editGraphIcon.IsOk() ? editGraphIcon.GetBitmap(iconSize) :
+                                                         wxBitmap{},
+                                  _(L"Edit the selected item"));
         }
     else
         {
