@@ -144,6 +144,27 @@ namespace Wisteria::Graphs
         /// @brief Adds a caption explaining how to interpret the graph.
         void AddDefaultCaption() final;
 
+        /// @returns The p-value threshold, if specified.
+        [[nodiscard]]
+        const std::optional<double>& GetPValueThreshold() const noexcept
+            {
+            return m_pValueThreshold;
+            }
+
+        /// @returns Which predictors to include, if specified.
+        [[nodiscard]]
+        const std::optional<Influence>& GetPredictorsToInclude() const noexcept
+            {
+            return m_predictorsToInclude;
+            }
+
+        /// @returns Whether the default caption was added.
+        [[nodiscard]]
+        bool HasDefaultCaption() const noexcept
+            {
+            return m_hasDefaultCaption;
+            }
+
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
@@ -158,6 +179,10 @@ namespace Wisteria::Graphs
             {
             return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel());
             }
+
+        std::optional<double> m_pValueThreshold;
+        std::optional<Influence> m_predictorsToInclude;
+        bool m_hasDefaultCaption{ false };
         };
     } // namespace Wisteria::Graphs
 

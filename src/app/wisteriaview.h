@@ -104,9 +104,13 @@ class WisteriaView : public wxView
     void SaveItem(wxSimpleJSON::Ptr_t& itemNode, const Wisteria::GraphItems::GraphItemBase* item,
                   const Wisteria::Canvas* canvas) const;
     [[nodiscard]]
-    static wxString SavePenToStr(const wxPen& pen);
+    wxString SavePenToStr(const wxPen& pen) const;
     [[nodiscard]]
-    static wxString SaveBrushToStr(const wxBrush& brush);
+    wxString SaveBrushToStr(const wxBrush& brush) const;
+    [[nodiscard]]
+    wxString SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label) const;
+    [[nodiscard]]
+    wxString ColorToStr(const wxColour& color) const;
     [[nodiscard]]
     wxSimpleJSON::Ptr_t SaveLabel(const Wisteria::GraphItems::Label* label,
                                   const Wisteria::Canvas* canvas) const;

@@ -1676,6 +1676,10 @@ namespace Wisteria::GraphItems
               shortened to `'79-80`.
               (This will only be applied if all dates are in the same century.)*/
         void SimplifyBrackets();
+        /// @returns @c true if SimplifyBrackets() has been called.
+        [[nodiscard]]
+        bool AreBracketsSimplified() const noexcept
+            { return m_bracketsSimplified; }
 
         /// @}
 
@@ -2316,6 +2320,7 @@ namespace Wisteria::GraphItems
         // scale information
         bool m_scaledReserved{ false };
         bool m_startAtZero{ false };
+        bool m_bracketsSimplified{ false };
         double m_rangeStart{ 0 };
         double m_rangeEnd{ 0 };
         uint8_t m_displayPrecision{ 0 };

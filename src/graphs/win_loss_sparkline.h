@@ -175,6 +175,13 @@ namespace Wisteria::Graphs
             m_highlightBestRecords = highlight;
             }
 
+        /// @returns Whether best records are being highlighted.
+        [[nodiscard]]
+        bool IsHighlightingBestRecords() const noexcept
+            {
+            return m_highlightBestRecords;
+            }
+
         /** @brief Builds and returns a legend.
             @details This can be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.

@@ -984,6 +984,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> BoxPlot::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         if (GetDataset() == nullptr || GetBoxCount() != 1)
             {
             return nullptr;

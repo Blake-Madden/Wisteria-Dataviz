@@ -223,6 +223,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
     std::unique_ptr<GraphItems::Label> MultiSeriesLinePlot::CreateLegend(
         const LegendOptions& options)
         {
+        SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())

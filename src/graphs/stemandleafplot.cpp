@@ -508,6 +508,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> StemAndLeafPlot::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         if (GetDataset() == nullptr || m_stems.empty())
             {
             return nullptr;

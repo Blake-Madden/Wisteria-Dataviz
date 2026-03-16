@@ -263,6 +263,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> LinePlot::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         if (!IsUsingGrouping())
             {
             return nullptr;

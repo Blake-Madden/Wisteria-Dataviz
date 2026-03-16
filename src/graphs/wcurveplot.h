@@ -169,6 +169,13 @@ namespace Wisteria::Graphs
             ResetTimeLabels();
             }
 
+        /// @returns The time interval label.
+        [[nodiscard]]
+        const wxString& GetTimeIntervalLabel() const noexcept
+            {
+            return m_timeLabel;
+            }
+
       private:
         void ResetTimeLabels();
         [[nodiscard]]

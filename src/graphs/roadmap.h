@@ -84,6 +84,13 @@ namespace Wisteria::Graphs
             return m_roadPen;
             }
 
+        /// @returns The pen used to draw the road (const version).
+        [[nodiscard]]
+        const wxPen& GetRoadPen() const noexcept
+            {
+            return m_roadPen;
+            }
+
         /// @brief Gets/sets the pen used to draw the lane separator on the road.
         /// @details This is useful for changing the color, pen style, or even removing the
         ///     line in the middle of the road.\n
@@ -98,9 +105,23 @@ namespace Wisteria::Graphs
             return m_laneSeparatorPen;
             }
 
+        /// @returns The pen used to draw the lane separator (const version).
+        [[nodiscard]]
+        const wxPen& GetLaneSeparatorPen() const noexcept
+            {
+            return m_laneSeparatorPen;
+            }
+
         /** @brief Sets the icon theme for the road stops.
             @param theme Which theme to use.*/
         void SetRoadStopTheme(const RoadStopTheme theme) noexcept { m_iconTheme = theme; }
+
+        /// @returns The current road stop theme.
+        [[nodiscard]]
+        RoadStopTheme GetRoadStopTheme() const noexcept
+            {
+            return m_iconTheme;
+            }
 
         /** @brief Builds and returns a legend.
             @details This can be managed by the parent canvas and placed next to the plot.
@@ -114,6 +135,13 @@ namespace Wisteria::Graphs
         void SetMarkerLabelDisplay(const MarkerLabelDisplay mlDisplay) noexcept
             {
             m_markerLabelDisplay = mlDisplay;
+            }
+
+        /// @returns How the marker labels are displayed.
+        [[nodiscard]]
+        MarkerLabelDisplay GetMarkerLabelDisplay() const noexcept
+            {
+            return m_markerLabelDisplay;
             }
 
         /// @returns The lane separator style.

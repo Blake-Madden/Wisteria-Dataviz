@@ -284,6 +284,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> Roadmap::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())

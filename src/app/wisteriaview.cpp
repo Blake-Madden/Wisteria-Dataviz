@@ -274,6 +274,10 @@ void WisteriaView::LoadProject()
         const auto& importOpts = m_reportBuilder.GetDatasetImportOptions();
         for (const auto& [dsName, dataset] : m_reportBuilder.GetDatasets())
             {
+            if (dsName.empty())
+                {
+                continue;
+                }
             const wxWindowID dsId = nextId;
             nextId = wxNewId();
 
@@ -1271,6 +1275,20 @@ void WisteriaView::SaveDatasetImportOptions(
             dateArray->ArrayAdd(dateObj);
             }
         }
+
+    // columns-order (preserves original spreadsheet column ordering)
+    wxArrayString colOrder;
+    for (const auto& col : colInfo)
+        {
+        if (!col.m_excluded)
+            {
+            colOrder.Add(col.m_name);
+            }
+        }
+    if (!colOrder.empty())
+        {
+        dsNode->Add(L"columns-order", colOrder);
+        }
     }
 
 //-------------------------------------------
@@ -1493,16 +1511,22 @@ void WisteriaView::SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& 
     auto subArray = parentNode->GetProperty(L"subsets");
     for (const auto& [subName, sOpts] : subsetOpts)
         {
-        if (sOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0)
+        if (sOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0 &&
+            subName.CmpNoCase(sourceName) != 0)
             {
             auto subObj = wxSimpleJSON::Create(wxString::Format(
                 L"{\"name\": \"%s\", "
                 L"\"section\": {}, \"filter\": {}, \"filter-and\": [], \"filter-or\": [], "
+                L"\"subsets\": [], \"pivots\": [], \"merges\": [], "
                 L"\"recode-re\": [], \"columns-rename\": [], "
                 L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
                 L"\"collapse-except\": [], \"formulas\": []}",
                 EscapeJsonStr(subName)));
             SaveSubsetFilters(subObj, sOpts);
+
+            SaveSubsets(subObj, subName);
+            SavePivots(subObj, subName);
+            SaveMerges(subObj, subName);
 
             const auto txIt = transformOpts.find(subName);
             if (txIt != transformOpts.cend())
@@ -1512,7 +1536,8 @@ void WisteriaView::SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& 
                 }
 
             // clean up empty arrays
-            for (const auto& key : { L"recode-re", L"columns-rename", L"mutate-categorical-columns",
+            for (const auto& key : { L"subsets", L"pivots", L"merges", L"recode-re",
+                                     L"columns-rename", L"mutate-categorical-columns",
                                      L"collapse-min", L"collapse-except", L"formulas" })
                 {
                 if (subObj->GetProperty(key)->ArraySize() == 0)
@@ -1535,14 +1560,21 @@ void WisteriaView::SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& s
     auto pivArray = parentNode->GetProperty(L"pivots");
     for (const auto& [pivName, pOpts] : pivotOpts)
         {
-        if (pOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0)
+        if (pOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0 &&
+            pivName.CmpNoCase(sourceName) != 0)
             {
             auto pivObj = wxSimpleJSON::Create(
-                wxString::Format(L"{\"name\": \"%s\", "
-                                 L"\"subsets\": [], \"recode-re\": [], \"columns-rename\": [], "
-                                 L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
-                                 L"\"collapse-except\": []}",
-                                 EscapeJsonStr(pivName)));
+                pivName.empty() ?
+                    wxString(L"{\"subsets\": [], \"pivots\": [], \"merges\": [], "
+                             L"\"recode-re\": [], \"columns-rename\": [], "
+                             L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
+                             L"\"collapse-except\": [], \"formulas\": []}") :
+                    wxString::Format(L"{\"name\": \"%s\", "
+                                     L"\"subsets\": [], \"pivots\": [], \"merges\": [], "
+                                     L"\"recode-re\": [], \"columns-rename\": [], "
+                                     L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
+                                     L"\"collapse-except\": [], \"formulas\": []}",
+                                     EscapeJsonStr(pivName)));
 
             if (pOpts.m_type == Wisteria::ReportBuilder::PivotType::Wider)
                 {
@@ -1623,17 +1655,20 @@ void WisteriaView::SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& s
                 }
 
             SaveSubsets(pivObj, pivName);
+            SavePivots(pivObj, pivName);
+            SaveMerges(pivObj, pivName);
 
             const auto txIt = transformOpts.find(pivName);
             if (txIt != transformOpts.cend())
                 {
                 SaveTransformOptions(pivObj, txIt->second);
+                SaveFormulas(pivObj, txIt->second.m_formulas);
                 }
 
             // clean up empty arrays
-            for (const auto& key :
-                 { L"subsets", L"recode-re", L"columns-rename", L"mutate-categorical-columns",
-                   L"collapse-min", L"collapse-except" })
+            for (const auto& key : { L"subsets", L"merges", L"pivots", L"recode-re",
+                                     L"columns-rename", L"mutate-categorical-columns",
+                                     L"collapse-min", L"collapse-except", L"formulas" })
                 {
                 if (pivObj->GetProperty(key)->ArraySize() == 0)
                     {
@@ -1650,14 +1685,21 @@ void WisteriaView::SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& s
 void WisteriaView::SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
     {
     const auto& mergeOpts = m_reportBuilder.GetDatasetMergeOptions();
+    const auto& transformOpts = m_reportBuilder.GetDatasetTransformOptions();
 
     auto mrgArray = parentNode->GetProperty(L"merges");
     for (const auto& [mrgName, mOpts] : mergeOpts)
         {
-        if (mOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0)
+        if (mOpts.m_sourceDatasetName.CmpNoCase(sourceName) == 0 &&
+            mrgName.CmpNoCase(sourceName) != 0)
             {
             auto mrgObj = wxSimpleJSON::Create(
-                wxString::Format(L"{\"name\": \"%s\", \"by\": []}", EscapeJsonStr(mrgName)));
+                wxString::Format(L"{\"name\": \"%s\", \"by\": [], "
+                                 L"\"subsets\": [], \"pivots\": [], \"merges\": [], "
+                                 L"\"recode-re\": [], \"columns-rename\": [], "
+                                 L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
+                                 L"\"collapse-except\": [], \"formulas\": []}",
+                                 EscapeJsonStr(mrgName)));
             if (!mOpts.m_type.empty() && mOpts.m_type != L"left-join-unique")
                 {
                 mrgObj->Add(L"type", mOpts.m_type);
@@ -1683,20 +1725,65 @@ void WisteriaView::SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& s
                 mrgObj->Add(L"suffix", mOpts.m_suffix);
                 }
 
+            SaveSubsets(mrgObj, mrgName);
+            SavePivots(mrgObj, mrgName);
+            SaveMerges(mrgObj, mrgName);
+
+            const auto txIt = transformOpts.find(mrgName);
+            if (txIt != transformOpts.cend())
+                {
+                SaveTransformOptions(mrgObj, txIt->second);
+                SaveFormulas(mrgObj, txIt->second.m_formulas);
+                }
+
+            // clean up empty arrays
+            for (const auto& key : { L"subsets", L"pivots", L"merges", L"recode-re",
+                                     L"columns-rename", L"mutate-categorical-columns",
+                                     L"collapse-min", L"collapse-except", L"formulas" })
+                {
+                if (mrgObj->GetProperty(key)->ArraySize() == 0)
+                    {
+                    mrgObj->DeleteProperty(key);
+                    }
+                }
+
             mrgArray->ArrayAdd(mrgObj);
             }
         }
     }
 
 //-------------------------------------------
-wxString WisteriaView::SavePenToStr(const wxPen& pen)
+wxString WisteriaView::ColorToStr(const wxColour& color) const
+    {
+    const auto hexStr = color.GetAsString(wxC2S_HTML_SYNTAX);
+    // check constants table first (preserves {{ConstantName}} syntax)
+    for (const auto& constant : m_reportBuilder.GetConstants())
+        {
+        if (constant.m_value.CmpNoCase(hexStr) == 0)
+            {
+            return L"{{" + constant.m_name + L"}}";
+            }
+        }
+    // check named Wisteria colors
+    for (const auto& [name, colorEnum] : Wisteria::ReportBuilder::GetColorMap())
+        {
+        if (Wisteria::Colors::ColorBrewer::GetColor(colorEnum) == color)
+            {
+            return wxString(name);
+            }
+        }
+    return hexStr;
+    }
+
+//-------------------------------------------
+wxString WisteriaView::SavePenToStr(const wxPen& pen) const
     {
     if (!pen.IsOk() || pen == wxNullPen)
         {
         return L"null";
         }
 
-    const auto colorStr = pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX);
+    const auto colorStr = ColorToStr(pen.GetColour());
     const auto styleStr = Wisteria::ReportEnumConvert::ConvertPenStyleToString(pen.GetStyle());
 
     const bool isDefaultWidth = (pen.GetWidth() <= 1);
@@ -1723,14 +1810,14 @@ wxString WisteriaView::SavePenToStr(const wxPen& pen)
     }
 
 //-------------------------------------------
-wxString WisteriaView::SaveBrushToStr(const wxBrush& brush)
+wxString WisteriaView::SaveBrushToStr(const wxBrush& brush) const
     {
     if (!brush.IsOk() || brush == wxNullBrush)
         {
         return L"null";
         }
 
-    const auto colorStr = brush.GetColour().GetAsString(wxC2S_HTML_SYNTAX);
+    const auto colorStr = ColorToStr(brush.GetColour());
     const auto styleStr = Wisteria::ReportEnumConvert::ConvertBrushStyleToString(brush.GetStyle());
 
     const bool isDefaultStyle = (!styleStr.has_value() || styleStr.value() == L"solid");
@@ -1845,11 +1932,11 @@ void WisteriaView::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
         itemNode->Add(L"horizontal-page-alignment", hpaStr.value());
         }
 
-    // vertical-page-alignment (default is Centered)
+    // vertical-page-alignment (default is TopAligned)
     const auto vpaStr = Wisteria::ReportEnumConvert::ConvertPageVerticalAlignmentToString(
         item->GetPageVerticalAlignment());
     if (vpaStr.has_value() &&
-        item->GetPageVerticalAlignment() != Wisteria::PageVerticalAlignment::Centered)
+        item->GetPageVerticalAlignment() != Wisteria::PageVerticalAlignment::TopAligned)
         {
         itemNode->Add(L"vertical-page-alignment", vpaStr.value());
         }
@@ -1873,6 +1960,165 @@ void WisteriaView::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
         {
         itemNode->Add(L"fit-row-to-content", true);
         }
+    }
+
+//-------------------------------------------
+wxString WisteriaView::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label) const
+    {
+    wxString json = L"{";
+
+    // text (prefer template if it has {{constants}})
+    const auto textTmpl = label.GetPropertyTemplate(L"text");
+    const auto& text = textTmpl.empty() ? label.GetText() : textTmpl;
+    if (!text.empty())
+        {
+        json += L"\"text\": \"" + EscapeJsonStr(text) + L"\"";
+        }
+
+    // bold
+    if (label.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += L"\"bold\": true";
+        }
+
+    // color (font color, if not default black)
+    const auto& fontColor = label.GetFontColor();
+    if (fontColor.IsOk() && fontColor != *wxBLACK)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        const auto colorTmpl = label.GetPropertyTemplate(L"color");
+        json += L"\"color\": \"" +
+                EscapeJsonStr(colorTmpl.empty() ? ColorToStr(fontColor) : colorTmpl) + L"\"";
+        }
+
+    // background color
+    const auto& bgColor = label.GetFontBackgroundColor();
+    if (bgColor.IsOk() && bgColor != wxTransparentColour)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += L"\"background\": \"" + ColorToStr(bgColor) + L"\"";
+        }
+
+    // orientation (default is horizontal)
+    if (label.GetTextOrientation() == Wisteria::Orientation::Vertical)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += L"\"orientation\": \"vertical\"";
+        }
+
+    // line-spacing (default is 1)
+    if (!compare_doubles(label.GetLineSpacing(), 1.0))
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += wxString::Format(L"\"line-spacing\": %g", label.GetLineSpacing());
+        }
+
+    // text-alignment (default is flush-left)
+    if (label.GetTextAlignment() != Wisteria::TextAlignment::FlushLeft)
+        {
+        const auto taStr =
+            Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(label.GetTextAlignment());
+        if (taStr.has_value())
+            {
+            if (json.Last() != L'{')
+                {
+                json += L", ";
+                }
+            json += L"\"text-alignment\": \"" + taStr.value() + L"\"";
+            }
+        }
+
+    // padding
+    if (label.GetTopPadding() != 0 || label.GetRightPadding() != 0 ||
+        label.GetBottomPadding() != 0 || label.GetLeftPadding() != 0)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += wxString::Format(L"\"padding\": [%d, %d, %d, %d]", label.GetTopPadding(),
+                                 label.GetRightPadding(), label.GetBottomPadding(),
+                                 label.GetLeftPadding());
+        }
+
+    // pen
+    const auto& pen = label.GetPen();
+    if (pen.IsOk() && pen != wxNullPen)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += L"\"pen\": " + SavePenToStr(pen);
+        }
+
+    // header
+    const auto& header = label.GetHeaderInfo();
+    if (header.IsEnabled())
+        {
+        wxString hdrStr = L"{";
+        if (header.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+            {
+            hdrStr += L"\"bold\": true";
+            }
+        if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
+            {
+            if (hdrStr.Last() != L'{')
+                {
+                hdrStr += L", ";
+                }
+            hdrStr += L"\"color\": \"" + ColorToStr(header.GetFontColor()) + L"\"";
+            }
+        if (!compare_doubles(header.GetRelativeScaling(), 1.0))
+            {
+            if (hdrStr.Last() != L'{')
+                {
+                hdrStr += L", ";
+                }
+            hdrStr += wxString::Format(L"\"relative-scaling\": %g", header.GetRelativeScaling());
+            }
+        if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
+            {
+            const auto htaStr = Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(
+                header.GetLabelAlignment());
+            if (htaStr.has_value())
+                {
+                if (hdrStr.Last() != L'{')
+                    {
+                    hdrStr += L", ";
+                    }
+                hdrStr += L"\"text-alignment\": \"" + htaStr.value() + L"\"";
+                }
+            }
+        hdrStr += L"}";
+        if (hdrStr != L"{}")
+            {
+            if (json.Last() != L'{')
+                {
+                json += L", ";
+                }
+            json += L"\"header\": " + hdrStr;
+            }
+        }
+
+    json += L"}";
+    return json;
     }
 
 //-------------------------------------------
@@ -1909,7 +2155,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveLabel(const Wisteria::GraphItems::Label* l
             }
         if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
             {
-            headerNode->Add(L"color", header.GetFontColor().GetAsString(wxC2S_HTML_SYNTAX));
+            headerNode->Add(L"color", ColorToStr(header.GetFontColor()));
             }
         if (!compare_doubles(header.GetRelativeScaling(), 1.0))
             {
@@ -2040,15 +2286,14 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveLabel(const Wisteria::GraphItems::Label* l
     if (fontColor.IsOk() && fontColor != *wxBLACK)
         {
         const auto colorTemplate = label->GetPropertyTemplate(L"color");
-        node->Add(L"color",
-                  colorTemplate.empty() ? fontColor.GetAsString(wxC2S_HTML_SYNTAX) : colorTemplate);
+        node->Add(L"color", colorTemplate.empty() ? ColorToStr(fontColor) : colorTemplate);
         }
 
     // background color
     const auto& bgColor = label->GetFontBackgroundColor();
     if (bgColor.IsOk() && bgColor != wxTransparentColour)
         {
-        node->Add(L"background", bgColor.GetAsString(wxC2S_HTML_SYNTAX));
+        node->Add(L"background", ColorToStr(bgColor));
         }
 
     // bold
@@ -2216,9 +2461,8 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveShape(const Wisteria::GraphItems::Shape* s
         if (!labelColorTmpl.empty() ||
             (shape->GetFontColor().IsOk() && shape->GetFontColor() != *wxBLACK))
             {
-            const wxString colorVal = labelColorTmpl.empty() ?
-                                          shape->GetFontColor().GetAsString(wxC2S_HTML_SYNTAX) :
-                                          labelColorTmpl;
+            const wxString colorVal =
+                labelColorTmpl.empty() ? ColorToStr(shape->GetFontColor()) : labelColorTmpl;
             tmpl += L", \"label\": {\"text\": \"" + EscapeJsonStr(labelText) +
                     L"\", \"color\": \"" + EscapeJsonStr(colorVal) + L"\"}";
             }
@@ -2310,9 +2554,8 @@ WisteriaView::SaveFillableShape(const Wisteria::GraphItems::FillableShape* shape
         if (!labelColorTmpl.empty() ||
             (shape->GetFontColor().IsOk() && shape->GetFontColor() != *wxBLACK))
             {
-            const wxString colorVal = labelColorTmpl.empty() ?
-                                          shape->GetFontColor().GetAsString(wxC2S_HTML_SYNTAX) :
-                                          labelColorTmpl;
+            const wxString colorVal =
+                labelColorTmpl.empty() ? ColorToStr(shape->GetFontColor()) : labelColorTmpl;
             tmpl += L", \"label\": {\"text\": \"" + EscapeJsonStr(labelText) +
                     L"\", \"color\": \"" + EscapeJsonStr(colorVal) + L"\"}";
             }
@@ -2418,11 +2661,11 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveCommonAxis(const Wisteria::GraphItems::Axi
         }
 
     // number-display
-    const auto ndStr =
+    const auto numDisplayStr =
         Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(axis->GetNumberDisplay());
-    if (ndStr.has_value() && axis->GetNumberDisplay() != Wisteria::NumberDisplay::Value)
+    if (numDisplayStr.has_value() && axis->GetNumberDisplay() != Wisteria::NumberDisplay::Value)
         {
-        tmpl += L", \"number-display\": \"" + ndStr.value() + L"\"";
+        tmpl += L", \"number-display\": \"" + numDisplayStr.value() + L"\"";
         }
 
     // tickmarks
@@ -2504,6 +2747,10 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveCommonAxis(const Wisteria::GraphItems::Axi
             {
             // dataset-based brackets
             tmpl += L", \"brackets\": {\"dataset\": \"" + EscapeJsonStr(bracketDsName) + L"\"";
+            if (axis->AreBracketsSimplified())
+                {
+                tmpl += L", \"simplify\": true";
+                }
             const auto labelVar = axis->GetPropertyTemplate(L"bracket.label");
             const auto valueVar = axis->GetPropertyTemplate(L"bracket.value");
             if (!labelVar.empty() || !valueVar.empty())
@@ -2615,21 +2862,25 @@ wxString WisteriaView::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph
         return {};
         }
 
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
-        {
-        return _DT(L"line-plot");
-        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
         {
         return _DT(L"multi-series-line-plot");
         }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
         {
-        return _DT(L"scatter-plot");
+        return _DT(L"w-curve-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
+        {
+        return _DT(L"line-plot");
         }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
         {
         return _DT(L"bubble-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
+        {
+        return _DT(L"scatter-plot");
         }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
         {
@@ -2666,10 +2917,6 @@ wxString WisteriaView::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
         return _DT(L"candlestick-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
-        {
-        return _DT(L"w-curve-plot");
         }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
         {
@@ -2719,56 +2966,121 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
     const wxString datasetName = graph->GetPropertyTemplate(L"dataset");
 
     // variables (from cached property templates)
+    // indexed variables like y[0], y[1] are collapsed into "y": [...]
     const auto& templates = graph->GetPropertyTemplates();
     wxString varsStr;
+    std::map<wxString, std::vector<std::pair<size_t, wxString>>> indexedVars;
     for (const auto& [prop, val] : templates)
         {
         if (prop.StartsWith(L"variables."))
             {
             const auto varName = prop.Mid(10); // skip "variables."
-            if (!varsStr.empty())
+            // check for indexed pattern like "y[0]"
+            const auto bracketPos = varName.find(L'[');
+            if (bracketPos != wxString::npos && varName.EndsWith(L"]"))
+                {
+                const auto baseName = varName.Left(bracketPos);
+                const auto idxStr = varName.Mid(bracketPos + 1, varName.length() - bracketPos - 2);
+                unsigned long idx = 0;
+                if (idxStr.ToULong(&idx))
+                    {
+                    indexedVars[baseName].emplace_back(static_cast<size_t>(idx), val);
+                    }
+                }
+            else
+                {
+                if (!varsStr.empty())
+                    {
+                    varsStr += L", ";
+                    }
+                varsStr += L"\"" + varName + L"\": \"" + EscapeJsonStr(val) + L"\"";
+                }
+            }
+        }
+    // write indexed variables as arrays
+    for (auto& [baseName, entries] : indexedVars)
+        {
+        std::sort(entries.begin(), entries.end(),
+                  [](const auto& a, const auto& b) { return a.first < b.first; });
+        if (!varsStr.empty())
+            {
+            varsStr += L", ";
+            }
+        varsStr += L"\"" + baseName + L"\": [";
+        for (size_t i = 0; i < entries.size(); ++i)
+            {
+            if (i > 0)
                 {
                 varsStr += L", ";
                 }
-            varsStr += L"\"" + varName + L"\": \"" + EscapeJsonStr(val) + L"\"";
+            varsStr += L"\"" + EscapeJsonStr(entries[i].second) + L"\"";
             }
+        varsStr += L"]";
         }
 
     // title
-    const auto& title = graph->GetTitle();
     wxString titleStr;
-    if (!title.GetText().empty())
+    if (!graph->GetTitle().GetText().empty())
         {
-        const auto textTmpl = title.GetPropertyTemplate(L"text");
-        const auto& titleText = textTmpl.empty() ? title.GetText() : textTmpl;
-        titleStr = L"\"title\": {\"text\": \"" + EscapeJsonStr(titleText) + L"\"}";
+        titleStr = L"\"title\": " + SaveLabelPropertiesToStr(graph->GetTitle());
         }
 
     // subtitle
-    const auto& subtitle = graph->GetSubtitle();
     wxString subtitleStr;
-    if (!subtitle.GetText().empty())
+    if (!graph->GetSubtitle().GetText().empty())
         {
-        const auto textTmpl = subtitle.GetPropertyTemplate(L"text");
-        const auto& stText = textTmpl.empty() ? subtitle.GetText() : textTmpl;
-        subtitleStr = L"\"sub-title\": {\"text\": \"" + EscapeJsonStr(stText) + L"\"}";
+        subtitleStr = L"\"sub-title\": " + SaveLabelPropertiesToStr(graph->GetSubtitle());
         }
 
     // caption
-    const auto& caption = graph->GetCaption();
     wxString captionStr;
-    if (!caption.GetText().empty())
+    if (!graph->GetCaption().GetText().empty())
         {
-        const auto textTmpl = caption.GetPropertyTemplate(L"text");
-        const auto& capText = textTmpl.empty() ? caption.GetText() : textTmpl;
-        captionStr = L"\"caption\": {\"text\": \"" + EscapeJsonStr(capText) + L"\"}";
+        captionStr = L"\"caption\": " + SaveLabelPropertiesToStr(graph->GetCaption());
         }
 
     // background-color
     const auto& bgColor = graph->GetPlotBackgroundColor();
     if (bgColor.IsOk() && !bgColor.IsTransparent())
         {
-        graphNode->Add(L"background-color", bgColor.GetAsString(wxC2S_HTML_SYNTAX));
+        graphNode->Add(L"background-color", ColorToStr(bgColor));
+        }
+
+    // stipple-shape (only meaningful when box-effect is stipple-shape)
+    if (graph->GetStippleShape() != Wisteria::Icons::IconShape::Square)
+        {
+        const auto iconStr =
+            Wisteria::ReportEnumConvert::ConvertIconToString(graph->GetStippleShape());
+        if (iconStr.has_value())
+            {
+            const auto& ssColor = graph->GetStippleShapeColor();
+            const bool hasColor =
+                ssColor.IsOk() &&
+                ssColor != Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White);
+            if (hasColor)
+                {
+                wxString ssObj = L"{\"icon\": \"" + iconStr.value() + L"\", \"color\": \"" +
+                                 ColorToStr(ssColor) + L"\"}";
+                auto printed = graphNode->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"stipple-shape\": " + ssObj + L"}";
+                    graphNode = wxSimpleJSON::Create(printed);
+                    }
+                }
+            else
+                {
+                wxString ssObj = L"{\"icon\": \"" + iconStr.value() + L"\"}";
+                auto printed = graphNode->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"stipple-shape\": " + ssObj + L"}";
+                    graphNode = wxSimpleJSON::Create(printed);
+                    }
+                }
+            }
         }
 
     // axes
@@ -2852,6 +3164,17 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             if (ldStr.has_value())
                 {
                 axisObj += L", \"label-display\": \"" + ldStr.value() + L"\"";
+                }
+            }
+
+        // number-display
+        if (axis->GetNumberDisplay() != Wisteria::NumberDisplay::Value)
+            {
+            const auto numDisplayStr =
+                Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(axis->GetNumberDisplay());
+            if (numDisplayStr.has_value())
+                {
+                axisObj += L", \"number-display\": \"" + numDisplayStr.value() + L"\"";
                 }
             }
 
@@ -3096,6 +3419,90 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
         additions += L", \"reference-areas\": [" + refAreasStr + L"]";
         }
 
+    // annotations
+    const auto& annotations = graph->GetAnnotations();
+    if (!annotations.empty())
+        {
+        wxString annotationsStr;
+        for (const auto& ann : annotations)
+            {
+            const auto* label =
+                dynamic_cast<const Wisteria::GraphItems::Label*>(ann.GetObject().get());
+            if (label == nullptr)
+                {
+                continue;
+                }
+            wxString annObj = L"{\"label\": " + SaveLabelPropertiesToStr(*label);
+            // anchor point
+            const auto anchor = ann.GetAnchorPoint();
+            annObj +=
+                wxString::Format(L", \"anchor\": {\"x\": %g, \"y\": %g}", anchor.m_x, anchor.m_y);
+            // interest points
+            const auto& interestPts = ann.GetInterestPoints();
+            if (!interestPts.empty())
+                {
+                wxString ptsStr;
+                for (const auto& pt : interestPts)
+                    {
+                    if (!ptsStr.empty())
+                        {
+                        ptsStr += L", ";
+                        }
+                    ptsStr += wxString::Format(L"{\"x\": %g, \"y\": %g}", pt.m_x, pt.m_y);
+                    }
+                annObj += L", \"interest-points\": [" + ptsStr + L"]";
+                }
+            annObj += L"}";
+            if (!annotationsStr.empty())
+                {
+                annotationsStr += L", ";
+                }
+            annotationsStr += annObj;
+            }
+        if (!annotationsStr.empty())
+            {
+            additions += L", \"annotations\": [" + annotationsStr + L"]";
+            }
+        }
+
+    // legend
+    const auto& legendInfo = graph->GetLegendInfo();
+    if (legendInfo.has_value())
+        {
+        wxString legendObj = L"{";
+        const auto placement = legendInfo->GetPlacement();
+        if (placement == Wisteria::Side::Left)
+            {
+            legendObj += L"\"placement\": \"left\"";
+            }
+        else if (placement == Wisteria::Side::Top)
+            {
+            legendObj += L"\"placement\": \"top\"";
+            }
+        else if (placement == Wisteria::Side::Bottom)
+            {
+            legendObj += L"\"placement\": \"bottom\"";
+            }
+        else
+            {
+            legendObj += L"\"placement\": \"right\"";
+            }
+        if (!legendInfo->IsIncludingHeader())
+            {
+            legendObj += L", \"include-header\": false";
+            }
+        if (legendInfo->GetRingPerimeter() == Wisteria::Perimeter::Inner)
+            {
+            legendObj += L", \"ring\": \"inner\"";
+            }
+        if (!legendInfo->GetTitle().empty())
+            {
+            legendObj += L", \"title\": \"" + EscapeJsonStr(legendInfo->GetTitle()) + L"\"";
+            }
+        legendObj += L"}";
+        additions += L", \"legend\": " + legendObj;
+        }
+
     // pen (item-level pen for the graph)
     const auto& graphPen = graph->GetPen();
     if (!graphPen.IsOk() || graphPen == wxNullPen)
@@ -3129,7 +3536,7 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                 {
                 colorsArr += L", ";
                 }
-            colorsArr += L"\"" + brushes[i].GetColour().GetAsString(wxC2S_HTML_SYNTAX) + L"\"";
+            colorsArr += L"\"" + ColorToStr(brushes[i].GetColour()) + L"\"";
             }
         colorsArr += L"]";
 
@@ -3169,7 +3576,7 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                 {
                 colorsArr += L", ";
                 }
-            colorsArr += L"\"" + colors[i].GetAsString(wxC2S_HTML_SYNTAX) + L"\"";
+            colorsArr += L"\"" + ColorToStr(colors[i]) + L"\"";
             }
         colorsArr += L"]";
         additions += L", \"color-scheme\": " + colorsArr;
@@ -3306,6 +3713,15 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                     }
                 }
             }
+        // w-curve-plot specific
+        if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
+            {
+            const auto* wcPlot = dynamic_cast<const Wisteria::Graphs::WCurvePlot*>(graph);
+            if (wcPlot->GetTimeIntervalLabel() != _(L"year"))
+                {
+                node->Add(L"time-interval-label", wcPlot->GetTimeIntervalLabel());
+                }
+            }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
         {
@@ -3322,6 +3738,60 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             {
             node->Add(L"confidence-level", scatterPlot->GetConfidenceLevel());
             }
+        // regression-line-scheme
+        if (scatterPlot->GetRegressionLineStyleScheme() != nullptr &&
+            !scatterPlot->GetRegressionLineStyleScheme()->GetLineStyles().empty())
+            {
+            const auto& lineStyles = scatterPlot->GetRegressionLineStyleScheme()->GetLineStyles();
+            const bool isDefault =
+                (lineStyles.size() == 1 && lineStyles.front().first == wxPENSTYLE_SOLID &&
+                 lineStyles.front().second == Wisteria::LineStyle::Lines);
+            if (!isDefault)
+                {
+                wxString lsArr = L"[";
+                for (size_t i = 0; i < lineStyles.size(); ++i)
+                    {
+                    if (i > 0)
+                        {
+                        lsArr += L", ";
+                        }
+                    lsArr += L"{";
+                    const auto psStr =
+                        Wisteria::ReportEnumConvert::ConvertPenStyleToString(lineStyles[i].first);
+                    if (psStr.has_value() && lineStyles[i].first != wxPENSTYLE_SOLID)
+                        {
+                        lsArr += L"\"pen-style\": {\"style\": \"" + psStr.value() + L"\"}, ";
+                        }
+                    const auto lStr =
+                        Wisteria::ReportEnumConvert::ConvertLineStyleToString(lineStyles[i].second);
+                    lsArr += L"\"line-style\": \"" +
+                             (lStr.has_value() ? lStr.value() : wxString(L"lines")) + L"\"}";
+                    }
+                lsArr += L"]";
+                auto printed = node->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"regression-line-scheme\": " + lsArr + L"}";
+                    node = wxSimpleJSON::Create(printed);
+                    }
+                }
+            }
+        // bubble-plot specific
+        if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
+            {
+            const auto* bubblePlot = dynamic_cast<const Wisteria::Graphs::BubblePlot*>(graph);
+            if (bubblePlot->GetMinBubbleRadius() != 4)
+                {
+                node->Add(L"min-bubble-radius",
+                          static_cast<double>(bubblePlot->GetMinBubbleRadius()));
+                }
+            if (bubblePlot->GetMaxBubbleRadius() != 30)
+                {
+                node->Add(L"max-bubble-radius",
+                          static_cast<double>(bubblePlot->GetMaxBubbleRadius()));
+                }
+            }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
@@ -3333,17 +3803,17 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             {
             node->Add(L"box-effect", beStr.value());
             }
-        if (barChart->GetBarOrientation() == Wisteria::Orientation::Horizontal)
+        if (barChart->GetBarOrientation() == Wisteria::Orientation::Vertical)
             {
-            node->Add(L"bar-orientation", wxString{ _DT(L"horizontal") });
+            node->Add(L"bar-orientation", wxString{ _DT(L"vertical") });
             }
         if (barChart->GetNumberDisplay() != Wisteria::NumberDisplay::Value)
             {
-            const auto ndStr = Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(
+            const auto numDisplayStr = Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(
                 barChart->GetNumberDisplay());
-            if (ndStr.has_value())
+            if (numDisplayStr.has_value())
                 {
-                node->Add(L"number-display", ndStr.value());
+                node->Add(L"number-display", numDisplayStr.value());
                 }
             }
         if (barChart->GetBinLabelDisplay() != Wisteria::BinLabelDisplay::BinValue)
@@ -3448,14 +3918,12 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 const auto& decalColor = decal.GetFontColor();
                 if (decalColor.IsOk() && decalColor != *wxBLACK)
                     {
-                    decalsArr +=
-                        L", \"color\": \"" + decalColor.GetAsString(wxC2S_HTML_SYNTAX) + L"\"";
+                    decalsArr += L", \"color\": \"" + ColorToStr(decalColor) + L"\"";
                     }
                 const auto& decalBgColor = decal.GetFontBackgroundColor();
                 if (decalBgColor.IsOk())
                     {
-                    decalsArr += L", \"background\": \"" +
-                                 decalBgColor.GetAsString(wxC2S_HTML_SYNTAX) + L"\"";
+                    decalsArr += L", \"background\": \"" + ColorToStr(decalBgColor) + L"\"";
                     }
                 decalsArr += L"}}";
                 }
@@ -3546,8 +4014,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 bool hasField = false;
                 if (bg.m_barColor.IsOk())
                     {
-                    bgArr +=
-                        L"\"color\": \"" + bg.m_barColor.GetAsString(wxC2S_HTML_SYNTAX) + L"\"";
+                    bgArr += L"\"color\": \"" + ColorToStr(bg.m_barColor) + L"\"";
                     hasField = true;
                     }
                 if (bg.m_barBrush.IsOk() && bg.m_barBrush != wxNullBrush)
@@ -3572,6 +4039,111 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 printed.RemoveLast();
                 printed += L", \"bar-groups\": " + bgArr + L"}";
                 node = wxSimpleJSON::Create(printed);
+                }
+            }
+
+            // first-bar-brackets (from cached property templates)
+            {
+            wxString fbbArr;
+            for (size_t i = 0;; ++i)
+                {
+                const auto idx = std::to_wstring(i);
+                const auto startBlock =
+                    graph->GetPropertyTemplate(L"first-bar-brackets[" + idx + L"].start-block");
+                const auto startBlockRe =
+                    graph->GetPropertyTemplate(L"first-bar-brackets[" + idx + L"].start-block-re");
+                const auto endBlock =
+                    graph->GetPropertyTemplate(L"first-bar-brackets[" + idx + L"].end-block");
+                const auto endBlockRe =
+                    graph->GetPropertyTemplate(L"first-bar-brackets[" + idx + L"].end-block-re");
+                const auto label =
+                    graph->GetPropertyTemplate(L"first-bar-brackets[" + idx + L"].label");
+                if (startBlock.empty() && startBlockRe.empty())
+                    {
+                    break;
+                    }
+                if (!fbbArr.empty())
+                    {
+                    fbbArr += L", ";
+                    }
+                fbbArr += L"{";
+                if (!startBlockRe.empty())
+                    {
+                    fbbArr += L"\"start-block-re\": \"" + EscapeJsonStr(startBlockRe) + L"\", ";
+                    fbbArr += L"\"end-block-re\": \"" + EscapeJsonStr(endBlockRe) + L"\"";
+                    }
+                else
+                    {
+                    fbbArr += L"\"start-block\": \"" + EscapeJsonStr(startBlock) + L"\", ";
+                    fbbArr += L"\"end-block\": \"" + EscapeJsonStr(endBlock) + L"\"";
+                    }
+                if (!label.empty())
+                    {
+                    fbbArr += L", \"label\": \"" + EscapeJsonStr(label) + L"\"";
+                    }
+                fbbArr += L"}";
+                }
+            if (!fbbArr.empty())
+                {
+                auto printed = node->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"first-bar-brackets\": [" + fbbArr + L"]}";
+                    node = wxSimpleJSON::Create(printed);
+                    }
+                }
+            }
+            // last-bar-brackets (from cached property templates)
+            {
+            wxString lbbArr;
+            for (size_t i = 0;; ++i)
+                {
+                const auto idx = std::to_wstring(i);
+                const auto startBlock =
+                    graph->GetPropertyTemplate(L"last-bar-brackets[" + idx + L"].start-block");
+                const auto startBlockRe =
+                    graph->GetPropertyTemplate(L"last-bar-brackets[" + idx + L"].start-block-re");
+                const auto endBlock =
+                    graph->GetPropertyTemplate(L"last-bar-brackets[" + idx + L"].end-block");
+                const auto endBlockRe =
+                    graph->GetPropertyTemplate(L"last-bar-brackets[" + idx + L"].end-block-re");
+                const auto label =
+                    graph->GetPropertyTemplate(L"last-bar-brackets[" + idx + L"].label");
+                if (startBlock.empty() && startBlockRe.empty())
+                    {
+                    break;
+                    }
+                if (!lbbArr.empty())
+                    {
+                    lbbArr += L", ";
+                    }
+                lbbArr += L"{";
+                if (!startBlockRe.empty())
+                    {
+                    lbbArr += L"\"start-block-re\": \"" + EscapeJsonStr(startBlockRe) + L"\", ";
+                    lbbArr += L"\"end-block-re\": \"" + EscapeJsonStr(endBlockRe) + L"\"";
+                    }
+                else
+                    {
+                    lbbArr += L"\"start-block\": \"" + EscapeJsonStr(startBlock) + L"\", ";
+                    lbbArr += L"\"end-block\": \"" + EscapeJsonStr(endBlock) + L"\"";
+                    }
+                if (!label.empty())
+                    {
+                    lbbArr += L", \"label\": \"" + EscapeJsonStr(label) + L"\"";
+                    }
+                lbbArr += L"}";
+                }
+            if (!lbbArr.empty())
+                {
+                auto printed = node->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"last-bar-brackets\": [" + lbbArr + L"]}";
+                    node = wxSimpleJSON::Create(printed);
+                    }
                 }
             }
 
@@ -3836,8 +4408,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                     {
                     donutStr += L", ";
                     }
-                donutStr += L"\"color\": \"" +
-                            pieChart->GetDonutHoleColor().GetAsString(wxC2S_HTML_SYNTAX) + L"\"";
+                donutStr += L"\"color\": \"" + ColorToStr(pieChart->GetDonutHoleColor()) + L"\"";
                 }
             donutStr += L"}";
             auto printed = node->Print(false);
@@ -3870,17 +4441,17 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
         {
         const auto* chernoff = dynamic_cast<const Wisteria::Graphs::ChernoffFacesPlot*>(graph);
-        node->Add(L"face-color", chernoff->GetFaceColor().GetAsString(wxC2S_HTML_SYNTAX));
+        node->Add(L"face-color", ColorToStr(chernoff->GetFaceColor()));
         node->Add(L"show-labels", chernoff->IsShowingLabels());
-        node->Add(L"outline-color", chernoff->GetOutlineColor().GetAsString(wxC2S_HTML_SYNTAX));
+        node->Add(L"outline-color", ColorToStr(chernoff->GetOutlineColor()));
         const auto gStr = Wisteria::ReportEnumConvert::ConvertGenderToString(chernoff->GetGender());
         if (gStr.has_value())
             {
             node->Add(L"gender", gStr.value());
             }
-        node->Add(L"eye-color", chernoff->GetEyeColor().GetAsString(wxC2S_HTML_SYNTAX));
-        node->Add(L"hair-color", chernoff->GetHairColor().GetAsString(wxC2S_HTML_SYNTAX));
-        node->Add(L"lipstick-color", chernoff->GetLipstickColor().GetAsString(wxC2S_HTML_SYNTAX));
+        node->Add(L"eye-color", ColorToStr(chernoff->GetEyeColor()));
+        node->Add(L"hair-color", ColorToStr(chernoff->GetHairColor()));
+        node->Add(L"lipstick-color", ColorToStr(chernoff->GetLipstickColor()));
         const auto hsStr =
             Wisteria::ReportEnumConvert::ConvertHairStyleToString(chernoff->GetHairStyle());
         if (hsStr.has_value())
@@ -3971,6 +4542,578 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             node->Add(L"row-count", static_cast<double>(waffle->GetRowCount().value()));
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
+        {
+        const auto* candlePlot = dynamic_cast<const Wisteria::Graphs::CandlestickPlot*>(graph);
+        if (candlePlot->GetPlotType() != Wisteria::Graphs::CandlestickPlot::PlotType::Candlestick)
+            {
+            const auto ptStr = Wisteria::ReportEnumConvert::ConvertCandlestickPlotTypeToString(
+                candlePlot->GetPlotType());
+            if (ptStr.has_value())
+                {
+                node->Add(L"plot-type", ptStr.value());
+                }
+            }
+        const auto& gainBrush = candlePlot->GetGainBrush();
+        if (gainBrush.IsOk() && gainBrush != wxNullBrush &&
+            gainBrush.GetColour() !=
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Green))
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"gain-brush\": " + SaveBrushToStr(gainBrush) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        const auto& lossBrush = candlePlot->GetLossBrush();
+        if (lossBrush.IsOk() && lossBrush != wxNullBrush &&
+            lossBrush.GetColour() !=
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Red))
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"loss-brush\": " + SaveBrushToStr(lossBrush) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
+        {
+        const auto* gantt = dynamic_cast<const Wisteria::Graphs::GanttChart*>(graph);
+        if (gantt->GetDateDisplayInterval() != Wisteria::DateInterval::FiscalQuarterly)
+            {
+            const auto diStr = Wisteria::ReportEnumConvert::ConvertDateIntervalToString(
+                gantt->GetDateDisplayInterval());
+            if (diStr.has_value())
+                {
+                node->Add(L"date-interval", diStr.value());
+                }
+            }
+        if (gantt->GetFiscalYearType() != Wisteria::FiscalYear::USBusiness)
+            {
+            const auto fyStr =
+                Wisteria::ReportEnumConvert::ConvertFiscalYearToString(gantt->GetFiscalYearType());
+            if (fyStr.has_value())
+                {
+                node->Add(L"fy-type", fyStr.value());
+                }
+            }
+        if (gantt->GetLabelDisplay() != Wisteria::Graphs::GanttChart::TaskLabelDisplay::Days)
+            {
+            const auto tlStr = Wisteria::ReportEnumConvert::ConvertTaskLabelDisplayToString(
+                gantt->GetLabelDisplay());
+            if (tlStr.has_value())
+                {
+                node->Add(L"task-label-display", tlStr.value());
+                }
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
+        {
+        const auto* sankey = dynamic_cast<const Wisteria::Graphs::SankeyDiagram*>(graph);
+        if (sankey->GetGroupLabelDisplay() != Wisteria::BinLabelDisplay::BinName)
+            {
+            const auto glStr = Wisteria::ReportEnumConvert::ConvertBinLabelDisplayToString(
+                sankey->GetGroupLabelDisplay());
+            if (glStr.has_value())
+                {
+                node->Add(L"group-label-display", glStr.value());
+                }
+            }
+        if (sankey->GetColumnHeaderDisplay() != Wisteria::GraphColumnHeader::NoDisplay)
+            {
+            const auto ghStr = Wisteria::ReportEnumConvert::ConvertGraphColumnHeaderToString(
+                sankey->GetColumnHeaderDisplay());
+            if (ghStr.has_value())
+                {
+                node->Add(L"group-header-display", ghStr.value());
+                }
+            }
+        // column-headers (cached as indexed templates)
+        wxString colArr;
+        for (size_t i = 0;; ++i)
+            {
+            const auto val =
+                sankey->GetPropertyTemplate(L"column-headers[" + std::to_wstring(i) + L"]");
+            if (val.empty())
+                {
+                break;
+                }
+            if (!colArr.empty())
+                {
+                colArr += L", ";
+                }
+            colArr += L"\"" + EscapeJsonStr(val) + L"\"";
+            }
+        if (!colArr.empty())
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"column-headers\": [" + colArr + L"]}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        if (sankey->GetFlowShape() != Wisteria::FlowShape::Curvy)
+            {
+            const auto fsStr =
+                Wisteria::ReportEnumConvert::ConvertFlowShapeToString(sankey->GetFlowShape());
+            if (fsStr.has_value())
+                {
+                node->Add(L"flow-shape", fsStr.value());
+                }
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
+        {
+        const auto* heatmap = dynamic_cast<const Wisteria::Graphs::HeatMap*>(graph);
+        if (heatmap->GetGroupColumnCount().has_value())
+            {
+            node->Add(L"group-column-count",
+                      static_cast<double>(heatmap->GetGroupColumnCount().value()));
+            }
+        if (!heatmap->IsShowingGroupHeaders())
+            {
+            node->Add(L"show-group-header", false);
+            }
+        if (!heatmap->GetGroupHeaderPrefix().empty())
+            {
+            node->Add(L"group-header-prefix", heatmap->GetGroupHeaderPrefix());
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
+        {
+        const auto* sparkline = dynamic_cast<const Wisteria::Graphs::WinLossSparkline*>(graph);
+        if (!sparkline->IsHighlightingBestRecords())
+            {
+            node->Add(L"highlight-best-records", false);
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        const auto* likert = dynamic_cast<const Wisteria::Graphs::LikertChart*>(graph);
+        // survey-format
+        const auto sfStr = Wisteria::ReportEnumConvert::ConvertLikertSurveyQuestionFormatToString(
+            likert->GetSurveyType());
+        if (sfStr.has_value())
+            {
+            node->Add(L"survey-format", sfStr.value());
+            }
+        // colors (only if non-default)
+        if (likert->GetNegativeColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Orange))
+            {
+            node->Add(L"negative-color", ColorToStr(likert->GetNegativeColor()));
+            }
+        if (likert->GetPositiveColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Cerulean))
+            {
+            node->Add(L"positive-color", ColorToStr(likert->GetPositiveColor()));
+            }
+        if (likert->GetNeutralColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey))
+            {
+            node->Add(L"neutral-color", ColorToStr(likert->GetNeutralColor()));
+            }
+        if (likert->GetNoResponseColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White))
+            {
+            node->Add(L"no-response-color", ColorToStr(likert->GetNoResponseColor()));
+            }
+        // simplify / apply-default-labels (tracked as property templates)
+        if (!likert->GetPropertyTemplate(L"simplify").empty())
+            {
+            node->Add(L"simplify", true);
+            }
+        if (!likert->GetPropertyTemplate(L"apply-default-labels").empty())
+            {
+            node->Add(L"apply-default-labels", true);
+            }
+        // boolean options
+        if (likert->IsShowingResponseCounts())
+            {
+            node->Add(L"show-response-counts", true);
+            }
+        if (!likert->IsShowingPercentages())
+            {
+            node->Add(L"show-percentages", false);
+            }
+        if (!likert->IsShowingSectionHeaders())
+            {
+            node->Add(L"show-section-headers", false);
+            }
+        if (likert->IsSettingBarSizesToRespondentSize())
+            {
+            node->Add(L"adjust-bar-widths-to-respondent-size", true);
+            }
+        // header labels (only if non-default)
+        if (likert->GetPositiveHeader() != _(L"Agree"))
+            {
+            node->Add(L"positive-label", likert->GetPositiveHeader());
+            }
+        if (likert->GetNegativeHeader() != _(L"Disagree"))
+            {
+            node->Add(L"negative-label", likert->GetNegativeHeader());
+            }
+        if (likert->GetNoResponseHeader() != _(L"No Response"))
+            {
+            node->Add(L"no-response-label", likert->GetNoResponseHeader());
+            }
+        // question-brackets
+        const auto& brackets = likert->GetQuestionsBrackets();
+        if (!brackets.empty())
+            {
+            wxString bArr = L"[";
+            for (size_t i = 0; i < brackets.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    bArr += L", ";
+                    }
+                bArr += L"{\"start\": \"" + EscapeJsonStr(brackets[i].m_question1) +
+                        L"\", \"end\": \"" + EscapeJsonStr(brackets[i].m_question2) +
+                        L"\", \"title\": \"" + EscapeJsonStr(brackets[i].m_title) + L"\"}";
+                }
+            bArr += L"]";
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"question-brackets\": " + bArr + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
+        {
+        const auto* lrRoadmap = dynamic_cast<const Wisteria::Graphs::LRRoadmap*>(graph);
+        // p-value-threshold
+        if (lrRoadmap->GetPValueThreshold().has_value())
+            {
+            node->Add(L"p-value-threshold", lrRoadmap->GetPValueThreshold().value());
+            }
+        // predictors-to-include
+        if (lrRoadmap->GetPredictorsToInclude().has_value())
+            {
+            const auto preds = static_cast<int>(lrRoadmap->GetPredictorsToInclude().value());
+            wxString predsArr = L"[";
+            bool hasEntry{ false };
+            if (preds ==
+                (Wisteria::Influence::InfluencePositive | Wisteria::Influence::InfluenceNegative |
+                 Wisteria::Influence::InfluenceNeutral))
+                {
+                predsArr += L"\"all\"";
+                hasEntry = true;
+                }
+            else
+                {
+                if (preds & Wisteria::Influence::InfluencePositive)
+                    {
+                    if (hasEntry)
+                        {
+                        predsArr += L", ";
+                        }
+                    predsArr += L"\"positive\"";
+                    hasEntry = true;
+                    }
+                if (preds & Wisteria::Influence::InfluenceNegative)
+                    {
+                    if (hasEntry)
+                        {
+                        predsArr += L", ";
+                        }
+                    predsArr += L"\"negative\"";
+                    hasEntry = true;
+                    }
+                if (preds & Wisteria::Influence::InfluenceNeutral)
+                    {
+                    if (hasEntry)
+                        {
+                        predsArr += L", ";
+                        }
+                    predsArr += L"\"neutral\"";
+                    hasEntry = true;
+                    }
+                }
+            predsArr += L"]";
+            if (hasEntry)
+                {
+                auto printed = node->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"predictors-to-include\": " + predsArr + L"}";
+                    node = wxSimpleJSON::Create(printed);
+                    }
+                }
+            }
+        // shared roadmap properties
+        const auto* roadmap = dynamic_cast<const Wisteria::Graphs::Roadmap*>(graph);
+        const auto& roadPen = roadmap->GetRoadPen();
+        if (roadPen.IsOk() && roadPen != wxNullPen &&
+            !(roadPen.GetColour() == *wxBLACK && roadPen.GetColour().IsOpaque() &&
+              roadPen.GetWidth() == 10 && roadPen.GetStyle() == wxPENSTYLE_SOLID))
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"road-pen\": " + SavePenToStr(roadPen) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        const auto& lanePen = roadmap->GetLaneSeparatorPen();
+        if (lanePen.IsOk() && lanePen != wxNullPen)
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"lane-separator-pen\": " + SavePenToStr(lanePen) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        if (roadmap->GetLabelPlacement() != Wisteria::LabelPlacement::Flush)
+            {
+            const auto lpStr = Wisteria::ReportEnumConvert::ConvertLabelPlacementToString(
+                roadmap->GetLabelPlacement());
+            if (lpStr.has_value())
+                {
+                node->Add(L"label-placement", lpStr.value());
+                }
+            }
+        if (roadmap->GetLaneSeparatorStyle() !=
+            Wisteria::Graphs::Roadmap::LaneSeparatorStyle::SingleLine)
+            {
+            const auto lsStr = Wisteria::ReportEnumConvert::ConvertLaneSeparatorStyleToString(
+                roadmap->GetLaneSeparatorStyle());
+            if (lsStr.has_value())
+                {
+                node->Add(L"lane-separator-style", lsStr.value());
+                }
+            }
+        if (roadmap->GetRoadStopTheme() !=
+            Wisteria::Graphs::Roadmap::RoadStopTheme::LocationMarkers)
+            {
+            const auto rsStr = Wisteria::ReportEnumConvert::ConvertRoadStopThemeToString(
+                roadmap->GetRoadStopTheme());
+            if (rsStr.has_value())
+                {
+                node->Add(L"road-stop-theme", rsStr.value());
+                }
+            }
+        if (roadmap->GetMarkerLabelDisplay() !=
+            Wisteria::Graphs::Roadmap::MarkerLabelDisplay::NameAndValue)
+            {
+            const auto mlStr = Wisteria::ReportEnumConvert::ConvertMarkerLabelDisplayToString(
+                roadmap->GetMarkerLabelDisplay());
+            if (mlStr.has_value())
+                {
+                node->Add(L"marker-label-display", mlStr.value());
+                }
+            }
+        if (lrRoadmap->HasDefaultCaption())
+            {
+            node->Add(L"default-caption", true);
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
+        {
+        const auto* pcRoadmap = dynamic_cast<const Wisteria::Graphs::ProConRoadmap*>(graph);
+        // minimum-count
+        if (pcRoadmap->GetMinimumCount().has_value())
+            {
+            node->Add(L"minimum-count", static_cast<double>(pcRoadmap->GetMinimumCount().value()));
+            }
+        // positive-legend-label (default is "Pro")
+        if (pcRoadmap->GetPositiveLabel() != _(L"Pro"))
+            {
+            node->Add(L"positive-legend-label", pcRoadmap->GetPositiveLabel());
+            }
+        // negative-legend-label (default is "Con")
+        if (pcRoadmap->GetNegativeLabel() != _(L"Con"))
+            {
+            node->Add(L"negative-legend-label", pcRoadmap->GetNegativeLabel());
+            }
+        // shared roadmap properties
+        const auto* roadmap = dynamic_cast<const Wisteria::Graphs::Roadmap*>(graph);
+        const auto& roadPen = roadmap->GetRoadPen();
+        if (roadPen.IsOk() && roadPen != wxNullPen &&
+            !(roadPen.GetColour() == *wxBLACK && roadPen.GetColour().IsOpaque() &&
+              roadPen.GetWidth() == 10 && roadPen.GetStyle() == wxPENSTYLE_SOLID))
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"road-pen\": " + SavePenToStr(roadPen) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        const auto& lanePen = roadmap->GetLaneSeparatorPen();
+        if (lanePen.IsOk() && lanePen != wxNullPen)
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"lane-separator-pen\": " + SavePenToStr(lanePen) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        if (roadmap->GetLabelPlacement() != Wisteria::LabelPlacement::Flush)
+            {
+            const auto lpStr = Wisteria::ReportEnumConvert::ConvertLabelPlacementToString(
+                roadmap->GetLabelPlacement());
+            if (lpStr.has_value())
+                {
+                node->Add(L"label-placement", lpStr.value());
+                }
+            }
+        if (roadmap->GetLaneSeparatorStyle() !=
+            Wisteria::Graphs::Roadmap::LaneSeparatorStyle::SingleLine)
+            {
+            const auto lsStr = Wisteria::ReportEnumConvert::ConvertLaneSeparatorStyleToString(
+                roadmap->GetLaneSeparatorStyle());
+            if (lsStr.has_value())
+                {
+                node->Add(L"lane-separator-style", lsStr.value());
+                }
+            }
+        if (roadmap->GetRoadStopTheme() !=
+            Wisteria::Graphs::Roadmap::RoadStopTheme::LocationMarkers)
+            {
+            const auto rsStr = Wisteria::ReportEnumConvert::ConvertRoadStopThemeToString(
+                roadmap->GetRoadStopTheme());
+            if (rsStr.has_value())
+                {
+                node->Add(L"road-stop-theme", rsStr.value());
+                }
+            }
+        if (roadmap->GetMarkerLabelDisplay() !=
+            Wisteria::Graphs::Roadmap::MarkerLabelDisplay::NameAndAbsoluteValue)
+            {
+            const auto mlStr = Wisteria::ReportEnumConvert::ConvertMarkerLabelDisplayToString(
+                roadmap->GetMarkerLabelDisplay());
+            if (mlStr.has_value())
+                {
+                node->Add(L"marker-label-display", mlStr.value());
+                }
+            }
+        if (pcRoadmap->HasDefaultCaption())
+            {
+            node->Add(L"default-caption", true);
+            }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
+        {
+        const auto* table = dynamic_cast<const Wisteria::Graphs::Table*>(graph);
+        // default-borders (only if any are false)
+        if (!table->IsShowingTopBorder() || !table->IsShowingRightBorder() ||
+            !table->IsShowingBottomBorder() || !table->IsShowingLeftBorder())
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += wxString::Format(L", \"default-borders\": [%s, %s, %s, %s]}",
+                                            table->IsShowingTopBorder() ? L"true" : L"false",
+                                            table->IsShowingRightBorder() ? L"true" : L"false",
+                                            table->IsShowingBottomBorder() ? L"true" : L"false",
+                                            table->IsShowingLeftBorder() ? L"true" : L"false");
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        // min-width-proportion
+        if (table->GetMinWidthProportion().has_value())
+            {
+            node->Add(L"min-width-proportion", table->GetMinWidthProportion().value());
+            }
+        // min-height-proportion
+        if (table->GetMinHeightProportion().has_value())
+            {
+            node->Add(L"min-height-proportion", table->GetMinHeightProportion().value());
+            }
+        // clear-trailing-row-formatting
+        if (table->IsClearingTrailingRowFormatting())
+            {
+            node->Add(L"clear-trailing-row-formatting", true);
+            }
+        // highlight-pen (default is solid red, 1px)
+        const auto& hlPen = table->GetHighlightPen();
+        if (hlPen.IsOk() && hlPen != wxNullPen &&
+            !(hlPen.GetColour() ==
+                  Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Red) &&
+              hlPen.GetWidth() == 1 && hlPen.GetStyle() == wxPENSTYLE_SOLID))
+            {
+            auto printed = node->Print(false);
+            if (printed.EndsWith(L"}"))
+                {
+                printed.RemoveLast();
+                printed += L", \"highlight-pen\": " + SavePenToStr(hlPen) + L"}";
+                node = wxSimpleJSON::Create(printed);
+                }
+            }
+        // cached procedural properties
+        for (const auto& prop : { L"variables",
+                                  L"row-sort",
+                                  L"insert-group-header",
+                                  L"row-group",
+                                  L"column-group",
+                                  L"alternate-row-color",
+                                  L"row-add",
+                                  L"row-suppression",
+                                  L"column-suppression",
+                                  L"row-formatting",
+                                  L"row-color",
+                                  L"row-bold",
+                                  L"row-borders",
+                                  L"row-content-align",
+                                  L"column-formatting",
+                                  L"column-color",
+                                  L"column-bold",
+                                  L"column-borders",
+                                  L"column-content-align",
+                                  L"column-highlight",
+                                  L"aggregates",
+                                  L"row-totals",
+                                  L"cell-update",
+                                  L"cell-annotations",
+                                  L"footnotes" })
+            {
+            const auto cachedJson = graph->GetPropertyTemplate(prop);
+            if (!cachedJson.empty())
+                {
+                auto printed = node->Print(false);
+                if (printed.EndsWith(L"}"))
+                    {
+                    printed.RemoveLast();
+                    printed += L", \"" + wxString(prop) + L"\": " + cachedJson + L"}";
+                    node = wxSimpleJSON::Create(printed);
+                    }
+                }
+            }
+        // transpose (cached as "true" string)
+        if (graph->GetPropertyTemplate(L"transpose") == L"true")
+            {
+            node->Add(L"transpose", true);
+            }
+        // link-id (cached as numeric string)
+        const auto linkIdStr = graph->GetPropertyTemplate(L"link-id");
+        if (!linkIdStr.empty())
+            {
+            long linkIdVal{ 0 };
+            if (wxString(linkIdStr).ToLong(&linkIdVal))
+                {
+                node->Add(L"link-id", static_cast<double>(linkIdVal));
+                }
+            }
+        }
 
     return node;
     }
@@ -4042,7 +5185,7 @@ void WisteriaView::SaveProject(const wxString& filePath)
         wmObj->Add(L"label", wmLabel);
         if (wmColor.IsOk())
             {
-            wmObj->Add(L"color", wmColor.GetAsString(wxC2S_HTML_SYNTAX));
+            wmObj->Add(L"color", ColorToStr(wmColor));
             }
         }
     else
@@ -4086,46 +5229,32 @@ void WisteriaView::SaveProject(const wxString& filePath)
     const auto& subsetOpts = m_reportBuilder.GetDatasetSubsetOptions();
     const auto& mergeOpts = m_reportBuilder.GetDatasetMergeOptions();
 
-    // build a lookup of derived dataset names
-    // (pivot, subset, and merge datasets reference a parent)
-    std::set<wxString, Wisteria::Data::wxStringLessNoCase> derivedDatasets;
-    for (const auto& [name, opts] : pivotOpts)
-        {
-        derivedDatasets.insert(name);
-        }
-    for (const auto& [name, opts] : subsetOpts)
-        {
-        derivedDatasets.insert(name);
-        }
-    for (const auto& [name, opts] : mergeOpts)
-        {
-        derivedDatasets.insert(name);
-        }
-
     auto datasetsArray = root->GetProperty(L"datasets");
-    for (const auto& [dsName, dataset] : datasets)
+    const auto& insertionOrder = m_reportBuilder.GetDatasetInsertionOrder();
+    for (const auto& dsName : insertionOrder)
         {
-        // skip derived datasets; they are nested under their parent
-        if (derivedDatasets.contains(dsName))
+        // only write top-level datasets (those with a file path);
+        // derived datasets (subsets, pivots, merges) are nested under their parent
+        const auto optIt = importOpts.find(dsName);
+        if (optIt == importOpts.cend() || optIt->second.m_filePath.empty() ||
+            !datasets.contains(dsName))
             {
             continue;
             }
 
-        const auto optIt = importOpts.find(dsName);
-
         // build dataset template with name and path up front
         wxString dsTmpl = L"{";
-        dsTmpl += wxString::Format(L"\"name\": \"%s\", ", EscapeJsonStr(dsName));
-        if (optIt != importOpts.cend())
             {
-            const auto& optsTmpl = optIt->second;
-            if (!optsTmpl.m_filePath.empty())
+            wxFileName dataPath(optIt->second.m_filePath);
+            // only write "name" if it differs from the file stem
+            const auto fileStem = dataPath.GetName();
+            if (dsName.CmpNoCase(fileStem) != 0)
                 {
-                wxFileName dataPath(optsTmpl.m_filePath);
-                dataPath.MakeRelativeTo(projectDir.GetPath());
-                dsTmpl += wxString::Format(L"\"path\": \"%s\", ",
-                                           EscapeJsonStr(dataPath.GetFullPath(wxPATH_UNIX)));
+                dsTmpl += wxString::Format(L"\"name\": \"%s\", ", EscapeJsonStr(dsName));
                 }
+            dataPath.MakeRelativeTo(projectDir.GetPath());
+            dsTmpl += wxString::Format(L"\"path\": \"%s\", ",
+                                       EscapeJsonStr(dataPath.GetFullPath(wxPATH_UNIX)));
             }
         dsTmpl += L"\"categorical-columns\": [], \"date-columns\": [], "
                   L"\"recode-re\": [], \"columns-rename\": [], "
@@ -4134,7 +5263,6 @@ void WisteriaView::SaveProject(const wxString& filePath)
                   L"\"subsets\": [], \"pivots\": [], \"merges\": []}";
         auto dsNode = wxSimpleJSON::Create(dsTmpl);
 
-        if (optIt != importOpts.cend())
             {
             const auto& opts = optIt->second;
 
@@ -4222,11 +5350,12 @@ void WisteriaView::SaveProject(const wxString& filePath)
             continue;
             }
 
-        auto pageObj = wxSimpleJSON::Create(L"{\"rows\": []}");
-        if (!canvas->GetLabel().empty())
-            {
-            pageObj->Add(L"name", canvas->GetLabel());
-            }
+        const auto& nameTmpl = canvas->GetNameTemplate();
+        const auto& pageName = nameTmpl.empty() ? canvas->GetLabel() : nameTmpl;
+        auto pageObj = pageName.empty() ?
+                           wxSimpleJSON::Create(L"{\"rows\": []}") :
+                           wxSimpleJSON::Create(L"{\"name\": \"" + EscapeJsonStr(pageName) +
+                                                L"\", \"rows\": []}");
 
         auto rowsArray = pageObj->GetProperty(L"rows");
         const auto [rowCount, colCount] = canvas->GetFixedObjectsGridSize();
@@ -4237,13 +5366,27 @@ void WisteriaView::SaveProject(const wxString& filePath)
             for (size_t col = 0; col < colCount; ++col)
                 {
                 const auto item = canvas->GetFixedObject(row, col);
+                // skip legend labels (serialized as part of the graph)
+                if (item != nullptr && item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
+                    {
+                    const auto* label =
+                        dynamic_cast<const Wisteria::GraphItems::Label*>(item.get());
+                    if (label != nullptr && label->IsLegend())
+                        {
+                        continue;
+                        }
+                    }
                 auto itemNode = SavePageItem(item.get(), canvas);
                 if (itemNode != nullptr)
                     {
                     itemsArray->ArrayAdd(itemNode);
                     }
                 }
-            rowsArray->ArrayAdd(rowObj);
+            // skip rows where all items were filtered out (e.g., legend-only rows)
+            if (itemsArray->ArraySize() > 0)
+                {
+                rowsArray->ArrayAdd(rowObj);
+                }
             }
 
         pagesArray->ArrayAdd(pageObj);

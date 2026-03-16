@@ -369,6 +369,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> ScatterPlot::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         if (m_series.empty())
             {
             return nullptr;

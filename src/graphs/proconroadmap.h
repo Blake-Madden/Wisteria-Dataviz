@@ -214,6 +214,34 @@ namespace Wisteria::Graphs
             @param label The label to display.*/
         void SetNegativeLegendLabel(const wxString& label) { m_negativeLabel = label; }
 
+        /// @returns The positive legend label.
+        [[nodiscard]]
+        const wxString& GetPositiveLabel() const noexcept
+            {
+            return m_positiveLabel;
+            }
+
+        /// @returns The negative legend label.
+        [[nodiscard]]
+        const wxString& GetNegativeLabel() const noexcept
+            {
+            return m_negativeLabel;
+            }
+
+        /// @returns The minimum count for inclusion, if specified.
+        [[nodiscard]]
+        const std::optional<size_t>& GetMinimumCount() const noexcept
+            {
+            return m_minimumCount;
+            }
+
+        /// @returns Whether the default caption was added.
+        [[nodiscard]]
+        bool HasDefaultCaption() const noexcept
+            {
+            return m_hasDefaultCaption;
+            }
+
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
@@ -231,6 +259,8 @@ namespace Wisteria::Graphs
 
         wxString m_positiveLabel{ /*TRANSLATORS: A favorable reason. */ _(L"Pro") };
         wxString m_negativeLabel{ /*TRANSLATORS: An unfavorable reason. */ _(L"Con") };
+        std::optional<size_t> m_minimumCount;
+        bool m_hasDefaultCaption{ false };
         };
     } // namespace Wisteria::Graphs
 

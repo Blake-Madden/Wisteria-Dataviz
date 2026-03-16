@@ -128,7 +128,9 @@ namespace Wisteria
                     {
                     // create the canvas used for the page
                     auto* canvas = new Canvas(parent);
-                    canvas->SetLabel(ExpandConstants(page->GetProperty(_DT(L"name"))->AsString()));
+                    const auto rawName = page->GetProperty(_DT(L"name"))->AsString();
+                    canvas->SetNameTemplate(rawName);
+                    canvas->SetLabel(ExpandConstants(rawName));
 
                     // page numbering
                     if (page->HasProperty(L"page-numbering"))
@@ -1929,8 +1931,9 @@ namespace Wisteria
                             if (m_datasets.contains(mergeName))
                                 {
                                 wxLogWarning(L"Dataset '%s' already exists "
-                                             "and will be overwritten by a merge.",
+                                             "and cannot be overwritten by a merge.",
                                              mergeName);
+                                continue;
                                 }
                             m_datasets.insert_or_assign(mergeName, mergedData);
 
@@ -1994,8 +1997,9 @@ namespace Wisteria
                             if (m_datasets.contains(pivotName))
                                 {
                                 wxLogWarning(L"Dataset '%s' already exists "
-                                             "and will be overwritten by a pivot.",
+                                             "and cannot be overwritten by a pivot.",
                                              pivotName);
+                                continue;
                                 }
                             m_datasets.insert_or_assign(pivotName, pivotedData);
 
@@ -2032,8 +2036,9 @@ namespace Wisteria
                             if (m_datasets.contains(pivotName))
                                 {
                                 wxLogWarning(L"Dataset '%s' already exists "
-                                             "and will be overwritten by a pivot.",
+                                             "and cannot be overwritten by a pivot.",
                                              pivotName);
+                                continue;
                                 }
                             m_datasets.insert_or_assign(pivotName, pivotedData);
 
@@ -2247,8 +2252,9 @@ namespace Wisteria
                         if (m_datasets.contains(subsetName))
                             {
                             wxLogWarning(L"Dataset '%s' already exists "
-                                         "and will be overwritten by a subset.",
+                                         "and cannot be overwritten by a subset.",
                                          subsetName);
+                            continue;
                             }
                         m_datasets.insert_or_assign(subsetName, subsettedDataset);
                         SetDatasetSubsetOptions(subsetName, subsetOpts);
@@ -2652,6 +2658,36 @@ namespace Wisteria
                             }
                         }
 
+                    // reorder ColumnPreviewInfo to match original spreadsheet order
+                    const auto colOrder = datasetNode->GetProperty(L"columns-order")->AsStrings();
+                    if (!colOrder.empty())
+                        {
+                        Data::Dataset::ColumnPreviewInfo reordered;
+                        for (const auto& name : colOrder)
+                            {
+                            const auto it =
+                                std::find_if(columnPreviewInfo.cbegin(), columnPreviewInfo.cend(),
+                                             [&name](const auto& cp) { return cp.m_name == name; });
+                            if (it != columnPreviewInfo.cend())
+                                {
+                                reordered.push_back(*it);
+                                }
+                            }
+                        // append any columns not in the order list
+                        // (shouldn't happen, but be safe)
+                        for (const auto& cp : columnPreviewInfo)
+                            {
+                            const auto it = std::find_if(reordered.cbegin(), reordered.cend(),
+                                                         [&cp](const auto& r)
+                                                         { return r.m_name == cp.m_name; });
+                            if (it == reordered.cend())
+                                {
+                                reordered.push_back(cp);
+                                }
+                            }
+                        columnPreviewInfo = std::move(reordered);
+                        }
+
                     // import using the user-provided parser or deduce from the file extension
                     const auto fileExt(wxFileName(path).GetExt());
                     if (importer.CmpNoCase(L"csv") == 0 || fileExt.CmpNoCase(L"csv") == 0)
@@ -2688,6 +2724,26 @@ namespace Wisteria
                                                      importDefines });
                     // recode values, build subsets and pivots, etc.
                     LoadDatasetTransformations(datasetNode, dataset);
+                    // update column preview info to reflect any renames
+                    const auto txIt = m_datasetTransformOptions.find(dsName);
+                    if (txIt != m_datasetTransformOptions.cend())
+                        {
+                        auto& cpInfo = m_datasetImportOptions[dsName].m_columnPreviewInfo;
+                        for (const auto& rename : txIt->second.m_columnRenames)
+                            {
+                            if (!rename.m_name.empty() && !rename.m_newName.empty())
+                                {
+                                for (auto& col : cpInfo)
+                                    {
+                                    if (col.m_name.CmpNoCase(rename.m_name) == 0)
+                                        {
+                                        col.m_name = rename.m_newName;
+                                        break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -3011,13 +3067,15 @@ namespace Wisteria
                     Graphs::LikertChart::DeduceScale(foundPos->second, questions, groupVarName);
                 }
 
-            if (graphNode->GetProperty(L"simplify")->AsBool())
+            const bool doSimplify = graphNode->GetProperty(L"simplify")->AsBool();
+            if (doSimplify)
                 {
                 surveyFormat = Graphs::LikertChart::Simplify(foundPos->second, questions,
                                                              surveyFormat.value());
                 }
 
-            if (graphNode->GetProperty(L"apply-default-labels")->AsBool())
+            const bool doApplyLabels = graphNode->GetProperty(L"apply-default-labels")->AsBool();
+            if (doApplyLabels)
                 {
                 Graphs::LikertChart::SetLabels(
                     foundPos->second, questions,
@@ -3043,6 +3101,14 @@ namespace Wisteria
             if (!groupVarNameRaw.empty())
                 {
                 likertChart->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
+                }
+            if (doSimplify)
+                {
+                likertChart->SetPropertyTemplate(L"simplify", L"true");
+                }
+            if (doApplyLabels)
+                {
+                likertChart->SetPropertyTemplate(L"apply-default-labels", L"true");
                 }
 
             likertChart->SetData(
@@ -3858,25 +3924,40 @@ namespace Wisteria
             barBracketsNode->IsOk() && barBracketsNode->IsValueArray())
             {
             const auto barBrackets = barBracketsNode->AsNodes();
-            for (const auto& barBracket : barBrackets)
+            for (size_t bbi = 0; bbi < barBrackets.size(); ++bbi)
                 {
+                const auto& barBracket = barBrackets[bbi];
+                const auto idx = std::to_wstring(bbi);
                 // just log any missing bracket requests and then skip over them
                 try
                     {
                     if (barBracket->HasProperty(L"start-block-re") &&
                         barBracket->HasProperty(L"end-block-re"))
                         {
-                        barChart->AddFirstBarBracketRE(
-                            barBracket->GetProperty(L"start-block-re")->AsString(),
-                            barBracket->GetProperty(L"end-block-re")->AsString(),
-                            barBracket->GetProperty(L"label")->AsString());
+                        const auto startVal =
+                            barBracket->GetProperty(L"start-block-re")->AsString();
+                        const auto endVal = barBracket->GetProperty(L"end-block-re")->AsString();
+                        const auto labelVal = barBracket->GetProperty(L"label")->AsString();
+                        barChart->AddFirstBarBracketRE(startVal, endVal, labelVal);
+                        barChart->SetPropertyTemplate(
+                            L"first-bar-brackets[" + idx + L"].start-block-re", startVal);
+                        barChart->SetPropertyTemplate(
+                            L"first-bar-brackets[" + idx + L"].end-block-re", endVal);
+                        barChart->SetPropertyTemplate(L"first-bar-brackets[" + idx + L"].label",
+                                                      labelVal);
                         }
                     else
                         {
-                        barChart->AddFirstBarBracket(
-                            barBracket->GetProperty(L"start-block")->AsString(),
-                            barBracket->GetProperty(L"end-block")->AsString(),
-                            barBracket->GetProperty(L"label")->AsString());
+                        const auto startVal = barBracket->GetProperty(L"start-block")->AsString();
+                        const auto endVal = barBracket->GetProperty(L"end-block")->AsString();
+                        const auto labelVal = barBracket->GetProperty(L"label")->AsString();
+                        barChart->AddFirstBarBracket(startVal, endVal, labelVal);
+                        barChart->SetPropertyTemplate(
+                            L"first-bar-brackets[" + idx + L"].start-block", startVal);
+                        barChart->SetPropertyTemplate(L"first-bar-brackets[" + idx + L"].end-block",
+                                                      endVal);
+                        barChart->SetPropertyTemplate(L"first-bar-brackets[" + idx + L"].label",
+                                                      labelVal);
                         }
                     }
                 catch (const std::exception& err)
@@ -3889,24 +3970,39 @@ namespace Wisteria
             barBracketsNode->IsOk() && barBracketsNode->IsValueArray())
             {
             const auto barBrackets = barBracketsNode->AsNodes();
-            for (const auto& barBracket : barBrackets)
+            for (size_t bbi = 0; bbi < barBrackets.size(); ++bbi)
                 {
+                const auto& barBracket = barBrackets[bbi];
+                const auto idx = std::to_wstring(bbi);
                 try
                     {
                     if (barBracket->HasProperty(L"start-block-re") &&
                         barBracket->HasProperty(L"end-block-re"))
                         {
-                        barChart->AddLastBarBracketRE(
-                            barBracket->GetProperty(L"start-block-re")->AsString(),
-                            barBracket->GetProperty(L"end-block-re")->AsString(),
-                            barBracket->GetProperty(L"label")->AsString());
+                        const auto startVal =
+                            barBracket->GetProperty(L"start-block-re")->AsString();
+                        const auto endVal = barBracket->GetProperty(L"end-block-re")->AsString();
+                        const auto labelVal = barBracket->GetProperty(L"label")->AsString();
+                        barChart->AddLastBarBracketRE(startVal, endVal, labelVal);
+                        barChart->SetPropertyTemplate(
+                            L"last-bar-brackets[" + idx + L"].start-block-re", startVal);
+                        barChart->SetPropertyTemplate(
+                            L"last-bar-brackets[" + idx + L"].end-block-re", endVal);
+                        barChart->SetPropertyTemplate(L"last-bar-brackets[" + idx + L"].label",
+                                                      labelVal);
                         }
                     else
                         {
-                        barChart->AddLastBarBracket(
-                            barBracket->GetProperty(L"start-block")->AsString(),
-                            barBracket->GetProperty(L"end-block")->AsString(),
-                            barBracket->GetProperty(L"label")->AsString());
+                        const auto startVal = barBracket->GetProperty(L"start-block")->AsString();
+                        const auto endVal = barBracket->GetProperty(L"end-block")->AsString();
+                        const auto labelVal = barBracket->GetProperty(L"label")->AsString();
+                        barChart->AddLastBarBracket(startVal, endVal, labelVal);
+                        barChart->SetPropertyTemplate(
+                            L"last-bar-brackets[" + idx + L"].start-block", startVal);
+                        barChart->SetPropertyTemplate(L"last-bar-brackets[" + idx + L"].end-block",
+                                                      endVal);
+                        barChart->SetPropertyTemplate(L"last-bar-brackets[" + idx + L"].label",
+                                                      labelVal);
                         }
                     }
                 catch (const std::exception& err)
@@ -5387,6 +5483,16 @@ namespace Wisteria
 
         table->SetData(foundPos->second, variables, tableNode->GetProperty(L"transpose")->AsBool());
 
+        // cache raw JSON for round-trip serialization
+        if (variablesNode->IsOk())
+            {
+            table->SetPropertyTemplate(L"variables", variablesNode->Print(false));
+            }
+        if (tableNode->GetProperty(L"transpose")->AsBool())
+            {
+            table->SetPropertyTemplate(L"transpose", L"true");
+            }
+
         // sorting
         const auto sortNode = tableNode->GetProperty(L"row-sort");
         if (sortNode->IsOk())
@@ -5411,6 +5517,7 @@ namespace Wisteria
                     table->Sort(sortColumn.value(), sortDirection);
                     }
                 }
+            table->SetPropertyTemplate(L"row-sort", sortNode->Print(false));
             }
 
         if (tableNode->HasProperty(L"link-id"))
@@ -5430,6 +5537,7 @@ namespace Wisteria
                     tLink.AddTable(table);
                     m_tableLinks.push_back(std::move(tLink));
                     }
+                table->SetPropertyTemplate(L"link-id", std::to_wstring(linkId.value()));
                 }
             }
 
@@ -5452,20 +5560,33 @@ namespace Wisteria
         if (tableNode->HasProperty(L"insert-group-header"))
             {
             table->InsertGroupHeader(tableNode->GetProperty(L"insert-group-header")->AsStrings());
+            table->SetPropertyTemplate(
+                L"insert-group-header",
+                tableNode->GetProperty(L"insert-group-header")->Print(false));
             }
 
         // group the rows
-        const auto rowGroupings = tableNode->GetProperty(L"row-group")->AsDoubles();
+        const auto rowGroupNode = tableNode->GetProperty(L"row-group");
+        const auto rowGroupings = rowGroupNode->AsDoubles();
         for (const auto& rowGrouping : rowGroupings)
             {
             table->GroupRow(rowGrouping);
             }
+        if (!rowGroupings.empty())
+            {
+            table->SetPropertyTemplate(L"row-group", rowGroupNode->Print(false));
+            }
 
         // group the columns
-        const auto columnGroupings = tableNode->GetProperty(L"column-group")->AsDoubles();
+        const auto columnGroupNode = tableNode->GetProperty(L"column-group");
+        const auto columnGroupings = columnGroupNode->AsDoubles();
         for (const auto& columnGrouping : columnGroupings)
             {
             table->GroupColumn(columnGrouping);
+            }
+        if (!columnGroupings.empty())
+            {
+            table->SetPropertyTemplate(L"column-group", columnGroupNode->Print(false));
             }
 
         // apply zebra stripes to loaded data before we start adding custom rows/columns, manually
@@ -5482,10 +5603,12 @@ namespace Wisteria
                 rowColor = Colors::ColorBrewer::GetColor(Colors::Color::White);
                 }
             table->ApplyAlternateRowColors(rowColor, startRow.value_or(0), colStops);
+            table->SetPropertyTemplate(L"alternate-row-color", altRowColorNode->Print(false));
             }
 
         // add rows
-        auto rowAddCommands = tableNode->GetProperty(L"row-add")->AsNodes();
+        const auto rowAddNode = tableNode->GetProperty(L"row-add");
+        auto rowAddCommands = rowAddNode->AsNodes();
         if (!rowAddCommands.empty())
             {
             for (const auto& rowAddCommand : rowAddCommands)
@@ -5509,10 +5632,12 @@ namespace Wisteria
                     table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt);
                     }
                 }
+            table->SetPropertyTemplate(L"row-add", rowAddNode->Print(false));
             }
 
         // change the rows' suppression
-        const auto rowSuppressionCommands = tableNode->GetProperty(L"row-suppression")->AsNodes();
+        const auto rowSuppressionNode = tableNode->GetProperty(L"row-suppression");
+        const auto rowSuppressionCommands = rowSuppressionNode->AsNodes();
         if (!rowSuppressionCommands.empty())
             {
             for (const auto& rowSuppressionCommand : rowSuppressionCommands)
@@ -5552,13 +5677,25 @@ namespace Wisteria
                         }
                     }
                 }
+            table->SetPropertyTemplate(L"row-suppression", rowSuppressionNode->Print(false));
             }
 
         LoadTableRowFormatting(table, tableNode);
 
+        // cache row formatting properties for round-trip serialization
+        for (const auto& prop :
+             { L"row-formatting", L"row-color", L"row-bold", L"row-borders", L"row-content-align" })
+            {
+            const auto node = tableNode->GetProperty(prop);
+            if (node->IsOk() && !node->AsNodes().empty())
+                {
+                table->SetPropertyTemplate(prop, node->Print(false));
+                }
+            }
+
         // change the columns' suppression
-        const auto columnSuppressionCommands =
-            tableNode->GetProperty(L"column-suppression")->AsNodes();
+        const auto columnSuppressionNode = tableNode->GetProperty(L"column-suppression");
+        const auto columnSuppressionCommands = columnSuppressionNode->AsNodes();
         if (!columnSuppressionCommands.empty())
             {
             for (const auto& columnSuppressionCommand : columnSuppressionCommands)
@@ -5599,13 +5736,25 @@ namespace Wisteria
                         }
                     }
                 }
+            table->SetPropertyTemplate(L"column-suppression", columnSuppressionNode->Print(false));
             }
 
         LoadTableColumnFormatting(table, tableNode);
 
+        // cache column formatting properties for round-trip serialization
+        for (const auto& prop : { L"column-formatting", L"column-color", L"column-bold",
+                                  L"column-borders", L"column-content-align" })
+            {
+            const auto node = tableNode->GetProperty(prop);
+            if (node->IsOk() && !node->AsNodes().empty())
+                {
+                table->SetPropertyTemplate(prop, node->Print(false));
+                }
+            }
+
         // highlight cells down a column
-        const auto columnHighlightsCommands =
-            tableNode->GetProperty(L"column-highlight")->AsNodes();
+        const auto columnHighlightNode = tableNode->GetProperty(L"column-highlight");
+        const auto columnHighlightsCommands = columnHighlightNode->AsNodes();
         if (!columnHighlightsCommands.empty())
             {
             for (const auto& columnHighlightsCommand : columnHighlightsCommands)
@@ -5628,10 +5777,12 @@ namespace Wisteria
                         }
                     }
                 }
+            table->SetPropertyTemplate(L"column-highlight", columnHighlightNode->Print(false));
             }
 
         // column/row aggregates
-        const auto columnRowAggregates = tableNode->GetProperty(L"aggregates")->AsNodes();
+        const auto aggregatesNode = tableNode->GetProperty(L"aggregates");
+        const auto columnRowAggregates = aggregatesNode->AsNodes();
         if (!columnRowAggregates.empty())
             {
             for (const auto& columnRowAggregate : columnRowAggregates)
@@ -5713,6 +5864,7 @@ namespace Wisteria
                                                 std::nullopt));
                     }
                 }
+            table->SetPropertyTemplate(L"aggregates", aggregatesNode->Print(false));
             }
 
         // row totals
@@ -5722,10 +5874,12 @@ namespace Wisteria
             const wxColour bkColor(ConvertColor(rowTotals->GetProperty(L"background")));
             table->InsertRowTotals(bkColor.IsOk() ? std::optional<wxColour>(bkColor) :
                                                     std::nullopt);
+            table->SetPropertyTemplate(L"row-totals", rowTotals->Print(false));
             }
 
         // cell updating
-        const auto cellUpdates = tableNode->GetProperty(L"cell-update")->AsNodes();
+        const auto cellUpdateNode = tableNode->GetProperty(L"cell-update");
+        const auto cellUpdates = cellUpdateNode->AsNodes();
         if (!cellUpdates.empty())
             {
             for (const auto& cellUpdate : cellUpdates)
@@ -5890,9 +6044,11 @@ namespace Wisteria
                         }
                     }
                 }
+            table->SetPropertyTemplate(L"cell-update", cellUpdateNode->Print(false));
             }
 
-        const auto annotationsNode = tableNode->GetProperty(L"cell-annotations")->AsNodes();
+        const auto cellAnnotationsNode = tableNode->GetProperty(L"cell-annotations");
+        const auto annotationsNode = cellAnnotationsNode->AsNodes();
         if (!annotationsNode.empty())
             {
             for (const auto& annotation : annotationsNode)
@@ -5954,10 +6110,12 @@ namespace Wisteria
                         }
                     }
                 }
+            table->SetPropertyTemplate(L"cell-annotations", cellAnnotationsNode->Print(false));
             }
 
         // assign footnotes after all cells have been updated
-        const auto footnotesNode = tableNode->GetProperty(L"footnotes")->AsNodes();
+        const auto footnotesJsonNode = tableNode->GetProperty(L"footnotes");
+        const auto footnotesNode = footnotesJsonNode->AsNodes();
         if (!footnotesNode.empty())
             {
             for (const auto& ftNode : footnotesNode)
@@ -5967,6 +6125,7 @@ namespace Wisteria
                                    ExpandAndCache(table.get(), L"footnote.text",
                                                   ftNode->GetProperty(L"footnote")->AsString()));
                 }
+            table->SetPropertyTemplate(L"footnotes", footnotesJsonNode->Print(false));
             }
 
         LoadGraph(tableNode, canvas, currentRow, currentColumn, table);
@@ -7007,14 +7166,23 @@ namespace Wisteria
                     graph->CreateLegend(Graphs::LegendOptions()
                                             .RingPerimeter(ringPerimeter)
                                             .IncludeHeader(includeHeader)
+                                            .Title(headerLabel)
+                                            .Placement(Side::Left)
                                             .PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
-                // update title
-                if (!headerLabel.empty())
+                if (legend != nullptr)
                     {
-                    legend->SetLine(0, headerLabel);
+                    if (!headerLabel.empty())
+                        {
+                        legend->SetLine(0, headerLabel);
+                        }
+                    legend->SetIsLegend(true);
+                    canvas->SetFixedObject(currentRow, currentColumn + 1, graph);
+                    canvas->SetFixedObject(currentRow, currentColumn++, std::move(legend));
                     }
-                canvas->SetFixedObject(currentRow, currentColumn + 1, graph);
-                canvas->SetFixedObject(currentRow, currentColumn++, std::move(legend));
+                else
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    }
                 }
             else if (placement.CmpNoCase(L"bottom") == 0)
                 {
@@ -7022,13 +7190,23 @@ namespace Wisteria
                     Graphs::LegendOptions()
                         .RingPerimeter(ringPerimeter)
                         .IncludeHeader(includeHeader)
+                        .Title(headerLabel)
+                        .Placement(Side::Bottom)
                         .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
-                if (!headerLabel.empty())
+                if (legend != nullptr)
                     {
-                    legend->SetLine(0, headerLabel);
+                    if (!headerLabel.empty())
+                        {
+                        legend->SetLine(0, headerLabel);
+                        }
+                    legend->SetIsLegend(true);
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    canvas->SetFixedObject(++currentRow, currentColumn, std::move(legend));
                     }
-                canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(++currentRow, currentColumn, std::move(legend));
+                else
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    }
                 }
             else if (placement.CmpNoCase(L"top") == 0)
                 {
@@ -7036,13 +7214,23 @@ namespace Wisteria
                     Graphs::LegendOptions()
                         .RingPerimeter(ringPerimeter)
                         .IncludeHeader(includeHeader)
+                        .Title(headerLabel)
+                        .Placement(Side::Top)
                         .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
-                if (!headerLabel.empty())
+                if (legend != nullptr)
                     {
-                    legend->SetLine(0, headerLabel);
+                    if (!headerLabel.empty())
+                        {
+                        legend->SetLine(0, headerLabel);
+                        }
+                    legend->SetIsLegend(true);
+                    canvas->SetFixedObject(currentRow + 1, currentColumn, graph);
+                    canvas->SetFixedObject(currentRow++, currentColumn, std::move(legend));
                     }
-                canvas->SetFixedObject(currentRow + 1, currentColumn, graph);
-                canvas->SetFixedObject(currentRow++, currentColumn, std::move(legend));
+                else
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    }
                 }
             else // right, the default
                 {
@@ -7050,13 +7238,23 @@ namespace Wisteria
                     Graphs::LegendOptions()
                         .RingPerimeter(ringPerimeter)
                         .IncludeHeader(includeHeader)
+                        .Title(headerLabel)
+                        .Placement(Side::Right)
                         .PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
-                if (!headerLabel.empty())
+                if (legend != nullptr)
                     {
-                    legend->SetLine(0, headerLabel);
+                    if (!headerLabel.empty())
+                        {
+                        legend->SetLine(0, headerLabel);
+                        }
+                    legend->SetIsLegend(true);
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legend));
                     }
-                canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legend));
+                else
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    }
                 }
             }
         // no legend, so just add the graph

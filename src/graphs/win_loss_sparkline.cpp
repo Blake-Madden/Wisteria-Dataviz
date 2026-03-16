@@ -791,6 +791,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> WinLossSparkline::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo(
                 _(L"Won") + (m_hadShutoutWins ? _(L"\nWon in a shutout") : wxString{}) +

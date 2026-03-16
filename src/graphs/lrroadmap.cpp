@@ -26,6 +26,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
             return;
             }
 
+        m_pValueThreshold = pLevel;
+        m_predictorsToInclude = predictorsToIncludes;
+
         if (dvName)
             {
             SetGoalLabel(dvName.value());
@@ -144,6 +147,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
     //----------------------------------------------------------------
     void LRRoadmap::AddDefaultCaption()
         {
+        m_hasDefaultCaption = true;
         GetCaption().SetText(wxString::Format(_(L"The larger the map marker and deeper the curve, "
                                                 "the stronger the item's association with %s"),
                                               GetGoalLabel()));

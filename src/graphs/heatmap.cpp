@@ -44,6 +44,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         ResetGrouping();
         GetSelectedIds().clear();
         m_continuousColumnName = continuousColumnName;
+        m_requestedGroupColumnCount = groupColumnCount;
 
         if (GetDataset() == nullptr)
             {
@@ -458,6 +459,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         if (GetDataset() == nullptr)
             {
             return nullptr;

@@ -355,6 +355,20 @@ namespace Wisteria::GraphItems
             return m_topImageOffset;
             }
 
+        /// @brief Marks this label as a legend.
+        /// @param isLegend @c true if this label is a legend.
+        void SetIsLegend(bool isLegend) noexcept
+            {
+            m_isLegend = isLegend;
+            }
+
+        /// @returns @c true if this label is a legend.
+        [[nodiscard]]
+        bool IsLegend() const noexcept
+            {
+            return m_isLegend;
+            }
+
         /// @}
 
         /// @name Bounding Box Functions
@@ -703,6 +717,7 @@ namespace Wisteria::GraphItems
         size_t m_topImageOffset{ 0 };
         bool m_boundingBoxScalingLocked{ false };
         bool m_markupEnabled{ false };
+        bool m_isLegend{ false };
         };
     } // namespace Wisteria::GraphItems
 

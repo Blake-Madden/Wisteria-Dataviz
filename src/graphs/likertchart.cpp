@@ -412,6 +412,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())

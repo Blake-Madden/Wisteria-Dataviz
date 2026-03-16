@@ -131,6 +131,13 @@ namespace Wisteria::Graphs
             @param type The plot type to set this to.*/
         void SetPlotType(const PlotType& type) { m_chartType = type; }
 
+        /// @returns The current plot type.
+        [[nodiscard]]
+        PlotType GetPlotType() const noexcept
+            {
+            return m_chartType;
+            }
+
         /// @brief Gets/sets the brush used to paint days that saw a loss.
         /// @returns The brush used to paint days that saw a loss.
         [[nodiscard]]
@@ -139,10 +146,24 @@ namespace Wisteria::Graphs
             return m_lossBrush;
             }
 
+        /// @returns The brush used to paint days that saw a loss.
+        [[nodiscard]]
+        const wxBrush& GetLossBrush() const noexcept
+            {
+            return m_lossBrush;
+            }
+
         /// @brief Gets/sets the brush used to paint days that saw a gain.
         /// @returns The brush used to paint days that saw a gain.
         [[nodiscard]]
         wxBrush& GetGainBrush() noexcept
+            {
+            return m_gainBrush;
+            }
+
+        /// @returns The brush used to paint days that saw a gain.
+        [[nodiscard]]
+        const wxBrush& GetGainBrush() const noexcept
             {
             return m_gainBrush;
             }

@@ -4184,6 +4184,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Axis::SimplifyBrackets()
         {
+        m_bracketsSimplified = true;
         if (GetBrackets().size() < 2)
             {
             return;

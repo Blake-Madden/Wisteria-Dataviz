@@ -807,8 +807,7 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
-        static std::optional<wxString>
-        ConvertBarShapeToString(Graphs::BarChart::BarShape value)
+        static std::optional<wxString> ConvertBarShapeToString(Graphs::BarChart::BarShape value)
             {
             static const std::map<Graphs::BarChart::BarShape, wxString> values = {
                 { Graphs::BarChart::BarShape::Rectangle, L"rectangle" },
@@ -817,9 +816,8 @@ namespace Wisteria
             };
 
             const auto foundValue = values.find(value);
-            return ((foundValue != values.cend()) ?
-                        std::optional<wxString>(foundValue->second) :
-                        std::nullopt);
+            return ((foundValue != values.cend()) ? std::optional<wxString>(foundValue->second) :
+                                                    std::nullopt);
             }
 
         //---------------------------------------------------
@@ -1531,6 +1529,196 @@ namespace Wisteria
             static const std::map<LabelPlacement, wxString> values = {
                 { LabelPlacement::NextToParent, L"next-to-parent" },
                 { LabelPlacement::Flush, L"flush" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a LaneSeparatorStyle enum to its JSON string.
+        /// @param value The lane separator style enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertLaneSeparatorStyleToString(Graphs::Roadmap::LaneSeparatorStyle value)
+            {
+            static const std::map<Graphs::Roadmap::LaneSeparatorStyle, wxString> values = {
+                { Graphs::Roadmap::LaneSeparatorStyle::SingleLine, L"single-line" },
+                { Graphs::Roadmap::LaneSeparatorStyle::DoubleLine, L"double-line" },
+                { Graphs::Roadmap::LaneSeparatorStyle::NoDisplay, L"no-display" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a RoadStopTheme enum to its JSON string.
+        /// @param value The road stop theme enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertRoadStopThemeToString(Graphs::Roadmap::RoadStopTheme value)
+            {
+            static const std::map<Graphs::Roadmap::RoadStopTheme, wxString> values = {
+                { Graphs::Roadmap::RoadStopTheme::LocationMarkers, L"location-markers" },
+                { Graphs::Roadmap::RoadStopTheme::RoadSigns, L"road-signs" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a MarkerLabelDisplay enum to its JSON string.
+        /// @param value The marker label display enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertMarkerLabelDisplayToString(Graphs::Roadmap::MarkerLabelDisplay value)
+            {
+            static const std::map<Graphs::Roadmap::MarkerLabelDisplay, wxString> values = {
+                { Graphs::Roadmap::MarkerLabelDisplay::Name, L"name" },
+                { Graphs::Roadmap::MarkerLabelDisplay::NameAndAbsoluteValue,
+                  L"name-and-absolute-value" },
+                { Graphs::Roadmap::MarkerLabelDisplay::NameAndValue, L"name-and-value" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a CandlestickPlot::PlotType enum to its JSON string.
+        /// @param value The plot type enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertCandlestickPlotTypeToString(Graphs::CandlestickPlot::PlotType value)
+            {
+            static const std::map<Graphs::CandlestickPlot::PlotType, wxString> values = {
+                { Graphs::CandlestickPlot::PlotType::Candlestick, L"candlestick" },
+                { Graphs::CandlestickPlot::PlotType::Ohlc, L"ohlc" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a GraphColumnHeader enum to its JSON string.
+        /// @param value The graph column header enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertGraphColumnHeaderToString(GraphColumnHeader value)
+            {
+            static const std::map<GraphColumnHeader, wxString> values = {
+                { GraphColumnHeader::AsHeader, L"as-header" },
+                { GraphColumnHeader::AsFooter, L"as-footer" },
+                { GraphColumnHeader::NoDisplay, L"no-display" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a FlowShape enum to its JSON string.
+        /// @param value The flow shape enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertFlowShapeToString(FlowShape value)
+            {
+            static const std::map<FlowShape, wxString> values = {
+                { FlowShape::Curvy, L"curvy" }, { FlowShape::Jagged, L"jagged" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a DateInterval enum to its JSON string.
+        /// @brief Converts a LikertSurveyQuestionFormat to its JSON string.
+        /// @param value The survey format enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertLikertSurveyQuestionFormatToString(
+            Graphs::LikertChart::LikertSurveyQuestionFormat value)
+            {
+            using LF = Graphs::LikertChart::LikertSurveyQuestionFormat;
+            static const std::map<LF, wxString> values = {
+                { LF::TwoPoint, L"two-point" },
+                { LF::TwoPointCategorized, L"two-point-categorized" },
+                { LF::ThreePoint, L"three-point" },
+                { LF::ThreePointCategorized, L"threepoint-categorized" },
+                { LF::FourPoint, L"four-point" },
+                { LF::FourPointCategorized, L"four-point-categorized" },
+                { LF::FivePoint, L"five-point" },
+                { LF::FivePointCategorized, L"five-point-categorized" },
+                { LF::SixPoint, L"six-point" },
+                { LF::SixPointCategorized, L"six-point-categorized" },
+                { LF::SevenPoint, L"seven-point" },
+                { LF::SevenPointCategorized, L"seven-point-categorized" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @param value The date interval enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertDateIntervalToString(DateInterval value)
+            {
+            static const std::map<DateInterval, wxString> values = {
+                { DateInterval::Daily, L"daily" },
+                { DateInterval::FiscalQuarterly, L"fiscal-quarterly" },
+                { DateInterval::Monthly, L"monthly" },
+                { DateInterval::Weekly, L"weekly" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a FiscalYear enum to its JSON string.
+        /// @param value The fiscal year enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertFiscalYearToString(FiscalYear value)
+            {
+            static const std::map<FiscalYear, wxString> values = {
+                { FiscalYear::Education, L"education" }, { FiscalYear::USBusiness, L"us-business" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a TaskLabelDisplay enum to its JSON string.
+        /// @param value The task label display enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertTaskLabelDisplayToString(Graphs::GanttChart::TaskLabelDisplay value)
+            {
+            static const std::map<Graphs::GanttChart::TaskLabelDisplay, wxString> values = {
+                { Graphs::GanttChart::TaskLabelDisplay::Days, L"days" },
+                { Graphs::GanttChart::TaskLabelDisplay::Description, L"description" },
+                { Graphs::GanttChart::TaskLabelDisplay::DescriptionAndDays,
+                  L"description-and-days" },
+                { Graphs::GanttChart::TaskLabelDisplay::NoDisplay, L"no-display" },
+                { Graphs::GanttChart::TaskLabelDisplay::Resource, L"resource" },
+                { Graphs::GanttChart::TaskLabelDisplay::ResourceAndDays, L"resource-and-days" },
+                { Graphs::GanttChart::TaskLabelDisplay::ResourceAndDescription,
+                  L"resource-and-description" },
+                { Graphs::GanttChart::TaskLabelDisplay::ResourceDescriptionAndDays,
+                  L"resource-description-and-days" }
             };
 
             const auto foundValue = values.find(value);

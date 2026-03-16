@@ -195,6 +195,13 @@ namespace Wisteria::Graphs
             return m_showGroupHeaders;
             }
 
+        /// @returns The requested group column count.
+        [[nodiscard]]
+        const std::optional<size_t>& GetGroupColumnCount() const noexcept
+            {
+            return m_requestedGroupColumnCount;
+            }
+
         /// @}
 
         /** @brief Builds and returns a legend.
@@ -222,6 +229,7 @@ namespace Wisteria::Graphs
         wxString m_continuousColumnName;
         bool m_showGroupHeaders{ true };
         size_t m_groupColumnCount{ 1 };
+        std::optional<size_t> m_requestedGroupColumnCount;
         };
     } // namespace Wisteria::Graphs
 

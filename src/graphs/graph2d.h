@@ -89,10 +89,46 @@ namespace Wisteria::Graphs
             return m_perimeter;
             }
 
+        /// @brief Sets a custom title for the legend.
+        /// @param title The title text.
+        /// @returns A self reference.
+        [[nodiscard]]
+        LegendOptions& Title(const wxString& title)
+            {
+            m_title = title;
+            return *this;
+            }
+
+        /// @returns The custom legend title (empty if using the default).
+        [[nodiscard]]
+        const wxString& GetTitle() const noexcept
+            {
+            return m_title;
+            }
+
+        /// @brief Sets the placement side for the legend.
+        /// @param side Which side of the graph the legend is placed.
+        /// @returns A self reference.
+        [[nodiscard]]
+        LegendOptions& Placement(Side side) noexcept
+            {
+            m_placement = side;
+            return *this;
+            }
+
+        /// @returns Which side of the graph the legend is placed.
+        [[nodiscard]]
+        Side GetPlacement() const noexcept
+            {
+            return m_placement;
+            }
+
       private:
         bool m_includeHeader{ false };
         LegendCanvasPlacementHint m_hint{ LegendCanvasPlacementHint::RightOfGraph };
         Perimeter m_perimeter{ Perimeter::Outer };
+        wxString m_title;
+        Side m_placement{ Side::Right };
         };
 
     /// @brief Base class for plotting 2D data.
@@ -111,6 +147,54 @@ namespace Wisteria::Graphs
         Graph2D(const Graph2D&) = delete;
         /// @private
         Graph2D& operator=(const Graph2D&) = delete;
+
+        /// @brief An object embedded on the plot (e.g., an annotation label).
+        class EmbeddedObject
+            {
+          public:
+            EmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
+                           wxPoint2DDouble anchorPt, std::vector<wxPoint2DDouble> interestPts)
+                : m_object(object), m_anchorPt(anchorPt), m_interestPts(std::move(interestPts)),
+                  m_originalScaling(object->GetScaling())
+                {
+                }
+
+            [[nodiscard]]
+            std::shared_ptr<GraphItems::GraphItemBase>& GetObject() noexcept
+                {
+                return m_object;
+                }
+
+            [[nodiscard]]
+            const std::shared_ptr<GraphItems::GraphItemBase>& GetObject() const noexcept
+                {
+                return m_object;
+                }
+
+            [[nodiscard]]
+            wxPoint2DDouble GetAnchorPoint() const noexcept
+                {
+                return m_anchorPt;
+                }
+
+            [[nodiscard]]
+            double GetOriginalScaling() const noexcept
+                {
+                return m_originalScaling;
+                }
+
+            [[nodiscard]]
+            const std::vector<wxPoint2DDouble>& GetInterestPoints() const noexcept
+                {
+                return m_interestPts;
+                }
+
+          private:
+            std::shared_ptr<GraphItems::GraphItemBase> m_object;
+            wxPoint2DDouble m_anchorPt;
+            std::vector<wxPoint2DDouble> m_interestPts;
+            double m_originalScaling{ 1.0 };
+            };
 
         /** @brief Embeds an annotation object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
@@ -140,6 +224,13 @@ namespace Wisteria::Graphs
                 object->SetDPIScaleFactor(GetDPIScaleFactor());
                 m_embeddedObjects.emplace_back(object, pt, std::move(interestPts));
                 }
+            }
+
+        /// @returns The embedded annotation objects on the plot.
+        [[nodiscard]]
+        const std::vector<EmbeddedObject>& GetAnnotations() const noexcept
+            {
+            return m_embeddedObjects;
             }
 
         /** @name Title Functions
@@ -486,6 +577,14 @@ namespace Wisteria::Graphs
             @param options Options for how to build the legend.
             @returns The legend for the plot.*/
         virtual std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) = 0;
+
+        /// @returns The legend options used when the legend was created,
+        ///     or @c std::nullopt if no legend has been created.
+        [[nodiscard]]
+        const std::optional<LegendOptions>& GetLegendInfo() const noexcept
+            {
+            return m_legendInfo;
+            }
 
         /// @returns A label, truncated if it is more than 32 characters.
         /// @param variableName The variable name to truncate.
@@ -921,58 +1020,18 @@ namespace Wisteria::Graphs
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
 
+        /// @brief Sets the legend options used when the legend was created.
+        /// @param options The legend options.
+        void SetLegendInfo(const LegendOptions& options)
+            {
+            m_legendInfo = options;
+            }
+
       private:
+        std::optional<LegendOptions> m_legendInfo;
         /// @brief Sets a non-const pointer to the parent canvas.
         /// @param canvas The parent canvas.
         void SetCanvas(Wisteria::Canvas* canvas) noexcept { m_parentCanvas = canvas; }
-
-        /// @private
-        class EmbeddedObject
-            {
-          public:
-            EmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
-                           wxPoint2DDouble anchorPt, std::vector<wxPoint2DDouble> interestPts)
-                : m_object(object), m_anchorPt(anchorPt), m_interestPts(std::move(interestPts)),
-                  m_originalScaling(object->GetScaling())
-                {
-                }
-
-            [[nodiscard]]
-            std::shared_ptr<GraphItems::GraphItemBase>& GetObject() noexcept
-                {
-                return m_object;
-                }
-
-            [[nodiscard]]
-            const std::shared_ptr<GraphItems::GraphItemBase>& GetObject() const noexcept
-                {
-                return m_object;
-                }
-
-            [[nodiscard]]
-            wxPoint2DDouble GetAnchorPoint() const noexcept
-                {
-                return m_anchorPt;
-                }
-
-            [[nodiscard]]
-            double GetOriginalScaling() const noexcept
-                {
-                return m_originalScaling;
-                }
-
-            [[nodiscard]]
-            const std::vector<wxPoint2DDouble>& GetInterestPoints() const noexcept
-                {
-                return m_interestPts;
-                }
-
-          private:
-            std::shared_ptr<GraphItems::GraphItemBase> m_object;
-            wxPoint2DDouble m_anchorPt;
-            std::vector<wxPoint2DDouble> m_interestPts;
-            double m_originalScaling{ 1.0 };
-            };
 
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.

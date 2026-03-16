@@ -866,6 +866,14 @@ namespace Wisteria::Graphs
             m_questionBrackets.push_back(std::move(qBracket));
             }
 
+        /// @returns The question brackets.
+        [[nodiscard]]
+        const std::vector<QuestionsBracket>&
+        GetQuestionsBrackets() const noexcept
+            {
+            return m_questionBrackets;
+            }
+
         /** @brief Builds and returns a legend.
             @details This can be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
@@ -1016,6 +1024,7 @@ namespace Wisteria::Graphs
                 }
             }
 
+      public:
         /// @returns The color used for the weakest (i.e., closest to neutral) negative point.
         [[nodiscard]]
         wxColour GetNegativeColor() const noexcept
@@ -1075,6 +1084,7 @@ namespace Wisteria::Graphs
             return m_positiveColor;
             }
 
+      private:
         /// @returns The positive response label at a given point.
         /// @param point The positive point label to return.
         ///     Values should be 1-3, going from the weakest positive response to the strongest.

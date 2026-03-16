@@ -676,6 +676,13 @@ namespace Wisteria::Graphs
         ///     setting the data.
         /// @sa SetTableSize().
         /// @todo Need to remove custom cell background colors also.
+        /// @returns @c true if trailing row formatting is being cleared.
+        [[nodiscard]]
+        bool IsClearingTrailingRowFormatting() const noexcept
+            {
+            return m_clearTrailingRowFormatting;
+            }
+
         void ClearTrailingRowFormatting(const bool clearFormatting) noexcept
             {
             m_clearTrailingRowFormatting = clearFormatting;
@@ -770,6 +777,13 @@ namespace Wisteria::Graphs
         /// @returns The pen used to highlight specific cells (e.g., outliers).
         [[nodiscard]]
         wxPen& GetHighlightPen() noexcept
+            {
+            return m_highlightPen;
+            }
+
+        /// @private
+        [[nodiscard]]
+        const wxPen& GetHighlightPen() const noexcept
             {
             return m_highlightPen;
             }

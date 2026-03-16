@@ -25,6 +25,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
             return;
             }
 
+        m_minimumCount = minimumCountForItem;
+
         // get positive columns
         auto positiveColumn = data->GetCategoricalColumn(positiveColumnName);
         if (positiveColumn == data->GetCategoricalColumns().cend())
@@ -145,6 +147,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
     //----------------------------------------------------------------
     void ProConRoadmap::AddDefaultCaption()
         {
+        m_hasDefaultCaption = true;
         GetCaption().SetText(_(L"The larger the map marker and deeper the curve, "
                                "the more responses mentioning that sentiment"));
         }

@@ -51,6 +51,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         if (!IsUsingGrouping() || GetGroupCount() == 0)
             {
             return nullptr;

@@ -282,6 +282,13 @@ namespace Wisteria
             return m_datasets;
             }
 
+        /// @returns The insertion order of top-level (imported) datasets.
+        [[nodiscard]]
+        const std::vector<wxString>& GetDatasetInsertionOrder() const noexcept
+            {
+            return m_datasetInsertionOrder;
+            }
+
         /// @brief Adds a dataset to the report.
         /// @param name The name for the dataset.
         /// @param dataset The dataset to add.
@@ -295,6 +302,7 @@ namespace Wisteria
                 }
             m_datasets[name] = dataset;
             m_datasetImportOptions[name] = importOptions;
+            m_datasetInsertionOrder.push_back(name);
             }
 
         /// @brief Adds a dataset to the report with default import options.
@@ -959,7 +967,7 @@ namespace Wisteria
                                 const wxString& rawValue) const
             {
             const wxString expanded = ExpandConstants(rawValue);
-            if (expanded != rawValue && item != nullptr)
+            if (item != nullptr)
                 {
                 item->SetPropertyTemplate(property, rawValue);
                 }
@@ -1106,6 +1114,8 @@ namespace Wisteria
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;
+        // preserves the original insertion order of top-level (imported) datasets
+        std::vector<wxString> m_datasetInsertionOrder;
         std::map<wxString, DatasetImportOptions, Data::wxStringLessNoCase> m_datasetImportOptions;
         std::map<wxString, DatasetPivotOptions, Data::wxStringLessNoCase> m_datasetPivotOptions;
         std::map<wxString, DatasetTransformOptions, Data::wxStringLessNoCase>

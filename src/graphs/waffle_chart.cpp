@@ -163,6 +163,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     //-------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> WaffleChart::CreateLegend(const LegendOptions& options)
         {
+        SetLegendInfo(options);
         // Base legend label container
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
