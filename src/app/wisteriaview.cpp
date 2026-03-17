@@ -123,6 +123,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind edit graph button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
 
+    // bind canvas double-click to edit the selected item
+    m_frame->Bind(wxEVT_WISTERIA_CANVAS_DCLICK, &WisteriaView::OnCanvasDClick, this);
+
     m_frame->CenterOnScreen();
     if (wxGetApp().GetMainFrame()->IsMaximized())
         {
@@ -1155,6 +1158,12 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         {
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnCanvasDClick(wxCommandEvent& event)
+    {
+    OnEditItem(event);
     }
 
 //-------------------------------------------

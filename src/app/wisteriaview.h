@@ -153,6 +153,7 @@ class WisteriaView : public wxView
     void OnInsertChernoffPlot(wxCommandEvent& event);
     void OnInsertScatterPlot(wxCommandEvent& event);
     void OnEditItem(wxCommandEvent& event);
+    void OnCanvasDClick(wxCommandEvent& event);
     void EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
     void EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
