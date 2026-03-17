@@ -222,6 +222,13 @@ bool WisteriaView::OnClose(bool deleteWindow)
     // show the main frame when the last document is being closed
     if (wxGetApp().GetDocumentCount() == 1)
         {
+        // show the empty mainframe when the last document is being closed
+        wxArrayString mruFiles;
+        for (size_t i = 0; i < wxGetApp().GetDocManager()->GetFileHistory()->GetCount(); ++i)
+            {
+            mruFiles.Add(wxGetApp().GetDocManager()->GetFileHistory()->GetHistoryFile(i));
+            }
+        wxGetApp().GetStartPage()->SetMRUList(mruFiles);
         wxGetApp().GetMainFrame()->CenterOnScreen();
         wxGetApp().GetMainFrame()->Show();
         }

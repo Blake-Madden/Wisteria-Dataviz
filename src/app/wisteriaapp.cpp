@@ -89,6 +89,13 @@ bool WisteriaApp::OnInit()
                           wxCLASSINFO(WisteriaView));
     SetAppFileExtension(L"json");
 
+        // load MRU file history before building the start page
+        {
+        wxConfig config(GetAppName() + DONTTRANSLATE(L"MRU"), GetVendorName());
+        config.SetPath(DONTTRANSLATE(L"Recent File List", DTExplanation::SystemEntry));
+        GetDocManager()->FileHistoryLoad(config);
+        }
+
     LoadInterface();
 
     return true;
