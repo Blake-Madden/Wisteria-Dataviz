@@ -1163,7 +1163,8 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         for (size_t col = 0; col < gridCols; ++col)
             {
             auto item = canvas->GetFixedObject(row, col);
-            if (item != nullptr && item->IsSelected())
+            if (item != nullptr &&
+                (item->IsSelected() || !item->GetSelectedIds().empty()))
                 {
                 ++selectedCount;
                 selectedItem = item;
