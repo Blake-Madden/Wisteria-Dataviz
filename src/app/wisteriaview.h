@@ -175,6 +175,7 @@ class WisteriaView : public wxView
     wxRibbonButtonBar* m_graphButtonBar{ nullptr };
     wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
     bool m_sidebarShown{ true };
+    wxString m_projectFilePath;
 
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;

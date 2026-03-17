@@ -35,6 +35,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     const wxFileName fn(doc->GetFilename());
     const wxString title =
         !fn.GetName().empty() ? fn.GetName() : wxFileName::StripExtension(doc->GetTitle());
+    doc->SetTitle(title);
 
     m_frame = new wxDocChildFrame(doc, this, wxGetApp().GetMainFrame(), wxID_ANY, title,
                                   wxDefaultPosition, windowSize, wxDEFAULT_FRAME_STYLE);
@@ -181,6 +182,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             }
         }
 
+    m_projectFilePath = doc->GetFilename();
     LoadProject();
 
     if (initialDataset != nullptr)
@@ -1463,7 +1465,7 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
 //-------------------------------------------
 void WisteriaView::OnSaveProject([[maybe_unused]] wxCommandEvent& event)
     {
-    wxString filePath = GetDocument()->GetFilename();
+    wxString filePath = m_projectFilePath;
 
     if (filePath.empty())
         {
@@ -1480,8 +1482,12 @@ void WisteriaView::OnSaveProject([[maybe_unused]] wxCommandEvent& event)
     try
         {
         SaveProject(filePath);
+        m_projectFilePath = filePath;
+        const wxString savedTitle = wxFileName{ filePath }.GetName();
         GetDocument()->SetFilename(filePath, true);
+        GetDocument()->SetTitle(savedTitle);
         GetDocument()->Modify(false);
+        m_frame->SetTitle(savedTitle);
         }
     catch (const std::exception& exc)
         {
