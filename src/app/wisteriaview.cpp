@@ -995,6 +995,13 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto chernoffSvg = wxGetApp().GetResourceManager().GetSVG(L"chernoffplot.svg");
+    if (chernoffSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(chernoffSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1088,6 +1095,13 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertScatterPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto scatterSvg = wxGetApp().GetResourceManager().GetSVG(L"scatterplot.svg");
+    if (scatterSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(scatterSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1163,8 +1177,7 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         for (size_t col = 0; col < gridCols; ++col)
             {
             auto item = canvas->GetFixedObject(row, col);
-            if (item != nullptr &&
-                (item->IsSelected() || !item->GetSelectedIds().empty()))
+            if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
                 {
                 ++selectedCount;
                 selectedItem = item;
@@ -1208,9 +1221,16 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                    const size_t graphRow, const size_t graphCol)
     {
     Wisteria::UI::InsertScatterPlotDlg dlg(
-        canvas, &m_reportBuilder, m_frame, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Scatter Plot"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto scatterSvg = wxGetApp().GetResourceManager().GetSVG(L"scatterplot.svg");
+    if (scatterSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(scatterSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph, canvas);
 
@@ -1328,10 +1348,18 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                                     const size_t graphRow, const size_t graphCol)
     {
-    Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame, wxID_ANY,
-                                        wxDefaultPosition, wxDefaultSize,
+    Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                        _(L"Edit Chernoff Faces Plot"), wxID_ANY, wxDefaultPosition,
+                                        wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto chernoffSvg = wxGetApp().GetResourceManager().GetSVG(L"chernoffplot.svg");
+    if (chernoffSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(chernoffSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph, canvas);
 

@@ -39,6 +39,7 @@ namespace Wisteria::UI
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.*/
         InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
+                             const wxString& caption = _(L"Insert Scatter Plot"),
                              wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
                              const wxSize& size = wxDefaultSize,
                              long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |

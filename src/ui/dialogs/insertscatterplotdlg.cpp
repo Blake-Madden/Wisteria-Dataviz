@@ -15,11 +15,11 @@ namespace Wisteria::UI
     {
     //-------------------------------------------
     InsertScatterPlotDlg::InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                               wxWindow* parent, const wxWindowID id,
-                                               const wxPoint& pos, const wxSize& size,
-                                               const long style, EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, _(L"Insert Scatter Plot"), id, pos, size,
-                         style, editMode)
+                                               wxWindow* parent, const wxString& caption,
+                                               const wxWindowID id, const wxPoint& pos,
+                                               const wxSize& size, const long style,
+                                               EditMode editMode)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
         FinalizeControls();

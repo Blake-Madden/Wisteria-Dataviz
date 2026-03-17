@@ -14,10 +14,10 @@ namespace Wisteria::UI
     {
     //-------------------------------------------
     InsertChernoffDlg::InsertChernoffDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                         wxWindow* parent, const wxWindowID id, const wxPoint& pos,
+                                         wxWindow* parent, const wxString& caption,
+                                         const wxWindowID id, const wxPoint& pos,
                                          const wxSize& size, const long style, EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, _(L"Insert Chernoff Faces Plot"), id, pos,
-                         size, style, editMode)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
         FinalizeControls();
