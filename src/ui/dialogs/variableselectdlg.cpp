@@ -259,8 +259,8 @@ namespace Wisteria::UI
             varsSizer->Add(new wxStaticText(this, wxID_STATIC, label),
                            wxGBPosition{ labelRow, listCol }, wxGBSpan{ 1, 1 });
 
-            auto* list =
-                new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
+            auto* list = new wxListView(this, wxID_ANY, wxDefaultPosition,
+                                        wxSize{ -1, FromDIP(75) }, listStyle);
             list->InsertColumn(0, wxString{});
             list->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
             // quneiform-suppress-begin
@@ -420,6 +420,36 @@ namespace Wisteria::UI
                                         }
                                     }
                             });
+
+        // pre-populate sub-lists with any default variables,
+        // removing them from the main list
+        for (size_t i = 0; i < varInfo.size(); ++i)
+            {
+            const auto& defaults = varInfo[i].m_defaultVariables;
+            if (defaults.empty())
+                {
+                continue;
+                }
+            auto* targetList = m_varLists[i].m_list;
+            for (const auto& varName : defaults)
+                {
+                const long idx = m_mainVarlist->FindItem(-1, varName);
+                if (idx == wxNOT_FOUND)
+                    {
+                    continue;
+                    }
+                wxListItem listItem;
+                listItem.SetId(idx);
+                listItem.SetColumn(0);
+                listItem.SetMask(wxLIST_MASK_TEXT | wxLIST_MASK_IMAGE);
+                if (m_mainVarlist->GetItem(listItem))
+                    {
+                    listItem.SetId(targetList->GetItemCount());
+                    targetList->InsertItem(listItem);
+                    m_mainVarlist->DeleteItem(idx);
+                    }
+                }
+            }
 
         UpdateButtonStates();
 

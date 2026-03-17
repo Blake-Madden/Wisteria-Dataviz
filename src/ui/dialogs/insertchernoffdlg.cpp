@@ -233,19 +233,73 @@ namespace Wisteria::UI
             }
 
         using VLI = VariableSelectDlg::VariableListInfo;
-        VariableSelectDlg dlg(
-            this, columnInfo,
-            { VLI{}.Label(_(L"Face Width")).SingleSelection(true),
-              VLI{}.Label(_(L"Face Height")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Eye Size")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Eye Position")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Eyebrow Slant")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Pupil Position")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Nose Size")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Mouth Width")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Mouth Curvature")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Face Color")).SingleSelection(true).Required(false),
-              VLI{}.Label(_(L"Ear Size")).SingleSelection(true).Required(false) });
+        using FID = Graphs::ChernoffFacesPlot::FeatureId;
+
+        const auto defaultVar = [this](FID fid) -> std::vector<wxString>
+        {
+            const auto it = m_featureVariables.find(fid);
+            if (it != m_featureVariables.cend() && !it->second.empty())
+                {
+                return { it->second };
+                }
+            return {};
+        };
+
+        VariableSelectDlg dlg(this, columnInfo,
+                              { VLI{}
+                                    .Label(_(L"Face Width"))
+                                    .SingleSelection(true)
+                                    .DefaultVariables(defaultVar(FID::FaceWidth)),
+                                VLI{}
+                                    .Label(_(L"Face Height"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::FaceHeight)),
+                                VLI{}
+                                    .Label(_(L"Eye Size"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::EyeSize)),
+                                VLI{}
+                                    .Label(_(L"Eye Position"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::EyePosition)),
+                                VLI{}
+                                    .Label(_(L"Eyebrow Slant"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::EyebrowSlant)),
+                                VLI{}
+                                    .Label(_(L"Pupil Position"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::PupilDirection)),
+                                VLI{}
+                                    .Label(_(L"Nose Size"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::NoseSize)),
+                                VLI{}
+                                    .Label(_(L"Mouth Width"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::MouthWidth)),
+                                VLI{}
+                                    .Label(_(L"Mouth Curvature"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::SmileFrown)),
+                                VLI{}
+                                    .Label(_(L"Face Color"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::FaceColor)),
+                                VLI{}
+                                    .Label(_(L"Ear Size"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::EarSize)) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -253,7 +307,6 @@ namespace Wisteria::UI
             }
 
         // map feature IDs to selected variable names
-        using FID = Graphs::ChernoffFacesPlot::FeatureId;
         constexpr FID featureOrder[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
                                          FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
                                          FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,

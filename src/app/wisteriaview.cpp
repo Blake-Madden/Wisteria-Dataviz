@@ -971,6 +971,7 @@ void WisteriaView::PlaceGraphWithLegend(
         }
 
     canvas->CalcRowDimensions();
+    canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
     canvas->Refresh();
     }

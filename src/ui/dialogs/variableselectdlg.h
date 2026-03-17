@@ -79,10 +79,23 @@ namespace Wisteria::UI
                 return *this;
                 }
 
+            /// @brief Sets the default variables to pre-populate this list with.
+            /// @details Any variable names specified here will be moved from the main
+            ///     variable list into this list when the dialog is created.
+            ///     Names that do not match any column in the dataset are silently ignored.
+            /// @param defaultVars The variable names to pre-select.
+            /// @returns A self reference.
+            VariableListInfo& DefaultVariables(const std::vector<wxString>& defaultVars)
+                {
+                m_defaultVariables = defaultVars;
+                return *this;
+                }
+
           private:
             wxString m_label;
             bool m_singleSelection{ false };
             bool m_required{ true };
+            std::vector<wxString> m_defaultVariables;
             };
 
         /** @brief Constructor.

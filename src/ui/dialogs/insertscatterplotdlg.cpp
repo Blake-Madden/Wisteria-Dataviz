@@ -169,8 +169,21 @@ namespace Wisteria::UI
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}.Label(_(L"X (independent)")), VLI{}.Label(_(L"Y (dependent)")),
-              VLI{}.Label(_(L"Grouping")).SingleSelection(true).Required(false) });
+            { VLI{}
+                  .Label(_(L"X (independent)"))
+                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ m_xVariable }),
+              VLI{}
+                  .Label(_(L"Y (dependent)"))
+                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ m_yVariable }),
+              VLI{}
+                  .Label(_(L"Grouping"))
+                  .SingleSelection(true)
+                  .Required(false)
+                  .DefaultVariables(m_groupVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
