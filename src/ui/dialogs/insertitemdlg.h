@@ -38,6 +38,15 @@ namespace Wisteria::UI
     class InsertItemDlg : public DialogWithHelp
         {
       public:
+        /// @brief Whether this dialog is being used to insert a new item or edit an existing one.
+        enum class EditMode
+            {
+            /// @brief A new item is being created and inserted into a canvas.
+            Insert,
+            /// @brief An existing item is being edited.
+            Edit
+            };
+
         /** @brief Constructor.
             @param canvas The canvas whose grid layout is displayed.
             @param reportBuilder The report builder containing the project's datasets.
@@ -46,11 +55,13 @@ namespace Wisteria::UI
             @param id The window ID.
             @param pos The screen position.
             @param size The window size.
-            @param style The window style.*/
+            @param style The window style.
+            @param editMode Whether the item is being inserted or edited.*/
         InsertItemDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                       const wxString& caption, wxWindowID id = wxID_ANY,
                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                      long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+                      long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                      EditMode editMode = EditMode::Insert);
 
         /// @private
         InsertItemDlg(const InsertItemDlg&) = delete;
@@ -204,6 +215,8 @@ namespace Wisteria::UI
         size_t m_columns{ 1 };
         size_t m_selectedRow{ 0 };
         size_t m_selectedColumn{ 0 };
+
+        EditMode m_editMode{ EditMode::Insert };
 
         // DDX data members (bound to controls via wxGenericValidator)
         int m_horizontalAlign{ 0 };

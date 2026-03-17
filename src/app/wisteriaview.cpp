@@ -120,7 +120,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScatterPlot, this, ID_NEW_SCATTERPLOT);
 
     // bind edit graph button
-    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditGraph, this, ID_EDIT_ITEM);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
 
     m_frame->CenterOnScreen();
     if (wxGetApp().GetMainFrame()->IsMaximized())
@@ -1134,7 +1134,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::OnEditGraph([[maybe_unused]] wxCommandEvent& event)
+void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     {
     auto* canvas = GetActiveCanvas();
     if (canvas == nullptr)
@@ -1196,7 +1196,10 @@ void WisteriaView::OnEditGraph([[maybe_unused]] wxCommandEvent& event)
 void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                                    const size_t graphRow, const size_t graphCol)
     {
-    Wisteria::UI::InsertScatterPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
+    Wisteria::UI::InsertScatterPlotDlg dlg(
+        canvas, &m_reportBuilder, m_frame, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph, canvas);
 
@@ -1314,7 +1317,10 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                                     const size_t graphRow, const size_t graphCol)
     {
-    Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame);
+    Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame, wxID_ANY,
+                                        wxDefaultPosition, wxDefaultSize,
+                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph, canvas);
 
@@ -4061,10 +4067,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
         if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
             {
             const auto* wcPlot = dynamic_cast<const Wisteria::Graphs::WCurvePlot*>(graph);
-            if (wcPlot->GetTimeIntervalLabel() != _(L"year"))
-                {
-                node->Add(L"time-interval-label", wcPlot->GetTimeIntervalLabel());
-                }
+            node->Add(L"time-interval-label", wcPlot->GetTimeIntervalLabel());
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
@@ -5095,19 +5098,10 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             {
             node->Add(L"adjust-bar-widths-to-respondent-size", true);
             }
-        // header labels (only if non-default)
-        if (likert->GetPositiveHeader() != _(L"Agree"))
-            {
-            node->Add(L"positive-label", likert->GetPositiveHeader());
-            }
-        if (likert->GetNegativeHeader() != _(L"Disagree"))
-            {
-            node->Add(L"negative-label", likert->GetNegativeHeader());
-            }
-        if (likert->GetNoResponseHeader() != _(L"No Response"))
-            {
-            node->Add(L"no-response-label", likert->GetNoResponseHeader());
-            }
+        // header labels
+        node->Add(L"positive-label", likert->GetPositiveHeader());
+        node->Add(L"negative-label", likert->GetNegativeHeader());
+        node->Add(L"no-response-label", likert->GetNoResponseHeader());
         // question-brackets
         const auto& brackets = likert->GetQuestionsBrackets();
         if (!brackets.empty())
@@ -5274,16 +5268,9 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             {
             node->Add(L"minimum-count", static_cast<double>(pcRoadmap->GetMinimumCount().value()));
             }
-        // positive-legend-label (default is "Pro")
-        if (pcRoadmap->GetPositiveLabel() != _(L"Pro"))
-            {
-            node->Add(L"positive-legend-label", pcRoadmap->GetPositiveLabel());
-            }
-        // negative-legend-label (default is "Con")
-        if (pcRoadmap->GetNegativeLabel() != _(L"Con"))
-            {
-            node->Add(L"negative-legend-label", pcRoadmap->GetNegativeLabel());
-            }
+        // positive/negative legend labels
+        node->Add(L"positive-legend-label", pcRoadmap->GetPositiveLabel());
+        node->Add(L"negative-legend-label", pcRoadmap->GetNegativeLabel());
         // shared roadmap properties
         const auto* roadmap = dynamic_cast<const Wisteria::Graphs::Roadmap*>(graph);
         const auto& roadPen = roadmap->GetRoadPen();
@@ -5568,10 +5555,7 @@ void WisteriaView::SaveProject(const wxString& filePath)
     //---------
     const auto& datasets = m_reportBuilder.GetDatasets();
     const auto& importOpts = m_reportBuilder.GetDatasetImportOptions();
-    const auto& pivotOpts = m_reportBuilder.GetDatasetPivotOptions();
     const auto& transformOpts = m_reportBuilder.GetDatasetTransformOptions();
-    const auto& subsetOpts = m_reportBuilder.GetDatasetSubsetOptions();
-    const auto& mergeOpts = m_reportBuilder.GetDatasetMergeOptions();
 
     auto datasetsArray = root->GetProperty(L"datasets");
     const auto& insertionOrder = m_reportBuilder.GetDatasetInsertionOrder();

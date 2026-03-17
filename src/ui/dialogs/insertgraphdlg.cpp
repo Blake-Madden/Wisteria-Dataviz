@@ -14,8 +14,9 @@ namespace Wisteria::UI
     //-------------------------------------------
     InsertGraphDlg::InsertGraphDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                    wxWindow* parent, const wxString& caption, const wxWindowID id,
-                                   const wxPoint& pos, const wxSize& size, const long style)
-        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style)
+                                   const wxPoint& pos, const wxSize& size, const long style,
+                                   EditMode editMode)
+        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         }
 

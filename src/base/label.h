@@ -357,10 +357,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Marks this label as a legend.
         /// @param isLegend @c true if this label is a legend.
-        void SetIsLegend(bool isLegend) noexcept
-            {
-            m_isLegend = isLegend;
-            }
+        void SetIsLegend(bool isLegend) noexcept { m_isLegend = isLegend; }
 
         /// @returns @c true if this label is a legend.
         [[nodiscard]]

@@ -868,8 +868,7 @@ namespace Wisteria::Graphs
 
         /// @returns The question brackets.
         [[nodiscard]]
-        const std::vector<QuestionsBracket>&
-        GetQuestionsBrackets() const noexcept
+        const std::vector<QuestionsBracket>& GetQuestionsBrackets() const noexcept
             {
             return m_questionBrackets;
             }

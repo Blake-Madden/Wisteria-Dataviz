@@ -1022,13 +1022,11 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the legend options used when the legend was created.
         /// @param options The legend options.
-        void SetLegendInfo(const LegendOptions& options)
-            {
-            m_legendInfo = options;
-            }
+        void SetLegendInfo(const LegendOptions& options) { m_legendInfo = options; }
 
       private:
         std::optional<LegendOptions> m_legendInfo;
+
         /// @brief Sets a non-const pointer to the parent canvas.
         /// @param canvas The parent canvas.
         void SetCanvas(Wisteria::Canvas* canvas) noexcept { m_parentCanvas = canvas; }

@@ -36,12 +36,14 @@ namespace Wisteria::UI
             @param id The window ID.
             @param pos The screen position.
             @param size The window size.
-            @param style The window style.*/
+            @param style The window style.
+            @param editMode Whether the item is being inserted or edited.*/
         InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                              wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
                              const wxSize& size = wxDefaultSize,
                              long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
-                                          wxRESIZE_BORDER);
+                                          wxRESIZE_BORDER,
+                             EditMode editMode = EditMode::Insert);
 
         /// @private
         InsertScatterPlotDlg(const InsertScatterPlotDlg&) = delete;

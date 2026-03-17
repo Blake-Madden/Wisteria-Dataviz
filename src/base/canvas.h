@@ -246,12 +246,14 @@ namespace Wisteria
 
         /// @brief Sets the raw name template (e.g., `{{ReportName()}}`).
         /// @param tmpl The template string.
-        void SetNameTemplate(const wxString& tmpl)
-            { m_nameTemplate = tmpl; }
+        void SetNameTemplate(const wxString& tmpl) { m_nameTemplate = tmpl; }
+
         /// @returns The raw name template, or empty if none was set.
         [[nodiscard]]
         const wxString& GetNameTemplate() const noexcept
-            { return m_nameTemplate; }
+            {
+            return m_nameTemplate;
+            }
 
         /** @name Watermark Functions
             @brief Functions related to displaying a watermarked stamp or text on the canvas.*/

@@ -40,9 +40,10 @@ namespace Wisteria::UI
     //-------------------------------------------
     InsertItemDlg::InsertItemDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                  wxWindow* parent, const wxString& caption, const wxWindowID id,
-                                 const wxPoint& pos, const wxSize& size, const long style)
+                                 const wxPoint& pos, const wxSize& size, const long style,
+                                 EditMode editMode)
         : DialogWithHelp(parent, id, caption, pos, size, style), m_canvas(canvas),
-          m_reportBuilder(reportBuilder)
+          m_reportBuilder(reportBuilder), m_editMode(editMode)
         {
         const auto gridSize = m_canvas->GetFixedObjectsGridSize();
         m_rows = std::max<size_t>(gridSize.first, 1);
@@ -213,7 +214,8 @@ namespace Wisteria::UI
         pagePage->SetSizer(pageSizer);
         m_sideBarBook->AddPage(pagePage, _(L"Page Options"), ID_PAGE_SECTION, true);
 
-            // grid size controls
+        // grid size controls (only for new items being added to the canvas)
+        if (m_editMode == EditMode::Insert)
             {
             auto* gridSizeSizer = new wxFlexGridSizer(4, wxSize{ FromDIP(8), FromDIP(4) });
             gridSizeSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Rows:")),
@@ -250,7 +252,8 @@ namespace Wisteria::UI
                                 });
             }
 
-            // grid preview
+        // grid preview (only for new items being added to the canvas)
+        if (m_editMode == EditMode::Insert)
             {
             pageSizer->Add(new wxStaticText(pagePage, wxID_ANY,
                                             _(L"Select the cell where the item will be placed:")),

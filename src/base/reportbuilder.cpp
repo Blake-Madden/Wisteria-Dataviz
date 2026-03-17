@@ -3753,6 +3753,10 @@ namespace Wisteria
     void ReportBuilder::LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
                                      const std::shared_ptr<Graphs::BarChart>& barChart) const
         {
+        if (barChart == nullptr)
+            {
+            return;
+            }
         const auto boxEffect =
             ReportEnumConvert::ConvertBoxEffect(graphNode->GetProperty(L"box-effect")->AsString());
         if (boxEffect)
@@ -6406,9 +6410,9 @@ namespace Wisteria
         // just a named color scheme
         else if (brushSchemeNode->IsValueString())
             {
-            if (const auto colorScheme = LoadColorScheme(brushSchemeNode))
+            if (const auto namedColorScheme = LoadColorScheme(brushSchemeNode))
                 {
-                return std::make_shared<Brushes::Schemes::BrushScheme>(*colorScheme);
+                return std::make_shared<Brushes::Schemes::BrushScheme>(*namedColorScheme);
                 }
             }
         return nullptr;
