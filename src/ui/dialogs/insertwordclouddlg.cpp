@@ -1,24 +1,23 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertscatterplotdlg.cpp
+// Name:        insertwordclouddlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertscatterplotdlg.h"
-#include "../../graphs/scatterplot.h"
+#include "insertwordclouddlg.h"
+#include "../../graphs/wordcloud.h"
 #include "variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertScatterPlotDlg::InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                               wxWindow* parent, const wxString& caption,
-                                               const wxWindowID id, const wxPoint& pos,
-                                               const wxSize& size, const long style,
-                                               EditMode editMode)
+    InsertWordCloudDlg::InsertWordCloudDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                           wxWindow* parent, const wxString& caption,
+                                           const wxWindowID id, const wxPoint& pos,
+                                           const wxSize& size, const long style, EditMode editMode)
         : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
@@ -32,7 +31,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::CreateControls()
+    void InsertWordCloudDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
         CreateGraphOptionsPage();
@@ -40,8 +39,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Scatter Plot Options"), ID_OPTIONS_SECTION,
-                                  true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Word Cloud Options"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -74,46 +72,44 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (independent):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(GetVariableLabelColor());
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* wordLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Word:"));
+        wordLabel->SetFont(wordLabel->GetFont().Bold());
+        varGrid->Add(wordLabel, wxSizerFlags{}.CenterVertical());
+        m_wordVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_wordVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_wordVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (dependent):"));
-        yLabel->SetFont(yLabel->GetFont().Bold());
-        varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
-        m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
-        varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
-        groupLabel->SetFont(groupLabel->GetFont().Bold());
-        varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
-        varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* weightLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Weight:"));
+        weightLabel->SetFont(weightLabel->GetFont().Bold());
+        varGrid->Add(weightLabel, wxSizerFlags{}.CenterVertical());
+        m_weightVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_weightVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_weightVarLabel, wxSizerFlags{}.CenterVertical());
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
-        // regression options
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showRegressionLines)),
-                          wxSizerFlags{}.Border());
+        // frequency options
+        auto* freqSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showConfidenceBands)),
-                          wxSizerFlags{}.Border());
+        freqSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Minimum frequency:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_minFreqSpin = new wxSpinCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                       wxDefaultSize, wxSP_ARROW_KEYS, 1, 10000, 1);
+        freqSizer->Add(m_minFreqSpin);
 
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
+        freqSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Maximum frequency:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_maxFreqSpin = new wxSpinCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                       wxDefaultSize, wxSP_ARROW_KEYS, 0, 10000, 0);
+        freqSizer->Add(m_maxFreqSpin);
+
+        freqSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Maximum words:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_maxWordsSpin = new wxSpinCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                        wxDefaultSize, wxSP_ARROW_KEYS, 0, 10000, 0);
+        freqSizer->Add(m_maxWordsSpin);
+
+        optionsSizer->Add(freqSizer, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -124,16 +120,15 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnDatasetChanged()
+    void InsertWordCloudDlg::OnDatasetChanged()
         {
-        m_xVariable.clear();
-        m_yVariable.clear();
-        m_groupVariable.clear();
+        m_wordVariable.clear();
+        m_weightVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnSelectVariables()
+    void InsertWordCloudDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -143,8 +138,6 @@ namespace Wisteria::UI
             return;
             }
 
-        // prefer the stored column preview info (preserves original file order)
-        // over rebuilding it from the dataset's internal column grouping
         Data::Dataset::ColumnPreviewInfo columnInfo;
         if (GetReportBuilder() != nullptr)
             {
@@ -168,56 +161,49 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"X (independent)"))
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Y (dependent)"))
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
+                  .Label(_(L"Word"))
                   .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
+                  .DefaultVariables(m_wordVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                                        std::vector<wxString>{ m_wordVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Weight"))
+                  .SingleSelection(true)
+                  .Required(false)
+                  .DefaultVariables(m_weightVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_weightVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
             return;
             }
 
-        const auto xVars = dlg.GetSelectedVariables(0);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
+        const auto wordVars = dlg.GetSelectedVariables(0);
+        m_wordVariable = wordVars.empty() ? wxString{} : wordVars.front();
 
-        const auto yVars = dlg.GetSelectedVariables(1);
-        m_yVariable = yVars.empty() ? wxString{} : yVars.front();
-
-        const auto groupVars = dlg.GetSelectedVariables(2);
-        m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
+        const auto weightVars = dlg.GetSelectedVariables(1);
+        m_weightVariable = weightVars.empty() ? wxString{} : weightVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::UpdateVariableLabels()
+    void InsertWordCloudDlg::UpdateVariableLabels()
         {
-        m_xVarLabel->SetLabel(m_xVariable);
-        m_yVarLabel->SetLabel(m_yVariable);
-        m_groupVarLabel->SetLabel(m_groupVariable);
+        m_wordVarLabel->SetLabel(m_wordVariable);
+        m_weightVarLabel->SetLabel(m_weightVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertScatterPlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertWordCloudDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -238,7 +224,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertScatterPlotDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertWordCloudDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -257,7 +243,28 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertScatterPlotDlg::Validate()
+    size_t InsertWordCloudDlg::GetMinFrequency() const noexcept
+        {
+        const int val = m_minFreqSpin->GetValue();
+        return (val > 0) ? static_cast<size_t>(val) : 1;
+        }
+
+    //-------------------------------------------
+    std::optional<size_t> InsertWordCloudDlg::GetMaxFrequency() const noexcept
+        {
+        const int val = m_maxFreqSpin->GetValue();
+        return (val > 0) ? std::optional<size_t>(static_cast<size_t>(val)) : std::nullopt;
+        }
+
+    //-------------------------------------------
+    std::optional<size_t> InsertWordCloudDlg::GetMaxWords() const noexcept
+        {
+        const int val = m_maxWordsSpin->GetValue();
+        return (val > 0) ? std::optional<size_t>(static_cast<size_t>(val)) : std::nullopt;
+        }
+
+    //-------------------------------------------
+    bool InsertWordCloudDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -266,9 +273,9 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_xVariable.empty() || m_yVariable.empty())
+        if (m_wordVariable.empty())
             {
-            wxMessageBox(_(L"Please select the X and Y variables."), _(L"Variable Not Specified"),
+            wxMessageBox(_(L"Please select the word variable."), _(L"Variable Not Specified"),
                          wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
@@ -278,10 +285,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertWordCloudDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
         {
-        const auto* scatter = dynamic_cast<const Graphs::ScatterPlot*>(&graph);
-        if (scatter == nullptr)
+        const auto* wordCloud = dynamic_cast<const Graphs::WordCloud*>(&graph);
+        if (wordCloud == nullptr)
             {
             return;
             }
@@ -290,7 +297,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph, canvas);
 
         // select the dataset by name from the property template
-        const auto dsName = scatter->GetPropertyTemplate(L"dataset");
+        const auto dsName = wordCloud->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -303,20 +310,17 @@ namespace Wisteria::UI
                 }
             }
 
-        // load the actual column names used by the graph
-        // (property templates may contain unexpanded {{placeholders}})
-        m_xVariable = scatter->GetXColumnName();
-        m_yVariable = scatter->GetYColumnName();
-        const auto& series = scatter->GetSeriesList();
-        if (!series.empty())
-            {
-            m_groupVariable = series.front().GetGroupColumnName().value_or(wxString{});
-            }
+        // load column names from the graph
+        m_wordVariable = wordCloud->GetWordColumnName();
+        m_weightVariable = wordCloud->GetWeightColumnName();
         UpdateVariableLabels();
 
-        // scatter-specific options
-        m_showRegressionLines = scatter->IsShowingRegressionLines();
-        m_showConfidenceBands = scatter->IsShowingConfidenceBands();
+        // frequency options
+        m_minFreqSpin->SetValue(static_cast<int>(wordCloud->GetMinFrequency()));
+        const auto maxFreq = wordCloud->GetMaxFrequency();
+        m_maxFreqSpin->SetValue(maxFreq.has_value() ? static_cast<int>(maxFreq.value()) : 0);
+        const auto maxWords = wordCloud->GetMaxWords();
+        m_maxWordsSpin->SetValue(maxWords.has_value() ? static_cast<int>(maxWords.value()) : 0);
 
         TransferDataToWindow();
         }

@@ -70,8 +70,6 @@ namespace Wisteria::UI
         optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // feature-to-variable label grid
-        const wxColour varLabelColor{ 0, 102, 204 };
-
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
         constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
@@ -89,7 +87,7 @@ namespace Wisteria::UI
             featureGrid->Add(featureLabel, wxSizerFlags{}.CenterVertical());
 
             m_featureVarLabels[i] = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-            m_featureVarLabels[i]->SetForegroundColour(varLabelColor);
+            m_featureVarLabels[i]->SetForegroundColour(GetVariableLabelColor());
             featureGrid->Add(m_featureVarLabels[i], wxSizerFlags{}.CenterVertical());
             }
 

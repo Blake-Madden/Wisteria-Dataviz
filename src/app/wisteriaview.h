@@ -156,6 +156,9 @@ class WisteriaView : public wxView
     void OnInsertWCurvePlot(wxCommandEvent& event);
     void OnInsertLRRoadmap(wxCommandEvent& event);
     void OnInsertProConRoadmap(wxCommandEvent& event);
+    void OnInsertHistogram(wxCommandEvent& event);
+    void OnInsertWordCloud(wxCommandEvent& event);
+    void OnInsertWLSparkline(wxCommandEvent& event);
     void OnEditItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
     void EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
@@ -170,6 +173,12 @@ class WisteriaView : public wxView
                        size_t graphCol);
     void EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                            size_t graphRow, size_t graphCol);
+    void EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                       size_t graphCol);
+    void EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                       size_t graphCol);
+    void EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,

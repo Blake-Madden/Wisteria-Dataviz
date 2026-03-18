@@ -72,29 +72,27 @@ namespace Wisteria::UI
         optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
-        const wxColour varLabelColor{ 0, 102, 204 };
-
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
         auto* predLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Predictor:"));
         predLabel->SetFont(predLabel->GetFont().Bold());
         varGrid->Add(predLabel, wxSizerFlags{}.CenterVertical());
         m_predictorVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_predictorVarLabel->SetForegroundColour(varLabelColor);
+        m_predictorVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_predictorVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* coefLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Coefficient:"));
         coefLabel->SetFont(coefLabel->GetFont().Bold());
         varGrid->Add(coefLabel, wxSizerFlags{}.CenterVertical());
         m_coefficientVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_coefficientVarLabel->SetForegroundColour(varLabelColor);
+        m_coefficientVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_coefficientVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* pvalLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"P-value:"));
         pvalLabel->SetFont(pvalLabel->GetFont().Bold());
         varGrid->Add(pvalLabel, wxSizerFlags{}.CenterVertical());
         m_pValueVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_pValueVarLabel->SetForegroundColour(varLabelColor);
+        m_pValueVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_pValueVarLabel, wxSizerFlags{}.CenterVertical());
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());

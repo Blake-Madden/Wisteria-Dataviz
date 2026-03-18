@@ -41,6 +41,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
         GetSelectedIds().clear();
         m_words.clear();
 
+        m_wordColumnName = wordColumnName;
+        m_weightColumnName = weightColumnName.value_or(wxString{});
+        m_minFreq = minFreq;
+        m_maxFreq = maxFreq;
+        m_maxWords = maxWords;
+
         if (GetDataset() == nullptr)
             {
             return;

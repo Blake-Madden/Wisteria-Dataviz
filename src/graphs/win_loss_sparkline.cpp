@@ -49,6 +49,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         m_longestWinningStreak = 0;
         m_hadShutoutWins = m_hadShutoutLosses = false;
 
+        m_seasonColumnName = seasonColumnName;
+        m_wonColumnName = wonColumnName;
+        m_shutoutColumnName = shutoutColumnName;
+        m_homeGameColumnName = homeGameColumnName;
+        m_postseasonColumnName = postseasonColumnName.value_or(wxString{});
+
         const auto wonColIter = data->GetCategoricalColumn(wonColumnName);
         if (wonColIter == data->GetCategoricalColumns().cend())
             {

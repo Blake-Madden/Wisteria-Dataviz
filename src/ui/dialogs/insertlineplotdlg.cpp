@@ -70,29 +70,27 @@ namespace Wisteria::UI
         optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
-        const wxColour varLabelColor{ 0, 102, 204 };
-
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
         auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (continuous):"));
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
         m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_yVarLabel->SetForegroundColour(varLabelColor);
+        m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (axis):"));
         xLabel->SetFont(xLabel->GetFont().Bold());
         varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
         m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(varLabelColor);
+        m_xVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(varLabelColor);
+        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());

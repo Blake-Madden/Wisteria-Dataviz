@@ -339,6 +339,20 @@ namespace Wisteria::Graphs
             return m_startBinsValue;
             }
 
+        /// @returns The name of the continuous column being binned.
+        [[nodiscard]]
+        const wxString& GetContinuousColumnName() const noexcept
+            {
+            return m_continuousColumn;
+            }
+
+        /// @returns Whether neat (rounded) intervals are being used.
+        [[nodiscard]]
+        bool IsUsingNeatIntervals() const noexcept
+            {
+            return m_neatRanges;
+            }
+
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if you are showing unique values for the categories
         ///     (i.e., not ranges) and you are just showing bars that actually have values

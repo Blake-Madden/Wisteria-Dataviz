@@ -182,6 +182,41 @@ namespace Wisteria::Graphs
             return m_highlightBestRecords;
             }
 
+        /// @returns The name of the season column.
+        [[nodiscard]]
+        const wxString& GetSeasonColumnName() const noexcept
+            {
+            return m_seasonColumnName;
+            }
+
+        /// @returns The name of the won/lost column.
+        [[nodiscard]]
+        const wxString& GetWonColumnName() const noexcept
+            {
+            return m_wonColumnName;
+            }
+
+        /// @returns The name of the shutout column.
+        [[nodiscard]]
+        const wxString& GetShutoutColumnName() const noexcept
+            {
+            return m_shutoutColumnName;
+            }
+
+        /// @returns The name of the home game column.
+        [[nodiscard]]
+        const wxString& GetHomeGameColumnName() const noexcept
+            {
+            return m_homeGameColumnName;
+            }
+
+        /// @returns The name of the postseason column, or empty if not used.
+        [[nodiscard]]
+        const wxString& GetPostseasonColumnName() const noexcept
+            {
+            return m_postseasonColumnName;
+            }
+
         /** @brief Builds and returns a legend.
             @details This can be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
@@ -229,6 +264,13 @@ namespace Wisteria::Graphs
         wxColour m_highlightColor;
         bool m_hasPostseasonData{ false };
         bool m_highlightBestRecords{ true };
+
+        // column names
+        wxString m_seasonColumnName;
+        wxString m_wonColumnName;
+        wxString m_shutoutColumnName;
+        wxString m_homeGameColumnName;
+        wxString m_postseasonColumnName;
 
         // state data
         size_t m_longestWinningStreak{ 0 };

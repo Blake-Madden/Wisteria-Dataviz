@@ -1,20 +1,20 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertscatterplotdlg.cpp
+// Name:        insertwlsparklinedlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertscatterplotdlg.h"
-#include "../../graphs/scatterplot.h"
+#include "insertwlsparklinedlg.h"
+#include "../../graphs/win_loss_sparkline.h"
 #include "variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertScatterPlotDlg::InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+    InsertWLSparklineDlg::InsertWLSparklineDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                                wxWindow* parent, const wxString& caption,
                                                const wxWindowID id, const wxPoint& pos,
                                                const wxSize& size, const long style,
@@ -32,7 +32,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::CreateControls()
+    void InsertWLSparklineDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
         CreateGraphOptionsPage();
@@ -40,8 +40,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Scatter Plot Options"), ID_OPTIONS_SECTION,
-                                  true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Win/Loss Options"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -74,45 +73,54 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (independent):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(GetVariableLabelColor());
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* seasonLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Season:"));
+        seasonLabel->SetFont(seasonLabel->GetFont().Bold());
+        varGrid->Add(seasonLabel, wxSizerFlags{}.CenterVertical());
+        m_seasonVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_seasonVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_seasonVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (dependent):"));
-        yLabel->SetFont(yLabel->GetFont().Bold());
-        varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
-        m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
-        varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* wonLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Won/Lost:"));
+        wonLabel->SetFont(wonLabel->GetFont().Bold());
+        varGrid->Add(wonLabel, wxSizerFlags{}.CenterVertical());
+        m_wonVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_wonVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_wonVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
-        groupLabel->SetFont(groupLabel->GetFont().Bold());
-        varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
-        varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* shutoutLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Shutout:"));
+        shutoutLabel->SetFont(shutoutLabel->GetFont().Bold());
+        varGrid->Add(shutoutLabel, wxSizerFlags{}.CenterVertical());
+        m_shutoutVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_shutoutVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_shutoutVarLabel, wxSizerFlags{}.CenterVertical());
+
+        auto* homeLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Home game:"));
+        homeLabel->SetFont(homeLabel->GetFont().Bold());
+        varGrid->Add(homeLabel, wxSizerFlags{}.CenterVertical());
+        m_homeGameVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_homeGameVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_homeGameVarLabel, wxSizerFlags{}.CenterVertical());
+
+        auto* postLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Postseason:"));
+        postLabel->SetFont(postLabel->GetFont().Bold());
+        varGrid->Add(postLabel, wxSizerFlags{}.CenterVertical());
+        m_postseasonVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_postseasonVarLabel->SetForegroundColour(GetVariableLabelColor());
+        varGrid->Add(m_postseasonVarLabel, wxSizerFlags{}.CenterVertical());
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
-        // regression options
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
+        // highlight best records
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Highlight best records"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showRegressionLines)),
-                          wxSizerFlags{}.Border());
-
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showConfidenceBands)),
+                                         wxGenericValidator(&m_highlightBestRecords)),
                           wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
+        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 4));
         optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
 
         // bind events
@@ -124,16 +132,18 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnDatasetChanged()
+    void InsertWLSparklineDlg::OnDatasetChanged()
         {
-        m_xVariable.clear();
-        m_yVariable.clear();
-        m_groupVariable.clear();
+        m_seasonVariable.clear();
+        m_wonVariable.clear();
+        m_shutoutVariable.clear();
+        m_homeGameVariable.clear();
+        m_postseasonVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnSelectVariables()
+    void InsertWLSparklineDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -143,8 +153,6 @@ namespace Wisteria::UI
             return;
             }
 
-        // prefer the stored column preview info (preserves original file order)
-        // over rebuilding it from the dataset's internal column grouping
         Data::Dataset::ColumnPreviewInfo columnInfo;
         if (GetReportBuilder() != nullptr)
             {
@@ -168,22 +176,47 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"X (independent)"))
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
+                  .Label(_(L"Season"))
+                  .SingleSelection(true)
+                  .DefaultVariables(m_seasonVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_seasonVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
-                  .Label(_(L"Y (dependent)"))
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
+                  .Label(_(L"Won/Lost"))
+                  .SingleSelection(true)
+                  .DefaultVariables(m_wonVariable.empty() ? std::vector<wxString>{} :
+                                                            std::vector<wxString>{ m_wonVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
-                  .Label(_(L"Grouping"))
+                  .Label(_(L"Shutout"))
+                  .SingleSelection(true)
+                  .DefaultVariables(m_shutoutVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_shutoutVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Home game"))
+                  .SingleSelection(true)
+                  .DefaultVariables(m_homeGameVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_homeGameVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Postseason"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
+                  .DefaultVariables(m_postseasonVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                                        std::vector<wxString>{ m_postseasonVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
@@ -193,31 +226,39 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto xVars = dlg.GetSelectedVariables(0);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
+        const auto seasonVars = dlg.GetSelectedVariables(0);
+        m_seasonVariable = seasonVars.empty() ? wxString{} : seasonVars.front();
 
-        const auto yVars = dlg.GetSelectedVariables(1);
-        m_yVariable = yVars.empty() ? wxString{} : yVars.front();
+        const auto wonVars = dlg.GetSelectedVariables(1);
+        m_wonVariable = wonVars.empty() ? wxString{} : wonVars.front();
 
-        const auto groupVars = dlg.GetSelectedVariables(2);
-        m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
+        const auto shutoutVars = dlg.GetSelectedVariables(2);
+        m_shutoutVariable = shutoutVars.empty() ? wxString{} : shutoutVars.front();
+
+        const auto homeVars = dlg.GetSelectedVariables(3);
+        m_homeGameVariable = homeVars.empty() ? wxString{} : homeVars.front();
+
+        const auto postVars = dlg.GetSelectedVariables(4);
+        m_postseasonVariable = postVars.empty() ? wxString{} : postVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::UpdateVariableLabels()
+    void InsertWLSparklineDlg::UpdateVariableLabels()
         {
-        m_xVarLabel->SetLabel(m_xVariable);
-        m_yVarLabel->SetLabel(m_yVariable);
-        m_groupVarLabel->SetLabel(m_groupVariable);
+        m_seasonVarLabel->SetLabel(m_seasonVariable);
+        m_wonVarLabel->SetLabel(m_wonVariable);
+        m_shutoutVarLabel->SetLabel(m_shutoutVariable);
+        m_homeGameVarLabel->SetLabel(m_homeGameVariable);
+        m_postseasonVarLabel->SetLabel(m_postseasonVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertScatterPlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertWLSparklineDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -238,7 +279,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertScatterPlotDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertWLSparklineDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -257,7 +298,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertScatterPlotDlg::Validate()
+    bool InsertWLSparklineDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -266,10 +307,12 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_xVariable.empty() || m_yVariable.empty())
+        if (m_seasonVariable.empty() || m_wonVariable.empty() || m_shutoutVariable.empty() ||
+            m_homeGameVariable.empty())
             {
-            wxMessageBox(_(L"Please select the X and Y variables."), _(L"Variable Not Specified"),
-                         wxOK | wxICON_WARNING, this);
+            wxMessageBox(
+                _(L"Please select the season, won/lost, shutout, and home game variables."),
+                _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
             }
@@ -278,10 +321,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertWLSparklineDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
         {
-        const auto* scatter = dynamic_cast<const Graphs::ScatterPlot*>(&graph);
-        if (scatter == nullptr)
+        const auto* sparkline = dynamic_cast<const Graphs::WinLossSparkline*>(&graph);
+        if (sparkline == nullptr)
             {
             return;
             }
@@ -290,7 +333,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph, canvas);
 
         // select the dataset by name from the property template
-        const auto dsName = scatter->GetPropertyTemplate(L"dataset");
+        const auto dsName = sparkline->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -303,20 +346,15 @@ namespace Wisteria::UI
                 }
             }
 
-        // load the actual column names used by the graph
-        // (property templates may contain unexpanded {{placeholders}})
-        m_xVariable = scatter->GetXColumnName();
-        m_yVariable = scatter->GetYColumnName();
-        const auto& series = scatter->GetSeriesList();
-        if (!series.empty())
-            {
-            m_groupVariable = series.front().GetGroupColumnName().value_or(wxString{});
-            }
+        // load column names from the graph
+        m_seasonVariable = sparkline->GetSeasonColumnName();
+        m_wonVariable = sparkline->GetWonColumnName();
+        m_shutoutVariable = sparkline->GetShutoutColumnName();
+        m_homeGameVariable = sparkline->GetHomeGameColumnName();
+        m_postseasonVariable = sparkline->GetPostseasonColumnName();
         UpdateVariableLabels();
 
-        // scatter-specific options
-        m_showRegressionLines = scatter->IsShowingRegressionLines();
-        m_showConfidenceBands = scatter->IsShowingConfidenceBands();
+        m_highlightBestRecords = sparkline->IsHighlightingBestRecords();
 
         TransferDataToWindow();
         }

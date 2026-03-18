@@ -71,6 +71,41 @@ namespace Wisteria::Graphs
                      size_t minFreq = 1, std::optional<size_t> maxFreq = std::nullopt,
                      std::optional<size_t> maxWords = std::nullopt);
 
+        /// @returns The name of the word column.
+        [[nodiscard]]
+        const wxString& GetWordColumnName() const noexcept
+            {
+            return m_wordColumnName;
+            }
+
+        /// @returns The name of the weight column, or empty if not used.
+        [[nodiscard]]
+        const wxString& GetWeightColumnName() const noexcept
+            {
+            return m_weightColumnName;
+            }
+
+        /// @returns The minimum frequency threshold.
+        [[nodiscard]]
+        size_t GetMinFrequency() const noexcept
+            {
+            return m_minFreq;
+            }
+
+        /// @returns The maximum frequency threshold, or @c std::nullopt if not set.
+        [[nodiscard]]
+        std::optional<size_t> GetMaxFrequency() const noexcept
+            {
+            return m_maxFreq;
+            }
+
+        /// @returns The maximum number of words, or @c std::nullopt if not set.
+        [[nodiscard]]
+        std::optional<size_t> GetMaxWords() const noexcept
+            {
+            return m_maxWords;
+            }
+
       private:
         [[deprecated("Word clouds do not support legends.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label>
@@ -103,6 +138,12 @@ namespace Wisteria::Graphs
 
         void RecalcSizes(wxDC& dc) final;
         std::vector<WordInfo> m_words;
+
+        wxString m_wordColumnName;
+        wxString m_weightColumnName;
+        size_t m_minFreq{ 1 };
+        std::optional<size_t> m_maxFreq;
+        std::optional<size_t> m_maxWords;
         };
     } // namespace Wisteria::Graphs
 
