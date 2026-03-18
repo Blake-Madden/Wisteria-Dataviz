@@ -83,7 +83,7 @@ namespace Wisteria::UI
             /// @details Any variable names specified here will be moved from the main
             ///     variable list into this list when the dialog is created.
             ///     Names that do not match any column in the dataset are silently ignored.
-            /// @param defaultVars The variable names to pre-select.
+            /// @param defaultVars The variable names to preselect.
             /// @returns A self reference.
             VariableListInfo& DefaultVariables(const std::vector<wxString>& defaultVars)
                 {

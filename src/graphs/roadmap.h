@@ -180,6 +180,13 @@ namespace Wisteria::Graphs
         /// @param magnitude The maximum influence of the road stops.
         void SetMagnitude(const double magnitude) noexcept { m_magnitude = magnitude; }
 
+        /// @returns The name of the goal.
+        [[nodiscard]]
+        const wxString& GetGoalLabel() const noexcept
+            {
+            return m_goalLabel;
+            }
+
       protected:
         /// @brief Description of icon used for a road stop.
         using RoadStopIcon = std::pair<Wisteria::Icons::IconShape, wxColour>;
@@ -240,13 +247,6 @@ namespace Wisteria::Graphs
         /// @returns The negative label used for the legend.
         [[nodiscard]]
         virtual wxString GetNegativeLegendLabel() const = 0;
-
-        /// @returns The name of the goal.
-        [[nodiscard]]
-        const wxString& GetGoalLabel() const noexcept
-            {
-            return m_goalLabel;
-            }
 
         /// @brief Sets the name of the goal.
         /// @param label The goal name.

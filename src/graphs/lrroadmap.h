@@ -165,6 +165,27 @@ namespace Wisteria::Graphs
             return m_hasDefaultCaption;
             }
 
+        /// @returns The predictor column name.
+        [[nodiscard]]
+        const wxString& GetPredictorColumnName() const noexcept
+            {
+            return m_predictorColumnName;
+            }
+
+        /// @returns The coefficient column name.
+        [[nodiscard]]
+        const wxString& GetCoefficientColumnName() const noexcept
+            {
+            return m_coefficientColumnName;
+            }
+
+        /// @returns The p-value column name, or empty if not used.
+        [[nodiscard]]
+        const wxString& GetPValueColumnName() const noexcept
+            {
+            return m_pValueColumnName;
+            }
+
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
@@ -180,6 +201,9 @@ namespace Wisteria::Graphs
             return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel());
             }
 
+        wxString m_predictorColumnName;
+        wxString m_coefficientColumnName;
+        wxString m_pValueColumnName;
         std::optional<double> m_pValueThreshold;
         std::optional<Influence> m_predictorsToInclude;
         bool m_hasDefaultCaption{ false };

@@ -242,6 +242,34 @@ namespace Wisteria::Graphs
             return m_hasDefaultCaption;
             }
 
+        /// @returns The positive (pros) column name.
+        [[nodiscard]]
+        const wxString& GetPositiveColumnName() const noexcept
+            {
+            return m_positiveColumnName;
+            }
+
+        /// @returns The positive value column name, or empty if using frequency counts.
+        [[nodiscard]]
+        const wxString& GetPositiveValueColumnName() const noexcept
+            {
+            return m_positiveValueColumnName;
+            }
+
+        /// @returns The negative (cons) column name.
+        [[nodiscard]]
+        const wxString& GetNegativeColumnName() const noexcept
+            {
+            return m_negativeColumnName;
+            }
+
+        /// @returns The negative value column name, or empty if using frequency counts.
+        [[nodiscard]]
+        const wxString& GetNegativeValueColumnName() const noexcept
+            {
+            return m_negativeValueColumnName;
+            }
+
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
@@ -257,6 +285,10 @@ namespace Wisteria::Graphs
             return m_negativeLabel;
             }
 
+        wxString m_positiveColumnName;
+        wxString m_positiveValueColumnName;
+        wxString m_negativeColumnName;
+        wxString m_negativeValueColumnName;
         wxString m_positiveLabel{ /*TRANSLATORS: A favorable reason. */ _(L"Pro") };
         wxString m_negativeLabel{ /*TRANSLATORS: An unfavorable reason. */ _(L"Con") };
         std::optional<size_t> m_minimumCount;

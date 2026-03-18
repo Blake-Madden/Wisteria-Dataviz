@@ -25,6 +25,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
             return;
             }
 
+        m_positiveColumnName = positiveColumnName;
+        m_positiveValueColumnName = positiveValueColumnName.value_or(wxString{});
+        m_negativeColumnName = negativeColumnName;
+        m_negativeValueColumnName = negativeValueColumnName.value_or(wxString{});
         m_minimumCount = minimumCountForItem;
 
         // get positive columns

@@ -443,6 +443,20 @@ namespace Wisteria::Graphs
             return m_linePenStyles;
             }
 
+        /// @returns The name of the X column.
+        [[nodiscard]]
+        const wxString& GetXColumnName() const noexcept
+            {
+            return m_xColumnName;
+            }
+
+        /// @returns The name of the Y column.
+        [[nodiscard]]
+        const wxString& GetYColumnName() const noexcept
+            {
+            return m_yColumnName;
+            }
+
       protected:
         /// @brief X column iterators.
         struct XColumns
@@ -652,13 +666,6 @@ namespace Wisteria::Graphs
         /// @details This will set the iterator to the proper column.
         /// @warning This must be called after setting the dataset.
         void SetXColumn(const wxString& xColumnName);
-
-        /// @returns The name of the X column.
-        [[nodiscard]]
-        const wxString& GetXColumnName() const noexcept
-            {
-            return m_xColumnName;
-            }
 
       private:
         /** @brief Adds a line to the plot.

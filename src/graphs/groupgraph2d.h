@@ -60,6 +60,13 @@ namespace Wisteria::Graphs
             return m_groupColumn.has_value();
             }
 
+        /// @returns The name of the grouping column, or @c std::nullopt if not set.
+        [[nodiscard]]
+        const std::optional<wxString>& GetGroupColumnName() const noexcept
+            {
+            return m_groupColumn;
+            }
+
       protected:
         /** @private
             @brief Builds a list of group IDs, sorted by their respective strings'
