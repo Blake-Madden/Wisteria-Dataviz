@@ -134,8 +134,24 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWordCloud, this, ID_NEW_WORD_CLOUD);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWLSparkline, this, ID_NEW_WIN_LOSS_SPARKLINE);
 
-    // bind edit graph button
+    // bind edit/delete item buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeleteItem, this, ID_DELETE_ITEM);
+
+    // bind DELETE key to delete selected item
+    m_frame->Bind(wxEVT_CHAR_HOOK,
+                  [this](wxKeyEvent& event)
+                  {
+                      if (event.GetKeyCode() == WXK_DELETE)
+                          {
+                          wxCommandEvent cmd;
+                          OnDeleteItem(cmd);
+                          }
+                      else
+                          {
+                          event.Skip();
+                          }
+                  });
 
     // bind canvas double-click to edit the selected item
     m_frame->Bind(wxEVT_WISTERIA_CANVAS_DCLICK, &WisteriaView::OnCanvasDClick, this);
@@ -207,6 +223,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         AddDatasetToProject(initialDataset, initialDatasetName, initialColumnInfo,
                             { initialFilePath, wxString{}, initialWorksheet, initialFullColumnInfo,
                               initialImportInfo });
+        AddPageToProject(1, 1, wxString{});
         }
 
     UpdateGraphButtonStates();
@@ -785,6 +802,8 @@ void WisteriaView::UpdateGraphButtonStates()
     if (m_pagesButtonBar != nullptr)
         {
         m_pagesButtonBar->EnableButton(ID_EDIT_PAGE, enabled);
+        m_pagesButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
+        m_pagesButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
 
     if (m_graphButtonBar == nullptr)
@@ -799,7 +818,6 @@ void WisteriaView::UpdateGraphButtonStates()
     m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, enabled);
     m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, enabled);
     m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, enabled);
-    m_graphButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
     }
 
 //-------------------------------------------
@@ -1264,6 +1282,102 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         {
         EditWLSparkline(*graph, canvas, itemRow, itemCol);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    // find the selected item in the canvas grid
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> selectedItem;
+    size_t itemRow{ 0 };
+    size_t itemCol{ 0 };
+    size_t selectedCount{ 0 };
+    for (size_t row = 0; row < gridRows; ++row)
+        {
+        for (size_t col = 0; col < gridCols; ++col)
+            {
+            auto item = canvas->GetFixedObject(row, col);
+            if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
+                {
+                // skip legend labels
+                auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(item.get());
+                if (label != nullptr && label->IsLegend())
+                    {
+                    continue;
+                    }
+                ++selectedCount;
+                selectedItem = item;
+                itemRow = row;
+                itemCol = col;
+                }
+            }
+        }
+
+    if (selectedCount > 1)
+        {
+        wxMessageBox(_(L"Please select only one item to delete."), _(L"Delete"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    if (selectedItem == nullptr)
+        {
+        return;
+        }
+
+    if (wxMessageBox(_(L"Are you sure you want to delete the selected item?"), _(L"Delete Item"),
+                     wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)
+        {
+        return;
+        }
+
+    // if the item is a graph with a legend, clear the legend cell too
+    auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(selectedItem.get());
+    if (graph != nullptr)
+        {
+        const auto& legendInfo = graph->GetLegendInfo();
+        if (legendInfo.has_value())
+            {
+            const auto oldSide = legendInfo->GetPlacement();
+            const bool hasLegendCell =
+                (oldSide == Wisteria::Side::Top && itemRow > 0) ||
+                (oldSide == Wisteria::Side::Bottom && itemRow + 1 < gridRows) ||
+                (oldSide == Wisteria::Side::Left && itemCol > 0) ||
+                (oldSide == Wisteria::Side::Right && itemCol + 1 < gridCols);
+            if (hasLegendCell)
+                {
+                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? itemRow - 1 :
+                                         (oldSide == Wisteria::Side::Bottom) ? itemRow + 1 :
+                                                                               itemRow;
+                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? itemCol - 1 :
+                                         (oldSide == Wisteria::Side::Right) ? itemCol + 1 :
+                                                                              itemCol;
+                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
+                if (legendItem != nullptr)
+                    {
+                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
+                    if (label != nullptr && label->IsLegend())
+                        {
+                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                        }
+                    }
+                }
+            }
+        }
+
+    canvas->SetFixedObject(itemRow, itemCol, nullptr);
+    canvas->CalcRowDimensions();
+    canvas->ResetResizeDelay();
+    canvas->SendSizeEvent();
+    canvas->Refresh();
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------

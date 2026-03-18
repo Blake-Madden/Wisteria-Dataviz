@@ -17,6 +17,7 @@ clear.svg
 copy.svg
 data.svg
 date.svg
+delete.svg
 dichotomous-categorical.svg
 dichotomous-discrete.svg
 discrete.svg

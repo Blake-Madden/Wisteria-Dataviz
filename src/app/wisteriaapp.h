@@ -171,6 +171,7 @@ constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };
 
 // Item editing
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };
+constexpr wxWindowID ID_DELETE_ITEM{ wxID_HIGHEST + 40 };
 
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };

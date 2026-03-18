@@ -31,6 +31,7 @@ WisteriaArtProvider::WisteriaArtProvider()
                     { wxART_PRINT, L"print.svg" },
                     { wxART_COPY, L"copy.svg" },
                     { wxART_FIND, L"find.svg" },
+                    { wxART_DELETE, L"delete.svg" },
                     { L"ID_SELECT_ALL", L"select-all.svg" },
                     { L"ID_LIST_SORT", L"sort.svg" },
                     { L"ID_CLEAR", L"clear.svg" },
@@ -338,6 +339,17 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   pageEditIcon.IsOk() ? pageEditIcon.GetBitmap(iconSize) :
                                                         wxBitmap{},
                                   _(L"Edit the current page"));
+        const auto editItemIcon = GetResourceManager().GetSVG(L"edit.svg");
+        pagesButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit Item"),
+                                  editItemIcon.IsOk() ? editItemIcon.GetBitmap(iconSize) :
+                                                        wxBitmap{},
+                                  _(L"Edit the selected item"));
+        const auto deleteItemIcon =
+            wxArtProvider::GetBitmapBundle(wxART_DELETE, wxART_BUTTON, iconSize);
+        pagesButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete Item"),
+                                  deleteItemIcon.IsOk() ? deleteItemIcon.GetBitmap(iconSize) :
+                                                          wxBitmap{},
+                                  _(L"Delete the selected item"));
 
         // Graph category panel
         auto* graphPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Graphs"));
@@ -382,12 +394,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         graphButtonBar->AddDropdownButton(
             ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
             sportsIcon.IsOk() ? sportsIcon.GetBitmap(iconSize) : wxBitmap{}, _(L"Sports graphs"));
-
-        const auto editGraphIcon = GetResourceManager().GetSVG(L"edit.svg");
-        graphButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"),
-                                  editGraphIcon.IsOk() ? editGraphIcon.GetBitmap(iconSize) :
-                                                         wxBitmap{},
-                                  _(L"Edit the selected item"));
         }
     else
         {

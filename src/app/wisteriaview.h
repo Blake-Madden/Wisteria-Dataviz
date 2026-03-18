@@ -160,6 +160,7 @@ class WisteriaView : public wxView
     void OnInsertWordCloud(wxCommandEvent& event);
     void OnInsertWLSparkline(wxCommandEvent& event);
     void OnEditItem(wxCommandEvent& event);
+    void OnDeleteItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
     void EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
