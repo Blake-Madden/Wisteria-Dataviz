@@ -260,6 +260,7 @@ namespace Wisteria::UI
             const auto iconSize = wxSize{ FromDIP(16), FromDIP(16) };
             auto* varLabelSz = new wxBoxSizer(wxHORIZONTAL);
             varLabelSz->Add(new wxStaticText(this, wxID_STATIC, label));
+            varLabelSz->AddStretchSpacer();
             for (const auto& acceptedType : acceptedVarTypes)
                 {
                 auto* icon = new wxStaticBitmap(
@@ -281,13 +282,14 @@ namespace Wisteria::UI
                         .GetBitmap(iconSize));
                 varLabelSz->Add(icon, wxSizerFlags{}.CenterVertical());
                 }
-            varsSizer->Add(varLabelSz, wxGBPosition{ labelRow, listCol }, wxGBSpan{ 1, 1 });
+            // quneiform-suppress-begin
+            varsSizer->Add(varLabelSz, wxGBPosition{ labelRow, listCol }, wxGBSpan{ 1, 1 },
+                           wxEXPAND);
 
             auto* list = new wxListView(this, wxID_ANY, wxDefaultPosition,
                                         wxSize{ -1, FromDIP(75) }, listStyle);
             list->InsertColumn(0, wxString{});
             list->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
-            // quneiform-suppress-begin
             varsSizer->Add(list, wxGBPosition{ listRow, listCol }, wxGBSpan{ 1, 1 }, wxEXPAND);
             // quneiform-suppress-end
 
@@ -303,8 +305,8 @@ namespace Wisteria::UI
             const size_t columnSet = safe_divide(i, MAXGROUPSPERCOLUMN);
             const size_t rowWithinSet = safe_modulus(i, MAXGROUPSPERCOLUMN);
 
-            const int buttonCol = 1 + static_cast<int>(columnSet) * 2;
-            const int listCol = 2 + static_cast<int>(columnSet) * 2;
+            const int buttonCol = 1 + (static_cast<int>(columnSet) * 2);
+            const int listCol = 2 + (static_cast<int>(columnSet) * 2);
             const int labelRow = static_cast<int>(rowWithinSet) * 2;
             const int listRow = labelRow + 1;
             const int buttonRow = listRow;
@@ -322,8 +324,8 @@ namespace Wisteria::UI
             currentList.m_list = addVarControls(
                 currentList.m_addId, currentList.m_removeId,
                 (currentList.m_required ?
-                     currentList.m_label :
-                     wxString::Format(_(L"%s (optional)"), currentList.m_label)),
+                     currentList.m_label + L":" :
+                     wxString::Format(_(L"%s (optional):"), currentList.m_label)),
                 var.m_acceptedTypes, style, buttonCol, listCol, buttonRow, labelRow, listRow);
             m_varLists.push_back(std::move(currentList));
             }

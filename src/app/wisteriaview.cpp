@@ -906,7 +906,7 @@ void WisteriaView::BuildGraphMenus()
     // Survey graphs
     appendItem(m_surveyGraphMenu, ID_NEW_LIKERT, _(L"Likert Chart..."), L"likert7.svg");
     m_surveyGraphMenu.AppendSeparator();
-    appendItem(m_basicGraphMenu, ID_NEW_WORD_CLOUD, _(L"Word Cloud..."), L"wordcloud.svg");
+    appendItem(m_surveyGraphMenu, ID_NEW_WORD_CLOUD, _(L"Word Cloud..."), L"wordcloud.svg");
     m_surveyGraphMenu.AppendSeparator();
     appendItem(m_surveyGraphMenu, ID_NEW_PROCON_ROADMAP, _(L"Pro && Con Roadmap..."),
                L"roadmap.svg");

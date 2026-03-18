@@ -1090,7 +1090,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         const wxString& GetPositiveLabel(const size_t point) const noexcept
             {
-            assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
+            wxASSERT_MSG(point >= 1 && point <= 3, "Incorrect point specified for label!");
             return (point == 1) ? m_positive1Label :
                    (point == 2) ? m_positive2Label :
                    (point == 3) ? m_positive3Label :
@@ -1103,7 +1103,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         const wxString& GetNegativeLabel(const size_t point) const noexcept
             {
-            assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
+            wxASSERT_MSG(point >= 1 && point <= 3, "Incorrect point specified for label!");
             return (point == 1) ? m_negative1Label :
                    (point == 2) ? m_negative2Label :
                    (point == 3) ? m_negative3Label :
@@ -1124,7 +1124,7 @@ namespace Wisteria::Graphs
         /// @note This label will be shown in the legend and also (possibly) as a section header.
         void SetNegativeLabel(const wxString& label, const size_t point)
             {
-            assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
+            wxASSERT_MSG(point >= 1 && point <= 3, "Incorrect point specified for label!");
             if (label.empty())
                 {
                 return;
@@ -1153,7 +1153,7 @@ namespace Wisteria::Graphs
         /// @note This label will be shown in the legend and also (possibly) as a section header.
         void SetPositiveLabel(const wxString& label, const size_t point)
             {
-            assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
+            wxASSERT_MSG(point >= 1 && point <= 3, "Incorrect point specified for label!");
             if (label.empty())
                 {
                 return;

@@ -366,7 +366,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         Line& GetLine(const size_t index) noexcept
             {
-            assert(index < m_lines.size() && L"Invalid index in GetLine()!");
+            wxASSERT_MSG(index < m_lines.size(), L"Invalid index in GetLine()!");
             return m_lines.at(index);
             }
 

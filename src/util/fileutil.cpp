@@ -262,7 +262,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
     {
     if (currentDir.empty() || fileToFind.empty())
         {
-        return wxString{};
+        return {};
         }
 
     // get the file name from the path (which may be in a foreign OS file path format)

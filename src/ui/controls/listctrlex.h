@@ -676,7 +676,7 @@ namespace Wisteria::UI
             {
             if (column < 0 || column >= GetColumnCount())
                 {
-                return wxString{};
+                return {};
                 }
             wxListItem item;
             item.SetMask(wxLIST_MASK_TEXT);
@@ -693,7 +693,7 @@ namespace Wisteria::UI
             const long selected = GetFirstSelected();
             if (selected == wxNOT_FOUND)
                 {
-                return wxString{};
+                return {};
                 }
 
             return GetItemTextEx(selected, 0);

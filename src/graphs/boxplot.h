@@ -384,7 +384,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         BoxAndWhisker& GetBox(const size_t index)
             {
-            assert(index < m_boxes.size() && L"Invalid index in GetBox()!");
+            wxASSERT_MSG(index < m_boxes.size(), L"Invalid index in GetBox()!");
             return m_boxes.at(index);
             }
 

@@ -189,7 +189,7 @@ namespace Wisteria
         /// @param length The maximum text length.
         static void SetMaxLegendTextLength(const size_t length) noexcept
             {
-            assert(length > 0 && L"Max legend label lengths should be at least 1!");
+            wxASSERT_MSG(length > 0, L"Max legend label lengths should be at least 1!");
             m_maxLegendTextLength = std::max<size_t>(1, length); // at least length of one
             }
 

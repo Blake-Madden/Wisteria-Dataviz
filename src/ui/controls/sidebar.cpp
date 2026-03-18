@@ -246,7 +246,7 @@ namespace Wisteria::UI
         {
         if (!IsFolderSelected())
             {
-            return wxString{};
+            return {};
             }
         if (m_folders[GetSelectedFolder().value()].GetSubItemCount() == 0)
             {

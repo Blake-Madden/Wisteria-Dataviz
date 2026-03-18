@@ -111,7 +111,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             {
             if (!doubleVal2->IsValid())
                 {
-                return wxString{};
+                return {};
                 }
             return doubleVal2->FormatDate();
             }

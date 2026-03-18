@@ -359,7 +359,7 @@ namespace Wisteria::UI
         const int sel = m_datasetChoice->GetSelection();
         if (sel == wxNOT_FOUND || static_cast<size_t>(sel) >= m_datasetNames.size())
             {
-            return wxString{};
+            return {};
             }
         return m_datasetNames[sel];
         }

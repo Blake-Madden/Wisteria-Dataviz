@@ -364,7 +364,8 @@ namespace Wisteria::GraphItems
     void Point2D::SetBoundingBox(const wxRect& rect, wxDC& dc,
                                  [[maybe_unused]] const double parentScaling)
         {
-        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_MSG(!IsFreeFloating(),
+                     L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             {
             return;

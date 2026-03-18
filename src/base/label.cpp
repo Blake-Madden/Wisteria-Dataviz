@@ -166,7 +166,8 @@ namespace Wisteria::GraphItems
         {
         InvalidateCachedBoundingBox();
 
-        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_MSG(!IsFreeFloating(),
+                     L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             {
             return;
@@ -2109,7 +2110,7 @@ namespace Wisteria::GraphItems
                 { wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
                   L"Helvetica Neue", L"Lucida Grande", L"Calibri", L"Arial", L"Courier New" }));
             }
-        assert(!theFont.GetFaceName().empty() && L"Corrected font face name is empty.");
+        wxASSERT_MSG(!theFont.GetFaceName().empty(), L"Corrected font face name is empty.");
         // if font is still messed up, fall back to system default
         assert(theFont.IsOk());
         if (!theFont.IsOk())

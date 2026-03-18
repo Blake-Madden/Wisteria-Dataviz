@@ -469,7 +469,7 @@ namespace Wisteria::UI
             return returnType;
             }
 
-        return wxString{};
+        return {};
         }
 
     //-------------------------------------------------------------

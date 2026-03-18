@@ -159,11 +159,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         const std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
-        assert(condensedCodes.size() == 3 && L"String table should have 3 values!");
-        assert(std::ranges::min_element(condensedCodes)->first == 0 &&
-               L"String table should start at zero!");
-        assert(std::ranges::max_element(condensedCodes)->first == 2 &&
-               L"String table should end at 2!");
+        wxASSERT_MSG(condensedCodes.size() == 3, L"String table should have 3 values!");
+        wxASSERT_MSG(std::ranges::min_element(condensedCodes)->first == 0,
+                     L"String table should start at zero!");
+        wxASSERT_MSG(std::ranges::max_element(condensedCodes)->first == 2,
+                     L"String table should end at 2!");
         for (const auto& catColumnName : questionColumns)
             {
             const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
@@ -174,9 +174,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                      catColumnName)
                         .ToUTF8());
                 }
-            assert(*std::max_element(categoricalColumn->GetValues().cbegin(),
-                                     categoricalColumn->GetValues().cend()) <= 4 &&
-                   L"Categorical codes shouldn't be higher than 4!");
+            wxASSERT_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
+                                           categoricalColumn->GetValues().cend()) <= 4,
+                         L"Categorical codes shouldn't be higher than 4!");
             // collapse both degrees of "negative" into one
             categoricalColumn->Recode(2, 1);
             // collapse both degrees of "positive" into one
@@ -192,11 +192,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         const std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
-        assert(condensedCodes.size() == 3 && L"String table should have 3 values!");
-        assert(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0 &&
-               L"String table should start at zero!");
-        assert(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 2 &&
-               L"String table should end at 2!");
+        wxASSERT_MSG(condensedCodes.size() == 3, L"String table should have 3 values!");
+        wxASSERT_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0,
+                     L"String table should start at zero!");
+        wxASSERT_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 2,
+                     L"String table should end at 2!");
         for (const auto& catColumnName : questionColumns)
             {
             const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
@@ -207,9 +207,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                      catColumnName)
                         .ToUTF8());
                 }
-            assert(*std::max_element(categoricalColumn->GetValues().cbegin(),
-                                     categoricalColumn->GetValues().cend()) <= 6 &&
-                   L"Categorical codes shouldn't be higher than 6!");
+            wxASSERT_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
+                                           categoricalColumn->GetValues().cend()) <= 6,
+                         L"Categorical codes shouldn't be higher than 6!");
             // collapse all degrees of "negative" into one
             categoricalColumn->Recode(2, 1);
             categoricalColumn->Recode(3, 1);
@@ -227,11 +227,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         const std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
-        assert(condensedCodes.size() == 4 && L"String table should have 4 values!");
-        assert(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0 &&
-               L"String table should start at zero!");
-        assert(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 3 &&
-               L"String table should end at 3!");
+        wxASSERT_MSG(condensedCodes.size() == 4, L"String table should have 4 values!");
+        wxASSERT_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0,
+                     L"String table should start at zero!");
+        wxASSERT_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 3,
+                     L"String table should end at 3!");
         for (const auto& catColumnName : questionColumns)
             {
             const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
@@ -242,9 +242,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                      catColumnName)
                         .ToUTF8());
                 }
-            assert(*std::max_element(categoricalColumn->GetValues().cbegin(),
-                                     categoricalColumn->GetValues().cend()) <= 5 &&
-                   L"Categorical codes shouldn't be higher than 5!");
+            wxASSERT_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
+                                           categoricalColumn->GetValues().cend()) <= 5,
+                         L"Categorical codes shouldn't be higher than 5!");
             // collapse both degrees of "negative" into one
             categoricalColumn->Recode(2, 1);
             // old neutral code
@@ -262,11 +262,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         const std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
-        assert(condensedCodes.size() == 4 && L"String table should have 4 values!");
-        assert(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0 &&
-               L"String table should start at zero!");
-        assert(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 3 &&
-               L"String table should end at 3!");
+        wxASSERT_MSG(condensedCodes.size() == 4, L"String table should have 4 values!");
+        wxASSERT_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0,
+                     L"String table should start at zero!");
+        wxASSERT_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 3,
+                     L"String table should end at 3!");
         for (const auto& catColumnName : questionColumns)
             {
             const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
@@ -277,9 +277,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                      catColumnName)
                         .ToUTF8());
                 }
-            assert(*std::max_element(categoricalColumn->GetValues().cbegin(),
-                                     categoricalColumn->GetValues().cend()) <= 7 &&
-                   L"Categorical codes shouldn't be higher than 7!");
+            wxASSERT_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
+                                           categoricalColumn->GetValues().cend()) <= 7,
+                         L"Categorical codes shouldn't be higher than 7!");
             // collapse all three degrees of "negative" into one
             categoricalColumn->Recode(2, 1);
             categoricalColumn->Recode(3, 1);
@@ -736,8 +736,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             {
             return;
             }
-        assert(IsCategorized() &&
-               L"Categorized data being passed into non-categorized Likert chart!");
+        wxASSERT_MSG(IsCategorized(),
+                     L"Categorized data being passed into non-categorized Likert chart!");
 
         m_maxRespondents = std::max(m_maxRespondents, responses.GetRowCount());
 
@@ -800,8 +800,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 groupResponses += surveyQuestion.m_responses;
                 sQuestion.AddCategoricalResponse(surveyQuestion);
                 }
-            assert(groupResponses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(groupResponses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(sQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
@@ -815,8 +815,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 groupResponses += surveyQuestion.m_responses;
                 sQuestion.AddCategoricalResponse(surveyQuestion);
                 }
-            assert(groupResponses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(groupResponses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(sQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized)
@@ -831,8 +831,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 groupResponses += surveyQuestion.m_responses;
                 sQuestion.AddCategoricalResponse(surveyQuestion);
                 }
-            assert(groupResponses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(groupResponses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(sQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
@@ -847,8 +847,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 groupResponses += surveyQuestion.m_responses;
                 sQuestion.AddCategoricalResponse(surveyQuestion);
                 }
-            assert(groupResponses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(groupResponses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(sQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized)
@@ -864,8 +864,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 groupResponses += surveyQuestion.m_responses;
                 sQuestion.AddCategoricalResponse(surveyQuestion);
                 }
-            assert(groupResponses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(groupResponses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(sQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
@@ -881,8 +881,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 groupResponses += surveyQuestion.m_responses;
                 sQuestion.AddCategoricalResponse(surveyQuestion);
                 }
-            assert(groupResponses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(groupResponses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(sQuestion);
             }
         }
@@ -895,8 +895,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             {
             return;
             }
-        assert(!IsCategorized() &&
-               L"Non-categorized data being loaded into categorized Likert chart!");
+        wxASSERT_MSG(!IsCategorized(),
+                     L"Non-categorized data being loaded into categorized Likert chart!");
 
         m_maxRespondents = std::max(m_maxRespondents, responses.GetRowCount());
 
@@ -927,8 +927,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             {
             const LikertThreePointSurveyQuestion surveyQuestion(
                 question, findCount(1), 0 /* no neutrals*/, findCount(2), findNACount());
-            assert(surveyQuestion.m_responses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(surveyQuestion.m_responses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(surveyQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint)
@@ -937,8 +937,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                                                 // 1-3, negative to positive
                                                                 findCount(1), findCount(2),
                                                                 findCount(3), findNACount());
-            assert(surveyQuestion.m_responses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(surveyQuestion.m_responses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(surveyQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint)
@@ -946,8 +946,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             const LikertFivePointSurveyQuestion surveyQuestion(question, findCount(1), findCount(2),
                                                                0 /* no neutrals*/, findCount(3),
                                                                findCount(4), findNACount());
-            assert(surveyQuestion.m_responses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(surveyQuestion.m_responses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(surveyQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint)
@@ -955,8 +955,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             const LikertFivePointSurveyQuestion surveyQuestion(question, findCount(1), findCount(2),
                                                                findCount(3), findCount(4),
                                                                findCount(5), findNACount());
-            assert(surveyQuestion.m_responses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(surveyQuestion.m_responses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(surveyQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint)
@@ -964,8 +964,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             const LikertSevenPointSurveyQuestion surveyQuestion(
                 question, findCount(1), findCount(2), findCount(3), 0 /* no neutrals*/,
                 findCount(4), findCount(5), findCount(6), findNACount());
-            assert(surveyQuestion.m_responses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(surveyQuestion.m_responses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(surveyQuestion);
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint)
@@ -973,8 +973,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             const LikertSevenPointSurveyQuestion surveyQuestion(
                 question, findCount(1), findCount(2), findCount(3), findCount(4), findCount(5),
                 findCount(6), findCount(7), findNACount());
-            assert(surveyQuestion.m_responses == responses.GetRowCount() &&
-                   L"Classified responses don't equal the overall responses count!");
+            wxASSERT_MSG(surveyQuestion.m_responses == responses.GetRowCount(),
+                         L"Classified responses don't equal the overall responses count!");
             AddSurveyQuestion(surveyQuestion);
             }
         }

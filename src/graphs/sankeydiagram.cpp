@@ -180,7 +180,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             size_t groupOffset{ 0 };
             for (const auto& groups : fromGrouping.get_data())
                 {
-                assert(!groups.second.first.empty() && L"No groups in column group info!");
+                wxASSERT_MSG(!groups.second.first.empty(), L"No groups in column group info!");
                 m_fromAxisGroups.push_back(SankeyAxisGroup{
                     groups.first, groupOffset, groupOffset + (groups.second.first.size() - 1) });
                 groupOffset += groups.second.first.size();
@@ -188,8 +188,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                     {
                     const auto subGroupPos =
                         std::ranges::find(std::as_const(m_sankeyColumns[0]), SankeyGroup{ gr });
-                    assert(subGroupPos != m_sankeyColumns[0].cend() &&
-                           L"Unable to find group in Sankey column!");
+                    wxASSERT_MSG(subGroupPos != m_sankeyColumns[0].cend(),
+                                 L"Unable to find group in Sankey column!");
                     if (subGroupPos != m_sankeyColumns[0].cend())
                         {
                         tempColumn.push_back(*subGroupPos);
@@ -708,10 +708,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             {
             for (const auto& aGr : m_fromAxisGroups)
                 {
-                assert(aGr.m_startGroup < m_sankeyColumns[0].size() &&
-                       L"Axis group start out of range!");
-                assert(aGr.m_endGroup < m_sankeyColumns[0].size() &&
-                       L"Axis group end out of range!");
+                wxASSERT_MSG(aGr.m_startGroup < m_sankeyColumns[0].size(),
+                             L"Axis group start out of range!");
+                wxASSERT_MSG(aGr.m_endGroup < m_sankeyColumns[0].size(),
+                             L"Axis group end out of range!");
                 const auto groupTop = m_sankeyColumns[0].at(aGr.m_startGroup).m_yAxisTopPosition;
                 const auto groupBottom =
                     m_sankeyColumns[0].at(aGr.m_endGroup).m_yAxisBottomPosition;

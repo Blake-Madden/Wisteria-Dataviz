@@ -250,7 +250,7 @@ namespace Wisteria::UI
     //---------------------------------------------------
     wxWindow* SideBarBook::DoRemovePage(size_t nPage)
         {
-        assert(nPage < m_pages.size() && L"invalid page index in SideBarBook::DoRemovePage()");
+        wxASSERT_MSG(nPage < m_pages.size(), L"invalid page index in SideBarBook::DoRemovePage()");
 
         // NOLINTNEXTLINE(misc-const-correctness)
         wxWindow* pageRemoved = m_pages[nPage];

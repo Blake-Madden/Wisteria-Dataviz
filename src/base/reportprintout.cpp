@@ -13,8 +13,8 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
     {
     wxDC* dc = GetDC();
     auto* canvas = GetCanvasFromPageNumber(page);
-    assert(dc && L"Invalid printing DC!");
-    assert(canvas && L"Invalid page when printing report!");
+    wxASSERT_MSG(dc, L"Invalid printing DC!");
+    wxASSERT_MSG(canvas, L"Invalid page when printing report!");
     if (dc != nullptr && canvas != nullptr)
         {
         const wxWindowUpdateLocker wl(canvas);
@@ -283,7 +283,7 @@ Wisteria::FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const
       m_originalMinHeight((canvas != nullptr) ? canvas->GetCanvasMinHeightDIPs() : 0),
       m_originalSize((canvas != nullptr) ? canvas->GetSize() : wxSize{})
     {
-    assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
+    wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr)
         {
         const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),

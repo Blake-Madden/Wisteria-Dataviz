@@ -109,7 +109,8 @@ namespace Wisteria::UI
 
         // MD codes
         auto* mdCodesSizer = new wxBoxSizer(wxHORIZONTAL);
-        m_mdValuesLabel = new wxStaticText(this, wxID_ANY, _(L"Missing data codes:"));
+        m_mdValuesLabel =
+            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (space separated):"));
         mdCodesSizer->Add(m_mdValuesLabel,
                           wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
         for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
@@ -117,8 +118,9 @@ namespace Wisteria::UI
             m_mdValues.append(code).append(L' ');
             }
         m_mdValues.Trim();
-        m_mdValuesText = new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
-                                        wxDefaultSize, 0, wxGenericValidator(&m_mdValues));
+        m_mdValuesText =
+            new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
+                           wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator(&m_mdValues));
         mdCodesSizer->Add(m_mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
         mainSizer->Add(mdCodesSizer,
                        wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
