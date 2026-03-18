@@ -199,27 +199,35 @@ namespace Wisteria::UI
                   .SingleSelection(true)
                   .DefaultVariables(m_positiveVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_positiveVariable }),
+                                        std::vector<wxString>{ m_positiveVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
                   .Label(_(L"Positive values"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(m_positiveValueVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_positiveValueVariable }),
+                                        std::vector<wxString>{ m_positiveValueVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Negative (cons)"))
                   .SingleSelection(true)
                   .DefaultVariables(m_negativeVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_negativeVariable }),
+                                        std::vector<wxString>{ m_negativeVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
                   .Label(_(L"Negative values"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(m_negativeValueVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_negativeValueVariable }) });
+                                        std::vector<wxString>{ m_negativeValueVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

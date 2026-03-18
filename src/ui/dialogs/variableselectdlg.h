@@ -91,11 +91,30 @@ namespace Wisteria::UI
                 return *this;
                 }
 
+            /// @brief Sets the types of variables that can be moved into this list.
+            /// @brief The default is to accept all variable types.
+            /// @param acceptedTypes The acceptable column types.
+            /// @returns A self reference.
+            VariableListInfo&
+            AcceptedTypes(const std::vector<Data::Dataset::ColumnImportType>& acceptedTypes)
+                {
+                m_acceptedTypes = acceptedTypes;
+                return *this;
+                }
+
           private:
             wxString m_label;
             bool m_singleSelection{ false };
             bool m_required{ true };
             std::vector<wxString> m_defaultVariables;
+            std::vector<Data::Dataset::ColumnImportType> m_acceptedTypes{
+                Data::Dataset::ColumnImportType::String,
+                Data::Dataset::ColumnImportType::Discrete,
+                Data::Dataset::ColumnImportType::Numeric,
+                Data::Dataset::ColumnImportType::Date,
+                Data::Dataset::ColumnImportType::DichotomousString,
+                Data::Dataset::ColumnImportType::DichotomousDiscrete
+            };
             };
 
         /** @brief Constructor.

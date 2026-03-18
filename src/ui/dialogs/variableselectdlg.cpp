@@ -241,10 +241,11 @@ namespace Wisteria::UI
         // quneiform-suppress-end
 
         // set up the variable groups on the right side
-        const auto addVarControls = [&](const auto addId, const auto removeId,
-                                        const wxString& label, const long listStyle,
-                                        const int buttonCol, const int listCol, const int buttonRow,
-                                        const int labelRow, const int listRow)
+        const auto addVarControls =
+            [&](const auto addId, const auto removeId, const wxString& label,
+                const std::vector<Data::Dataset::ColumnImportType> acceptedVarTypes, long listStyle,
+                const int buttonCol, const int listCol, const int buttonRow, const int labelRow,
+                const int listRow)
         {
             auto* buttonSz = new wxBoxSizer(wxVERTICAL);
             auto* varButtonAdd = new wxButton(this, addId);
@@ -256,8 +257,31 @@ namespace Wisteria::UI
             varsSizer->Add(buttonSz, wxGBPosition{ buttonRow, buttonCol }, wxGBSpan{ 1, 1 },
                            wxALIGN_CENTER_VERTICAL);
 
-            varsSizer->Add(new wxStaticText(this, wxID_STATIC, label),
-                           wxGBPosition{ labelRow, listCol }, wxGBSpan{ 1, 1 });
+            const auto iconSize = wxSize{ FromDIP(16), FromDIP(16) };
+            auto* varLabelSz = new wxBoxSizer(wxHORIZONTAL);
+            varLabelSz->Add(new wxStaticText(this, wxID_STATIC, label));
+            for (const auto& acceptedType : acceptedVarTypes)
+                {
+                auto* icon = new wxStaticBitmap(
+                    this, wxID_ANY,
+                    wxArtProvider::GetBitmapBundle(
+                        acceptedType == Data::Dataset::ColumnImportType::Numeric ?
+                            "ID_CONTINUOUS" :
+                        acceptedType == Data::Dataset::ColumnImportType::Discrete ?
+                            "ID_DISCRETE" :
+                        acceptedType == Data::Dataset::ColumnImportType::String ?
+                            "ID_CATEGORICAL" :
+                        acceptedType == Data::Dataset::ColumnImportType::Date ?
+                            "ID_DATE" :
+                        acceptedType == Data::Dataset::ColumnImportType::DichotomousString ?
+                            "ID_DICHOTOMOUS_CATEGORICAL" :
+                        acceptedType == Data::Dataset::ColumnImportType::DichotomousDiscrete ?
+                            "ID_DICHOTOMOUS_DISCRETE" :
+                            "ID_CONTINUOUS")
+                        .GetBitmap(iconSize));
+                varLabelSz->Add(icon, wxSizerFlags{}.CenterVertical());
+                }
+            varsSizer->Add(varLabelSz, wxGBPosition{ labelRow, listCol }, wxGBSpan{ 1, 1 });
 
             auto* list = new wxListView(this, wxID_ANY, wxDefaultPosition,
                                         wxSize{ -1, FromDIP(75) }, listStyle);
@@ -295,12 +319,12 @@ namespace Wisteria::UI
             const long style = currentList.m_singleSelection ?
                                    (wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL) :
                                    (wxLC_REPORT | wxLC_NO_HEADER);
-            currentList.m_list =
-                addVarControls(currentList.m_addId, currentList.m_removeId,
-                               (currentList.m_required ?
-                                    currentList.m_label + L':' :
-                                    wxString::Format(_(L"%s (optional):"), currentList.m_label)),
-                               style, buttonCol, listCol, buttonRow, labelRow, listRow);
+            currentList.m_list = addVarControls(
+                currentList.m_addId, currentList.m_removeId,
+                (currentList.m_required ?
+                     currentList.m_label :
+                     wxString::Format(_(L"%s (optional)"), currentList.m_label)),
+                var.m_acceptedTypes, style, buttonCol, listCol, buttonRow, labelRow, listRow);
             m_varLists.push_back(std::move(currentList));
             }
 

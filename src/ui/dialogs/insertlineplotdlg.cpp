@@ -166,19 +166,27 @@ namespace Wisteria::UI
                   .Label(_(L"Y (continuous)"))
                   .SingleSelection(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable }),
+                                                          std::vector<wxString>{ m_yVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"X (axis)"))
                   .SingleSelection(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable }),
+                                                          std::vector<wxString>{ m_xVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
+                                   Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
                   .Label(_(L"Grouping"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(m_groupVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable }) });
+                                        std::vector<wxString>{ m_groupVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

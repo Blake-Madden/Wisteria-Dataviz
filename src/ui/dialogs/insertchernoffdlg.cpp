@@ -249,57 +249,68 @@ namespace Wisteria::UI
                               { VLI{}
                                     .Label(_(L"Face Width"))
                                     .SingleSelection(true)
-                                    .DefaultVariables(defaultVar(FID::FaceWidth)),
+                                    .DefaultVariables(defaultVar(FID::FaceWidth))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Face Height"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::FaceHeight)),
+                                    .DefaultVariables(defaultVar(FID::FaceHeight))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Eye Size"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EyeSize)),
+                                    .DefaultVariables(defaultVar(FID::EyeSize))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Eye Position"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EyePosition)),
+                                    .DefaultVariables(defaultVar(FID::EyePosition))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Eyebrow Slant"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EyebrowSlant)),
+                                    .DefaultVariables(defaultVar(FID::EyebrowSlant))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Pupil Position"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::PupilDirection)),
+                                    .DefaultVariables(defaultVar(FID::PupilDirection))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Nose Size"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::NoseSize)),
+                                    .DefaultVariables(defaultVar(FID::NoseSize))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Mouth Width"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::MouthWidth)),
+                                    .DefaultVariables(defaultVar(FID::MouthWidth))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Mouth Curvature"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::SmileFrown)),
+                                    .DefaultVariables(defaultVar(FID::SmileFrown))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Face Color"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::FaceColor)),
+                                    .DefaultVariables(defaultVar(FID::FaceColor))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
                                     .Label(_(L"Ear Size"))
                                     .SingleSelection(true)
                                     .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EarSize)) });
+                                    .DefaultVariables(defaultVar(FID::EarSize))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

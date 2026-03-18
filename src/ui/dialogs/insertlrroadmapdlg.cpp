@@ -199,20 +199,25 @@ namespace Wisteria::UI
                   .SingleSelection(true)
                   .DefaultVariables(m_predictorVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_predictorVariable }),
+                                        std::vector<wxString>{ m_predictorVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
                   .Label(_(L"Coefficient"))
                   .SingleSelection(true)
                   .DefaultVariables(m_coefficientVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_coefficientVariable }),
+                                        std::vector<wxString>{ m_coefficientVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(_(L"P-value"))
+                  .Label(_(L"p-value"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(m_pValueVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_pValueVariable }) });
+                                        std::vector<wxString>{ m_pValueVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
