@@ -73,7 +73,11 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertchernoffdlg.cpp
     src/ui/dialogs/insertgraphdlg.cpp
     src/ui/dialogs/insertitemdlg.cpp
+    src/ui/dialogs/insertlineplotdlg.cpp
+    src/ui/dialogs/insertlrroadmapdlg.cpp
+    src/ui/dialogs/insertproconroadmapdlg.cpp
     src/ui/dialogs/insertscatterplotdlg.cpp
+    src/ui/dialogs/insertwcurvedlg.cpp
     src/ui/dialogs/odspreviewdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/pivotlongerdlg.cpp

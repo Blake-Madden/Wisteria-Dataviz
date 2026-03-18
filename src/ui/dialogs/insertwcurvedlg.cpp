@@ -1,24 +1,24 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertscatterplotdlg.cpp
+// Name:        insertwcurvedlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertscatterplotdlg.h"
-#include "../../graphs/scatterplot.h"
+#include "insertwcurvedlg.h"
+#include "../../graphs/wcurveplot.h"
 #include "variableselectdlg.h"
 #include <wx/valgen.h>
+#include <wx/valtext.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertScatterPlotDlg::InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                               wxWindow* parent, const wxString& caption,
-                                               const wxWindowID id, const wxPoint& pos,
-                                               const wxSize& size, const long style,
-                                               EditMode editMode)
+    InsertWCurveDlg::InsertWCurveDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                     wxWindow* parent, const wxString& caption, const wxWindowID id,
+                                     const wxPoint& pos, const wxSize& size, const long style,
+                                     EditMode editMode)
         : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
@@ -32,7 +32,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::CreateControls()
+    void InsertWCurveDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
         CreateGraphOptionsPage();
@@ -40,8 +40,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Scatter Plot Options"), ID_OPTIONS_SECTION,
-                                  true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"W-Curve Options"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -76,19 +75,19 @@ namespace Wisteria::UI
 
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (independent):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(varLabelColor);
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (dependent):"));
+        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (sentiment):"));
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
         m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
         m_yVarLabel->SetForegroundColour(varLabelColor);
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
+
+        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (time interval):"));
+        xLabel->SetFont(xLabel->GetFont().Bold());
+        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
+        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_xVarLabel->SetForegroundColour(varLabelColor);
+        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
@@ -99,16 +98,14 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
-        // regression options
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showRegressionLines)),
-                          wxSizerFlags{}.Border());
-
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showConfidenceBands)),
-                          wxSizerFlags{}.Border());
+        // time interval label
+        auto* timeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        timeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Time interval label:")),
+                       wxSizerFlags{}.CenterVertical());
+        timeSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                      wxDefaultSize, 0,
+                                      wxTextValidator(wxFILTER_NONE, &m_timeIntervalLabel)));
+        optionsSizer->Add(timeSizer, wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -126,16 +123,16 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnDatasetChanged()
+    void InsertWCurveDlg::OnDatasetChanged()
         {
-        m_xVariable.clear();
         m_yVariable.clear();
+        m_xVariable.clear();
         m_groupVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnSelectVariables()
+    void InsertWCurveDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -170,17 +167,18 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"X (independent)"))
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable }),
-              VLI{}
-                  .Label(_(L"Y (dependent)"))
+                  .Label(_(L"Y (sentiment)"))
+                  .SingleSelection(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable }),
               VLI{}
+                  .Label(_(L"X (time interval)"))
+                  .SingleSelection(true)
+                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ m_xVariable }),
+              VLI{}
                   .Label(_(L"Grouping"))
                   .SingleSelection(true)
-                  .Required(false)
                   .DefaultVariables(m_groupVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_groupVariable }) });
@@ -190,11 +188,11 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto xVars = dlg.GetSelectedVariables(0);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
-
-        const auto yVars = dlg.GetSelectedVariables(1);
+        const auto yVars = dlg.GetSelectedVariables(0);
         m_yVariable = yVars.empty() ? wxString{} : yVars.front();
+
+        const auto xVars = dlg.GetSelectedVariables(1);
+        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
 
         const auto groupVars = dlg.GetSelectedVariables(2);
         m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
@@ -203,10 +201,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::UpdateVariableLabels()
+    void InsertWCurveDlg::UpdateVariableLabels()
         {
-        m_xVarLabel->SetLabel(m_xVariable);
         m_yVarLabel->SetLabel(m_yVariable);
+        m_xVarLabel->SetLabel(m_xVariable);
         m_groupVarLabel->SetLabel(m_groupVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
@@ -214,7 +212,7 @@ namespace Wisteria::UI
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertScatterPlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertWCurveDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -235,7 +233,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertScatterPlotDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertWCurveDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -254,7 +252,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertScatterPlotDlg::Validate()
+    bool InsertWCurveDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -263,10 +261,10 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_xVariable.empty() || m_yVariable.empty())
+        if (m_yVariable.empty() || m_xVariable.empty() || m_groupVariable.empty())
             {
-            wxMessageBox(_(L"Please select the X and Y variables."), _(L"Variable Not Specified"),
-                         wxOK | wxICON_WARNING, this);
+            wxMessageBox(_(L"Please select the Y, X, and grouping variables."),
+                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
             }
@@ -275,10 +273,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertWCurveDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
         {
-        const auto* scatter = dynamic_cast<const Graphs::ScatterPlot*>(&graph);
-        if (scatter == nullptr)
+        const auto* wcurve = dynamic_cast<const Graphs::WCurvePlot*>(&graph);
+        if (wcurve == nullptr)
             {
             return;
             }
@@ -287,7 +285,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph, canvas);
 
         // select the dataset by name from the property template
-        const auto dsName = scatter->GetPropertyTemplate(L"dataset");
+        const auto dsName = wcurve->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -300,20 +298,14 @@ namespace Wisteria::UI
                 }
             }
 
-        // load the actual column names used by the graph
-        // (property templates may contain unexpanded {{placeholders}})
-        m_xVariable = scatter->GetXColumnName();
-        m_yVariable = scatter->GetYColumnName();
-        const auto& series = scatter->GetSeriesList();
-        if (!series.empty())
-            {
-            m_groupVariable = series.front().GetGroupColumnName().value_or(wxString{});
-            }
+        // load the actual column names from the graph
+        m_xVariable = wcurve->GetXColumnName();
+        m_yVariable = wcurve->GetYColumnName();
+        m_groupVariable = wcurve->GetGroupColumnName().value_or(wxString{});
         UpdateVariableLabels();
 
-        // scatter-specific options
-        m_showRegressionLines = scatter->IsShowingRegressionLines();
-        m_showConfidenceBands = scatter->IsShowingConfidenceBands();
+        // W-Curve-specific options
+        m_timeIntervalLabel = wcurve->GetTimeIntervalLabel();
 
         TransferDataToWindow();
         }

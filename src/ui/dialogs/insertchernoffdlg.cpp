@@ -218,7 +218,7 @@ namespace Wisteria::UI
             {
             const auto& importOpts = GetReportBuilder()->GetDatasetImportOptions();
             const int sel = m_datasetChoice->GetSelection();
-            if (sel != wxNOT_FOUND && static_cast<size_t>(sel) < m_datasetNames.size())
+            if (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size()))
                 {
                 const auto it = importOpts.find(m_datasetNames[sel]);
                 if (it != importOpts.cend())
@@ -375,7 +375,7 @@ namespace Wisteria::UI
             }
 
         const int sel = m_datasetChoice->GetSelection();
-        if (sel == wxNOT_FOUND || static_cast<size_t>(sel) >= m_datasetNames.size())
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_datasetNames.size()))
             {
             return nullptr;
             }

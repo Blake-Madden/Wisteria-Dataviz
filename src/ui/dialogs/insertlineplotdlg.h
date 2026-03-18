@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef INSERT_SCATTERPLOT_DIALOG_H
-#define INSERT_SCATTERPLOT_DIALOG_H
+#ifndef INSERT_LINEPLOT_DIALOG_H
+#define INSERT_LINEPLOT_DIALOG_H
 
 #include "insertgraphdlg.h"
 #include <vector>
@@ -18,38 +18,38 @@
 
 namespace Wisteria::UI
     {
-    /** @brief Dialog for inserting a scatter plot into a canvas cell.
+    /** @brief Dialog for inserting a line plot into a canvas cell.
         @details Extends InsertGraphDlg with an "Options" page containing:
             - A dataset selector (from the project's datasets).
             - A "Variables..." button that opens a VariableSelectDlg
-              for selecting X, Y, and an optional grouping column.
+              for selecting Y, X, and an optional grouping column.
             - Labels showing the current variable selections.
-            - Checkboxes for regression lines and confidence bands.
+            - A checkbox for auto-splining.
             - Legend placement.*/
-    class InsertScatterPlotDlg final : public InsertGraphDlg
+    class InsertLinePlotDlg final : public InsertGraphDlg
         {
       public:
         /** @brief Constructor.
             @param canvas The canvas whose grid layout is displayed.
             @param reportBuilder The report builder containing the project's datasets.
             @param parent The parent window.
+            @param caption The dialog title.
             @param id The window ID.
             @param pos The screen position.
             @param size The window size.
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.*/
-        InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
-                             const wxString& caption = _(L"Insert Scatter Plot"),
-                             wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
-                             const wxSize& size = wxDefaultSize,
-                             long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
-                                          wxRESIZE_BORDER,
-                             EditMode editMode = EditMode::Insert);
+        InsertLinePlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
+                          const wxString& caption = _(L"Insert Line Plot"),
+                          wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
+                          const wxSize& size = wxDefaultSize,
+                          long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                          EditMode editMode = EditMode::Insert);
 
         /// @private
-        InsertScatterPlotDlg(const InsertScatterPlotDlg&) = delete;
+        InsertLinePlotDlg(const InsertLinePlotDlg&) = delete;
         /// @private
-        InsertScatterPlotDlg& operator=(const InsertScatterPlotDlg&) = delete;
+        InsertLinePlotDlg& operator=(const InsertLinePlotDlg&) = delete;
 
         /// @returns The selected dataset, or @c nullptr if none.
         [[nodiscard]]
@@ -65,18 +65,18 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The X variable name (independent variable).
-        [[nodiscard]]
-        const wxString& GetXVariable() const noexcept
-            {
-            return m_xVariable;
-            }
-
-        /// @returns The Y variable name (dependent variable).
+        /// @returns The Y variable name (continuous column).
         [[nodiscard]]
         const wxString& GetYVariable() const noexcept
             {
             return m_yVariable;
+            }
+
+        /// @returns The X variable name (continuous, categorical, or date column).
+        [[nodiscard]]
+        const wxString& GetXVariable() const noexcept
+            {
+            return m_xVariable;
             }
 
         /// @returns The grouping variable name, or empty if none.
@@ -86,24 +86,17 @@ namespace Wisteria::UI
             return m_groupVariable;
             }
 
-        /// @returns Whether to show regression lines.
+        /// @returns Whether to enable auto-splining.
         [[nodiscard]]
-        bool GetShowRegressionLines() const noexcept
+        bool GetAutoSpline() const noexcept
             {
-            return m_showRegressionLines;
+            return m_autoSpline;
             }
 
-        /// @returns Whether to show confidence bands.
-        [[nodiscard]]
-        bool GetShowConfidenceBands() const noexcept
-            {
-            return m_showConfidenceBands;
-            }
-
-        /// @brief Populates all dialog controls from an existing scatter plot.
-        /// @param plot The scatter plot to read settings from.
-        /// @param canvas The canvas the plot belongs to.
-        void LoadFromGraph(const Graphs::Graph2D& plot, Canvas* canvas);
+        /// @brief Populates all dialog controls from an existing line plot.
+        /// @param graph The graph to read settings from.
+        /// @param canvas The canvas the graph belongs to.
+        void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
 
       protected:
         void CreateControls() override;
@@ -125,8 +118,7 @@ namespace Wisteria::UI
         wxStaticText* m_groupVarLabel{ nullptr };
 
         // DDX data members
-        bool m_showRegressionLines{ true };
-        bool m_showConfidenceBands{ true };
+        bool m_autoSpline{ true };
 
         wxString m_xVariable;
         wxString m_yVariable;
@@ -138,4 +130,4 @@ namespace Wisteria::UI
 
 /// @}
 
-#endif // INSERT_SCATTERPLOT_DIALOG_H
+#endif // INSERT_LINEPLOT_DIALOG_H

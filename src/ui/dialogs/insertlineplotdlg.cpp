@@ -1,24 +1,23 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertscatterplotdlg.cpp
+// Name:        insertlineplotdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertscatterplotdlg.h"
-#include "../../graphs/scatterplot.h"
+#include "insertlineplotdlg.h"
+#include "../../graphs/lineplot.h"
 #include "variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertScatterPlotDlg::InsertScatterPlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                               wxWindow* parent, const wxString& caption,
-                                               const wxWindowID id, const wxPoint& pos,
-                                               const wxSize& size, const long style,
-                                               EditMode editMode)
+    InsertLinePlotDlg::InsertLinePlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                         wxWindow* parent, const wxString& caption,
+                                         const wxWindowID id, const wxPoint& pos,
+                                         const wxSize& size, const long style, EditMode editMode)
         : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
@@ -32,7 +31,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::CreateControls()
+    void InsertLinePlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
         CreateGraphOptionsPage();
@@ -40,8 +39,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Scatter Plot Options"), ID_OPTIONS_SECTION,
-                                  true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Line Plot Options"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -76,19 +74,19 @@ namespace Wisteria::UI
 
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (independent):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(varLabelColor);
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (dependent):"));
+        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (continuous):"));
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
         m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
         m_yVarLabel->SetForegroundColour(varLabelColor);
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
+
+        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (axis):"));
+        xLabel->SetFont(xLabel->GetFont().Bold());
+        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
+        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_xVarLabel->SetForegroundColour(varLabelColor);
+        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
@@ -99,15 +97,10 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
-        // regression options
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
+        // line options
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Auto spline"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showRegressionLines)),
-                          wxSizerFlags{}.Border());
-
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showConfidenceBands)),
+                                         wxGenericValidator(&m_autoSpline)),
                           wxSizerFlags{}.Border());
 
         // legend placement
@@ -126,7 +119,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnDatasetChanged()
+    void InsertLinePlotDlg::OnDatasetChanged()
         {
         m_xVariable.clear();
         m_yVariable.clear();
@@ -135,7 +128,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::OnSelectVariables()
+    void InsertLinePlotDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -170,13 +163,15 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"X (independent)"))
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable }),
-              VLI{}
-                  .Label(_(L"Y (dependent)"))
+                  .Label(_(L"Y (continuous)"))
+                  .SingleSelection(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable }),
+              VLI{}
+                  .Label(_(L"X (axis)"))
+                  .SingleSelection(true)
+                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ m_xVariable }),
               VLI{}
                   .Label(_(L"Grouping"))
                   .SingleSelection(true)
@@ -190,11 +185,11 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto xVars = dlg.GetSelectedVariables(0);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
-
-        const auto yVars = dlg.GetSelectedVariables(1);
+        const auto yVars = dlg.GetSelectedVariables(0);
         m_yVariable = yVars.empty() ? wxString{} : yVars.front();
+
+        const auto xVars = dlg.GetSelectedVariables(1);
+        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
 
         const auto groupVars = dlg.GetSelectedVariables(2);
         m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
@@ -203,10 +198,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::UpdateVariableLabels()
+    void InsertLinePlotDlg::UpdateVariableLabels()
         {
-        m_xVarLabel->SetLabel(m_xVariable);
         m_yVarLabel->SetLabel(m_yVariable);
+        m_xVarLabel->SetLabel(m_xVariable);
         m_groupVarLabel->SetLabel(m_groupVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
@@ -214,7 +209,7 @@ namespace Wisteria::UI
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertScatterPlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertLinePlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -235,7 +230,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertScatterPlotDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertLinePlotDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -254,7 +249,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertScatterPlotDlg::Validate()
+    bool InsertLinePlotDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -263,9 +258,9 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_xVariable.empty() || m_yVariable.empty())
+        if (m_yVariable.empty() || m_xVariable.empty())
             {
-            wxMessageBox(_(L"Please select the X and Y variables."), _(L"Variable Not Specified"),
+            wxMessageBox(_(L"Please select the Y and X variables."), _(L"Variable Not Specified"),
                          wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
@@ -275,10 +270,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
         {
-        const auto* scatter = dynamic_cast<const Graphs::ScatterPlot*>(&graph);
-        if (scatter == nullptr)
+        const auto* linePlot = dynamic_cast<const Graphs::LinePlot*>(&graph);
+        if (linePlot == nullptr)
             {
             return;
             }
@@ -287,7 +282,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph, canvas);
 
         // select the dataset by name from the property template
-        const auto dsName = scatter->GetPropertyTemplate(L"dataset");
+        const auto dsName = linePlot->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -300,20 +295,14 @@ namespace Wisteria::UI
                 }
             }
 
-        // load the actual column names used by the graph
-        // (property templates may contain unexpanded {{placeholders}})
-        m_xVariable = scatter->GetXColumnName();
-        m_yVariable = scatter->GetYColumnName();
-        const auto& series = scatter->GetSeriesList();
-        if (!series.empty())
-            {
-            m_groupVariable = series.front().GetGroupColumnName().value_or(wxString{});
-            }
+        // load the actual column names from the graph
+        m_xVariable = linePlot->GetXColumnName();
+        m_yVariable = linePlot->GetYColumnName();
+        m_groupVariable = linePlot->GetGroupColumnName().value_or(wxString{});
         UpdateVariableLabels();
 
-        // scatter-specific options
-        m_showRegressionLines = scatter->IsShowingRegressionLines();
-        m_showConfidenceBands = scatter->IsShowingConfidenceBands();
+        // line-specific options
+        m_autoSpline = linePlot->IsAutoSplining();
 
         TransferDataToWindow();
         }
