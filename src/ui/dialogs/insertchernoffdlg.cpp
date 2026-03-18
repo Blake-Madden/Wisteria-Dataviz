@@ -434,6 +434,7 @@ namespace Wisteria::UI
             {
             wxMessageBox(_(L"At least the 'Face Width' variable must be assigned."),
                          _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
+            OnSelectVariables();
             return false;
             }
 

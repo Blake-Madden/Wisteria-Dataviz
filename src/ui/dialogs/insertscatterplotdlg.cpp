@@ -263,17 +263,11 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_xVariable.empty())
+        if (m_xVariable.empty() || m_yVariable.empty())
             {
-            wxMessageBox(_(L"Please select an X (independent) variable."),
-                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
-            return false;
-            }
-
-        if (m_yVariable.empty())
-            {
-            wxMessageBox(_(L"Please select a Y (dependent) variable."),
-                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
+            wxMessageBox(_(L"Please select the X and Y variables."), _(L"Variable Not Specified"),
+                         wxOK | wxICON_WARNING, this);
+            OnSelectVariables();
             return false;
             }
 

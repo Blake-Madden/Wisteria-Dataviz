@@ -1161,10 +1161,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::OnCanvasDClick(wxCommandEvent& event)
-    {
-    OnEditItem(event);
-    }
+void WisteriaView::OnCanvasDClick(wxCommandEvent& event) { OnEditItem(event); }
 
 //-------------------------------------------
 void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
