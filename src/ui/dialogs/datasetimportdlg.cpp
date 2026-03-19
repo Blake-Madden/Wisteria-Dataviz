@@ -92,6 +92,15 @@ namespace Wisteria::UI
         m_idColumnChoice = new wxChoice(this, wxID_ANY);
         m_idColumnChoice->Append(_(L"(None)"));
         m_idColumnChoice->SetSelection(0);
+        m_idColumnChoice->Clear();
+        m_idColumnChoice->Append(_(L"(None)"));
+        for (const auto& col : m_columnInfo)
+            {
+            if (col.m_type == Data::Dataset::ColumnImportType::String)
+                {
+                m_idColumnChoice->Append(col.m_name);
+                }
+            }
         optionsSizer->Add(m_idColumnChoice, wxSizerFlags{});
 
         mainSizer->Add(optionsSizer, wxSizerFlags{}.Expand().Border(wxALL, FromDIP(10)));
@@ -110,14 +119,17 @@ namespace Wisteria::UI
         // MD codes
         auto* mdCodesSizer = new wxBoxSizer(wxHORIZONTAL);
         m_mdValuesLabel =
-            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (space separated):"));
+            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):"));
         mdCodesSizer->Add(m_mdValuesLabel,
                           wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
         for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
             {
-            m_mdValues.append(code).append(L' ');
+            if (!m_mdValues.empty())
+                {
+                m_mdValues += L", ";
+                }
+            m_mdValues += code;
             }
-        m_mdValues.Trim();
         m_mdValuesText =
             new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
                            wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator(&m_mdValues));
@@ -282,7 +294,7 @@ namespace Wisteria::UI
         {
         try
             {
-            UpdateGrid();
+            RefreshPreview();
             }
         catch (const std::exception& exc)
             {
@@ -409,7 +421,7 @@ namespace Wisteria::UI
     void DatasetImportDlg::OnColumnHeaderClick(wxGridEvent& event)
         {
         const int col = event.GetCol();
-        if (col < 0 || static_cast<size_t>(col) >= m_columnInfo.size())
+        if (col < 0 || std::cmp_greater_equal(col, m_columnInfo.size()))
             {
             event.Skip();
             return;
@@ -490,7 +502,7 @@ namespace Wisteria::UI
 
         for (const auto colIdx : selectedCols)
             {
-            if (colIdx < 0 || static_cast<size_t>(colIdx) >= m_columnInfo.size())
+            if (colIdx < 0 || std::cmp_greater_equal(colIdx, m_columnInfo.size()))
                 {
                 continue;
                 }

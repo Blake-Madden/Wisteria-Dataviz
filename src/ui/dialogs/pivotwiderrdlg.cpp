@@ -10,12 +10,6 @@
 
 namespace Wisteria::UI
     {
-    [[nodiscard]]
-    static wxString NaNLabel()
-        {
-        return L"NaN";
-        }
-
     //-------------------------------------------
     PivotWiderDlg::PivotWiderDlg(const ReportBuilder* reportBuilder, wxWindow* parent,
                                  const wxWindowID id, const wxPoint& pos, const wxSize& size,
@@ -188,10 +182,25 @@ namespace Wisteria::UI
             }
 
         using VLI = VariableSelectDlg::VariableListInfo;
-        VariableSelectDlg dlg(this, columnInfo,
-                              { VLI{}.Label(_(L"ID Columns")),
-                                VLI{}.Label(_(L"Names From (categorical)")).SingleSelection(true),
-                                VLI{}.Label(_(L"Values From (continuous)")).Required(false) });
+        VariableSelectDlg dlg(
+            this, columnInfo,
+            { VLI{}
+                  .Label(_(L"ID Columns"))
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::Discrete,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Names From (categorical)"))
+                  .SingleSelection(true)
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::Discrete,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Values From (continuous)"))
+                  .Required(false)
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -343,7 +352,7 @@ namespace Wisteria::UI
             }
 
         const int sel = m_datasetChoice->GetSelection();
-        if (sel == wxNOT_FOUND || static_cast<size_t>(sel) >= m_datasetNames.size())
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_datasetNames.size()))
             {
             return nullptr;
             }
@@ -357,7 +366,7 @@ namespace Wisteria::UI
     wxString PivotWiderDlg::GetSelectedDatasetName() const
         {
         const int sel = m_datasetChoice->GetSelection();
-        if (sel == wxNOT_FOUND || static_cast<size_t>(sel) >= m_datasetNames.size())
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_datasetNames.size()))
             {
             return {};
             }

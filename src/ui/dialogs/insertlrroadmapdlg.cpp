@@ -27,7 +27,7 @@ namespace Wisteria::UI
 
         const auto currentSize = GetSize();
         SetSize(currentSize.GetWidth() * 2, currentSize.GetHeight());
-        SetMinSize(wxSize(currentSize.GetWidth() * 2, currentSize.GetHeight()));
+        SetMinSize(wxSize{ currentSize.GetWidth() * 2, currentSize.GetHeight() });
 
         Centre();
         }
@@ -199,6 +199,7 @@ namespace Wisteria::UI
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_predictorVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}

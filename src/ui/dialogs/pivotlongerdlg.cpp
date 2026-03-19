@@ -181,9 +181,17 @@ namespace Wisteria::UI
             }
 
         using VLI = VariableSelectDlg::VariableListInfo;
-        VariableSelectDlg dlg(this, columnInfo,
-                              { VLI{}.Label(_(L"Columns to Keep (ID/grouping)")),
-                                VLI{}.Label(_(L"Columns to Pivot (continuous)")) });
+        VariableSelectDlg dlg(
+            this, columnInfo,
+            { VLI{}
+                  .Label(_(L"Columns to Keep (ID/grouping)"))
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
+                                   Data::Dataset::ColumnImportType::Discrete,
+                                   Data::Dataset::ColumnImportType::DichotomousString,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Columns to Pivot (continuous)"))
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

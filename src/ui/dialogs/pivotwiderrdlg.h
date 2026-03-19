@@ -105,6 +105,13 @@ namespace Wisteria::UI
         void UpdateColumnLabels();
         void UpdatePreview();
         void SetDefaultOutputName();
+
+        [[nodiscard]]
+        static wxString NaNLabel()
+            {
+            return L"NaN";
+            }
+
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         const ReportBuilder* m_reportBuilder{ nullptr };
