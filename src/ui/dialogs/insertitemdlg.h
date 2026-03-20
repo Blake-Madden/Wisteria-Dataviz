@@ -68,14 +68,14 @@ namespace Wisteria::UI
         /// @private
         InsertItemDlg& operator=(const InsertItemDlg&) = delete;
 
-        /// @returns The selected row (zero-based).
+        /// @returns The selected row.
         [[nodiscard]]
         size_t GetSelectedRow() const noexcept
             {
             return m_selectedRow;
             }
 
-        /// @returns The selected column (zero-based).
+        /// @returns The selected column.
         [[nodiscard]]
         size_t GetSelectedColumn() const noexcept
             {
@@ -135,7 +135,7 @@ namespace Wisteria::UI
             }
 
         /// @brief Resizes the canvas grid to match the dialog's grid dimensions.
-        /// @details Call after the dialog returns wxID_OK and before placing
+        /// @details Call after the dialog returns @c wxID_OK and before placing
         ///     any items. This is a no-op if the grid is already large enough.
         void ApplyGridSize()
             {
@@ -203,8 +203,6 @@ namespace Wisteria::UI
 
       private:
         void SelectCell(size_t row, size_t column);
-        [[nodiscard]]
-        static wxString GetItemTypeName(const std::shared_ptr<GraphItems::GraphItemBase>& item);
 
         Canvas* m_canvas{ nullptr };
         const ReportBuilder* m_reportBuilder{ nullptr };

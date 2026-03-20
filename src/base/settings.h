@@ -72,12 +72,8 @@ namespace Wisteria
                     can easily be enabled/disabled globally
                     (based on how @c DEBUG_EXPERIMENTAL_CODE is defined).*/
             IncludeExperimentalCode = (1 << 3),
-            /** @brief Allows various file output options that should not be available in
-                    production releases. For example, allowing configuration files to
-                    export dataset silently for debugging purposes.*/
-            AllowFileIO = (1 << 4),
             /** @brief Logs various information for additional messages.*/
-            LogExtraInfo = (1 << 5)
+            LogExtraInfo = (1 << 4)
         };
 
 #if wxDEBUG_LEVEL >= 2

@@ -54,37 +54,40 @@ namespace Wisteria::UI
             (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0);
 
         // worksheet selector (spreadsheets only)
-        m_worksheetLabel = new wxStaticText(this, wxID_ANY, _(L"Worksheet:"));
-        optionsSizer->Add(m_worksheetLabel, wxSizerFlags{}.CenterVertical());
+        auto* worksheetLabel = new wxStaticText(this, wxID_ANY, _(L"Worksheet:"));
+        optionsSizer->Add(worksheetLabel, wxSizerFlags{}.CenterVertical());
 
-        m_worksheetChoice = new wxChoice(this, wxID_ANY);
+        auto* worksheetChoice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                                             nullptr, 0, wxGenericValidator(&m_worksheet));
         for (const auto& name : m_worksheetNames)
             {
-            m_worksheetChoice->Append(name);
+            worksheetChoice->Append(name);
             }
         if (!m_worksheetNames.empty())
             {
-            m_worksheetChoice->SetSelection(0);
+            worksheetChoice->SetSelection(0);
             }
-        optionsSizer->Add(m_worksheetChoice, wxSizerFlags{});
+        optionsSizer->Add(worksheetChoice, wxSizerFlags{});
 
-        m_worksheetLabel->Show(isSpreadsheet);
-        m_worksheetChoice->Show(isSpreadsheet);
+        worksheetLabel->Show(isSpreadsheet);
+        worksheetChoice->Show(isSpreadsheet);
 
         // skip rows
         optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Skip rows:")),
                           wxSizerFlags{}.CenterVertical());
         const auto spinSize = FromDIP(wxSize{ 90, -1 });
-        m_skipRowsSpin = new wxSpinCtrl(this, wxID_ANY, L"0", wxDefaultPosition, spinSize,
-                                        wxSP_ARROW_KEYS, 0, 1000, 0);
-        optionsSizer->Add(m_skipRowsSpin, wxSizerFlags{});
+        auto* skipRowsSpin = new wxSpinCtrl(this, wxID_ANY, L"0", wxDefaultPosition, spinSize,
+                                            wxSP_ARROW_KEYS, 0, 1000, m_skipRows);
+        skipRowsSpin->SetValidator(wxGenericValidator(&m_skipRows));
+        optionsSizer->Add(skipRowsSpin, wxSizerFlags{});
 
         // max discrete value
         optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Max discrete value:")),
                           wxSizerFlags{}.CenterVertical());
-        m_maxDiscreteSpin = new wxSpinCtrl(this, wxID_ANY, L"7", wxDefaultPosition, spinSize,
-                                           wxSP_ARROW_KEYS, 1, 100, 7);
-        optionsSizer->Add(m_maxDiscreteSpin, wxSizerFlags{});
+        auto* maxDiscreteSpin = new wxSpinCtrl(this, wxID_ANY, L"7", wxDefaultPosition, spinSize,
+                                               wxSP_ARROW_KEYS, 1, 100, m_maxDiscrete);
+        maxDiscreteSpin->SetValidator(wxGenericValidator(&m_maxDiscrete));
+        optionsSizer->Add(maxDiscreteSpin, wxSizerFlags{});
 
         // ID column
         optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"ID column:")),
@@ -108,20 +111,23 @@ namespace Wisteria::UI
         // checkboxes
         auto* checkSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        m_leadingZerosCheck = new wxCheckBox(this, wxID_ANY, _(L"Leading zeros as text"));
-        checkSizer->Add(m_leadingZerosCheck, wxSizerFlags{}.Border(wxRIGHT, FromDIP(15)));
+        auto* leadingZerosCheck =
+            new wxCheckBox(this, wxID_ANY, _(L"Leading zeros as text"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_leadingZeros));
+        checkSizer->Add(leadingZerosCheck, wxSizerFlags{}.Border(wxRIGHT, FromDIP(15)));
 
-        m_yearsAsTextCheck = new wxCheckBox(this, wxID_ANY, _(L"Years as text"));
-        checkSizer->Add(m_yearsAsTextCheck);
+        auto* yearsAsTextCheck =
+            new wxCheckBox(this, wxID_ANY, _(L"Years as text"), wxDefaultPosition, wxDefaultSize, 0,
+                           wxGenericValidator(&m_yearsAsText));
+        checkSizer->Add(yearsAsTextCheck);
 
         mainSizer->Add(checkSizer, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
 
         // MD codes
         auto* mdCodesSizer = new wxBoxSizer(wxHORIZONTAL);
-        m_mdValuesLabel =
-            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):"));
-        mdCodesSizer->Add(m_mdValuesLabel,
-                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
+        mdCodesSizer->Add(
+            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):")),
+            wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
         for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
             {
             if (!m_mdValues.empty())
@@ -130,17 +136,17 @@ namespace Wisteria::UI
                 }
             m_mdValues += code;
             }
-        m_mdValuesText =
+        auto* mdValuesText =
             new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
                            wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator(&m_mdValues));
-        mdCodesSizer->Add(m_mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
+        mdCodesSizer->Add(mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
         mainSizer->Add(mdCodesSizer,
                        wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
 
         // column type controls
         auto* columnTypeSizer = new wxBoxSizer(wxHORIZONTAL);
-        m_selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Column data type:"));
-        columnTypeSizer->Add(m_selectedColumnLabel,
+        auto* selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Column data type:"));
+        columnTypeSizer->Add(selectedColumnLabel,
                              wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
         m_columnTypeChoice = new wxChoice(this, wxID_ANY);
         m_columnTypeChoice->Append(_(L"Text"));
@@ -178,13 +184,13 @@ namespace Wisteria::UI
         SetSizer(mainSizer);
 
         // bind events
-        m_worksheetChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
-        m_skipRowsSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
-        m_maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
-        m_leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
-        m_yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
+        worksheetChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
+        skipRowsSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
+        maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
+        leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
+        yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_idColumnChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
-        m_mdValuesText->Bind(wxEVT_TEXT, &DatasetImportDlg::OnOptionChanged, this);
+        mdValuesText->Bind(wxEVT_TEXT, &DatasetImportDlg::OnOptionChanged, this);
         m_previewGrid->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, &DatasetImportDlg::OnColumnHeaderClick,
                             this);
         m_previewGrid->Bind(wxEVT_GRID_SELECT_CELL, &DatasetImportDlg::OnColumnSelected, this);
@@ -208,10 +214,10 @@ namespace Wisteria::UI
             {
             // build partial ImportInfo for column deduction
             Data::ImportInfo previewInfo;
-            previewInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
-            previewInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
-            previewInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
-            previewInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
+            previewInfo.SkipRows(static_cast<size_t>(m_skipRows));
+            previewInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
+            previewInfo.TreatLeadingZerosAsText(m_leadingZeros);
+            previewInfo.TreatYearsAsText(m_yearsAsText);
             if (m_mdValues.empty())
                 {
                 previewInfo.MDCodes(std::nullopt);
@@ -244,7 +250,18 @@ namespace Wisteria::UI
                 if (prevIt != previousColumnInfo.cend())
                     {
                     col.m_excluded = prevIt->m_excluded;
-                    col.m_type = prevIt->m_type;
+                    // Preserve the user's column type overrides unless:
+                    // - Numeric -> String AND LeadingZeros is ON
+                    // - String -> Numeric AND LeadingZeros is OFF
+                    if ((prevIt->m_type != Data::Dataset::ColumnImportType::Numeric ||
+                         col.m_type != Data::Dataset::ColumnImportType::String ||
+                         !previewInfo.GetTreatLeadingZerosAsText()) &&
+                        (prevIt->m_type != Data::Dataset::ColumnImportType::String ||
+                         col.m_type != Data::Dataset::ColumnImportType::Numeric ||
+                         previewInfo.GetTreatLeadingZerosAsText()))
+                        {
+                        col.m_type = prevIt->m_type;
+                        }
                     }
                 }
 
@@ -308,10 +325,10 @@ namespace Wisteria::UI
         TransferDataFromWindow();
         // convert to full ImportInfo from current m_columnInfo
         auto importInfo = Data::Dataset::ImportInfoFromPreview(m_columnInfo);
-        importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
-        importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
-        importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
-        importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
+        importInfo.SkipRows(static_cast<size_t>(m_skipRows));
+        importInfo.TreatLeadingZerosAsText(m_leadingZeros);
+        importInfo.TreatYearsAsText(m_yearsAsText);
+        importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
         if (m_mdValues.empty())
             {
             importInfo.MDCodes(std::nullopt);
@@ -603,15 +620,16 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
-    Data::ImportInfo DatasetImportDlg::GetImportInfo() const
+    Data::ImportInfo DatasetImportDlg::GetImportInfo()
         {
+        TransferDataFromWindow();
         const auto columnInfo = GetColumnPreviewInfo();
 
         auto importInfo = Data::Dataset::ImportInfoFromPreview(columnInfo);
-        importInfo.SkipRows(static_cast<size_t>(m_skipRowsSpin->GetValue()));
-        importInfo.TreatLeadingZerosAsText(m_leadingZerosCheck->GetValue());
-        importInfo.TreatYearsAsText(m_yearsAsTextCheck->GetValue());
-        importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscreteSpin->GetValue()));
+        importInfo.SkipRows(static_cast<size_t>(m_skipRows));
+        importInfo.TreatLeadingZerosAsText(m_leadingZeros);
+        importInfo.TreatYearsAsText(m_yearsAsText);
+        importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
 
         if (m_idColumnChoice->GetSelection() > 0)
             {
@@ -622,12 +640,13 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
-    std::variant<wxString, size_t> DatasetImportDlg::GetWorksheet() const
+    std::variant<wxString, size_t> DatasetImportDlg::GetWorksheet()
         {
-        if (!m_worksheetNames.empty() && m_worksheetChoice->GetSelection() != wxNOT_FOUND)
+        TransferDataFromWindow();
+        if (!m_worksheetNames.empty() && m_worksheet != wxNOT_FOUND)
             {
             // 1-based index
-            return static_cast<size_t>(m_worksheetChoice->GetSelection() + 1);
+            return static_cast<size_t>(m_worksheet + 1);
             }
         return static_cast<size_t>(1);
         }

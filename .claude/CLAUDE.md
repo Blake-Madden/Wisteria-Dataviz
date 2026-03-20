@@ -24,6 +24,7 @@ The project uses clang-format (v20) and clang-tidy. Key style rules:
 - **Indentation:** 4 spaces, no tabs
 - **Line length:** 100 characters max
 - **Brace style:** Whitesmiths
+- Variable names have minimum of three letters (except loop counter)
 - **Naming conventions:**
   - Class members: `m_` prefix with camelBack (e.g., `m_lineStyle`)
   - Local variables: camelBack
@@ -31,6 +32,8 @@ The project uses clang-format (v20) and clang-tidy. Key style rules:
 - **Pointers/references:** Left-aligned (`int* ptr`, not `int *ptr`)
 - **Comments:** First word lowercase, unless the comment contains multiple sentences
 - **Line endings:** LF (Unix-style)
+- Uses wxWidgets 3.3.3 API
+- Use validators when connecting values to wxWidgets UI objects
 
 ## Unit Tests
 
@@ -89,6 +92,3 @@ GraphItemBase (wxObject)
 
 `ReportBuilder` (`src/base/reportbuilder.h`) can generate complete multi-page reports from JSON configuration files, creating datasets, graphs, and layouts declaratively.
 
-## Submodules
-
-Located in `src/`: easyexif, wxSimpleJSON, CRCpp, utfcpp, wxStartPage - exclude these from code searches/modifications.

@@ -12,6 +12,7 @@
 #ifndef INSERT_PAGE_DIALOG_H
 #define INSERT_PAGE_DIALOG_H
 
+#include "../../base/canvas.h"
 #include "dialogwithhelp.h"
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
@@ -23,13 +24,14 @@ namespace Wisteria::UI
         {
       public:
         /** @brief Constructor.
+            @param canvas The canvas whose grid layout is displayed.
             @param parent The parent window.
             @param id The window ID.
             @param caption The dialog caption.
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        explicit InsertPageDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
+        explicit InsertPageDlg(Canvas* canvas, wxWindow* parent, wxWindowID id = wxID_ANY,
                                const wxString& caption = _(L"Insert Page"),
                                const wxPoint& pos = wxDefaultPosition,
                                const wxSize& size = wxDefaultSize,
@@ -45,47 +47,45 @@ namespace Wisteria::UI
 
         /// @returns The number of rows for the new page.
         [[nodiscard]]
-        size_t GetRows() const noexcept
+        size_t GetRows() noexcept
             {
-            return static_cast<size_t>(m_rowsSpin->GetValue());
+            TransferDataFromWindow();
+            return m_rowCount;
             }
 
         /// @returns The number of columns for the new page.
         [[nodiscard]]
-        size_t GetColumns() const noexcept
+        size_t GetColumns() noexcept
             {
-            return static_cast<size_t>(m_columnsSpin->GetValue());
-            }
-
-        /// @brief Sets the number of rows.
-        /// @param rows The number of rows.
-        void SetRows(const size_t rows) { m_rowsSpin->SetValue(static_cast<int>(rows)); }
-
-        /// @brief Sets the number of columns.
-        /// @param columns The number of columns.
-        void SetColumns(const size_t columns)
-            {
-            m_columnsSpin->SetValue(static_cast<int>(columns));
+            TransferDataFromWindow();
+            return m_columnCount;
             }
 
         /// @brief Sets the page name.
         /// @param name The page name.
-        void SetPageName(const wxString& name) { m_nameCtrl->SetValue(name); }
+        void SetPageName(const wxString& name)
+            {
+            m_pageName = name;
+            TransferDataToWindow();
+            }
 
         /// @returns The name for the new page (may be empty).
         [[nodiscard]]
-        wxString GetPageName() const
+        wxString GetPageName()
             {
-            return m_nameCtrl->GetValue();
+            TransferDataFromWindow();
+            return m_pageName;
             }
 
       private:
         void CreateControls();
 
-        wxSpinCtrl* m_rowsSpin{ nullptr };
-        wxSpinCtrl* m_columnsSpin{ nullptr };
-        wxTextCtrl* m_nameCtrl{ nullptr };
+        Canvas* m_canvas{ nullptr };
         wxPanel* m_previewPanel{ nullptr };
+
+        int m_rowCount{ 1 };
+        int m_columnCount{ 1 };
+        wxString m_pageName;
         };
     } // namespace Wisteria::UI
 

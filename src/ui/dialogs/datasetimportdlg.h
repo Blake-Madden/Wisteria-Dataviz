@@ -59,7 +59,7 @@ namespace Wisteria::UI
 
         /// @returns The finalized ImportInfo based on the dialog's settings.
         [[nodiscard]]
-        Data::ImportInfo GetImportInfo() const;
+        Data::ImportInfo GetImportInfo();
 
         /// @returns The column preview information for non-excluded columns only.
         [[nodiscard]]
@@ -75,7 +75,7 @@ namespace Wisteria::UI
 
         /// @returns The selected worksheet (1-based index).
         [[nodiscard]]
-        std::variant<wxString, size_t> GetWorksheet() const;
+        std::variant<wxString, size_t> GetWorksheet();
 
         /// @returns The file path being imported.
         [[nodiscard]]
@@ -99,24 +99,20 @@ namespace Wisteria::UI
         void OnColumnTypeChanged(wxCommandEvent& event);
         void UpdateColumnTypeControls();
 
+        // controls
+        wxChoice* m_idColumnChoice{ nullptr };
+        wxChoice* m_columnTypeChoice{ nullptr };
+
+        wxGrid* m_previewGrid{ nullptr };
+
         wxString m_filePath;
         wxString m_fileExt;
         wxString m_mdValues;
-
-        // controls
-        wxStaticText* m_worksheetLabel{ nullptr };
-        wxChoice* m_worksheetChoice{ nullptr };
-        wxSpinCtrl* m_skipRowsSpin{ nullptr };
-        wxSpinCtrl* m_maxDiscreteSpin{ nullptr };
-        wxCheckBox* m_leadingZerosCheck{ nullptr };
-        wxCheckBox* m_yearsAsTextCheck{ nullptr };
-        wxChoice* m_idColumnChoice{ nullptr };
-        wxStaticText* m_selectedColumnLabel{ nullptr };
-        wxChoice* m_columnTypeChoice{ nullptr };
-        wxStaticText* m_mdValuesLabel{ nullptr };
-        wxTextCtrl* m_mdValuesText{ nullptr };
-
-        wxGrid* m_previewGrid{ nullptr };
+        int m_worksheet{ 0 };
+        int m_skipRows{ 0 };
+        int m_maxDiscrete{ 7 };
+        bool m_leadingZeros{ false };
+        bool m_yearsAsText{ false };
 
         // preview data
         std::shared_ptr<Data::Dataset> m_previewDataset;

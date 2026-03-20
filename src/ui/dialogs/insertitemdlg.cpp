@@ -80,127 +80,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    wxString InsertItemDlg::GetItemTypeName(const std::shared_ptr<GraphItems::GraphItemBase>& item)
-        {
-        if (item == nullptr)
-            {
-            return {};
-            }
-        // check leaf types before base types so that derived classes
-        // are reported more specifically
-        if (item->IsKindOf(wxCLASSINFO(Graphs::Histogram)))
-            {
-            return _(L"[Histogram]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::GanttChart)))
-            {
-            return _(L"[Gantt Chart]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::LikertChart)))
-            {
-            return _(L"[Likert Chart]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::CategoricalBarChart)))
-            {
-            return _(L"[Bar Chart]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::BarChart)))
-            {
-            return _(L"[Bar Chart]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::BubblePlot)))
-            {
-            return _(L"[Bubble Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::ScatterPlot)))
-            {
-            return _(L"[Scatter Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::MultiSeriesLinePlot)))
-            {
-            return _(L"[Line Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::WCurvePlot)))
-            {
-            return _(L"[W-Curve Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::LinePlot)))
-            {
-            return _(L"[Line Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::BoxPlot)))
-            {
-            return _(L"[Box Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::CandlestickPlot)))
-            {
-            return _(L"[Candlestick Plot]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::HeatMap)))
-            {
-            return _(L"[Heat Map]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::PieChart)))
-            {
-            return _(L"[Pie Chart]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::Table)))
-            {
-            return _(L"[Table]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::SankeyDiagram)))
-            {
-            return _(L"[Sankey Diagram]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::ChernoffFacesPlot)))
-            {
-            return _(L"[Chernoff Faces]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::ChernoffFacesPlot::ChernoffLegend)))
-            {
-            return _(L"[Chernoff Legend]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::WaffleChart)))
-            {
-            return _(L"[Waffle Chart]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::WordCloud)))
-            {
-            return _(L"[Word Cloud]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::WinLossSparkline)))
-            {
-            return _(L"[Sparkline]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::StemAndLeafPlot)))
-            {
-            return _(L"[Stem & Leaf]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::LRRoadmap)))
-            {
-            return _(L"[Roadmap]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(Graphs::ProConRoadmap)))
-            {
-            return _(L"[Roadmap]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(GraphItems::Label)))
-            {
-            return _(L"[Label]");
-            }
-        if (item->IsKindOf(wxCLASSINFO(GraphItems::Image)))
-            {
-            return _(L"[Image]");
-            }
-        // fallback for any Graph2D subclass not listed above
-        if (item->IsKindOf(wxCLASSINFO(Graphs::Graph2D)))
-            {
-            return _(L"[Graph]");
-            }
-        return _(L"[Item]");
-        }
-
-    //-------------------------------------------
     void InsertItemDlg::CreateControls()
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -310,8 +189,9 @@ namespace Wisteria::UI
 
                             if (row == m_selectedRow && col == m_selectedColumn)
                                 {
-                                dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT),
-                                                2, wxPENSTYLE_DOT));
+                                dc.SetPen(
+                                    wxPen{ wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT), 2,
+                                           wxPENSTYLE_DOT });
                                 dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
                                 }
                             else
@@ -324,7 +204,7 @@ namespace Wisteria::UI
 
                             if (isOccupied)
                                 {
-                                const auto label = GetItemTypeName(item);
+                                const auto label = item->GetClassName();
                                 if (!label.empty())
                                     {
                                     dc.SetFont(labelFont);

@@ -28,6 +28,7 @@
 #include <vector>
 #include <wx/dcgraph.h>
 #include <wx/gdicmn.h>
+#include <wx/regex.h>
 #include <wx/settings.h>
 #include <wx/string.h>
 #include <wx/uilocale.h>
@@ -1802,6 +1803,21 @@ namespace Wisteria
             const RelativeAlignment& GetRelativeAlignment() const noexcept
                 {
                 return m_itemInfo.m_relativeAlignment;
+                }
+
+            /// @returns The RTTI name of the item.
+            [[nodiscard]]
+            wxString GetClassName() const
+                {
+                wxString className = GetClassInfo()->GetClassName();
+                // strip off namespace info and beautify the name
+                if (auto startPos = className.find_last_of(L':'); startPos != wxString::npos)
+                    {
+                    className.erase(0, startPos + 1);
+                    }
+                const wxRegEx camelCase{ L"([a-z])([A-Z])" };
+                camelCase.ReplaceAll(&className, LR"(\1 \2)");
+                return wxGetTranslation(className);
                 }
 
             // Just hiding these from Doxygen. If these are included inside groupings,

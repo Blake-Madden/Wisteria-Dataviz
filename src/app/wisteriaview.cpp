@@ -712,7 +712,7 @@ void WisteriaView::AddDatasetToProject(
 //-------------------------------------------
 void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
     {
-    Wisteria::UI::InsertPageDlg dlg(m_frame);
+    Wisteria::UI::InsertPageDlg dlg(nullptr, m_frame);
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -730,11 +730,7 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const auto [currentRows, currentCols] = canvas->GetFixedObjectsGridSize();
-
-    Wisteria::UI::InsertPageDlg dlg(m_frame, wxID_ANY, _(L"Edit Page"));
-    dlg.SetRows(currentRows);
-    dlg.SetColumns(currentCols);
+    Wisteria::UI::InsertPageDlg dlg(canvas, m_frame, wxID_ANY, _(L"Edit Page"));
     if (m_sideBar->GetSelectedFolder())
         {
         dlg.SetPageName(m_sideBar->GetFolderText(m_sideBar->GetSelectedFolder().value()));

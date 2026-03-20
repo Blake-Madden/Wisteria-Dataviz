@@ -37,8 +37,8 @@ namespace Wisteria
         const auto json = wxSimpleJSON::LoadFile(m_configFilePath);
         if (!json->IsOk())
             {
-            wxMessageBox(json->GetLastError(), _(L"Configuration File Parsing Error"),
-                         wxOK | wxICON_WARNING | wxCENTRE);
+            wxLogError(json->GetLastError(), _(L"Configuration File Parsing Error"),
+                       wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
@@ -83,8 +83,8 @@ namespace Wisteria
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Datasets Section Error"),
-                         wxOK | wxICON_WARNING | wxCENTRE);
+            wxLogError(wxString::FromUTF8(err.what()), _(L"Datasets Section Error"),
+                       wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
@@ -94,8 +94,8 @@ namespace Wisteria
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Constants Section Error"),
-                         wxOK | wxICON_WARNING | wxCENTRE);
+            wxLogError(wxString::FromUTF8(err.what()), _(L"Constants Section Error"),
+                       wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
@@ -413,7 +413,7 @@ namespace Wisteria
                                         // show error, but OK to keep going
                                         catch (const std::exception& err)
                                             {
-                                            wxMessageBox(
+                                            wxLogError(
                                                 wxString::FromUTF8(wxString::FromUTF8(err.what())),
                                                 _(L"Canvas Item Error"),
                                                 wxOK | wxICON_WARNING | wxCENTRE);
@@ -528,8 +528,9 @@ namespace Wisteria
             // just a color string
             else if (brushNode->IsValueString())
                 {
-                const wxString brushPropertyName =
-                    propertyPrefix.empty() ? wxString(L"brush.color") : propertyPrefix + L".color";
+                const wxString brushPropertyName = propertyPrefix.empty() ?
+                                                       wxString{ L"brush.color" } :
+                                                       propertyPrefix + L".color";
                 const wxColour brushColor(
                     ConvertColor(brushNode->AsString(), item, brushPropertyName));
                 if (brushColor.IsOk())
@@ -540,8 +541,9 @@ namespace Wisteria
             // or a full definition
             else
                 {
-                const wxString brushPropertyName =
-                    propertyPrefix.empty() ? wxString(L"brush.color") : propertyPrefix + L".color";
+                const wxString brushPropertyName = propertyPrefix.empty() ?
+                                                       wxString{ L"brush.color" } :
+                                                       propertyPrefix + L".color";
                 const auto colorPropNode = brushNode->GetProperty(L"color");
                 const wxColour brushColor(
                     (colorPropNode->IsOk() && !colorPropNode->IsValueNull()) ?
@@ -582,7 +584,7 @@ namespace Wisteria
             else if (penNode->IsValueString() && !penNode->HasProperty(L"color"))
                 {
                 const wxString penPropertyName =
-                    propertyPrefix.empty() ? wxString(L"pen.color") : propertyPrefix + L".color";
+                    propertyPrefix.empty() ? wxString{ L"pen.color" } : propertyPrefix + L".color";
                 const wxColour penColor(ConvertColor(penNode->AsString(), item, penPropertyName));
                 if (penColor.IsOk())
                     {
@@ -592,7 +594,7 @@ namespace Wisteria
             else
                 {
                 const wxString penPropertyName =
-                    propertyPrefix.empty() ? wxString(L"pen.color") : propertyPrefix + L".color";
+                    propertyPrefix.empty() ? wxString{ L"pen.color" } : propertyPrefix + L".color";
                 const auto colorPropNode = penNode->GetProperty(L"color");
                 const wxColour penColor(
                     (colorPropNode->IsOk() && !colorPropNode->IsValueNull()) ?
@@ -913,10 +915,10 @@ namespace Wisteria
                         }
                     else if (importNode->IsOk())
                         {
-                        const auto p = importNode->GetProperty(L"path")->AsString();
-                        if (!p.empty())
+                        const auto importPath = importNode->GetProperty(L"path")->AsString();
+                        if (!importPath.empty())
                             {
-                            label->SetPropertyTemplate(L"left-image.path", p);
+                            label->SetPropertyTemplate(L"left-image.path", importPath);
                             }
                         }
                     }
@@ -934,10 +936,10 @@ namespace Wisteria
                     }
                 else if (importNode->IsOk())
                     {
-                    const auto p = importNode->GetProperty(L"path")->AsString();
-                    if (!p.empty())
+                    const auto importPath = importNode->GetProperty(L"path")->AsString();
+                    if (!importPath.empty())
                         {
-                        label->SetPropertyTemplate(L"top-image.path", p);
+                        label->SetPropertyTemplate(L"top-image.path", importPath);
                         }
                     }
                 }
@@ -2446,38 +2448,10 @@ namespace Wisteria
                 {
                 SetDatasetTransformOptions(dsName, transformOpts);
                 }
-
-            const auto exportPath = dsNode->GetProperty(L"export-path")->AsString();
-            // A project silently writing to an arbitrary file is
-            // a security threat vector, so only allow that for builds
-            // with DEBUG_FILE_IO explicitly set.
-            // This should only be used for reviewing the output from a pivot operation
-            // when designing a project (in release build).
-            if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
+            else
                 {
-                if (!exportPath.empty())
-                    {
-                    wxFileName fn(exportPath);
-                    if (fn.GetPath().empty())
-                        {
-                        fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
-                        }
-                    if (fn.GetExt().CmpNoCase(L"csv") == 0)
-                        {
-                        dataset->ExportCSV(fn.GetFullPath());
-                        }
-                    else
-                        {
-                        dataset->ExportTSV(fn.GetFullPath());
-                        }
-                    }
-                }
-            else if (!exportPath.empty())
-                {
-                // just log this (don't throw)
-                wxLogWarning(L"Dataset '%s' cannot be exported "
-                             "because debug file IO is not enabled.",
-                             dataset->GetName());
+                wxLogWarning(_(L"Transformation dataset without a name."),
+                             wxOK | wxICON_WARNING | wxCENTRE);
                 }
             }
         }
@@ -2511,7 +2485,7 @@ namespace Wisteria
                     wxString dsName = datasetNode->GetProperty(_DT(L"name"))->AsString();
                     if (dsName.empty())
                         {
-                        dsName = wxFileName(path).GetName();
+                        dsName = wxFileName{ path }.GetName();
                         }
 
                     const wxString importer = datasetNode->GetProperty(L"importer")->AsString();
@@ -2738,8 +2712,7 @@ namespace Wisteria
 
                     if (m_datasets.contains(dsName))
                         {
-                        wxLogWarning(L"Dataset '%s' already exists "
-                                     "and will be overwritten.",
+                        wxLogWarning(L"Dataset '%s' already exists and will be overwritten.",
                                      dsName);
                         }
                     AddDataset(dsName, dataset,
