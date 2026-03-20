@@ -51,6 +51,19 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         return m_logWindow;
         }
 
+    /// @returns Resets the log window.
+    /// @note This should be called from document view's close event
+    ///     to ensure that this window gets cleaned up and re-parented.
+    void DestroyLogWindow()
+        {
+        if (m_logWindow != nullptr)
+            {
+            m_logWindow->Hide();
+            m_logWindow->Destroy();
+            m_logWindow = nullptr;
+            }
+        }
+
     /// @brief Shows or hides the log report window.
     void OnViewLogReport();
 

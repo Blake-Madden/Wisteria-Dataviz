@@ -245,6 +245,8 @@ bool WisteriaView::OnClose(bool deleteWindow)
         return false;
         }
 
+    wxGetApp().DestroyLogWindow();
+
     Activate(false);
 
     if (deleteWindow)
@@ -1380,12 +1382,12 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
                                                                               itemCol;
 
                 if (isLegend(canvas->GetFixedObject(legendRow, legendCol)))
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
+                    {
+                    canvas->SetFixedObject(legendRow, legendCol, nullptr);
                     }
                 }
             }
+        }
 
     canvas->SetFixedObject(itemRow, itemCol, nullptr);
     canvas->CalcRowDimensions();
