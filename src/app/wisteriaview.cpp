@@ -939,7 +939,6 @@ void WisteriaView::PlaceGraphWithLegend(
     std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
     const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement)
     {
-    using LP = Wisteria::UI::LegendPlacement;
     auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
 
     // The legend occupies its own cell in the canvas grid, adjacent to the graph.
@@ -950,28 +949,28 @@ void WisteriaView::PlaceGraphWithLegend(
     // no column to the left, so we add one and shift the graph to column 1.
     // Similarly, when the legend goes on top and the graph is in row 0,
     // we add a row and shift the graph down to row 1.
-    if (legendPlacement == LP::Right)
+    if (legendPlacement == Wisteria::UI::LegendPlacement::Right)
         {
         if (graphCol + 1 >= gridCols)
             {
             canvas->SetFixedObjectsGridSize(gridRows, gridCols + 1);
             }
         }
-    else if (legendPlacement == LP::Left)
+    else if (legendPlacement == Wisteria::UI::LegendPlacement::Left)
         {
         if (graphCol == 0)
             {
             canvas->SetFixedObjectsGridSize(gridRows, gridCols + 1);
             }
         }
-    else if (legendPlacement == LP::Bottom)
+    else if (legendPlacement == Wisteria::UI::LegendPlacement::Bottom)
         {
         if (graphRow + 1 >= gridRows)
             {
             canvas->SetFixedObjectsGridSize(gridRows + 1, gridCols);
             }
         }
-    else if (legendPlacement == LP::Top)
+    else if (legendPlacement == Wisteria::UI::LegendPlacement::Top)
         {
         if (graphRow == 0)
             {
@@ -979,8 +978,12 @@ void WisteriaView::PlaceGraphWithLegend(
             }
         }
 
-    const auto plotRow = (legendPlacement == LP::Top && graphRow == 0) ? graphRow + 1 : graphRow;
-    const auto plotCol = (legendPlacement == LP::Left && graphCol == 0) ? graphCol + 1 : graphCol;
+    const auto plotRow = (legendPlacement == Wisteria::UI::LegendPlacement::Top && graphRow == 0) ?
+                             graphRow + 1 :
+                             graphRow;
+    const auto plotCol = (legendPlacement == Wisteria::UI::LegendPlacement::Left && graphCol == 0) ?
+                             graphCol + 1 :
+                             graphCol;
     canvas->SetFixedObject(plotRow, plotCol, plot);
 
     if (legend != nullptr)
@@ -991,20 +994,20 @@ void WisteriaView::PlaceGraphWithLegend(
             legendLabel->SetIsLegend(true);
             }
 
-        if (legendPlacement == LP::Right)
+        if (legendPlacement == Wisteria::UI::LegendPlacement::Right)
             {
             canvas->SetFixedObject(plotRow, plotCol + 1, std::move(legend));
             }
-        else if (legendPlacement == LP::Left)
+        else if (legendPlacement == Wisteria::UI::LegendPlacement::Left)
             {
             canvas->SetFixedObject(plotRow, plotCol - 1, std::move(legend));
             }
-        else if (legendPlacement == LP::Bottom)
+        else if (legendPlacement == Wisteria::UI::LegendPlacement::Bottom)
             {
             legend->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::LeftAligned);
             canvas->SetFixedObject(plotRow + 1, plotCol, std::move(legend));
             }
-        else if (legendPlacement == LP::Top)
+        else if (legendPlacement == Wisteria::UI::LegendPlacement::Top)
             {
             legend->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::LeftAligned);
             canvas->SetFixedObject(plotRow - 1, plotCol, std::move(legend));
@@ -1289,6 +1292,27 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    const auto isLegend = [](const auto item)
+    {
+        if (item == nullptr)
+            {
+            return false;
+            }
+        if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
+            {
+            if (auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(item.get());
+                label != nullptr && label->IsLegend())
+                {
+                return true;
+                }
+            }
+        if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
+            {
+            return true;
+            }
+        return false;
+    };
+
     // find the selected item in the canvas grid
     const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
     std::shared_ptr<Wisteria::GraphItems::GraphItemBase> selectedItem;
@@ -1303,8 +1327,7 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
             if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
                 {
                 // skip legend labels
-                auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(item.get());
-                if (label != nullptr && label->IsLegend())
+                if (isLegend(item))
                     {
                     continue;
                     }
@@ -1355,18 +1378,14 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
                 const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? itemCol - 1 :
                                          (oldSide == Wisteria::Side::Right) ? itemCol + 1 :
                                                                               itemCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
+
+                if (isLegend(canvas->GetFixedObject(legendRow, legendCol)))
                         {
                         canvas->SetFixedObject(legendRow, legendCol, nullptr);
                         }
                     }
                 }
             }
-        }
 
     canvas->SetFixedObject(itemRow, itemCol, nullptr);
     canvas->CalcRowDimensions();
@@ -1631,8 +1650,17 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
                 auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
                 if (legendItem != nullptr)
                     {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
+                    if (legendItem->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
+                        {
+                        if (auto* label =
+                                dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
+                            label != nullptr && label->IsLegend())
+                            {
+                            canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                            }
+                        }
+                    if (legendItem->IsKindOf(
+                            wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
                         {
                         canvas->SetFixedObject(legendRow, legendCol, nullptr);
                         }

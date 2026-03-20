@@ -123,7 +123,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         {
         if (!IsShown())
             {
-            return wxRect{};
+            return {};
             }
 
         const wxRect boundingBox = GetBoundingBox(dc);
@@ -515,6 +515,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         // draw all arrow lines
         arrowLines.Draw(dc);
+
+        // draw the selection outline
+        if (IsSelected())
+            {
+            const bool penIsLight{ (
+                GetPen().IsOk() && GetPen().GetColour().IsOk() &&
+                Wisteria::Colors::ColorContrast::IsLight(GetPen().GetColour())) };
+            const wxDCPenChanger pc(
+                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            std::array<wxPoint, 5> pts;
+            GraphItems::Polygon::GetRectPoints(m_rect, pts);
+            dc.DrawLines(pts.size(), pts.data());
+            }
 
         return m_rect;
         }
@@ -1776,6 +1791,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
     std::unique_ptr<ChernoffFacesPlot::ChernoffLegend> ChernoffFacesPlot::CreateExtendedLegend(
         const LegendOptions& options)
         {
+        SetLegendInfo(options);
         auto legend = std::make_unique<ChernoffLegend>(
             GraphItems::GraphItemInfo{}.DPIScaling(GetDPIScaleFactor()).Pen(wxNullPen));
 

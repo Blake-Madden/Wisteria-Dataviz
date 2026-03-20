@@ -140,6 +140,8 @@ namespace Wisteria::UI
                                           0, nullptr, 0, wxGenericValidator(&m_facialHair));
         m_facialHairChoice->Append(_(L"Clean shaven"));
         m_facialHairChoice->Append(_(L"Five o'clock shadow"));
+        m_facialHairLabel->Enable(m_gender == 1);
+        m_facialHairChoice->Enable(m_gender == 1);
         appearanceSizer->Add(m_facialHairChoice);
 
         // skin color range (lighter and darker side by side)

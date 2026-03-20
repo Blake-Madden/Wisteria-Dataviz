@@ -440,9 +440,9 @@ namespace Wisteria::Graphs
                 }
 
             [[nodiscard]]
-            bool HitTest([[maybe_unused]] const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
+            bool HitTest(const wxPoint pt, wxDC& dc) const final
                 {
-                return false;
+                return GetBoundingBox(dc).Contains(pt);
                 }
 
             std::vector<FeatureLabel> m_features;
