@@ -123,6 +123,18 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
                   ID_INSERT_GRAPH_SPORTS);
 
+    m_frame->Bind(
+        wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED,
+        [this](wxRibbonButtonBarEvent& event) { event.PopupMenu(&m_saveMenu); }, ID_SAVE_PROJECT);
+    m_frame->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent& event)
+        {
+            m_projectFilePath.clear();
+            OnSaveProject(event);
+        },
+        ID_SAVE_PROJECT_AS);
+
     // bind individual graph menu items
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertChernoffPlot, this, ID_NEW_CHERNOFFPLOT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScatterPlot, this, ID_NEW_SCATTERPLOT);
@@ -869,6 +881,9 @@ void WisteriaView::BuildGraphMenus()
             }
         menu.Append(item);
     };
+
+    appendItem(m_saveMenu, ID_SAVE_PROJECT, _(L"Save"), L"file-save.svg");
+    appendItem(m_saveMenu, ID_SAVE_PROJECT_AS, _(L"Save As..."), L"file-save.svg");
 
     // Basic graphs
     appendItem(m_basicGraphMenu, ID_NEW_BARCHART, _(L"Bar Chart..."), L"barchart.svg");

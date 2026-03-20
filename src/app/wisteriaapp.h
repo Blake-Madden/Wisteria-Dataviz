@@ -181,6 +181,7 @@ constexpr wxWindowID ID_PIVOT_LONGER{ wxID_HIGHEST + 37 };
 
 // Project
 constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };
+constexpr wxWindowID ID_SAVE_PROJECT_AS{ wxID_HIGHEST + 41 };
 
 // Item editing
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };

@@ -204,6 +204,7 @@ class WisteriaView : public wxView
     std::vector<Wisteria::Canvas*> m_pages;
     WindowContainer m_workWindows;
 
+    wxMenu m_saveMenu;
     wxMenu m_basicGraphMenu;
     wxMenu m_businessGraphMenu;
     wxMenu m_statisticalGraphMenu;

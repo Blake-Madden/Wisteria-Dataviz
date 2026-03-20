@@ -261,7 +261,6 @@ int WisteriaApp::OnExit()
 wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     {
     const bool isProjectRibbon = (doc != nullptr);
-    const auto iconSize = parent->FromDIP(wxSize{ 32, 32 });
 
     auto* ribbon = new wxRibbonBar(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                    wxRIBBON_BAR_SHOW_PAGE_ICONS | wxRIBBON_BAR_DEFAULT_STYLE);
@@ -284,8 +283,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
     if (isProjectRibbon)
         {
-        projectButtonBar->AddButton(ID_SAVE_PROJECT, _(L"Save"), ReadSvgIcon(L"file-save.svg"),
-                                    _(L"Save the project"));
+        projectButtonBar->AddHybridButton(ID_SAVE_PROJECT, _(L"Save"),
+                                          ReadSvgIcon(L"file-save.svg"), _(L"Save the project"));
 
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
@@ -317,11 +316,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   _(L"Edit the current page"));
         pagesButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit Item"), ReadSvgIcon(L"edit.svg"),
                                   _(L"Edit the selected item"));
-        const auto deleteItemIcon =
-            wxArtProvider::GetBitmapBundle(wxART_DELETE, wxART_BUTTON, iconSize);
-        pagesButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete Item"),
-                                  deleteItemIcon.IsOk() ? deleteItemIcon.GetBitmap(iconSize) :
-                                                          wxBitmap{},
+        pagesButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete Item"), ReadSvgIcon(L"delete.svg"),
                                   _(L"Delete the selected item"));
 
         // Graph category panel
