@@ -79,8 +79,6 @@ bool WisteriaApp::OnInit()
     GetResourceManager().LoadArchive(FindResourceFile(L"res.wad"));
     wxArtProvider::Push(new WisteriaArtProvider{});
 
-    InitProjectSidebar();
-
     // create the document template
     // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
     [[maybe_unused]]
@@ -98,6 +96,7 @@ bool WisteriaApp::OnInit()
         }
 
     LoadInterface();
+    InitProjectSidebar();
 
     return true;
     // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
@@ -268,81 +267,55 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                    wxRIBBON_BAR_SHOW_PAGE_ICONS | wxRIBBON_BAR_DEFAULT_STYLE);
 
     // Home tab
-    const auto homeIcon = GetResourceManager().GetSVG(
-        wxSystemSettings::GetAppearance().IsDark() ? L"home-dark-mode.svg" : L"home.svg");
-    auto* homePage = new wxRibbonPage(
-        ribbon, wxID_ANY, _(L"Home"),
-        homeIcon.IsOk() ? homeIcon.GetBitmap(parent->FromDIP(wxSize{ 16, 16 })) : wxBitmap{});
+    const auto homeIcon = ReadSvgIcon(
+        wxSystemSettings::GetAppearance().IsDark() ? L"home-dark-mode.svg" : L"home.svg",
+        wxSize{ 16, 16 });
+    auto* homePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Home"), homeIcon);
 
     // Project panel with New and Open buttons
     auto* projectPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Project"));
     auto* projectButtonBar = new wxRibbonButtonBar(projectPanel, wxID_ANY);
 
-    const auto newIcon = GetResourceManager().GetSVG(L"wisteria.svg");
-    projectButtonBar->AddButton(wxID_NEW, _(L"New"),
-                                newIcon.IsOk() ? newIcon.GetBitmap(iconSize) : wxBitmap{},
+    projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"wisteria.svg"),
                                 _(L"Create a new project"));
 
-    const auto openIcon = GetResourceManager().GetSVG(L"file-open.svg");
-    projectButtonBar->AddButton(wxID_OPEN, _(L"Open"),
-                                openIcon.IsOk() ? openIcon.GetBitmap(iconSize) : wxBitmap{},
+    projectButtonBar->AddButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"file-open.svg"),
                                 _(L"Open a data file"));
 
     if (isProjectRibbon)
         {
-        const auto saveIcon = GetResourceManager().GetSVG(L"file-save.svg");
-        projectButtonBar->AddButton(ID_SAVE_PROJECT, _(L"Save"),
-                                    saveIcon.IsOk() ? saveIcon.GetBitmap(iconSize) : wxBitmap{},
+        projectButtonBar->AddButton(ID_SAVE_PROJECT, _(L"Save"), ReadSvgIcon(L"file-save.svg"),
                                     _(L"Save the project"));
 
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-
-        const auto printIcon = GetResourceManager().GetSVG(L"print.svg");
-        printButtonBar->AddButton(wxID_PRINT, _(L"Print"),
-                                  printIcon.IsOk() ? printIcon.GetBitmap(iconSize) : wxBitmap{},
+        printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
                                   _(L"Print all pages"));
 
         // Data panel
         auto* dataPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Data"));
         auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, wxID_ANY);
 
-        const auto dataIcon = GetResourceManager().GetSVG(L"data.svg");
-        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"),
-                                 dataIcon.IsOk() ? dataIcon.GetBitmap(iconSize) : wxBitmap{},
+        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data.svg"),
                                  _(L"Import a dataset into the project"));
 
-        const auto pivotWiderIcon = GetResourceManager().GetSVG(L"pivot-wider.svg");
-        dataButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"),
-                                 pivotWiderIcon.IsOk() ? pivotWiderIcon.GetBitmap(iconSize) :
-                                                         wxBitmap{},
+        dataButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"), ReadSvgIcon(L"pivot-wider.svg"),
                                  _(L"Pivot a dataset wider (unstack)"));
-
-        const auto pivotLongerIcon = GetResourceManager().GetSVG(L"pivot-longer.svg");
         dataButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
-                                 pivotLongerIcon.IsOk() ? pivotLongerIcon.GetBitmap(iconSize) :
-                                                          wxBitmap{},
+                                 ReadSvgIcon(L"pivot-longer.svg"),
                                  _(L"Pivot a dataset longer (stack)"));
 
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
-        const auto pageIcon = GetResourceManager().GetSVG(L"page.svg");
-        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"),
-                                  pageIcon.IsOk() ? pageIcon.GetBitmap(iconSize) : wxBitmap{},
+        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"page.svg"),
                                   _(L"Add a new page to the project"));
 
-        const auto pageEditIcon = GetResourceManager().GetSVG(L"page-edit.svg");
-        pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"),
-                                  pageEditIcon.IsOk() ? pageEditIcon.GetBitmap(iconSize) :
-                                                        wxBitmap{},
+        pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"), ReadSvgIcon(L"page-edit.svg"),
                                   _(L"Edit the current page"));
-        const auto editItemIcon = GetResourceManager().GetSVG(L"edit.svg");
-        pagesButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit Item"),
-                                  editItemIcon.IsOk() ? editItemIcon.GetBitmap(iconSize) :
-                                                        wxBitmap{},
+        pagesButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit Item"), ReadSvgIcon(L"edit.svg"),
                                   _(L"Edit the selected item"));
         const auto deleteItemIcon =
             wxArtProvider::GetBitmapBundle(wxART_DELETE, wxART_BUTTON, iconSize);
@@ -355,45 +328,31 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* graphPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Graphs"));
         auto* graphButtonBar = new wxRibbonButtonBar(graphPanel, ID_GRAPH_BUTTONBAR);
 
-        const auto basicIcon = GetResourceManager().GetSVG(L"chart-basic.svg");
-        graphButtonBar->AddDropdownButton(
-            ID_INSERT_GRAPH_BASIC, _(L"Basic"),
-            basicIcon.IsOk() ? basicIcon.GetBitmap(iconSize) : wxBitmap{}, _(L"Basic graphs"));
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BASIC, _(L"Basic"),
+                                          ReadSvgIcon(L"chart-basic.svg"), _(L"Basic graphs"));
 
-        const auto businessIcon = GetResourceManager().GetSVG(L"chart-business.svg");
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BUSINESS, _(L"Business"),
-                                          businessIcon.IsOk() ? businessIcon.GetBitmap(iconSize) :
-                                                                wxBitmap{},
+                                          ReadSvgIcon(L"chart-business.svg"),
                                           _(L"Business graphs"));
 
-        const auto statisticalIcon = GetResourceManager().GetSVG(L"chart-statistical.svg");
-        graphButtonBar->AddDropdownButton(
-            ID_INSERT_GRAPH_STATISTICAL, _(L"Statistical"),
-            statisticalIcon.IsOk() ? statisticalIcon.GetBitmap(iconSize) : wxBitmap{},
-            _(L"Statistical graphs"));
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_STATISTICAL, _(L"Statistical"),
+                                          ReadSvgIcon(L"chart-statistical.svg"),
+                                          _(L"Statistical graphs"));
 
-        const auto surveyIcon = GetResourceManager().GetSVG(L"chart-survey.svg");
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SURVEY, _(L"Survey"),
-                                          surveyIcon.IsOk() ? surveyIcon.GetBitmap(iconSize) :
-                                                              wxBitmap{},
+                                          ReadSvgIcon(L"chart-survey.svg"),
                                           _(L"Survey data graphs"));
 
-        const auto educationIcon = GetResourceManager().GetSVG(L"chart-education.svg");
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_EDUCATION, _(L"Education"),
-                                          educationIcon.IsOk() ? educationIcon.GetBitmap(iconSize) :
-                                                                 wxBitmap{},
+                                          ReadSvgIcon(L"chart-education.svg"),
                                           _(L"Education graphs"));
 
-        const auto socialIcon = GetResourceManager().GetSVG(L"chart-social.svg");
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SOCIAL, _(L"Social Sciences"),
-                                          socialIcon.IsOk() ? socialIcon.GetBitmap(iconSize) :
-                                                              wxBitmap{},
+                                          ReadSvgIcon(L"chart-social.svg"),
                                           _(L"Social sciences graphs"));
 
-        const auto sportsIcon = GetResourceManager().GetSVG(L"chart-sports.svg");
-        graphButtonBar->AddDropdownButton(
-            ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
-            sportsIcon.IsOk() ? sportsIcon.GetBitmap(iconSize) : wxBitmap{}, _(L"Sports graphs"));
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
+                                          ReadSvgIcon(L"chart-sports.svg"), _(L"Sports graphs"));
         }
     else
         {
@@ -404,9 +363,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
     auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
 
-    const auto logIcon = GetResourceManager().GetSVG(L"log-book.svg");
-    toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
-                              logIcon.IsOk() ? logIcon.GetBitmap(iconSize) : wxBitmap{},
+    toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"log-book.svg"),
                               _(L"View the log report"));
 
     // Help tab
@@ -415,9 +372,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     auto* aboutPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"About"));
     auto* aboutButtonBar = new wxRibbonButtonBar(aboutPanel, wxID_ANY);
 
-    const auto appIcon = GetResourceManager().GetSVG(L"wisteria.svg");
-    aboutButtonBar->AddButton(wxID_ABOUT, _(L"About"),
-                              appIcon.IsOk() ? appIcon.GetBitmap(iconSize) : wxBitmap{},
+    aboutButtonBar->AddButton(wxID_ABOUT, _(L"About"), ReadSvgIcon(L"wisteria.svg"),
                               _(L"About Wisteria Dataviz"));
 
     ribbon->SetArtProvider(new wxRibbonMSWFlatArtProvider);
@@ -432,6 +387,6 @@ void WisteriaApp::InitProjectSidebar()
     // fill in the icons for the projects' sidebars
     // Do NOT change the ordering of these (indices are used by LoadProject());
     // new ones always get added at the bottom.
-    m_projectSideBarImageList.push_back(GetResourceManager().GetSVG(L"data.svg"));
-    m_projectSideBarImageList.push_back(GetResourceManager().GetSVG(L"page.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"data.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"page.svg"));
     }
