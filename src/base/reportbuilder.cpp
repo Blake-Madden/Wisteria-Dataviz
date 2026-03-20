@@ -2599,12 +2599,14 @@ namespace Wisteria
                     };
                     fillImportDefines();
 
+                    const auto worksheetNode = datasetNode->GetProperty(L"worksheet");
                     const std::variant<wxString, size_t> worksheet =
-                        datasetNode->GetProperty(L"worksheet")->IsValueNumber() ?
-                            std::variant<wxString, size_t>(static_cast<size_t>(
-                                datasetNode->GetProperty(L"worksheet")->AsDouble())) :
+                        worksheetNode->IsNull() ?
+                            std::variant<wxString, size_t>(static_cast<size_t>(1)) :
+                        worksheetNode->IsValueNumber() ?
                             std::variant<wxString, size_t>(
-                                datasetNode->GetProperty(L"worksheet")->AsString());
+                                static_cast<size_t>(worksheetNode->AsDouble())) :
+                            std::variant<wxString, size_t>(worksheetNode->AsString());
                     // if no columns are defined, then deduce them ourselves
                     Data::Dataset::ColumnPreviewInfo columnPreviewInfo;
                     if (!datasetNode->HasProperty(L"id-column") &&
