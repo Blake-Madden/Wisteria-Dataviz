@@ -4724,6 +4724,12 @@ namespace Wisteria
                 {
                 pieChart->SetPropertyTemplate(L"variables.group-2", groupVar2NameRaw);
                 }
+            if (groupVar1Name.empty())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: group variable not specified for pie chart."), dsName)
+                        .ToUTF8());
+                }
             pieChart->SetData(
                 foundPos->second,
                 (!aggVarName.empty() ? std::optional<wxString>(aggVarName) : std::nullopt),
