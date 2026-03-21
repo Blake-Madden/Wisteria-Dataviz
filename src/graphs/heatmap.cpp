@@ -136,7 +136,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
                 m_matrix[currentRow][currentColumn].m_valueLabel =
-                    (std::isnan(continuousColumn->GetValue(i)) ?
+                    (!std::isfinite(continuousColumn->GetValue(i)) ?
                          crossedOutSymbolForNaN :
                          wxNumberFormatter::ToString(continuousColumn->GetValue(i), 1,
                                                      Settings::GetDefaultNumberFormat()));
@@ -184,7 +184,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
                 m_matrix[currentRow][currentColumn].m_valueLabel =
-                    (std::isnan(continuousColumn->GetValue(i)) ?
+                    (!std::isfinite(continuousColumn->GetValue(i)) ?
                          crossedOutSymbolForNaN :
                          wxNumberFormatter::ToString(continuousColumn->GetValue(i), 1,
                                                      Settings::GetDefaultNumberFormat()));

@@ -100,7 +100,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             const auto val = continuousColumn->GetValue(i);
-            if (std::isnan(val))
+            if (!std::isfinite(val))
                 {
                 continue;
                 }

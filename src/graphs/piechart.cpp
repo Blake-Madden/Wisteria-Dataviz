@@ -472,7 +472,11 @@ namespace Wisteria::Graphs
         double totalValue{ 0.0 };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (useAggregateColumn && std::isnan(weightColumn->GetValue(i)))
+            if (useAggregateColumn && !std::isfinite(weightColumn->GetValue(i)))
+                {
+                continue;
+                }
+            if (useContinuousGroup1Column && !std::isfinite(groupColumnContinuous1->GetValue(i)))
                 {
                 continue;
                 }
@@ -509,7 +513,17 @@ namespace Wisteria::Graphs
             auto searchValue = std::pair<Data::GroupIdType, SliceAndCounts>(0, SliceAndCounts{});
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                if (useAggregateColumn && std::isnan(weightColumn->GetValue(i)))
+                if (useAggregateColumn && !std::isfinite(weightColumn->GetValue(i)))
+                    {
+                    continue;
+                    }
+                if (useContinuousGroup1Column &&
+                    !std::isfinite(groupColumnContinuous1->GetValue(i)))
+                    {
+                    continue;
+                    }
+                if (useContinuousGroup2Column &&
+                    !std::isfinite(groupColumnContinuous2->GetValue(i)))
                     {
                     continue;
                     }

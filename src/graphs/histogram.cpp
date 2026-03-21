@@ -126,7 +126,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         frequency_set<double> groups;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (!std::isnan(continuousColumn->GetValue(i)))
+            if (std::isfinite(continuousColumn->GetValue(i)))
                 {
                 groups.insert(ConvertToSortableValue(continuousColumn->GetValue(i)));
                 }
@@ -151,7 +151,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
 
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(continuousColumn->GetValue(i)))
+            if (!std::isfinite(continuousColumn->GetValue(i)))
                 {
                 continue;
                 }
@@ -418,7 +418,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             numOfBins);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            if (std::isnan(continuousColumn->GetValue(i)))
+            if (!std::isfinite(continuousColumn->GetValue(i)))
                 {
                 continue;
                 }
