@@ -1142,6 +1142,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final
             {
+            SetLegendInfo(options);
             return options.GetRingPerimeter() == Perimeter::Inner ?
                 CreateInnerPieLegend(options.GetPlacementHint()) :
                 CreateOuterPieLegend(options.GetPlacementHint());
