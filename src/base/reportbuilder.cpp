@@ -353,7 +353,7 @@ namespace Wisteria
                                                 {
                                                 canvas->SetFixedObject(
                                                     currentRow, currentColumn,
-                                                    LoadLabel(item, GraphItems::Label()));
+                                                    LoadLabel(item, GraphItems::Label{}));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
                                                          L"spacer") == 0)
@@ -632,7 +632,7 @@ namespace Wisteria
         const auto titleProperty = axisNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
-            auto titleLabel = LoadLabel(titleProperty, GraphItems::Label());
+            auto titleLabel = LoadLabel(titleProperty, GraphItems::Label{});
             if (titleLabel != nullptr)
                 {
                 axis.GetTitle() = *titleLabel;
@@ -855,13 +855,13 @@ namespace Wisteria
     std::shared_ptr<GraphItems::Label> ReportBuilder::LoadSpacer() const
         {
         return std::make_shared<GraphItems::Label>(
-            GraphItems::GraphItemInfo().DPIScaling(m_dpiScaleFactor).Scaling(1.0).Show(false));
+            GraphItems::GraphItemInfo{}.DPIScaling(m_dpiScaleFactor).Scaling(1.0).Show(false));
         }
 
     //---------------------------------------------------
     std::shared_ptr<GraphItems::Label> ReportBuilder::LoadEmptySpacer() const
         {
-        return std::make_shared<GraphItems::Label>(GraphItems::GraphItemInfo()
+        return std::make_shared<GraphItems::Label>(GraphItems::GraphItemInfo{}
                                                        .DPIScaling(m_dpiScaleFactor)
                                                        .Scaling(0.0)
                                                        .FixedWidthOnCanvas(true)
@@ -878,6 +878,7 @@ namespace Wisteria
         if (labelNode->IsValueString())
             {
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
+            label->SetDPIScaleFactor(m_dpiScaleFactor);
             label->SetText(ExpandAndCache(label.get(), L"text", labelNode->AsString()));
             label->GetPen() = wxNullPen;
 
@@ -887,6 +888,7 @@ namespace Wisteria
         if (labelNode->IsOk())
             {
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
+            label->SetDPIScaleFactor(m_dpiScaleFactor);
             label->SetText(
                 ExpandAndCache(label.get(), L"text", labelNode->GetProperty(L"text")->AsString()));
             label->GetPen() = wxNullPen;
@@ -3830,7 +3832,7 @@ namespace Wisteria
                     {
                     const auto blockIndex = decal->GetProperty(L"block")->AsDouble(0);
                     const auto decalLabel =
-                        LoadLabel(decal->GetProperty(L"decal"), GraphItems::Label());
+                        LoadLabel(decal->GetProperty(L"decal"), GraphItems::Label{});
                     if (decalLabel != nullptr &&
                         blockIndex < barChart->GetBars().at(barPos.value()).GetBlocks().size())
                         {
@@ -4794,7 +4796,7 @@ namespace Wisteria
             if (graphNode->HasProperty(L"left-margin-note"))
                 {
                 auto marginLabel =
-                    LoadLabel(graphNode->GetProperty(L"left-margin-note"), GraphItems::Label());
+                    LoadLabel(graphNode->GetProperty(L"left-margin-note"), GraphItems::Label{});
                 if (marginLabel != nullptr)
                     {
                     pieChart->GetLeftMarginNote() = *marginLabel;
@@ -4803,7 +4805,7 @@ namespace Wisteria
             if (graphNode->HasProperty(L"right-margin-note"))
                 {
                 auto marginLabel =
-                    LoadLabel(graphNode->GetProperty(L"right-margin-note"), GraphItems::Label());
+                    LoadLabel(graphNode->GetProperty(L"right-margin-note"), GraphItems::Label{});
                 if (marginLabel != nullptr)
                     {
                     pieChart->GetRightMarginNote() = *marginLabel;
@@ -7020,7 +7022,7 @@ namespace Wisteria
             const auto annotations = annotationNode->AsNodes();
             for (const auto& annotation : annotations)
                 {
-                auto label = LoadLabel(annotation->GetProperty(L"label"), GraphItems::Label());
+                auto label = LoadLabel(annotation->GetProperty(L"label"), GraphItems::Label{});
                 if (!label)
                     {
                     continue;
