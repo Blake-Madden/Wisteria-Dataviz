@@ -3561,7 +3561,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
-                              const size_t labelRow, const size_t labelCol)
+                             const size_t labelRow, const size_t labelCol)
     {
     Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame, _(L"Edit Label"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
@@ -3637,9 +3637,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
 
     // resolve relative paths against the project directory
     const wxString projectDir =
-        m_projectFilePath.empty() ?
-            wxString{} :
-            wxFileName(m_projectFilePath).GetPathWithSep();
+        m_projectFilePath.empty() ? wxString{} : wxFileName{ m_projectFilePath }.GetPathWithSep();
 
     // load and optionally stitch multiple images
     std::vector<wxBitmap> bmps;
@@ -3650,8 +3648,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
             {
             resolvedPath = projectDir + path;
             }
-        auto loadedBmp =
-            Wisteria::GraphItems::Image::LoadFile(resolvedPath);
+        auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
         if (loadedBmp.IsOk())
             {
             bmps.push_back(loadedBmp);
@@ -3679,12 +3676,10 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     const auto effect = dlg.GetImageEffect();
     if (effect != Wisteria::ImageEffect::NoEffect)
         {
-        resultImg =
-            Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
+        resultImg = Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
         }
 
-    auto image =
-        std::make_shared<Wisteria::GraphItems::Image>(resultImg);
+    auto image = std::make_shared<Wisteria::GraphItems::Image>(resultImg);
     dlg.ApplyPageOptions(*image);
     dlg.ApplyToImage(*image);
 
@@ -3696,8 +3691,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
             wxFileName fn(filePath);
             if (fn.IsAbsolute())
                 {
-                fn.MakeRelativeTo(
-                    wxFileName(m_projectFilePath).GetPath());
+                fn.MakeRelativeTo(wxFileName(m_projectFilePath).GetPath());
                 return fn.GetFullPath(wxPATH_UNIX);
                 }
             }
@@ -3707,8 +3701,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     // cache import paths for round-tripping
     if (paths.GetCount() == 1)
         {
-        image->SetPropertyTemplate(L"image-import.path",
-                                   makeRelative(paths[0]));
+        image->SetPropertyTemplate(L"image-import.path", makeRelative(paths[0]));
         }
     else
         {
@@ -3722,19 +3715,16 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
             joined += makeRelative(paths[idx]);
             }
         image->SetPropertyTemplate(L"image-import.paths", joined);
-        image->SetPropertyTemplate(L"image-import.stitch",
-                                   dlg.GetStitchDirection());
+        image->SetPropertyTemplate(L"image-import.stitch", dlg.GetStitchDirection());
         }
 
     // cache effect for round-tripping
     if (effect != Wisteria::ImageEffect::NoEffect)
         {
-        const auto effectStr =
-            Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
+        const auto effectStr = Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
         if (effectStr.has_value())
             {
-            image->SetPropertyTemplate(L"image-import.effect",
-                                       effectStr.value());
+            image->SetPropertyTemplate(L"image-import.effect", effectStr.value());
             }
         }
 
@@ -3743,20 +3733,16 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         {
         const auto reqWidth = dlg.GetImageWidth();
         const auto reqHeight = dlg.GetImageHeight();
-        const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(
-            resultImg.GetSize(),
-            wxSize{ reqWidth, reqHeight });
+        const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(resultImg.GetSize(),
+                                                                    wxSize{ reqWidth, reqHeight });
         image->SetSize(bestSz);
-        image->SetPropertyTemplate(L"size.width",
-                                   std::to_wstring(reqWidth));
-        image->SetPropertyTemplate(L"size.height",
-                                   std::to_wstring(reqHeight));
+        image->SetPropertyTemplate(L"size.width", std::to_wstring(reqWidth));
+        image->SetPropertyTemplate(L"size.height", std::to_wstring(reqHeight));
         }
 
     image->SetDPIScaleFactor(canvas->FromDIP(1));
 
-    canvas->SetFixedObject(dlg.GetSelectedRow(),
-                           dlg.GetSelectedColumn(), image);
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), image);
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -3766,15 +3752,13 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
-                              Wisteria::Canvas* canvas,
-                              const size_t imageRow, const size_t imageCol)
+void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas,
+                             const size_t imageRow, const size_t imageCol)
     {
-    Wisteria::UI::InsertImageDlg dlg(
-        canvas, nullptr, m_frame, _(L"Edit Image"), wxID_ANY,
-        wxDefaultPosition, wxDefaultSize,
-        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    Wisteria::UI::InsertImageDlg dlg(canvas, nullptr, m_frame, _(L"Edit Image"), wxID_ANY,
+                                     wxDefaultPosition, wxDefaultSize,
+                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     const auto imgBmp = wxGetApp().ReadSvgIcon(L"image.svg");
     if (imgBmp.IsOk())
         {
@@ -3798,9 +3782,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
 
     // resolve relative paths against the project directory
     const wxString projectDir2 =
-        m_projectFilePath.empty() ?
-            wxString{} :
-            wxFileName(m_projectFilePath).GetPathWithSep();
+        m_projectFilePath.empty() ? wxString{} : wxFileName(m_projectFilePath).GetPathWithSep();
 
     // load and optionally stitch multiple images
     std::vector<wxBitmap> bmps;
@@ -3811,8 +3793,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
             {
             resolvedPath = projectDir2 + path;
             }
-        auto loadedBmp =
-            Wisteria::GraphItems::Image::LoadFile(resolvedPath);
+        auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
         if (loadedBmp.IsOk())
             {
             bmps.push_back(loadedBmp);
@@ -3840,12 +3821,10 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
     const auto effect = dlg.GetImageEffect();
     if (effect != Wisteria::ImageEffect::NoEffect)
         {
-        resultImg =
-            Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
+        resultImg = Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
         }
 
-    auto newImage =
-        std::make_shared<Wisteria::GraphItems::Image>(resultImg);
+    auto newImage = std::make_shared<Wisteria::GraphItems::Image>(resultImg);
     dlg.ApplyPageOptions(*newImage);
     dlg.ApplyToImage(*newImage);
 
@@ -3857,8 +3836,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
             wxFileName fn(filePath);
             if (fn.IsAbsolute())
                 {
-                fn.MakeRelativeTo(
-                    wxFileName(m_projectFilePath).GetPath());
+                fn.MakeRelativeTo(wxFileName(m_projectFilePath).GetPath());
                 return fn.GetFullPath(wxPATH_UNIX);
                 }
             }
@@ -3868,8 +3846,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
     // cache import paths for round-tripping
     if (paths.GetCount() == 1)
         {
-        newImage->SetPropertyTemplate(L"image-import.path",
-                                      makeRelative2(paths[0]));
+        newImage->SetPropertyTemplate(L"image-import.path", makeRelative2(paths[0]));
         }
     else
         {
@@ -3883,19 +3860,16 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
             joined += makeRelative2(paths[idx]);
             }
         newImage->SetPropertyTemplate(L"image-import.paths", joined);
-        newImage->SetPropertyTemplate(L"image-import.stitch",
-                                      dlg.GetStitchDirection());
+        newImage->SetPropertyTemplate(L"image-import.stitch", dlg.GetStitchDirection());
         }
 
     // cache effect for round-tripping
     if (effect != Wisteria::ImageEffect::NoEffect)
         {
-        const auto effectStr =
-            Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
+        const auto effectStr = Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
         if (effectStr.has_value())
             {
-            newImage->SetPropertyTemplate(L"image-import.effect",
-                                          effectStr.value());
+            newImage->SetPropertyTemplate(L"image-import.effect", effectStr.value());
             }
         }
 
@@ -3904,14 +3878,11 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image,
         {
         const auto reqWidth = dlg.GetImageWidth();
         const auto reqHeight = dlg.GetImageHeight();
-        const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(
-            resultImg.GetSize(),
-            wxSize{ reqWidth, reqHeight });
+        const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(resultImg.GetSize(),
+                                                                    wxSize{ reqWidth, reqHeight });
         newImage->SetSize(bestSz);
-        newImage->SetPropertyTemplate(L"size.width",
-                                      std::to_wstring(reqWidth));
-        newImage->SetPropertyTemplate(L"size.height",
-                                      std::to_wstring(reqHeight));
+        newImage->SetPropertyTemplate(L"size.width", std::to_wstring(reqWidth));
+        newImage->SetPropertyTemplate(L"size.height", std::to_wstring(reqHeight));
         }
 
     newImage->SetDPIScaleFactor(canvas->FromDIP(1));
@@ -4968,18 +4939,26 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveLabel(const Wisteria::GraphItems::Label* l
     const auto& header = label->GetHeaderInfo();
     if (header.IsEnabled())
         {
-        auto headerNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        wxString hdrObj = L"{";
         if (header.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
             {
-            headerNode->Add(L"bold", true);
+            hdrObj += L"\"bold\": true";
             }
         if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
             {
-            headerNode->Add(L"color", ColorToStr(header.GetFontColor()));
+            if (hdrObj.Last() != L'{')
+                {
+                hdrObj += L", ";
+                }
+            hdrObj += L"\"color\": \"" + EscapeJsonStr(ColorToStr(header.GetFontColor())) + L"\"";
             }
         if (!compare_doubles(header.GetRelativeScaling(), 1.0))
             {
-            headerNode->Add(L"relative-scaling", header.GetRelativeScaling());
+            if (hdrObj.Last() != L'{')
+                {
+                hdrObj += L", ";
+                }
+            hdrObj += wxString::Format(L"\"relative-scaling\": %g", header.GetRelativeScaling());
             }
         if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
             {
@@ -4987,13 +4966,17 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveLabel(const Wisteria::GraphItems::Label* l
                 header.GetLabelAlignment());
             if (htaStr.has_value())
                 {
-                headerNode->Add(L"text-alignment", htaStr.value());
+                if (hdrObj.Last() != L'{')
+                    {
+                    hdrObj += L", ";
+                    }
+                hdrObj += L"\"text-alignment\": \"" + htaStr.value() + L"\"";
                 }
             }
-        const wxString printed = headerNode->Print(false);
-        if (printed != L"{}")
+        hdrObj += L"}";
+        if (hdrObj != L"{}")
             {
-            headerStr = printed;
+            headerStr = hdrObj;
             }
         }
 
@@ -5211,8 +5194,8 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveImage(const Wisteria::GraphItems::Image* i
     else if (!pathTemplate.empty())
         {
         // single path
-        tmpl += L", \"image-import\": {\"path\": \""
-                + EscapeJsonStr(makeRelative(pathTemplate)) + L"\"";
+        tmpl += L", \"image-import\": {\"path\": \"" + EscapeJsonStr(makeRelative(pathTemplate)) +
+                L"\"";
         if (!effectTemplate.empty())
             {
             tmpl += L", \"effect\": \"" + EscapeJsonStr(effectTemplate) + L"\"";
@@ -5895,21 +5878,21 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
     wxString titleStr;
     if (!graph->GetTitle().GetText().empty())
         {
-        titleStr = L"\"title\": " + SaveLabelPropertiesToStr(graph->GetTitle());
+        titleStr = SaveLabelPropertiesToStr(graph->GetTitle());
         }
 
     // subtitle
     wxString subtitleStr;
     if (!graph->GetSubtitle().GetText().empty())
         {
-        subtitleStr = L"\"sub-title\": " + SaveLabelPropertiesToStr(graph->GetSubtitle());
+        subtitleStr = SaveLabelPropertiesToStr(graph->GetSubtitle());
         }
 
     // caption
     wxString captionStr;
     if (!graph->GetCaption().GetText().empty())
         {
-        captionStr = L"\"caption\": " + SaveLabelPropertiesToStr(graph->GetCaption());
+        captionStr = SaveLabelPropertiesToStr(graph->GetCaption());
         }
 
     // background-color
@@ -5926,33 +5909,15 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             Wisteria::ReportEnumConvert::ConvertIconToString(graph->GetStippleShape());
         if (iconStr.has_value())
             {
+            wxString ssObj = L"{\"icon\": \"" + iconStr.value() + L"\"";
             const auto& ssColor = graph->GetStippleShapeColor();
-            const bool hasColor =
-                ssColor.IsOk() &&
-                ssColor != Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White);
-            if (hasColor)
+            if (ssColor.IsOk() &&
+                ssColor != Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White))
                 {
-                wxString ssObj = L"{\"icon\": \"" + iconStr.value() + L"\", \"color\": \"" +
-                                 ColorToStr(ssColor) + L"\"}";
-                auto printed = graphNode->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"stipple-shape\": " + ssObj + L"}";
-                    graphNode = wxSimpleJSON::Create(printed);
-                    }
+                ssObj += L", \"color\": \"" + ColorToStr(ssColor) + L"\"";
                 }
-            else
-                {
-                wxString ssObj = L"{\"icon\": \"" + iconStr.value() + L"\"}";
-                auto printed = graphNode->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"stipple-shape\": " + ssObj + L"}";
-                    graphNode = wxSimpleJSON::Create(printed);
-                    }
-                }
+            ssObj += L"}";
+            graphNode->Add(L"stipple-shape", wxSimpleJSON::Create(ssObj));
             }
         }
 
@@ -6257,39 +6222,38 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
         refAreasStr += raObj;
         }
 
-    // now build the template with sub-objects embedded
-    wxString additions;
+    // add sub-objects directly to the node
     if (!datasetName.empty())
         {
-        additions += L", \"dataset\": \"" + EscapeJsonStr(datasetName) + L"\"";
+        graphNode->Add(L"dataset", datasetName);
         }
     if (!varsStr.empty())
         {
-        additions += L", \"variables\": {" + varsStr + L"}";
+        graphNode->Add(L"variables", wxSimpleJSON::Create(L"{" + varsStr + L"}"));
         }
     if (!titleStr.empty())
         {
-        additions += L", " + titleStr;
+        graphNode->Add(L"title", wxSimpleJSON::Create(titleStr));
         }
     if (!subtitleStr.empty())
         {
-        additions += L", " + subtitleStr;
+        graphNode->Add(L"sub-title", wxSimpleJSON::Create(subtitleStr));
         }
     if (!captionStr.empty())
         {
-        additions += L", " + captionStr;
+        graphNode->Add(L"caption", wxSimpleJSON::Create(captionStr));
         }
     if (!axesStr.empty())
         {
-        additions += L", \"axes\": [" + axesStr + L"]";
+        graphNode->Add(L"axes", wxSimpleJSON::Create(L"[" + axesStr + L"]"));
         }
     if (!refLinesStr.empty())
         {
-        additions += L", \"reference-lines\": [" + refLinesStr + L"]";
+        graphNode->Add(L"reference-lines", wxSimpleJSON::Create(L"[" + refLinesStr + L"]"));
         }
     if (!refAreasStr.empty())
         {
-        additions += L", \"reference-areas\": [" + refAreasStr + L"]";
+        graphNode->Add(L"reference-areas", wxSimpleJSON::Create(L"[" + refAreasStr + L"]"));
         }
 
     // annotations
@@ -6334,7 +6298,7 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             }
         if (!annotationsStr.empty())
             {
-            additions += L", \"annotations\": [" + annotationsStr + L"]";
+            graphNode->Add(L"annotations", wxSimpleJSON::Create(L"[" + annotationsStr + L"]"));
             }
         }
 
@@ -6373,19 +6337,19 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             legendObj += L", \"title\": \"" + EscapeJsonStr(legendInfo->GetTitle()) + L"\"";
             }
         legendObj += L"}";
-        additions += L", \"legend\": " + legendObj;
+        graphNode->Add(L"legend", wxSimpleJSON::Create(legendObj));
         }
 
     // pen (item-level pen for the graph)
     const auto& graphPen = graph->GetPen();
     if (!graphPen.IsOk() || graphPen == wxNullPen)
         {
-        additions += L", \"pen\": null";
+        graphNode->AddNull(L"pen");
         }
     else if (!(graphPen.GetColour() == *wxBLACK && graphPen.GetWidth() <= 1 &&
                graphPen.GetStyle() == wxPENSTYLE_SOLID))
         {
-        additions += L", \"pen\": " + SavePenToStr(graphPen);
+        graphNode->Add(L"pen", wxSimpleJSON::Create(SavePenToStr(graphPen)));
         }
 
     // brush-scheme
@@ -6415,7 +6379,8 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
 
         if (allSolid)
             {
-            additions += L", \"brush-scheme\": {\"color-scheme\": " + colorsArr + L"}";
+            graphNode->Add(L"brush-scheme",
+                           wxSimpleJSON::Create(L"{\"color-scheme\": " + colorsArr + L"}"));
             }
         else
             {
@@ -6432,8 +6397,9 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                     L"\"" + (bsStr.has_value() ? bsStr.value() : wxString(L"solid")) + L"\"";
                 }
             stylesArr += L"]";
-            additions += L", \"brush-scheme\": {\"brush-styles\": " + stylesArr +
-                         L", \"color-scheme\": " + colorsArr + L"}";
+            graphNode->Add(L"brush-scheme",
+                           wxSimpleJSON::Create(L"{\"brush-styles\": " + stylesArr +
+                                                L", \"color-scheme\": " + colorsArr + L"}"));
             }
         }
 
@@ -6452,7 +6418,7 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             colorsArr += L"\"" + ColorToStr(colors[i]) + L"\"";
             }
         colorsArr += L"]";
-        additions += L", \"color-scheme\": " + colorsArr;
+        graphNode->Add(L"color-scheme", wxSimpleJSON::Create(colorsArr));
         }
 
     // icon-scheme
@@ -6471,20 +6437,7 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                 L"\"" + (iconStr.has_value() ? iconStr.value() : wxString(L"blank-icon")) + L"\"";
             }
         iconsArr += L"]";
-        additions += L", \"icon-scheme\": " + iconsArr;
-        }
-
-    // rebuild node with sub-objects
-    if (!additions.empty())
-        {
-        // get existing JSON, inject additions before closing brace
-        auto printed = graphNode->Print(false);
-        if (printed.EndsWith(L"}"))
-            {
-            printed.RemoveLast();
-            printed += additions + L"}";
-            graphNode = wxSimpleJSON::Create(printed);
-            }
+        graphNode->Add(L"icon-scheme", wxSimpleJSON::Create(iconsArr));
         }
 
     SaveItem(graphNode, graph, canvas);
@@ -6538,13 +6491,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             }
         if (!showcaseArr.empty())
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"showcase-lines\": [" + showcaseArr + L"]}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"showcase-lines", wxSimpleJSON::Create(L"[" + showcaseArr + L"]"));
             }
         // line-scheme
         if (linePlot->GetLineStyleScheme() != nullptr &&
@@ -6577,13 +6524,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                              (lStr.has_value() ? lStr.value() : wxString(L"lines")) + L"\"}";
                     }
                 lsArr += L"]";
-                auto printed2 = node->Print(false);
-                if (printed2.EndsWith(L"}"))
-                    {
-                    printed2.RemoveLast();
-                    printed2 += L", \"line-scheme\": " + lsArr + L"}";
-                    node = wxSimpleJSON::Create(printed2);
-                    }
+                node->Add(L"line-scheme", wxSimpleJSON::Create(lsArr));
                 }
             }
         // w-curve-plot specific
@@ -6638,13 +6579,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                              (lStr.has_value() ? lStr.value() : wxString(L"lines")) + L"\"}";
                     }
                 lsArr += L"]";
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"regression-line-scheme\": " + lsArr + L"}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"regression-line-scheme", wxSimpleJSON::Create(lsArr));
                 }
             }
         // bubble-plot specific
@@ -6752,13 +6687,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             }
         if (!showcaseBarArr.empty())
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"showcase-bars\": [" + showcaseBarArr + L"]}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"showcase-bars", wxSimpleJSON::Create(L"[" + showcaseBarArr + L"]"));
             }
 
         // decals
@@ -6800,13 +6729,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             }
         if (!decalsArr.empty())
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"decals\": [" + decalsArr + L"]}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"decals", wxSimpleJSON::Create(L"[" + decalsArr + L"]"));
             }
 
         if (!barChart->GetBinLabelSuffix().empty())
@@ -6861,13 +6784,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 sortObj += L"]";
                 }
             sortObj += L"}";
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"bar-sort\": " + sortObj + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"bar-sort", wxSimpleJSON::Create(sortObj));
             }
         // bar-groups
         if (!barChart->GetBarGroups().empty())
@@ -6903,13 +6820,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 bgArr += L"}";
                 }
             bgArr += L"]";
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"bar-groups\": " + bgArr + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"bar-groups", wxSimpleJSON::Create(bgArr));
             }
 
             // first-bar-brackets (from cached property templates)
@@ -6955,13 +6866,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 }
             if (!fbbArr.empty())
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"first-bar-brackets\": [" + fbbArr + L"]}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"first-bar-brackets", wxSimpleJSON::Create(L"[" + fbbArr + L"]"));
                 }
             }
             // last-bar-brackets (from cached property templates)
@@ -7007,13 +6912,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 }
             if (!lbbArr.empty())
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"last-bar-brackets\": [" + lbbArr + L"]}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"last-bar-brackets", wxSimpleJSON::Create(L"[" + lbbArr + L"]"));
                 }
             }
 
@@ -7159,13 +7058,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 }
             if (!showcaseSliceArr.empty())
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"showcase-slices\": [" + showcaseSliceArr + L"]}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"showcase-slices", wxSimpleJSON::Create(L"[" + showcaseSliceArr + L"]"));
                 }
             }
         else if (showcaseMode != Wisteria::Graphs::PieChart::ShowcaseMode::None)
@@ -7189,13 +7082,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                              L", \"show-outer-pie-midpoint-labels\": false";
                 }
             scObj += L"}";
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"showcase-slices\": " + scObj + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"showcase-slices", wxSimpleJSON::Create(scObj));
             }
         // showcased-ring-labels (for any showcase mode)
         if (showcaseMode != Wisteria::Graphs::PieChart::ShowcaseMode::None)
@@ -7212,13 +7099,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
         const auto& ipPen = pieChart->GetInnerPieConnectionLinePen();
         if (ipPen.IsOk() && ipPen != wxNullPen)
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"inner-pie-line-pen\": " + SavePenToStr(ipPen) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"inner-pie-line-pen", wxSimpleJSON::Create(SavePenToStr(ipPen)));
             }
         // margin notes
         if (!pieChart->GetLeftMarginNote().GetText().empty())
@@ -7226,13 +7107,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             const auto marginNode = SaveLabel(&pieChart->GetLeftMarginNote(), canvas);
             if (marginNode)
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"left-margin-note\": " + marginNode->Print(false) + L"}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"left-margin-note", marginNode);
                 }
             }
         if (!pieChart->GetRightMarginNote().GetText().empty())
@@ -7240,33 +7115,15 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             const auto marginNode = SaveLabel(&pieChart->GetRightMarginNote(), canvas);
             if (marginNode)
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"right-margin-note\": " + marginNode->Print(false) + L"}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"right-margin-note", marginNode);
                 }
             }
         // donut hole
         if (pieChart->IsIncludingDonutHole())
             {
             wxString donutStr = L"{";
-            if (!pieChart->GetDonutHoleLabel().GetText().empty())
-                {
-                const auto labelNode = SaveLabel(&pieChart->GetDonutHoleLabel(), canvas);
-                if (labelNode)
-                    {
-                    donutStr += L"\"label\": " + labelNode->Print(false);
-                    }
-                }
             if (!compare_doubles(pieChart->GetDonutHoleProportion(), math_constants::half))
                 {
-                if (donutStr.length() > 1)
-                    {
-                    donutStr += L", ";
-                    }
                 donutStr +=
                     wxString::Format(L"\"proportion\": %g", pieChart->GetDonutHoleProportion());
                 }
@@ -7281,13 +7138,16 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 donutStr += L"\"color\": \"" + ColorToStr(pieChart->GetDonutHoleColor()) + L"\"";
                 }
             donutStr += L"}";
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
+            auto donutNode = wxSimpleJSON::Create(donutStr);
+            if (!pieChart->GetDonutHoleLabel().GetText().empty())
                 {
-                printed.RemoveLast();
-                printed += L", \"donut-hole\": " + donutStr + L"}";
-                node = wxSimpleJSON::Create(printed);
+                const auto labelNode = SaveLabel(&pieChart->GetDonutHoleLabel(), canvas);
+                if (labelNode)
+                    {
+                    donutNode->Add(L"label", labelNode);
+                    }
                 }
+            node->Add(L"donut-hole", donutNode);
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
@@ -7384,27 +7244,15 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 shapesArr += L"}";
                 }
             shapesArr += L"]";
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"shapes\": " + shapesArr + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"shapes", wxSimpleJSON::Create(shapesArr));
             }
         // grid-round
         if (waffle->GetGridRounding().has_value())
             {
             const auto& gr = waffle->GetGridRounding().value();
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += wxString::Format(
-                    L", \"grid-round\": {\"cell-count\": %zu, \"shape-index\": %zu}}",
-                    gr.m_numberOfCells, gr.m_shapesIndex);
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"grid-round", wxSimpleJSON::Create(wxString::Format(
+                                         L"{\"cell-count\": %zu, \"shape-index\": %zu}",
+                                         gr.m_numberOfCells, gr.m_shapesIndex)));
             }
         // row-count
         if (waffle->GetRowCount().has_value())
@@ -7429,26 +7277,14 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             gainBrush.GetColour() !=
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Green))
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"gain-brush\": " + SaveBrushToStr(gainBrush) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"gain-brush", wxSimpleJSON::Create(SaveBrushToStr(gainBrush)));
             }
         const auto& lossBrush = candlePlot->GetLossBrush();
         if (lossBrush.IsOk() && lossBrush != wxNullBrush &&
             lossBrush.GetColour() !=
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Red))
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"loss-brush\": " + SaveBrushToStr(lossBrush) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"loss-brush", wxSimpleJSON::Create(SaveBrushToStr(lossBrush)));
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
@@ -7521,13 +7357,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             }
         if (!colArr.empty())
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"column-headers\": [" + colArr + L"]}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"column-headers", wxSimpleJSON::Create(L"[" + colArr + L"]"));
             }
         if (sankey->GetFlowShape() != Wisteria::FlowShape::Curvy)
             {
@@ -7641,13 +7471,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                         L"\", \"title\": \"" + EscapeJsonStr(brackets[i].m_title) + L"\"}";
                 }
             bArr += L"]";
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"question-brackets\": " + bArr + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"question-brackets", wxSimpleJSON::Create(bArr));
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
@@ -7704,13 +7528,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             predsArr += L"]";
             if (hasEntry)
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"predictors-to-include\": " + predsArr + L"}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(L"predictors-to-include", wxSimpleJSON::Create(predsArr));
                 }
             }
         // shared roadmap properties
@@ -7720,24 +7538,12 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             !(roadPen.GetColour() == *wxBLACK && roadPen.GetColour().IsOpaque() &&
               roadPen.GetWidth() == 10 && roadPen.GetStyle() == wxPENSTYLE_SOLID))
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"road-pen\": " + SavePenToStr(roadPen) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"road-pen", wxSimpleJSON::Create(SavePenToStr(roadPen)));
             }
         const auto& lanePen = roadmap->GetLaneSeparatorPen();
         if (lanePen.IsOk() && lanePen != wxNullPen)
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"lane-separator-pen\": " + SavePenToStr(lanePen) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"lane-separator-pen", wxSimpleJSON::Create(SavePenToStr(lanePen)));
             }
         if (roadmap->GetLabelPlacement() != Wisteria::LabelPlacement::Flush)
             {
@@ -7801,24 +7607,12 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             !(roadPen.GetColour() == *wxBLACK && roadPen.GetColour().IsOpaque() &&
               roadPen.GetWidth() == 10 && roadPen.GetStyle() == wxPENSTYLE_SOLID))
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"road-pen\": " + SavePenToStr(roadPen) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"road-pen", wxSimpleJSON::Create(SavePenToStr(roadPen)));
             }
         const auto& lanePen = roadmap->GetLaneSeparatorPen();
         if (lanePen.IsOk() && lanePen != wxNullPen)
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"lane-separator-pen\": " + SavePenToStr(lanePen) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"lane-separator-pen", wxSimpleJSON::Create(SavePenToStr(lanePen)));
             }
         if (roadmap->GetLabelPlacement() != Wisteria::LabelPlacement::Flush)
             {
@@ -7871,17 +7665,12 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
         if (!table->IsShowingTopBorder() || !table->IsShowingRightBorder() ||
             !table->IsShowingBottomBorder() || !table->IsShowingLeftBorder())
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += wxString::Format(L", \"default-borders\": [%s, %s, %s, %s]}",
-                                            table->IsShowingTopBorder() ? L"true" : L"false",
-                                            table->IsShowingRightBorder() ? L"true" : L"false",
-                                            table->IsShowingBottomBorder() ? L"true" : L"false",
-                                            table->IsShowingLeftBorder() ? L"true" : L"false");
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"default-borders",
+                      wxSimpleJSON::Create(wxString::Format(
+                          L"[%s, %s, %s, %s]", table->IsShowingTopBorder() ? L"true" : L"false",
+                          table->IsShowingRightBorder() ? L"true" : L"false",
+                          table->IsShowingBottomBorder() ? L"true" : L"false",
+                          table->IsShowingLeftBorder() ? L"true" : L"false")));
             }
         // min-width-proportion
         if (table->GetMinWidthProportion().has_value())
@@ -7905,13 +7694,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                   Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Red) &&
               hlPen.GetWidth() == 1 && hlPen.GetStyle() == wxPENSTYLE_SOLID))
             {
-            auto printed = node->Print(false);
-            if (printed.EndsWith(L"}"))
-                {
-                printed.RemoveLast();
-                printed += L", \"highlight-pen\": " + SavePenToStr(hlPen) + L"}";
-                node = wxSimpleJSON::Create(printed);
-                }
+            node->Add(L"highlight-pen", wxSimpleJSON::Create(SavePenToStr(hlPen)));
             }
         // cached procedural properties
         for (const auto& prop : { L"variables",
@@ -7943,13 +7726,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             const auto cachedJson = graph->GetPropertyTemplate(prop);
             if (!cachedJson.empty())
                 {
-                auto printed = node->Print(false);
-                if (printed.EndsWith(L"}"))
-                    {
-                    printed.RemoveLast();
-                    printed += L", \"" + wxString(prop) + L"\": " + cachedJson + L"}";
-                    node = wxSimpleJSON::Create(printed);
-                    }
+                node->Add(wxString(prop), wxSimpleJSON::Create(cachedJson));
                 }
             }
         // transpose (cached as "true" string)
