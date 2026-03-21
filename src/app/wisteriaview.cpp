@@ -1124,7 +1124,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                                     plot->CreateExtendedLegend(Wisteria::Graphs::LegendOptions{}
+                                     plot->CreateEnhancedLegend(Wisteria::Graphs::LegendOptions{}
                                                                     .IncludeHeader(true)
                                                                     .Placement(side)
                                                                     .PlacementHint(hint))) :
@@ -1687,11 +1687,17 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 dlg.GetUseEnhancedLegend() ?
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                                     plot->CreateExtendedLegend(Wisteria::Graphs::LegendOptions{}
+                                     plot->CreateEnhancedLegend(Wisteria::Graphs::LegendOptions{}
                                                                     .IncludeHeader(true)
                                                                     .Placement(side)
                                                                     .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
 

@@ -176,6 +176,11 @@ namespace Wisteria::UI
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels (from ID column)"),
                                          wxDefaultPosition, wxDefaultSize, 0,
                                          wxGenericValidator(&m_showLabels)),
+                          wxSizerFlags{}.Border());
+
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Use enhanced legend"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_useEnhancedLegend)),
                           wxSizerFlags{}.Border(wxLEFT));
 
         // legend placement
@@ -535,6 +540,9 @@ namespace Wisteria::UI
         m_hairColorPicker->SetColour(chernoff->GetHairColor());
 
         m_showLabels = chernoff->IsShowingLabels();
+
+        m_useEnhancedLegend =
+            (chernoff->GetLastLegendType() == Graphs::ChernoffFacesPlot::LegendType::Enhanced);
 
         TransferDataToWindow();
         }

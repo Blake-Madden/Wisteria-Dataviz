@@ -411,6 +411,11 @@ namespace Wisteria::Graphs
             }
 
         GetSelectedIds().clear();
+
+        m_weightColumnName = weightColumnName.value_or(wxString{});
+        m_groupColumn1Name = groupColumn1Name;
+        m_groupColumn2Name = groupColumn2Name.value_or(wxString{});
+
         auto groupColumnContinuous1{ data->GetContinuousColumns().cend() };
         bool useContinuousGroup1Column{ false };
         const auto& groupColumn1 = data->GetCategoricalColumn(groupColumn1Name);

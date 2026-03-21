@@ -467,12 +467,26 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
-        /** @brief Builds and returns an extended legend with a face graphic and labeled features.
+        /** @brief Builds and returns an enhanced legend with a face graphic and labeled features.
             @details The legend shows a face with connection lines pointing to each feature.
             @param options The options for how to build the legend.
             @returns The graphical legend for the chart.*/
         [[nodiscard]]
-        std::unique_ptr<ChernoffLegend> CreateExtendedLegend(const LegendOptions& options);
+        std::unique_ptr<ChernoffLegend> CreateEnhancedLegend(const LegendOptions& options);
+
+        /// @brief The type of legend most recently created for this plot.
+        enum class LegendType
+            {
+            Regular, /*!< @brief A standard Label-based legend.*/
+            Enhanced /*!< @brief An extended ChernoffLegend with face graphic.*/
+            };
+
+        /// @returns The legend type that was last created.
+        [[nodiscard]]
+        LegendType GetLastLegendType() const noexcept
+            {
+            return m_lastLegendType;
+            }
 
         /// @}
 
@@ -610,6 +624,8 @@ namespace Wisteria::Graphs
         wxString m_mouthCurvatureColumnName;
         wxString m_faceSaturationColumnName;
         wxString m_earSizeColumnName;
+
+        LegendType m_lastLegendType{ LegendType::Enhanced };
         };
     } // namespace Wisteria::Graphs
 

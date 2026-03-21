@@ -32,6 +32,7 @@
 #include "../graphs/proconroadmap.h"
 #include "../graphs/sankeydiagram.h"
 #include "../graphs/scatterplot.h"
+#include "../graphs/stemandleafplot.h"
 #include "../graphs/table.h"
 #include "../graphs/waffle_chart.h"
 #include "../graphs/wcurveplot.h"

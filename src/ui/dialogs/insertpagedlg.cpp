@@ -101,9 +101,9 @@ namespace Wisteria::UI
             const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
             const auto labelFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).Smaller();
 
-            for (size_t row = 0; row < m_rowCount; ++row)
+            for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
                 {
-                for (size_t col = 0; col < m_columnCount; ++col)
+                for (size_t col = 0; std::cmp_less(col, m_columnCount); ++col)
                     {
                     const auto cellLeft = static_cast<int>(col * cellWidth);
                     const auto cellTop = static_cast<int>(row * cellHeight);

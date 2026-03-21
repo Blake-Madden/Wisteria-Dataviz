@@ -486,6 +486,27 @@ namespace Wisteria::Graphs
                      const wxString& groupColumn1Name,
                      std::optional<wxString> groupColumn2Name = std::nullopt);
 
+        /// @returns The name of the weight column, or empty if not used.
+        [[nodiscard]]
+        const wxString& GetWeightColumnName() const noexcept
+            {
+            return m_weightColumnName;
+            }
+
+        /// @returns The name of the primary grouping column.
+        [[nodiscard]]
+        const wxString& GetGroupColumn1Name() const noexcept
+            {
+            return m_groupColumn1Name;
+            }
+
+        /// @returns The name of the secondary grouping column, or empty if not used.
+        [[nodiscard]]
+        const wxString& GetGroupColumn2Name() const noexcept
+            {
+            return m_groupColumn2Name;
+            }
+
         /// @returns @c true if outer slice labels have their font colors match
         ///     their respective pie slice.
         [[nodiscard]]
@@ -1359,6 +1380,11 @@ namespace Wisteria::Graphs
         Perimeter m_showcasedRingLabels{ Perimeter::Outer };
         bool m_showcaseByGroup{ false };
         bool m_showcaseShowOuterPieMidPointLabels{ false };
+
+        // column names
+        wxString m_weightColumnName;
+        wxString m_groupColumn1Name;
+        wxString m_groupColumn2Name;
 
         // donut hole
         bool m_includeDonutHole{ false };

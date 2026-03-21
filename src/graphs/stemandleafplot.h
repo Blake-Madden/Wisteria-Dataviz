@@ -107,6 +107,13 @@ namespace Wisteria::Graphs
                      const wxString& continuousColumnName,
                      const std::optional<wxString>& groupColumnName = std::nullopt);
 
+        /// @returns The name of the continuous column being plotted.
+        [[nodiscard]]
+        const wxString& GetContinuousColumnName() const noexcept
+            {
+            return m_continuousColumnName;
+            }
+
         /** @brief Builds and returns a legend.
             @details Returns a text-only explanatory key legend
                 (e.g., "Key: 2 | 0 means 20"). For back-to-back

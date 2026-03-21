@@ -1740,6 +1740,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> ChernoffFacesPlot::CreateLegend(const LegendOptions& options)
         {
+        m_lastLegendType = LegendType::Regular;
         SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo{}
@@ -1788,9 +1789,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         }
 
     //----------------------------------------------------------------
-    std::unique_ptr<ChernoffFacesPlot::ChernoffLegend> ChernoffFacesPlot::CreateExtendedLegend(
+    std::unique_ptr<ChernoffFacesPlot::ChernoffLegend> ChernoffFacesPlot::CreateEnhancedLegend(
         const LegendOptions& options)
         {
+        m_lastLegendType = LegendType::Enhanced;
         SetLegendInfo(options);
         auto legend = std::make_unique<ChernoffLegend>(
             GraphItems::GraphItemInfo{}.DPIScaling(GetDPIScaleFactor()).Pen(wxNullPen));

@@ -113,6 +113,13 @@ namespace Wisteria::UI
             return m_showLabels;
             }
 
+        /// @returns Whether to use the enhanced (ChernoffLegend) legend.
+        [[nodiscard]]
+        bool GetUseEnhancedLegend() const noexcept
+            {
+            return m_useEnhancedLegend;
+            }
+
         /// @returns The variable name for a given feature, or empty if unassigned.
         /// @param feature The facial feature to look up.
         [[nodiscard]]
@@ -148,6 +155,7 @@ namespace Wisteria::UI
         int m_hairStyle{ 1 };
         int m_facialHair{ 0 };
         bool m_showLabels{ true };
+        bool m_useEnhancedLegend{ true };
 
         // controls needed for event handlers or without DDX support
         wxStaticText* m_facialHairLabel{ nullptr };
