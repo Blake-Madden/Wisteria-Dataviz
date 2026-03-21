@@ -106,6 +106,11 @@ namespace Wisteria::UI
         /// @returns @c true if all pages were deleted successfully.
         bool DeleteAllPages();
 
+        /// @brief Remove one page from the control and deletes it.
+        /// @param nPage The index of the page to delete.
+        /// @returns @c true if the page was successfully deleted.
+        bool DeletePage(size_t nPage);
+
         /// @returns The sidebar.
         [[nodiscard]]
         SideBar* GetSideBar() noexcept
@@ -146,10 +151,7 @@ namespace Wisteria::UI
         // SendEvent flag is included.
         /// @private
         int DoSetSelection(size_t nPage, int flags = 0);
-        /// @brief Remove one page from the control and delete it.
-        /// @param nPage The index of the page to delete.
-        /// @returns @c true if the page was successfully deleted.
-        bool DeletePage(size_t nPage);
+
         // remove the page and return a pointer to it
         /// @private
         wxWindow* DoRemovePage(size_t nPage);

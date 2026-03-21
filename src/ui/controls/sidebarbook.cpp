@@ -199,7 +199,10 @@ namespace Wisteria::UI
     //---------------------------------------------------
     int SideBarBook::DoSetSelection(size_t nPage, int flags)
         {
-        wxCHECK_MSG(nPage < GetPageCount(), wxNOT_FOUND, L"invalid page index in DoSetSelection()");
+        if (nPage >= GetPageCount())
+            {
+            return wxNOT_FOUND;
+            }
 
         const wxWindowUpdateLocker noUpdates(this);
 
@@ -221,7 +224,7 @@ namespace Wisteria::UI
 
             if (((flags & SetSelection_SendEvent) == 0) || allowed)
                 {
-                if (oldSel != wxNOT_FOUND)
+                if (oldSel != wxNOT_FOUND && std::cmp_less(oldSel, GetPageCount()))
                     {
                     m_pages[oldSel]->Hide();
                     }
@@ -250,11 +253,33 @@ namespace Wisteria::UI
     //---------------------------------------------------
     wxWindow* SideBarBook::DoRemovePage(size_t nPage)
         {
-        wxASSERT_MSG(nPage < m_pages.size(), L"invalid page index in SideBarBook::DoRemovePage()");
+        if (nPage >= m_pages.size())
+            {
+            return nullptr;
+            }
 
         // NOLINTNEXTLINE(misc-const-correctness)
         wxWindow* pageRemoved = m_pages[nPage];
         m_pages.erase(m_pages.begin() + nPage);
+
+        if (nPage < GetSideBar()->GetFolderCount())
+            {
+            GetSideBar()->DeleteFolder(nPage);
+            }
+
+        if (m_pages.empty())
+            {
+            m_selection = wxNOT_FOUND;
+            }
+        else if (std::cmp_equal(m_selection, nPage))
+            {
+            m_selection = std::min(m_selection, static_cast<int>(m_pages.size()) - 1);
+            }
+        else if (std::cmp_greater(m_selection, nPage))
+            {
+            --m_selection;
+            }
+
         DoInvalidateBestSize();
 
         return pageRemoved;
