@@ -199,6 +199,7 @@ namespace Wisteria::UI
             }
 
         /// @brief ID for the Page sidebar section.
+        /// @note Subclass IDs start at wxID_HIGHEST + 2 to avoid collision with this.
         constexpr static wxWindowID ID_PAGE_SECTION{ wxID_HIGHEST + 1 };
 
       private:

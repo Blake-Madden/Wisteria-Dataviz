@@ -99,8 +99,10 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/insertlineplotdlg.cpp
     ../../src/ui/dialogs/insertlrroadmapdlg.cpp
     ../../src/ui/dialogs/insertpagedlg.cpp
+    ../../src/ui/dialogs/insertpiechartdlg.cpp
     ../../src/ui/dialogs/insertproconroadmapdlg.cpp
     ../../src/ui/dialogs/insertscatterplotdlg.cpp
+    ../../src/ui/dialogs/insertstemandleafdlg.cpp
     ../../src/ui/dialogs/insertwcurvedlg.cpp
     ../../src/ui/dialogs/insertwlsparklinedlg.cpp
     ../../src/ui/dialogs/insertwordclouddlg.cpp

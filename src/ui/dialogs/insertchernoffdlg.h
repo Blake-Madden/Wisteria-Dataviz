@@ -143,6 +143,7 @@ namespace Wisteria::UI
         /// @brief The number of facial features available for variable mapping.
         constexpr static size_t FEATURE_COUNT{ 11 };
 
+        // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
         constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };

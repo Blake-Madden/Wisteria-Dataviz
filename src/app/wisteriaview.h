@@ -159,6 +159,7 @@ class WisteriaView : public wxView
     void OnInsertHistogram(wxCommandEvent& event);
     void OnInsertWordCloud(wxCommandEvent& event);
     void OnInsertWLSparkline(wxCommandEvent& event);
+    void OnInsertStemAndLeaf(wxCommandEvent& event);
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
@@ -179,6 +180,8 @@ class WisteriaView : public wxView
     void EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                        size_t graphCol);
     void EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol);
+    void EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,

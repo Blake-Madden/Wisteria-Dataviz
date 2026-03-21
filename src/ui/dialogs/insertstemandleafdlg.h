@@ -9,24 +9,23 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef INSERT_WORDCLOUD_DIALOG_H
-#define INSERT_WORDCLOUD_DIALOG_H
+#ifndef INSERT_STEMANDLEAF_DIALOG_H
+#define INSERT_STEMANDLEAF_DIALOG_H
 
 #include "insertgraphdlg.h"
 #include <vector>
-#include <wx/spinctrl.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
     {
-    /** @brief Dialog for inserting a word cloud into a canvas cell.
+    /** @brief Dialog for inserting a stem-and-leaf plot into a canvas cell.
         @details Extends InsertGraphDlg with an "Options" page containing:
             - A dataset selector (from the project's datasets).
             - A "Variables..." button that opens a VariableSelectDlg
-              for selecting a word column and an optional weight column.
+              for selecting a continuous column and an optional grouping column.
             - Labels showing the current variable selections.
-            - Frequency filtering options (min, max, max words).*/
-    class InsertWordCloudDlg final : public InsertGraphDlg
+            - Legend placement.*/
+    class InsertStemAndLeafDlg final : public InsertGraphDlg
         {
       public:
         /** @brief Constructor.
@@ -39,17 +38,18 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.*/
-        InsertWordCloudDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
-                           const wxString& caption = _(L"Insert Word Cloud"),
-                           wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
-                           const wxSize& size = wxDefaultSize,
-                           long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                           EditMode editMode = EditMode::Insert);
+        InsertStemAndLeafDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
+                             const wxString& caption = _(L"Insert Stem-and-Leaf Plot"),
+                             wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
+                             const wxSize& size = wxDefaultSize,
+                             long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
+                                          wxRESIZE_BORDER,
+                             EditMode editMode = EditMode::Insert);
 
         /// @private
-        InsertWordCloudDlg(const InsertWordCloudDlg&) = delete;
+        InsertStemAndLeafDlg(const InsertStemAndLeafDlg&) = delete;
         /// @private
-        InsertWordCloudDlg& operator=(const InsertWordCloudDlg&) = delete;
+        InsertStemAndLeafDlg& operator=(const InsertStemAndLeafDlg&) = delete;
 
         /// @returns The selected dataset, or @c nullptr if none.
         [[nodiscard]]
@@ -65,33 +65,21 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The word variable name (categorical column).
+        /// @returns The continuous variable name.
         [[nodiscard]]
-        const wxString& GetWordVariable() const noexcept
+        const wxString& GetContinuousVariable() const noexcept
             {
-            return m_wordVariable;
+            return m_continuousVariable;
             }
 
-        /// @returns The weight variable name, or empty if none.
+        /// @returns The grouping variable name, or empty if none.
         [[nodiscard]]
-        const wxString& GetWeightVariable() const noexcept
+        const wxString& GetGroupVariable() const noexcept
             {
-            return m_weightVariable;
+            return m_groupVariable;
             }
 
-        /// @returns The minimum frequency threshold.
-        [[nodiscard]]
-        size_t GetMinFrequency() const noexcept;
-
-        /// @returns The maximum frequency, or @c std::nullopt if zero (unlimited).
-        [[nodiscard]]
-        std::optional<size_t> GetMaxFrequency() const noexcept;
-
-        /// @returns The maximum number of words, or @c std::nullopt if zero (unlimited).
-        [[nodiscard]]
-        std::optional<size_t> GetMaxWords() const noexcept;
-
-        /// @brief Populates all dialog controls from an existing word cloud.
+        /// @brief Populates all dialog controls from an existing stem-and-leaf plot.
         /// @param graph The graph to read settings from.
         /// @param canvas The canvas the graph belongs to.
         void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
@@ -112,14 +100,11 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
 
         wxChoice* m_datasetChoice{ nullptr };
-        wxStaticText* m_wordVarLabel{ nullptr };
-        wxStaticText* m_weightVarLabel{ nullptr };
-        wxSpinCtrl* m_minFreqSpin{ nullptr };
-        wxSpinCtrl* m_maxFreqSpin{ nullptr };
-        wxSpinCtrl* m_maxWordsSpin{ nullptr };
+        wxStaticText* m_continuousVarLabel{ nullptr };
+        wxStaticText* m_groupVarLabel{ nullptr };
 
-        wxString m_wordVariable;
-        wxString m_weightVariable;
+        wxString m_continuousVariable;
+        wxString m_groupVariable;
 
         std::vector<wxString> m_datasetNames;
         };
@@ -127,4 +112,4 @@ namespace Wisteria::UI
 
 /// @}
 
-#endif // INSERT_WORDCLOUD_DIALOG_H
+#endif // INSERT_STEMANDLEAF_DIALOG_H
