@@ -81,6 +81,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertpiechartdlg.cpp
     src/ui/dialogs/insertproconroadmapdlg.cpp
     src/ui/dialogs/insertscatterplotdlg.cpp
+    src/ui/dialogs/insertshapedlg.cpp
     src/ui/dialogs/insertstemandleafdlg.cpp
     src/ui/dialogs/insertwcurvedlg.cpp
     src/ui/dialogs/insertwlsparklinedlg.cpp

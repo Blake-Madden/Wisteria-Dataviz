@@ -137,10 +137,22 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertLabelDlg::OnEnableHeader(const bool enable)
         {
-        m_headerFontPicker->Enable(enable);
-        m_headerColorPicker->Enable(enable);
-        m_headerAlignmentChoice->Enable(enable);
-        m_headerScalingSpin->Enable(enable);
+        if (m_headerFontPicker != nullptr)
+            {
+            m_headerFontPicker->Enable(enable);
+            }
+        if (m_headerColorPicker != nullptr)
+            {
+            m_headerColorPicker->Enable(enable);
+            }
+        if (m_headerAlignmentChoice != nullptr)
+            {
+            m_headerAlignmentChoice->Enable(enable);
+            }
+        if (m_headerScalingSpin != nullptr)
+            {
+            m_headerScalingSpin->Enable(enable);
+            }
         }
 
     //-------------------------------------------

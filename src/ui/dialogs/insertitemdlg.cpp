@@ -553,6 +553,7 @@ namespace Wisteria::UI
         item.SetPadding(padding[0], padding[1], padding[2], padding[3]);
 
         item.SetFixedWidthOnCanvas(GetFixedWidth());
+        item.FitCanvasRowHeightToContent(GetFitRowToContent());
 
         const auto sides = GetOutlineSides();
         if (sides.any())

@@ -167,6 +167,11 @@ class WisteriaView : public wxView
     void OnInsertImage(wxCommandEvent& event);
     void EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas, size_t imageRow,
                    size_t imageCol);
+    void OnInsertShape(wxCommandEvent& event);
+    void EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas, size_t shapeRow,
+                   size_t shapeCol);
+    void EditFillableShape(Wisteria::GraphItems::FillableShape& shape, Wisteria::Canvas* canvas,
+                           size_t shapeRow, size_t shapeCol);
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);

@@ -20,6 +20,7 @@
 #include "../ui/dialogs/insertpiechartdlg.h"
 #include "../ui/dialogs/insertproconroadmapdlg.h"
 #include "../ui/dialogs/insertscatterplotdlg.h"
+#include "../ui/dialogs/insertshapedlg.h"
 #include "../ui/dialogs/insertstemandleafdlg.h"
 #include "../ui/dialogs/insertwcurvedlg.h"
 #include "../ui/dialogs/insertwlsparklinedlg.h"
@@ -153,6 +154,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertImage, this, ID_NEW_IMAGE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertShape, this, ID_NEW_SHAPE);
 
     // bind edit/delete item buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
@@ -1278,6 +1280,31 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    // shapes are not Graph2D (check FillableShape before Shape since it derives from Shape)
+    if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::FillableShape)))
+        {
+        auto* fillableShape =
+            dynamic_cast<Wisteria::GraphItems::FillableShape*>(selectedItem.get());
+        if (fillableShape != nullptr)
+            {
+            EditFillableShape(*fillableShape, canvas, itemRow, itemCol);
+            }
+        return;
+        }
+    if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Shape)))
+        {
+        auto* shape = dynamic_cast<Wisteria::GraphItems::Shape*>(selectedItem.get());
+        if (shape != nullptr)
+            {
+            EditShape(*shape, canvas, itemRow, itemCol);
+            }
+        return;
+        }
+
+    if (!selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)))
+        {
+        return;
+        }
     auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(selectedItem.get());
     if (graph == nullptr)
         {
@@ -3888,6 +3915,254 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
     newImage->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(imageRow, imageCol, newImage);
+    canvas->CalcRowDimensions();
+    canvas->ResetResizeDelay();
+    canvas->SendSizeEvent();
+    canvas->Refresh();
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame);
+    const auto shapeBmp = wxGetApp().ReadSvgIcon(L"shape.svg");
+    if (shapeBmp.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(shapeBmp);
+        dlg.SetIcon(icon);
+        }
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    dlg.ApplyGridSize();
+
+    const auto labelText = dlg.GetLabelText();
+    const auto expanded = m_reportBuilder.ExpandConstants(labelText);
+
+    const wxPen shapePen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() };
+
+    // cache the user-specified size for round-tripping
+    const auto shapeWidth = std::to_wstring(dlg.GetShapeWidth());
+    const auto shapeHeight = std::to_wstring(dlg.GetShapeHeight());
+
+    if (dlg.IsFillable())
+        {
+        auto shape = std::make_shared<Wisteria::GraphItems::FillableShape>(
+            Wisteria::GraphItems::GraphItemInfo{ expanded }
+                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                .Pen(shapePen)
+                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+                .FontColor(dlg.GetLabelFontColor())
+                .DPIScaling(canvas->FromDIP(1)),
+            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() },
+            dlg.GetFillPercent());
+        shape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
+        shape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
+        shape->SetFixedWidthOnCanvas(true);
+        shape->SetPropertyTemplate(L"size.width", shapeWidth);
+        shape->SetPropertyTemplate(L"size.height", shapeHeight);
+        if (expanded != labelText)
+            {
+            shape->SetPropertyTemplate(L"label.text", labelText);
+            }
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
+        }
+    else
+        {
+        auto shape = std::make_shared<Wisteria::GraphItems::Shape>(
+            Wisteria::GraphItems::GraphItemInfo{ expanded }
+                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                .Pen(shapePen)
+                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+                .FontColor(dlg.GetLabelFontColor())
+                .DPIScaling(canvas->FromDIP(1)),
+            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() });
+        shape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
+        shape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
+        shape->SetFixedWidthOnCanvas(true);
+        shape->SetPropertyTemplate(L"size.width", shapeWidth);
+        shape->SetPropertyTemplate(L"size.height", shapeHeight);
+        if (expanded != labelText)
+            {
+            shape->SetPropertyTemplate(L"label.text", labelText);
+            }
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
+        }
+
+    canvas->CalcRowDimensions();
+    canvas->ResetResizeDelay();
+    canvas->SendSizeEvent();
+    canvas->Refresh();
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas,
+                             const size_t shapeRow, const size_t shapeCol)
+    {
+    Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame, _(L"Edit Shape"), wxID_ANY,
+                                     wxDefaultPosition, wxDefaultSize,
+                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto shapeBmp = wxGetApp().ReadSvgIcon(L"shape.svg");
+    if (shapeBmp.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(shapeBmp);
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(shapeRow, shapeCol);
+    dlg.LoadFromShape(shape, canvas);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const auto labelText = dlg.GetLabelText();
+    const auto expanded = m_reportBuilder.ExpandConstants(labelText);
+    const wxPen shapePen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() };
+    const auto shapeWidth = std::to_wstring(dlg.GetShapeWidth());
+    const auto shapeHeight = std::to_wstring(dlg.GetShapeHeight());
+
+    if (dlg.IsFillable())
+        {
+        auto newShape = std::make_shared<Wisteria::GraphItems::FillableShape>(
+            Wisteria::GraphItems::GraphItemInfo{ expanded }
+                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                .Pen(shapePen)
+                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+                .FontColor(dlg.GetLabelFontColor())
+                .DPIScaling(canvas->FromDIP(1)),
+            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() },
+            dlg.GetFillPercent());
+        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
+        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
+        newShape->SetFixedWidthOnCanvas(true);
+        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
+        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
+        if (expanded != labelText)
+            {
+            newShape->SetPropertyTemplate(L"label.text", labelText);
+            }
+        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
+        }
+    else
+        {
+        auto newShape = std::make_shared<Wisteria::GraphItems::Shape>(
+            Wisteria::GraphItems::GraphItemInfo{ expanded }
+                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                .Pen(shapePen)
+                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+                .FontColor(dlg.GetLabelFontColor())
+                .DPIScaling(canvas->FromDIP(1)),
+            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() });
+        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
+        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
+        newShape->SetFixedWidthOnCanvas(true);
+        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
+        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
+        if (expanded != labelText)
+            {
+            newShape->SetPropertyTemplate(L"label.text", labelText);
+            }
+        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
+        }
+
+    canvas->CalcRowDimensions();
+    canvas->ResetResizeDelay();
+    canvas->SendSizeEvent();
+    canvas->Refresh();
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::EditFillableShape(Wisteria::GraphItems::FillableShape& shape,
+                                     Wisteria::Canvas* canvas, const size_t shapeRow,
+                                     const size_t shapeCol)
+    {
+    Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame, _(L"Edit Fillable Shape"), wxID_ANY,
+                                     wxDefaultPosition, wxDefaultSize,
+                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto shapeBmp = wxGetApp().ReadSvgIcon(L"shape.svg");
+    if (shapeBmp.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(shapeBmp);
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(shapeRow, shapeCol);
+    dlg.LoadFromFillableShape(shape, canvas);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const auto labelText = dlg.GetLabelText();
+    const auto expanded = m_reportBuilder.ExpandConstants(labelText);
+    const wxPen shapePen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() };
+    const auto shapeWidth = std::to_wstring(dlg.GetShapeWidth());
+    const auto shapeHeight = std::to_wstring(dlg.GetShapeHeight());
+
+    if (dlg.IsFillable())
+        {
+        auto newShape = std::make_shared<Wisteria::GraphItems::FillableShape>(
+            Wisteria::GraphItems::GraphItemInfo{ expanded }
+                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                .Pen(shapePen)
+                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+                .FontColor(dlg.GetLabelFontColor())
+                .DPIScaling(canvas->FromDIP(1)),
+            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() },
+            dlg.GetFillPercent());
+        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
+        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
+        newShape->SetFixedWidthOnCanvas(true);
+        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
+        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
+        if (expanded != labelText)
+            {
+            newShape->SetPropertyTemplate(L"label.text", labelText);
+            }
+        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
+        }
+    else
+        {
+        auto newShape = std::make_shared<Wisteria::GraphItems::Shape>(
+            Wisteria::GraphItems::GraphItemInfo{ expanded }
+                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                .Pen(shapePen)
+                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+                .FontColor(dlg.GetLabelFontColor())
+                .DPIScaling(canvas->FromDIP(1)),
+            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() });
+        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
+        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
+        newShape->SetFixedWidthOnCanvas(true);
+        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
+        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
+        if (expanded != labelText)
+            {
+            newShape->SetPropertyTemplate(L"label.text", labelText);
+            }
+        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
+        }
+
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();

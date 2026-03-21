@@ -63,7 +63,7 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [this]([[maybe_unused]] wxCommandEvent&)
             {
-                wxFileDialog fileDlg(this, _(L"Select image(s)"), wxString{}, wxString{},
+                wxFileDialog fileDlg(this, _(L"Select images"), wxString{}, wxString{},
                                      Wisteria::GraphItems::Image::GetImageFileFilter(),
                                      wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
                 if (fileDlg.ShowModal() != wxID_OK)
@@ -193,8 +193,14 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertImageDlg::OnEnableCustomSize(const bool enable)
         {
-        m_widthSpin->Enable(enable);
-        m_heightSpin->Enable(enable);
+        if (m_widthSpin != nullptr)
+            {
+            m_widthSpin->Enable(enable);
+            }
+        if (m_heightSpin != nullptr)
+            {
+            m_heightSpin->Enable(enable);
+            }
         }
 
     //-------------------------------------------

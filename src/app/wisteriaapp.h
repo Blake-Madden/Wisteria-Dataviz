@@ -191,6 +191,7 @@ constexpr wxWindowID ID_DELETE_ITEM{ wxID_HIGHEST + 40 };
 constexpr wxWindowID ID_NEW_LABEL{ wxID_HIGHEST + 42 };
 constexpr wxWindowID ID_OBJECTS_BUTTONBAR{ wxID_HIGHEST + 43 };
 constexpr wxWindowID ID_NEW_IMAGE{ wxID_HIGHEST + 44 };
+constexpr wxWindowID ID_NEW_SHAPE{ wxID_HIGHEST + 45 };
 
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };

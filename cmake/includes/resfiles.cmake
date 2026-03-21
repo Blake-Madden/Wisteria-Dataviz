@@ -56,6 +56,7 @@ sankey.svg
 scale.svg
 scatterplot.svg
 select-all.svg
+shape.svg
 sort.svg
 sparkline.svg
 stem-leaf.svg

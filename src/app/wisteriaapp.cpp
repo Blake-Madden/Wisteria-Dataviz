@@ -357,6 +357,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Insert a text label"));
         objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
                                     _(L"Insert an image"));
+        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
+                                    _(L"Insert a shape"));
         }
     else
         {
