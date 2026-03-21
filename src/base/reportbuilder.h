@@ -456,6 +456,13 @@ namespace Wisteria
             return m_paperSize;
             }
 
+        /** @brief Expands embedded placeholders in strings into their values.
+            @param str The full string to expand.
+            @returns The original string, with any placeholders in it replaced
+                with the user-defined values.*/
+        [[nodiscard]]
+        wxString ExpandConstants(wxString str) const;
+
       private:
         using ValuesType = std::variant<wxString, double>;
 
@@ -942,13 +949,6 @@ namespace Wisteria
                 }
             return std::nullopt;
             }
-
-        /** @brief Expands embedded placeholders in strings into their values.
-            @param str The full string to expand.
-            @returns The original string, with any placeholders in it replaced
-                with the user-defined values.*/
-        [[nodiscard]]
-        wxString ExpandConstants(wxString str) const;
 
         [[nodiscard]]
         std::vector<wxString> ExpandConstants(std::vector<wxString> strs) const

@@ -99,7 +99,9 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/insertchernoffdlg.cpp
     src/ui/dialogs/insertgraphdlg.cpp
     src/ui/dialogs/inserthistogramdlg.cpp
+    src/ui/dialogs/insertimgdlg.cpp
     src/ui/dialogs/insertitemdlg.cpp
+    src/ui/dialogs/insertlabeldlg.cpp
     src/ui/dialogs/insertlineplotdlg.cpp
     src/ui/dialogs/insertlrroadmapdlg.cpp
     src/ui/dialogs/insertpagedlg.cpp

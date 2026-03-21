@@ -6574,6 +6574,33 @@ namespace Wisteria
                     {
                     image->SetPropertyTemplate(L"image-import.path", pathStr);
                     }
+                // cache multiple paths as tab-separated string
+                const auto pathsArr = importNode->GetProperty(L"paths")->AsStrings();
+                if (!pathsArr.empty())
+                    {
+                    wxString joined;
+                    for (size_t i = 0; i < pathsArr.size(); ++i)
+                        {
+                        if (i > 0)
+                            {
+                            joined += L"\t";
+                            }
+                        joined += pathsArr[i];
+                        }
+                    image->SetPropertyTemplate(L"image-import.paths", joined);
+                    }
+                // cache stitch direction
+                const auto stitchStr = importNode->GetProperty(L"stitch")->AsString();
+                if (!stitchStr.empty())
+                    {
+                    image->SetPropertyTemplate(L"image-import.stitch", stitchStr);
+                    }
+                // cache effect
+                const auto effectStr = importNode->GetProperty(L"effect")->AsString();
+                if (!effectStr.empty())
+                    {
+                    image->SetPropertyTemplate(L"image-import.effect", effectStr);
+                    }
                 }
 
             wxSize sz{ 32, 32 };

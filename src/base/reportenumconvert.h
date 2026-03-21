@@ -842,6 +842,25 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<wxString> ConvertImageEffectToString(ImageEffect value)
+            {
+            static const std::map<ImageEffect, wxString> values = {
+                { ImageEffect::BlurHorizontal, L"blur-horizontal" },
+                { ImageEffect::BlurVertical, L"blur-vertical" },
+                { ImageEffect::FrostedGlass, L"frosted-glass" },
+                { ImageEffect::Grayscale, L"gray-scale" },
+                { ImageEffect::OilPainting, L"oil-painting" },
+                { ImageEffect::Sepia, L"sepia" },
+                { ImageEffect::NoEffect, L"no-effect" }
+            };
+
+            const auto foundValue = values.find(value);
+            return ((foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                    std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Gender> ConvertGender(const wxString& value)
             {
             static const std::map<std::wstring, Gender> genderValues = {

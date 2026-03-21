@@ -33,6 +33,8 @@ heatmap.svg
 histogram.svg
 home-dark-mode.svg
 home.svg
+image.svg
+label.svg
 likert3.svg
 likert7.svg
 lineplot-points.svg

@@ -348,6 +348,15 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
                                           ReadSvgIcon(L"chart-sports.svg"), _(L"Sports graphs"));
+
+        // Objects panel (labels, images, shapes)
+        auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
+        auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
+
+        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
+                                    _(L"Insert a text label"));
+        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
+                                    _(L"Insert an image"));
         }
     else
         {

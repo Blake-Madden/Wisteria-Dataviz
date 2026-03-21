@@ -187,6 +187,11 @@ constexpr wxWindowID ID_SAVE_PROJECT_AS{ wxID_HIGHEST + 41 };
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };
 constexpr wxWindowID ID_DELETE_ITEM{ wxID_HIGHEST + 40 };
 
+// Objects (labels, images, shapes)
+constexpr wxWindowID ID_NEW_LABEL{ wxID_HIGHEST + 42 };
+constexpr wxWindowID ID_OBJECTS_BUTTONBAR{ wxID_HIGHEST + 43 };
+constexpr wxWindowID ID_NEW_IMAGE{ wxID_HIGHEST + 44 };
+
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };
 

@@ -554,8 +554,15 @@ namespace Wisteria::UI
 
         item.SetFixedWidthOnCanvas(GetFixedWidth());
 
-        item.GetPen() = GetOutlinePen();
         const auto sides = GetOutlineSides();
+        if (sides.any())
+            {
+            item.GetPen() = GetOutlinePen();
+            }
+        else
+            {
+            item.GetPen() = wxNullPen;
+            }
         item.GetGraphItemInfo().Outline(sides[0], sides[1], sides[2], sides[3]);
         }
 

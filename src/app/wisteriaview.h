@@ -160,6 +160,13 @@ class WisteriaView : public wxView
     void OnInsertWordCloud(wxCommandEvent& event);
     void OnInsertWLSparkline(wxCommandEvent& event);
     void OnInsertStemAndLeaf(wxCommandEvent& event);
+    void OnInsertPieChart(wxCommandEvent& event);
+    void OnInsertLabel(wxCommandEvent& event);
+    void EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas, size_t labelRow,
+                   size_t labelCol);
+    void OnInsertImage(wxCommandEvent& event);
+    void EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas, size_t imageRow,
+                   size_t imageCol);
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
@@ -183,6 +190,8 @@ class WisteriaView : public wxView
                          size_t graphRow, size_t graphCol);
     void EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
+    void EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                      size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
