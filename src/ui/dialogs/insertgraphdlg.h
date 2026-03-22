@@ -12,6 +12,7 @@
 #ifndef INSERT_GRAPH_DIALOG_H
 #define INSERT_GRAPH_DIALOG_H
 
+#include "../../base/label.h"
 #include "../controls/thumbnail.h"
 #include "insertitemdlg.h"
 #include <wx/choice.h>
@@ -77,17 +78,26 @@ namespace Wisteria::UI
         [[nodiscard]]
         LegendPlacement GetLegendPlacement() const;
 
-        /// @returns The graph title text.
+        /// @returns The graph title label.
         [[nodiscard]]
-        wxString GetGraphTitle() const;
+        const GraphItems::Label& GetTitleLabel() const noexcept
+            {
+            return m_titleLabel;
+            }
 
-        /// @returns The graph subtitle text.
+        /// @returns The graph subtitle label.
         [[nodiscard]]
-        wxString GetGraphSubtitle() const;
+        const GraphItems::Label& GetSubtitleLabel() const noexcept
+            {
+            return m_subtitleLabel;
+            }
 
-        /// @returns The graph caption text.
+        /// @returns The graph caption label.
         [[nodiscard]]
-        wxString GetGraphCaption() const;
+        const GraphItems::Label& GetCaptionLabel() const noexcept
+            {
+            return m_captionLabel;
+            }
 
         /// @returns The selected plot background color.
         ///     May be invalid if the user did not change it.
@@ -144,23 +154,27 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
 
       private:
+        void OnEditTitle();
+        void OnEditSubtitle();
+        void OnEditCaption();
+        void EditLabelHelper(GraphItems::Label& label, wxStaticText* preview,
+                             const wxString& caption);
+
         // DDX data members
         int m_legendPlacement{ 1 };
-        wxString m_title;
-        wxString m_subtitle;
-        wxString m_caption;
         bool m_mirrorXAxis{ false };
         bool m_mirrorYAxis{ false };
         int m_plotBgImageOpacity{ 255 };
 
-        // original property templates (may contain {{placeholders}})
-        // and expanded text for detecting user changes
-        wxString m_titleTemplate;
-        wxString m_titleExpanded;
-        wxString m_subtitleTemplate;
-        wxString m_subtitleExpanded;
-        wxString m_captionTemplate;
-        wxString m_captionExpanded;
+        // title / subtitle / caption as full Labels
+        GraphItems::Label m_titleLabel;
+        GraphItems::Label m_subtitleLabel;
+        GraphItems::Label m_captionLabel;
+
+        // preview controls
+        wxStaticText* m_titlePreview{ nullptr };
+        wxStaticText* m_subtitlePreview{ nullptr };
+        wxStaticText* m_captionPreview{ nullptr };
 
         // controls without DDX validator support
         wxColourPickerCtrl* m_plotBgColorPicker{ nullptr };

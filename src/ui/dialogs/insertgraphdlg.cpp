@@ -8,6 +8,8 @@
 
 #include "insertgraphdlg.h"
 #include "../../graphs/graph2d.h"
+#include "insertlabeldlg.h"
+#include <wx/gbsizer.h>
 
 namespace Wisteria::UI
     {
@@ -23,45 +25,63 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertGraphDlg::ApplyGraphOptions(Graphs::Graph2D& graph) const
         {
-        const auto title = GetGraphTitle();
-        if (!title.empty())
-            {
-            graph.GetTitle().SetText(title);
-            if (title != m_titleExpanded)
+        const auto applyLabel = [this](const GraphItems::Label& src, GraphItems::Label& dest)
+        {
+            if (src.GetText().empty())
                 {
-                graph.GetTitle().SetPropertyTemplate(L"text", title);
+                return;
                 }
-            else if (!m_titleTemplate.empty())
+            // apply all styling from the dialog's label to the graph's label
+            dest.GetFont() = src.GetFont();
+            dest.SetFontColor(src.GetFontColor());
+            dest.SetFontBackgroundColor(src.GetFontBackgroundColor());
+            dest.SetTextAlignment(src.GetTextAlignment());
+            dest.SetLineSpacing(src.GetLineSpacing());
+            dest.SetTextOrientation(src.GetTextOrientation());
+            dest.SetPadding(src.GetTopPadding(), src.GetRightPadding(), src.GetBottomPadding(),
+                            src.GetLeftPadding());
+            dest.GetPen() = src.GetPen();
+            dest.GetHeaderInfo() = src.GetHeaderInfo();
+            // left image
+            dest.SetLeftImage(src.GetLeftImage());
+            const auto leftImgPath = src.GetPropertyTemplate(L"left-image.path");
+            if (!leftImgPath.empty())
                 {
-                graph.GetTitle().SetPropertyTemplate(L"text", m_titleTemplate);
+                dest.SetPropertyTemplate(L"left-image.path", leftImgPath);
                 }
-            }
-        const auto subtitle = GetGraphSubtitle();
-        if (!subtitle.empty())
-            {
-            graph.GetSubtitle().SetText(subtitle);
-            if (subtitle != m_subtitleExpanded)
+            // top shapes
+            const auto& topShapes = src.GetTopShape();
+            if (topShapes.has_value())
                 {
-                graph.GetSubtitle().SetPropertyTemplate(L"text", subtitle);
+                dest.SetTopShape(topShapes.value(), src.GetTopImageOffset());
                 }
-            else if (!m_subtitleTemplate.empty())
+            // expand constants if a report builder is available
+            const auto rawText = src.GetText();
+            const auto* builder = GetReportBuilder();
+            if (builder != nullptr)
                 {
-                graph.GetSubtitle().SetPropertyTemplate(L"text", m_subtitleTemplate);
+                const auto expanded = builder->ExpandConstants(rawText);
+                dest.SetText(expanded);
+                if (expanded != rawText)
+                    {
+                    dest.SetPropertyTemplate(L"text", rawText);
+                    }
                 }
-            }
-        const auto caption = GetGraphCaption();
-        if (!caption.empty())
-            {
-            graph.GetCaption().SetText(caption);
-            if (caption != m_captionExpanded)
+            else
                 {
-                graph.GetCaption().SetPropertyTemplate(L"text", caption);
+                dest.SetText(rawText);
                 }
-            else if (!m_captionTemplate.empty())
+            // preserve any existing text template from the source
+            const auto srcTemplate = src.GetPropertyTemplate(L"text");
+            if (!srcTemplate.empty())
                 {
-                graph.GetCaption().SetPropertyTemplate(L"text", m_captionTemplate);
+                dest.SetPropertyTemplate(L"text", srcTemplate);
                 }
-            }
+        };
+
+        applyLabel(m_titleLabel, graph.GetTitle());
+        applyLabel(m_subtitleLabel, graph.GetSubtitle());
+        applyLabel(m_captionLabel, graph.GetCaption());
 
         const auto bgColor = GetPlotBackgroundColor();
         if (bgColor.IsOk() && bgColor != *wxWHITE)
@@ -128,28 +148,50 @@ namespace Wisteria::UI
         graphPage->SetSizer(graphSizer);
         GetSideBarBook()->AddPage(graphPage, _(L"Graph Options"), ID_GRAPH_OPTIONS_SECTION, false);
 
-        // title, subtitle, caption
-        auto* textSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        textSizer->AddGrowableCol(1, 1);
+        // title, subtitle, caption — each opens a full Label editor
+        auto* textSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
 
-        textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Title:")),
-                       wxSizerFlags{}.CenterVertical());
-        textSizer->Add(new wxTextCtrl(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                                      wxDefaultSize, 0, wxTextValidator(wxFILTER_NONE, &m_title)),
-                       wxSizerFlags{}.Expand());
+        const auto previewColor = GetVariableLabelColor();
 
-        textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Subtitle:")),
-                       wxSizerFlags{}.CenterVertical());
-        textSizer->Add(new wxTextCtrl(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                                      wxDefaultSize, 0,
-                                      wxTextValidator(wxFILTER_NONE, &m_subtitle)),
-                       wxSizerFlags{}.Expand());
+        textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Title:")), wxGBPosition(0, 0),
+                       wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+            {
+            auto* btn = new wxButton(graphPage, wxID_ANY, _(L"Edit..."));
+            btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditTitle(); });
+            textSizer->Add(btn, wxGBPosition(0, 1));
+            }
+        m_titlePreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                                          wxDefaultSize, wxST_ELLIPSIZE_END);
+        m_titlePreview->SetForegroundColour(previewColor);
+        textSizer->Add(m_titlePreview, wxGBPosition(0, 2), wxDefaultSpan,
+                       wxALIGN_CENTER_VERTICAL | wxEXPAND);
 
-        textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Caption:")),
-                       wxSizerFlags{}.CenterVertical());
-        textSizer->Add(new wxTextCtrl(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                                      wxDefaultSize, 0, wxTextValidator(wxFILTER_NONE, &m_caption)),
-                       wxSizerFlags{}.Expand());
+        textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Subtitle:")), wxGBPosition(1, 0),
+                       wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+            {
+            auto* btn = new wxButton(graphPage, wxID_ANY, _(L"Edit..."));
+            btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditSubtitle(); });
+            textSizer->Add(btn, wxGBPosition(1, 1));
+            }
+        m_subtitlePreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                                             wxDefaultSize, wxST_ELLIPSIZE_END);
+        m_subtitlePreview->SetForegroundColour(previewColor);
+        textSizer->Add(m_subtitlePreview, wxGBPosition(1, 2), wxDefaultSpan,
+                       wxALIGN_CENTER_VERTICAL | wxEXPAND);
+
+        textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Caption:")), wxGBPosition(2, 0),
+                       wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+            {
+            auto* btn = new wxButton(graphPage, wxID_ANY, _(L"Edit..."));
+            btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditCaption(); });
+            textSizer->Add(btn, wxGBPosition(2, 1));
+            }
+        m_captionPreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                                            wxDefaultSize, wxST_ELLIPSIZE_END);
+        m_captionPreview->SetForegroundColour(previewColor);
+        textSizer->Add(m_captionPreview, wxGBPosition(2, 2), wxDefaultSpan,
+                       wxALIGN_CENTER_VERTICAL | wxEXPAND);
+        textSizer->AddGrowableCol(2, 1);
 
         graphSizer->Add(textSizer, wxSizerFlags{}.Expand().Border());
 
@@ -195,13 +237,46 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    wxString InsertGraphDlg::GetGraphTitle() const { return m_title; }
+    void InsertGraphDlg::EditLabelHelper(GraphItems::Label& label, wxStaticText* preview,
+                                         const wxString& dlgCaption)
+        {
+        InsertLabelDlg dlg(GetCanvas(), GetReportBuilder(), this, dlgCaption, wxID_ANY,
+                           wxDefaultPosition, wxDefaultSize,
+                           wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                           label.GetText().empty() ? EditMode::Insert : EditMode::Edit,
+                           false /*includePageOptions*/);
+        if (!label.GetText().empty())
+            {
+            dlg.LoadFromLabel(label, GetCanvas());
+            }
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        dlg.ApplyToLabel(label);
+        if (preview != nullptr)
+            {
+            preview->SetLabel(label.GetText());
+            }
+        }
 
     //-------------------------------------------
-    wxString InsertGraphDlg::GetGraphSubtitle() const { return m_subtitle; }
+    void InsertGraphDlg::OnEditTitle()
+        {
+        EditLabelHelper(m_titleLabel, m_titlePreview, _(L"Edit Title"));
+        }
 
     //-------------------------------------------
-    wxString InsertGraphDlg::GetGraphCaption() const { return m_caption; }
+    void InsertGraphDlg::OnEditSubtitle()
+        {
+        EditLabelHelper(m_subtitleLabel, m_subtitlePreview, _(L"Edit Subtitle"));
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnEditCaption()
+        {
+        EditLabelHelper(m_captionLabel, m_captionPreview, _(L"Edit Caption"));
+        }
 
     //-------------------------------------------
     wxColour InsertGraphDlg::GetPlotBackgroundColor() const
@@ -230,17 +305,48 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertGraphDlg::LoadGraphOptions(const Graphs::Graph2D& graph, const Canvas* canvas)
         {
-        m_title = graph.GetTitle().GetText();
-        m_subtitle = graph.GetSubtitle().GetText();
-        m_caption = graph.GetCaption().GetText();
-
-        // preserve raw templates for round-tripping {{placeholders}}
-        m_titleTemplate = graph.GetTitle().GetPropertyTemplate(L"text");
-        m_titleExpanded = m_title;
-        m_subtitleTemplate = graph.GetSubtitle().GetPropertyTemplate(L"text");
-        m_subtitleExpanded = m_subtitle;
-        m_captionTemplate = graph.GetCaption().GetPropertyTemplate(L"text");
-        m_captionExpanded = m_caption;
+        // copy the full Labels so we can round-trip all styling
+        const auto loadLabel =
+            [](const GraphItems::Label& src, GraphItems::Label& dest, wxStaticText* preview)
+        {
+            dest.GetFont() = src.GetFont();
+            dest.SetFontColor(src.GetFontColor());
+            dest.SetFontBackgroundColor(src.GetFontBackgroundColor());
+            dest.SetTextAlignment(src.GetTextAlignment());
+            dest.SetLineSpacing(src.GetLineSpacing());
+            dest.SetTextOrientation(src.GetTextOrientation());
+            dest.SetPadding(src.GetTopPadding(), src.GetRightPadding(), src.GetBottomPadding(),
+                            src.GetLeftPadding());
+            dest.GetPen() = src.GetPen();
+            dest.GetHeaderInfo() = src.GetHeaderInfo();
+            // left image
+            dest.SetLeftImage(src.GetLeftImage());
+            const auto leftImgPath = src.GetPropertyTemplate(L"left-image.path");
+            if (!leftImgPath.empty())
+                {
+                dest.SetPropertyTemplate(L"left-image.path", leftImgPath);
+                }
+            // top shapes
+            const auto& topShapes = src.GetTopShape();
+            if (topShapes.has_value())
+                {
+                dest.SetTopShape(topShapes.value(), src.GetTopImageOffset());
+                }
+            // use the raw template text if available so constants are shown unexpanded
+            const auto tmpl = src.GetPropertyTemplate(L"text");
+            dest.SetText(tmpl.empty() ? src.GetText() : tmpl);
+            if (!tmpl.empty())
+                {
+                dest.SetPropertyTemplate(L"text", tmpl);
+                }
+            if (preview != nullptr)
+                {
+                preview->SetLabel(src.GetText());
+                }
+        };
+        loadLabel(graph.GetTitle(), m_titleLabel, m_titlePreview);
+        loadLabel(graph.GetSubtitle(), m_subtitleLabel, m_subtitlePreview);
+        loadLabel(graph.GetCaption(), m_captionLabel, m_captionPreview);
 
         const auto bgColor = graph.GetPlotBackgroundColor();
         if (bgColor.IsOk() && !bgColor.IsTransparent() && m_plotBgColorPicker != nullptr)
