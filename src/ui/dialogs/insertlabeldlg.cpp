@@ -7,6 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertlabeldlg.h"
+#include "../../base/reportenumconvert.h"
+#include "insertshapedlg.h"
+#include <utility>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -53,36 +56,50 @@ namespace Wisteria::UI
         labelSizer->Add(m_textCtrl, wxSizerFlags{ 1 }.Expand().Border());
 
         // font options
+        auto* fontBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Font"));
         auto* fontGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        fontGrid->Add(new wxStaticText(labelPage, wxID_ANY, _(L"Font:")),
+        fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Font:")),
                       wxSizerFlags{}.CenterVertical());
-        m_fontPicker = new wxFontPickerCtrl(labelPage, wxID_ANY,
+        m_fontPicker = new wxFontPickerCtrl(fontBox->GetStaticBox(), wxID_ANY,
                                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
         fontGrid->Add(m_fontPicker);
 
-        fontGrid->Add(new wxStaticText(labelPage, wxID_ANY, _(L"Font color:")),
+        fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Font color:")),
                       wxSizerFlags{}.CenterVertical());
-        m_fontColorPicker = new wxColourPickerCtrl(labelPage, wxID_ANY, *wxBLACK);
+        m_fontColorPicker = new wxColourPickerCtrl(fontBox->GetStaticBox(), wxID_ANY, *wxBLACK);
         fontGrid->Add(m_fontColorPicker);
 
-        fontGrid->Add(new wxStaticText(labelPage, wxID_ANY, _(L"Background color:")),
+        fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Background color:")),
                       wxSizerFlags{}.CenterVertical());
-        m_bgColorPicker = new wxColourPickerCtrl(labelPage, wxID_ANY, wxTransparentColour);
+        m_bgColorPicker =
+            new wxColourPickerCtrl(fontBox->GetStaticBox(), wxID_ANY, wxTransparentColour);
         fontGrid->Add(m_bgColorPicker);
 
-        fontGrid->Add(new wxStaticText(labelPage, wxID_ANY, _(L"Alignment:")),
+        fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Alignment:")),
                       wxSizerFlags{}.CenterVertical());
             {
-            auto* alignChoice = new wxChoice(labelPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                             0, nullptr, 0, wxGenericValidator(&m_alignment));
+            auto* alignChoice =
+                new wxChoice(fontBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                             nullptr, 0, wxGenericValidator(&m_alignment));
             alignChoice->Append(_(L"Left"));
             alignChoice->Append(_(L"Right"));
             alignChoice->Append(_(L"Center"));
+            alignChoice->Append(_(L"Justified"));
+            alignChoice->Append(_(L"Justified (at word)"));
             fontGrid->Add(alignChoice);
             }
 
-        labelSizer->Add(fontGrid, wxSizerFlags{}.Border());
+        fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Line spacing:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_lineSpacingSpin = new wxSpinCtrlDouble(fontBox->GetStaticBox(), wxID_ANY, wxEmptyString,
+                                                 wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
+                                                 -100.0, 100.0, 1.0, 0.5);
+        m_lineSpacingSpin->SetDigits(1);
+        fontGrid->Add(m_lineSpacingSpin);
+
+        fontBox->Add(fontGrid, wxSizerFlags{}.Border());
+        labelSizer->Add(fontBox, wxSizerFlags{}.Border());
 
         // header options
         auto* headerBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Header"));
@@ -113,6 +130,8 @@ namespace Wisteria::UI
         m_headerAlignmentChoice->Append(_(L"Left"));
         m_headerAlignmentChoice->Append(_(L"Right"));
         m_headerAlignmentChoice->Append(_(L"Center"));
+        m_headerAlignmentChoice->Append(_(L"Justified"));
+        m_headerAlignmentChoice->Append(_(L"Justified (at word)"));
         headerGrid->Add(m_headerAlignmentChoice);
 
         headerGrid->Add(
@@ -124,7 +143,7 @@ namespace Wisteria::UI
         headerGrid->Add(m_headerScalingSpin);
 
         headerBox->Add(headerGrid, wxSizerFlags{}.Border());
-        labelSizer->Add(headerBox, wxSizerFlags{}.Expand().Border());
+        labelSizer->Add(headerBox, wxSizerFlags{}.Border());
 
         // header controls start disabled
         OnEnableHeader(false);
@@ -132,6 +151,48 @@ namespace Wisteria::UI
         // bind events
         enableHeaderCheck->Bind(wxEVT_CHECKBOX,
                                 [this](wxCommandEvent& evt) { OnEnableHeader(evt.IsChecked()); });
+
+        // top shapes
+        auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shape(s)"));
+
+        m_topShapeListBox =
+            new wxEditableListBox(topShapeBox->GetStaticBox(), wxID_ANY, _(L"Shapes:"),
+                                  wxDefaultPosition, wxSize{ FromDIP(300), FromDIP(100) },
+                                  wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT);
+        topShapeBox->Add(m_topShapeListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New to open shape dialog
+        m_topShapeListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                                [this](wxCommandEvent&) { OnAddTopShape(); });
+
+        // override Edit to open shape dialog with selected shape
+        m_topShapeListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                 [this](wxCommandEvent&) { OnEditTopShape(); });
+
+        // override Delete to keep m_topShapes in sync
+        m_topShapeListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent&)
+            {
+                const auto sel = m_topShapeListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel != wxNOT_FOUND && std::cmp_less(sel, m_topShapes.size()))
+                    {
+                    m_topShapes.erase(std::next(m_topShapes.begin(), sel));
+                    RefreshTopShapeList();
+                    }
+            });
+
+        auto* offsetGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        offsetGrid->Add(new wxStaticText(topShapeBox->GetStaticBox(), wxID_ANY, _(L"Offset:")),
+                        wxSizerFlags{}.CenterVertical());
+        m_topShapeOffsetSpin = new wxSpinCtrl(topShapeBox->GetStaticBox(), wxID_ANY);
+        m_topShapeOffsetSpin->SetRange(0, 1'000);
+        m_topShapeOffsetSpin->SetValue(0);
+        offsetGrid->Add(m_topShapeOffsetSpin);
+
+        topShapeBox->Add(offsetGrid, wxSizerFlags{}.Border());
+        labelSizer->Add(topShapeBox, wxSizerFlags{}.Border());
         }
 
     //-------------------------------------------
@@ -195,6 +256,10 @@ namespace Wisteria::UI
             m_bgColorPicker->SetColour(label.GetFontBackgroundColor());
             }
         m_alignment = static_cast<int>(label.GetTextAlignment());
+        if (m_lineSpacingSpin != nullptr)
+            {
+            m_lineSpacingSpin->SetValue(label.GetLineSpacing());
+            }
 
         // header
         const auto& headerInfo = label.GetHeaderInfo();
@@ -215,6 +280,22 @@ namespace Wisteria::UI
 
         OnEnableHeader(m_headerEnabled);
 
+        // top shapes
+        const auto& topShapes = label.GetTopShape();
+        if (topShapes.has_value())
+            {
+            m_topShapes = topShapes.value();
+            }
+        else
+            {
+            m_topShapes.clear();
+            }
+        if (m_topShapeOffsetSpin != nullptr)
+            {
+            m_topShapeOffsetSpin->SetValue(static_cast<int>(label.GetTopImageOffset()));
+            }
+        RefreshTopShapeList();
+
         TransferDataToWindow();
         }
 
@@ -226,6 +307,7 @@ namespace Wisteria::UI
         label.SetFontColor(GetFontColor());
         label.SetFontBackgroundColor(GetBackgroundColor());
         label.SetTextAlignment(GetLabelAlignment());
+        label.SetLineSpacing(GetLineSpacing());
 
         auto& headerInfo = label.GetHeaderInfo();
         headerInfo.Enable(IsHeaderEnabled());
@@ -236,5 +318,111 @@ namespace Wisteria::UI
             headerInfo.LabelAlignment(GetHeaderAlignment());
             headerInfo.RelativeScaling(GetHeaderScaling());
             }
+
+        // top shapes
+        if (!m_topShapes.empty())
+            {
+            label.SetTopShape(m_topShapes, GetTopShapeOffset());
+            }
+        else
+            {
+            label.SetTopShape(std::nullopt);
+            }
+        }
+
+    //-------------------------------------------
+    int InsertLabelDlg::GetTopShapeOffset() const
+        {
+        return m_topShapeOffsetSpin != nullptr ? m_topShapeOffsetSpin->GetValue() : 0;
+        }
+
+    //-------------------------------------------
+    wxString InsertLabelDlg::FormatShapeLabel(const Wisteria::GraphItems::ShapeInfo& shp)
+        {
+        const auto nameOpt = Wisteria::ReportEnumConvert::ConvertIconToString(shp.GetShape());
+        const auto name = nameOpt.has_value() ? nameOpt.value() : _(L"Unknown");
+        const auto sz = shp.GetSizeDIPs();
+        return wxString::Format(L"%s (%d\u00d7%d)", name, sz.GetWidth(), sz.GetHeight());
+        }
+
+    //-------------------------------------------
+    void InsertLabelDlg::RefreshTopShapeList()
+        {
+        if (m_topShapeListBox == nullptr)
+            {
+            return;
+            }
+
+        wxArrayString items;
+        items.reserve(m_topShapes.size());
+        for (const auto& shp : m_topShapes)
+            {
+            items.Add(FormatShapeLabel(shp));
+            }
+        m_topShapeListBox->SetStrings(items);
+        }
+
+    //-------------------------------------------
+    void InsertLabelDlg::OnAddTopShape()
+        {
+        InsertShapeDlg dlg(GetCanvas(), nullptr, this, _(L"Add Top Shape"));
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        Wisteria::GraphItems::ShapeInfo shp;
+        shp.Shape(dlg.GetIconShape())
+            .Size(wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() })
+            .Pen(wxPen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() })
+            .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+            .Text(dlg.GetLabelText());
+        if (dlg.IsFillable())
+            {
+            shp.FillPercent(dlg.GetFillPercent());
+            }
+
+        m_topShapes.push_back(shp);
+        RefreshTopShapeList();
+        }
+
+    //-------------------------------------------
+    void InsertLabelDlg::OnEditTopShape()
+        {
+        if (m_topShapeListBox == nullptr)
+            {
+            return;
+            }
+        const auto sel = m_topShapeListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_topShapes.size()))
+            {
+            return;
+            }
+
+        InsertShapeDlg dlg(GetCanvas(), nullptr, this, _(L"Edit Top Shape"), wxID_ANY,
+                           wxDefaultPosition, wxDefaultSize,
+                           wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                           InsertItemDlg::EditMode::Edit);
+        dlg.LoadFromShapeInfo(m_topShapes[static_cast<size_t>(sel)]);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        Wisteria::GraphItems::ShapeInfo shp;
+        shp.Shape(dlg.GetIconShape())
+            .Size(wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() })
+            .Pen(wxPen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() })
+            .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
+            .Text(dlg.GetLabelText());
+        if (dlg.IsFillable())
+            {
+            shp.FillPercent(dlg.GetFillPercent());
+            }
+
+        m_topShapes[static_cast<size_t>(sel)] = shp;
+        RefreshTopShapeList();
         }
     } // namespace Wisteria::UI

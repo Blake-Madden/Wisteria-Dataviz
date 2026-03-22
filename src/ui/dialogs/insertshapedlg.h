@@ -125,6 +125,10 @@ namespace Wisteria::UI
         void LoadFromFillableShape(const Wisteria::GraphItems::FillableShape& shape,
                                    Canvas* canvas);
 
+        /// @brief Populates controls from a ShapeInfo.
+        /// @param shapeInfo The shape info to read settings from.
+        void LoadFromShapeInfo(const Wisteria::GraphItems::ShapeInfo& shapeInfo);
+
       private:
         void CreateControls() final;
         bool Validate() final;

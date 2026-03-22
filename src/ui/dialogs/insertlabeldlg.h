@@ -12,8 +12,10 @@
 #ifndef INSERT_LABEL_DIALOG_H
 #define INSERT_LABEL_DIALOG_H
 
+#include "../../base/shapes.h"
 #include "insertitemdlg.h"
 #include <wx/clrpicker.h>
+#include <wx/editlbox.h>
 #include <wx/fontpicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
@@ -132,6 +134,24 @@ namespace Wisteria::UI
             return m_headerScalingSpin != nullptr ? m_headerScalingSpin->GetValue() : 1.0;
             }
 
+        /// @returns The line spacing.
+        [[nodiscard]]
+        double GetLineSpacing() const
+            {
+            return m_lineSpacingSpin != nullptr ? m_lineSpacingSpin->GetValue() : 1.0;
+            }
+
+        /// @returns The top shapes (may be empty if none are configured).
+        [[nodiscard]]
+        const std::vector<Wisteria::GraphItems::ShapeInfo>& GetTopShapes() const noexcept
+            {
+            return m_topShapes;
+            }
+
+        /// @returns The top shape offset (in DIPs).
+        [[nodiscard]]
+        int GetTopShapeOffset() const;
+
         /// @brief Populates controls from an existing label.
         /// @param label The label to read settings from.
         /// @param canvas The canvas the label belongs to.
@@ -145,6 +165,13 @@ namespace Wisteria::UI
         void CreateControls() final;
         bool Validate() final;
         void OnEnableHeader(bool enable);
+
+        void OnAddTopShape();
+        void OnEditTopShape();
+        /// @brief Builds a display string for a ShapeInfo (e.g., "Square (32\u00d732)").
+        [[nodiscard]]
+        static wxString FormatShapeLabel(const Wisteria::GraphItems::ShapeInfo& shp);
+        void RefreshTopShapeList();
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_LABEL_SECTION{ wxID_HIGHEST + 2 };
@@ -161,6 +188,7 @@ namespace Wisteria::UI
 
         // DDX data members
         int m_alignment{ 0 }; // FlushLeft
+        wxSpinCtrlDouble* m_lineSpacingSpin{ nullptr };
 
         // header
         bool m_headerEnabled{ false };
@@ -169,6 +197,11 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_headerColorPicker{ nullptr };
         wxChoice* m_headerAlignmentChoice{ nullptr };
         wxSpinCtrlDouble* m_headerScalingSpin{ nullptr };
+
+        // top shapes
+        std::vector<Wisteria::GraphItems::ShapeInfo> m_topShapes;
+        wxEditableListBox* m_topShapeListBox{ nullptr };
+        wxSpinCtrl* m_topShapeOffsetSpin{ nullptr };
         };
     } // namespace Wisteria::UI
 

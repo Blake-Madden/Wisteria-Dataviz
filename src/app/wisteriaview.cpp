@@ -1041,6 +1041,7 @@ void WisteriaView::PlaceGraphWithLegend(
             }
         }
 
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -1464,6 +1465,7 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetFixedObject(itemRow, itemCol, nullptr);
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -3578,6 +3580,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
     label->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), label);
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -3624,6 +3627,7 @@ void WisteriaView::EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canva
     newLabel->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(labelRow, labelCol, newLabel);
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -3770,6 +3774,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     image->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), image);
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -3915,6 +3920,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
     newImage->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(imageRow, imageCol, newImage);
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -4000,6 +4006,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
         }
 
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -4081,6 +4088,7 @@ void WisteriaView::EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canva
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
 
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -4163,6 +4171,7 @@ void WisteriaView::EditFillableShape(Wisteria::GraphItems::FillableShape& shape,
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
 
+    canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
@@ -4913,11 +4922,11 @@ void WisteriaView::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
         itemNode->Add(L"id", static_cast<double>(item->GetId()));
         }
 
-    // scaling (relative to canvas)
-    const double relScale = std::round(item->GetScaling() / canvas->GetScaling() * 10.0) / 10.0;
-    if (!compare_doubles(relScale, 1.0))
+    // scaling — use the original cached value, not the canvas-overwritten one
+    const double itemScaling = item->GetGraphItemInfo().GetOriginalCanvasScaling();
+    if (!compare_doubles(itemScaling, 1.0))
         {
-        itemNode->Add(L"scaling", relScale);
+        itemNode->Add(L"scaling", itemScaling);
         }
 
     // canvas-margins [top, right, bottom, left]

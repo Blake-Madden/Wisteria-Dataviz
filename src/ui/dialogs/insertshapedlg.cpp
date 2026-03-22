@@ -608,4 +608,124 @@ namespace Wisteria::UI
 
         TransferDataToWindow();
         }
+
+    //-------------------------------------------
+    void InsertShapeDlg::LoadFromShapeInfo(const Wisteria::GraphItems::ShapeInfo& shapeInfo)
+        {
+        // find the shape in the map
+        const auto iconShape = shapeInfo.GetShape();
+        for (size_t i = 0; i < m_shapeMap.size(); ++i)
+            {
+            if (m_shapeMap[i] == iconShape)
+                {
+                m_shapeIndex = static_cast<int>(i);
+                break;
+                }
+            }
+
+        // size
+        const auto sz = shapeInfo.GetSizeDIPs();
+        if (m_widthSpin != nullptr)
+            {
+            m_widthSpin->SetValue(sz.GetWidth());
+            }
+        if (m_heightSpin != nullptr)
+            {
+            m_heightSpin->SetValue(sz.GetHeight());
+            }
+
+        // pen
+        const auto& pen = shapeInfo.GetPen();
+        if (pen.IsOk() && pen != wxNullPen)
+            {
+            if (m_penColorPicker != nullptr)
+                {
+                m_penColorPicker->SetColour(pen.GetColour());
+                }
+            if (m_penWidthSpin != nullptr)
+                {
+                m_penWidthSpin->SetValue(pen.GetWidth());
+                }
+            switch (pen.GetStyle())
+                {
+            case wxPENSTYLE_DOT:
+                m_penStyle = 1;
+                break;
+            case wxPENSTYLE_LONG_DASH:
+                m_penStyle = 2;
+                break;
+            case wxPENSTYLE_SHORT_DASH:
+                m_penStyle = 3;
+                break;
+            case wxPENSTYLE_DOT_DASH:
+                m_penStyle = 4;
+                break;
+            default:
+                m_penStyle = 0;
+                break;
+                }
+            }
+
+        // brush
+        const auto& brush = shapeInfo.GetBrush();
+        if (brush.IsOk() && brush != wxNullBrush)
+            {
+            if (m_brushColorPicker != nullptr)
+                {
+                m_brushColorPicker->SetColour(brush.GetColour());
+                }
+            switch (brush.GetStyle())
+                {
+            case wxBRUSHSTYLE_TRANSPARENT:
+                m_brushStyle = 1;
+                break;
+            case wxBRUSHSTYLE_BDIAGONAL_HATCH:
+                m_brushStyle = 2;
+                break;
+            case wxBRUSHSTYLE_CROSSDIAG_HATCH:
+                m_brushStyle = 3;
+                break;
+            case wxBRUSHSTYLE_FDIAGONAL_HATCH:
+                m_brushStyle = 4;
+                break;
+            case wxBRUSHSTYLE_CROSS_HATCH:
+                m_brushStyle = 5;
+                break;
+            case wxBRUSHSTYLE_HORIZONTAL_HATCH:
+                m_brushStyle = 6;
+                break;
+            case wxBRUSHSTYLE_VERTICAL_HATCH:
+                m_brushStyle = 7;
+                break;
+            default:
+                m_brushStyle = 0;
+                break;
+                }
+            }
+
+        // label
+        if (m_labelTextCtrl != nullptr)
+            {
+            m_labelTextCtrl->SetValue(shapeInfo.GetText());
+            }
+
+        // fill percent
+        const auto fillPct = shapeInfo.GetFillPercent();
+        if (fillPct < 1.0)
+            {
+            m_fillable = true;
+            if (m_fillPercentSpin != nullptr)
+                {
+                m_fillPercentSpin->SetValue(fillPct);
+                }
+            OnEnableFillable(true);
+            }
+        else
+            {
+            m_fillable = false;
+            OnEnableFillable(false);
+            }
+
+        TransferDataToWindow();
+        }
     } // namespace Wisteria::UI
