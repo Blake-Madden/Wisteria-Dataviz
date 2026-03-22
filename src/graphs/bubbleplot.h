@@ -104,6 +104,13 @@ namespace Wisteria::Graphs
                      const wxString& xColumnName, const wxString& sizeColumnName,
                      const std::optional<wxString>& groupColumnName = std::nullopt);
 
+        /// @private
+        [[nodiscard]]
+        const wxString& GetSizeColumnName() const noexcept
+            {
+            return m_sizeColumnName;
+            }
+
         /// @name Bubble Size Functions
         /// @brief Functions relating to bubble sizing.
         /// @{

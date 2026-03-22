@@ -58,8 +58,12 @@ namespace Wisteria
     /// @brief Base class for a list of line styles to use for groups.
     /// @details This is used for line plots and includes the line's pen style and
     ///     how points between the lines are connected (e.g., arrow lines, splines, etc.).
-    class LineStyleScheme
+    class LineStyleScheme : public wxObject
         {
+        wxDECLARE_DYNAMIC_CLASS(LineStyleScheme);
+
+        LineStyleScheme() = default;
+
       public:
         /// @brief Constructor.
         /// @param penStyles The list of pen & line styles to fill the scheme with.
@@ -116,6 +120,8 @@ namespace Wisteria
     ///     straight lines.
     class StandardLineStyles : public LineStyleScheme
         {
+        wxDECLARE_DYNAMIC_CLASS(StandardLineStyles);
+
       public:
         /// @brief Constructor.
         StandardLineStyles()

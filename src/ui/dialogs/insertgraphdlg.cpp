@@ -219,41 +219,45 @@ namespace Wisteria::UI
         graphSizer->Add(bgSizer, wxSizerFlags{}.Expand().Border());
 
         // background image
+        auto* bgBox = new wxStaticBoxSizer(wxVERTICAL, graphPage, _(L"Background Image"));
+
         auto* bgImgSizer = new wxFlexGridSizer(3, wxSize{ FromDIP(8), FromDIP(4) });
-        bgImgSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Background image:")),
+        bgImgSizer->Add(new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, _(L"Image:")),
                         wxSizerFlags{}.CenterVertical());
             {
-            auto* btn = new wxButton(graphPage, wxID_ANY, _(L"Edit..."));
+            auto* btn = new wxButton(bgBox->GetStaticBox(), wxID_ANY, _(L"Edit..."));
             btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditBackgroundImage(); });
             bgImgSizer->Add(btn);
             }
-        m_bgImagePreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                                            wxDefaultSize, wxST_ELLIPSIZE_END);
+        m_bgImagePreview = new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, wxEmptyString,
+                                            wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
         m_bgImagePreview->SetForegroundColour(previewColor);
         bgImgSizer->Add(m_bgImagePreview, wxSizerFlags{}.CenterVertical());
-        graphSizer->Add(bgImgSizer, wxSizerFlags{}.Expand().Border());
+        bgBox->Add(bgImgSizer, wxSizerFlags{}.Expand().Border());
 
-        // image opacity and fit
         auto* imgOptionsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        imgOptionsSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Image opacity:")),
+        imgOptionsSizer->Add(new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, _(L"Opacity:")),
                              wxSizerFlags{}.CenterVertical());
             {
-            auto* opacitySpin = new wxSpinCtrl(graphPage, wxID_ANY);
+            auto* opacitySpin = new wxSpinCtrl(bgBox->GetStaticBox(), wxID_ANY);
             opacitySpin->SetRange(0, 255);
             opacitySpin->SetValue(255);
             opacitySpin->SetValidator(wxGenericValidator(&m_plotBgImageOpacity));
             imgOptionsSizer->Add(opacitySpin);
             }
-        imgOptionsSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Image fit:")),
+        imgOptionsSizer->Add(new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, _(L"Fit:")),
                              wxSizerFlags{}.CenterVertical());
             {
-            auto* fitChoice = new wxChoice(graphPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                           nullptr, 0, wxGenericValidator(&m_plotBgImageFit));
+            auto* fitChoice =
+                new wxChoice(bgBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                             nullptr, 0, wxGenericValidator(&m_plotBgImageFit));
             fitChoice->Append(_(L"Crop and center"));
             fitChoice->Append(_(L"Shrink"));
             imgOptionsSizer->Add(fitChoice);
             }
-        graphSizer->Add(imgOptionsSizer, wxSizerFlags{}.Border());
+        bgBox->Add(imgOptionsSizer, wxSizerFlags{}.Border());
+
+        graphSizer->Add(bgBox, wxSizerFlags{}.Expand().Border());
 
         // axis mirroring
         graphSizer->Add(new wxCheckBox(graphPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,

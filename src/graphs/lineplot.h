@@ -380,6 +380,13 @@ namespace Wisteria::Graphs
             return m_lines;
             }
 
+        /// @private
+        [[nodiscard]]
+        const std::vector<Line>& GetLines() const noexcept
+            {
+            return m_lines;
+            }
+
         /** @brief Gets the number of lines on the plot.
             @returns The number of lines.
             @note This should be called after SetData().*/

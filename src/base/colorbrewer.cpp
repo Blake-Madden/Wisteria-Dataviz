@@ -8,7 +8,45 @@
 
 #include "colorbrewer.h"
 
-namespace Wisteria::Colors
+using namespace Wisteria::Colors::Schemes;
+
+// clang-format off
+wxIMPLEMENT_DYNAMIC_CLASS(ColorScheme, wxObject)
+wxIMPLEMENT_DYNAMIC_CLASS(Dusk, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(EarthTones, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1920s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1940s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1950s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1960s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1970s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1980s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade1990s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Decade2000s, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(October, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Slytherin, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Campfire, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(CoffeeShop, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(ArcticChill, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(BackToSchool, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(BoxOfChocolates, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Cosmopolitan, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(DayAndNight, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(FreshFlowers, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(IceCream, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(UrbanOasis, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Typewriter, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(TastyWaves, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Spring, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(ShabbyChic, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(RollingThunder, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(ProduceSection, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Nautical, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(MeadowSunset, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Semesters, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Seasons, ColorScheme)
+    // clang-format on
+
+    namespace Wisteria::Colors
     {
     //-------------------------------------------
     wxColour ColorBrewer::GetColor(const Color color)

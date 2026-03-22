@@ -470,8 +470,12 @@ namespace Wisteria::Colors
     namespace Schemes
         {
         /// @brief Base class for creating a color scheme.
-        class ColorScheme
+        class ColorScheme : public wxObject
             {
+            wxDECLARE_DYNAMIC_CLASS(ColorScheme);
+
+            ColorScheme() = default;
+
           public:
             /** @brief Constructor.
                 @param colors The initializer list of colors to fill the scheme with.
@@ -579,6 +583,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Dusk : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Dusk);
+
           public:
             Dusk()
                 : ColorScheme({ wxColour(L"#003F5C"), wxColour(L"#2F4B7C"), wxColour(L"#665191"),
@@ -603,6 +609,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class EarthTones : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(EarthTones);
+
           public:
             EarthTones()
                 : ColorScheme({ wxColour(186, 150, 155), wxColour(110, 80, 69),
@@ -627,6 +635,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1920s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1920s);
+
           public:
             Decade1920s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::ChineseRed),
@@ -654,6 +664,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1940s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1940s);
+
           public:
             Decade1940s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::VogueGreen),
@@ -681,6 +693,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1950s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1950s);
+
           public:
             Decade1950s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Lime),
@@ -707,6 +721,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1960s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1960s);
+
           public:
             Decade1960s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Navel),
@@ -734,6 +750,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1970s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1970s);
+
           public:
             Decade1970s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Avocado),
@@ -761,6 +779,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1980s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1980s);
+
           public:
             Decade1980s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::DressyRose),
@@ -788,6 +808,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1990s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade1990s);
+
           public:
             Decade1990s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::SmokySalmon),
@@ -816,6 +838,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade2000s : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Decade2000s);
+
           public:
             Decade2000s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::HickorySmoke),
@@ -842,6 +866,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class October : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(October);
+
           public:
             October()
                 : ColorScheme(
@@ -863,6 +889,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Slytherin : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Slytherin);
+
           public:
             Slytherin()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Slytherin1),
@@ -883,6 +911,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Campfire : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Campfire);
+
           public:
             Campfire()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Firework),
@@ -902,6 +932,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class CoffeeShop : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(CoffeeShop);
+
           public:
             CoffeeShop()
                 : ColorScheme(
@@ -920,6 +952,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class ArcticChill : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(ArcticChill);
+
           public:
             ArcticChill()
                 : ColorScheme({ ColorBrewer::GetColor(Color::GlacierBlue),
@@ -939,6 +973,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class BackToSchool : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(BackToSchool);
+
           public:
             BackToSchool()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Orange),
@@ -958,6 +994,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class BoxOfChocolates : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(BoxOfChocolates);
+
           public:
             BoxOfChocolates()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Chocolate), wxColour(L"#301B28"),
@@ -976,6 +1014,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Cosmopolitan : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Cosmopolitan);
+
           public:
             Cosmopolitan()
                 : ColorScheme({ wxColour(L"#8593AE"), ColorBrewer::GetColor(Color::Blush),
@@ -994,6 +1034,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class DayAndNight : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(DayAndNight);
+
           public:
             DayAndNight()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Blueberry),
@@ -1012,6 +1054,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class FreshFlowers : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(FreshFlowers);
+
           public:
             FreshFlowers()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Aquamarine), wxColour(L"#E6D72A"),
@@ -1030,6 +1074,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class IceCream : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(IceCream);
+
           public:
             IceCream()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Caramel),
@@ -1049,6 +1095,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class UrbanOasis : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(UrbanOasis);
+
           public:
             UrbanOasis()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Bark),
@@ -1068,6 +1116,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Typewriter : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Typewriter);
+
           public:
             Typewriter()
                 : ColorScheme({ wxColour(L"#080706"), ColorBrewer::GetColor(Color::GoldLeaf),
@@ -1086,6 +1136,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class TastyWaves : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(TastyWaves);
+
           public:
             TastyWaves()
                 : ColorScheme({ wxColour(L"#003B46"), ColorBrewer::GetColor(Color::LightSeafoam),
@@ -1104,6 +1156,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Spring : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Spring);
+
           public:
             Spring()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Petal),
@@ -1123,6 +1177,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class ShabbyChic : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(ShabbyChic);
+
           public:
             ShabbyChic()
                 : ColorScheme({ wxColour(L"#CDAB81"), ColorBrewer::GetColor(Color::Metal),
@@ -1141,6 +1197,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class RollingThunder : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(RollingThunder);
+
           public:
             RollingThunder()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Meadow),
@@ -1160,6 +1218,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class ProduceSection : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(ProduceSection);
+
           public:
             ProduceSection()
                 : ColorScheme({ wxColour(L"#31A9B8"), ColorBrewer::GetColor(Color::Avocado),
@@ -1178,6 +1238,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Nautical : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Nautical);
+
           public:
             Nautical()
                 : ColorScheme({ ColorBrewer::GetColor(Color::CandyApple),
@@ -1197,6 +1259,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class MeadowSunset : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(MeadowSunset);
+
           public:
             MeadowSunset()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Grass),
@@ -1216,6 +1280,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Semesters : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Semesters);
+
           public:
             Semesters()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Pumpkin),
@@ -1234,6 +1300,8 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Seasons : public ColorScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Seasons);
+
           public:
             Seasons()
                 : ColorScheme({ ColorBrewer::GetColor(Color::Pumpkin),

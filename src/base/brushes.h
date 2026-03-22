@@ -18,8 +18,12 @@
 namespace Wisteria::Brushes::Schemes
     {
     /// @brief Base class for a list of brushes to use for groups.
-    class BrushScheme
+    class BrushScheme : public wxObject
         {
+        wxDECLARE_DYNAMIC_CLASS(BrushScheme);
+
+        BrushScheme() = default;
+
       public:
         /// @brief Constructor.
         /// @param brushes The vector of brushes to fill the scheme with.

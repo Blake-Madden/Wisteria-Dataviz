@@ -15,7 +15,9 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Image, Wisteria::GraphItems::GraphItemBase);
 
-namespace Wisteria::GraphItems
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
+
+    namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------
     wxSize Image::GetSVGSize(const wxString& filePath)
@@ -130,7 +132,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxImage& image, const uint8_t opacity, const wxColour& colorToPreserve)
+    void Image::SetOpacity(wxImage & image, const uint8_t opacity, const wxColour& colorToPreserve)
         {
         if (!image.IsOk())
             {
@@ -171,7 +173,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxImage& image, const uint8_t opacity,
+    void Image::SetOpacity(wxImage & image, const uint8_t opacity,
                            const bool preserveTransparentPixels)
         {
         if (!image.IsOk())
@@ -565,7 +567,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetColorTransparent(wxImage& image, const wxColour& color)
+    void Image::SetColorTransparent(wxImage & image, const wxColour& color)
         {
         if (!image.IsOk())
             {
@@ -596,7 +598,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity, bool preserveTransparentPixels)
+    void Image::SetOpacity(wxBitmap & bmp, const uint8_t opacity, bool preserveTransparentPixels)
         {
         // note: don't call HasAlpha as this is disabled (for legacy reasons) on Windows
         // by default, even though its depth is 32. You have to explicitly call UseAlpha,
@@ -848,7 +850,9 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Image::GetBoundingBox([[maybe_unused]] wxDC& dc) const
+    wxRect Image::GetBoundingBox([[maybe_unused]]
+                                 wxDC &
+                                 dc) const
         {
         const wxCoord width(m_frameSize.GetWidth() * GetScaling());
         const wxCoord height(m_frameSize.GetHeight() * GetScaling());
@@ -951,7 +955,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxBitmapType Image::GetImageFileTypeFromExtension(wxString& ext)
+    wxBitmapType Image::GetImageFileTypeFromExtension(wxString & ext)
         {
         ext = (ext.find(L'.') == std::wstring::npos) ? ext : wxFileName(ext).GetExt();
         wxBitmapType imageType{ wxBITMAP_TYPE_PNG };
@@ -996,7 +1000,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Image::Draw(wxDC& dc) const
+    wxRect Image::Draw(wxDC & dc) const
         {
         if (!IsShown() || !IsOk() || !m_originalImg.IsOk())
             {

@@ -562,8 +562,12 @@ namespace Wisteria::GraphItems
 namespace Wisteria::Images::Schemes
     {
     /// @brief Class for a list of images.
-    class ImageScheme
+    class ImageScheme : public wxObject
         {
+        wxDECLARE_DYNAMIC_CLASS(ImageScheme);
+
+        ImageScheme() = default;
+
       public:
         /// @brief Constructor.
         /// @param images The vector of images to fill the scheme with.

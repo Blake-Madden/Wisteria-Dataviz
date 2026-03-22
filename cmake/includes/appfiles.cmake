@@ -8,12 +8,14 @@ SET(APP_WISTERIA_SRC
     src/app/wisteriadoc.cpp
     src/app/wisteriaview.cpp
     src/base/axis.cpp
+    src/base/brushes.cpp
     src/base/canvas.cpp
     src/base/colorbrewer.cpp
     src/base/colors.cpp
     src/base/commonaxisbuilder.cpp
     src/base/fillableshape.cpp
     src/base/graphitems.cpp
+    src/base/icons.cpp
     src/base/image.cpp
     src/base/label.cpp
     src/base/lines.cpp

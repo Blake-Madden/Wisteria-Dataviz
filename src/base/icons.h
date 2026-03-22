@@ -193,8 +193,12 @@ namespace Wisteria::Icons
     namespace Schemes
         {
         /// @brief Base class for a list of shapes to use for groups.
-        class IconScheme
+        class IconScheme : public wxObject
             {
+            wxDECLARE_DYNAMIC_CLASS(IconScheme);
+
+            IconScheme() = default;
+
           public:
             /// @brief Constructor.
             /// @param shapes The vector of shapes to fill the scheme with.
@@ -263,6 +267,8 @@ namespace Wisteria::Icons
         /// @brief Standard shapes scheme.
         class StandardShapes : public IconScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(StandardShapes);
+
           public:
             StandardShapes()
                 : IconScheme({ IconShape::Circle, IconShape::Square, IconShape::Hexagon,
@@ -276,6 +282,8 @@ namespace Wisteria::Icons
         /// @brief Semesters (fall, spring, and summer) icon scheme.
         class Semesters : public IconScheme
             {
+            wxDECLARE_DYNAMIC_CLASS(Semesters);
+
           public:
             Semesters() : IconScheme({ IconShape::FallLeaf, IconShape::Flower, IconShape::Sun }) {}
             };

@@ -10,7 +10,13 @@
 #include "image.h"
 #include "label.h"
 
-namespace Wisteria::GraphItems
+// clang-format off
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::LineStyleScheme, wxObject)
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::StandardLineStyles,
+                           Wisteria::GraphItems::LineStyleScheme)
+    // clang-format on
+
+    namespace Wisteria::GraphItems
     {
     //-------------------------------------------
     double GraphItemBase::GetDPIScaleFactor() const
@@ -21,7 +27,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void GraphItemBase::DrawSelectionLabel(wxDC& dc, const double scaling,
+    void GraphItemBase::DrawSelectionLabel(wxDC & dc, const double scaling,
                                            const wxRect boundingBox /*= wxRect()*/) const
         {
         if (IsSelected() && IsShowingLabelWhenSelected() && !GetText().empty())
@@ -77,7 +83,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxBitmap GraphItemBase::ToBitmap(wxDC& dc) const
+    wxBitmap GraphItemBase::ToBitmap(wxDC & dc) const
         {
         const wxRect boundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
         wxBitmap bmp{ boundingBox.GetWidth(), boundingBox.GetHeight(), 32 };
