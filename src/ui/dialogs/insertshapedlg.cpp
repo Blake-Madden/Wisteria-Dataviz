@@ -318,7 +318,13 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertShapeDlg::OnEnableFillable(const bool enable) { m_fillPercentSpin->Enable(enable); }
+    void InsertShapeDlg::OnEnableFillable(const bool enable)
+        {
+        if (m_fillPercentSpin != nullptr)
+            {
+            m_fillPercentSpin->Enable(enable);
+            }
+        }
 
     //-------------------------------------------
     bool InsertShapeDlg::Validate() { return true; }
@@ -452,7 +458,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertShapeDlg::LoadFromShape(const Wisteria::GraphItems::Shape& shape, Canvas* canvas)
+    void InsertShapeDlg::LoadFromShape(const Wisteria::GraphItems::Shape& shape)
         {
         // alignment
         switch (shape.GetPageHorizontalAlignment())
@@ -596,7 +602,7 @@ namespace Wisteria::UI
                                                Canvas* canvas)
         {
         // load the Shape base properties
-        LoadFromShape(shape, canvas);
+        LoadFromShape(shape);
 
         // enable fillable and set the fill percent
         m_fillable = true;

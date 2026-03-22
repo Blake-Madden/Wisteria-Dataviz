@@ -94,6 +94,13 @@ namespace Wisteria::UI
             return m_timeIntervalLabel;
             }
 
+        /// @returns The selected color scheme, or @c nullptr for default.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
+            {
+            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            }
+
         /// @returns The selected shape scheme for the W-Curve plot points.
         [[nodiscard]]
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> GetShapeScheme() const
@@ -135,6 +142,7 @@ namespace Wisteria::UI
         wxStaticText* m_groupVarLabel{ nullptr };
 
         // DDX data members
+        int m_colorSchemeIndex{ 0 };
         int m_shapeSchemeIndex{ 0 };
         wxString m_timeIntervalLabel{ _(L"year") };
 

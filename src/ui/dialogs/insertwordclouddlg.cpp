@@ -111,6 +111,16 @@ namespace Wisteria::UI
 
         optionsSizer->Add(freqSizer, wxSizerFlags{}.Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -315,6 +325,9 @@ namespace Wisteria::UI
         m_wordVariable = wordCloud->GetWordColumnName();
         m_weightVariable = wordCloud->GetWeightColumnName();
         UpdateVariableLabels();
+
+        // determine which color scheme is in use
+        m_colorSchemeIndex = ColorSchemeToIndex(wordCloud->GetColorScheme());
 
         // frequency options
         m_minFreqSpin->SetValue(static_cast<int>(wordCloud->GetMinFrequency()));

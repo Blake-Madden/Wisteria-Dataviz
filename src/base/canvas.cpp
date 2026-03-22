@@ -737,9 +737,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     void Canvas::CalcAllSizes(wxDC & dc)
         {
         wxASSERT_MSG((std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
-                                [](const auto initVal, const auto val) noexcept
+                                      [](const auto initVal, const auto val) noexcept
                                       { return initVal + val.GetHeightProportion(); })) <= 1,
-               L"Canvas row proportions are more than 100%!");
+                     L"Canvas row proportions are more than 100%!");
 
         /* The rendering area must have a minimum size of 700x500;
            otherwise, it will be crunched up and look bad.*/
@@ -801,7 +801,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             const auto currentRowIndex =
                 std::distance(GetFixedObjects().begin(), fixedObjectsRowPos);
             wxASSERT_MSG(std::cmp_less(currentRowIndex, m_rowsInfo.size()),
-                   L"Canvas row out of range!");
+                         L"Canvas row out of range!");
 
             const size_t rowHeightGridArea =
                 fixedObjectRect.GetHeight() * GetRowInfo(currentRowIndex).GetHeightProportion();
@@ -1142,7 +1142,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // because it needs to call CalcMinHeightProportion().
         // These are just sanity tests, the above should force the scaling to 1.0.
         wxASSERT_MSG(compare_doubles(GetScaling(), 1.0),
-               L"Scaling of canvas must be one when calling CalcRowDimensions()!");
+                     L"Scaling of canvas must be one when calling CalcRowDimensions()!");
         if (!compare_doubles(GetScaling(), 1.0))
             {
             return;
@@ -1696,7 +1696,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         if (event.LeftDown())
             {
             wxASSERT_MSG(currentlyDraggedShape == nullptr,
-                   L"Item being dragged should be null upon left mouse down!");
+                         L"Item being dragged should be null upon left mouse down!");
             // unselect any selected items (if Control/Command isn't held down),
             // as we are now selecting (and possibly dragging) something else.
             if (!wxGetMouseState().CmdDown())
@@ -1783,7 +1783,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             dragMode = DragMode::DraggingNone;
 
             wxASSERT_MSG(currentlyDraggedShape, "Drag image is null while mouse up, "
-                                            "although drag mode isn't set to none!");
+                                                "although drag mode isn't set to none!");
             if (m_dragImage != nullptr)
                 {
                 m_dragImage->Hide();
@@ -1792,7 +1792,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
 
             wxASSERT_MSG(currentlyDraggedShape, "Item being dragged is null while mouse up, "
-                                            "although drag mode isn't set to none!");
+                                                "although drag mode isn't set to none!");
             if (currentlyDraggedShape)
                 {
                 const wxPoint movePt(unscrolledPosition - dragStartPos);
@@ -1808,7 +1808,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         else if (event.Dragging() && dragMode != DragMode::DraggingNone)
             {
             wxASSERT_MSG(currentlyDraggedShape, "Item being dragged is null while mouse drag, "
-                                            "although drag mode isn't set to none!");
+                                                "although drag mode isn't set to none!");
             if (dragMode == DragMode::DragStart && currentlyDraggedShape)
                 {
                 dragStartPos = unscrolledPosition;

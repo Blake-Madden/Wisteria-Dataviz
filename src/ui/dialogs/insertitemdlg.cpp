@@ -574,7 +574,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertItemDlg::LoadPageOptions(const GraphItems::GraphItemBase& item, const Canvas* canvas)
+    void InsertItemDlg::LoadPageOptions(const GraphItems::GraphItemBase& item)
         {
         // alignment
         switch (item.GetPageHorizontalAlignment())

@@ -219,6 +219,16 @@ namespace Wisteria::UI
 
         optionsSizer->Add(donutBox, wxSizerFlags{}.Expand().Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
@@ -414,7 +424,7 @@ namespace Wisteria::UI
                            wxDefaultPosition, wxDefaultSize,
                            wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                            EditMode::Edit, false);
-        dlg.LoadFromLabel(m_donutHoleLabel, GetCanvas());
+        dlg.LoadFromLabel(m_donutHoleLabel);
 
         if (dlg.ShowModal() == wxID_OK)
             {
@@ -453,6 +463,9 @@ namespace Wisteria::UI
         m_weightVariable = pieChart->GetWeightColumnName();
         m_group2Variable = pieChart->GetGroupColumn2Name();
         UpdateVariableLabels();
+
+        // determine which color scheme is in use
+        m_colorSchemeIndex = ColorSchemeToIndex(pieChart->GetColorScheme());
 
         m_includeDonutHole = pieChart->IsIncludingDonutHole();
         m_showOuterPieLabels = pieChart->IsShowingOuterPieLabels();

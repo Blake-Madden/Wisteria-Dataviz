@@ -101,6 +101,13 @@ namespace Wisteria::UI
             return m_showConfidenceBands;
             }
 
+        /// @returns The selected color scheme, or @c nullptr for default.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
+            {
+            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            }
+
         /// @returns The selected shape scheme for the scatter plot points.
         [[nodiscard]]
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> GetShapeScheme() const
@@ -144,6 +151,7 @@ namespace Wisteria::UI
         // DDX data members
         bool m_showRegressionLines{ true };
         bool m_showConfidenceBands{ true };
+        int m_colorSchemeIndex{ 0 };
         int m_shapeSchemeIndex{ 0 };
 
         wxString m_xVariable;

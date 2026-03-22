@@ -1177,6 +1177,12 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -1504,6 +1510,12 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -1800,6 +1812,12 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -1872,6 +1890,12 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -1992,6 +2016,12 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -2065,6 +2095,12 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -2619,6 +2655,13 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
+
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
@@ -2695,6 +2738,13 @@ void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         auto plot = std::make_shared<Wisteria::Graphs::Histogram>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -2823,6 +2873,13 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
+
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetWeightVariable());
@@ -2876,6 +2933,13 @@ void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         auto plot = std::make_shared<Wisteria::Graphs::WordCloud>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
 
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
@@ -3340,6 +3404,13 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
+
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetWeightVariable());
@@ -3434,6 +3505,13 @@ void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+
+        if (dlg.GetColorScheme() != nullptr)
+            {
+            plot->SetColorScheme(dlg.GetColorScheme());
+            plot->SetBrushScheme(
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
+            }
 
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
@@ -3611,7 +3689,7 @@ void WisteriaView::EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canva
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(labelRow, labelCol);
-    dlg.LoadFromLabel(label, canvas);
+    dlg.LoadFromLabel(label);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -4037,7 +4115,7 @@ void WisteriaView::EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canva
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(shapeRow, shapeCol);
-    dlg.LoadFromShape(shape, canvas);
+    dlg.LoadFromShape(shape);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -6768,6 +6846,21 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                 }
             }
 
+        // check if the color scheme is a named scheme —
+        // if so, save by name instead of enumerating colors
+        const auto& cs = graph->GetColorScheme();
+        const int csIndex =
+            (cs != nullptr) ? Wisteria::UI::InsertGraphDlg::ColorSchemeToIndex(cs) : 0;
+
+        if (allSolid && csIndex > 0)
+            {
+            // named color scheme with solid brushes — save by name
+            const auto schemeName = Wisteria::UI::InsertGraphDlg::ColorSchemeToName(csIndex);
+            graphNode->Add(L"brush-scheme", schemeName);
+            graphNode->Add(L"color-scheme", schemeName);
+            }
+        else
+            {
         wxString colorsArr = L"[";
         for (size_t i = 0; i < brushes.size(); ++i)
             {
@@ -6793,8 +6886,8 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                     {
                     stylesArr += L", ";
                     }
-                const auto bsStr =
-                    Wisteria::ReportEnumConvert::ConvertBrushStyleToString(brushes[i].GetStyle());
+                    const auto bsStr = Wisteria::ReportEnumConvert::ConvertBrushStyleToString(
+                        brushes[i].GetStyle());
                 stylesArr +=
                     L"\"" + (bsStr.has_value() ? bsStr.value() : wxString(L"solid")) + L"\"";
                 }
@@ -6804,13 +6897,84 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                                                 L", \"color-scheme\": " + colorsArr + L"}"));
             }
         }
+        }
 
-    // color-scheme (only if no brush-scheme was written, since brush-scheme embeds its own)
+    // color-scheme — save named schemes by name, otherwise enumerate individual colors
+    // (only if no brush-scheme was written, since brush-scheme embeds its own)
     if ((graph->GetBrushScheme() == nullptr || graph->GetBrushScheme()->GetBrushes().empty()) &&
         graph->GetColorScheme() != nullptr && !graph->GetColorScheme()->GetColors().empty())
         {
+        // clang-format off
+        const auto& cs = graph->GetColorScheme();
+        if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::ArcticChill)))
+            { graphNode->Add(L"color-scheme", wxString{ L"arcticchill" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::BackToSchool)))
+            { graphNode->Add(L"color-scheme", wxString{ L"backtoschool" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::BoxOfChocolates)))
+            { graphNode->Add(L"color-scheme", wxString{ L"boxofchocolates" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Campfire)))
+            { graphNode->Add(L"color-scheme", wxString{ L"campfire" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::CoffeeShop)))
+            { graphNode->Add(L"color-scheme", wxString{ L"coffeeshop" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Cosmopolitan)))
+            { graphNode->Add(L"color-scheme", wxString{ L"cosmopolitan" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::DayAndNight)))
+            { graphNode->Add(L"color-scheme", wxString{ L"dayandnight" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1920s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1920s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1940s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1940s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1950s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1950s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1960s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1960s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1970s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1970s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1980s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1980s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade1990s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade1990s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade2000s)))
+            { graphNode->Add(L"color-scheme", wxString{ L"decade2000s" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Dusk)))
+            { graphNode->Add(L"color-scheme", wxString{ L"dusk" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::EarthTones)))
+            { graphNode->Add(L"color-scheme", wxString{ L"earthtones" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::FreshFlowers)))
+            { graphNode->Add(L"color-scheme", wxString{ L"freshflowers" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::IceCream)))
+            { graphNode->Add(L"color-scheme", wxString{ L"icecream" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::MeadowSunset)))
+            { graphNode->Add(L"color-scheme", wxString{ L"meadowsunset" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Nautical)))
+            { graphNode->Add(L"color-scheme", wxString{ L"nautical" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::October)))
+            { graphNode->Add(L"color-scheme", wxString{ L"october" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::ProduceSection)))
+            { graphNode->Add(L"color-scheme", wxString{ L"producesection" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::RollingThunder)))
+            { graphNode->Add(L"color-scheme", wxString{ L"rollingthunder" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Seasons)))
+            { graphNode->Add(L"color-scheme", wxString{ L"seasons" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Semesters)))
+            { graphNode->Add(L"color-scheme", wxString{ L"semesters" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::ShabbyChic)))
+            { graphNode->Add(L"color-scheme", wxString{ L"shabbychic" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Slytherin)))
+            { graphNode->Add(L"color-scheme", wxString{ L"slytherin" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Spring)))
+            { graphNode->Add(L"color-scheme", wxString{ L"spring" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::TastyWaves)))
+            { graphNode->Add(L"color-scheme", wxString{ L"tastywaves" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Typewriter)))
+            { graphNode->Add(L"color-scheme", wxString{ L"typewriter" }); }
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::UrbanOasis)))
+            { graphNode->Add(L"color-scheme", wxString{ L"urbanoasis" }); }
+        else
+            {
+            // unrecognized scheme — fall back to enumerating individual colors
         wxString colorsArr = L"[";
-        const auto& colors = graph->GetColorScheme()->GetColors();
+            const auto& colors = cs->GetColors();
         for (size_t i = 0; i < colors.size(); ++i)
             {
             if (i > 0)
@@ -6821,6 +6985,8 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             }
         colorsArr += L"]";
         graphNode->Add(L"color-scheme", wxSimpleJSON::Create(colorsArr));
+        }
+        // clang-format on
         }
 
     // icon-scheme — save named schemes by name, otherwise enumerate individual icons

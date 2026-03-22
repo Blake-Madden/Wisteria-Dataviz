@@ -176,7 +176,7 @@ namespace Wisteria::UI
         labelSizer->Add(leftImgBox, wxSizerFlags{}.Border());
 
         // top shapes
-        auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shape(s)"));
+        auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shapes"));
 
         m_topShapeListBox =
             new wxEditableListBox(topShapeBox->GetStaticBox(), wxID_ANY, _(L"Shapes:"),
@@ -254,11 +254,11 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertLabelDlg::LoadFromLabel(const Wisteria::GraphItems::Label& label, Canvas* canvas)
+    void InsertLabelDlg::LoadFromLabel(const Wisteria::GraphItems::Label& label)
         {
         if (m_includePageOptions)
             {
-            LoadPageOptions(label, canvas);
+            LoadPageOptions(label);
             }
 
         if (m_textCtrl != nullptr)

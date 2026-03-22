@@ -160,6 +160,16 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_neatIntervals)),
                           wxSizerFlags{}.Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
@@ -350,6 +360,9 @@ namespace Wisteria::UI
         m_continuousVariable = histogram->GetContinuousColumnName();
         m_groupVariable = histogram->GetGroupColumnName().value_or(wxString{});
         UpdateVariableLabels();
+
+        // determine which color scheme is in use
+        m_colorSchemeIndex = ColorSchemeToIndex(histogram->GetColorScheme());
 
         // binning options
         m_binningMethod = static_cast<int>(histogram->GetBinningMethod());

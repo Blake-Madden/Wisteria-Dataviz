@@ -157,8 +157,7 @@ namespace Wisteria::UI
 
         /// @brief Populates the page-level controls from an existing graph item.
         /// @param item The item to read the options from.
-        /// @param canvas The canvas the item belongs to.
-        void LoadPageOptions(const GraphItems::GraphItemBase& item, const Canvas* canvas);
+        void LoadPageOptions(const GraphItems::GraphItemBase& item);
 
         /// @brief Selects a specific cell in the grid preview.
         /// @param row The row to select.

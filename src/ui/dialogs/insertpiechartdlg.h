@@ -158,6 +158,13 @@ namespace Wisteria::UI
             return m_donutHoleLabel;
             }
 
+        /// @returns The selected color scheme, or @c nullptr for default.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
+            {
+            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            }
+
         /// @brief Populates all dialog controls from an existing pie chart.
         /// @param graph The graph to read settings from.
         /// @param canvas The canvas the graph belongs to.
@@ -184,6 +191,7 @@ namespace Wisteria::UI
         wxButton* m_editDonutLabelButton{ nullptr };
 
         // DDX data members
+        int m_colorSchemeIndex{ 0 };
         bool m_includeDonutHole{ false };
         bool m_showOuterPieLabels{ true };
         bool m_showInnerPieLabels{ true };

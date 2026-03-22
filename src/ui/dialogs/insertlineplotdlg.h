@@ -94,6 +94,13 @@ namespace Wisteria::UI
             return m_autoSpline;
             }
 
+        /// @returns The selected color scheme, or @c nullptr for default.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
+            {
+            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            }
+
         /// @returns The selected shape scheme for the line plot points.
         [[nodiscard]]
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> GetShapeScheme() const
@@ -136,6 +143,7 @@ namespace Wisteria::UI
 
         // DDX data members
         bool m_autoSpline{ true };
+        int m_colorSchemeIndex{ 0 };
         int m_shapeSchemeIndex{ 0 };
 
         wxString m_xVariable;

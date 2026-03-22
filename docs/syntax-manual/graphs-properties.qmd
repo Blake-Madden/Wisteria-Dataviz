@@ -21,8 +21,10 @@ Properties common to all graphs:
     - `"image-import"`: An [image file specification](#image-file-properties) for the image
         (supports single path, multiple paths with stitching, and effects).
     - `"size"`: An optional object with `"width"` and `"height"` to override the default size.
-    - `"opacity"`: An integer (0–255) controlling the image's opacity. Default is 255 (fully opaque).
-    - `"image-fit"`: How the image fits inside the plot area. Options are:
+    - `"opacity"`: An integer (0–255) controlling the image's opacity.
+       Default is 255 (fully opaque).
+    - `"image-fit"`: How the image fits inside the plot area.
+       Options are:
         - `"shrink"` (default): Shrink the image to fit the plot area.
         - `"crop-and-center"`: Crop the image to the plot area dimensions,
             using the center of the image as the crop origin.

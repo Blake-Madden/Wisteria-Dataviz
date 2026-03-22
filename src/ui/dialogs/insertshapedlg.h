@@ -116,8 +116,7 @@ namespace Wisteria::UI
 
         /// @brief Populates controls from an existing Shape.
         /// @param shape The shape to read settings from.
-        /// @param canvas The canvas the shape belongs to.
-        void LoadFromShape(const Wisteria::GraphItems::Shape& shape, Canvas* canvas);
+        void LoadFromShape(const Wisteria::GraphItems::Shape& shape);
 
         /// @brief Populates controls from an existing FillableShape.
         /// @param shape The fillable shape to read settings from.

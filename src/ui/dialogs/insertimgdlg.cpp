@@ -265,7 +265,7 @@ namespace Wisteria::UI
         {
         if (m_includePageOptions)
             {
-            LoadPageOptions(image, canvas);
+            LoadPageOptions(image);
             }
 
         // file paths from property templates

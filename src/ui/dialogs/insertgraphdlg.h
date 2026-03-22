@@ -12,6 +12,7 @@
 #ifndef INSERT_GRAPH_DIALOG_H
 #define INSERT_GRAPH_DIALOG_H
 
+#include "../../base/colorbrewer.h"
 #include "../../base/image.h"
 #include "../../base/label.h"
 #include "insertitemdlg.h"
@@ -138,6 +139,18 @@ namespace Wisteria::UI
         /// @param canvas The canvas the graph belongs to.
         void LoadGraphOptions(const Graphs::Graph2D& graph, const Canvas* canvas);
 
+        /// @brief Maps an existing color scheme to a dropdown index.
+        /// @param scheme The color scheme to identify (may be @c nullptr).
+        /// @returns The corresponding index (0 if unrecognized or @c nullptr).
+        [[nodiscard]]
+        static int ColorSchemeToIndex(const std::shared_ptr<Colors::Schemes::ColorScheme>& scheme);
+
+        /// @brief Returns the JSON key name for a color scheme dropdown index.
+        /// @param index The zero-based selection index (0 = default/none).
+        /// @returns The JSON key string, or empty if index is 0 or out of range.
+        [[nodiscard]]
+        static wxString ColorSchemeToName(int index);
+
       protected:
         /// @returns The color to apply to selected variable names on the dialog.
         static wxColour GetVariableLabelColor() { return wxColour{ 0, 102, 204 }; }
@@ -162,6 +175,16 @@ namespace Wisteria::UI
                 InsertGraphDlg::CreateControls() and before adding
                 chart-specific pages.*/
         void CreateGraphOptionsPage();
+
+        /// @brief Creates a color scheme from a dropdown index.
+        /// @param index The zero-based selection index (0 = default/none).
+        /// @returns The corresponding color scheme, or @c nullptr for "Default".
+        [[nodiscard]]
+        static std::shared_ptr<Colors::Schemes::ColorScheme> ColorSchemeFromIndex(int index);
+
+        /// @brief Returns the list of color scheme display names for a wxChoice.
+        [[nodiscard]]
+        static wxArrayString GetColorSchemeNames();
 
         /// @brief ID for the Graph Options sidebar section.
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
