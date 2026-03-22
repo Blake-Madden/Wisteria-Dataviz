@@ -152,6 +152,29 @@ namespace Wisteria::UI
         enableHeaderCheck->Bind(wxEVT_CHECKBOX,
                                 [this](wxCommandEvent& evt) { OnEnableHeader(evt.IsChecked()); });
 
+        // left image
+        auto* leftImgBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Left Image"));
+        m_leftImageThumbnail = new Thumbnail(
+            leftImgBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
+            wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
+        leftImgBox->Add(m_leftImageThumbnail, wxSizerFlags{}.Border());
+        // intercept click to capture the file path for round-tripping
+        m_leftImageThumbnail->Bind(
+            wxEVT_LEFT_DOWN,
+            [this](wxMouseEvent&)
+            {
+                wxFileDialog fileDlg(
+                    this, _(L"Select an Image"), wxString{}, wxString{},
+                    wxString::Format(L"%s %s", _(L"Image Files"), wxImage::GetImageExtWildcard()),
+                    wxFD_OPEN | wxFD_PREVIEW);
+                if (fileDlg.ShowModal() == wxID_OK)
+                    {
+                    m_leftImagePath = fileDlg.GetPath();
+                    m_leftImageThumbnail->LoadImage(m_leftImagePath);
+                    }
+            });
+        labelSizer->Add(leftImgBox, wxSizerFlags{}.Border());
+
         // top shapes
         auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shape(s)"));
 
@@ -280,6 +303,13 @@ namespace Wisteria::UI
 
         OnEnableHeader(m_headerEnabled);
 
+        // left image
+        m_leftImagePath = label.GetPropertyTemplate(L"left-image.path");
+        if (!m_leftImagePath.empty() && m_leftImageThumbnail != nullptr)
+            {
+            m_leftImageThumbnail->LoadImage(m_leftImagePath);
+            }
+
         // top shapes
         const auto& topShapes = label.GetTopShape();
         if (topShapes.has_value())
@@ -317,6 +347,23 @@ namespace Wisteria::UI
             headerInfo.FontColor(GetHeaderFontColor());
             headerInfo.LabelAlignment(GetHeaderAlignment());
             headerInfo.RelativeScaling(GetHeaderScaling());
+            }
+
+        // left image
+        const auto leftImgPath = GetLeftImagePath();
+        if (!leftImgPath.empty())
+            {
+            const auto img = Wisteria::GraphItems::Image::LoadFile(leftImgPath);
+            if (img.IsOk())
+                {
+                label.SetLeftImage(wxBitmapBundle::FromImage(img));
+                label.SetPropertyTemplate(L"left-image.path", leftImgPath);
+                }
+            }
+        else
+            {
+            label.SetLeftImage(wxBitmapBundle{});
+            label.SetPropertyTemplate(L"left-image.path", wxString{});
             }
 
         // top shapes
@@ -425,4 +472,5 @@ namespace Wisteria::UI
         m_topShapes[static_cast<size_t>(sel)] = shp;
         RefreshTopShapeList();
         }
+
     } // namespace Wisteria::UI

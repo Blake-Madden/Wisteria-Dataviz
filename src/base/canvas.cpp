@@ -736,9 +736,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //---------------------------------------------------
     void Canvas::CalcAllSizes(wxDC & dc)
         {
-        assert((std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
+        wxASSERT_MSG((std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
                                 [](const auto initVal, const auto val) noexcept
-                                { return initVal + val.GetHeightProportion(); })) <= 1 &&
+                                      { return initVal + val.GetHeightProportion(); })) <= 1,
                L"Canvas row proportions are more than 100%!");
 
         /* The rendering area must have a minimum size of 700x500;
@@ -800,7 +800,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             auto& currentRow = *fixedObjectsRowPos;
             const auto currentRowIndex =
                 std::distance(GetFixedObjects().begin(), fixedObjectsRowPos);
-            assert(std::cmp_less(currentRowIndex, m_rowsInfo.size()) &&
+            wxASSERT_MSG(std::cmp_less(currentRowIndex, m_rowsInfo.size()),
                    L"Canvas row out of range!");
 
             const size_t rowHeightGridArea =
@@ -1141,7 +1141,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // This will only work when the canvas is at the default 1.0 scaling
         // because it needs to call CalcMinHeightProportion().
         // These are just sanity tests, the above should force the scaling to 1.0.
-        assert(compare_doubles(GetScaling(), 1.0) &&
+        wxASSERT_MSG(compare_doubles(GetScaling(), 1.0),
                L"Scaling of canvas must be one when calling CalcRowDimensions()!");
         if (!compare_doubles(GetScaling(), 1.0))
             {
@@ -1261,9 +1261,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     std::shared_ptr<GraphItems::GraphItemBase> Canvas::GetFixedObject(const size_t row,
                                                                       const size_t column)
         {
-        assert(!GetFixedObjects().empty());
-        assert(row < GetFixedObjects().size());
-        assert(column < GetFixedObjects().at(0).size());
+        wxASSERT(!GetFixedObjects().empty());
+        wxASSERT(row < GetFixedObjects().size());
+        wxASSERT(column < GetFixedObjects().at(0).size());
         if (GetFixedObjects().empty() || row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
             {
@@ -1292,9 +1292,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     std::shared_ptr<GraphItems::GraphItemBase> Canvas::GetFixedObject(const size_t row,
                                                                       const size_t column) const
         {
-        assert(!GetFixedObjects().empty());
-        assert(row < GetFixedObjects().size());
-        assert(column < GetFixedObjects().at(0).size());
+        wxASSERT(!GetFixedObjects().empty());
+        wxASSERT(row < GetFixedObjects().size());
+        wxASSERT(column < GetFixedObjects().at(0).size());
         if (GetFixedObjects().empty() || row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
             {
@@ -1695,7 +1695,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         if (event.LeftDown())
             {
-            assert(currentlyDraggedShape == nullptr &&
+            wxASSERT_MSG(currentlyDraggedShape == nullptr,
                    L"Item being dragged should be null upon left mouse down!");
             // unselect any selected items (if Control/Command isn't held down),
             // as we are now selecting (and possibly dragging) something else.
@@ -1782,7 +1782,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             // finished dragging
             dragMode = DragMode::DraggingNone;
 
-            assert(currentlyDraggedShape && "Drag image is null while mouse up, "
+            wxASSERT_MSG(currentlyDraggedShape, "Drag image is null while mouse up, "
                                             "although drag mode isn't set to none!");
             if (m_dragImage != nullptr)
                 {
@@ -1791,7 +1791,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 m_dragImage = nullptr;
                 }
 
-            assert(currentlyDraggedShape && "Item being dragged is null while mouse up, "
+            wxASSERT_MSG(currentlyDraggedShape, "Item being dragged is null while mouse up, "
                                             "although drag mode isn't set to none!");
             if (currentlyDraggedShape)
                 {
@@ -1807,7 +1807,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             }
         else if (event.Dragging() && dragMode != DragMode::DraggingNone)
             {
-            assert(currentlyDraggedShape && "Item being dragged is null while mouse drag, "
+            wxASSERT_MSG(currentlyDraggedShape, "Item being dragged is null while mouse drag, "
                                             "although drag mode isn't set to none!");
             if (dragMode == DragMode::DragStart && currentlyDraggedShape)
                 {
@@ -1971,7 +1971,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //------------------------------------------------------
     void Canvas::ZoomIn()
         {
-        assert(m_zoomLevel >= 0);
+        wxASSERT(m_zoomLevel >= 0);
         if (m_zoomLevel >= 40) // don't allow zooming into a nonsensical depth
             {
             return;
@@ -1990,7 +1990,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //------------------------------------------------------
     void Canvas::ZoomOut()
         {
-        assert(m_zoomLevel >= 0);
+        wxASSERT(m_zoomLevel >= 0);
         if (m_zoomLevel <= 0)
             {
             return;
@@ -2009,7 +2009,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //------------------------------------------------------
     void Canvas::ZoomReset()
         {
-        assert(m_zoomLevel >= 0);
+        wxASSERT(m_zoomLevel >= 0);
         if (m_zoomLevel == 0)
             {
             return;

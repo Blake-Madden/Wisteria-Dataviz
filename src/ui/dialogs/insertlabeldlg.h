@@ -13,6 +13,7 @@
 #define INSERT_LABEL_DIALOG_H
 
 #include "../../base/shapes.h"
+#include "../controls/thumbnail.h"
 #include "insertitemdlg.h"
 #include <wx/clrpicker.h>
 #include <wx/editlbox.h>
@@ -141,6 +142,13 @@ namespace Wisteria::UI
             return m_lineSpacingSpin != nullptr ? m_lineSpacingSpin->GetValue() : 1.0;
             }
 
+        /// @returns The left image file path (empty if none).
+        [[nodiscard]]
+        const wxString& GetLeftImagePath() const noexcept
+            {
+            return m_leftImagePath;
+            }
+
         /// @returns The top shapes (may be empty if none are configured).
         [[nodiscard]]
         const std::vector<Wisteria::GraphItems::ShapeInfo>& GetTopShapes() const noexcept
@@ -197,6 +205,10 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_headerColorPicker{ nullptr };
         wxChoice* m_headerAlignmentChoice{ nullptr };
         wxSpinCtrlDouble* m_headerScalingSpin{ nullptr };
+
+        // left image
+        Thumbnail* m_leftImageThumbnail{ nullptr };
+        wxString m_leftImagePath;
 
         // top shapes
         std::vector<Wisteria::GraphItems::ShapeInfo> m_topShapes;
