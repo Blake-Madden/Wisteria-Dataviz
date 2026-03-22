@@ -1177,6 +1177,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -1503,6 +1504,7 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -1798,6 +1800,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
+        plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -1869,6 +1872,7 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
+        plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -1988,6 +1992,7 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+        plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -2060,6 +2065,7 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+        plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -6817,9 +6823,16 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
         graphNode->Add(L"color-scheme", wxSimpleJSON::Create(colorsArr));
         }
 
-    // icon-scheme
+    // icon-scheme — save named schemes by name, otherwise enumerate individual icons
     if (graph->GetShapeScheme() != nullptr && !graph->GetShapeScheme()->GetShapes().empty())
         {
+        if (graph->GetShapeScheme()->IsKindOf(wxCLASSINFO(Wisteria::Icons::Schemes::Semesters)))
+            {
+            graphNode->Add(L"icon-scheme", wxString{ L"semesters" });
+            }
+        else if (!graph->GetShapeScheme()->IsKindOf(
+                     wxCLASSINFO(Wisteria::Icons::Schemes::StandardShapes)))
+            {
         wxString iconsArr = L"[";
         const auto& shapes = graph->GetShapeScheme()->GetShapes();
         for (size_t i = 0; i < shapes.size(); ++i)
@@ -6829,11 +6842,13 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                 iconsArr += L", ";
                 }
             const auto iconStr = Wisteria::ReportEnumConvert::ConvertIconToString(shapes[i]);
-            iconsArr +=
-                L"\"" + (iconStr.has_value() ? iconStr.value() : wxString(L"blank-icon")) + L"\"";
+                iconsArr += L"\"" +
+                            (iconStr.has_value() ? iconStr.value() : wxString(L"blank-icon")) +
+                            L"\"";
             }
         iconsArr += L"]";
         graphNode->Add(L"icon-scheme", wxSimpleJSON::Create(iconsArr));
+        }
         }
 
     SaveItem(graphNode, graph, canvas);
