@@ -202,6 +202,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         const auto groupColumn = GetGroupColumn();
         const auto yColumn = GetContinuousColumn(m_yColumnName);
         const auto xColumns = GetXColumns();
+
+        // refresh each line's shape from the current scheme
+        // (the scheme may have changed since SetData() was called)
+        if (GetShapeScheme() != nullptr)
+            {
+            for (size_t lineIndex = 0; lineIndex < GetLines().size(); ++lineIndex)
+                {
+                GetLines()[lineIndex].SetShape(GetShapeScheme()->GetShape(lineIndex));
+                GetLines()[lineIndex].SetShapeImage(GetShapeScheme()->GetImage(lineIndex));
+                }
+            }
+
         for (auto& line : GetLines())
             {
             auto points = std::make_unique<GraphItems::Points2D>(line.GetPen());

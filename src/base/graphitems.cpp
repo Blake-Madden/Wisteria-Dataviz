@@ -11,9 +11,9 @@
 #include "label.h"
 
 // clang-format off
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::LineStyleScheme, wxObject)
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::StandardLineStyles,
-                           Wisteria::GraphItems::LineStyleScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::LineStyleScheme, wxObject)
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::StandardLineStyles,
+                           Wisteria::LineStyleScheme)
     // clang-format on
 
     namespace Wisteria::GraphItems
