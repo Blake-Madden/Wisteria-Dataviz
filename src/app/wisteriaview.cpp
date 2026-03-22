@@ -5398,7 +5398,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveLabel(const Wisteria::GraphItems::Label* l
     // orientation (default is horizontal)
     if (label->GetTextOrientation() == Wisteria::Orientation::Vertical)
         {
-        node->Add(L"orientation", L"vertical");
+        node->Add(L"orientation", wxString{ L"vertical" });
         }
 
     // line-spacing (default is 1)
