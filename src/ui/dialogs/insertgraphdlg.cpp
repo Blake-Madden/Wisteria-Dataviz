@@ -7,8 +7,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertgraphdlg.h"
+#include "../../base/reportenumconvert.h"
 #include "../../graphs/graph2d.h"
+#include "insertimgdlg.h"
 #include "insertlabeldlg.h"
+#include <wx/filename.h>
 #include <wx/gbsizer.h>
 
 namespace Wisteria::UI
@@ -95,6 +98,16 @@ namespace Wisteria::UI
             graph.SetPlotBackgroundImage(
                 wxBitmapBundle::FromBitmap(wxBitmap(bgImage.GetOriginalImage())),
                 GetPlotBackgroundImageOpacity());
+            graph.SetPlotBackgroundImageFit(GetPlotBackgroundImageFit());
+
+            // copy property templates to the graph for round-tripping
+            for (const auto& [key, val] : bgImage.GetPropertyTemplates())
+                {
+                if (key.StartsWith(L"image-import.") || key.StartsWith(L"size."))
+                    {
+                    graph.SetPropertyTemplate(key, val);
+                    }
+                }
             }
 
         graph.MirrorXAxis(GetMirrorXAxis());
@@ -206,25 +219,41 @@ namespace Wisteria::UI
         graphSizer->Add(bgSizer, wxSizerFlags{}.Expand().Border());
 
         // background image
-        graphSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Background image:")),
-                        wxSizerFlags{}.Border(wxLEFT));
-        m_plotBgImageThumbnail = new Thumbnail(
-            graphPage, wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
-            wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
-        graphSizer->Add(m_plotBgImageThumbnail, wxSizerFlags{}.Border());
+        auto* bgImgSizer = new wxFlexGridSizer(3, wxSize{ FromDIP(8), FromDIP(4) });
+        bgImgSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Background image:")),
+                        wxSizerFlags{}.CenterVertical());
+            {
+            auto* btn = new wxButton(graphPage, wxID_ANY, _(L"Edit..."));
+            btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditBackgroundImage(); });
+            bgImgSizer->Add(btn);
+            }
+        m_bgImagePreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                                            wxDefaultSize, wxST_ELLIPSIZE_END);
+        m_bgImagePreview->SetForegroundColour(previewColor);
+        bgImgSizer->Add(m_bgImagePreview, wxSizerFlags{}.CenterVertical());
+        graphSizer->Add(bgImgSizer, wxSizerFlags{}.Expand().Border());
 
-        // image opacity
-        auto* opacitySizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        opacitySizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Image opacity:")),
-                          wxSizerFlags{}.CenterVertical());
+        // image opacity and fit
+        auto* imgOptionsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        imgOptionsSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Image opacity:")),
+                             wxSizerFlags{}.CenterVertical());
             {
             auto* opacitySpin = new wxSpinCtrl(graphPage, wxID_ANY);
             opacitySpin->SetRange(0, 255);
             opacitySpin->SetValue(255);
             opacitySpin->SetValidator(wxGenericValidator(&m_plotBgImageOpacity));
-            opacitySizer->Add(opacitySpin);
+            imgOptionsSizer->Add(opacitySpin);
             }
-        graphSizer->Add(opacitySizer, wxSizerFlags{}.Border());
+        imgOptionsSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Image fit:")),
+                             wxSizerFlags{}.CenterVertical());
+            {
+            auto* fitChoice = new wxChoice(graphPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                                           nullptr, 0, wxGenericValidator(&m_plotBgImageFit));
+            fitChoice->Append(_(L"Crop and center"));
+            fitChoice->Append(_(L"Shrink"));
+            imgOptionsSizer->Add(fitChoice);
+            }
+        graphSizer->Add(imgOptionsSizer, wxSizerFlags{}.Border());
 
         // axis mirroring
         graphSizer->Add(new wxCheckBox(graphPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,
@@ -279,21 +308,142 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::OnEditBackgroundImage()
+        {
+        InsertImageDlg dlg(GetCanvas(), GetReportBuilder(), this, _(L"Edit Background Image"),
+                           wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                           wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                           m_plotBgImage.IsOk() ? EditMode::Edit : EditMode::Insert,
+                           false /*includePageOptions*/);
+        if (m_plotBgImage.IsOk())
+            {
+            dlg.LoadFromImage(m_plotBgImage, GetCanvas());
+            }
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        // rebuild the image from the dialog's settings
+        const auto paths = dlg.GetImagePaths();
+        if (paths.empty())
+            {
+            m_plotBgImage = GraphItems::Image{};
+            if (m_bgImagePreview != nullptr)
+                {
+                m_bgImagePreview->SetLabel(wxEmptyString);
+                }
+            return;
+            }
+
+        // load and optionally stitch the image(s)
+        std::vector<wxBitmap> bmps;
+        for (const auto& path : paths)
+            {
+            auto loadedBmp = GraphItems::Image::LoadFile(path);
+            if (loadedBmp.IsOk())
+                {
+                bmps.push_back(loadedBmp);
+                }
+            }
+        if (bmps.empty())
+            {
+            return;
+            }
+
+        wxImage resultImg;
+        if (bmps.size() == 1)
+            {
+            resultImg = bmps[0].ConvertToImage();
+            }
+        else if (dlg.GetStitchDirection() == L"vertical")
+            {
+            resultImg = GraphItems::Image::StitchVertically(bmps);
+            }
+        else
+            {
+            resultImg = GraphItems::Image::StitchHorizontally(bmps);
+            }
+
+        // apply effect
+        const auto effect = dlg.GetImageEffect();
+        if (effect != ImageEffect::NoEffect)
+            {
+            resultImg = GraphItems::Image::ApplyEffect(effect, resultImg);
+            }
+
+        m_plotBgImage = GraphItems::Image(resultImg);
+        dlg.ApplyToImage(m_plotBgImage);
+
+        // apply custom size
+        if (dlg.IsCustomSizeEnabled())
+            {
+            const auto reqWidth = dlg.GetImageWidth();
+            const auto reqHeight = dlg.GetImageHeight();
+            const auto bestSz =
+                GraphItems::Image::ToBestSize(resultImg.GetSize(), wxSize{ reqWidth, reqHeight });
+            m_plotBgImage.SetSize(bestSz);
+            }
+
+        // cache property templates for round-tripping
+        if (paths.GetCount() == 1)
+            {
+            m_plotBgImage.SetPropertyTemplate(L"image-import.path", paths[0]);
+            }
+        else
+            {
+            wxString joined;
+            for (size_t i = 0; i < paths.GetCount(); ++i)
+                {
+                if (i > 0)
+                    {
+                    joined += L"\t";
+                    }
+                joined += paths[i];
+                }
+            m_plotBgImage.SetPropertyTemplate(L"image-import.paths", joined);
+            m_plotBgImage.SetPropertyTemplate(L"image-import.stitch", dlg.GetStitchDirection());
+            }
+
+        // cache effect
+        if (effect != ImageEffect::NoEffect)
+            {
+            const auto effectStr = ReportEnumConvert::ConvertImageEffectToString(effect);
+            if (effectStr.has_value())
+                {
+                m_plotBgImage.SetPropertyTemplate(L"image-import.effect", effectStr.value());
+                }
+            }
+
+        // cache custom size
+        if (dlg.IsCustomSizeEnabled())
+            {
+            m_plotBgImage.SetPropertyTemplate(L"size.width", std::to_wstring(dlg.GetImageWidth()));
+            m_plotBgImage.SetPropertyTemplate(L"size.height",
+                                              std::to_wstring(dlg.GetImageHeight()));
+            }
+
+        // update preview
+        if (m_bgImagePreview != nullptr)
+            {
+            const auto pathStr = m_plotBgImage.GetPropertyTemplate(L"image-import.path");
+            if (!pathStr.empty())
+                {
+                m_bgImagePreview->SetLabel(wxFileName{ pathStr }.GetFullName());
+                }
+            else
+                {
+                m_bgImagePreview->SetLabel(
+                    wxString::Format(wxPLURAL(L"%zu image", L"%zu images", paths.GetCount()),
+                                     static_cast<size_t>(paths.GetCount())));
+                }
+            }
+        }
+
+    //-------------------------------------------
     wxColour InsertGraphDlg::GetPlotBackgroundColor() const
         {
         return (m_plotBgColorPicker != nullptr) ? m_plotBgColorPicker->GetColour() : wxColour{};
-        }
-
-    //-------------------------------------------
-    const GraphItems::Image& InsertGraphDlg::GetPlotBackgroundImage() const
-        {
-        return m_plotBgImageThumbnail->GetImage();
-        }
-
-    //-------------------------------------------
-    uint8_t InsertGraphDlg::GetPlotBackgroundImageOpacity() const
-        {
-        return static_cast<uint8_t>(m_plotBgImageOpacity);
         }
 
     //-------------------------------------------
@@ -352,6 +502,40 @@ namespace Wisteria::UI
         if (bgColor.IsOk() && !bgColor.IsTransparent() && m_plotBgColorPicker != nullptr)
             {
             m_plotBgColorPicker->SetColour(bgColor);
+            }
+
+        // background image — rebuild from the graph's bitmap and property templates
+        const auto& bgBundle = graph.GetPlotBackgroundImage();
+        if (bgBundle.IsOk())
+            {
+            const auto bmp = bgBundle.GetBitmapFor(this);
+            m_plotBgImage = GraphItems::Image(bmp.ConvertToImage());
+
+            // copy property templates from the graph for round-tripping
+            for (const auto& [key, val] : graph.GetPropertyTemplates())
+                {
+                if (key.StartsWith(L"image-import.") || key.StartsWith(L"size."))
+                    {
+                    m_plotBgImage.SetPropertyTemplate(key, val);
+                    }
+                }
+
+            m_plotBgImageOpacity = graph.GetPlotBackgroundImageOpacity();
+            m_plotBgImageFit = static_cast<int>(graph.GetPlotBackgroundImageFit());
+
+            // update preview
+            if (m_bgImagePreview != nullptr)
+                {
+                const auto pathStr = m_plotBgImage.GetPropertyTemplate(L"image-import.path");
+                if (!pathStr.empty())
+                    {
+                    m_bgImagePreview->SetLabel(wxFileName{ pathStr }.GetFullName());
+                    }
+                else
+                    {
+                    m_bgImagePreview->SetLabel(_(L"(image)"));
+                    }
+                }
             }
 
         m_mirrorXAxis = graph.IsXAxisMirrored();

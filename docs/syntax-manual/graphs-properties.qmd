@@ -16,6 +16,16 @@ Properties common to all graphs:
 - `"caption"`: The caption of the graph, which contains [label](#label-properties) properties.
 - `"axes"`: An array of [axis](#axis-properties) objects.
 - `"background-color"`: A string specifying the plotting area's background color.
+- `"background-image"`: An object specifying an image to draw within the plotting area. \
+    Contains the following properties:
+    - `"image-import"`: An [image file specification](#image-file-properties) for the image
+        (supports single path, multiple paths with stitching, and effects).
+    - `"size"`: An optional object with `"width"` and `"height"` to override the default size.
+    - `"opacity"`: An integer (0–255) controlling the image's opacity. Default is 255 (fully opaque).
+    - `"image-fit"`: How the image fits inside the plot area. Options are:
+        - `"shrink"` (default): Shrink the image to fit the plot area.
+        - `"crop-and-center"`: Crop the image to the plot area dimensions,
+            using the center of the image as the crop origin.
 - `"image-scheme"`: An array of image import specifications.
    (See [image file properties](#image-file-properties).)
 - `"common-box-image-outline"`: A string specifying the color for the outline around the bars/boxes

@@ -12,8 +12,8 @@
 #ifndef INSERT_GRAPH_DIALOG_H
 #define INSERT_GRAPH_DIALOG_H
 
+#include "../../base/image.h"
 #include "../../base/label.h"
-#include "../controls/thumbnail.h"
 #include "insertitemdlg.h"
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
@@ -104,13 +104,26 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxColour GetPlotBackgroundColor() const;
 
-        /// @returns The plot background image, or an invalid image if none was selected.
+        /// @returns The background image settings.
         [[nodiscard]]
-        const GraphItems::Image& GetPlotBackgroundImage() const;
+        const GraphItems::Image& GetPlotBackgroundImage() const noexcept
+            {
+            return m_plotBgImage;
+            }
 
-        /// @returns The opacity for the plot background image (0–255).
+        /// @returns The opacity for the plot background image (0-255).
         [[nodiscard]]
-        uint8_t GetPlotBackgroundImageOpacity() const;
+        uint8_t GetPlotBackgroundImageOpacity() const noexcept
+            {
+            return static_cast<uint8_t>(m_plotBgImageOpacity);
+            }
+
+        /// @returns The plot background image fit mode.
+        [[nodiscard]]
+        ImageFit GetPlotBackgroundImageFit() const noexcept
+            {
+            return static_cast<ImageFit>(m_plotBgImageFit);
+            }
 
         /// @returns Whether to mirror the X axis.
         [[nodiscard]]
@@ -159,26 +172,31 @@ namespace Wisteria::UI
         void OnEditCaption();
         void EditLabelHelper(GraphItems::Label& label, wxStaticText* preview,
                              const wxString& caption);
+        void OnEditBackgroundImage();
 
         // DDX data members
         int m_legendPlacement{ 1 };
         bool m_mirrorXAxis{ false };
         bool m_mirrorYAxis{ false };
         int m_plotBgImageOpacity{ 255 };
+        int m_plotBgImageFit{ 1 }; // Shrink
 
         // title / subtitle / caption as full Labels
         GraphItems::Label m_titleLabel;
         GraphItems::Label m_subtitleLabel;
         GraphItems::Label m_captionLabel;
 
+        // background image
+        GraphItems::Image m_plotBgImage;
+
         // preview controls
         wxStaticText* m_titlePreview{ nullptr };
         wxStaticText* m_subtitlePreview{ nullptr };
         wxStaticText* m_captionPreview{ nullptr };
+        wxStaticText* m_bgImagePreview{ nullptr };
 
         // controls without DDX validator support
         wxColourPickerCtrl* m_plotBgColorPicker{ nullptr };
-        Thumbnail* m_plotBgImageThumbnail{ nullptr };
         };
     } // namespace Wisteria::UI
 

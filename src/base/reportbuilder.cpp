@@ -6940,6 +6940,83 @@ namespace Wisteria
             graph->SetPlotBackgroundColor(bgColor);
             }
 
+        // background image
+        if (const auto bgImgNode = graphNode->GetProperty(L"background-image"); bgImgNode->IsOk())
+            {
+            const auto importNode = bgImgNode->GetProperty(L"image-import");
+            const auto bmp = LoadImageFile(importNode);
+            if (bmp.IsOk())
+                {
+                const auto opacity = static_cast<uint8_t>(
+                    bgImgNode->GetProperty(L"opacity")->AsDouble(wxALPHA_OPAQUE));
+                graph->SetPlotBackgroundImage(wxBitmapBundle(bmp), opacity);
+
+                // image fit
+                const auto fitStr = bgImgNode->GetProperty(L"image-fit")->AsString();
+                if (!fitStr.empty())
+                    {
+                    const auto fit = ReportEnumConvert::ConvertImageFit(fitStr);
+                    if (fit.has_value())
+                        {
+                        graph->SetPlotBackgroundImageFit(fit.value());
+                        }
+                    }
+
+                // cache property templates for round-tripping
+                if (importNode->IsValueString())
+                    {
+                    graph->SetPropertyTemplate(L"image-import.path", importNode->AsString());
+                    }
+                else if (importNode->IsOk())
+                    {
+                    const auto pathStr = importNode->GetProperty(L"path")->AsString();
+                    if (!pathStr.empty())
+                        {
+                        graph->SetPropertyTemplate(L"image-import.path", pathStr);
+                        }
+                    const auto pathsArr = importNode->GetProperty(L"paths")->AsStrings();
+                    if (!pathsArr.empty())
+                        {
+                        wxString joined;
+                        for (size_t i = 0; i < pathsArr.size(); ++i)
+                            {
+                            if (i > 0)
+                                {
+                                joined += L"\t";
+                                }
+                            joined += pathsArr[i];
+                            }
+                        graph->SetPropertyTemplate(L"image-import.paths", joined);
+                        }
+                    const auto stitchStr = importNode->GetProperty(L"stitch")->AsString();
+                    if (!stitchStr.empty())
+                        {
+                        graph->SetPropertyTemplate(L"image-import.stitch", stitchStr);
+                        }
+                    const auto effectStr = importNode->GetProperty(L"effect")->AsString();
+                    if (!effectStr.empty())
+                        {
+                        graph->SetPropertyTemplate(L"image-import.effect", effectStr);
+                        }
+                    }
+                // cache size
+                const auto sizeNode = bgImgNode->GetProperty(L"size");
+                if (sizeNode->IsOk())
+                    {
+                    const auto widthVal = sizeNode->GetProperty(L"width")->AsString();
+                    if (!widthVal.empty())
+                        {
+                        graph->SetPropertyTemplate(L"size.width", widthVal);
+                        }
+                    const auto heightVal = sizeNode->GetProperty(L"height")->AsString();
+                    if (!heightVal.empty())
+                        {
+                        graph->SetPropertyTemplate(L"size.height", heightVal);
+                        }
+                    }
+                }
+            }
+
         // image scheme
         const auto imageSchemeNode = graphNode->GetProperty(L"image-scheme");
         if (imageSchemeNode->IsOk() && imageSchemeNode->IsValueArray())

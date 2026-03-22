@@ -6186,6 +6186,113 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
         graphNode->Add(L"background-color", ColorToStr(bgColor));
         }
 
+    // background-image
+    const auto& bgImgBundle = graph->GetPlotBackgroundImage();
+    if (bgImgBundle.IsOk())
+        {
+        // helper to make absolute paths relative to the project file
+        const auto makeRelative = [this](wxString filePath) -> wxString
+        {
+            if (!m_projectFilePath.empty())
+                {
+                wxFileName fn(filePath);
+                if (fn.IsAbsolute())
+                    {
+                    const wxFileName projectDir(m_projectFilePath);
+                    fn.MakeRelativeTo(projectDir.GetPath());
+                    filePath = fn.GetFullPath(wxPATH_UNIX);
+                    }
+                }
+            return filePath;
+        };
+
+        wxString bgImgStr = L"{";
+        const auto pathsTemplate = graph->GetPropertyTemplate(L"image-import.paths");
+        const auto pathTemplate = graph->GetPropertyTemplate(L"image-import.path");
+        const auto effectTemplate = graph->GetPropertyTemplate(L"image-import.effect");
+        const auto stitchTemplate = graph->GetPropertyTemplate(L"image-import.stitch");
+
+        if (!pathsTemplate.empty())
+            {
+            bgImgStr += L"\"image-import\": {\"paths\": [";
+            wxStringTokenizer tokenizer(pathsTemplate, L"\t");
+            bool first = true;
+            while (tokenizer.HasMoreTokens())
+                {
+                if (!first)
+                    {
+                    bgImgStr += L", ";
+                    }
+                bgImgStr += L"\"" + EscapeJsonStr(makeRelative(tokenizer.GetNextToken())) + L"\"";
+                first = false;
+                }
+            bgImgStr += L"]";
+            if (!stitchTemplate.empty())
+                {
+                bgImgStr += L", \"stitch\": \"" + EscapeJsonStr(stitchTemplate) + L"\"";
+                }
+            if (!effectTemplate.empty())
+                {
+                bgImgStr += L", \"effect\": \"" + EscapeJsonStr(effectTemplate) + L"\"";
+                }
+            bgImgStr += L"}";
+            }
+        else if (!pathTemplate.empty())
+            {
+            bgImgStr += L"\"image-import\": {\"path\": \"" +
+                        EscapeJsonStr(makeRelative(pathTemplate)) + L"\"";
+            if (!effectTemplate.empty())
+                {
+                bgImgStr += L", \"effect\": \"" + EscapeJsonStr(effectTemplate) + L"\"";
+                }
+            bgImgStr += L"}";
+            }
+
+        // size
+        const auto widthStr = graph->GetPropertyTemplate(L"size.width");
+        const auto heightStr = graph->GetPropertyTemplate(L"size.height");
+        if (!widthStr.empty() || !heightStr.empty())
+            {
+            bgImgStr += L", \"size\": {";
+            bool needComma = false;
+            if (!widthStr.empty())
+                {
+                bgImgStr += L"\"width\": " + widthStr;
+                needComma = true;
+                }
+            if (!heightStr.empty())
+                {
+                if (needComma)
+                    {
+                    bgImgStr += L", ";
+                    }
+                bgImgStr += L"\"height\": " + heightStr;
+                }
+            bgImgStr += L"}";
+            }
+
+        // opacity
+        const auto opacity = graph->GetPlotBackgroundImageOpacity();
+        if (opacity != wxALPHA_OPAQUE)
+            {
+            bgImgStr += L", \"opacity\": " + std::to_wstring(opacity);
+            }
+
+        // image-fit
+        const auto imgFit = graph->GetPlotBackgroundImageFit();
+        if (imgFit != Wisteria::ImageFit::Shrink)
+            {
+            const auto fitStr = Wisteria::ReportEnumConvert::ConvertImageFitToString(imgFit);
+            if (fitStr.has_value())
+                {
+                bgImgStr += L", \"image-fit\": \"" + fitStr.value() + L"\"";
+                }
+            }
+
+        bgImgStr += L"}";
+        graphNode->Add(L"background-image", wxSimpleJSON::Create(bgImgStr));
+        }
+
     // stipple-shape (only meaningful when box-effect is stipple-shape)
     if (graph->GetStippleShape() != Wisteria::Icons::IconShape::Square)
         {

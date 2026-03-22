@@ -497,6 +497,27 @@ namespace Wisteria::Graphs
         /// @param fit How to fit the image.
         void SetPlotBackgroundImageFit(const ImageFit fit) { m_plotAreaImageFit = fit; }
 
+        /// @returns How the plot background image fits inside the plot area.
+        [[nodiscard]]
+        ImageFit GetPlotBackgroundImageFit() const noexcept
+            {
+            return m_plotAreaImageFit;
+            }
+
+        /// @returns The plot background image as a bitmap bundle.
+        [[nodiscard]]
+        const wxBitmapBundle& GetPlotBackgroundImage() const noexcept
+            {
+            return m_plotAreaBgImage;
+            }
+
+        /// @returns The opacity of the plot background image.
+        [[nodiscard]]
+        uint8_t GetPlotBackgroundImageOpacity() const noexcept
+            {
+            return m_bgImageOpacity;
+            }
+
         /// @returns The plot background color, if it is valid and not transparent;
         ///     otherwise, returns the canvas's background color.
         [[nodiscard]]

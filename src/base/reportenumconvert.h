@@ -861,6 +861,32 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<ImageFit> ConvertImageFit(const wxString& value)
+            {
+            static const std::map<std::wstring, ImageFit> values = {
+                { L"crop-and-center", ImageFit::CropAndCenter }, { L"shrink", ImageFit::Shrink }
+            };
+
+            const auto foundValue = values.find(value.Lower().ToStdWstring());
+            return ((foundValue != values.cend()) ? std::optional<ImageFit>(foundValue->second) :
+                                                    std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertImageFitToString(ImageFit value)
+            {
+            static const std::map<ImageFit, wxString> values = {
+                { ImageFit::CropAndCenter, L"crop-and-center" }, { ImageFit::Shrink, L"shrink" }
+            };
+
+            const auto foundValue = values.find(value);
+            return ((foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                    std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Gender> ConvertGender(const wxString& value)
             {
             static const std::map<std::wstring, Gender> genderValues = {
