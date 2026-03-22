@@ -1,0 +1,193 @@
+/** @addtogroup UI
+    @brief User interface classes.
+    @date 2005-2026
+    @copyright Blake Madden
+    @author Blake Madden
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License.
+
+     SPDX-License-Identifier: BSD-3-Clause
+@{*/
+
+#ifndef INSERT_BUBBLEPLOT_DIALOG_H
+#define INSERT_BUBBLEPLOT_DIALOG_H
+
+#include "../../base/icons.h"
+#include "insertgraphdlg.h"
+#include <vector>
+#include <wx/wx.h>
+
+namespace Wisteria::UI
+    {
+    /** @brief Dialog for inserting a bubble plot into a canvas cell.
+        @details Extends InsertGraphDlg with an "Options" page containing:
+            - A dataset selector (from the project's datasets).
+            - A "Variables..." button that opens a VariableSelectDlg
+              for selecting X, Y, size, and an optional grouping column.
+            - Labels showing the current variable selections.
+            - Checkboxes for regression lines and confidence bands.
+            - Spin controls for minimum and maximum bubble radius.
+            - Legend placement.*/
+    class InsertBubblePlotDlg final : public InsertGraphDlg
+        {
+      public:
+        /** @brief Constructor.
+            @param canvas The canvas whose grid layout is displayed.
+            @param reportBuilder The report builder containing the project's datasets.
+            @param parent The parent window.
+            @param caption The dialog title.
+            @param id The window ID.
+            @param pos The screen position.
+            @param size The window size.
+            @param style The window style.
+            @param editMode Whether the item is being inserted or edited.*/
+        InsertBubblePlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
+                            const wxString& caption = _(L"Insert Bubble Plot"),
+                            wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
+                            const wxSize& size = wxDefaultSize,
+                            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                            EditMode editMode = EditMode::Insert);
+
+        /// @private
+        InsertBubblePlotDlg(const InsertBubblePlotDlg&) = delete;
+        /// @private
+        InsertBubblePlotDlg& operator=(const InsertBubblePlotDlg&) = delete;
+
+        /// @returns The selected dataset, or @c nullptr if none.
+        [[nodiscard]]
+        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
+
+        /// @returns The name of the selected dataset, or empty if none.
+        [[nodiscard]]
+        wxString GetSelectedDatasetName() const
+            {
+            const int sel = m_datasetChoice->GetSelection();
+            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
+                       m_datasetNames[sel] :
+                       wxString{};
+            }
+
+        /// @returns The X variable name (independent variable).
+        [[nodiscard]]
+        const wxString& GetXVariable() const noexcept
+            {
+            return m_xVariable;
+            }
+
+        /// @returns The Y variable name (dependent variable).
+        [[nodiscard]]
+        const wxString& GetYVariable() const noexcept
+            {
+            return m_yVariable;
+            }
+
+        /// @returns The size variable name (bubble area).
+        [[nodiscard]]
+        const wxString& GetSizeVariable() const noexcept
+            {
+            return m_sizeVariable;
+            }
+
+        /// @returns The grouping variable name, or empty if none.
+        [[nodiscard]]
+        const wxString& GetGroupVariable() const noexcept
+            {
+            return m_groupVariable;
+            }
+
+        /// @returns Whether to show regression lines.
+        [[nodiscard]]
+        bool GetShowRegressionLines() const noexcept
+            {
+            return m_showRegressionLines;
+            }
+
+        /// @returns Whether to show confidence bands.
+        [[nodiscard]]
+        bool GetShowConfidenceBands() const noexcept
+            {
+            return m_showConfidenceBands;
+            }
+
+        /// @returns The minimum bubble radius (in DIPs).
+        [[nodiscard]]
+        int GetMinBubbleRadius() const noexcept
+            {
+            return m_minBubbleRadius;
+            }
+
+        /// @returns The maximum bubble radius (in DIPs).
+        [[nodiscard]]
+        int GetMaxBubbleRadius() const noexcept
+            {
+            return m_maxBubbleRadius;
+            }
+
+        /// @returns The selected color scheme, or @c nullptr for default.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
+            {
+            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            }
+
+        /// @returns The selected shape scheme for the bubble plot points.
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> GetShapeScheme() const
+            {
+            switch (m_shapeSchemeIndex)
+                {
+            case 1:
+                return std::make_shared<Wisteria::Icons::Schemes::Semesters>();
+            case 0:
+                [[fallthrough]];
+            default:
+                return std::make_shared<Wisteria::Icons::Schemes::StandardShapes>();
+                }
+            }
+
+        /// @brief Populates all dialog controls from an existing bubble plot.
+        /// @param graph The graph to read settings from.
+        /// @param canvas The canvas the graph belongs to.
+        void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
+
+      protected:
+        void CreateControls() override;
+
+      private:
+        bool Validate() override;
+        void OnSelectVariables();
+        void OnDatasetChanged();
+        void UpdateVariableLabels();
+        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
+
+        // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
+        constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
+        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
+        constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
+
+        wxChoice* m_datasetChoice{ nullptr };
+        wxStaticText* m_xVarLabel{ nullptr };
+        wxStaticText* m_yVarLabel{ nullptr };
+        wxStaticText* m_sizeVarLabel{ nullptr };
+        wxStaticText* m_groupVarLabel{ nullptr };
+
+        // DDX data members
+        bool m_showRegressionLines{ true };
+        bool m_showConfidenceBands{ true };
+        int m_colorSchemeIndex{ 0 };
+        int m_shapeSchemeIndex{ 0 };
+        int m_minBubbleRadius{ 4 };
+        int m_maxBubbleRadius{ 30 };
+
+        wxString m_xVariable;
+        wxString m_yVariable;
+        wxString m_sizeVariable;
+        wxString m_groupVariable;
+
+        std::vector<wxString> m_datasetNames;
+        };
+    } // namespace Wisteria::UI
+
+/// @}
+
+#endif // INSERT_BUBBLEPLOT_DIALOG_H

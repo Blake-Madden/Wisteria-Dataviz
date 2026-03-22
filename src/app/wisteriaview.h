@@ -152,10 +152,14 @@ class WisteriaView : public wxView
     void OnGraphDropdown(wxCommandEvent& event);
     void OnInsertChernoffPlot(wxCommandEvent& event);
     void OnInsertScatterPlot(wxCommandEvent& event);
+    void OnInsertBubblePlot(wxCommandEvent& event);
     void OnInsertLinePlot(wxCommandEvent& event);
+    void OnInsertMultiSeriesLinePlot(wxCommandEvent& event);
     void OnInsertWCurvePlot(wxCommandEvent& event);
     void OnInsertLRRoadmap(wxCommandEvent& event);
     void OnInsertProConRoadmap(wxCommandEvent& event);
+    void OnInsertGanttChart(wxCommandEvent& event);
+    void OnInsertCandlestickPlot(wxCommandEvent& event);
     void OnInsertHistogram(wxCommandEvent& event);
     void OnInsertWordCloud(wxCommandEvent& event);
     void OnInsertWLSparkline(wxCommandEvent& event);
@@ -177,10 +181,14 @@ class WisteriaView : public wxView
     void OnCanvasDClick(wxCommandEvent& event);
     void EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
+    void EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                        size_t graphCol);
     void EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                           size_t graphRow, size_t graphCol);
     void EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                       size_t graphCol);
+    void EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                 size_t graphRow, size_t graphCol);
     void EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                         size_t graphCol);
     void EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
@@ -197,6 +205,10 @@ class WisteriaView : public wxView
                          size_t graphRow, size_t graphCol);
     void EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                       size_t graphCol);
+    void EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                        size_t graphCol);
+    void EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                             size_t graphRow, size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,

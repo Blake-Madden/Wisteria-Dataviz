@@ -72,7 +72,10 @@ SET(WISTERIA_SRC
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp
+    src/ui/dialogs/insertbubbleplotdlg.cpp
+    src/ui/dialogs/insertcandlestickplotdlg.cpp
     src/ui/dialogs/insertchernoffdlg.cpp
+    src/ui/dialogs/insertganttchartdlg.cpp
     src/ui/dialogs/insertgraphdlg.cpp
     src/ui/dialogs/inserthistogramdlg.cpp
     src/ui/dialogs/insertimgdlg.cpp
@@ -80,6 +83,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertlabeldlg.cpp
     src/ui/dialogs/insertlineplotdlg.cpp
     src/ui/dialogs/insertlrroadmapdlg.cpp
+    src/ui/dialogs/insertmultiserieslineplotdlg.cpp
     src/ui/dialogs/insertpiechartdlg.cpp
     src/ui/dialogs/insertproconroadmapdlg.cpp
     src/ui/dialogs/insertscatterplotdlg.cpp
