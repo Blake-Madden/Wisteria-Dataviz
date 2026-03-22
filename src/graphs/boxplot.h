@@ -561,6 +561,20 @@ namespace Wisteria::Graphs
 
         /// @}
 
+        /// @returns The continuous column name used for the plot.
+        [[nodiscard]]
+        const wxString& GetContinuousColumnName() const noexcept
+            {
+            return m_continuousColumn;
+            }
+
+        /// @returns The group column name, or @c std::nullopt if none.
+        [[nodiscard]]
+        const std::optional<wxString>& GetGroupColumnName() const noexcept
+            {
+            return m_groupColumn;
+            }
+
         /// @private
         [[nodiscard]]
         const BoxAndWhisker& GetBox(const size_t index) const

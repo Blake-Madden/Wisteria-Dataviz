@@ -23,6 +23,7 @@
 #include "../ui/dialogs/insertpagedlg.h"
 #include "../ui/dialogs/insertpiechartdlg.h"
 #include "../ui/dialogs/insertproconroadmapdlg.h"
+#include "../ui/dialogs/insertsankeydiagramdlg.h"
 #include "../ui/dialogs/insertscatterplotdlg.h"
 #include "../ui/dialogs/insertshapedlg.h"
 #include "../ui/dialogs/insertstemandleafdlg.h"
@@ -156,6 +157,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertProConRoadmap, this, ID_NEW_PROCON_ROADMAP);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertGanttChart, this, ID_NEW_GANTT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCandlestickPlot, this, ID_NEW_CANDLESTICK);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertSankeyDiagram, this, ID_NEW_SANKEY_DIAGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHistogram, this, ID_NEW_HISTOGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWordCloud, this, ID_NEW_WORD_CLOUD);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWLSparkline, this, ID_NEW_WIN_LOSS_SPARKLINE);
@@ -1387,6 +1389,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
         EditCandlestickPlot(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
+        {
+        EditSankeyDiagram(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
         {
@@ -3434,6 +3440,162 @@ void WisteriaView::EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteri
                      graph.GetPropertyTemplate(L"variables.low"));
         carryForward(L"variables.close", dlg.GetCloseVariable(),
                      graph.GetPropertyTemplate(L"variables.close"));
+
+        canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertSankeyDiagramDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto sankeySvg = wxGetApp().GetResourceManager().GetSVG(L"sankey.svg");
+    if (sankeySvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(sankeySvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::SankeyDiagram>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+        plot->SetFlowShape(dlg.GetFlowShape());
+        plot->SetGroupLabelDisplay(dlg.GetGroupLabelDisplay());
+        plot->SetColumnHeaderDisplay(dlg.GetColumnHeaderDisplay());
+
+        const std::optional<wxString> fromWeightCol =
+            dlg.GetFromWeightVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(dlg.GetFromWeightVariable());
+        const std::optional<wxString> toWeightCol =
+            dlg.GetToWeightVariable().empty() ? std::nullopt :
+                                                std::optional<wxString>(dlg.GetToWeightVariable());
+        const std::optional<wxString> fromGroupCol =
+            dlg.GetFromGroupVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(dlg.GetFromGroupVariable());
+
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
+                      fromWeightCol, toWeightCol, fromGroupCol);
+
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.from", dlg.GetFromVariable());
+        plot->SetPropertyTemplate(L"variables.to", dlg.GetToVariable());
+        if (!dlg.GetFromWeightVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.from-weight", dlg.GetFromWeightVariable());
+            }
+        if (!dlg.GetToWeightVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.to-weight", dlg.GetToWeightVariable());
+            }
+        if (!dlg.GetFromGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.from-group", dlg.GetFromGroupVariable());
+            }
+
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                     const size_t graphRow, const size_t graphCol)
+    {
+    Wisteria::UI::InsertSankeyDiagramDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Sankey Diagram"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto sankeySvg = wxGetApp().GetResourceManager().GetSVG(L"sankey.svg");
+    if (sankeySvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(sankeySvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph, canvas);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::SankeyDiagram>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+        plot->SetFlowShape(dlg.GetFlowShape());
+        plot->SetGroupLabelDisplay(dlg.GetGroupLabelDisplay());
+        plot->SetColumnHeaderDisplay(dlg.GetColumnHeaderDisplay());
+
+        const std::optional<wxString> fromWeightCol =
+            dlg.GetFromWeightVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(dlg.GetFromWeightVariable());
+        const std::optional<wxString> toWeightCol =
+            dlg.GetToWeightVariable().empty() ? std::nullopt :
+                                                std::optional<wxString>(dlg.GetToWeightVariable());
+        const std::optional<wxString> fromGroupCol =
+            dlg.GetFromGroupVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(dlg.GetFromGroupVariable());
+
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
+                      fromWeightCol, toWeightCol, fromGroupCol);
+
+        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
+                                                  const wxString& oldExpanded)
+        {
+            if (newVal != oldExpanded || newVal.empty())
+                {
+                plot->SetPropertyTemplate(prop, newVal);
+                }
+            else
+                {
+                const auto oldTemplate = graph.GetPropertyTemplate(prop);
+                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
+                }
+        };
+
+        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
+                     graph.GetPropertyTemplate(L"dataset"));
+        carryForward(L"variables.from", dlg.GetFromVariable(),
+                     graph.GetPropertyTemplate(L"variables.from"));
+        carryForward(L"variables.to", dlg.GetToVariable(),
+                     graph.GetPropertyTemplate(L"variables.to"));
+        carryForward(L"variables.from-weight", dlg.GetFromWeightVariable(),
+                     graph.GetPropertyTemplate(L"variables.from-weight"));
+        carryForward(L"variables.to-weight", dlg.GetToWeightVariable(),
+                     graph.GetPropertyTemplate(L"variables.to-weight"));
+        carryForward(L"variables.from-group", dlg.GetFromGroupVariable(),
+                     graph.GetPropertyTemplate(L"variables.from-group"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 

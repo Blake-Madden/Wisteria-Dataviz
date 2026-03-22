@@ -160,6 +160,7 @@ class WisteriaView : public wxView
     void OnInsertProConRoadmap(wxCommandEvent& event);
     void OnInsertGanttChart(wxCommandEvent& event);
     void OnInsertCandlestickPlot(wxCommandEvent& event);
+    void OnInsertSankeyDiagram(wxCommandEvent& event);
     void OnInsertHistogram(wxCommandEvent& event);
     void OnInsertWordCloud(wxCommandEvent& event);
     void OnInsertWLSparkline(wxCommandEvent& event);
@@ -209,6 +210,8 @@ class WisteriaView : public wxView
                         size_t graphCol);
     void EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                              size_t graphRow, size_t graphCol);
+    void EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                           size_t graphRow, size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,

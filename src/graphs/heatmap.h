@@ -163,6 +163,13 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& groupColumnName = std::nullopt,
                      std::optional<size_t> groupColumnCount = std::nullopt);
 
+        /// @returns The continuous column name used for heatmapping.
+        [[nodiscard]]
+        const wxString& GetContinuousColumnName() const noexcept
+            {
+            return m_continuousColumnName;
+            }
+
         /** @name Grouping Functions
             @brief Functions related to how grouped cells are displayed.
             @details These functions are only relevant if a grouping column was supplied.*/
