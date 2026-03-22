@@ -6362,7 +6362,12 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
             {
             const auto ttTmpl = axis->GetTitle().GetPropertyTemplate(L"text");
             const auto& ttText = ttTmpl.empty() ? axis->GetTitle().GetText() : ttTmpl;
-            axisObj += L", \"title\": {\"text\": \"" + EscapeJsonStr(ttText) + L"\"}";
+            axisObj += L", \"title\": {\"text\": \"" + EscapeJsonStr(ttText) + L"\"";
+            if (axis->GetTitle().GetTextOrientation() == Wisteria::Orientation::Vertical)
+                {
+                axisObj += L", \"orientation\": \"vertical\"";
+                }
+            axisObj += L"}";
             }
 
         // axis-pen
