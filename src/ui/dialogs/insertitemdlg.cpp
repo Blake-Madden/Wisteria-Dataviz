@@ -602,12 +602,9 @@ namespace Wisteria::UI
             break;
             }
 
-        // scaling (relative to canvas)
-        if (canvas != nullptr)
-            {
-            const double relScale = item.GetScaling() / canvas->GetScaling();
-            m_scalingSpin->SetValue(std::round(relScale * 10.0) / 10.0);
-            }
+        // scaling — use the original value cached when the item was placed on the
+        // canvas, since the canvas overwrites GetScaling() with its own scaling
+        m_scalingSpin->SetValue(item.GetGraphItemInfo().GetOriginalCanvasScaling());
 
         // canvas margins
         m_marginTop = item.GetTopCanvasMargin();
@@ -625,9 +622,19 @@ namespace Wisteria::UI
         m_fitRowToContent = item.IsFittingCanvasRowHeightToContent();
         m_fixedWidth = item.IsFixedWidthOnCanvas();
 
-        // outline
+        // outline — Label's constructors default to Outline(true,true,true,true) but
+        // with wxNullPen, so no outline is actually drawn. Treat the sides as disabled
+        // when the pen is null to avoid misleadingly showing all checkboxes checked.
         const auto& pen = item.GetPen();
-        if (pen.IsOk() && pen != wxNullPen)
+        const bool hasOutlinePen = pen.IsOk() && pen != wxNullPen;
+
+        const auto& info = item.GetGraphItemInfo();
+        m_outlineTop = hasOutlinePen && info.IsShowingTopOutline();
+        m_outlineRight = hasOutlinePen && info.IsShowingRightOutline();
+        m_outlineBottom = hasOutlinePen && info.IsShowingBottomOutline();
+        m_outlineLeft = hasOutlinePen && info.IsShowingLeftOutline();
+
+        if (hasOutlinePen)
             {
             m_outlineColorPicker->SetColour(pen.GetColour());
             m_outlineWidth = pen.GetWidth();
@@ -651,12 +658,6 @@ namespace Wisteria::UI
                 break;
                 }
             }
-
-        const auto& info = item.GetGraphItemInfo();
-        m_outlineTop = info.IsShowingTopOutline();
-        m_outlineRight = info.IsShowingRightOutline();
-        m_outlineBottom = info.IsShowingBottomOutline();
-        m_outlineLeft = info.IsShowingLeftOutline();
 
         TransferDataToWindow();
         }
