@@ -173,6 +173,12 @@ class WisteriaView : public wxView
     void OnInsertWLSparkline(wxCommandEvent& event);
     void OnInsertStemAndLeaf(wxCommandEvent& event);
     void OnInsertPieChart(wxCommandEvent& event);
+    void OnInsertWaffleChart(wxCommandEvent& event);
+    void EditWaffleChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol);
+    void OnInsertCatBarChart(wxCommandEvent& event);
+    void EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol);
     void OnInsertLabel(wxCommandEvent& event);
     void EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas, size_t labelRow,
                    size_t labelCol);

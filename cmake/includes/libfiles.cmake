@@ -75,6 +75,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertboxplotdlg.cpp
     src/ui/dialogs/insertbubbleplotdlg.cpp
     src/ui/dialogs/insertcandlestickplotdlg.cpp
+    src/ui/dialogs/insertcatbarchartdlg.cpp
     src/ui/dialogs/insertchernoffdlg.cpp
     src/ui/dialogs/insertganttchartdlg.cpp
     src/ui/dialogs/insertgraphdlg.cpp
@@ -93,6 +94,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertscatterplotdlg.cpp
     src/ui/dialogs/insertshapedlg.cpp
     src/ui/dialogs/insertstemandleafdlg.cpp
+    src/ui/dialogs/insertwafflechartdlg.cpp
     src/ui/dialogs/insertwcurvedlg.cpp
     src/ui/dialogs/insertwlsparklinedlg.cpp
     src/ui/dialogs/insertwordclouddlg.cpp
