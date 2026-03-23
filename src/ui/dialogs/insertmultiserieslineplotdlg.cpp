@@ -287,7 +287,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertMultiSeriesLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertMultiSeriesLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* linePlot = dynamic_cast<const Graphs::LinePlot*>(&graph);
         if (linePlot == nullptr)

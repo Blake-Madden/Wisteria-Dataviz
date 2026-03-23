@@ -365,7 +365,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertSankeyDiagramDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertSankeyDiagramDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* sankey = dynamic_cast<const Graphs::SankeyDiagram*>(&graph);
         if (sankey == nullptr)

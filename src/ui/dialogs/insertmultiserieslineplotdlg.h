@@ -111,8 +111,7 @@ namespace Wisteria::UI
 
         /// @brief Populates all dialog controls from an existing multi-series line plot.
         /// @param graph The graph to read settings from.
-        /// @param canvas The canvas the graph belongs to.
-        void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
+        void LoadFromGraph(const Graphs::Graph2D& graph);
 
       protected:
         void CreateControls() override;

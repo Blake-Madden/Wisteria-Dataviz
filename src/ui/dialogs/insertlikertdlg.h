@@ -28,8 +28,8 @@ namespace Wisteria::UI
               for selecting question columns and an optional grouping column.
             - Labels showing the current variable selections.
             - A survey format choice.
-            - Checkboxes for simplify, apply default labels, show response counts,
-              show percentages, show section headers, and adjust bar widths.
+            - Checkboxes for show response counts, show percentages,
+              show section headers, and adjust bar widths.
             - Color pickers for negative, positive, neutral, and no-response colors.
             - Text fields for positive, negative, and no-response header labels.*/
     class InsertLikertDlg final : public InsertGraphDlg
@@ -160,8 +160,7 @@ namespace Wisteria::UI
 
         /// @brief Populates all dialog controls from an existing Likert chart.
         /// @param graph The graph to read settings from.
-        /// @param canvas The canvas the graph belongs to.
-        void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
+        void LoadFromGraph(const Graphs::Graph2D& graph);
 
       protected:
         void CreateControls() override;

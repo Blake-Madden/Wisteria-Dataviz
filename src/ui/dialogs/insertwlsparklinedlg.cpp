@@ -330,7 +330,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWLSparklineDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertWLSparklineDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* sparkline = dynamic_cast<const Graphs::WinLossSparkline*>(&graph);
         if (sparkline == nullptr)

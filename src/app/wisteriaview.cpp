@@ -1549,7 +1549,7 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -1764,7 +1764,7 @@ void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -1899,7 +1899,7 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -2142,7 +2142,7 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -2344,7 +2344,7 @@ void WisteriaView::EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph,
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -2548,7 +2548,7 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -2755,7 +2755,7 @@ void WisteriaView::EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -2969,7 +2969,7 @@ void WisteriaView::EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria:
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -3205,7 +3205,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -3399,7 +3399,7 @@ void WisteriaView::EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteri
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -3541,7 +3541,7 @@ void WisteriaView::EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria:
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -3794,7 +3794,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -4134,7 +4134,7 @@ void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -4353,7 +4353,7 @@ void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -4558,7 +4558,7 @@ void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -4751,7 +4751,7 @@ void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -4904,7 +4904,7 @@ void WisteriaView::EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -5099,7 +5099,7 @@ void WisteriaView::EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -5317,7 +5317,7 @@ void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(graphRow, graphCol);
-    dlg.LoadFromGraph(graph, canvas);
+    dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -9003,15 +9003,6 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
             Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White))
             {
             node->Add(L"no-response-color", ColorToStr(likert->GetNoResponseColor()));
-            }
-        // simplify / apply-default-labels (tracked as property templates)
-        if (!likert->GetPropertyTemplate(L"simplify").empty())
-            {
-            node->Add(L"simplify", true);
-            }
-        if (!likert->GetPropertyTemplate(L"apply-default-labels").empty())
-            {
-            node->Add(L"apply-default-labels", true);
             }
         // boolean options
         if (likert->IsShowingResponseCounts())

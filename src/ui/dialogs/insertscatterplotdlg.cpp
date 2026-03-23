@@ -303,7 +303,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertScatterPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* scatter = dynamic_cast<const Graphs::ScatterPlot*>(&graph);
         if (scatter == nullptr)

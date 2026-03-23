@@ -136,6 +136,21 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& groupColumnName = std::nullopt,
                      BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
 
+        /// @returns The name of the categorical column used for bar labels.
+        [[nodiscard]]
+        const wxString& GetCategoricalColumnName() const noexcept
+            {
+            return m_categoricalColumnName;
+            }
+
+        /// @returns The name of the weight (aggregate) column, or @c std::nullopt
+        ///     if frequency counting is used.
+        [[nodiscard]]
+        const std::optional<wxString>& GetWeightColumnName() const noexcept
+            {
+            return m_weightColumn;
+            }
+
       private:
         struct CatBarBlock
             {

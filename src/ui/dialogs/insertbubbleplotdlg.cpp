@@ -348,7 +348,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertBubblePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertBubblePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* bubble = dynamic_cast<const Graphs::BubblePlot*>(&graph);
         if (bubble == nullptr)

@@ -164,16 +164,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     std::unique_ptr<GraphItems::Label> WaffleChart::CreateLegend(const LegendOptions& options)
         {
         SetLegendInfo(options);
-        // Base legend label container
+        // legend doesn't make any sense if just a list of icons
+        const auto iconsWithLabels = std::ranges::count_if(GetShapes(), [](const auto& shp)
+                                                           { return !shp.GetText().empty(); });
+        if (iconsWithLabels == 0)
+            {
+            return nullptr;
+            }
+
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo()
+            GraphItems::GraphItemInfo{}
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
                 .DPIScaling(GetDPIScaleFactor())
                 .FontColor(GetLeftYAxis().GetFontColor()));
 
         // collect unique legend entries by:
-        //   - shape icon
-        //   - brush color
+        // - shape icon
+        // - brush color
         struct LegendEntry
             {
             Icons::IconShape shape;
@@ -207,8 +214,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                     }
                 else
                     {
-                    entries.push_back(
-                        { shp.GetShape(), shp.GetBrush().GetColour(), shp.GetText(), shp });
+                    entries.emplace_back(shp.GetShape(), shp.GetBrush().GetColour(), shp.GetText(),
+                                         shp);
                     }
                 }
             }

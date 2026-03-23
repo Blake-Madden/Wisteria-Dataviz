@@ -297,7 +297,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWordCloudDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertWordCloudDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* wordCloud = dynamic_cast<const Graphs::WordCloud*>(&graph);
         if (wordCloud == nullptr)

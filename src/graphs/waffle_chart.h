@@ -105,14 +105,18 @@ namespace Wisteria::Graphs
             return m_rowCount;
             }
 
+        /** @brief Builds and returns a legend explaining the shapes.
+            @param options The options for how to build the legend.
+            @note Will return @c nullptr if no shapes have text connected to them.
+            @returns The legend for the chart.*/
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+
       private:
         void LoadShapeGrid(std::vector<GraphItems::ShapeInfo>& shapes,
                            const std::optional<GridRounding>& gridRound,
                            const std::optional<size_t> rowCount);
         void RecalcSizes(wxDC& dc) final;
-
-        [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         std::vector<std::vector<GraphItems::ShapeInfo>> m_matrix;
         std::vector<GraphItems::ShapeInfo> m_originalShapes;

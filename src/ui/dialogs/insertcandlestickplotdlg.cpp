@@ -315,7 +315,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertCandlestickPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertCandlestickPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* candle = dynamic_cast<const Graphs::CandlestickPlot*>(&graph);
         if (candle == nullptr)

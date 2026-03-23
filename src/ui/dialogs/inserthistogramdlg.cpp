@@ -332,7 +332,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertHistogramDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertHistogramDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* histogram = dynamic_cast<const Graphs::Histogram*>(&graph);
         if (histogram == nullptr)

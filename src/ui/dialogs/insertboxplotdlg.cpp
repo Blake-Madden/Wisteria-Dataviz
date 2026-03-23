@@ -486,7 +486,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertBoxPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertBoxPlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* boxPlot = dynamic_cast<const Graphs::BoxPlot*>(&graph);
         if (boxPlot == nullptr)

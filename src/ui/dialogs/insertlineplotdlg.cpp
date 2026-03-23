@@ -183,14 +183,14 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"Y"))
+                  .Label(/* TRANSLATORS: y-axis variable. */ _(L"Y"))
                   .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(_(L"X (axis)"))
+                  .Label(/* TRANSLATORS: x-axis variable. */ _(L"X"))
                   .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
@@ -302,7 +302,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* linePlot = dynamic_cast<const Graphs::LinePlot*>(&graph);
         if (linePlot == nullptr)

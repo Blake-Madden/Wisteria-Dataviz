@@ -190,6 +190,11 @@ namespace Wisteria::UI
                     questionChoices.Add(var);
                     }
 
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Title:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* titleCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+                grid->Add(titleCtrl, wxSizerFlags{}.Expand());
+
                 grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start question:")),
                           wxSizerFlags{}.CenterVertical());
                 auto* startCtrl =
@@ -203,11 +208,6 @@ namespace Wisteria::UI
                     new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, questionChoices);
                 endCtrl->SetSelection(static_cast<int>(questionChoices.size()) - 1);
                 grid->Add(endCtrl, wxSizerFlags{}.Expand());
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Title:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* titleCtrl = new wxTextCtrl(&dlg, wxID_ANY);
-                grid->Add(titleCtrl, wxSizerFlags{}.Expand());
 
                 sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
                 sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
@@ -230,8 +230,8 @@ namespace Wisteria::UI
                     }
                 const auto titleVal = titleCtrl->GetValue().Trim(true).Trim(false);
 
-                m_questionBrackets.push_back(
-                    { questionChoices[startSel], questionChoices[endSel], titleVal });
+                m_questionBrackets.emplace_back(questionChoices[startSel], questionChoices[endSel],
+                                                titleVal);
                 SyncBracketsToList();
             });
 
@@ -463,8 +463,8 @@ namespace Wisteria::UI
             }
         else
             {
-            m_questionsVarLabel->SetLabel(std::to_wstring(m_questionVariables.size()) +
-                                          _(L" columns"));
+            m_questionsVarLabel->SetLabel(
+                wxString::Format(_(L"%zu columns"), m_questionVariables.size()));
             }
         m_groupVarLabel->SetLabel(m_groupVariable);
 
@@ -578,7 +578,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertLikertDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertLikertDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* likert = dynamic_cast<const Graphs::LikertChart*>(&graph);
         if (likert == nullptr)

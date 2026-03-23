@@ -332,7 +332,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertProConRoadmapDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertProConRoadmapDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* roadmap = dynamic_cast<const Graphs::ProConRoadmap*>(&graph);
         if (roadmap == nullptr)

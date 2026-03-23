@@ -459,7 +459,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertChernoffDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertChernoffDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* chernoff = dynamic_cast<const Graphs::ChernoffFacesPlot*>(&graph);
         if (chernoff == nullptr)

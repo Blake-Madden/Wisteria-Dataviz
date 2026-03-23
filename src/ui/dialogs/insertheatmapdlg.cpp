@@ -305,7 +305,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertHeatMapDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertHeatMapDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* heatmap = dynamic_cast<const Graphs::HeatMap*>(&graph);
         if (heatmap == nullptr)

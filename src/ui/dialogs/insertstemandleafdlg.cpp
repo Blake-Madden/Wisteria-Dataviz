@@ -250,7 +250,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertStemAndLeafDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertStemAndLeafDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* stemLeaf = dynamic_cast<const Graphs::StemAndLeafPlot*>(&graph);
         if (stemLeaf == nullptr)

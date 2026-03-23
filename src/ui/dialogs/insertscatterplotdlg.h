@@ -125,8 +125,7 @@ namespace Wisteria::UI
 
         /// @brief Populates all dialog controls from an existing scatter plot.
         /// @param plot The scatter plot to read settings from.
-        /// @param canvas The canvas the plot belongs to.
-        void LoadFromGraph(const Graphs::Graph2D& plot, Canvas* canvas);
+        void LoadFromGraph(const Graphs::Graph2D& plot);
 
       protected:
         void CreateControls() override;

@@ -302,7 +302,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWCurveDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertWCurveDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* wcurve = dynamic_cast<const Graphs::WCurvePlot*>(&graph);
         if (wcurve == nullptr)

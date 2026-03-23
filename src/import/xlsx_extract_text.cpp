@@ -729,11 +729,14 @@ namespace lily_of_the_valley
                             ++i;
                             continue;
                             }
-                        // literal currency characters
+                        // clang-format off
+                        #pragma warning(suppress: 6287) // specific code for redundant sub-expressions
                         if (ch == L'$' || ch == L'£' || ch == L'¥' || ch == L'€')
                             {
+                            // literal currency characters
                             return sv.substr(i, 1);
                             }
+                        // clang-format on
                         }
                     return {};
                 };

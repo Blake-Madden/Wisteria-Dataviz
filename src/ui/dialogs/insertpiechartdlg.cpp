@@ -434,7 +434,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertPieChartDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertPieChartDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* pieChart = dynamic_cast<const Graphs::PieChart*>(&graph);
         if (pieChart == nullptr)

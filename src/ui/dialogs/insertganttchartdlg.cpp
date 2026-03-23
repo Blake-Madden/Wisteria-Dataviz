@@ -474,7 +474,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertGanttChartDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertGanttChartDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* gantt = dynamic_cast<const Graphs::GanttChart*>(&graph);
         if (gantt == nullptr)

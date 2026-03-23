@@ -334,7 +334,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertLRRoadmapDlg::LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas)
+    void InsertLRRoadmapDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
         const auto* roadmap = dynamic_cast<const Graphs::LRRoadmap*>(&graph);
         if (roadmap == nullptr)
