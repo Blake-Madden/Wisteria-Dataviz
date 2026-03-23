@@ -96,6 +96,16 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // pie style
         auto* styleSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         styleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Style:")),
@@ -218,16 +228,6 @@ namespace Wisteria::UI
         donutBox->Add(m_editDonutLabelButton, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
         optionsSizer->Add(donutBox, wxSizerFlags{}.Expand().Border());
-
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

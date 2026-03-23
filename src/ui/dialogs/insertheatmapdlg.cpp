@@ -87,6 +87,16 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // group column count
         auto* groupOptsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         m_groupColumnCountLabel =
@@ -118,15 +128,12 @@ namespace Wisteria::UI
 
         optionsSizer->Add(prefixSizer, wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+        // legend placement
+        auto* legendGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        legendGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                         wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+        legendGrid->Add(CreateLegendPlacementChoice(optionsPage, 1));
+        optionsSizer->Add(legendGrid, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,

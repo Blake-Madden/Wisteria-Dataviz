@@ -88,6 +88,16 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // frequency options
         auto* freqSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -111,15 +121,12 @@ namespace Wisteria::UI
 
         optionsSizer->Add(freqSizer, wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+        // legend placement
+        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
+                         wxSizerFlags{}.CenterVertical());
+        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
+        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,

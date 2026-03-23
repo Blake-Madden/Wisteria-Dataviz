@@ -124,6 +124,16 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
+        // color scheme
+        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
+                        wxSizerFlags{}.CenterVertical());
+        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                     GetColorSchemeNames(), 0,
+                                     wxGenericValidator(&m_colorSchemeIndex)),
+                        wxSizerFlags{}.CenterVertical());
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
+
         // date interval
         auto* optGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -168,16 +178,6 @@ namespace Wisteria::UI
             }
 
         optionsSizer->Add(optGrid, wxSizerFlags{}.Border());
-
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
