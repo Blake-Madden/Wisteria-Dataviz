@@ -20,6 +20,21 @@
 
 namespace Wisteria::UI
     {
+    /// @brief Flags controlling which sections are visible in InsertShapeDlg.
+    /// @note The shape type combo is always shown.
+    enum ShapeDlgOptions : int
+        {
+        ShapeDlgIncludeSize = 1 << 0,      ///< Show the size controls.
+        ShapeDlgIncludePen = 1 << 1,       ///< Show the pen (outline) controls.
+        ShapeDlgIncludeBrush = 1 << 2,     ///< Show the brush (fill) controls.
+        ShapeDlgIncludeLabel = 1 << 3,     ///< Show the label controls.
+        ShapeDlgIncludeFillable = 1 << 4,  ///< Show the fillable controls.
+        ShapeDlgIncludeAlignment = 1 << 5, ///< Show the alignment controls.
+        /// @brief All options enabled (the default).
+        ShapeDlgIncludeAll = ShapeDlgIncludeSize | ShapeDlgIncludePen | ShapeDlgIncludeBrush |
+        ShapeDlgIncludeLabel | ShapeDlgIncludeFillable | ShapeDlgIncludeAlignment
+        };
+
     /** @brief Dialog for inserting or editing a Shape or FillableShape on a canvas cell.
         @details Extends InsertItemDlg with a "Shape Options" page containing:
             - Shape type (via choice control with human-readable names).
@@ -43,12 +58,14 @@ namespace Wisteria::UI
             @param pos The screen position.
             @param size The window size.
             @param style The window style.
-            @param editMode Whether the item is being inserted or edited.*/
+            @param editMode Whether the item is being inserted or edited.
+            @param options Bitmask of ShapeDlgOptions controlling which
+                sections are shown.*/
         InsertShapeDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                        const wxString& caption = _(L"Insert Shape"), wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                       EditMode editMode = EditMode::Insert);
+                       EditMode editMode = EditMode::Insert, int options = ShapeDlgIncludeAll);
 
         /// @private
         InsertShapeDlg(const InsertShapeDlg&) = delete;
@@ -176,6 +193,8 @@ namespace Wisteria::UI
         bool m_fillable{ false };
         int m_horizontalAlign{ 1 }; // Centered
         int m_verticalAlign{ 1 };   // Centered
+
+        int m_options{ ShapeDlgIncludeAll };
 
         // mapping from choice index to IconShape
         std::vector<Icons::IconShape> m_shapeMap;

@@ -15,8 +15,9 @@ namespace Wisteria::UI
     InsertShapeDlg::InsertShapeDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                    wxWindow* parent, const wxString& caption, const wxWindowID id,
                                    const wxPoint& pos, const wxSize& size, const long style,
-                                   EditMode editMode)
-        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
+                                   EditMode editMode, const int options)
+        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
+          m_options(options)
         {
         CreateControls();
         FinalizeControls();
@@ -161,45 +162,49 @@ namespace Wisteria::UI
         shapeSizer->Add(shapeGrid, wxSizerFlags{}.Border());
 
         // size
-        auto* sizeBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Size"));
-        auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        if ((m_options & ShapeDlgIncludeSize) != 0)
+            {
+            auto* sizeBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Size"));
+            auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
-                      wxSizerFlags{}.CenterVertical());
-        m_widthSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
-        m_widthSpin->SetRange(1, 10'000);
-        m_widthSpin->SetValue(32);
-        sizeGrid->Add(m_widthSpin);
+            sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                          wxSizerFlags{}.CenterVertical());
+            m_widthSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
+            m_widthSpin->SetRange(1, 10'000);
+            m_widthSpin->SetValue(32);
+            sizeGrid->Add(m_widthSpin);
 
-        sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Height:")),
-                      wxSizerFlags{}.CenterVertical());
-        m_heightSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
-        m_heightSpin->SetRange(1, 10'000);
-        m_heightSpin->SetValue(32);
-        sizeGrid->Add(m_heightSpin);
+            sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Height:")),
+                          wxSizerFlags{}.CenterVertical());
+            m_heightSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
+            m_heightSpin->SetRange(1, 10'000);
+            m_heightSpin->SetValue(32);
+            sizeGrid->Add(m_heightSpin);
 
-        sizeBox->Add(sizeGrid, wxSizerFlags{}.Border());
-        shapeSizer->Add(sizeBox, wxSizerFlags{}.Expand().Border());
+            sizeBox->Add(sizeGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(sizeBox, wxSizerFlags{}.Expand().Border());
+            }
 
         // pen options
-        auto* penBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Pen (outline)"));
-        auto* penGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-
-        penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
-                     wxSizerFlags{}.CenterVertical());
-        m_penColorPicker = new wxColourPickerCtrl(penBox->GetStaticBox(), wxID_ANY, *wxBLACK);
-        penGrid->Add(m_penColorPicker);
-
-        penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
-                     wxSizerFlags{}.CenterVertical());
-        m_penWidthSpin = new wxSpinCtrl(penBox->GetStaticBox(), wxID_ANY);
-        m_penWidthSpin->SetRange(1, 20);
-        m_penWidthSpin->SetValue(1);
-        penGrid->Add(m_penWidthSpin);
-
-        penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
-                     wxSizerFlags{}.CenterVertical());
+        if ((m_options & ShapeDlgIncludePen) != 0)
             {
+            auto* penBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Pen (outline)"));
+            auto* penGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
+            penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
+                         wxSizerFlags{}.CenterVertical());
+            m_penColorPicker = new wxColourPickerCtrl(penBox->GetStaticBox(), wxID_ANY, *wxBLACK);
+            penGrid->Add(m_penColorPicker);
+
+            penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                         wxSizerFlags{}.CenterVertical());
+            m_penWidthSpin = new wxSpinCtrl(penBox->GetStaticBox(), wxID_ANY);
+            m_penWidthSpin->SetRange(1, 20);
+            m_penWidthSpin->SetValue(1);
+            penGrid->Add(m_penWidthSpin);
+
+            penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
+                         wxSizerFlags{}.CenterVertical());
             auto* penStyleChoice =
                 new wxChoice(penBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
                              nullptr, 0, wxGenericValidator(&m_penStyle));
@@ -209,23 +214,25 @@ namespace Wisteria::UI
             penStyleChoice->Append(_(L"Short dash"));
             penStyleChoice->Append(_(L"Dot dash"));
             penGrid->Add(penStyleChoice);
+
+            penBox->Add(penGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(penBox, wxSizerFlags{}.Expand().Border());
             }
 
-        penBox->Add(penGrid, wxSizerFlags{}.Border());
-        shapeSizer->Add(penBox, wxSizerFlags{}.Expand().Border());
-
         // brush options
-        auto* brushBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Brush (fill)"));
-        auto* brushGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-
-        brushGrid->Add(new wxStaticText(brushBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
-                       wxSizerFlags{}.CenterVertical());
-        m_brushColorPicker = new wxColourPickerCtrl(brushBox->GetStaticBox(), wxID_ANY, *wxWHITE);
-        brushGrid->Add(m_brushColorPicker);
-
-        brushGrid->Add(new wxStaticText(brushBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
-                       wxSizerFlags{}.CenterVertical());
+        if ((m_options & ShapeDlgIncludeBrush) != 0)
             {
+            auto* brushBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Brush (fill)"));
+            auto* brushGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
+            brushGrid->Add(new wxStaticText(brushBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
+                           wxSizerFlags{}.CenterVertical());
+            m_brushColorPicker =
+                new wxColourPickerCtrl(brushBox->GetStaticBox(), wxID_ANY, *wxWHITE);
+            brushGrid->Add(m_brushColorPicker);
+
+            brushGrid->Add(new wxStaticText(brushBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
+                           wxSizerFlags{}.CenterVertical());
             auto* brushStyleChoice =
                 new wxChoice(brushBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
                              0, nullptr, 0, wxGenericValidator(&m_brushStyle));
@@ -238,61 +245,69 @@ namespace Wisteria::UI
             brushStyleChoice->Append(_(L"Horizontal hatch"));
             brushStyleChoice->Append(_(L"Vertical hatch"));
             brushGrid->Add(brushStyleChoice);
+
+            brushBox->Add(brushGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(brushBox, wxSizerFlags{}.Expand().Border());
             }
 
-        brushBox->Add(brushGrid, wxSizerFlags{}.Border());
-        shapeSizer->Add(brushBox, wxSizerFlags{}.Expand().Border());
-
         // label options
-        auto* labelBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Label"));
-        auto* labelGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        if ((m_options & ShapeDlgIncludeLabel) != 0)
+            {
+            auto* labelBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Label"));
+            auto* labelGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Text:")),
-                       wxSizerFlags{}.CenterVertical());
-        m_labelTextCtrl = new wxTextCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{},
-                                         wxDefaultPosition, wxSize{ FromDIP(200), -1 });
-        labelGrid->Add(m_labelTextCtrl, wxSizerFlags{}.Expand());
+            labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Text:")),
+                           wxSizerFlags{}.CenterVertical());
+            m_labelTextCtrl = new wxTextCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{},
+                                             wxDefaultPosition, wxSize{ FromDIP(200), -1 });
+            labelGrid->Add(m_labelTextCtrl, wxSizerFlags{}.Expand());
 
-        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
-                       wxSizerFlags{}.CenterVertical());
-        m_labelColorPicker = new wxColourPickerCtrl(labelBox->GetStaticBox(), wxID_ANY, *wxBLACK);
-        labelGrid->Add(m_labelColorPicker);
+            labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
+                           wxSizerFlags{}.CenterVertical());
+            m_labelColorPicker =
+                new wxColourPickerCtrl(labelBox->GetStaticBox(), wxID_ANY, *wxBLACK);
+            labelGrid->Add(m_labelColorPicker);
 
-        labelBox->Add(labelGrid, wxSizerFlags{}.Border());
-        shapeSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
+            labelBox->Add(labelGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
+            }
 
         // fillable options
-        auto* fillBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Fillable"));
+        if ((m_options & ShapeDlgIncludeFillable) != 0)
+            {
+            auto* fillBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Fillable"));
 
-        auto* fillableCheck =
-            new wxCheckBox(fillBox->GetStaticBox(), wxID_ANY, _(L"Make shape fillable"),
-                           wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_fillable));
-        fillBox->Add(fillableCheck, wxSizerFlags{}.Border());
+            auto* fillableCheck = new wxCheckBox(fillBox->GetStaticBox(), wxID_ANY,
+                                                 _(L"Make shape fillable"), wxDefaultPosition,
+                                                 wxDefaultSize, 0, wxGenericValidator(&m_fillable));
+            fillBox->Add(fillableCheck, wxSizerFlags{}.Border());
 
-        auto* fillGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        fillGrid->Add(new wxStaticText(fillBox->GetStaticBox(), wxID_ANY, _(L"Fill percent:")),
-                      wxSizerFlags{}.CenterVertical());
-        m_fillPercentSpin = new wxSpinCtrlDouble(fillBox->GetStaticBox(), wxID_ANY, wxEmptyString,
-                                                 wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
-                                                 0.0, 1.0, 0.0, 0.05);
-        fillGrid->Add(m_fillPercentSpin);
+            auto* fillGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            fillGrid->Add(new wxStaticText(fillBox->GetStaticBox(), wxID_ANY, _(L"Fill percent:")),
+                          wxSizerFlags{}.CenterVertical());
+            m_fillPercentSpin = new wxSpinCtrlDouble(
+                fillBox->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                wxSP_ARROW_KEYS, 0.0, 1.0, 0.0, 0.05);
+            fillGrid->Add(m_fillPercentSpin);
 
-        fillBox->Add(fillGrid, wxSizerFlags{}.Border());
-        shapeSizer->Add(fillBox, wxSizerFlags{}.Expand().Border());
+            fillBox->Add(fillGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(fillBox, wxSizerFlags{}.Expand().Border());
 
-        // fill controls start disabled
-        OnEnableFillable(false);
+            // fill controls start disabled
+            OnEnableFillable(false);
 
-        fillableCheck->Bind(wxEVT_CHECKBOX,
-                            [this](wxCommandEvent& evt) { OnEnableFillable(evt.IsChecked()); });
+            fillableCheck->Bind(wxEVT_CHECKBOX,
+                                [this](wxCommandEvent& evt) { OnEnableFillable(evt.IsChecked()); });
+            }
 
         // alignment
-        auto* alignBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Alignment"));
-        auto* alignGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-
-        alignGrid->Add(new wxStaticText(alignBox->GetStaticBox(), wxID_ANY, _(L"Horizontal:")),
-                       wxSizerFlags{}.CenterVertical());
+        if ((m_options & ShapeDlgIncludeAlignment) != 0)
             {
+            auto* alignBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Alignment"));
+            auto* alignGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
+            alignGrid->Add(new wxStaticText(alignBox->GetStaticBox(), wxID_ANY, _(L"Horizontal:")),
+                           wxSizerFlags{}.CenterVertical());
             auto* hAlignChoice =
                 new wxChoice(alignBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
                              0, nullptr, 0, wxGenericValidator(&m_horizontalAlign));
@@ -300,11 +315,9 @@ namespace Wisteria::UI
             hAlignChoice->Append(_(L"Centered"));
             hAlignChoice->Append(_(L"Right aligned"));
             alignGrid->Add(hAlignChoice);
-            }
 
-        alignGrid->Add(new wxStaticText(alignBox->GetStaticBox(), wxID_ANY, _(L"Vertical:")),
-                       wxSizerFlags{}.CenterVertical());
-            {
+            alignGrid->Add(new wxStaticText(alignBox->GetStaticBox(), wxID_ANY, _(L"Vertical:")),
+                           wxSizerFlags{}.CenterVertical());
             auto* vAlignChoice =
                 new wxChoice(alignBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
                              0, nullptr, 0, wxGenericValidator(&m_verticalAlign));
@@ -312,10 +325,10 @@ namespace Wisteria::UI
             vAlignChoice->Append(_(L"Centered"));
             vAlignChoice->Append(_(L"Bottom aligned"));
             alignGrid->Add(vAlignChoice);
-            }
 
-        alignBox->Add(alignGrid, wxSizerFlags{}.Border());
-        shapeSizer->Add(alignBox, wxSizerFlags{}.Expand().Border());
+            alignBox->Add(alignGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(alignBox, wxSizerFlags{}.Expand().Border());
+            }
         }
 
     //-------------------------------------------

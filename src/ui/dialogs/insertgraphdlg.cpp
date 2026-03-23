@@ -318,7 +318,7 @@ namespace Wisteria::UI
                            wxID_ANY, wxDefaultPosition, wxDefaultSize,
                            wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                            m_plotBgImage.IsOk() ? EditMode::Edit : EditMode::Insert,
-                           false /*includePageOptions*/);
+                           ImageDlgIncludeAll & ~ImageDlgIncludePageOptions);
         if (m_plotBgImage.IsOk())
             {
             dlg.LoadFromImage(m_plotBgImage, GetCanvas());
@@ -360,7 +360,7 @@ namespace Wisteria::UI
             {
             resultImg = bmps[0].ConvertToImage();
             }
-        else if (dlg.GetStitchDirection() == L"vertical")
+        else if (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical)
             {
             resultImg = GraphItems::Image::StitchVertically(bmps);
             }
@@ -406,7 +406,10 @@ namespace Wisteria::UI
                 joined += paths[i];
                 }
             m_plotBgImage.SetPropertyTemplate(L"image-import.paths", joined);
-            m_plotBgImage.SetPropertyTemplate(L"image-import.stitch", dlg.GetStitchDirection());
+            m_plotBgImage.SetPropertyTemplate(
+                L"image-import.stitch",
+                (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ? L"vertical" :
+                                                                                L"horizontal");
             }
 
         // cache effect
