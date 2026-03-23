@@ -4681,6 +4681,11 @@ namespace Wisteria
 
             boxPlot->ShowAllPoints(graphNode->GetProperty(L"show-all-points")->AsBool());
             boxPlot->ShowLabels(graphNode->GetProperty(L"show-labels")->AsBool());
+            const auto showMidpointNode = graphNode->GetProperty(L"show-midpoint-connection");
+            if (showMidpointNode->IsOk())
+                {
+                boxPlot->ShowMidpointConnection(showMidpointNode->AsBool());
+                }
 
             LoadGraph(graphNode, canvas, currentRow, currentColumn, boxPlot);
             return boxPlot;

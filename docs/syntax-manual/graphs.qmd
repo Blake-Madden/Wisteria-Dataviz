@@ -31,6 +31,8 @@ Properties for `"box-plot"` nodes:
 - `"show-all-points"`: `true` to show all points.
   By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
+- `"show-midpoint-connection"`: `false` to hide the line connecting the midpoints between boxes
+  (shown by default when a grouping variable is in use).
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
