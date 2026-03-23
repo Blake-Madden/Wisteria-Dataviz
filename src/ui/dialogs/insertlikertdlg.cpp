@@ -87,23 +87,6 @@ namespace Wisteria::UI
 
         optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
 
-        // survey format
-        auto* formatSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        formatSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Survey format:")),
-                         wxSizerFlags{}.CenterVertical());
-        wxArrayString surveyFormats;
-        surveyFormats.Add(_(L"Deduce from data"));
-        surveyFormats.Add(_(L"2-Point"));
-        surveyFormats.Add(_(L"3-Point"));
-        surveyFormats.Add(_(L"4-Point"));
-        surveyFormats.Add(_(L"5-Point"));
-        surveyFormats.Add(_(L"6-Point"));
-        surveyFormats.Add(_(L"7-Point"));
-        formatSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                      surveyFormats, 0, wxGenericValidator(&m_surveyFormatIndex)),
-                         wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(formatSizer, wxSizerFlags{}.Border());
-
         // checkboxes
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show response counts"),
                                          wxDefaultPosition, wxDefaultSize, 0,
@@ -353,32 +336,6 @@ namespace Wisteria::UI
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
-        }
-
-    //-------------------------------------------
-    std::optional<Graphs::LikertChart::LikertSurveyQuestionFormat>
-    InsertLikertDlg::SurveyFormatFromIndex(const int index) noexcept
-        {
-        using LF = Graphs::LikertChart::LikertSurveyQuestionFormat;
-        switch (index)
-            {
-        case 1:
-            return LF::TwoPoint;
-        case 2:
-            return LF::ThreePoint;
-        case 3:
-            return LF::FourPoint;
-        case 4:
-            return LF::FivePoint;
-        case 5:
-            return LF::SixPoint;
-        case 6:
-            return LF::SevenPoint;
-        case 0:
-            [[fallthrough]];
-        default:
-            return std::nullopt; // deduce from data
-            }
         }
 
     //-------------------------------------------
@@ -660,9 +617,6 @@ namespace Wisteria::UI
             }
         m_groupVariable = likert->GetPropertyTemplate(L"variables.group");
         UpdateVariableLabels();
-
-        // survey format
-        m_surveyFormatIndex = SurveyFormatToIndex(likert->GetSurveyType());
 
         // boolean options
         m_showResponseCounts = likert->IsShowingResponseCounts();

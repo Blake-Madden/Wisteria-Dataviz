@@ -85,13 +85,6 @@ namespace Wisteria::UI
             return m_groupVariable;
             }
 
-        /// @returns The selected survey format index.
-        [[nodiscard]]
-        int GetSurveyFormatIndex() const noexcept
-            {
-            return m_surveyFormatIndex;
-            }
-
         /// @returns Whether to show response counts.
         [[nodiscard]]
         bool GetShowResponseCounts() const noexcept
@@ -170,11 +163,6 @@ namespace Wisteria::UI
         /// @param canvas The canvas the graph belongs to.
         void LoadFromGraph(const Graphs::Graph2D& graph, Canvas* canvas);
 
-        /// @returns The survey format for a given combo index, or nullopt for "deduce".
-        [[nodiscard]]
-        static std::optional<Graphs::LikertChart::LikertSurveyQuestionFormat>
-        SurveyFormatFromIndex(int index) noexcept;
-
       protected:
         void CreateControls() override;
 
@@ -207,7 +195,6 @@ namespace Wisteria::UI
         wxEditableListBox* m_bracketListBox{ nullptr };
 
         // DDX data members
-        int m_surveyFormatIndex{ 0 };
         bool m_showResponseCounts{ false };
         bool m_showPercentages{ true };
         bool m_showSectionHeaders{ true };

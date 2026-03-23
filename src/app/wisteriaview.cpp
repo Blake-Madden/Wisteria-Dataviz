@@ -4020,26 +4020,20 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        // determine survey format
-        auto surveyFormat =
-            Wisteria::UI::InsertLikertDlg::SurveyFormatFromIndex(dlg.GetSurveyFormatIndex());
-
         const auto& questions = dlg.GetQuestionVariables();
         const auto dataset = dlg.GetSelectedDataset();
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
 
-        if (!surveyFormat.has_value())
-            {
-            surveyFormat = Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
-            }
+        auto surveyFormat =
+            Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
 
         // if a group variable is selected, upgrade to categorized variant
         if (groupCol.has_value())
             {
             using LF = Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat;
-            switch (surveyFormat.value())
+            switch (surveyFormat)
                 {
             case LF::TwoPoint:
                 surveyFormat = LF::TwoPointCategorized;
@@ -4065,7 +4059,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
-            canvas, surveyFormat.value(), dlg.GetNegativeColor(), dlg.GetPositiveColor(),
+            canvas, surveyFormat, dlg.GetNegativeColor(), dlg.GetPositiveColor(),
             dlg.GetNeutralColor(), dlg.GetNoResponseColor());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
@@ -4149,26 +4143,20 @@ void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 
     try
         {
-        // determine survey format
-        auto surveyFormat =
-            Wisteria::UI::InsertLikertDlg::SurveyFormatFromIndex(dlg.GetSurveyFormatIndex());
-
         const auto& questions = dlg.GetQuestionVariables();
         const auto dataset = dlg.GetSelectedDataset();
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
 
-        if (!surveyFormat.has_value())
-            {
-            surveyFormat = Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
-            }
+        auto surveyFormat =
+            Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
 
         // if a group variable is selected, upgrade to categorized variant
         if (groupCol.has_value())
             {
             using LF = Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat;
-            switch (surveyFormat.value())
+            switch (surveyFormat)
                 {
             case LF::TwoPoint:
                 surveyFormat = LF::TwoPointCategorized;
@@ -4194,7 +4182,7 @@ void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             }
 
         auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
-            canvas, surveyFormat.value(), dlg.GetNegativeColor(), dlg.GetPositiveColor(),
+            canvas, surveyFormat, dlg.GetNegativeColor(), dlg.GetPositiveColor(),
             dlg.GetNeutralColor(), dlg.GetNoResponseColor());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
