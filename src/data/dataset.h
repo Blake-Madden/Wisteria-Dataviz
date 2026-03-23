@@ -410,8 +410,19 @@ namespace Wisteria::Data
         [[nodiscard]]
         wxString GetLabelFromID(const GroupIdType code) const
             {
-            const auto foundLabel = m_stringTable.find(code);
-            if (foundLabel != m_stringTable.cend())
+            return GetLabelFromID(m_stringTable, code);
+            }
+
+        /** @brief Gets the label from a string table given a numeric code,
+                or the code formatted as a string if not found.
+            @returns The label from a string table, or the code as a string if not found.
+            @param stringTable The string table to search.
+            @param code The ID to look up.*/
+        [[nodiscard]]
+        static wxString GetLabelFromID(const StringTableType& stringTable, const GroupIdType code)
+            {
+            const auto foundLabel = stringTable.find(code);
+            if (foundLabel != stringTable.cend())
                 {
                 return foundLabel->second;
                 }

@@ -9,6 +9,7 @@
 - Added new shapes:
     - Tractor
 - Improved *Excel* importer performance
+- Likert chart now implicitly uses default response labels on legend (if none are found in dataset)
 
 ## 1.1.0 Release
 

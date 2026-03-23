@@ -674,61 +674,63 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 AddSurveyQuestion(questionColumn, *categoricalColumn);
                 }
 
-            // set the level labels from the data's string table,
-            // these will be used for the legend
-            if (!categoricalColumn->GetStringTable().empty())
+            // Set the level labels from the data's string table (if it has one),
+            // or use the default labels.
+            // these will be used for the legend.
+            auto stringTable = categoricalColumn->GetStringTable().size() >
+                                       1 /* MD code is always in string table*/ ?
+                                   categoricalColumn->GetStringTable() :
+                                   CreateLabels(GetSurveyType());
+            if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
+                GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
                 {
-                if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
-                    GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
-                    {
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(2), 1);
-                    }
-                else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint ||
-                         GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
-                    {
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                    SetNeutralLabel(categoricalColumn->GetLabelFromID(2));
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
-                    }
-                else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint ||
-                         GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized)
-                    {
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 2);
-                    }
-                else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint ||
-                         GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
-                    {
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                    SetNeutralLabel(categoricalColumn->GetLabelFromID(3));
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
-                    }
-                else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
-                         GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized)
-                    {
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 3);
-                    }
-                else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
-                         GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
-                    {
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                    SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
-                    SetNeutralLabel(categoricalColumn->GetLabelFromID(4));
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 1);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 2);
-                    SetPositiveLabel(categoricalColumn->GetLabelFromID(7), 3);
-                    }
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 1), 1);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 2), 1);
+                }
+            else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint ||
+                     GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
+                {
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 1), 1);
+                SetNeutralLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 2));
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 3), 1);
+                }
+            else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint ||
+                     GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized)
+                {
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 1), 1);
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 2), 2);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 3), 1);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 4), 2);
+                }
+            else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint ||
+                     GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
+                {
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 1), 1);
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 2), 2);
+                SetNeutralLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 3));
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 4), 1);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 5), 2);
+                }
+            else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
+                     GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized)
+                {
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 1), 1);
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 2), 2);
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 3), 3);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 4), 1);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 5), 2);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 6), 3);
+                }
+            else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
+                     GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
+                {
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 1), 1);
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 2), 2);
+                SetNegativeLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 3), 3);
+                SetNeutralLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 4));
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 5), 1);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 6), 2);
+                SetPositiveLabel(Data::ColumnWithStringTable::GetLabelFromID(stringTable, 7), 3);
                 }
             }
         }

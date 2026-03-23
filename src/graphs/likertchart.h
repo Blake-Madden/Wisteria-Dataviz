@@ -565,7 +565,9 @@ namespace Wisteria::Graphs
             @param questionColumns The vector of categorical columns to edit.
             @param codes The string table to use. This should at least start at 0 (no response)
                 and then go from 1 to the highest level of the Likert scale.
-            @sa CreateLabels().*/
+            @sa CreateLabels().
+            @note If this is not called on the dataset, then the default labels
+                (from CreateLabels()) will be implicitly used.*/
         static void SetLabels(const std::shared_ptr<Data::Dataset>& data,
                               const std::vector<wxString>& questionColumns,
                               const Data::ColumnWithStringTable::StringTableType& codes);
