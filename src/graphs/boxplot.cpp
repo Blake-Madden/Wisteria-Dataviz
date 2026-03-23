@@ -855,7 +855,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             }
 
         // draw the connection points
-        if (GetBoxCount() >= 2)
+        if (IsShowingMidpointConnection() && GetBoxCount() >= 2)
             {
             const wxPen connectionPen{ Colors::ColorContrast::ShadeOrTintIfClose(
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BondiBlue),

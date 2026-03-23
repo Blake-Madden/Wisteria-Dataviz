@@ -542,6 +542,20 @@ namespace Wisteria::Graphs
             m_showAllPoints = display;
             }
 
+        /// @returns @c true if the midpoint connection line is shown between boxes.
+        [[nodiscard]]
+        bool IsShowingMidpointConnection() const noexcept
+            {
+            return m_showMidpointConnection;
+            }
+
+        /// @brief Sets whether to draw a line connecting the midpoints of adjacent boxes.
+        /// @param show Whether to show the connection line.
+        void ShowMidpointConnection(const bool show = true) noexcept
+            {
+            m_showMidpointConnection = show;
+            }
+
         /// @returns The default color of the points.
         [[nodiscard]]
         wxColour GetPointColor() const noexcept
@@ -622,6 +636,7 @@ namespace Wisteria::Graphs
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };
+        bool m_showMidpointConnection{ true };
         };
     } // namespace Wisteria::Graphs
 
