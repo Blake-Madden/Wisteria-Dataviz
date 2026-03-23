@@ -4759,7 +4759,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         {
         resultImg = bmps[0].ConvertToImage();
         }
-    else if (dlg.GetStitchDirection() == L"vertical")
+    else if (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical)
         {
         resultImg = Wisteria::GraphItems::Image::StitchVertically(bmps);
         }
@@ -4810,7 +4810,9 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
             joined += makeRelative(paths[idx]);
             }
         image->SetPropertyTemplate(L"image-import.paths", joined);
-        image->SetPropertyTemplate(L"image-import.stitch", dlg.GetStitchDirection());
+        image->SetPropertyTemplate(L"image-import.stitch",
+            (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
+                L"vertical" : L"horizontal");
         }
 
     // cache effect for round-tripping
@@ -4905,7 +4907,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
         {
         resultImg = bmps[0].ConvertToImage();
         }
-    else if (dlg.GetStitchDirection() == L"vertical")
+    else if (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical)
         {
         resultImg = Wisteria::GraphItems::Image::StitchVertically(bmps);
         }
@@ -4956,7 +4958,9 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
             joined += makeRelative2(paths[idx]);
             }
         newImage->SetPropertyTemplate(L"image-import.paths", joined);
-        newImage->SetPropertyTemplate(L"image-import.stitch", dlg.GetStitchDirection());
+        newImage->SetPropertyTemplate(L"image-import.stitch",
+            (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
+                L"vertical" : L"horizontal");
         }
 
     // cache effect for round-tripping

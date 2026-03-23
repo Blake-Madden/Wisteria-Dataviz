@@ -20,6 +20,19 @@
 
 namespace Wisteria::UI
     {
+    /// @brief Flags controlling which sections are visible in InsertImageDlg.
+    enum ImageDlgOptions : int
+        {
+        ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Page Options" section.
+        ImageDlgIncludeStitch = 1 << 1,       ///< Show the stitch direction control.
+        ImageDlgIncludeSize = 1 << 2,         ///< Show the size override controls.
+        ImageDlgIncludeResizeMethod = 1 << 3, ///< Show the resize method control.
+        ImageDlgIncludeEffect = 1 << 4,       ///< Show the image effect control.
+        /// @brief All options enabled (the default).
+        ImageDlgIncludeAll = ImageDlgIncludePageOptions | ImageDlgIncludeStitch |
+        ImageDlgIncludeSize | ImageDlgIncludeResizeMethod | ImageDlgIncludeEffect
+        };
+
     /** @brief Dialog for inserting or editing an Image on a canvas cell.
         @details Extends InsertItemDlg with an "Image" page containing:
             - One or more image file paths (via editable list box with
@@ -48,13 +61,13 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.
-            @param includePageOptions Whether to show the "Page Options"
-                section.*/
+            @param options Bitmask of ImageDlgOptions controlling which
+                sections are shown.*/
         InsertImageDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                        const wxString& caption = _(L"Insert Image"), wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                       EditMode editMode = EditMode::Insert, bool includePageOptions = true);
+                       EditMode editMode = EditMode::Insert, int options = ImageDlgIncludeAll);
 
         /// @private
         InsertImageDlg(const InsertImageDlg&) = delete;
@@ -96,12 +109,42 @@ namespace Wisteria::UI
             return static_cast<ImageEffect>(m_imageEffect);
             }
 
-        /// @returns The stitch direction string
-        ///     ("horizontal" or "vertical").
+        /// @returns The stitch direction.
         [[nodiscard]]
-        wxString GetStitchDirection() const
+        Orientation GetStitchDirection() const noexcept
             {
-            return (m_stitchDirection == 1) ? L"vertical" : L"horizontal";
+            return static_cast<Orientation>(m_stitchDirection);
+            }
+
+        /// @brief Pre-populates the path list with the given file paths.
+        /// @param paths The image file paths to load.
+        void SetImagePaths(const wxArrayString& paths);
+
+        /// @brief Sets whether custom size is enabled and the dimensions.
+        /// @param enable Whether to enable custom sizing.
+        /// @param width The width in DIPs.
+        /// @param height The height in DIPs.
+        void SetCustomSize(bool enable, int width, int height);
+
+        /// @brief Sets the resize method.
+        /// @param method The resize method.
+        void SetResizeMethod(ResizeMethod method) noexcept
+            {
+            m_resizeMethod = static_cast<int>(method);
+            }
+
+        /// @brief Sets the image effect.
+        /// @param effect The image effect.
+        void SetImageEffect(ImageEffect effect) noexcept
+            {
+            m_imageEffect = static_cast<int>(effect);
+            }
+
+        /// @brief Sets the stitch direction.
+        /// @param direction The orientation for stitching multiple images.
+        void SetStitchDirection(Orientation direction) noexcept
+            {
+            m_stitchDirection = static_cast<int>(direction);
             }
 
         /// @brief Populates controls from an existing image.
@@ -122,7 +165,7 @@ namespace Wisteria::UI
         // and InsertLabelDlg (+2)
         constexpr static wxWindowID ID_IMAGE_SECTION{ wxID_HIGHEST + 3 };
 
-        bool m_includePageOptions{ true };
+        int m_options{ ImageDlgIncludeAll };
 
         // controls
         wxEditableListBox* m_pathListBox{ nullptr };

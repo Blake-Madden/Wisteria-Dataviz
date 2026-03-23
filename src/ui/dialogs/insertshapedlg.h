@@ -114,6 +114,14 @@ namespace Wisteria::UI
         [[nodiscard]]
         double GetFillPercent() const;
 
+        /// @brief Sets the selected icon shape.
+        /// @param shape The icon shape to select.
+        void SetIconShape(Icons::IconShape shape);
+
+        /// @brief Sets the brush color.
+        /// @param color The brush color.
+        void SetBrushColor(const wxColour& color);
+
         /// @brief Populates controls from an existing Shape.
         /// @param shape The shape to read settings from.
         void LoadFromShape(const Wisteria::GraphItems::Shape& shape);

@@ -459,6 +459,32 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertShapeDlg::SetIconShape(const Icons::IconShape shape)
+        {
+        for (size_t i = 0; i < m_shapeMap.size(); ++i)
+            {
+            if (m_shapeMap[i] == shape)
+                {
+                m_shapeIndex = static_cast<int>(i);
+                if (m_shapeChoice != nullptr)
+                    {
+                    m_shapeChoice->SetSelection(m_shapeIndex);
+                    }
+                break;
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void InsertShapeDlg::SetBrushColor(const wxColour& color)
+        {
+        if (m_brushColorPicker != nullptr && color.IsOk())
+            {
+            m_brushColorPicker->SetColour(color);
+            }
+        }
+
+    //-------------------------------------------
     void InsertShapeDlg::LoadFromShape(const Wisteria::GraphItems::Shape& shape)
         {
         // alignment

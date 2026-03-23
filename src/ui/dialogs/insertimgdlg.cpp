@@ -17,9 +17,9 @@ namespace Wisteria::UI
     InsertImageDlg::InsertImageDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                    wxWindow* parent, const wxString& caption, const wxWindowID id,
                                    const wxPoint& pos, const wxSize& size, const long style,
-                                   EditMode editMode, const bool includePageOptions)
+                                   EditMode editMode, const int options)
         : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
-          m_includePageOptions(includePageOptions)
+          m_options(options)
         {
         CreateControls();
         FinalizeControls();
@@ -42,7 +42,7 @@ namespace Wisteria::UI
         imagePage->SetSizer(imageSizer);
         GetSideBarBook()->AddPage(imagePage, _(L"Image Options"), ID_IMAGE_SECTION, true);
 
-        if (!m_includePageOptions)
+        if ((m_options & ImageDlgIncludePageOptions) == 0)
             {
             GetSideBarBook()->DeletePage(0);
             }
@@ -110,59 +110,66 @@ namespace Wisteria::UI
             });
 
         // stitch direction
-        auto* stitchGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        stitchGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Stitch direction:")),
-                        wxSizerFlags{}.CenterVertical());
-        m_stitchChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                      nullptr, 0, wxGenericValidator(&m_stitchDirection));
-        m_stitchChoice->Append(_(L"Horizontal"));
-        m_stitchChoice->Append(_(L"Vertical"));
-        stitchGrid->Add(m_stitchChoice);
-        imageSizer->Add(stitchGrid, wxSizerFlags{}.Border());
+        if ((m_options & ImageDlgIncludeStitch) != 0)
+            {
+            auto* stitchGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            stitchGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Stitch direction:")),
+                            wxSizerFlags{}.CenterVertical());
+            m_stitchChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                                          nullptr, 0, wxGenericValidator(&m_stitchDirection));
+            m_stitchChoice->Append(_(L"Horizontal"));
+            m_stitchChoice->Append(_(L"Vertical"));
+            stitchGrid->Add(m_stitchChoice);
+            imageSizer->Add(stitchGrid, wxSizerFlags{}.Border());
+            }
 
         // size options
-        auto* sizeBox = new wxStaticBoxSizer(wxVERTICAL, imagePage, _(L"Size"));
+        if ((m_options & ImageDlgIncludeSize) != 0)
+            {
+            auto* sizeBox = new wxStaticBoxSizer(wxVERTICAL, imagePage, _(L"Size"));
 
-        auto* customSizeCheck =
-            new wxCheckBox(sizeBox->GetStaticBox(), wxID_ANY, _(L"Override default size"),
-                           wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_customSize));
-        sizeBox->Add(customSizeCheck, wxSizerFlags{}.Border());
+            auto* customSizeCheck = new wxCheckBox(
+                sizeBox->GetStaticBox(), wxID_ANY, _(L"Override default size"), wxDefaultPosition,
+                wxDefaultSize, 0, wxGenericValidator(&m_customSize));
+            sizeBox->Add(customSizeCheck, wxSizerFlags{}.Border());
 
-        auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
-                      wxSizerFlags{}.CenterVertical());
-        m_widthSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
-        m_widthSpin->SetRange(1, 10'000);
-        m_widthSpin->SetValue(512);
-        sizeGrid->Add(m_widthSpin);
+            sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                          wxSizerFlags{}.CenterVertical());
+            m_widthSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
+            m_widthSpin->SetRange(1, 10'000);
+            m_widthSpin->SetValue(512);
+            sizeGrid->Add(m_widthSpin);
 
-        sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Height:")),
-                      wxSizerFlags{}.CenterVertical());
-        m_heightSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
-        m_heightSpin->SetRange(1, 10'000);
-        m_heightSpin->SetValue(512);
-        sizeGrid->Add(m_heightSpin);
+            sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Height:")),
+                          wxSizerFlags{}.CenterVertical());
+            m_heightSpin = new wxSpinCtrl(sizeBox->GetStaticBox(), wxID_ANY);
+            m_heightSpin->SetRange(1, 10'000);
+            m_heightSpin->SetValue(512);
+            sizeGrid->Add(m_heightSpin);
 
-        sizeBox->Add(sizeGrid, wxSizerFlags{}.Border());
-        imageSizer->Add(sizeBox, wxSizerFlags{}.Expand().Border());
+            sizeBox->Add(sizeGrid, wxSizerFlags{}.Border());
+            imageSizer->Add(sizeBox, wxSizerFlags{}.Expand().Border());
 
-        // size spins start disabled
-        OnEnableCustomSize(false);
+            // size spins start disabled
+            OnEnableCustomSize(false);
 
-        customSizeCheck->Bind(wxEVT_CHECKBOX,
-                              [this]([[maybe_unused]] wxCommandEvent&)
-                              {
-                                  TransferDataFromWindow();
-                                  OnEnableCustomSize(m_customSize);
-                              });
+            customSizeCheck->Bind(wxEVT_CHECKBOX,
+                                  [this]([[maybe_unused]] wxCommandEvent&)
+                                  {
+                                      TransferDataFromWindow();
+                                      OnEnableCustomSize(m_customSize);
+                                  });
+            }
 
         // resize method and effect
         auto* optionsGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        optionsGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Resize method:")),
-                         wxSizerFlags{}.CenterVertical());
+        if ((m_options & ImageDlgIncludeResizeMethod) != 0)
             {
+            optionsGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Resize method:")),
+                             wxSizerFlags{}.CenterVertical());
             auto* resizeChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                               0, nullptr, 0, wxGenericValidator(&m_resizeMethod));
             resizeChoice->Append(_(L"Downscale or upscale"));
@@ -172,9 +179,10 @@ namespace Wisteria::UI
             optionsGrid->Add(resizeChoice);
             }
 
-        optionsGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Effect:")),
-                         wxSizerFlags{}.CenterVertical());
+        if ((m_options & ImageDlgIncludeEffect) != 0)
             {
+            optionsGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Effect:")),
+                             wxSizerFlags{}.CenterVertical());
             auto* effectChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                               0, nullptr, 0, wxGenericValidator(&m_imageEffect));
             effectChoice->Append(_(L"None"));
@@ -201,6 +209,30 @@ namespace Wisteria::UI
             {
             m_heightSpin->Enable(enable);
             }
+        }
+
+    //-------------------------------------------
+    void InsertImageDlg::SetImagePaths(const wxArrayString& paths)
+        {
+        if (m_pathListBox != nullptr)
+            {
+            m_pathListBox->SetStrings(paths);
+            }
+        }
+
+    //-------------------------------------------
+    void InsertImageDlg::SetCustomSize(const bool enable, const int width, const int height)
+        {
+        m_customSize = enable;
+        if (m_widthSpin != nullptr)
+            {
+            m_widthSpin->SetValue(width);
+            }
+        if (m_heightSpin != nullptr)
+            {
+            m_heightSpin->SetValue(height);
+            }
+        OnEnableCustomSize(enable);
         }
 
     //-------------------------------------------
@@ -263,7 +295,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertImageDlg::LoadFromImage(const Wisteria::GraphItems::Image& image, Canvas* canvas)
         {
-        if (m_includePageOptions)
+        if ((m_options & ImageDlgIncludePageOptions) != 0)
             {
             LoadPageOptions(image);
             }
