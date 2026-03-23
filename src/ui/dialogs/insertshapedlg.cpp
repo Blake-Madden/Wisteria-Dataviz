@@ -300,6 +300,22 @@ namespace Wisteria::UI
                                 [this](wxCommandEvent& evt) { OnEnableFillable(evt.IsChecked()); });
             }
 
+        // repeat count
+        if ((m_options & ShapeDlgIncludeRepeat) != 0)
+            {
+            auto* repeatBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Repeat"));
+            auto* repeatGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
+            repeatGrid->Add(new wxStaticText(repeatBox->GetStaticBox(), wxID_ANY, _(L"Count:")),
+                            wxSizerFlags{}.CenterVertical());
+            m_repeatTextCtrl = new wxTextCtrl(repeatBox->GetStaticBox(), wxID_ANY, L"1",
+                                              wxDefaultPosition, wxSize{ FromDIP(200), -1 });
+            repeatGrid->Add(m_repeatTextCtrl, wxSizerFlags{}.Expand());
+
+            repeatBox->Add(repeatGrid, wxSizerFlags{}.Border());
+            shapeSizer->Add(repeatBox, wxSizerFlags{}.Expand().Border());
+            }
+
         // alignment
         if ((m_options & ShapeDlgIncludeAlignment) != 0)
             {
@@ -441,6 +457,21 @@ namespace Wisteria::UI
     double InsertShapeDlg::GetFillPercent() const
         {
         return m_fillPercentSpin != nullptr ? m_fillPercentSpin->GetValue() : 0.0;
+        }
+
+    //-------------------------------------------
+    wxString InsertShapeDlg::GetRepeatString() const
+        {
+        return m_repeatTextCtrl != nullptr ? m_repeatTextCtrl->GetValue() : wxString{ L"1" };
+        }
+
+    //-------------------------------------------
+    void InsertShapeDlg::SetRepeatString(const wxString& repeat)
+        {
+        if (m_repeatTextCtrl != nullptr)
+            {
+            m_repeatTextCtrl->SetValue(repeat);
+            }
         }
 
     //-------------------------------------------
@@ -770,6 +801,14 @@ namespace Wisteria::UI
             {
             m_fillable = false;
             OnEnableFillable(false);
+            }
+
+        // repeat count
+        if (m_repeatTextCtrl != nullptr)
+            {
+            const auto repeatTmpl = shapeInfo.GetPropertyTemplate(L"repeat");
+            m_repeatTextCtrl->SetValue(
+                repeatTmpl.empty() ? std::to_wstring(shapeInfo.GetRepeatCount()) : repeatTmpl);
             }
 
         TransferDataToWindow();

@@ -415,7 +415,7 @@ namespace Wisteria::UI
         InsertShapeDlg dlg(
             GetCanvas(), nullptr, this, _(L"Add Top Shape"), wxID_ANY, wxDefaultPosition,
             wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-            InsertItemDlg::EditMode::Insert, ShapeDlgIncludeAll & ~ShapeDlgIncludeAlignment);
+            InsertItemDlg::EditMode::Insert, ShapeDlgIncludeMost & ~ShapeDlgIncludeAlignment);
         if (dlg.ShowModal() != wxID_OK)
             {
             return;
@@ -453,7 +453,7 @@ namespace Wisteria::UI
         InsertShapeDlg dlg(
             GetCanvas(), nullptr, this, _(L"Edit Top Shape"), wxID_ANY, wxDefaultPosition,
             wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-            InsertItemDlg::EditMode::Edit, ShapeDlgIncludeAll & ~ShapeDlgIncludeAlignment);
+            InsertItemDlg::EditMode::Edit, ShapeDlgIncludeMost & ~ShapeDlgIncludeAlignment);
         dlg.LoadFromShapeInfo(m_topShapes[static_cast<size_t>(sel)]);
 
         if (dlg.ShowModal() != wxID_OK)

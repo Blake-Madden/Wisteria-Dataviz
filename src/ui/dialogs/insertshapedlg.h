@@ -30,8 +30,9 @@ namespace Wisteria::UI
         ShapeDlgIncludeLabel = 1 << 3,     ///< Show the label controls.
         ShapeDlgIncludeFillable = 1 << 4,  ///< Show the fillable controls.
         ShapeDlgIncludeAlignment = 1 << 5, ///< Show the alignment controls.
-        /// @brief All options enabled (the default).
-        ShapeDlgIncludeAll = ShapeDlgIncludeSize | ShapeDlgIncludePen | ShapeDlgIncludeBrush |
+        ShapeDlgIncludeRepeat = 1 << 6,    ///< Show the repeat count control.
+        /// @brief Most options enabled (the default, excludes repeat).
+        ShapeDlgIncludeMost = ShapeDlgIncludeSize | ShapeDlgIncludePen | ShapeDlgIncludeBrush |
         ShapeDlgIncludeLabel | ShapeDlgIncludeFillable | ShapeDlgIncludeAlignment
         };
 
@@ -65,7 +66,7 @@ namespace Wisteria::UI
                        const wxString& caption = _(L"Insert Shape"), wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                       EditMode editMode = EditMode::Insert, int options = ShapeDlgIncludeAll);
+                       EditMode editMode = EditMode::Insert, int options = ShapeDlgIncludeMost);
 
         /// @private
         InsertShapeDlg(const InsertShapeDlg&) = delete;
@@ -131,6 +132,14 @@ namespace Wisteria::UI
         [[nodiscard]]
         double GetFillPercent() const;
 
+        /// @returns The repeat count string (may contain a constant reference).
+        [[nodiscard]]
+        wxString GetRepeatString() const;
+
+        /// @brief Sets the repeat count string.
+        /// @param repeat The repeat string (number or constant reference).
+        void SetRepeatString(const wxString& repeat);
+
         /// @brief Sets the selected icon shape.
         /// @param shape The icon shape to select.
         void SetIconShape(Icons::IconShape shape);
@@ -186,6 +195,9 @@ namespace Wisteria::UI
         // fillable
         wxSpinCtrlDouble* m_fillPercentSpin{ nullptr };
 
+        // repeat
+        wxTextCtrl* m_repeatTextCtrl{ nullptr };
+
         // DDX data members
         int m_shapeIndex{ 10 }; // default to Square
         int m_penStyle{ 0 };
@@ -194,7 +206,7 @@ namespace Wisteria::UI
         int m_horizontalAlign{ 1 }; // Centered
         int m_verticalAlign{ 1 };   // Centered
 
-        int m_options{ ShapeDlgIncludeAll };
+        int m_options{ ShapeDlgIncludeMost };
 
         // mapping from choice index to IconShape
         std::vector<Icons::IconShape> m_shapeMap;

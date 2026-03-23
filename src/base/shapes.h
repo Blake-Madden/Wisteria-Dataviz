@@ -778,6 +778,25 @@ namespace Wisteria::GraphItems
             return m_repeatCount;
             }
 
+        /// @brief Stores an original template string for a property.
+        /// @param property The property path (e.g., "repeat", "fill-percent").
+        /// @param templateStr The original unexpanded string
+        ///     (may contain `{{}}` placeholders).
+        void SetPropertyTemplate(const wxString& property, const wxString& templateStr)
+            {
+            m_propertyTemplates[property] = templateStr;
+            }
+
+        /// @returns The original template string for the given property,
+        ///     or an empty string if no template was stored.
+        /// @param property The property path (e.g., "repeat", "fill-percent").
+        [[nodiscard]]
+        wxString GetPropertyTemplate(const wxString& property) const
+            {
+            const auto iter = m_propertyTemplates.find(property);
+            return (iter != m_propertyTemplates.cend()) ? iter->second : wxString{};
+            }
+
       private:
         Icons::IconShape m_shape{ Icons::IconShape::Square };
         wxSize m_sizeDIPs{ 16, 16 };
@@ -786,6 +805,7 @@ namespace Wisteria::GraphItems
         wxString m_text;
         double m_fillPercent{ math_constants::full };
         size_t m_repeatCount{ 1 };
+        std::map<wxString, wxString> m_propertyTemplates;
         };
 
     /** @brief Draws a shape onto a canvas.*/

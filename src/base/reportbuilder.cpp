@@ -4260,14 +4260,26 @@ namespace Wisteria
                 }
             }
 
-        return GraphItems::ShapeInfo{}
-            .Shape(loadedShape.value())
-            .Size(sz)
-            .Pen(pen)
-            .Brush(brush)
-            .Text((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
-            .Repeat(wxRound(repeat))
-            .FillPercent(fillPercent);
+        auto result = GraphItems::ShapeInfo{}
+                          .Shape(loadedShape.value())
+                          .Size(sz)
+                          .Pen(pen)
+                          .Brush(brush)
+                          .Text((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
+                          .Repeat(wxRound(repeat))
+                          .FillPercent(fillPercent);
+
+        // cache the raw string if it was a constant reference
+        if (repeatNode->IsOk() && repeatNode->IsValueString())
+            {
+            result.SetPropertyTemplate(L"repeat", repeatNode->AsString());
+            }
+        if (fillPercentNode->IsOk() && fillPercentNode->IsValueString())
+            {
+            result.SetPropertyTemplate(L"fill-percent", fillPercentNode->AsString());
+            }
+
+        return result;
         }
 
     //---------------------------------------------------
