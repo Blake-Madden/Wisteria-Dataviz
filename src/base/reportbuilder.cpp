@@ -189,13 +189,14 @@ namespace Wisteria
                         size_t currentRow{ 0 };
                         const auto rows = rowsProperty->AsNodes();
                         rowCount = rows.size();
-                        // Empty page? Go to next one.
                         if (rows.empty())
                             {
-                            delete canvas;
-                            continue;
+                            canvas->SetFixedObjectsGridSize(1, 1);
                             }
-                        canvas->SetFixedObjectsGridSize(rows.size(), 1);
+                        else
+                            {
+                            canvas->SetFixedObjectsGridSize(rows.size(), 1);
+                            }
                         for (const auto& row : rows)
                             {
                             const auto itemsProperty = row->GetProperty(L"items");
