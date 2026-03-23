@@ -10,10 +10,12 @@
 #include "../base/reportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
+#include "../ui/dialogs/insertboxplotdlg.h"
 #include "../ui/dialogs/insertbubbleplotdlg.h"
 #include "../ui/dialogs/insertcandlestickplotdlg.h"
 #include "../ui/dialogs/insertchernoffdlg.h"
 #include "../ui/dialogs/insertganttchartdlg.h"
+#include "../ui/dialogs/insertheatmapdlg.h"
 #include "../ui/dialogs/inserthistogramdlg.h"
 #include "../ui/dialogs/insertimgdlg.h"
 #include "../ui/dialogs/insertlabeldlg.h"
@@ -158,6 +160,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertGanttChart, this, ID_NEW_GANTT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCandlestickPlot, this, ID_NEW_CANDLESTICK);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertSankeyDiagram, this, ID_NEW_SANKEY_DIAGRAM);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBoxPlot, this, ID_NEW_BOXPLOT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHeatMap, this, ID_NEW_HEATMAP);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHistogram, this, ID_NEW_HISTOGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWordCloud, this, ID_NEW_WORD_CLOUD);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWLSparkline, this, ID_NEW_WIN_LOSS_SPARKLINE);
@@ -1365,6 +1369,14 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
         {
         EditProConRoadmap(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
+        {
+        EditBoxPlot(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
+        {
+        EditHeatMap(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
         {
@@ -3608,6 +3620,592 @@ void WisteriaView::EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria:
     }
 
 //-------------------------------------------
+void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertBoxPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto bpSvg = wxGetApp().GetResourceManager().GetSVG(L"boxplot.svg");
+    if (bpSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(bpSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(
+            canvas,
+            (dlg.GetColorScheme() != nullptr) ?
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()) :
+                nullptr,
+            dlg.GetColorScheme());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
+
+        plot->SetBoxEffect(dlg.GetBoxEffect());
+        plot->ShowAllPoints(dlg.GetShowAllPoints());
+        plot->ShowLabels(dlg.GetShowLabels());
+        plot->ShowMidpointConnection(dlg.GetShowMidpointConnection());
+
+        // apply stipple shape or image settings based on the selected effect
+        const auto boxEffect = dlg.GetBoxEffect();
+        if (boxEffect == Wisteria::BoxEffect::StippleShape)
+            {
+            plot->SetStippleShape(dlg.GetStippleShape());
+            plot->SetStippleShapeColor(dlg.GetStippleShapeColor());
+            }
+        else if (boxEffect == Wisteria::BoxEffect::StippleImage && !dlg.GetImagePaths().empty())
+            {
+            wxImage img(ResolveFilePath(dlg.GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
+            if (img.IsOk() && dlg.GetImageEffect() != Wisteria::ImageEffect::NoEffect)
+                {
+                img = Wisteria::GraphItems::Image::ApplyEffect(dlg.GetImageEffect(), img);
+                }
+            if (img.IsOk())
+                {
+                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                }
+            }
+        else if ((boxEffect == Wisteria::BoxEffect::CommonImage ||
+                  boxEffect == Wisteria::BoxEffect::Image) &&
+                 !dlg.GetImagePaths().empty())
+            {
+            const auto imgEffect = dlg.GetImageEffect();
+            std::vector<wxBitmapBundle> images;
+            images.reserve(dlg.GetImagePaths().GetCount());
+            for (const auto& path : dlg.GetImagePaths())
+                {
+                wxImage img(ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk() && imgEffect != Wisteria::ImageEffect::NoEffect)
+                    {
+                    img = Wisteria::GraphItems::Image::ApplyEffect(imgEffect, img);
+                    }
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                }
+            plot->SetImageScheme(
+                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
+            }
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.aggregate", dlg.GetContinuousVariable());
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group-1", dlg.GetGroupVariable());
+            }
+
+        // cache stipple shape and image settings for round-tripping
+        const auto shapeStr =
+            Wisteria::ReportEnumConvert::ConvertIconToString(dlg.GetStippleShape());
+        if (shapeStr)
+            {
+            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
+            }
+        plot->SetPropertyTemplate(L"stipple-shape-color",
+                                  dlg.GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
+        if (!dlg.GetImagePaths().empty())
+            {
+            wxString paths;
+            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
+                {
+                if (!paths.empty())
+                    {
+                    paths += L"\t";
+                    }
+                paths += dlg.GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
+        if (dlg.IsImageCustomSizeEnabled())
+            {
+            plot->SetPropertyTemplate(L"image-width", std::to_wstring(dlg.GetImageWidth()));
+            plot->SetPropertyTemplate(L"image-height", std::to_wstring(dlg.GetImageHeight()));
+            }
+            {
+            const auto resizeStr = Wisteria::ReportEnumConvert::ConvertResizeMethodToString(
+                dlg.GetImageResizeMethod());
+            if (resizeStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
+                }
+            }
+            {
+            const auto effectStr =
+                Wisteria::ReportEnumConvert::ConvertImageEffectToString(dlg.GetImageEffect());
+            if (effectStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
+                }
+            }
+        plot->SetPropertyTemplate(
+            L"image-stitch", (dlg.GetImageStitchDirection() == Wisteria::Orientation::Vertical) ?
+                                 L"vertical" :
+                                 L"horizontal");
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+        const auto side =
+            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                        Wisteria::Side::Bottom;
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                               const size_t graphRow, const size_t graphCol)
+    {
+    Wisteria::UI::InsertBoxPlotDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Box Plot"),
+                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto bpSvg = wxGetApp().GetResourceManager().GetSVG(L"boxplot.svg");
+    if (bpSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(bpSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph, canvas);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(
+            canvas,
+            (dlg.GetColorScheme() != nullptr) ?
+                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()) :
+                nullptr,
+            dlg.GetColorScheme());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
+
+        plot->SetBoxEffect(dlg.GetBoxEffect());
+        plot->ShowAllPoints(dlg.GetShowAllPoints());
+        plot->ShowLabels(dlg.GetShowLabels());
+        plot->ShowMidpointConnection(dlg.GetShowMidpointConnection());
+
+        // apply stipple shape or image settings based on the selected effect
+        const auto boxEffect = dlg.GetBoxEffect();
+        if (boxEffect == Wisteria::BoxEffect::StippleShape)
+            {
+            plot->SetStippleShape(dlg.GetStippleShape());
+            plot->SetStippleShapeColor(dlg.GetStippleShapeColor());
+            }
+        else if (boxEffect == Wisteria::BoxEffect::StippleImage && !dlg.GetImagePaths().empty())
+            {
+            wxImage img(ResolveFilePath(dlg.GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
+            if (img.IsOk() && dlg.GetImageEffect() != Wisteria::ImageEffect::NoEffect)
+                {
+                img = Wisteria::GraphItems::Image::ApplyEffect(dlg.GetImageEffect(), img);
+                }
+            if (img.IsOk())
+                {
+                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                }
+            }
+        else if ((boxEffect == Wisteria::BoxEffect::CommonImage ||
+                  boxEffect == Wisteria::BoxEffect::Image) &&
+                 !dlg.GetImagePaths().empty())
+            {
+            const auto imgEffect = dlg.GetImageEffect();
+            std::vector<wxBitmapBundle> images;
+            images.reserve(dlg.GetImagePaths().GetCount());
+            for (const auto& path : dlg.GetImagePaths())
+                {
+                wxImage img(ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk() && imgEffect != Wisteria::ImageEffect::NoEffect)
+                    {
+                    img = Wisteria::GraphItems::Image::ApplyEffect(imgEffect, img);
+                    }
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                }
+            plot->SetImageScheme(
+                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
+            }
+
+        // carry forward property templates, preserving {{placeholders}}
+        const auto* oldBoxPlot = dynamic_cast<const Wisteria::Graphs::BoxPlot*>(&graph);
+        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
+                                                  const wxString& oldExpanded)
+        {
+            if (newVal != oldExpanded || newVal.empty())
+                {
+                plot->SetPropertyTemplate(prop, newVal);
+                }
+            else
+                {
+                const auto oldTemplate = graph.GetPropertyTemplate(prop);
+                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
+                }
+        };
+
+        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
+                     graph.GetPropertyTemplate(L"dataset"));
+        carryForward(L"variables.aggregate", dlg.GetContinuousVariable(),
+                     oldBoxPlot != nullptr ? oldBoxPlot->GetContinuousColumnName() : wxString{});
+        const auto oldGroupName = (oldBoxPlot != nullptr) ?
+                                      oldBoxPlot->GetGroupColumnName().value_or(wxString{}) :
+                                      wxString{};
+        carryForward(L"variables.group-1", dlg.GetGroupVariable(), oldGroupName);
+
+        // cache stipple shape and image settings for round-tripping
+        const auto shapeStr =
+            Wisteria::ReportEnumConvert::ConvertIconToString(dlg.GetStippleShape());
+        if (shapeStr)
+            {
+            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
+            }
+        plot->SetPropertyTemplate(L"stipple-shape-color",
+                                  dlg.GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
+        if (!dlg.GetImagePaths().empty())
+            {
+            wxString paths;
+            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
+                {
+                if (!paths.empty())
+                    {
+                    paths += L"\t";
+                    }
+                paths += dlg.GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
+        if (dlg.IsImageCustomSizeEnabled())
+            {
+            plot->SetPropertyTemplate(L"image-width", std::to_wstring(dlg.GetImageWidth()));
+            plot->SetPropertyTemplate(L"image-height", std::to_wstring(dlg.GetImageHeight()));
+            }
+            {
+            const auto resizeStr = Wisteria::ReportEnumConvert::ConvertResizeMethodToString(
+                dlg.GetImageResizeMethod());
+            if (resizeStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
+                }
+            }
+            {
+            const auto effectStr =
+                Wisteria::ReportEnumConvert::ConvertImageEffectToString(dlg.GetImageEffect());
+            if (effectStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
+                }
+            }
+        plot->SetPropertyTemplate(
+            L"image-stitch", (dlg.GetImageStitchDirection() == Wisteria::Orientation::Vertical) ?
+                                 L"vertical" :
+                                 L"horizontal");
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+        const auto side =
+            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                        Wisteria::Side::Bottom;
+
+        canvas->SetFixedObject(graphRow, graphCol, nullptr);
+        const auto& oldLegendInfo = graph.GetLegendInfo();
+        if (oldLegendInfo.has_value())
+            {
+            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
+            const auto oldSide = oldLegendInfo->GetPlacement();
+            const bool hasLegendCell =
+                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
+                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
+                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
+                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
+            if (hasLegendCell)
+                {
+                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
+                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
+                                                                               graphRow;
+                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
+                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
+                                                                              graphCol;
+                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
+                if (legendItem != nullptr)
+                    {
+                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
+                    if (label != nullptr && label->IsLegend())
+                        {
+                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                        }
+                    }
+                }
+            }
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto hmSvg = wxGetApp().GetResourceManager().GetSVG(L"heatmap.svg");
+    if (hmSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(hmSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas, dlg.GetColorScheme());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
+                      static_cast<size_t>(dlg.GetGroupColumnCount()));
+
+        plot->ShowGroupHeaders(dlg.GetShowGroupHeaders());
+        plot->SetGroupHeaderPrefix(dlg.GetGroupHeaderPrefix());
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.continuous", dlg.GetContinuousVariable());
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
+            }
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+        const auto side =
+            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                        Wisteria::Side::Bottom;
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                               const size_t graphRow, const size_t graphCol)
+    {
+    Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Heat Map"),
+                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto hmSvg = wxGetApp().GetResourceManager().GetSVG(L"heatmap.svg");
+    if (hmSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(hmSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph, canvas);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas, dlg.GetColorScheme());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
+                      static_cast<size_t>(dlg.GetGroupColumnCount()));
+
+        plot->ShowGroupHeaders(dlg.GetShowGroupHeaders());
+        plot->SetGroupHeaderPrefix(dlg.GetGroupHeaderPrefix());
+
+        // carry forward property templates, preserving {{placeholders}}
+        const auto* oldHeatMap = dynamic_cast<const Wisteria::Graphs::HeatMap*>(&graph);
+        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
+                                                  const wxString& oldExpanded)
+        {
+            if (newVal != oldExpanded || newVal.empty())
+                {
+                plot->SetPropertyTemplate(prop, newVal);
+                }
+            else
+                {
+                const auto oldTemplate = graph.GetPropertyTemplate(prop);
+                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
+                }
+        };
+
+        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
+                     graph.GetPropertyTemplate(L"dataset"));
+        carryForward(L"variables.continuous", dlg.GetContinuousVariable(),
+                     oldHeatMap != nullptr ? oldHeatMap->GetContinuousColumnName() : wxString{});
+        const auto oldGroupName = (oldHeatMap != nullptr) ?
+                                      oldHeatMap->GetGroupColumnName().value_or(wxString{}) :
+                                      wxString{};
+        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+        const auto side =
+            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                        Wisteria::Side::Bottom;
+
+        canvas->SetFixedObject(graphRow, graphCol, nullptr);
+        const auto& oldLegendInfo = graph.GetLegendInfo();
+        if (oldLegendInfo.has_value())
+            {
+            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
+            const auto oldSide = oldLegendInfo->GetPlacement();
+            const bool hasLegendCell =
+                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
+                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
+                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
+                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
+            if (hasLegendCell)
+                {
+                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
+                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
+                                                                               graphRow;
+                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
+                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
+                                                                              graphCol;
+                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
+                if (legendItem != nullptr)
+                    {
+                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
+                    if (label != nullptr && label->IsLegend())
+                        {
+                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                        }
+                    }
+                }
+            }
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
     {
     auto* canvas = GetActiveCanvas();
@@ -4796,8 +5394,9 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
             }
         image->SetPropertyTemplate(L"image-import.paths", joined);
         image->SetPropertyTemplate(L"image-import.stitch",
-            (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
-                L"vertical" : L"horizontal");
+                                   (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
+                                       L"vertical" :
+                                       L"horizontal");
         }
 
     // cache effect for round-tripping
@@ -4928,9 +5527,10 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
             joined += MakeRelativePath(paths[idx]);
             }
         newImage->SetPropertyTemplate(L"image-import.paths", joined);
-        newImage->SetPropertyTemplate(L"image-import.stitch",
-            (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
-                L"vertical" : L"horizontal");
+        newImage->SetPropertyTemplate(
+            L"image-import.stitch", (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
+                                        L"vertical" :
+                                        L"horizontal");
         }
 
     // cache effect for round-tripping
@@ -5272,6 +5872,21 @@ wxString WisteriaView::MakeRelativePath(const wxString& filePath) const
             const wxFileName projectDir{ m_projectFilePath };
             fn.MakeRelativeTo(projectDir.GetPath());
             return fn.GetFullPath(wxPATH_UNIX);
+            }
+        }
+    return filePath;
+    }
+
+//-------------------------------------------
+wxString WisteriaView::ResolveFilePath(const wxString& filePath) const
+    {
+    if (!m_projectFilePath.empty())
+        {
+        wxFileName fn{ filePath };
+        if (fn.IsRelative())
+            {
+            fn.MakeAbsolute(wxFileName{ m_projectFilePath }.GetPath());
+            return fn.GetFullPath();
             }
         }
     return filePath;
@@ -6516,8 +7131,8 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveImage(const Wisteria::GraphItems::Image* i
     else if (!pathTemplate.empty())
         {
         // single path
-        tmpl += L", \"image-import\": {\"path\": \"" + EscapeJsonStr(MakeRelativePath(pathTemplate)) +
-                L"\"";
+        tmpl += L", \"image-import\": {\"path\": \"" +
+                EscapeJsonStr(MakeRelativePath(pathTemplate)) + L"\"";
         if (!effectTemplate.empty())
             {
             tmpl += L", \"effect\": \"" + EscapeJsonStr(effectTemplate) + L"\"";
@@ -7245,8 +7860,8 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                     {
                     bgImgStr += L", ";
                     }
-                bgImgStr += L"\"" +
-                            EscapeJsonStr(MakeRelativePath(tokenizer.GetNextToken())) + L"\"";
+                bgImgStr +=
+                    L"\"" + EscapeJsonStr(MakeRelativePath(tokenizer.GetNextToken())) + L"\"";
                 first = false;
                 }
             bgImgStr += L"]";
@@ -8682,6 +9297,56 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
         if (boxPlot->IsShowingLabels())
             {
             node->Add(L"show-labels", true);
+            }
+        if (!boxPlot->IsShowingMidpointConnection())
+            {
+            node->Add(L"show-midpoint-connection", false);
+            }
+
+        // serialize image paths for image-based box effects
+        const auto imgPaths = boxPlot->GetPropertyTemplate(L"image-paths");
+        const auto imgEffect = boxPlot->GetPropertyTemplate(L"image-effect");
+        if (!imgPaths.empty())
+            {
+            // helper to build an image object JSON string with optional effect
+            const auto buildImageObj = [&](const wxString& path) -> wxString
+            {
+                wxString obj = L"{\"path\": \"" + EscapeJsonStr(MakeRelativePath(path)) + L"\"";
+                if (!imgEffect.empty())
+                    {
+                    obj += L", \"effect\": \"" + EscapeJsonStr(imgEffect) + L"\"";
+                    }
+                obj += L"}";
+                return obj;
+            };
+
+            wxArrayString paths;
+            wxStringTokenizer tokenizer(imgPaths, L"\t");
+            while (tokenizer.HasMoreTokens())
+                {
+                paths.Add(tokenizer.GetNextToken());
+                }
+
+            const auto boxEff = boxPlot->GetBoxEffect();
+            if (boxEff == Wisteria::BoxEffect::StippleImage && !paths.empty())
+                {
+                node->Add(L"stipple-image", wxSimpleJSON::Create(buildImageObj(paths[0])));
+                }
+            else if (boxEff == Wisteria::BoxEffect::CommonImage ||
+                     boxEff == Wisteria::BoxEffect::Image)
+                {
+                wxString arr = L"[";
+                for (size_t i = 0; i < paths.GetCount(); ++i)
+                    {
+                    if (i > 0)
+                        {
+                        arr += L", ";
+                        }
+                    arr += buildImageObj(paths[i]);
+                    }
+                arr += L"]";
+                node->Add(L"image-scheme", wxSimpleJSON::Create(arr));
+                }
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))

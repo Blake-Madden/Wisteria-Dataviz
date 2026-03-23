@@ -84,6 +84,8 @@ class WisteriaView : public wxView
     static wxString EscapeJsonStr(const wxString& str);
     [[nodiscard]]
     wxString MakeRelativePath(const wxString& filePath) const;
+    [[nodiscard]]
+    wxString ResolveFilePath(const wxString& filePath) const;
     static void SaveDatasetImportOptions(wxSimpleJSON::Ptr_t& dsNode,
                                          const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
                                          const Wisteria::Data::ImportInfo& info);
@@ -163,6 +165,8 @@ class WisteriaView : public wxView
     void OnInsertGanttChart(wxCommandEvent& event);
     void OnInsertCandlestickPlot(wxCommandEvent& event);
     void OnInsertSankeyDiagram(wxCommandEvent& event);
+    void OnInsertBoxPlot(wxCommandEvent& event);
+    void OnInsertHeatMap(wxCommandEvent& event);
     void OnInsertHistogram(wxCommandEvent& event);
     void OnInsertWordCloud(wxCommandEvent& event);
     void OnInsertWLSparkline(wxCommandEvent& event);
@@ -198,6 +202,10 @@ class WisteriaView : public wxView
                        size_t graphCol);
     void EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                            size_t graphRow, size_t graphCol);
+    void EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                     size_t graphCol);
+    void EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                     size_t graphCol);
     void EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                        size_t graphCol);
     void EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
