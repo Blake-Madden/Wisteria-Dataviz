@@ -7024,12 +7024,43 @@ namespace Wisteria
             std::vector<wxBitmapBundle> images;
             const auto imgNodes = imageSchemeNode->AsNodes();
             images.reserve(imgNodes.size());
+            wxString pathsJoined;
+            wxString effectStr;
             for (const auto& imgNode : imgNodes)
                 {
                 images.emplace_back(LoadImageFile(imgNode));
+                // cache file paths for round-tripping
+                if (!pathsJoined.empty())
+                    {
+                    pathsJoined += L"\t";
+                    }
+                if (imgNode->IsValueString())
+                    {
+                    pathsJoined += imgNode->AsString();
+                    }
+                else
+                    {
+                    const auto nodePath = imgNode->GetProperty(L"path")->AsString();
+                    if (!nodePath.empty())
+                        {
+                        pathsJoined += nodePath;
+                        }
+                    if (effectStr.empty())
+                        {
+                        effectStr = imgNode->GetProperty(L"effect")->AsString();
+                        }
+                    }
                 }
             graph->SetImageScheme(
                 std::make_shared<Images::Schemes::ImageScheme>(std::move(images)));
+            if (!pathsJoined.empty())
+                {
+                graph->SetPropertyTemplate(L"image-paths", pathsJoined);
+                }
+            if (!effectStr.empty())
+                {
+                graph->SetPropertyTemplate(L"image-effect", effectStr);
+                }
             }
 
         // common image outline used for bar charts/box plots
@@ -7044,6 +7075,26 @@ namespace Wisteria
             stippleImgNode->IsOk())
             {
             graph->SetStippleBrush(LoadImageFile(stippleImgNode));
+            // cache file path and effect for round-tripping
+            wxString stipplePath;
+            wxString stippleEffect;
+            if (stippleImgNode->IsValueString())
+                {
+                stipplePath = stippleImgNode->AsString();
+                }
+            else
+                {
+                stipplePath = stippleImgNode->GetProperty(L"path")->AsString();
+                stippleEffect = stippleImgNode->GetProperty(L"effect")->AsString();
+                }
+            if (!stipplePath.empty())
+                {
+                graph->SetPropertyTemplate(L"image-paths", stipplePath);
+                }
+            if (!stippleEffect.empty())
+                {
+                graph->SetPropertyTemplate(L"image-effect", stippleEffect);
+                }
             }
 
         if (const auto stippleShapeNode = graphNode->GetProperty(L"stipple-shape");
@@ -7055,6 +7106,7 @@ namespace Wisteria
                 if (iconValue.has_value())
                     {
                     graph->SetStippleShape(iconValue.value());
+                    graph->SetPropertyTemplate(L"stipple-shape", stippleShapeNode->AsString());
                     }
                 else
                     {
@@ -7066,17 +7118,17 @@ namespace Wisteria
                 }
             else
                 {
-                const auto iconValue = ReportEnumConvert::ConvertIcon(
-                    stippleShapeNode->GetProperty(L"icon")->AsString());
+                const auto iconStr = stippleShapeNode->GetProperty(L"icon")->AsString();
+                const auto iconValue = ReportEnumConvert::ConvertIcon(iconStr);
                 if (iconValue.has_value())
                     {
                     graph->SetStippleShape(iconValue.value());
+                    graph->SetPropertyTemplate(L"stipple-shape", iconStr);
                     }
                 else
                     {
                     throw std::runtime_error(
-                        wxString::Format(_(L"%s: unknown icon for graph stipple shape."),
-                                         stippleShapeNode->GetProperty(L"icon")->AsString())
+                        wxString::Format(_(L"%s: unknown icon for graph stipple shape."), iconStr)
                             .ToUTF8());
                     }
                 if (const auto stippleShapeColor =
@@ -7084,6 +7136,8 @@ namespace Wisteria
                     stippleShapeColor.IsOk())
                     {
                     graph->SetStippleShapeColor(stippleShapeColor);
+                    graph->SetPropertyTemplate(L"stipple-shape-color",
+                                               stippleShapeColor.GetAsString(wxC2S_HTML_SYNTAX));
                     }
                 }
             }
