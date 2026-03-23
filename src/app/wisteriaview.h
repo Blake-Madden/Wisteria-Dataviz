@@ -166,6 +166,7 @@ class WisteriaView : public wxView
     void OnInsertCandlestickPlot(wxCommandEvent& event);
     void OnInsertSankeyDiagram(wxCommandEvent& event);
     void OnInsertBoxPlot(wxCommandEvent& event);
+    void OnInsertLikertChart(wxCommandEvent& event);
     void OnInsertHeatMap(wxCommandEvent& event);
     void OnInsertHistogram(wxCommandEvent& event);
     void OnInsertWordCloud(wxCommandEvent& event);
@@ -204,6 +205,8 @@ class WisteriaView : public wxView
                            size_t graphRow, size_t graphCol);
     void EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                      size_t graphCol);
+    void EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol);
     void EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                      size_t graphCol);
     void EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,

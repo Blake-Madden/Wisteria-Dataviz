@@ -19,6 +19,7 @@
 #include "../ui/dialogs/inserthistogramdlg.h"
 #include "../ui/dialogs/insertimgdlg.h"
 #include "../ui/dialogs/insertlabeldlg.h"
+#include "../ui/dialogs/insertlikertdlg.h"
 #include "../ui/dialogs/insertlineplotdlg.h"
 #include "../ui/dialogs/insertlrroadmapdlg.h"
 #include "../ui/dialogs/insertmultiserieslineplotdlg.h"
@@ -161,6 +162,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCandlestickPlot, this, ID_NEW_CANDLESTICK);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertSankeyDiagram, this, ID_NEW_SANKEY_DIAGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBoxPlot, this, ID_NEW_BOXPLOT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertLikertChart, this, ID_NEW_LIKERT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHeatMap, this, ID_NEW_HEATMAP);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHistogram, this, ID_NEW_HISTOGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWordCloud, this, ID_NEW_WORD_CLOUD);
@@ -1063,6 +1065,8 @@ void WisteriaView::PlaceGraphWithLegend(
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
     canvas->Refresh();
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -1374,6 +1378,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         {
         EditBoxPlot(*graph, canvas, itemRow, itemCol);
         }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        EditLikertChart(*graph, canvas, itemRow, itemCol);
+        }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
         {
         EditHeatMap(*graph, canvas, itemRow, itemCol);
@@ -1651,8 +1659,6 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -1869,8 +1875,6 @@ void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -2038,8 +2042,6 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -2243,8 +2245,6 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -2447,8 +2447,6 @@ void WisteriaView::EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph,
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -2655,8 +2653,6 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -2862,8 +2858,6 @@ void WisteriaView::EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -3085,8 +3079,6 @@ void WisteriaView::EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria:
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -3335,8 +3327,6 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -3999,8 +3989,286 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
 
-        GetDocument()->Modify(true);
+//-------------------------------------------
+void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto lkSvg = wxGetApp().GetResourceManager().GetSVG(L"likert7.svg");
+    if (lkSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(lkSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        // determine survey format
+        auto surveyFormat =
+            Wisteria::UI::InsertLikertDlg::SurveyFormatFromIndex(dlg.GetSurveyFormatIndex());
+
+        const auto& questions = dlg.GetQuestionVariables();
+        const auto dataset = dlg.GetSelectedDataset();
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+
+        if (!surveyFormat.has_value())
+            {
+            surveyFormat = Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
+            }
+
+        // if a group variable is selected, upgrade to categorized variant
+        if (groupCol.has_value())
+            {
+            using LF = Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat;
+            switch (surveyFormat.value())
+                {
+            case LF::TwoPoint:
+                surveyFormat = LF::TwoPointCategorized;
+                break;
+            case LF::ThreePoint:
+                surveyFormat = LF::ThreePointCategorized;
+                break;
+            case LF::FourPoint:
+                surveyFormat = LF::FourPointCategorized;
+                break;
+            case LF::FivePoint:
+                surveyFormat = LF::FivePointCategorized;
+                break;
+            case LF::SixPoint:
+                surveyFormat = LF::SixPointCategorized;
+                break;
+            case LF::SevenPoint:
+                surveyFormat = LF::SevenPointCategorized;
+                break;
+            default:
+                break;
+                }
+            }
+
+        auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
+            canvas, surveyFormat.value(), dlg.GetNegativeColor(), dlg.GetPositiveColor(),
+            dlg.GetNeutralColor(), dlg.GetNoResponseColor());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->SetData(dataset, questions, groupCol);
+
+        plot->ShowResponseCounts(dlg.GetShowResponseCounts());
+        plot->ShowPercentages(dlg.GetShowPercentages());
+        plot->ShowSectionHeaders(dlg.GetShowSectionHeaders());
+        plot->SetBarSizesToRespondentSize(dlg.GetAdjustBarWidths());
+        plot->SetPositiveHeader(dlg.GetPositiveLabel());
+        plot->SetNegativeHeader(dlg.GetNegativeLabel());
+        plot->SetNoResponseHeader(dlg.GetNoResponseLabel());
+        for (const auto& bracket : dlg.GetQuestionsBrackets())
+            {
+            plot->AddQuestionsBracket(bracket);
+            }
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        for (size_t i = 0; i < questions.size(); ++i)
+            {
+            plot->SetPropertyTemplate(L"variables.questions[" + std::to_wstring(i) + L"]",
+                                      questions[i]);
+            }
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
+            }
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+        const auto side =
+            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                        Wisteria::Side::Bottom;
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol)
+    {
+    Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Likert Chart"),
+                                      wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto lkSvg = wxGetApp().GetResourceManager().GetSVG(L"likert7.svg");
+    if (lkSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(lkSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph, canvas);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        // determine survey format
+        auto surveyFormat =
+            Wisteria::UI::InsertLikertDlg::SurveyFormatFromIndex(dlg.GetSurveyFormatIndex());
+
+        const auto& questions = dlg.GetQuestionVariables();
+        const auto dataset = dlg.GetSelectedDataset();
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+
+        if (!surveyFormat.has_value())
+            {
+            surveyFormat = Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
+            }
+
+        // if a group variable is selected, upgrade to categorized variant
+        if (groupCol.has_value())
+            {
+            using LF = Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat;
+            switch (surveyFormat.value())
+                {
+            case LF::TwoPoint:
+                surveyFormat = LF::TwoPointCategorized;
+                break;
+            case LF::ThreePoint:
+                surveyFormat = LF::ThreePointCategorized;
+                break;
+            case LF::FourPoint:
+                surveyFormat = LF::FourPointCategorized;
+                break;
+            case LF::FivePoint:
+                surveyFormat = LF::FivePointCategorized;
+                break;
+            case LF::SixPoint:
+                surveyFormat = LF::SixPointCategorized;
+                break;
+            case LF::SevenPoint:
+                surveyFormat = LF::SevenPointCategorized;
+                break;
+            default:
+                break;
+                }
+            }
+
+        auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
+            canvas, surveyFormat.value(), dlg.GetNegativeColor(), dlg.GetPositiveColor(),
+            dlg.GetNeutralColor(), dlg.GetNoResponseColor());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->SetData(dataset, questions, groupCol);
+
+        plot->ShowResponseCounts(dlg.GetShowResponseCounts());
+        plot->ShowPercentages(dlg.GetShowPercentages());
+        plot->ShowSectionHeaders(dlg.GetShowSectionHeaders());
+        plot->SetBarSizesToRespondentSize(dlg.GetAdjustBarWidths());
+        plot->SetPositiveHeader(dlg.GetPositiveLabel());
+        plot->SetNegativeHeader(dlg.GetNegativeLabel());
+        plot->SetNoResponseHeader(dlg.GetNoResponseLabel());
+        for (const auto& bracket : dlg.GetQuestionsBrackets())
+            {
+            plot->AddQuestionsBracket(bracket);
+            }
+
+        // carry forward property templates
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        for (size_t i = 0; i < questions.size(); ++i)
+            {
+            plot->SetPropertyTemplate(L"variables.questions[" + std::to_wstring(i) + L"]",
+                                      questions[i]);
+            }
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
+            }
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
+                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
+                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+        const auto side =
+            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                        Wisteria::Side::Bottom;
+
+        canvas->SetFixedObject(graphRow, graphCol, nullptr);
+        const auto& oldLegendInfo = graph.GetLegendInfo();
+        if (oldLegendInfo.has_value())
+            {
+            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
+            const auto oldSide = oldLegendInfo->GetPlacement();
+            const bool hasLegendCell =
+                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
+                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
+                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
+                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
+            if (hasLegendCell)
+                {
+                const auto legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
+                                       (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
+                                                                             graphRow;
+                const auto legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
+                                       (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
+                                                                            graphCol;
+                canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                }
+            }
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             graphRow, graphCol, legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4196,8 +4464,6 @@ void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -4414,8 +4680,6 @@ void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -4553,8 +4817,6 @@ void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -4756,8 +5018,6 @@ void WisteriaView::EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -4945,8 +5205,6 @@ void WisteriaView::EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -5194,8 +5452,6 @@ void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
                                                             .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
-
-        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
@@ -7675,6 +7931,10 @@ wxString WisteriaView::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph
         {
         return _DT(L"scatter-plot");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        return _DT(L"likert-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
         {
         return _DT(L"categorical-bar-chart");
@@ -7710,10 +7970,6 @@ wxString WisteriaView::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
         return _DT(L"candlestick-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
-        {
-        return _DT(L"likert-chart");
         }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
         {
@@ -8729,6 +8985,86 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                 }
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        const auto* likert = dynamic_cast<const Wisteria::Graphs::LikertChart*>(graph);
+        // survey-format
+        const auto sfStr = Wisteria::ReportEnumConvert::ConvertLikertSurveyQuestionFormatToString(
+            likert->GetSurveyType());
+        if (sfStr.has_value())
+            {
+            node->Add(L"survey-format", sfStr.value());
+            }
+        // colors (only if non-default)
+        if (likert->GetNegativeColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Orange))
+            {
+            node->Add(L"negative-color", ColorToStr(likert->GetNegativeColor()));
+            }
+        if (likert->GetPositiveColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Cerulean))
+            {
+            node->Add(L"positive-color", ColorToStr(likert->GetPositiveColor()));
+            }
+        if (likert->GetNeutralColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey))
+            {
+            node->Add(L"neutral-color", ColorToStr(likert->GetNeutralColor()));
+            }
+        if (likert->GetNoResponseColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White))
+            {
+            node->Add(L"no-response-color", ColorToStr(likert->GetNoResponseColor()));
+            }
+        // simplify / apply-default-labels (tracked as property templates)
+        if (!likert->GetPropertyTemplate(L"simplify").empty())
+            {
+            node->Add(L"simplify", true);
+            }
+        if (!likert->GetPropertyTemplate(L"apply-default-labels").empty())
+            {
+            node->Add(L"apply-default-labels", true);
+            }
+        // boolean options
+        if (likert->IsShowingResponseCounts())
+            {
+            node->Add(L"show-response-counts", true);
+            }
+        if (!likert->IsShowingPercentages())
+            {
+            node->Add(L"show-percentages", false);
+            }
+        if (!likert->IsShowingSectionHeaders())
+            {
+            node->Add(L"show-section-headers", false);
+            }
+        if (likert->IsSettingBarSizesToRespondentSize())
+            {
+            node->Add(L"adjust-bar-widths-to-respondent-size", true);
+            }
+        // header labels
+        node->Add(L"positive-label", likert->GetPositiveHeader());
+        node->Add(L"negative-label", likert->GetNegativeHeader());
+        node->Add(L"no-response-label", likert->GetNoResponseHeader());
+        // question-brackets
+        const auto& brackets = likert->GetQuestionsBrackets();
+        if (!brackets.empty())
+            {
+            wxString bArr = L"[";
+            for (size_t i = 0; i < brackets.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    bArr += L", ";
+                    }
+                bArr += L"{\"start\": \"" + EscapeJsonStr(brackets[i].m_question1) +
+                        L"\", \"end\": \"" + EscapeJsonStr(brackets[i].m_question2) +
+                        L"\", \"title\": \"" + EscapeJsonStr(brackets[i].m_title) + L"\"}";
+                }
+            bArr += L"]";
+            node->Add(L"question-brackets", wxSimpleJSON::Create(bArr));
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);
@@ -9573,86 +9909,6 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
         if (!sparkline->IsHighlightingBestRecords())
             {
             node->Add(L"highlight-best-records", false);
-            }
-        }
-    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
-        {
-        const auto* likert = dynamic_cast<const Wisteria::Graphs::LikertChart*>(graph);
-        // survey-format
-        const auto sfStr = Wisteria::ReportEnumConvert::ConvertLikertSurveyQuestionFormatToString(
-            likert->GetSurveyType());
-        if (sfStr.has_value())
-            {
-            node->Add(L"survey-format", sfStr.value());
-            }
-        // colors (only if non-default)
-        if (likert->GetNegativeColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Orange))
-            {
-            node->Add(L"negative-color", ColorToStr(likert->GetNegativeColor()));
-            }
-        if (likert->GetPositiveColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Cerulean))
-            {
-            node->Add(L"positive-color", ColorToStr(likert->GetPositiveColor()));
-            }
-        if (likert->GetNeutralColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey))
-            {
-            node->Add(L"neutral-color", ColorToStr(likert->GetNeutralColor()));
-            }
-        if (likert->GetNoResponseColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::White))
-            {
-            node->Add(L"no-response-color", ColorToStr(likert->GetNoResponseColor()));
-            }
-        // simplify / apply-default-labels (tracked as property templates)
-        if (!likert->GetPropertyTemplate(L"simplify").empty())
-            {
-            node->Add(L"simplify", true);
-            }
-        if (!likert->GetPropertyTemplate(L"apply-default-labels").empty())
-            {
-            node->Add(L"apply-default-labels", true);
-            }
-        // boolean options
-        if (likert->IsShowingResponseCounts())
-            {
-            node->Add(L"show-response-counts", true);
-            }
-        if (!likert->IsShowingPercentages())
-            {
-            node->Add(L"show-percentages", false);
-            }
-        if (!likert->IsShowingSectionHeaders())
-            {
-            node->Add(L"show-section-headers", false);
-            }
-        if (likert->IsSettingBarSizesToRespondentSize())
-            {
-            node->Add(L"adjust-bar-widths-to-respondent-size", true);
-            }
-        // header labels
-        node->Add(L"positive-label", likert->GetPositiveHeader());
-        node->Add(L"negative-label", likert->GetNegativeHeader());
-        node->Add(L"no-response-label", likert->GetNoResponseHeader());
-        // question-brackets
-        const auto& brackets = likert->GetQuestionsBrackets();
-        if (!brackets.empty())
-            {
-            wxString bArr = L"[";
-            for (size_t i = 0; i < brackets.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    bArr += L", ";
-                    }
-                bArr += L"{\"start\": \"" + EscapeJsonStr(brackets[i].m_question1) +
-                        L"\", \"end\": \"" + EscapeJsonStr(brackets[i].m_question2) +
-                        L"\", \"title\": \"" + EscapeJsonStr(brackets[i].m_title) + L"\"}";
-                }
-            bArr += L"]";
-            node->Add(L"question-brackets", wxSimpleJSON::Create(bArr));
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
