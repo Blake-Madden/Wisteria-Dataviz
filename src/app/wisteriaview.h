@@ -82,6 +82,8 @@ class WisteriaView : public wxView
     // save helpers
     [[nodiscard]]
     static wxString EscapeJsonStr(const wxString& str);
+    [[nodiscard]]
+    wxString MakeRelativePath(const wxString& filePath) const;
     static void SaveDatasetImportOptions(wxSimpleJSON::Ptr_t& dsNode,
                                          const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
                                          const Wisteria::Data::ImportInfo& info);

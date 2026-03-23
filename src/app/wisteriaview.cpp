@@ -4778,25 +4778,10 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     dlg.ApplyPageOptions(*image);
     dlg.ApplyToImage(*image);
 
-    // helper to make absolute paths relative to the project file
-    const auto makeRelative = [this](const wxString& filePath) -> wxString
-    {
-        if (!m_projectFilePath.empty())
-            {
-            wxFileName fn(filePath);
-            if (fn.IsAbsolute())
-                {
-                fn.MakeRelativeTo(wxFileName(m_projectFilePath).GetPath());
-                return fn.GetFullPath(wxPATH_UNIX);
-                }
-            }
-        return filePath;
-    };
-
     // cache import paths for round-tripping
     if (paths.GetCount() == 1)
         {
-        image->SetPropertyTemplate(L"image-import.path", makeRelative(paths[0]));
+        image->SetPropertyTemplate(L"image-import.path", MakeRelativePath(paths[0]));
         }
     else
         {
@@ -4807,7 +4792,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
                 {
                 joined += L"\t";
                 }
-            joined += makeRelative(paths[idx]);
+            joined += MakeRelativePath(paths[idx]);
             }
         image->SetPropertyTemplate(L"image-import.paths", joined);
         image->SetPropertyTemplate(L"image-import.stitch",
@@ -4926,25 +4911,10 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
     dlg.ApplyPageOptions(*newImage);
     dlg.ApplyToImage(*newImage);
 
-    // helper to make absolute paths relative to the project file
-    const auto makeRelative2 = [this](const wxString& filePath) -> wxString
-    {
-        if (!m_projectFilePath.empty())
-            {
-            wxFileName fn(filePath);
-            if (fn.IsAbsolute())
-                {
-                fn.MakeRelativeTo(wxFileName(m_projectFilePath).GetPath());
-                return fn.GetFullPath(wxPATH_UNIX);
-                }
-            }
-        return filePath;
-    };
-
     // cache import paths for round-tripping
     if (paths.GetCount() == 1)
         {
-        newImage->SetPropertyTemplate(L"image-import.path", makeRelative2(paths[0]));
+        newImage->SetPropertyTemplate(L"image-import.path", MakeRelativePath(paths[0]));
         }
     else
         {
@@ -4955,7 +4925,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
                 {
                 joined += L"\t";
                 }
-            joined += makeRelative2(paths[idx]);
+            joined += MakeRelativePath(paths[idx]);
             }
         newImage->SetPropertyTemplate(L"image-import.paths", joined);
         newImage->SetPropertyTemplate(L"image-import.stitch",
@@ -5289,6 +5259,22 @@ wxString WisteriaView::EscapeJsonStr(const wxString& str)
     escaped.Replace(L"\\", L"\\\\");
     escaped.Replace(L"\"", L"\\\"");
     return escaped;
+    }
+
+//-------------------------------------------
+wxString WisteriaView::MakeRelativePath(const wxString& filePath) const
+    {
+    if (!m_projectFilePath.empty())
+        {
+        wxFileName fn{ filePath };
+        if (fn.IsAbsolute())
+            {
+            const wxFileName projectDir{ m_projectFilePath };
+            fn.MakeRelativeTo(projectDir.GetPath());
+            return fn.GetFullPath(wxPATH_UNIX);
+            }
+        }
+    return filePath;
     }
 
 //-------------------------------------------
@@ -6495,22 +6481,6 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveImage(const Wisteria::GraphItems::Image* i
 
     wxString tmpl = L"{\"type\": \"image\"";
 
-    // helper to make absolute paths relative to the project file
-    const auto makeRelative = [this](wxString filePath) -> wxString
-    {
-        if (!m_projectFilePath.empty())
-            {
-            wxFileName fn(filePath);
-            if (fn.IsAbsolute())
-                {
-                const wxFileName projectDir(m_projectFilePath);
-                fn.MakeRelativeTo(projectDir.GetPath());
-                filePath = fn.GetFullPath(wxPATH_UNIX);
-                }
-            }
-        return filePath;
-    };
-
     // image-import from property templates
     const auto pathsTemplate = image->GetPropertyTemplate(L"image-import.paths");
     const auto pathTemplate = image->GetPropertyTemplate(L"image-import.path");
@@ -6529,7 +6499,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveImage(const Wisteria::GraphItems::Image* i
                 {
                 tmpl += L", ";
                 }
-            tmpl += L"\"" + EscapeJsonStr(makeRelative(tokenizer.GetNextToken())) + L"\"";
+            tmpl += L"\"" + EscapeJsonStr(MakeRelativePath(tokenizer.GetNextToken())) + L"\"";
             first = false;
             }
         tmpl += L"]";
@@ -6546,7 +6516,7 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveImage(const Wisteria::GraphItems::Image* i
     else if (!pathTemplate.empty())
         {
         // single path
-        tmpl += L", \"image-import\": {\"path\": \"" + EscapeJsonStr(makeRelative(pathTemplate)) +
+        tmpl += L", \"image-import\": {\"path\": \"" + EscapeJsonStr(MakeRelativePath(pathTemplate)) +
                 L"\"";
         if (!effectTemplate.empty())
             {
@@ -7258,22 +7228,6 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
     const auto& bgImgBundle = graph->GetPlotBackgroundImage();
     if (bgImgBundle.IsOk())
         {
-        // helper to make absolute paths relative to the project file
-        const auto makeRelative = [this](wxString filePath) -> wxString
-        {
-            if (!m_projectFilePath.empty())
-                {
-                wxFileName fn(filePath);
-                if (fn.IsAbsolute())
-                    {
-                    const wxFileName projectDir(m_projectFilePath);
-                    fn.MakeRelativeTo(projectDir.GetPath());
-                    filePath = fn.GetFullPath(wxPATH_UNIX);
-                    }
-                }
-            return filePath;
-        };
-
         wxString bgImgStr = L"{";
         const auto pathsTemplate = graph->GetPropertyTemplate(L"image-import.paths");
         const auto pathTemplate = graph->GetPropertyTemplate(L"image-import.path");
@@ -7291,7 +7245,8 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
                     {
                     bgImgStr += L", ";
                     }
-                bgImgStr += L"\"" + EscapeJsonStr(makeRelative(tokenizer.GetNextToken())) + L"\"";
+                bgImgStr += L"\"" +
+                            EscapeJsonStr(MakeRelativePath(tokenizer.GetNextToken())) + L"\"";
                 first = false;
                 }
             bgImgStr += L"]";
@@ -7308,7 +7263,7 @@ void WisteriaView::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSO
         else if (!pathTemplate.empty())
             {
             bgImgStr += L"\"image-import\": {\"path\": \"" +
-                        EscapeJsonStr(makeRelative(pathTemplate)) + L"\"";
+                        EscapeJsonStr(MakeRelativePath(pathTemplate)) + L"\"";
             if (!effectTemplate.empty())
                 {
                 bgImgStr += L", \"effect\": \"" + EscapeJsonStr(effectTemplate) + L"\"";
