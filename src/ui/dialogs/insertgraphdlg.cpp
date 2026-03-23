@@ -457,7 +457,7 @@ namespace Wisteria::UI
     bool InsertGraphDlg::GetMirrorYAxis() const { return m_mirrorYAxis; }
 
     //-------------------------------------------
-    void InsertGraphDlg::LoadGraphOptions(const Graphs::Graph2D& graph, const Canvas* canvas)
+    void InsertGraphDlg::LoadGraphOptions(const Graphs::Graph2D& graph)
         {
         // copy the full Labels so we can round-trip all styling
         const auto loadLabel =

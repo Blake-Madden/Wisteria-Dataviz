@@ -195,6 +195,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Predictor"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_predictorVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_predictorVariable })
@@ -205,6 +206,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Coefficient"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_coefficientVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_coefficientVariable })
@@ -341,7 +343,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = roadmap->GetPropertyTemplate(L"dataset");

@@ -189,18 +189,21 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Y (sentiment)"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"X (time interval)"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_xVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Grouping"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_groupVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_groupVariable })
@@ -308,7 +311,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = wcurve->GetPropertyTemplate(L"dataset");

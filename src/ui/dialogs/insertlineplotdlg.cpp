@@ -183,14 +183,16 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"Y (continuous)"))
+                  .Label(_(L"Y"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"X (axis)"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_xVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
@@ -309,7 +311,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = linePlot->GetPropertyTemplate(L"dataset");

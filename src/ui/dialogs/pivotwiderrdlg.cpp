@@ -186,19 +186,21 @@ namespace Wisteria::UI
             this, columnInfo,
             { VLI{}
                   .Label(_(L"ID Columns"))
+                  .Required(true)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
-                  .Label(_(L"Names From (categorical)"))
+                  .Label(_(L"Names From"))
                   .SingleSelection(true)
+                  .Required(true)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
-                  .Label(_(L"Values From (continuous)"))
+                  .Label(_(L"Values From"))
                   .Required(false)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 

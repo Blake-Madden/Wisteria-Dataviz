@@ -211,6 +211,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"From"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_fromVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_fromVariable })
@@ -221,6 +222,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"To"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_toVariable.empty() ? std::vector<wxString>{} :
                                                            std::vector<wxString>{ m_toVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
@@ -372,7 +374,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = sankey->GetPropertyTemplate(L"dataset");

@@ -229,6 +229,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Continuous"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_continuousVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_continuousVariable })
@@ -340,7 +341,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = histogram->GetPropertyTemplate(L"dataset");

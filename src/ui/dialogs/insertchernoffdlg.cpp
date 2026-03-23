@@ -254,6 +254,7 @@ namespace Wisteria::UI
                               { VLI{}
                                     .Label(_(L"Face Width"))
                                     .SingleSelection(true)
+                                    .Required(true)
                                     .DefaultVariables(defaultVar(FID::FaceWidth))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
@@ -467,7 +468,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = chernoff->GetPropertyTemplate(L"dataset");

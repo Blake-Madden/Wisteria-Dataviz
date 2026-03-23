@@ -144,7 +144,8 @@ namespace Wisteria::UI
         shapePage->SetSizer(shapeSizer);
         GetSideBarBook()->AddPage(shapePage, _(L"Shape Options"), ID_SHAPE_SECTION, true);
 
-        // shapes don't use Page Options — remove it and add only alignment here
+        // page options (background color, outline, etc.) are not relevant for shapes,
+        // which are self-contained items with their own pen/brush controls.
         GetSideBarBook()->DeletePage(0);
 
         // shape type

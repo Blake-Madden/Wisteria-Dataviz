@@ -136,8 +136,7 @@ namespace Wisteria::UI
 
         /// @brief Populates the graph options controls from an existing Graph2D.
         /// @param graph The graph to read options from.
-        /// @param canvas The canvas the graph belongs to.
-        void LoadGraphOptions(const Graphs::Graph2D& graph, const Canvas* canvas);
+        void LoadGraphOptions(const Graphs::Graph2D& graph);
 
         /// @brief Maps an existing color scheme to a dropdown index.
         /// @param scheme The color scheme to identify (may be @c nullptr).

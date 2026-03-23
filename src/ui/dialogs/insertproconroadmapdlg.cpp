@@ -195,6 +195,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Positive (pros)"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_positiveVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_positiveVariable })
@@ -213,6 +214,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Negative (cons)"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_negativeVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_negativeVariable })
@@ -339,7 +341,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = roadmap->GetPropertyTemplate(L"dataset");

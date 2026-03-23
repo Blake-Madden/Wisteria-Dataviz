@@ -244,6 +244,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Task"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_taskVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_taskVariable })
@@ -254,6 +255,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Start date"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_startDateVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_startDateVariable })
@@ -261,6 +263,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"End date"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_endDateVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_endDateVariable })
@@ -480,7 +483,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = gantt->GetPropertyTemplate(L"dataset");

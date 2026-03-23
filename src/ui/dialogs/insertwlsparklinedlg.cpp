@@ -178,6 +178,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Season"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_seasonVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_seasonVariable })
@@ -188,6 +189,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Won/Lost"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_wonVariable.empty() ? std::vector<wxString>{} :
                                                             std::vector<wxString>{ m_wonVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
@@ -197,6 +199,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Shutout"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_shutoutVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_shutoutVariable })
@@ -207,6 +210,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Home game"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_homeGameVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_homeGameVariable })
@@ -335,7 +339,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = sparkline->GetPropertyTemplate(L"dataset");

@@ -173,6 +173,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Word"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_wordVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_wordVariable })
@@ -305,7 +306,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = wordCloud->GetPropertyTemplate(L"dataset");

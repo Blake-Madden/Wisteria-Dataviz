@@ -185,12 +185,14 @@ namespace Wisteria::UI
             this, columnInfo,
             { VLI{}
                   .Label(_(L"Columns to Keep (ID/grouping)"))
+                  .Required(true)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
-                  .Label(_(L"Columns to Pivot (continuous)"))
+                  .Label(_(L"Columns to Pivot"))
+                  .Required(true)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)

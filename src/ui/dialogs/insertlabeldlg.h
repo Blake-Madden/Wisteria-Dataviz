@@ -162,7 +162,7 @@ namespace Wisteria::UI
 
         /// @brief Populates controls from an existing label.
         /// @param label The label to read settings from.
-         void LoadFromLabel(const Wisteria::GraphItems::Label& label);
+        void LoadFromLabel(const Wisteria::GraphItems::Label& label);
 
         /// @brief Applies the dialog settings to a label.
         /// @param label The label to update.

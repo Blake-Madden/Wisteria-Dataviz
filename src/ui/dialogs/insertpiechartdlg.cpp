@@ -299,6 +299,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Group (outer)"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_groupVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_groupVariable })
@@ -442,7 +443,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = pieChart->GetPropertyTemplate(L"dataset");

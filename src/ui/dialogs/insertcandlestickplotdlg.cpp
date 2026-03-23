@@ -117,7 +117,7 @@ namespace Wisteria::UI
                            wxSizerFlags{}.CenterVertical());
         wxArrayString plotTypes;
         plotTypes.Add(_(L"Candlestick"));
-        plotTypes.Add(_(L"OHLC"));
+        plotTypes.Add(/* TRANSLATORS: Open/High/Low/Close chart. */ _(L"OHLC"));
         plotTypeSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         plotTypes, 0, wxGenericValidator(&m_plotTypeIndex)),
                            wxSizerFlags{}.CenterVertical());
@@ -179,6 +179,7 @@ namespace Wisteria::UI
             { VLI{}
                   .Label(_(L"Date"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_dateVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_dateVariable })
@@ -186,6 +187,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Open"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_openVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_openVariable })
@@ -193,6 +195,7 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"High"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_highVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_highVariable })
@@ -200,12 +203,14 @@ namespace Wisteria::UI
               VLI{}
                   .Label(_(L"Low"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_lowVariable.empty() ? std::vector<wxString>{} :
                                                             std::vector<wxString>{ m_lowVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Close"))
                   .SingleSelection(true)
+                  .Required(true)
                   .DefaultVariables(m_closeVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_closeVariable })
@@ -319,7 +324,7 @@ namespace Wisteria::UI
             }
 
         // load graph and page options from the base classes
-        LoadGraphOptions(graph, canvas);
+        LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
         const auto dsName = candle->GetPropertyTemplate(L"dataset");
