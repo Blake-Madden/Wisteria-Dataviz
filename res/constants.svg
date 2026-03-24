@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="rootGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6b4fa0"/>
+      <stop offset="100%" stop-color="#3a7bd5"/>
+    </linearGradient>
+  </defs>
+  <!-- Square root symbol -->
+  <polyline
+    points="30,168 70,168 108,216 168,56 226,56"
+    fill="none"
+    stroke="url(#rootGrad)"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+  <!-- Overline (vinculum) -->
+  <line
+    x1="168" y1="56" x2="226" y2="56"
+    stroke="url(#rootGrad)"
+    stroke-width="16"
+    stroke-linecap="round"/>
+</svg>

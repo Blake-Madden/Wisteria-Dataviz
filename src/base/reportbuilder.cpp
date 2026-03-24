@@ -1074,6 +1074,18 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void ReportBuilder::RecalcFormula(const wxString& formulaName, const wxString& formulaValue,
+                                      const wxString& datasetName)
+        {
+        const auto dsIt = m_datasets.find(datasetName);
+        if (dsIt == m_datasets.cend() || dsIt->second == nullptr)
+            {
+            return;
+            }
+        m_values.insert_or_assign(formulaName, CalcFormula(formulaValue, dsIt->second));
+        }
+
+    //---------------------------------------------------
     std::optional<std::vector<wxString>>
     ReportBuilder::ExpandColumnSelections(wxString var,
                                           const std::shared_ptr<const Data::Dataset>& dataset) const

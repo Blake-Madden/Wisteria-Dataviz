@@ -118,6 +118,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotLonger, this,
                   ID_PIVOT_LONGER);
 
+    // bind add constant button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnRibbonAddConstant, this,
+                  ID_ADD_CONSTANT);
+
     // bind page buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditPage, this, ID_EDIT_PAGE);
@@ -359,6 +363,96 @@ void WisteriaView::LoadProject()
     // add the "Data" folder
     m_sideBar->InsertItem(0, _(L"Data"), dataFolderId, DATA_ICON_INDEX);
 
+    // add the "Constants" item (grid is shown when this sidebar item is clicked)
+    const wxWindowID constantsId = nextId;
+    nextId = wxNewId();
+    m_sideBar->InsertItem(1, _(L"Constants"), constantsId, CONSTANTS_ICON_INDEX);
+
+    m_constantsGrid = new wxGrid(m_workArea, constantsId);
+    m_constantsGrid->SetDoubleBuffered(true);
+    m_constantsGrid->GetGridWindow()->SetDoubleBuffered(true);
+    m_constantsGrid->CreateGrid(0, 4);
+    m_constantsGrid->SetColLabelValue(0, _(L"Dataset"));
+    m_constantsGrid->SetColLabelValue(1, _(L"Name"));
+    m_constantsGrid->SetColLabelValue(2, _(L"Value"));
+    m_constantsGrid->SetColLabelValue(3, _(L"Calculated"));
+    m_constantsGrid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
+    m_constantsGrid->EnableEditing(true);
+    // Calculated column is read-only (computed)
+    auto* readOnlyAttr = new wxGridCellAttr();
+    readOnlyAttr->SetReadOnly();
+    m_constantsGrid->SetColAttr(3, readOnlyAttr);
+        // add icons to column headers
+        {
+        const wxSize iconSize{ 16, 16 };
+        auto* constAttrProvider = new Wisteria::UI::DatasetGridAttrProvider();
+        const std::array<wxString, 4> iconNames = { L"data.svg", L"label.svg", L"constants.svg",
+                                                    L"equals.svg" };
+        for (size_t col = 0; col < iconNames.size(); ++col)
+            {
+            const auto bmp = wxGetApp().ReadSvgIcon(iconNames[col], iconSize);
+            if (bmp.IsOk())
+                {
+                constAttrProvider->SetColumnHeaderRenderer(
+                    static_cast<int>(col), Wisteria::UI::DatasetColumnHeaderRenderer(bmp));
+                }
+            }
+        m_constantsGrid->GetTable()->SetAttrProvider(constAttrProvider);
+        }
+
+    m_constantsGrid->Hide();
+    m_workArea->GetSizer()->Add(m_constantsGrid, wxSizerFlags{ 1 }.Expand());
+    m_workWindows.AddWindow(m_constantsGrid);
+
+    m_constantsGrid->Bind(wxEVT_GRID_CELL_CHANGED, &WisteriaView::OnConstantEdited, this);
+    m_constantsGrid->Bind(wxEVT_GRID_CELL_RIGHT_CLICK, &WisteriaView::OnConstantsGridRightClick,
+                          this);
+    m_constantsGrid->Bind(wxEVT_GRID_LABEL_RIGHT_CLICK, &WisteriaView::OnConstantsGridRightClick,
+                          this);
+    m_constantsGrid->GetGridWindow()->Bind(
+        wxEVT_RIGHT_UP,
+        [this](wxMouseEvent& evt)
+        {
+            // show context menu when right-clicking empty grid area
+            if (m_constantsGrid->GetNumberRows() == 0 ||
+                m_constantsGrid->YToRow(evt.GetPosition().y) == wxNOT_FOUND)
+                {
+                m_constantsGridClickedRow = -1;
+                wxMenu menu;
+                menu.Append(wxID_ADD, _(L"Add Constant"));
+                menu.Bind(wxEVT_MENU, &WisteriaView::OnAddConstant, this, wxID_ADD);
+                m_constantsGrid->PopupMenu(&menu, evt.GetPosition());
+                }
+        });
+    m_constantsGrid->GetGridWindow()->Bind(
+        wxEVT_KEY_DOWN,
+        [this](wxKeyEvent& evt)
+        {
+            if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_BACK)
+                {
+                const int row = m_constantsGrid->GetGridCursorRow();
+                const int col = m_constantsGrid->GetGridCursorCol();
+                if (row >= 0 && col >= 0 && !m_constantsGrid->IsReadOnly(row, col))
+                    {
+                    const wxString oldValue = m_constantsGrid->GetCellValue(row, col);
+                    m_constantsGrid->SetCellValue(row, col, wxString{});
+                    wxGridEvent gridEvt(m_constantsGrid->GetId(), wxEVT_GRID_CELL_CHANGED,
+                                        m_constantsGrid, row, col);
+                    gridEvt.SetString(oldValue);
+                    m_constantsGrid->ProcessWindowEvent(gridEvt);
+                    }
+                }
+            else if (evt.GetKeyCode() == WXK_INSERT && evt.ControlDown())
+                {
+                wxCommandEvent addEvt(wxEVT_MENU, wxID_ADD);
+                OnAddConstant(addEvt);
+                }
+            else
+                {
+                evt.Skip();
+                }
+        });
+
     if (!filename.empty())
         {
         // add datasets as subitems under "Data"
@@ -394,6 +488,9 @@ void WisteriaView::LoadProject()
 
             m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId, DATA_ICON_INDEX);
             }
+
+        // populate constants grid with data from the loaded project
+        PopulateConstantsGrid();
 
         // add pages as top-level folders
         size_t pageNum{ 1 };
@@ -527,7 +624,7 @@ void WisteriaView::ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGri
 //-------------------------------------------
 void WisteriaView::AdjustGridColumnsForIcons(wxGrid* grid)
     {
-    const int iconOffset = grid->FromDIP(16) + 8;
+    const int iconOffset = grid->FromDIP(24);
     int maxColWidth = grid->GetClientSize().GetWidth() / 4;
     if (maxColWidth <= 0)
         {
@@ -542,6 +639,299 @@ void WisteriaView::AdjustGridColumnsForIcons(wxGrid* grid)
             }
         grid->SetColSize(col, newWidth);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::PopulateConstantsGrid()
+    {
+    if (m_constantsGrid == nullptr)
+        {
+        return;
+        }
+
+    // clear existing rows
+    if (m_constantsGrid->GetNumberRows() > 0)
+        {
+        m_constantsGrid->DeleteRows(0, m_constantsGrid->GetNumberRows());
+        }
+
+    // build the dataset name choices for the dropdown
+    // (empty string = top-level constant, otherwise a dataset name)
+    wxArrayString dsChoices;
+    for (const auto& [dsName, dataset] : m_reportBuilder.GetDatasets())
+        {
+        if (!dsName.empty())
+            {
+            dsChoices.Add(dsName);
+            }
+        }
+
+    int row{ 0 };
+
+    // helper to set the Dataset cell's choice editor for a row
+    const auto setDatasetChoiceEditor = [this, &dsChoices](int gridRow)
+    { m_constantsGrid->SetCellEditor(gridRow, 0, new wxGridCellChoiceEditor(dsChoices)); };
+
+    // add top-level constants (no dataset)
+    for (const auto& c : m_reportBuilder.GetConstants())
+        {
+        m_constantsGrid->AppendRows(1);
+        m_constantsGrid->SetCellValue(row, 0, wxString{});
+        m_constantsGrid->SetCellValue(row, 1, c.m_name);
+        m_constantsGrid->SetCellValue(row, 2, c.m_value);
+        m_constantsGrid->SetCellValue(row, 3, m_reportBuilder.GetExpandedValue(c.m_name));
+        setDatasetChoiceEditor(row);
+        ++row;
+        }
+
+    // add dataset formula constants
+    for (const auto& [dsName, txOpts] : m_reportBuilder.GetDatasetTransformOptions())
+        {
+        for (const auto& f : txOpts.m_formulas)
+            {
+            m_constantsGrid->AppendRows(1);
+            m_constantsGrid->SetCellValue(row, 0, dsName);
+            m_constantsGrid->SetCellValue(row, 1, f.m_name);
+            m_constantsGrid->SetCellValue(row, 2, f.m_value);
+            m_constantsGrid->SetCellValue(row, 3, m_reportBuilder.GetExpandedValue(f.m_name));
+            setDatasetChoiceEditor(row);
+            ++row;
+            }
+        }
+
+    m_constantsGrid->AutoSizeColumns(false);
+    // ensure columns are at least wide enough for their header labels plus icon
+    const int minColWidth = m_constantsGrid->FromDIP(120);
+    for (int col = 0; col < m_constantsGrid->GetNumberCols(); ++col)
+        {
+        if (m_constantsGrid->GetColSize(col) < minColWidth)
+            {
+            m_constantsGrid->SetColSize(col, minColWidth);
+            }
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnConstantEdited(wxGridEvent& event)
+    {
+    const int row = event.GetRow();
+    const int col = event.GetCol();
+
+    // the new dataset value (after editing)
+    const wxString newDsName = m_constantsGrid->GetCellValue(row, 0);
+    const wxString name = m_constantsGrid->GetCellValue(row, 1);
+    const wxString value = m_constantsGrid->GetCellValue(row, 2);
+
+    if (col == 0)
+        {
+        // dataset column changed: move the constant between
+        // top-level and a dataset's formulas (or between datasets)
+        const wxString oldDsName = event.GetString();
+
+        // remove from old location
+        if (oldDsName.empty())
+            {
+            // was a top-level constant
+            auto& constants = m_reportBuilder.GetConstants();
+            constants.erase(
+                std::remove_if(constants.begin(), constants.end(),
+                               [&name](const Wisteria::ReportBuilder::DatasetFormulaInfo& c)
+                               { return c.m_name == name; }),
+                constants.end());
+            m_reportBuilder.SetConstants(constants);
+            }
+        else
+            {
+            // was a dataset formula
+            auto txOpts = m_reportBuilder.GetDatasetTransformOptions();
+            auto txIt = txOpts.find(oldDsName);
+            if (txIt != txOpts.end())
+                {
+                auto& formulas = txIt->second.m_formulas;
+                formulas.erase(
+                    std::remove_if(formulas.begin(), formulas.end(),
+                                   [&name](const Wisteria::ReportBuilder::DatasetFormulaInfo& f)
+                                   { return f.m_name == name; }),
+                    formulas.end());
+                m_reportBuilder.SetDatasetTransformOptions(oldDsName, txIt->second);
+                }
+            }
+
+        // add to new location
+        if (newDsName.empty())
+            {
+            // moving to top-level constants
+            auto& constants = m_reportBuilder.GetConstants();
+            constants.push_back({ name, value });
+            m_reportBuilder.SetConstants(constants);
+            }
+        else
+            {
+            // moving to a dataset's formulas
+            auto allTxOpts = m_reportBuilder.GetDatasetTransformOptions();
+            allTxOpts[newDsName].m_formulas.push_back({ name, value });
+            m_reportBuilder.SetDatasetTransformOptions(newDsName, allTxOpts[newDsName]);
+            m_reportBuilder.RecalcFormula(name, value, newDsName);
+            }
+        }
+    else if (newDsName.empty())
+        {
+        // editing Name or Value of a top-level constant
+        auto& constants = m_reportBuilder.GetConstants();
+        int topLevelIdx = 0;
+        for (int r = 0; r < row; ++r)
+            {
+            if (m_constantsGrid->GetCellValue(r, 0).empty())
+                {
+                ++topLevelIdx;
+                }
+            }
+
+        if (static_cast<size_t>(topLevelIdx) >= constants.size())
+            {
+            return;
+            }
+
+        if (col == 1)
+            {
+            constants[topLevelIdx].m_name = name;
+            }
+        else if (col == 2)
+            {
+            constants[topLevelIdx].m_value = value;
+            }
+
+        m_reportBuilder.SetConstants(constants);
+        }
+    else
+        {
+        // editing Name or Value of a dataset formula
+        auto txOpts = m_reportBuilder.GetDatasetTransformOptions();
+        auto txIt = txOpts.find(newDsName);
+        if (txIt == txOpts.end())
+            {
+            return;
+            }
+
+        int formulaIdx = 0;
+        for (int r = 0; r < row; ++r)
+            {
+            if (m_constantsGrid->GetCellValue(r, 0) == newDsName)
+                {
+                ++formulaIdx;
+                }
+            }
+
+        if (static_cast<size_t>(formulaIdx) >= txIt->second.m_formulas.size())
+            {
+            return;
+            }
+
+        if (col == 1)
+            {
+            txIt->second.m_formulas[formulaIdx].m_name = name;
+            }
+        else if (col == 2)
+            {
+            txIt->second.m_formulas[formulaIdx].m_value = value;
+            }
+
+        m_reportBuilder.SetDatasetTransformOptions(newDsName, txIt->second);
+        m_reportBuilder.RecalcFormula(name, value, newDsName);
+        }
+
+    PopulateConstantsGrid();
+    }
+
+//-------------------------------------------
+void WisteriaView::OnConstantsGridRightClick(wxGridEvent& event)
+    {
+    m_constantsGridClickedRow = event.GetRow();
+
+    wxMenu menu;
+    menu.Append(wxID_ADD, _(L"Add Constant"));
+    if (m_constantsGrid->GetNumberRows() > 0 && m_constantsGridClickedRow >= 0 &&
+        m_constantsGrid->GetCellValue(m_constantsGridClickedRow, 0).empty())
+        {
+        menu.Append(wxID_DELETE, _(L"Delete Constant"));
+        }
+    menu.Bind(wxEVT_MENU, &WisteriaView::OnAddConstant, this, wxID_ADD);
+    menu.Bind(wxEVT_MENU, &WisteriaView::OnDeleteConstant, this, wxID_DELETE);
+    m_constantsGrid->PopupMenu(&menu, event.GetPosition());
+    }
+
+//-------------------------------------------
+void WisteriaView::OnAddConstant([[maybe_unused]] wxCommandEvent& event)
+    {
+    wxString name =
+        wxGetTextFromUser(_(L"Enter constant name:"), _(L"Add Constant"), wxString{}, m_frame);
+    if (name.empty())
+        {
+        return;
+        }
+
+    wxString value =
+        wxGetTextFromUser(_(L"Enter constant value:"), _(L"Add Constant"), wxString{}, m_frame);
+
+    auto& constants = m_reportBuilder.GetConstants();
+    constants.push_back({ name, value });
+    m_reportBuilder.SetConstants(constants);
+    PopulateConstantsGrid();
+    }
+
+//-------------------------------------------
+void WisteriaView::OnDeleteConstant([[maybe_unused]] wxCommandEvent& event)
+    {
+    const int row = m_constantsGridClickedRow;
+    if (row < 0)
+        {
+        return;
+        }
+
+    // only top-level constants can be deleted
+    if (!m_constantsGrid->GetCellValue(row, 0).empty())
+        {
+        return;
+        }
+
+    const wxString name = m_constantsGrid->GetCellValue(row, 1);
+    if (wxMessageBox(wxString::Format(_(L"Delete constant \"%s\"?"), name), _(L"Delete Constant"),
+                     wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)
+        {
+        return;
+        }
+
+    // find the top-level constant index for this row
+    int topLevelIdx = 0;
+    for (int r = 0; r < row; ++r)
+        {
+        if (m_constantsGrid->GetCellValue(r, 0).empty())
+            {
+            ++topLevelIdx;
+            }
+        }
+
+    auto& constants = m_reportBuilder.GetConstants();
+    if (static_cast<size_t>(topLevelIdx) < constants.size())
+        {
+        constants.erase(std::next(constants.begin(), topLevelIdx));
+        m_reportBuilder.SetConstants(constants);
+        PopulateConstantsGrid();
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnRibbonAddConstant([[maybe_unused]] wxCommandEvent& event)
+    {
+    // select the Constants folder (index 1) in the sidebar
+    m_sideBar->SelectFolder(1, true);
+    // trigger the sidebar click so the constants grid is shown
+    wxCommandEvent sidebarEvt(Wisteria::UI::wxEVT_SIDEBAR_CLICK);
+    sidebarEvt.SetInt(m_constantsGrid->GetId());
+    OnSidebarClick(sidebarEvt);
+    // add a new constant
+    wxCommandEvent addEvt(wxEVT_MENU, wxID_ADD);
+    OnAddConstant(addEvt);
     }
 
 //-------------------------------------------
@@ -6254,7 +6644,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(imageRow, imageCol);
-    dlg.LoadFromImage(image, canvas);
+    dlg.LoadFromImage(image);
 
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -6557,7 +6947,7 @@ void WisteriaView::EditFillableShape(Wisteria::GraphItems::FillableShape& shape,
         dlg.SetIcon(icon);
         }
     dlg.SetSelectedCell(shapeRow, shapeCol);
-    dlg.LoadFromFillableShape(shape, canvas);
+    dlg.LoadFromFillableShape(shape);
 
     if (dlg.ShowModal() != wxID_OK)
         {

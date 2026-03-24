@@ -196,6 +196,9 @@ constexpr wxWindowID ID_NEW_SHAPE{ wxID_HIGHEST + 45 };
 // Multi-series graphs
 constexpr wxWindowID ID_NEW_MULTI_SERIES_LINEPLOT{ wxID_HIGHEST + 46 };
 
+// Constants
+constexpr wxWindowID ID_ADD_CONSTANT{ wxID_HIGHEST + 47 };
+
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };
 

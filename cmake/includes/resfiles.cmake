@@ -14,6 +14,7 @@ chart-statistical.svg
 chart-survey.svg
 chernoffplot.svg
 clear.svg
+constants.svg
 copy.svg
 data.svg
 date.svg
@@ -24,6 +25,7 @@ discrete.svg
 donut-subgrouped.svg
 donut.svg
 edit.svg
+equals.svg
 file-open.svg
 file-save.svg
 find.svg

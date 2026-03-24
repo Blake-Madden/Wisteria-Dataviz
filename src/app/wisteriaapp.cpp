@@ -304,6 +304,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         dataButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
                                  ReadSvgIcon(L"pivot-longer.svg"),
                                  _(L"Pivot a dataset longer (stack)"));
+        dataButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add Constant"), ReadSvgIcon(L"constants.svg"),
+                                 _(L"Add a constant to the project"));
 
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
@@ -395,4 +397,5 @@ void WisteriaApp::InitProjectSidebar()
     // new ones always get added at the bottom.
     m_projectSideBarImageList.push_back(ReadSvgIcon(L"data.svg"));
     m_projectSideBarImageList.push_back(ReadSvgIcon(L"page.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"constants.svg"));
     }

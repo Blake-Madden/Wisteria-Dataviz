@@ -321,7 +321,7 @@ namespace Wisteria::UI
                            ImageDlgIncludeAll & ~ImageDlgIncludePageOptions);
         if (m_plotBgImage.IsOk())
             {
-            dlg.LoadFromImage(m_plotBgImage, GetCanvas());
+            dlg.LoadFromImage(m_plotBgImage);
             }
         if (dlg.ShowModal() != wxID_OK)
             {

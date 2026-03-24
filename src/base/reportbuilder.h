@@ -45,6 +45,7 @@
 #include "fillableshape.h"
 #include <map>
 #include <vector>
+#include <wx/numformatter.h>
 
 namespace Wisteria
     {
@@ -395,6 +396,75 @@ namespace Wisteria
             {
             return m_constants;
             }
+
+        /// @returns A mutable reference to the top-level constants.
+        [[nodiscard]]
+        std::vector<DatasetFormulaInfo>& GetConstants() noexcept
+            {
+            return m_constants;
+            }
+
+        /// @brief Sets the top-level constants and updates the runtime values map.
+        /// @param constants The new constants to set.
+        void SetConstants(const std::vector<DatasetFormulaInfo>& constants)
+            {
+            // remove old constants from values map
+            for (const auto& c : m_constants)
+                {
+                m_values.erase(c.m_name);
+                }
+            m_constants = constants;
+            // add new constants to values map
+            for (const auto& cst : m_constants)
+                {
+                double dVal{ 0 };
+                if (cst.m_value.ToDouble(&dVal))
+                    {
+                    m_values[cst.m_name] = dVal;
+                    }
+                else
+                    {
+                    m_values[cst.m_name] = cst.m_value;
+                    }
+                }
+            }
+
+        /// @brief Expands a single constant value using the runtime values map.
+        /// @param name The constant name to look up.
+        /// @returns The expanded string value, or empty string if not found.
+        [[nodiscard]]
+        wxString GetExpandedValue(const wxString& name) const
+            {
+            const auto foundVal = m_values.find(name);
+            if (foundVal != m_values.cend())
+                {
+                if (const auto* const strVal{ std::get_if<wxString>(&foundVal->second) };
+                    strVal != nullptr)
+                    {
+                    return *strVal;
+                    }
+                else if (const auto* const dVal{ std::get_if<double>(&foundVal->second) };
+                         dVal != nullptr)
+                    {
+                    if (std::isnan(*dVal))
+                        {
+                        return wxString{};
+                        }
+                    return wxNumberFormatter::ToString(
+                        *dVal, 2,
+                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                    }
+                }
+            return {};
+            }
+
+        /// @brief Recalculates a single dataset formula and updates the expanded value.
+        /// @param formulaName The name of the formula constant.
+        /// @param formulaValue The formula expression (e.g., "MAX(`VALUE`)").
+        /// @param datasetName The name of the dataset to evaluate against.
+        void RecalcFormula(const wxString& formulaName, const wxString& formulaValue,
+                           const wxString& datasetName);
 
         /// @brief Generates a dataset name that does not collide with any
         ///     existing dataset in the report.

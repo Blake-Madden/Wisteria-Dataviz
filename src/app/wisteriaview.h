@@ -151,6 +151,12 @@ class WisteriaView : public wxView
     void AddPageToProject(size_t rows, size_t columns, const wxString& name);
     void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     void AdjustGridColumnsForIcons(wxGrid* grid);
+    void PopulateConstantsGrid();
+    void OnConstantEdited(wxGridEvent& event);
+    void OnConstantsGridRightClick(wxGridEvent& event);
+    void OnAddConstant(wxCommandEvent& event);
+    void OnDeleteConstant(wxCommandEvent& event);
+    void OnRibbonAddConstant(wxCommandEvent& event);
 
     void BuildGraphMenus();
     void OnGraphDropdown(wxCommandEvent& event);
@@ -248,6 +254,8 @@ class WisteriaView : public wxView
     wxPanel* m_workArea{ nullptr };
     wxRibbonButtonBar* m_graphButtonBar{ nullptr };
     wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
+    wxGrid* m_constantsGrid{ nullptr };
+    int m_constantsGridClickedRow{ -1 };
     bool m_sidebarShown{ true };
     wxString m_projectFilePath;
 
@@ -266,6 +274,7 @@ class WisteriaView : public wxView
 
     constexpr static size_t DATA_ICON_INDEX{ 0 };
     constexpr static size_t PAGE_ICON_INDEX{ 1 };
+    constexpr static size_t CONSTANTS_ICON_INDEX{ 2 };
 
     wxDECLARE_DYNAMIC_CLASS(WisteriaView);
     };
