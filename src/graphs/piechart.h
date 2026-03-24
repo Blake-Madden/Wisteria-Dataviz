@@ -1022,10 +1022,6 @@ namespace Wisteria::Graphs
                 otherwise, its opaque parent slice will show through it.*/
         void GhostInnerPieSlices(bool ghost, const std::vector<wxString>& slicesToGhost);
 
-        /** @brief Shows or hides the outside labels of the inner pie
-                (if using a secondary grouping variable).
-            @param show @c true to show the labels, @c false to hide them.
-            @note This should be called after SetData().*/
         /// @returns @c true if the inner pie labels are being shown.
         [[nodiscard]]
         bool IsShowingInnerPieLabels() const noexcept
@@ -1033,6 +1029,10 @@ namespace Wisteria::Graphs
             return m_showInnerPieLabels;
             }
 
+        /** @brief Shows or hides the outside labels of the inner pie
+                (if using a secondary grouping variable).
+            @param show @c true to show the labels, @c false to hide them.
+            @note This should be called after SetData().*/
         void ShowInnerPieLabels(bool show);
         /** @brief Shows or hides the outside labels of the inner pie
                 (if using a secondary grouping variable).

@@ -537,11 +537,17 @@ namespace Wisteria
         //-----------------------------
 
         /// @brief Converts a multiple column selection function into a vector of column names.
+        /// @param var The variable selection formula to expand.
+        /// @param dataset The dataset to resolve column names against.
+        /// @returns The expanded column names, or @c std::nullopt if the formula is unrecognized.
         [[nodiscard]]
         std::optional<std::vector<wxString>>
         ExpandColumnSelections(wxString var,
                                const std::shared_ptr<const Data::Dataset>& dataset) const;
         /// @brief Converts a single column selection function into a column name.
+        /// @param formula The column selection formula to expand.
+        /// @param dataset The dataset to resolve column names against.
+        /// @returns The expanded column name.
         [[nodiscard]]
         static wxString ExpandColumnSelection(const wxString& formula,
                                               const std::shared_ptr<const Data::Dataset>& dataset);

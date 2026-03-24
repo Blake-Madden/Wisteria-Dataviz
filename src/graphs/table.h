@@ -669,6 +669,14 @@ namespace Wisteria::Graphs
             return std::make_pair(m_table.size(), m_table[0].size());
             }
 
+        /// @returns @c true if trailing row formatting is being cleared.
+        /// @sa ClearTrailingRowFormatting().
+        [[nodiscard]]
+        bool IsClearingTrailingRowFormatting() const noexcept
+            {
+            return m_clearTrailingRowFormatting;
+            }
+
         /// @brief Hides formatting for any rows beyond the data boundary.
         /// @details Formatting includes cell borders and alternating row colors.
         /// @param clearFormatting @c true to hide the formatting for any trailing, empty rows.
@@ -676,13 +684,6 @@ namespace Wisteria::Graphs
         ///     setting the data.
         /// @sa SetTableSize().
         /// @todo Need to remove custom cell background colors also.
-        /// @returns @c true if trailing row formatting is being cleared.
-        [[nodiscard]]
-        bool IsClearingTrailingRowFormatting() const noexcept
-            {
-            return m_clearTrailingRowFormatting;
-            }
-
         void ClearTrailingRowFormatting(const bool clearFormatting) noexcept
             {
             m_clearTrailingRowFormatting = clearFormatting;

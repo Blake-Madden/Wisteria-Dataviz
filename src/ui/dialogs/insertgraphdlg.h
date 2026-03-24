@@ -181,7 +181,8 @@ namespace Wisteria::UI
         [[nodiscard]]
         static std::shared_ptr<Colors::Schemes::ColorScheme> ColorSchemeFromIndex(int index);
 
-        /// @brief Returns the list of color scheme display names for a wxChoice.
+        /// @brief Returns the list of color scheme display names for a @c wxChoice.
+        /// @returns The array of color scheme names.
         [[nodiscard]]
         static wxArrayString GetColorSchemeNames();
 

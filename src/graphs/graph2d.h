@@ -152,6 +152,10 @@ namespace Wisteria::Graphs
         class EmbeddedObject
             {
           public:
+            /// @brief Constructor.
+            /// @param object The embedded graph item.
+            /// @param anchorPt The anchor point in data coordinates.
+            /// @param interestPts Points of interest for connection lines.
             EmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
                            wxPoint2DDouble anchorPt, std::vector<wxPoint2DDouble> interestPts)
                 : m_object(object), m_anchorPt(anchorPt), m_interestPts(std::move(interestPts)),
@@ -159,30 +163,35 @@ namespace Wisteria::Graphs
                 {
                 }
 
+            /// @returns The embedded object.
             [[nodiscard]]
             std::shared_ptr<GraphItems::GraphItemBase>& GetObject() noexcept
                 {
                 return m_object;
                 }
 
+            /// @returns The embedded object.
             [[nodiscard]]
             const std::shared_ptr<GraphItems::GraphItemBase>& GetObject() const noexcept
                 {
                 return m_object;
                 }
 
+            /// @returns The anchor point in data coordinates.
             [[nodiscard]]
             wxPoint2DDouble GetAnchorPoint() const noexcept
                 {
                 return m_anchorPt;
                 }
 
+            /// @returns The original scaling of the object when it was embedded.
             [[nodiscard]]
             double GetOriginalScaling() const noexcept
                 {
                 return m_originalScaling;
                 }
 
+            /// @returns The points of interest for connection lines.
             [[nodiscard]]
             const std::vector<wxPoint2DDouble>& GetInterestPoints() const noexcept
                 {

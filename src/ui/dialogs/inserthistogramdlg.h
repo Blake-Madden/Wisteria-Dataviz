@@ -132,7 +132,6 @@ namespace Wisteria::UI
 
         /// @brief Populates all dialog controls from an existing histogram.
         /// @param graph The graph to read settings from.
-        /// @param canvas The canvas the graph belongs to.
         void LoadFromGraph(const Graphs::Graph2D& graph);
 
       protected:

@@ -34,6 +34,7 @@ namespace Wisteria::UI
             @param canvas The canvas whose grid layout is displayed.
             @param reportBuilder The report builder containing the project's datasets.
             @param parent The parent window.
+            @param caption The dialog caption.
             @param id The window ID.
             @param pos The screen position.
             @param size The window size.
