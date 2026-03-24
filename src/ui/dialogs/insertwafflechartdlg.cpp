@@ -255,8 +255,7 @@ namespace Wisteria::UI
         const auto repeatStr =
             repeatTmpl.empty() ? std::to_wstring(shapeInfo.GetRepeatCount()) : repeatTmpl;
 
-        // TRANSLATORS: %s × %s = shape name × repeat count (e.g., "square × 5").
-        wxString desc = wxString::Format(_(L"%s × %s"), shapeName, repeatStr);
+        wxString desc = wxString::Format(L"%s × %s", shapeName, repeatStr);
         if (!shapeInfo.GetText().empty())
             {
             desc += L" [" + shapeInfo.GetText() + L"]";
