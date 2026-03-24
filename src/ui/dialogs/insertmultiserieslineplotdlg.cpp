@@ -187,8 +187,7 @@ namespace Wisteria::UI
                   .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::String,
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }) });

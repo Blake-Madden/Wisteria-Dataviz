@@ -199,14 +199,13 @@ namespace Wisteria::UI
                                         std::vector<wxString>{ m_continuousVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(_(L"Group (optional)"))
+                  .Label(_(L"Group"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(m_groupVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::String,
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }) });

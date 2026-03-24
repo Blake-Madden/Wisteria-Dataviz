@@ -306,8 +306,7 @@ namespace Wisteria::UI
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete,
-                                   Data::Dataset::ColumnImportType::Numeric }),
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
                   .Label(_(L"Weight"))
                   .SingleSelection(true)
@@ -326,8 +325,7 @@ namespace Wisteria::UI
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete,
-                                   Data::Dataset::ColumnImportType::Numeric }) });
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
