@@ -168,7 +168,8 @@ namespace Wisteria::UI
         // override New button to open a structured sub-dialog
         m_bracketListBox->GetNewButton()->Bind(
             wxEVT_BUTTON,
-            [this](wxCommandEvent& event)
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
             {
                 if (m_questionVariables.size() < 2)
                     {
@@ -238,7 +239,8 @@ namespace Wisteria::UI
         // override Edit button to open a structured sub-dialog for the selected item
         m_bracketListBox->GetEditButton()->Bind(
             wxEVT_BUTTON,
-            [this](wxCommandEvent& event)
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
             {
                 auto* listCtrl = m_bracketListBox->GetListCtrl();
                 const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -317,10 +319,11 @@ namespace Wisteria::UI
         // override Delete button to remove from the backing vector
         m_bracketListBox->GetDelButton()->Bind(
             wxEVT_BUTTON,
-            [this](wxCommandEvent& event)
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
             {
-                auto* listCtrl = m_bracketListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                const long sel = m_bracketListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
                 if (sel < 0 || std::cmp_greater_equal(sel, m_questionBrackets.size()))
                     {
                     return;

@@ -72,14 +72,14 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Y (continuous):"));
+        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"y-axis:"));
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
         m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
         m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"X (axis):"));
+        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"x-ais:"));
         xLabel->SetFont(xLabel->GetFont().Bold());
         varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
         m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
@@ -183,14 +183,14 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(/* TRANSLATORS: y-axis variable. */ _(L"Y"))
+                  .Label(/* TRANSLATORS: y-axis variable. */ _(L"y-axis (independent)"))
                   .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(/* TRANSLATORS: x-axis variable. */ _(L"X"))
+                  .Label(/* TRANSLATORS: x-axis variable. */ _(L"x-axis (dependent)"))
                   .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :

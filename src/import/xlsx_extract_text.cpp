@@ -730,7 +730,9 @@ namespace lily_of_the_valley
                             continue;
                             }
                         // clang-format off
+#ifdef _MSC_VER
                         #pragma warning(suppress: 6287) // specific code for redundant sub-expressions
+#endif
                         if (ch == L'$' || ch == L'£' || ch == L'¥' || ch == L'€')
                             {
                             // literal currency characters

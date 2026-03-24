@@ -293,7 +293,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertImageDlg::LoadFromImage(const Wisteria::GraphItems::Image& image, Canvas* canvas)
+    void InsertImageDlg::LoadFromImage(const Wisteria::GraphItems::Image& image)
         {
         if ((m_options & ImageDlgIncludePageOptions) != 0)
             {

@@ -255,14 +255,18 @@ namespace Wisteria::UI
         const auto repeatStr =
             repeatTmpl.empty() ? std::to_wstring(shapeInfo.GetRepeatCount()) : repeatTmpl;
 
-        wxString desc = shapeName + L" \u00D7 " + repeatStr;
+        // TRANSLATORS: %s × %s = shape name × repeat count (e.g., "square × 5").
+        wxString desc = wxString::Format(_(L"%s × %s"), shapeName, repeatStr);
         if (!shapeInfo.GetText().empty())
             {
             desc += L" [" + shapeInfo.GetText() + L"]";
             }
         if (shapeInfo.GetFillPercent() < math_constants::full)
             {
-            desc += wxString::Format(L" (%.0f%%)", shapeInfo.GetFillPercent() * 100.0);
+            // TRANSLATORS: %s is the shape description (e.g., "square × 5"),
+            // %.0f is the fill percentage; %% is a literal percent sign.
+            // Some locales may reorder or place the percent sign differently.
+            desc = wxString::Format(_(L"%s (%.0f%%)"), desc, shapeInfo.GetFillPercent() * 100.0);
             }
         return desc;
         }

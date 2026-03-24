@@ -669,8 +669,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertShapeDlg::LoadFromFillableShape(const Wisteria::GraphItems::FillableShape& shape,
-                                               Canvas* canvas)
+    void InsertShapeDlg::LoadFromFillableShape(const Wisteria::GraphItems::FillableShape& shape)
         {
         // load the Shape base properties
         LoadFromShape(shape);

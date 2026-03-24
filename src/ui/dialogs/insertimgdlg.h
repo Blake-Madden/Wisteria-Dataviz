@@ -149,8 +149,7 @@ namespace Wisteria::UI
 
         /// @brief Populates controls from an existing image.
         /// @param image The image to read settings from.
-        /// @param canvas The canvas the image belongs to.
-        void LoadFromImage(const Wisteria::GraphItems::Image& image, Canvas* canvas);
+        void LoadFromImage(const Wisteria::GraphItems::Image& image);
 
         /// @brief Applies the dialog settings to an image.
         /// @param image The image to update.
