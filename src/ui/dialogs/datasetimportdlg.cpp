@@ -630,7 +630,20 @@ namespace Wisteria::UI
         importInfo.TreatLeadingZerosAsText(m_leadingZeros);
         importInfo.TreatYearsAsText(m_yearsAsText);
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
-
+        if (m_mdValues.empty())
+            {
+            importInfo.MDCodes(std::nullopt);
+            }
+        else
+            {
+            std::vector<std::wstring> mdCodes;
+            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_RET_EMPTY);
+            while (mdTokenizer.HasMoreTokens())
+                {
+                mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
+                }
+            importInfo.MDCodes(mdCodes);
+            }
         if (m_idColumnChoice->GetSelection() > 0)
             {
             importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
