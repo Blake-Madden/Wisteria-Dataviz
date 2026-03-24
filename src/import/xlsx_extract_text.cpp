@@ -57,7 +57,7 @@ namespace lily_of_the_valley
         if (nSerialDate < 60)
             {
             // Because of the 29-02-1900 issue, any serial date
-            // under 60 is one off... Compensate.
+            // under 60 is one off...compensate.
             ++nSerialDate;
             }
 
@@ -510,6 +510,25 @@ namespace lily_of_the_valley
         // trim trailing empty rows from the initial over-allocation
         while (!data.empty() && data.back().empty())
             {
+            data.pop_back();
+            }
+        // ...same for trailing rows that are just filled with blanks
+        while (!data.empty())
+            {
+            const auto& lastRow = data.back();
+            bool dataEncountered{ false };
+            for (const auto& currentCell : lastRow)
+                {
+                if (!currentCell.get_value().empty())
+                    {
+                    dataEncountered = true;
+                    break;
+                    }
+                }
+            if (dataEncountered)
+                {
+                break;
+                }
             data.pop_back();
             }
 
