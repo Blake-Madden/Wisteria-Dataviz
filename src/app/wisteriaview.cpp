@@ -95,6 +95,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_GRAPH_BUTTONBAR));
     m_pagesButtonBar =
         dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_PAGES_BUTTONBAR));
+    m_objectsButtonBar =
+        dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_OBJECTS_BUTTONBAR));
 
     // build the graph dropdown menus
     BuildGraphMenus();
@@ -1237,18 +1239,25 @@ void WisteriaView::UpdateGraphButtonStates()
         m_pagesButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
 
-    if (m_graphButtonBar == nullptr)
+    // graphs
+    if (m_graphButtonBar != nullptr)
         {
-        return;
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SURVEY, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, enabled);
         }
 
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, enabled);
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, enabled);
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, enabled);
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SURVEY, enabled);
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, enabled);
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, enabled);
-    m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, enabled);
+    // objects
+    if (m_objectsButtonBar != nullptr)
+        {
+        m_objectsButtonBar->EnableButton(ID_NEW_LABEL, enabled);
+        m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, enabled);
+        m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, enabled);
+        }
     }
 
 //-------------------------------------------

@@ -254,6 +254,7 @@ class WisteriaView : public wxView
     wxPanel* m_workArea{ nullptr };
     wxRibbonButtonBar* m_graphButtonBar{ nullptr };
     wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
+    wxRibbonButtonBar* m_objectsButtonBar{ nullptr };
     wxGrid* m_constantsGrid{ nullptr };
     int m_constantsGridClickedRow{ -1 };
     bool m_sidebarShown{ true };
