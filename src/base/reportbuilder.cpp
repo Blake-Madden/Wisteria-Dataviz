@@ -6168,6 +6168,38 @@ namespace Wisteria
             table->SetPropertyTemplate(L"footnotes", footnotesJsonNode->Print(false));
             }
 
+        // UI-only formatting options (used by InsertTableDlg for round-tripping)
+        const auto boldHeaderNode = tableNode->GetProperty(L"ui.bold-header-row");
+        if (boldHeaderNode->IsOk())
+            {
+            const bool val = boldHeaderNode->AsBool();
+            table->SetPropertyTemplate(L"ui.bold-header-row", val ? L"true" : L"false");
+            if (val)
+                {
+                table->BoldRow(0);
+                }
+            }
+        const auto centerHeaderNode = tableNode->GetProperty(L"ui.center-header-row");
+        if (centerHeaderNode->IsOk())
+            {
+            const bool val = centerHeaderNode->AsBool();
+            table->SetPropertyTemplate(L"ui.center-header-row", val ? L"true" : L"false");
+            if (val)
+                {
+                table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
+                }
+            }
+        const auto boldFirstColNode = tableNode->GetProperty(L"ui.bold-first-column");
+        if (boldFirstColNode->IsOk())
+            {
+            const bool val = boldFirstColNode->AsBool();
+            table->SetPropertyTemplate(L"ui.bold-first-column", val ? L"true" : L"false");
+            if (val)
+                {
+                table->BoldColumn(0);
+                }
+            }
+
         LoadGraph(tableNode, canvas, currentRow, currentColumn, table);
         return table;
         }

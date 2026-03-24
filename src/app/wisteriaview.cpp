@@ -31,6 +31,7 @@
 #include "../ui/dialogs/insertscatterplotdlg.h"
 #include "../ui/dialogs/insertshapedlg.h"
 #include "../ui/dialogs/insertstemandleafdlg.h"
+#include "../ui/dialogs/inserttabledlg.h"
 #include "../ui/dialogs/insertwafflechartdlg.h"
 #include "../ui/dialogs/insertwcurvedlg.h"
 #include "../ui/dialogs/insertwlsparklinedlg.h"
@@ -179,6 +180,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaffleChart, this, ID_NEW_WAFFLE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertTable, this, ID_NEW_TABLE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertImage, this, ID_NEW_IMAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertShape, this, ID_NEW_SHAPE);
@@ -1652,6 +1654,290 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertTableDlg dlg(canvas, &m_reportBuilder, m_frame);
+    const auto tableSvg = wxGetApp().GetResourceManager().GetSVG(L"table.svg");
+    if (tableSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(tableSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto table = std::make_shared<Wisteria::Graphs::Table>(canvas);
+        dlg.ApplyGraphOptions(*table);
+        dlg.ApplyPageOptions(*table);
+
+        // resolve variables
+        std::vector<wxString> columns;
+        const auto varFormula = dlg.GetVariableFormula();
+        if (!varFormula.empty())
+            {
+            auto expanded =
+                m_reportBuilder.ExpandColumnSelections(varFormula, dlg.GetSelectedDataset());
+            if (expanded.has_value())
+                {
+                columns = std::move(expanded.value());
+                }
+            }
+        else
+            {
+            columns = dlg.GetSelectedVariables();
+            }
+
+        table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
+        table->SetDefaultBorders(true, true, true, true);
+        table->SetMinWidthProportion(dlg.GetMinWidthProportion());
+        table->SetMinHeightProportion(dlg.GetMinHeightProportion());
+        table->ClearTrailingRowFormatting(dlg.GetClearTrailingRowFormatting());
+
+        if (dlg.GetBoldHeaderRow())
+            {
+            table->BoldRow(0);
+            }
+        if (dlg.GetCenterHeaderRow())
+            {
+            table->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
+            }
+        if (dlg.GetBoldFirstColumn())
+            {
+            table->BoldColumn(0);
+            }
+        if (dlg.GetAlternateRowColors())
+            {
+            table->ApplyAlternateRowColors(dlg.GetAlternateRowColor(), 1);
+            }
+
+        // cache property templates for round-tripping
+        table->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        if (!varFormula.empty())
+            {
+            table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
+            }
+        else
+            {
+            // store as JSON array string
+            wxString varsJson = L"[";
+            for (size_t i = 0; i < columns.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    varsJson += L", ";
+                    }
+                varsJson += wxString::Format(L"\"%s\"", columns[i]);
+                }
+            varsJson += L"]";
+            table->SetPropertyTemplate(L"variables", varsJson);
+            }
+        if (dlg.GetTranspose())
+            {
+            table->SetPropertyTemplate(L"transpose", L"true");
+            }
+        if (dlg.GetAlternateRowColors())
+            {
+            const auto color = dlg.GetAlternateRowColor();
+            table->SetPropertyTemplate(
+                L"alternate-row-color",
+                wxString::Format(L"{\"color\":\"%s\"}", color.GetAsString(wxC2S_HTML_SYNTAX)));
+            }
+        table->SetPropertyTemplate(L"ui.bold-header-row",
+                                   dlg.GetBoldHeaderRow() ? L"true" : L"false");
+        table->SetPropertyTemplate(L"ui.center-header-row",
+                                   dlg.GetCenterHeaderRow() ? L"true" : L"false");
+        table->SetPropertyTemplate(L"ui.bold-first-column",
+                                   dlg.GetBoldFirstColumn() ? L"true" : L"false");
+
+        PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                             const size_t graphRow, const size_t graphCol)
+    {
+    Wisteria::UI::InsertTableDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Table"), wxID_ANY,
+                                     wxDefaultPosition, wxDefaultSize,
+                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    const auto tableSvg = wxGetApp().GetResourceManager().GetSVG(L"table.svg");
+    if (tableSvg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(tableSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto table = std::make_shared<Wisteria::Graphs::Table>(canvas);
+        dlg.ApplyGraphOptions(*table);
+        dlg.ApplyPageOptions(*table);
+
+        // resolve variables
+        std::vector<wxString> columns;
+        const auto varFormula = dlg.GetVariableFormula();
+        if (!varFormula.empty())
+            {
+            auto expanded =
+                m_reportBuilder.ExpandColumnSelections(varFormula, dlg.GetSelectedDataset());
+            if (expanded.has_value())
+                {
+                columns = std::move(expanded.value());
+                }
+            }
+        else
+            {
+            columns = dlg.GetSelectedVariables();
+            }
+
+        table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
+        table->SetDefaultBorders(true, true, true, true);
+        table->SetMinWidthProportion(dlg.GetMinWidthProportion());
+        table->SetMinHeightProportion(dlg.GetMinHeightProportion());
+        table->ClearTrailingRowFormatting(dlg.GetClearTrailingRowFormatting());
+
+        if (dlg.GetBoldHeaderRow())
+            {
+            table->BoldRow(0);
+            }
+        if (dlg.GetCenterHeaderRow())
+            {
+            table->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
+            }
+        if (dlg.GetBoldFirstColumn())
+            {
+            table->BoldColumn(0);
+            }
+        if (dlg.GetAlternateRowColors())
+            {
+            table->ApplyAlternateRowColors(dlg.GetAlternateRowColor(), 1);
+            }
+
+        // cache property templates for round-tripping
+        const auto carryForward = [&graph, &table](const wxString& prop, const wxString& newVal,
+                                                   const wxString& oldExpanded)
+        {
+            if (newVal != oldExpanded || newVal.empty())
+                {
+                table->SetPropertyTemplate(prop, newVal);
+                }
+            else
+                {
+                const auto oldTemplate = graph.GetPropertyTemplate(prop);
+                table->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
+                }
+        };
+
+        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
+                     graph.GetPropertyTemplate(L"dataset"));
+
+        if (!varFormula.empty())
+            {
+            table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
+            }
+        else
+            {
+            wxString varsJson = L"[";
+            for (size_t i = 0; i < columns.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    varsJson += L", ";
+                    }
+                varsJson += wxString::Format(L"\"%s\"", columns[i]);
+                }
+            varsJson += L"]";
+            table->SetPropertyTemplate(L"variables", varsJson);
+            }
+
+        if (dlg.GetTranspose())
+            {
+            table->SetPropertyTemplate(L"transpose", L"true");
+            }
+        if (dlg.GetAlternateRowColors())
+            {
+            const auto color = dlg.GetAlternateRowColor();
+            table->SetPropertyTemplate(
+                L"alternate-row-color",
+                wxString::Format(L"{\"color\":\"%s\"}", color.GetAsString(wxC2S_HTML_SYNTAX)));
+            }
+
+        table->SetPropertyTemplate(L"ui.bold-header-row",
+                                   dlg.GetBoldHeaderRow() ? L"true" : L"false");
+        table->SetPropertyTemplate(L"ui.center-header-row",
+                                   dlg.GetCenterHeaderRow() ? L"true" : L"false");
+        table->SetPropertyTemplate(L"ui.bold-first-column",
+                                   dlg.GetBoldFirstColumn() ? L"true" : L"false");
+
+        // carry forward any advanced property templates from the original table
+        for (const auto& prop : { L"row-sort",
+                                  L"insert-group-header",
+                                  L"row-group",
+                                  L"column-group",
+                                  L"row-add",
+                                  L"row-suppression",
+                                  L"column-suppression",
+                                  L"row-formatting",
+                                  L"row-color",
+                                  L"row-bold",
+                                  L"row-borders",
+                                  L"row-content-align",
+                                  L"column-formatting",
+                                  L"column-color",
+                                  L"column-bold",
+                                  L"column-borders",
+                                  L"column-content-align",
+                                  L"column-highlight",
+                                  L"aggregates",
+                                  L"row-totals",
+                                  L"cell-update",
+                                  L"cell-annotations",
+                                  L"footnotes" })
+            {
+            const auto cached = graph.GetPropertyTemplate(prop);
+            if (!cached.empty())
+                {
+                table->SetPropertyTemplate(wxString(prop), cached);
+                }
+            }
+
+        PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::OnCanvasDClick(wxCommandEvent& event) { OnEditItem(event); }
 
 //-------------------------------------------
@@ -1828,6 +2114,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
         {
         EditWaffleChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
+        {
+        EditTable(*graph, canvas, itemRow, itemCol);
         }
     }
 
@@ -11107,7 +11397,10 @@ wxSimpleJSON::Ptr_t WisteriaView::SaveGraphByType(const Wisteria::Graphs::Graph2
                                   L"row-totals",
                                   L"cell-update",
                                   L"cell-annotations",
-                                  L"footnotes" })
+                                  L"footnotes",
+                                  L"ui.bold-header-row",
+                                  L"ui.center-header-row",
+                                  L"ui.bold-first-column" })
             {
             const auto cachedJson = graph->GetPropertyTemplate(prop);
             if (!cachedJson.empty())

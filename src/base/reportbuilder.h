@@ -533,6 +533,19 @@ namespace Wisteria
         [[nodiscard]]
         wxString ExpandConstants(wxString str) const;
 
+        // variable selection functions
+        //-----------------------------
+
+        /// @brief Converts a multiple column selection function into a vector of column names.
+        [[nodiscard]]
+        std::optional<std::vector<wxString>>
+        ExpandColumnSelections(wxString var,
+                               const std::shared_ptr<const Data::Dataset>& dataset) const;
+        /// @brief Converts a single column selection function into a column name.
+        [[nodiscard]]
+        static wxString ExpandColumnSelection(const wxString& formula,
+                                              const std::shared_ptr<const Data::Dataset>& dataset);
+
       private:
         using ValuesType = std::variant<wxString, double>;
 
@@ -1172,19 +1185,6 @@ namespace Wisteria
         wxString
         ConvertColumnOrGroupParameter(wxString columnStr,
                                       const std::shared_ptr<const Data::Dataset>& dataset) const;
-
-        // variable selection functions
-        //-----------------------------
-
-        /// @brief Converts a multiple column selection function into a vector of column names.
-        [[nodiscard]]
-        std::optional<std::vector<wxString>>
-        ExpandColumnSelections(wxString var,
-                               const std::shared_ptr<const Data::Dataset>& dataset) const;
-        /// @brief Converts a single column selection function into a column name.
-        [[nodiscard]]
-        static wxString ExpandColumnSelection(const wxString& formula,
-                                              const std::shared_ptr<const Data::Dataset>& dataset);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;

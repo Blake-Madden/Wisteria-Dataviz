@@ -257,7 +257,7 @@ namespace Wisteria::UI
             }
         bgBox->Add(imgOptionsSizer, wxSizerFlags{}.Border());
 
-        graphSizer->Add(bgBox, wxSizerFlags{}.Expand().Border());
+        graphSizer->Add(bgBox, wxSizerFlags{}.Border());
 
         // axis mirroring
         graphSizer->Add(new wxCheckBox(graphPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,

@@ -182,6 +182,7 @@ class WisteriaView : public wxView
     void OnInsertWaffleChart(wxCommandEvent& event);
     void EditWaffleChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
+    void OnInsertTable(wxCommandEvent& event);
     void OnInsertCatBarChart(wxCommandEvent& event);
     void EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol);
@@ -237,6 +238,8 @@ class WisteriaView : public wxView
                              size_t graphRow, size_t graphCol);
     void EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                            size_t graphRow, size_t graphCol);
+    void EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
+                   size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
