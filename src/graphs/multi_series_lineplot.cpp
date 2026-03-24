@@ -128,7 +128,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             if (IsXCategorical())
                 {
                 auto xColumnName = GetCategoricalColumn(GetXColumnName());
-                if (!xColumnName->GetStringTable().empty())
+                if (Data::ColumnWithStringTable::HasLabels(xColumnName->GetStringTable()))
                     {
                     GetBottomXAxis().ClearCustomLabels();
                     GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);

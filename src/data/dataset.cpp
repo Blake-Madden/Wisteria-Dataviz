@@ -15,7 +15,7 @@ namespace Wisteria::Data
     //----------------------------------------------
     void ColumnWithStringTable::RemoveUnusedStringTableEntries()
         {
-        if (GetStringTable().empty() || GetValues().empty())
+        if (!Data::ColumnWithStringTable::HasLabels(GetStringTable()) || GetValues().empty())
             {
             return;
             }

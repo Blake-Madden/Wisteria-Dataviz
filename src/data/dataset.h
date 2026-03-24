@@ -157,7 +157,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         const T& GetValue(const size_t index) const
             {
-            assert(index < m_data.size() && L"Invalid index in call to Column::GetValue()");
+            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::GetValue()");
             return m_data.at(index);
             }
 
@@ -166,7 +166,7 @@ namespace Wisteria::Data
             @param val The new value.*/
         void SetValue(const size_t index, const T& val)
             {
-            assert(index < m_data.size() && L"Invalid index in call to Column::SetValue()");
+            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::SetValue()");
             if (index >= m_data.size())
                 {
                 return;
@@ -179,7 +179,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         virtual bool IsMissingData(const size_t index) const
             {
-            assert(index < m_data.size() && L"Invalid index in call to Column::IsMissingData()");
+            wxASSERT_MSG(index < m_data.size(),
+                         L"Invalid index in call to Column::IsMissingData()");
             if (index >= m_data.size())
                 {
                 return false;
@@ -427,6 +428,24 @@ namespace Wisteria::Data
                 return foundLabel->second;
                 }
             return std::to_wstring(code);
+            }
+
+        /** @brief Returns @c true if a string table as valid labels in it.
+                (Will ignore the MD code, if present.)
+            @returns @c true if there are no valid labels.
+            @param stringTable The string table to review.*/
+        [[nodiscard]]
+        static bool HasLabels(const StringTableType& stringTable)
+            {
+            if (stringTable.empty())
+                {
+                return false;
+                }
+            if (stringTable.size() == 1 && stringTable.cbegin()->second.empty())
+                {
+                return false;
+                }
+            return true;
             }
 
         /** @brief Gets the underlying numeric code from the string table given the label,

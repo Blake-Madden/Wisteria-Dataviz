@@ -677,10 +677,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             // Set the level labels from the data's string table (if it has one),
             // or use the default labels.
             // these will be used for the legend.
-            auto stringTable = categoricalColumn->GetStringTable().size() >
-                                       1 /* MD code is always in string table*/ ?
-                                   categoricalColumn->GetStringTable() :
-                                   CreateLabels(GetSurveyType());
+            auto stringTable =
+                Data::ColumnWithStringTable::HasLabels(categoricalColumn->GetStringTable()) ?
+                    categoricalColumn->GetStringTable() :
+                    CreateLabels(GetSurveyType());
             if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
                 {

@@ -23,7 +23,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
             }
         // make reverse string table, sorted by label
         std::map<wxString, Data::GroupIdType, Data::wxStringLessNoCase> groups;
-        if (!GetGroupColumn()->GetStringTable().empty())
+        if (Data::ColumnWithStringTable::HasLabels(GetGroupColumn()->GetStringTable()))
             {
             for (const auto& [id, str] : GetGroupColumn()->GetStringTable())
                 {

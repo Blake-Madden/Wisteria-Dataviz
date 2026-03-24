@@ -117,9 +117,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     }
                 wxASSERT_MSG(currentRow < m_matrix.size(),
                              L"Invalid row when filling heatmap matrix! "
-                             "Data should be sorted by group before calling SetData().!");
-                wxASSERT_MSG(currentColumn < m_matrix[currentRow].size(),
-                             L"Invalid column when filling heatmap matrix!");
+                             "Data should be sorted by group before calling SetData()!");
                 // should not happen, just do this to prevent crash if data was not sorted by
                 // value and then by group first. What's displayed if this happens is the data
                 // won't be grouped properly, but it's showing it how the client passed it in.
@@ -241,7 +239,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), widestLabelWidth);
                 }
             }
-        const bool hasGroupLabels{ IsUsingGrouping() && !groupColumn->GetStringTable().empty() };
+        const bool hasGroupLabels{ IsUsingGrouping() && Data::ColumnWithStringTable::HasLabels(
+                                                            groupColumn->GetStringTable()) };
         const auto groupLabelWidth{ hasGroupLabels ? widestLabelWidth : 0 };
         if (IsUsingGrouping() && m_matrix.size() > 1)
             {
