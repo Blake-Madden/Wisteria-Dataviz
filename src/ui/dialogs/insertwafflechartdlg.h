@@ -102,7 +102,6 @@ namespace Wisteria::UI
         // DDX data members
         bool m_useGridRounding{ false };
         bool m_useRowCount{ false };
-        int m_legendPlacementIndex{ 1 };
 
         std::vector<GraphItems::ShapeInfo> m_shapes;
         };

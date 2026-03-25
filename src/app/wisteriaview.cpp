@@ -1467,11 +1467,7 @@ void WisteriaView::PlaceGraphWithLegend(
             }
         }
 
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -2228,11 +2224,7 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetFixedObject(itemRow, itemCol, nullptr);
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
     GetDocument()->Modify(true);
     }
 
@@ -6764,11 +6756,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
     label->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), label);
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -6811,11 +6799,7 @@ void WisteriaView::EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canva
     newLabel->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(labelRow, labelCol, newLabel);
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -6952,11 +6936,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     image->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), image);
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -7093,11 +7073,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
     newImage->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(imageRow, imageCol, newImage);
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -7179,11 +7155,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
         }
 
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -7261,11 +7233,7 @@ void WisteriaView::EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canva
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
 
-    canvas->ZoomReset();
-    canvas->CalcRowDimensions();
-    canvas->ResetResizeDelay();
-    canvas->SendSizeEvent();
-    canvas->Refresh();
+    UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
     }
@@ -7344,11 +7312,17 @@ void WisteriaView::EditFillableShape(Wisteria::GraphItems::FillableShape& shape,
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
 
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::UpdateCanvas(Wisteria::Canvas* canvas)
+    {
     canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
     canvas->Refresh();
-
-    GetDocument()->Modify(true);
     }

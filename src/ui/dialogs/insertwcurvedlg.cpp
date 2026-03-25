@@ -68,7 +68,8 @@ namespace Wisteria::UI
 
         // variables button
         auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
-        auto* varButton = new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
         varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
@@ -81,7 +82,8 @@ namespace Wisteria::UI
         m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* xLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (time interval):"));
+        auto* xLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (time interval):"));
         xLabel->SetFont(xLabel->GetFont().Bold());
         varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
         m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});

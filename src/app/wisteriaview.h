@@ -190,10 +190,14 @@ class WisteriaView : public wxView
     void AdjustGridColumnsForIcons(wxGrid* grid);
     void PopulateConstantsGrid();
     void BuildGraphMenus();
+
     [[nodiscard]]
     Wisteria::Canvas* GetActiveCanvas() noexcept;
+
     [[nodiscard]]
     bool IsPageSelected() const noexcept;
+
+    static void UpdateCanvas(Wisteria::Canvas* canvas);
 
     wxDocChildFrame* m_frame{ nullptr };
     wxSplitterWindow* m_splitter{ nullptr };

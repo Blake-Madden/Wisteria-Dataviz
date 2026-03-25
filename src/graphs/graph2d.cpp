@@ -215,7 +215,7 @@ namespace Wisteria::Graphs
 
         // Use smaller fonts for the subtitle and caption by default.
         // Normally, scaling is what controls the font sizes, but these objects
-        // have their scaling set to the parents on RecalcAllSizes().
+        // have their scaling set to the parents on CalcAllSizes().
         // This way, the client can change the font sizes of these items
         // if they want without having to deal with scaling.
         GetSubtitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
