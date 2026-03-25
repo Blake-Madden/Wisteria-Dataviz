@@ -517,9 +517,9 @@ namespace lily_of_the_valley
             {
             const auto& lastRow = data.back();
             bool dataEncountered{ false };
-            for (const auto& currentCell : lastRow)
+            for (const auto& cell : lastRow)
                 {
-                if (!currentCell.get_value().empty())
+                if (!cell.get_value().empty())
                     {
                     dataEncountered = true;
                     break;
