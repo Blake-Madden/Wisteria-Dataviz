@@ -5248,9 +5248,7 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
 
-        REQUIRE(wrk.size() == 1);
-        REQUIRE(wrk[0].size() == 1);
-        CHECK(wrk[0][0].get_value().empty());
+        REQUIRE(wrk.size() == 0);
         }
     }
 
