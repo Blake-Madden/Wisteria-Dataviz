@@ -18,9 +18,8 @@ namespace Wisteria::Graphs
     {
     /** @brief A discrete heat map, which is a grid-based plot which compares each value
          from a vector and maps them along a color scale (e.g., grayscale).
-         Each cell shows an observation's
-         value and its color represents that value's scale in comparison to the other
-         observations.
+         Each cell shows an observation's value and its color represents that value's scale
+         in comparison to the other observations.
 
          This is useful for reviewing densities of high and low values in a data series.
          The data can be visualized as a single series, or it can be grouped (refer to SetData()).
@@ -63,9 +62,20 @@ namespace Wisteria::Graphs
          If you wish to separate heat maps for each group, then `NAME` should be imported
          as the grouping variable.
 
-         Note that the data is mapped exactly in the order that it appears in the data
+         Note that the data is mapped *exactly* in the order that it appears in the data
          (i.e., nothing is sorted). Because of this, the grouping column should be presorted
          in the order that you want them to appear.
+
+         The heatmap does not consolidate or deduplicate group labels. Instead, it processes
+         the data sequentially: each time a group label is encountered, it is treated as part
+         of the current row only if it is contiguous with the previous occurrence of that same
+         label. If the same label appears again later in the dataset after a different group
+         has been encountered, it will be interpreted as a new row.
+
+         In other words, grouping is determined strictly by the *order and adjacency* of values
+         in the input. If the data is not partitioned (i.e., grouped into contiguous blocks by
+         label) ahead of time, the visualization may display multiple separate rows for what
+         logically appears to be the same group.
 
          @par Missing Data:
          - Missing data in the ID column will result in an empty selection label for the cell.

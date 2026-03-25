@@ -83,7 +83,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                                               continuousColumn->GetValues().cend());
         m_range = cb.GetRange();
 
-        const wxString crossedOutSymbolForNaN{ L"\u274C" };
+        const wxString crossedOutSymbolForNaN{ L"❌" };
         if (IsUsingGrouping())
             {
             const auto groupColumn = GetGroupColumn();
@@ -115,12 +115,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     currentColumn = 0;
                     currentGroupId = groupColumn->GetValue(i);
                     }
-                wxASSERT_MSG(currentRow < m_matrix.size(),
-                             L"Invalid row when filling heatmap matrix! "
-                             "Data should be sorted by group before calling SetData()!");
-                // should not happen, just do this to prevent crash if data was not sorted by
-                // value and then by group first. What's displayed if this happens is the data
-                // won't be grouped properly, but it's showing it how the client passed it in.
+                if (currentRow >= m_matrix.size())
+                    {
+                    wxLogWarning("Data was not sorted by group in heatmap. "
+                                 "Separate rows for the same group will be displayed.");
+                    }
+                // The data is displayed exactly as it was passed in from the dataset.
+                // If the values aren't partitioned by group first, then it will show
+                // different rows for the same group labels. Basically, it will treat each
+                // occurrence of a different group label as it goes down the values column
+                // as a new row, even if that label was encountered earlier. For display
+                // purposes, this will be treated as a new group/row.
                 if (currentRow >= m_matrix.size())
                     {
                     std::vector<HeatCell> newRow;
@@ -189,7 +194,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
                     GetDataset()->GetIdColumn().GetValue(i);
                 // ignored, just default to zero
-                m_matrix[currentRow][currentColumn].m_groupId = 0;
+                m_matrix[currentRow][currentColumn].m_groupId =
+                    Data::ColumnWithStringTable::MISSING_DATA_CODE;
                 ++currentColumn;
                 }
             }
@@ -375,7 +381,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 columnHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                 AddObject(std::move(columnHeader));
                 }
-            // then the column's cells
+            // then the cells by column
+            const auto rowGroupId =
+                row.empty() ? Data::ColumnWithStringTable::MISSING_DATA_CODE : row[0].m_groupId;
             for (const auto& cell : row)
                 {
                 // if no label on cell, then that means this row is jagged and there
@@ -427,7 +435,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 {
                 // add a group label
                 auto groupRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo{ groupColumn->GetLabelFromID(currentGroupStart) }
+                    GraphItems::GraphItemInfo{ groupColumn->GetLabelFromID(rowGroupId) }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(groupLabelFont) // font is already scaled, so leave its scaling at 1
                         .AnchorPoint(wxPoint{ drawArea.GetTopLeft().x - groupLabelWidth,
