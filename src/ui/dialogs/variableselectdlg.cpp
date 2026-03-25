@@ -418,8 +418,8 @@ namespace Wisteria::UI
                 },
                 varList.m_removeId);
 
-            // double-clicking var in a list on the right will remove it and send it back
-            // to the main list on the left
+            // double-clicking var in a list on the right (or hitting DELETE keys)
+            // will remove it and send it back to the main list on the left
             varList.m_list->Bind(wxEVT_LEFT_DCLICK,
                                  [&, this]([[maybe_unused]] wxMouseEvent&)
                                  {
@@ -427,6 +427,16 @@ namespace Wisteria::UI
                                                                        m_mainVarlist);
                                      UpdateButtonStates();
                                  });
+            varList.m_list->Bind(
+                wxEVT_KEY_DOWN,
+                [&, this](wxKeyEvent& evt)
+                {
+                    if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_BACK)
+                        {
+                        MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
+                        UpdateButtonStates();
+                        }
+                });
             }
 
         // double-clicking var in the main list will move it to the first list on
