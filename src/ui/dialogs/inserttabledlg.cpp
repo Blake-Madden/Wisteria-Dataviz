@@ -276,7 +276,9 @@ namespace Wisteria::UI
             }
         else
             {
-            m_varsLabel->SetLabel(wxString::Format(_(L"%zu column(s)"), m_variableNames.size()));
+            m_varsLabel->SetLabel(
+                wxString::Format(wxPLURAL(L"%zu column", L"%zu columns", m_variableNames.size()),
+                                 m_variableNames.size()));
             }
 
         GetSideBarBook()->GetCurrentPage()->Layout();
