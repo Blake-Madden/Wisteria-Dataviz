@@ -114,7 +114,7 @@ namespace Wisteria
             }
 
         const wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-        assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile()!");
+        wxASSERT_MSG(theBuffer, L"Invalid buffer in call to ZipCatalog::ReadTextFile()!");
         // empty file
         if (theBuffer == nullptr || theBuffer->GetBufferStart() == nullptr ||
             theBuffer->GetBufferSize() == 0 || memstream.GetLength() == 0)

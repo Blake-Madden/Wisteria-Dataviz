@@ -107,7 +107,7 @@ namespace Wisteria::Graphs
 
          // add a note
          auto note = std::make_shared<Label>(
-            GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???")).
+            GraphItemInfo{ _(L"What happened this week?\nAre we sure this is correct???") }.
             Pen(Colors::ColorBrewer::GetColor(Colors::Color::LightGray))
                 .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White)).
             Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));

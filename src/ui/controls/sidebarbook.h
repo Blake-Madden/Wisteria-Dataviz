@@ -129,7 +129,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         std::vector<wxBitmapBundle>& GetImageList()
             {
-            assert(m_sidebar);
+            wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
             }
 
@@ -137,7 +137,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         const std::vector<wxBitmapBundle>& GetImageList() const
             {
-            assert(m_sidebar);
+            wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
             }
 

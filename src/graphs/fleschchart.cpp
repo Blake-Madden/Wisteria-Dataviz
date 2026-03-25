@@ -31,7 +31,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             GetCanvas()->SetLabel(_(L"Flesch Readability Chart"));
             GetCanvas()->SetName(_(L"Flesch Readability Chart"));
             }
-        GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo(_(L"How Easy?")).Pen(wxNullPen));
+        GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo{ _(L"How Easy?") }.Pen(wxNullPen));
 
         // Set up the x-axis
         GetBottomXAxis().SetRange(0, 4, 0, 1, 1);
@@ -301,13 +301,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
 
         // add instruction label
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo(
+            GraphItems::GraphItemInfo{
                 _(L"HOW TO USE THIS CHART\n"
                   "       Take a pencil or ruler and connect your\n"
                   "\U0000201CWords per Sentence\U0000201D figure (left) with your\n"
                   "\U0000201CSyllables per 100 Words\U0000201D figure (right).  The\n"
                   "intersection of the pencil or ruler with the\n"
-                  "center line shows your \U0000201CReading Ease\U0000201D score."))
+                  "center line shows your \U0000201CReading Ease\U0000201D score.") }
                 .Pen(legendColor)
                 .FontBackgroundColor(legendBkColor)
                 .FontColor(legendColor)
@@ -376,9 +376,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 std::clamp<size_t>(syllablesPerWordColumn->GetValue(i) * 100, 120, 200);
 
             wxCoord coord1{ 0 }, coord2{ 0 }, coord3{ 0 };
-            assert(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
-            assert(middleRuler.GetPhysicalCoordinate(score, coord2));
-            assert(syllablesRuler.GetPhysicalCoordinate(syllablesPerWord, coord3));
+            wxASSERT(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
+            wxASSERT(middleRuler.GetPhysicalCoordinate(score, coord2));
+            wxASSERT(syllablesRuler.GetPhysicalCoordinate(syllablesPerWord, coord3));
             if (wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1) &&
                 middleRuler.GetPhysicalCoordinate(score, coord2) &&
                 syllablesRuler.GetPhysicalCoordinate(syllablesPerWord, coord3))
@@ -403,9 +403,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                     const std::array<wxPoint, 2> line1{ pt1, pt2 };
                     const std::array<wxPoint, 2> line2{ pt2, pt3 };
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), line1));
+                        GraphItems::GraphItemInfo{}.Pen(linePen).Scaling(GetScaling()), line1));
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), line2));
+                        GraphItems::GraphItemInfo{}.Pen(linePen).Scaling(GetScaling()), line2));
                     }
 
                 // Convert group ID into color scheme index
@@ -417,7 +417,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 // points on the rulers
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt1)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))
@@ -427,7 +427,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                     dc);
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt2)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))
@@ -437,7 +437,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                     dc);
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt3)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))

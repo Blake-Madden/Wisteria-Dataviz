@@ -805,7 +805,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                 captionFont.GetFractionalPointSize() * 2);
 
                             GraphItems::Label caption(
-                                GraphItems::GraphItemInfo(GetTitle())
+                                GraphItems::GraphItemInfo{ GetTitle() }
                                     .Pen(wxNullPen)
                                     .DPIScaling(m_list->GetDPIScaleFactor())
                                     .Font(captionFont)
@@ -981,8 +981,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                             // then it needs to be split up and drawn as
                                             // multiline text
                                             GraphItems::Label label(
-                                                GraphItems::GraphItemInfo(
-                                                    m_list->GetItemTextFormatted(i, j))
+                                                GraphItems::GraphItemInfo{
+                                                    m_list->GetItemTextFormatted(i, j) }
                                                     .Pen(wxNullPen)
                                                     .DPIScaling(m_list->GetDPIScaleFactor())
                                                     .Font(drawDC.GetFont())
@@ -1230,7 +1230,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
                         // remeasure the height of the longest string from the table
                         // into the average cell's width, this will be our overall line height
-                        GraphItems::Label measureLabel(GraphItems::GraphItemInfo(longestString)
+                        GraphItems::Label measureLabel(GraphItems::GraphItemInfo{ longestString }
                                                            .Font(dc->GetFont())
                                                            .DPIScaling(m_list->GetDPIScaleFactor())
                                                            .Pen(wxNullPen));
@@ -1257,7 +1257,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
                         // remeasure the height of the longest string from the table
                         // into the current cell's width, this will be our overall line height
-                        GraphItems::Label measureLabel(GraphItems::GraphItemInfo(longestString)
+                        GraphItems::Label measureLabel(GraphItems::GraphItemInfo{ longestString }
                                                            .Font(dc->GetFont())
                                                            .DPIScaling(m_list->GetDPIScaleFactor())
                                                            .Pen(wxNullPen));

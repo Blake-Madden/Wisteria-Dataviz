@@ -382,9 +382,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                                  GraphItems::Polygon::PointToPair(pts[9])));
 
                             auto streamRibbon{ std::make_unique<GraphItems::Polygon>(
-                                GraphItems::GraphItemInfo(wxString::Format(L"%s \u2192 %s",
-                                                                           group.m_label,
-                                                                           downstreamGroup.first))
+                                GraphItems::GraphItemInfo{ wxString::Format(L"%s \u2192 %s",
+                                                                            group.m_label,
+                                                                            downstreamGroup.first) }
                                     .Pen(wxNullPen)
                                     .Brush(Colors::ColorContrast::ChangeOpacity(currentColor, 100))
                                     .Scaling(GetScaling()),
@@ -462,7 +462,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                                pts[3]))
                         {
                         AddObject(std::make_unique<GraphItems::Polygon>(
-                            GraphItems::GraphItemInfo(group.m_label)
+                            GraphItems::GraphItemInfo{ group.m_label }
                                 .Pen(wxNullPen)
                                 .Brush(GetBrushScheme()->GetBrush(colorIndex))
                                 .Scaling(GetScaling()),
@@ -538,7 +538,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                             pts[0]))
                         {
                         auto groupLabel = std::make_unique<GraphItems::Label>(
-                            GraphItems::GraphItemInfo(boxLabel)
+                            GraphItems::GraphItemInfo{ boxLabel }
                                 .Scaling(GetScaling())
                                 .DPIScaling(GetDPIScaleFactor())
                                 .Pen(wxNullPen)
@@ -560,7 +560,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                  pts[0]))
                         {
                         auto groupLabel = std::make_unique<GraphItems::Label>(
-                            GraphItems::GraphItemInfo(boxLabel)
+                            GraphItems::GraphItemInfo{ boxLabel }
                                 .Scaling(GetScaling())
                                 .DPIScaling(GetDPIScaleFactor())
                                 .Pen(wxNullPen)

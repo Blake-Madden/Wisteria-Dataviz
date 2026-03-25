@@ -177,7 +177,7 @@ namespace Wisteria::Graphs
 
          // add a title
          canvas->GetTopTitles().push_back(Label(
-            GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)")).
+            GraphItemInfo{ _(L"Top 20 Majors for Juniors & Seniors (AY2021-22)") }.
             Padding(5, 5, 5, 5).Pen(wxNullPen).
             ChildAlignment(RelativeAlignment::FlushLeft).
             FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen))) );

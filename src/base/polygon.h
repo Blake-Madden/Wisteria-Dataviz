@@ -462,7 +462,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxRect GetPolygonBoundingBox(const polygonT& polygon)
             {
-            assert(!polygon.empty());
+            wxASSERT(!polygon.empty());
             if (polygon.empty())
                 {
                 return {};

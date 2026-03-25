@@ -231,7 +231,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             if (GetPhysicalCoordinates(xValue, yValue, textPt))
                 {
                 AddObject(std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo()
+                    GraphItems::GraphItemInfo{}
                         .Scaling(GetScaling())
                         .Pen(wxNullPen)
                         .Padding(0, 0, 0, 0)
@@ -294,7 +294,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
                 // points on the middle ruler
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))

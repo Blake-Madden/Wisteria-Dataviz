@@ -481,7 +481,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                    const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
             {
-            assert(!m_columnsToCompare.empty());
+            wxASSERT(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 const int result =
@@ -530,7 +530,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                    const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
             {
-            assert(!m_columnsToCompare.empty());
+            wxASSERT(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return (Compare(row1[m_columnsToCompare[0].first],
@@ -574,7 +574,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                    const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
             {
-            assert(!m_columnsToCompare.empty());
+            wxASSERT(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return (Compare(row1[m_columnsToCompare[0].first],
@@ -618,7 +618,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                    const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
-            assert(!m_columnsToCompare.empty());
+            wxASSERT(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 if (m_columnsToCompare[0].second == Wisteria::SortDirection::SortAscending)
@@ -671,7 +671,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                    const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
-            assert(!m_columnsToCompare.empty());
+            wxASSERT(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return row1[m_columnsToCompare[0]] < row2[m_columnsToCompare[0]];
@@ -715,7 +715,7 @@ namespace Wisteria::UI
         bool operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                         const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
-            assert(!m_columnsToCompare.empty());
+            wxASSERT(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return row1[m_columnsToCompare[0]] > row2[m_columnsToCompare[0]];
@@ -755,8 +755,8 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString GetItemText(const size_t row, const size_t column) const final
             {
-            assert(row < m_virtualData.size());
-            assert(column < m_virtualData.operator[](row).size());
+            wxASSERT(row < m_virtualData.size());
+            wxASSERT(column < m_virtualData.operator[](row).size());
             return m_virtualData.operator[](row).operator[](column).m_strVal.c_str();
             }
 
@@ -766,8 +766,8 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString GetItemTextFormatted(const size_t row, const size_t column) const final
             {
-            assert(row < m_virtualData.size());
-            assert(column < m_virtualData.operator[](row).size());
+            wxASSERT(row < m_virtualData.size());
+            wxASSERT(column < m_virtualData.operator[](row).size());
             const ListCellString& cell = m_virtualData.operator[](row).operator[](column);
             if (cell.GetNumberFormatType().m_type ==
                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
@@ -793,9 +793,9 @@ namespace Wisteria::UI
                          const NumberFormatInfo format,
                          [[maybe_unused]] const double sortableValue /*Not used here*/) final
             {
-            assert(std::isnan(sortableValue) &&
-                   L"Numeric sortable value not supported by ListCtrlExDataProvider, "
-                   "use ListCtrlExNumericDataProvider instead.");
+            wxASSERT_MSG(std::isnan(sortableValue),
+                         L"Numeric sortable value not supported by ListCtrlExDataProvider, "
+                         "use ListCtrlExNumericDataProvider instead.");
             ListCellString& cell = m_virtualData.operator[](row).operator[](column);
             cell.m_strVal = text;
             cell.SetNumberFormatType(format);
@@ -812,8 +812,8 @@ namespace Wisteria::UI
                 {
                 return wxNOT_FOUND;
                 }
-            assert(row < m_virtualData.size());
-            assert(column < m_virtualData.operator[](row).size());
+            wxASSERT(row < m_virtualData.size());
+            wxASSERT(column < m_virtualData.operator[](row).size());
             return m_virtualData.operator[](row).operator[](column).GetImage();
             }
 
@@ -1167,8 +1167,8 @@ namespace Wisteria::UI
                 {
                 return {};
                 }
-            assert(row < m_virtualData.size());
-            assert(column < m_virtualData.operator[](row).size());
+            wxASSERT(row < m_virtualData.size());
+            wxASSERT(column < m_virtualData.operator[](row).size());
             const DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
             if (cell.GetNumberFormatType().m_type ==
                     Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting ||
@@ -1198,7 +1198,7 @@ namespace Wisteria::UI
                        percentageLabel;
                 }
 
-            assert(m_formatNumber);
+            wxASSERT(m_formatNumber);
             if (cell.IsDisplayingLabel())
                 {
                 return (m_formatNumber != nullptr) ?

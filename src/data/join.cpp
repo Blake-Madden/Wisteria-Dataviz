@@ -220,8 +220,8 @@ namespace Wisteria::Data
             {
             const auto rCol = rightDataset->GetCategoricalColumn(srcCol);
             // cppcheck-suppress assertWithSideEffect
-            assert(rCol != rightDataset->GetCategoricalColumns().cend() &&
-                   L"Error getting mapped right dataset column!");
+            wxASSERT_MSG(rCol != rightDataset->GetCategoricalColumns().cend(),
+                         L"Error getting mapped right dataset column!");
             if (rCol == rightDataset->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(
@@ -232,8 +232,8 @@ namespace Wisteria::Data
                 }
             const auto mCol = mergedData->GetCategoricalColumn(outCol);
             // cppcheck-suppress assertWithSideEffect
-            assert(mCol != mergedData->GetCategoricalColumns().cend() &&
-                   L"Error getting mapped right dataset column!");
+            wxASSERT_MSG(mCol != mergedData->GetCategoricalColumns().cend(),
+                         L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(
@@ -248,8 +248,8 @@ namespace Wisteria::Data
             {
             const auto rCol = rightDataset->GetContinuousColumn(srcCol);
             // cppcheck-suppress assertWithSideEffect
-            assert(rCol != rightDataset->GetContinuousColumns().cend() &&
-                   L"Error getting mapped right dataset column!");
+            wxASSERT_MSG(rCol != rightDataset->GetContinuousColumns().cend(),
+                         L"Error getting mapped right dataset column!");
             if (rCol == rightDataset->GetContinuousColumns().cend())
                 {
                 throw std::runtime_error(
@@ -260,8 +260,8 @@ namespace Wisteria::Data
                 }
             const auto mCol = mergedData->GetContinuousColumn(outCol);
             // cppcheck-suppress assertWithSideEffect
-            assert(mCol != mergedData->GetContinuousColumns().cend() &&
-                   L"Error getting mapped right dataset column!");
+            wxASSERT_MSG(mCol != mergedData->GetContinuousColumns().cend(),
+                         L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetContinuousColumns().cend())
                 {
                 throw std::runtime_error(
@@ -276,8 +276,8 @@ namespace Wisteria::Data
             {
             const auto rCol = rightDataset->GetDateColumn(srcCol);
             // cppcheck-suppress assertWithSideEffect
-            assert(rCol != rightDataset->GetDateColumns().cend() &&
-                   L"Error getting mapped right dataset column!");
+            wxASSERT_MSG(rCol != rightDataset->GetDateColumns().cend(),
+                         L"Error getting mapped right dataset column!");
             if (rCol == rightDataset->GetDateColumns().cend())
                 {
                 throw std::runtime_error(
@@ -288,8 +288,8 @@ namespace Wisteria::Data
                 }
             const auto mCol = mergedData->GetDateColumn(outCol);
             // cppcheck-suppress assertWithSideEffect
-            assert(mCol != mergedData->GetDateColumns().cend() &&
-                   L"Error getting mapped right dataset column!");
+            wxASSERT_MSG(mCol != mergedData->GetDateColumns().cend(),
+                         L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetDateColumns().cend())
                 {
                 throw std::runtime_error(

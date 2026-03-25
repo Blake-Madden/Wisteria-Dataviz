@@ -58,7 +58,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
             }
 
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo()
+            GraphItems::GraphItemInfo{}
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
                 .DPIScaling(GetDPIScaleFactor())
                 .FontColor(GetLeftYAxis().GetFontColor()));

@@ -647,7 +647,7 @@ namespace Wisteria::UI
         /// @param columnSize The number of columns to resize to.
         void SetVirtualDataSize(size_t rowSize, size_t columnSize)
             {
-            assert(IsVirtual());
+            wxASSERT(IsVirtual());
             if (m_virtualData != nullptr)
                 {
                 m_virtualData->SetSize(rowSize, columnSize);
@@ -660,7 +660,7 @@ namespace Wisteria::UI
         /// @param rowSize The number of rows to resize to.
         void SetVirtualDataSize(size_t rowSize)
             {
-            assert(IsVirtual());
+            wxASSERT(IsVirtual());
             if (m_virtualData != nullptr)
                 {
                 m_virtualData->SetSize(rowSize);

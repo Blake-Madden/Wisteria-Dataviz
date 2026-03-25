@@ -1402,9 +1402,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
 
                 const auto cellText = cell.GetDisplayValue();
                 auto cellLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(
+                    GraphItems::GraphItemInfo{
                         (isPrefixSeparateLabel ? wxString{} : cell.GetPrefix()) +
-                        (!cellText.empty() ? cellText : wxString(L" ")))
+                        (!cellText.empty() ? cellText : wxString{ L" " }) }
                         .Pen(wxNullPen)
                         .Padding(5, 5, 5, 5)
                         .Scaling(GetScaling())

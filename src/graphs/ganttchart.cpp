@@ -83,13 +83,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             }
         // these columns are optional
         const auto resourceColumn =
-            GetDataset()->GetCategoricalColumn(resourceColumnName.value_or(wxString()));
+            GetDataset()->GetCategoricalColumn(resourceColumnName.value_or(wxString{}));
         const auto completionColumn =
-            GetDataset()->GetContinuousColumn(completionColumnName.value_or(wxString()));
+            GetDataset()->GetContinuousColumn(completionColumnName.value_or(wxString{}));
         // set the grouping column (or keep it as `std::nullopt` if not in use)
         SetGroupColumn(groupColumnName);
         auto descriptionColumn =
-            GetDataset()->GetCategoricalColumn(descriptionColumnName.value_or(wxString()));
+            GetDataset()->GetCategoricalColumn(descriptionColumnName.value_or(wxString{}));
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
@@ -106,11 +106,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             AddTask(GanttChart::TaskInfo(taskColumn->GetLabelFromID(taskColumn->GetValue(i)))
                         .Resource((resourceColumn != GetDataset()->GetCategoricalColumns().cend()) ?
                                       resourceColumn->GetLabelFromID(resourceColumn->GetValue(i)) :
-                                      wxString())
+                                      wxString{})
                         .Description(
                             (descriptionColumn != GetDataset()->GetCategoricalColumns().cend()) ?
                                 descriptionColumn->GetLabelFromID(descriptionColumn->GetValue(i)) :
-                                wxString())
+                                wxString{})
                         .StartDate(startColumn->GetValue(i))
                         .EndDate(endColumn->GetValue(i))
                         .Color(GetColorScheme()->GetColor(colorIndex))
@@ -197,8 +197,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
 
                 const auto startPt = GetScalingAxis().FindDatePosition(taskInfo.m_start);
                 const auto endPt = GetScalingAxis().FindDatePosition(taskInfo.m_end);
-                assert(startPt.has_value() && endPt.has_value() &&
-                       L"Valid dates not found on axis in Gantt chart?!");
+                wxASSERT_MSG(startPt.has_value() && endPt.has_value(),
+                             L"Valid dates not found on axis in Gantt chart?!");
                 if (!startPt.has_value() || !endPt.has_value())
                     {
                     continue;
@@ -302,7 +302,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 decalStr.Trim();
 
                 br.GetBlocks().front().SetDecal(GraphItems::Label(
-                    GraphItems::GraphItemInfo(decalStr)
+                    GraphItems::GraphItemInfo{ decalStr }
                         .ChildAlignment(RelativeAlignment::FlushLeft)
                         .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                             br.GetBlocks().front().GetBrush().GetColour()))));
@@ -370,7 +370,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 decalStr.Trim();
 
                 arrowBar.GetBlocks().front().SetDecal(
-                    GraphItems::Label(GraphItems::GraphItemInfo(decalStr).FontColor(
+                    GraphItems::Label(GraphItems::GraphItemInfo{ decalStr }.FontColor(
                         Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(taskInfo.m_color))));
                 arrowBar.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(
                     m_maxDescriptionLength);

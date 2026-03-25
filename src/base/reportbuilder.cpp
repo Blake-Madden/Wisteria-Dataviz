@@ -4158,7 +4158,8 @@ namespace Wisteria
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
         auto sh = std::make_unique<GraphItems::FillableShape>(
-            GraphItems::GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
+            GraphItems::GraphItemInfo{
+                (shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}) }
                 .Anchoring(Anchoring::TopLeftCorner)
                 .Pen(pen)
                 .Brush(brush)
@@ -4324,7 +4325,8 @@ namespace Wisteria
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
         auto sh = std::make_unique<GraphItems::Shape>(
-            GraphItems::GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
+            GraphItems::GraphItemInfo{
+                (shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}) }
                 .Anchoring(Anchoring::TopLeftCorner)
                 .Pen(pen)
                 .Brush(brush)

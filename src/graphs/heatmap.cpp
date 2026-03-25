@@ -220,7 +220,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         // find the width of the longest group label
         const auto groupColumn = GetGroupColumn();
-        GraphItems::Label measuringLabel(GraphItems::GraphItemInfo()
+        GraphItems::Label measuringLabel(GraphItems::GraphItemInfo{}
                                              .Scaling(GetScaling())
                                              .Pen(wxNullPen)
                                              .DPIScaling(GetDPIScaleFactor()));
@@ -256,16 +256,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             drawArea.SetWidth(drawArea.GetWidth() - groupLabelWidth);
             // Free some space for the group labels above each column (even if one column).
             // First, label might be too long, so get best fitting font and measure again.
-            GraphItems::Label groupHeaderLabelTemplate(
-                GraphItems::GraphItemInfo(wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
-                                                           // largest possible range
-                                                           GetDataset()->GetRowCount(),
-                                                           GetDataset()->GetRowCount()))
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .DPIScaling(GetDPIScaleFactor())
-                    .Padding(0, 0, LABEL_RIGHT_PADDING, 0)
-                    .Font(groupHeaderLabelFont));
+            GraphItems::Label groupHeaderLabelTemplate(GraphItems::GraphItemInfo{
+                wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
+                                 // largest possible range
+                                 GetDataset()->GetRowCount(), GetDataset()->GetRowCount()) }
+                                                           .Scaling(GetScaling())
+                                                           .Pen(wxNullPen)
+                                                           .DPIScaling(GetDPIScaleFactor())
+                                                           .Padding(0, 0, LABEL_RIGHT_PADDING, 0)
+                                                           .Font(groupHeaderLabelFont));
             // try to keep the axis font size, but use smaller font if necessary
             groupHeaderLabelFont.SetFractionalPointSize(std::min(
                 groupHeaderLabelFont.GetFractionalPointSize(),
@@ -366,7 +365,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                                                           m_matrix.size()));
 
                 auto columnHeader =
-                    std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(headerString)
+                    std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo{ headerString }
                                                             .Scaling(GetScaling())
                                                             .Pen(wxNullPen)
                                                             .Font(groupHeaderLabelFont)
@@ -400,14 +399,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 };
                 // keep scaling at 1 since this is set to a specific size on the plot
                 auto box = std::make_unique<GraphItems::Polygon>(
-                    GraphItems::GraphItemInfo(cell.m_selectionLabel).Pen(GetPen()).Brush(cellColor),
+                    GraphItems::GraphItemInfo{ cell.m_selectionLabel }.Pen(GetPen()).Brush(
+                        cellColor),
                     pts);
                 const wxRect boxRect{ pts[0], pts[2] };
 
                 AddObject(std::move(box));
                 // show the value of the cell, centered on it
                 AddObject(std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(cell.m_valueLabel)
+                    GraphItems::GraphItemInfo{ cell.m_valueLabel }
                         .Font(boxLabelFont)
                         .Pen(wxNullPen)
                         .Selectable(false)
@@ -427,7 +427,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 {
                 // add a group label
                 auto groupRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(groupColumn->GetLabelFromID(currentGroupStart))
+                    GraphItems::GraphItemInfo{ groupColumn->GetLabelFromID(currentGroupStart) }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(groupLabelFont) // font is already scaled, so leave its scaling at 1
                         .AnchorPoint(wxPoint{ drawArea.GetTopLeft().x - groupLabelWidth,
@@ -479,13 +479,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         const auto minValue = *std::ranges::min_element(std::as_const(validData));
         const auto maxValue = *std::ranges::max_element(std::as_const(validData));
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo(
+            GraphItems::GraphItemInfo{
                 // add spaces on the empty lines to work around SVG exporting
                 // stripping out the blank lines
                 wxString::Format(
                     L"%s\n \n \n%s",
                     wxNumberFormatter::ToString(maxValue, 6, Settings::GetDefaultNumberFormat()),
-                    wxNumberFormatter::ToString(minValue, 6, Settings::GetDefaultNumberFormat())))
+                    wxNumberFormatter::ToString(minValue, 6, Settings::GetDefaultNumberFormat())) }
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs() * 1.5)
                 .DPIScaling(GetDPIScaleFactor())
                 .Anchoring(Anchoring::TopLeftCorner)

@@ -92,7 +92,7 @@ namespace Wisteria::Graphs
 
             // the location marker:
             auto pt = std::make_unique<GraphItems::Point2D>(
-                GraphItems::GraphItemInfo()
+                GraphItems::GraphItemInfo{}
                     .Brush((GetRoadStops()[i].GetValue() >= 0 ? GetPositiveIcon().second :
                                                                 GetNegativeIcon().second))
                     .DPIScaling(GetDPIScaleFactor())
@@ -116,13 +116,13 @@ namespace Wisteria::Graphs
                                          wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                     GetRoadStops()[i].GetName();
 
-            auto markerLabel = std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(
-                GraphItems::GraphItemInfo(markerText)
+            auto markerLabel = std::make_unique<GraphItems::Label>(
+                GraphItems::GraphItemInfo{ markerText }
                     .Scaling(GetScaling())
                     .DPIScaling(GetDPIScaleFactor())
                     .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                         GetPlotOrCanvasColor()))
-                    .Pen(wxNullPen)));
+                    .Pen(wxNullPen));
             markerLabel->ShowLabelWhenSelected(true);
             if (GetLabelPlacement() == LabelPlacement::NextToParent)
                 {
@@ -173,7 +173,7 @@ namespace Wisteria::Graphs
             pavement->SetLineStyle(LineStyle::Spline);
             for (const auto& pt : pts)
                 {
-                pavement->AddPoint(GraphItems::Point2D(GraphItems::GraphItemInfo()
+                pavement->AddPoint(GraphItems::Point2D(GraphItems::GraphItemInfo{}
                                                            .AnchorPoint({ pt.x, pt.y })
                                                            .DPIScaling(GetDPIScaleFactor()),
                                                        0, Icons::IconShape::Blank),
@@ -197,7 +197,7 @@ namespace Wisteria::Graphs
                 for (const auto& pt : pts)
                     {
                     laneSep->AddPoint(
-                        GraphItems::Point2D(GraphItems::GraphItemInfo().AnchorPoint(pt).DPIScaling(
+                        GraphItems::Point2D(GraphItems::GraphItemInfo{}.AnchorPoint(pt).DPIScaling(
                                                 GetDPIScaleFactor()),
                                             0, Icons::IconShape::Blank),
                         dc);
@@ -218,7 +218,7 @@ namespace Wisteria::Graphs
                 for (const auto& pt : pts)
                     {
                     laneSepRoadLine->AddPoint(
-                        GraphItems::Point2D(GraphItems::GraphItemInfo().AnchorPoint(pt).DPIScaling(
+                        GraphItems::Point2D(GraphItems::GraphItemInfo{}.AnchorPoint(pt).DPIScaling(
                                                 GetDPIScaleFactor()),
                                             0, Icons::IconShape::Blank),
                         dc);
@@ -286,7 +286,7 @@ namespace Wisteria::Graphs
         {
         SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo()
+            GraphItems::GraphItemInfo{}
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
                 .FontColor(
                     Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))

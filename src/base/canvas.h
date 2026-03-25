@@ -502,7 +502,7 @@ namespace Wisteria
         [[nodiscard]]
         CanvasRowInfo& GetRowInfo(const size_t row)
             {
-            assert(row < m_rowsInfo.size() && L"Invalid row in call to GetRowInfo()!");
+            wxASSERT_MSG(row < m_rowsInfo.size(), L"Invalid row in call to GetRowInfo()!");
             return m_rowsInfo.at(row);
             }
 

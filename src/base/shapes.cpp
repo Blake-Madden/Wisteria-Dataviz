@@ -343,7 +343,7 @@ namespace Wisteria::GraphItems
         dc.DrawCircle(circleCenter, radius);
 
         // lettering on the sign
-        Label theLabel(GraphItemInfo(text)
+        Label theLabel(GraphItemInfo{ text }
                            .Pen(wxNullPen)
                            .AnchorPoint(circleCenter)
                            .Anchoring(Anchoring::Center)
@@ -515,7 +515,7 @@ namespace Wisteria::GraphItems
             const wxPoint leftLabelCenter(
                 static_cast<int>(r.GetX() + (leftRegionWidth * math_constants::half)),
                 static_cast<int>(cy));
-            Label leftLabel{ GraphItemInfo(leftText)
+            Label leftLabel{ GraphItemInfo{ leftText }
                                  .Pen(wxNullPen)
                                  .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
                                                 GetGraphItemInfo().GetFontColor() :
@@ -538,7 +538,7 @@ namespace Wisteria::GraphItems
                 static_cast<int>((r.GetRight() - rightRegionWidth) +
                                  (rightRegionWidth * math_constants::half)),
                 static_cast<int>(cy));
-            Label rightLabel{ GraphItemInfo(rightText)
+            Label rightLabel{ GraphItemInfo{ rightText }
                                   .Pen(wxNullPen)
                                   .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
                                                  GetGraphItemInfo().GetFontColor() :
@@ -580,7 +580,7 @@ namespace Wisteria::GraphItems
             const wxPoint anchor(
                 bottomLineRect.GetX() + (bottomLineRect.GetWidth() * math_constants::half), cy);
 
-            Label bottomLabel{ GraphItemInfo(bottomText)
+            Label bottomLabel{ GraphItemInfo{ bottomText }
                                    .Pen(wxNullPen)
                                    .LabelAlignment(TextAlignment::Centered)
                                    .DPIScaling(GetDPIScaleFactor())
@@ -3333,7 +3333,7 @@ namespace Wisteria::GraphItems
             monetaryAmountRect.MoveBottomTo(billRect.GetBottom() -
                                             (billRect.GetHeight() * math_constants::tenth));
 
-            Label amountLabel{ GraphItemInfo(L"100")
+            Label amountLabel{ GraphItemInfo{ L"100" }
                                    .Pen(wxNullPen)
                                    .FontColor(ApplyColorOpacity(Colors::ColorBrewer::GetColor(
                                        Colors::Color::OutrageousOrange, 200)))
@@ -3659,7 +3659,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawText(const wxRect rect, wxDC& dc) const
         {
-        Label theLabel(GraphItemInfo(GetGraphItemInfo().GetText())
+        Label theLabel(GraphItemInfo{ GetGraphItemInfo().GetText() }
                            .Pen(wxNullPen)
                            .AnchorPoint(GetMidPoint(rect))
                            .Anchoring(Anchoring::Center)
@@ -4415,7 +4415,7 @@ namespace Wisteria::GraphItems
                                                     circleCenter + wxPoint(-signRadius, 0) };
             dc.DrawPolygon(points.size(), points.data());
             // ! label
-            Label bangLabel(GraphItemInfo(L"!")
+            Label bangLabel(GraphItemInfo{ L"!" }
                                 .Pen(wxNullPen)
                                 .AnchorPoint(circleCenter)
                                 .Anchoring(Anchoring::Center)
@@ -5129,9 +5129,8 @@ namespace Wisteria::GraphItems
         textRect.Offset(wxPoint(frameWidth, frameWidth));
 
         Label boardText(
-            GraphItemInfo(
-                /* TRANSLATORS: Simple placeholder text of any sort */
-                _("ABC"))
+            GraphItemInfo{ /* TRANSLATORS: Simple placeholder text of any sort */
+                           _("ABC") }
                 .FontColor(ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::White)))
                 .Pen(wxNullPen)
                 .DPIScaling(GetDPIScaleFactor())
@@ -5241,7 +5240,7 @@ namespace Wisteria::GraphItems
         headlineBox.SetHeight(headlineBox.GetHeight() * math_constants::third);
         headlineBox.Deflate(ScaleToScreenAndCanvas(2));
         // TRANSLATORS: Name of a newspaper drawn on newspaper icons used for graphs.
-        Label headline(GraphItemInfo(_("DAYTON TIMES"))
+        Label headline(GraphItemInfo{ _("DAYTON TIMES") }
                            .DPIScaling(GetDPIScaleFactor())
                            .Scaling(GetScaling())
                            .Pen(wxNullPen));

@@ -20,6 +20,7 @@ The project uses clang-format (v20) and clang-tidy. Key style rules:
 - C++20 syntax
 - Use `std::wstring_view`, `std::prev`, `std::next`, `std::advance` instead of pointer arithmetic
 - Make variables and lambdas `const` if possible
+- Use `{}` CTOR initializer syntax when possible
 - Use `safe_divide` and `safe_modulus` for division and modulus operations when the divisor is a variable
 - **Indentation:** 4 spaces, no tabs
 - **Line length:** 100 characters max

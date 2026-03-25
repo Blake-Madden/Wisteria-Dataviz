@@ -120,7 +120,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
         wxClientDisplayRect(&x, &y, &width, &height);
         wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
-                                                   wxDefaultPosition, wxSize(width, height));
+                                                   wxDefaultPosition, wxSize{ width, height });
 
         frame->Centre(wxBOTH);
         frame->Initialize();
@@ -1532,7 +1532,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);
             const GraphItems::Label infoLabel(
-                GraphItems::GraphItemInfo(m_debugInfo)
+                GraphItems::GraphItemInfo{ m_debugInfo }
                     .AnchorPoint(bBox.GetBottomRight())
                     .Anchoring(Anchoring::BottomRightCorner)
                     .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
@@ -1634,7 +1634,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     dc, labelFont, drawingRect, angle, watermark.m_label));
                 labelFont.MakeBold();
 
-                GraphItems::Label waterLabel(GraphItems::GraphItemInfo(watermark.m_label)
+                GraphItems::Label waterLabel(GraphItems::GraphItemInfo{ watermark.m_label }
                                                  .Font(labelFont)
                                                  .Anchoring(Anchoring::TopLeftCorner)
                                                  .Padding(0, 0, 0, 0)
@@ -1664,7 +1664,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             else
                 {
                 GraphItems::Label waterLabel(
-                    GraphItems::GraphItemInfo(watermark.m_label)
+                    GraphItems::GraphItemInfo{ watermark.m_label }
                         .Anchoring(Anchoring::Center)
                         .Padding(0, 0, 0, 0)
                         .Pen(wxNullPen)

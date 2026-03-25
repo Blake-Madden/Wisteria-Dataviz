@@ -52,7 +52,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxRect Polygon::GetPolygonBoundingBox(const wxPoint* polygon, const size_t N)
         {
-        assert(N > 0 && polygon);
+        wxASSERT(N > 0 && polygon);
         if (N == 0 || polygon == nullptr)
             {
             return {};

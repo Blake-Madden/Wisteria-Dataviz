@@ -15,7 +15,7 @@
 //--------------------------------------------------
 void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
     {
-    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
+    wxASSERT_MSG(m_handler, L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download queue could not start because event handler "
@@ -257,7 +257,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
 //--------------------------------------------------
 void FileDownload::RequestResponse(const wxString& url)
     {
-    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
+    wxASSERT_MSG(m_handler, L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download could not start because event handler "

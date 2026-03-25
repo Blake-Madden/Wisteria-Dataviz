@@ -1024,7 +1024,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
                                   -GetPlotAreaBoundingBox().GetY());
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(GetImageOutlineColor())
                         .AnchorPoint(wxPoint{ lineXStart, lineYStart }),
                     barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
@@ -1040,7 +1040,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 {
                 const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(GetImageOutlineColor())
                         .AnchorPoint(wxPoint{ lineXStart, lineYStart }),
                     Wisteria::GraphItems::Image::CropImageToRect(
@@ -1060,7 +1060,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                              L"Non-rectangular shapes not currently "
                              "supported with stipple bar effect.");
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(wxNullPen)
                         .AnchorPoint(wxPoint(lineXStart, lineYStart)),
                     Wisteria::GraphItems::Image::CreateStippledImage(
@@ -1166,13 +1166,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 barRenderInfo.m_barRect.GetLeftBottom() // close polygon
                             };
                             AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
-                                Wisteria::GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
+                                Wisteria::GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(
                                     GraphItemBase::GetShadowColor()),
                                 shadowPts));
                             }
                         }
                     box = std::make_unique<GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        Wisteria::GraphItems::GraphItemInfo{
+                            barBlock.GetSelectionLabel().GetText() }
                             .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Scaling(GetScaling())
@@ -1232,7 +1233,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                    };
                     }();
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        Wisteria::GraphItems::GraphItemInfo{
+                            barBlock.GetSelectionLabel().GetText() }
                             .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Scaling(GetScaling())
@@ -1646,7 +1648,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
                                   -GetPlotAreaBoundingBox().GetY());
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(GetImageOutlineColor())
                         .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                     barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
@@ -1662,7 +1664,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 {
                 const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(GetImageOutlineColor())
                         .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                     Wisteria::GraphItems::Image::CropImageToRect(
@@ -1682,7 +1684,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                              L"Non-rectangular shapes not currently "
                              "supported with stipple bar effect.");
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(wxNullPen)
                         .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                     Wisteria::GraphItems::Image::CreateStippledImage(
@@ -1757,14 +1759,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 barRenderInfo.m_barRect.GetRightBottom()
                             };
                             AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
-                                Wisteria::GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
+                                Wisteria::GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(
                                     GraphItemBase::GetShadowColor()),
                                 shadowPts));
                             }
                         }
 
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        Wisteria::GraphItems::GraphItemInfo{
+                            barBlock.GetSelectionLabel().GetText() }
                             .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Scaling(GetScaling())
@@ -1827,7 +1830,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }();
 
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        Wisteria::GraphItems::GraphItemInfo{
+                            barBlock.GetSelectionLabel().GetText() }
                             .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Outline(true, true, true, true)
@@ -2287,7 +2291,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                     .Brush(barGroup.m_barBrush)
                                     .Color(barGroup.m_barColor)
                                     .Decal(Wisteria::GraphItems::Label(
-                                        Wisteria::GraphItems::GraphItemInfo(barGroup.m_barDecal)
+                                        Wisteria::GraphItems::GraphItemInfo{ barGroup.m_barDecal }
                                             .LabelFitting(LabelFit::SplitTextToFit)
                                             .ChildAlignment(RelativeAlignment::Centered)
                                             .FontColor(Wisteria::Colors::ColorContrast::
@@ -2315,7 +2319,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         theBar.SetAxisPosition(barAxisPos);
 
                         AddObject(std::make_unique<Wisteria::GraphItems::Shape>(
-                            Wisteria::GraphItems::GraphItemInfo()
+                            Wisteria::GraphItems::GraphItemInfo{}
                                 .Pen(wxPen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                                GetPlotOrCanvasColor()),
                                            2))
@@ -2384,7 +2388,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                     .Brush(barGroup.m_barBrush)
                                     .Color(barGroup.m_barColor)
                                     .Decal(Wisteria::GraphItems::Label(
-                                        Wisteria::GraphItems::GraphItemInfo(barGroup.m_barDecal)
+                                        Wisteria::GraphItems::GraphItemInfo{ barGroup.m_barDecal }
                                             .LabelFitting(LabelFit::SplitTextToFit)
                                             .ChildAlignment(RelativeAlignment::Centered)
                                             .FontColor(Wisteria::Colors::ColorContrast::
@@ -2412,7 +2416,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         theBar.SetAxisPosition(barAxisPos);
 
                         AddObject(std::make_unique<Wisteria::GraphItems::Shape>(
-                            Wisteria::GraphItems::GraphItemInfo()
+                            Wisteria::GraphItems::GraphItemInfo{}
                                 .Pen(wxPen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                                GetPlotOrCanvasColor()),
                                            2))

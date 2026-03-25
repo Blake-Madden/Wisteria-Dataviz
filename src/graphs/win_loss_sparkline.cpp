@@ -353,7 +353,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         const wxFont seasonHeaderLabelFont{ GetBottomXAxis().GetFont() };
 
         // find the width of the longest season label
-        GraphItems::Label measuringLabel(GraphItems::GraphItemInfo()
+        GraphItems::Label measuringLabel(GraphItems::GraphItemInfo{}
                                              .Scaling(GetScaling())
                                              .Pen(wxNullPen)
                                              .DPIScaling(GetDPIScaleFactor()));
@@ -412,7 +412,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         drawArea.SetWidth(drawArea.GetWidth() - allLabelsWidth);
         // Free some space for the season labels above each column (even if one column).
         const GraphItems::Label headerLabelTemplate(
-            GraphItems::GraphItemInfo(_(L"home"))
+            GraphItems::GraphItemInfo{ _(L"home") }
                 .Scaling(GetScaling())
                 .Pen(wxNullPen)
                 .DPIScaling(GetDPIScaleFactor())
@@ -441,15 +441,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         // draw the boxes in a grid, row x column
         int currentRow{ 0 }, currentColumn{ 0 };
 
-        auto homeHeader = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo(
-                /* TRANSLATORS: Sports game, as played at the team's home stadium. */ _(L"home"))
-                .Scaling(GetScaling())
-                .DPIScaling(GetDPIScaleFactor())
-                .Pen(wxNullPen)
-                .Font(seasonHeaderLabelFont)
-                .Padding(0, 0, 0, LABEL_PADDING)
-                .AnchorPoint(drawArea.GetTopLeft()));
+        auto homeHeader =
+            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo{
+                /* TRANSLATORS: Sports game, as played at the team's home stadium. */ _(L"home") }
+                                                    .Scaling(GetScaling())
+                                                    .DPIScaling(GetDPIScaleFactor())
+                                                    .Pen(wxNullPen)
+                                                    .Font(seasonHeaderLabelFont)
+                                                    .Padding(0, 0, 0, LABEL_PADDING)
+                                                    .AnchorPoint(drawArea.GetTopLeft()));
         homeHeader->Offset(-(homeRecordLabelWidth + roadRecordLabelWidth + pctRecordLabelWidth +
                              (paddingBetweenLabels * 2)),
                            -seasonHeaderLabelHeight);
@@ -457,10 +457,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         labels.push_back(std::move(homeHeader));
 
         auto roadHeader = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo(
-                /* TRANSLATORS: Sports game, where a team
-                   travels away from their home stadium to play. */
-                _(L"road"))
+            GraphItems::GraphItemInfo{ /* TRANSLATORS: Sports game, where a team
+                                          travels away from their home stadium to play. */
+                                       _(L"road") }
                 .Scaling(GetScaling())
                 .DPIScaling(GetDPIScaleFactor())
                 .Pen(wxNullPen)
@@ -472,17 +471,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         roadHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(roadHeader));
 
-        auto pctHeader =
-            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(
-                                                    /* TRANSLATORS: Percentage, as in the percent of
-                                                       games a team won during a season. */
-                                                    _(L"pct"))
-                                                    .Scaling(GetScaling())
-                                                    .DPIScaling(GetDPIScaleFactor())
-                                                    .Pen(wxNullPen)
-                                                    .Font(seasonHeaderLabelFont)
-                                                    .Padding(0, 0, 0, LABEL_PADDING)
-                                                    .AnchorPoint(drawArea.GetTopLeft()));
+        auto pctHeader = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo{ /* TRANSLATORS: Percentage, as in the percent of
+                                          games a team won during a season. */
+                                       _(L"pct") }
+                .Scaling(GetScaling())
+                .DPIScaling(GetDPIScaleFactor())
+                .Pen(wxNullPen)
+                .Font(seasonHeaderLabelFont)
+                .Padding(0, 0, 0, LABEL_PADDING)
+                .AnchorPoint(drawArea.GetTopLeft()));
         pctHeader->Offset(-pctRecordLabelWidth, -seasonHeaderLabelHeight);
         pctHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(pctHeader));
@@ -533,7 +531,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         auto smallerBox{ boxRect };
                         smallerBox.Deflate(smallerBox.GetWidth() * math_constants::tenth);
                         auto shp = std::make_unique<GraphItems::Shape>(
-                            GraphItems::GraphItemInfo()
+                            GraphItems::GraphItemInfo{}
                                 .Pen(wxPenInfo{
                                     Colors::ColorBrewer::GetColor(Colors::Color::PastelGray), 2 })
                                 .Brush(wxNullBrush)
@@ -547,7 +545,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     else
                         {
                         AddObject(std::make_unique<GraphItems::Polygon>(
-                            GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(wxNullBrush), pts));
+                            GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(wxNullBrush), pts));
                         }
                     ++currentColumn;
                     continue;
@@ -558,7 +556,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 if (game.m_postseason)
                     {
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(m_postseasonColor), pts));
+                        GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(m_postseasonColor), pts));
                     }
 
                 auto homeGameLine = std::make_unique<GraphItems::Lines>(
@@ -612,7 +610,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     if (inWinningStreak)
                         {
                         AddObject(std::make_unique<GraphItems::Polygon>(
-                            GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(m_highlightColor),
+                            GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(m_highlightColor),
                             pts));
                         }
                     winLine->AddLine(
@@ -659,7 +657,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
                                                     (currentRow * paddingBetweenLabels) };
                 auto seasonRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(row.first.m_seasonLabel)
+                    GraphItems::GraphItemInfo{ row.first.m_seasonLabel }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .DPIScaling(GetDPIScaleFactor())
                         .Font(GetBottomXAxis().GetFont())
@@ -683,7 +681,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         (currentRow * paddingBetweenLabels)
                 };
                 auto overallRecordRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(row.first.m_overallRecordLabel)
+                    GraphItems::GraphItemInfo{ row.first.m_overallRecordLabel }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(GetBottomXAxis().GetFont())
                         .AnchorPoint(labelAnchorPoint)
@@ -707,7 +705,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
                                                     (currentRow * paddingBetweenLabels) };
                 auto homeRecordRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(row.first.m_homeRecordLabel)
+                    GraphItems::GraphItemInfo{ row.first.m_homeRecordLabel }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(GetBottomXAxis().GetFont())
                         .AnchorPoint(labelAnchorPoint)
@@ -730,7 +728,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
                                                     (currentRow * paddingBetweenLabels) };
                 auto roadRecordRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(row.first.m_roadRecordLabel)
+                    GraphItems::GraphItemInfo{ row.first.m_roadRecordLabel }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(GetBottomXAxis().GetFont())
                         .AnchorPoint(labelAnchorPoint)
@@ -752,7 +750,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
                                                     (currentRow * paddingBetweenLabels) };
                 auto pctRecordRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(row.first.m_pctLabel)
+                    GraphItems::GraphItemInfo{ row.first.m_pctLabel }
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(GetBottomXAxis().GetFont())
                         .FontBackgroundColor(row.first.m_highlightPctLabel ? m_highlightColor :
@@ -798,19 +796,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
     std::unique_ptr<GraphItems::Label> WinLossSparkline::CreateLegend(const LegendOptions& options)
         {
         SetLegendInfo(options);
-        auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo(
+        auto legend =
+            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo{
                 _(L"Won") + (m_hadShutoutWins ? _(L"\nWon in a shutout") : wxString{}) +
                 _(L"\nLost") + (m_hadShutoutLosses ? _(L"\nLost in a shutout") : wxString{}) +
                 _(L"\nTied\nHome game\nCanceled game / scrimmage") +
                 (m_hasPostseasonData ? _(L"\nPostseason") : wxString{}) +
                 (m_highlightBestRecords ? _(L"\nBest record / longest winning streak") :
-                                          wxString{}))
-                .DPIScaling(GetDPIScaleFactor())
-                .Anchoring(Anchoring::TopLeftCorner)
-                .LabelAlignment(TextAlignment::FlushLeft)
-                .Font(GetLeftYAxis().GetFont())
-                .FontColor(GetLeftYAxis().GetFontColor()));
+                                          wxString{}) }
+                                                    .DPIScaling(GetDPIScaleFactor())
+                                                    .Anchoring(Anchoring::TopLeftCorner)
+                                                    .LabelAlignment(TextAlignment::FlushLeft)
+                                                    .Font(GetLeftYAxis().GetFont())
+                                                    .FontColor(GetLeftYAxis().GetFontColor()));
         legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine, m_winColor,
                                               wxNullBrush);
         if (m_hadShutoutWins)

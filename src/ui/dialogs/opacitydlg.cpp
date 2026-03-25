@@ -46,7 +46,7 @@ namespace Wisteria::UI
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        assert(m_image.IsOk());
+        wxASSERT(m_image.IsOk());
         if (m_image.IsOk())
             {
             const wxSize scaledSize = FromDIP(wxSize{ 300, 300 });

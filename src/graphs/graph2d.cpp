@@ -826,7 +826,7 @@ namespace Wisteria::Graphs
             std::array<wxPoint, 4> boxPoints;
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             AddObject(std::make_unique<GraphItems::Polygon>(
-                GraphItems::GraphItemInfo()
+                GraphItems::GraphItemInfo{}
                     .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                     .Brush(wxColour(GetPlotBackgroundColor()))
                     .Scaling(GetScaling()),
@@ -1060,7 +1060,7 @@ namespace Wisteria::Graphs
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2)
                     };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(wxNullPen), boxPoints);
+                        GraphItems::GraphItemInfo{}.Pen(wxNullPen), boxPoints);
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
                         area->GetBrush().SetColour(Colors::ColorContrast::ChangeOpacity(
@@ -1117,7 +1117,7 @@ namespace Wisteria::Graphs
                         wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y)
                     };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(wxNullPen), boxPoints);
+                        GraphItems::GraphItemInfo{}.Pen(wxNullPen), boxPoints);
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
                         area->GetBrush().SetColour(Colors::ColorContrast::ChangeOpacity(
@@ -1269,7 +1269,7 @@ namespace Wisteria::Graphs
                             wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(40)));
                         }
                     GraphItems::Label rulerLabel(
-                        GraphItems::GraphItemInfo(_DT(L"\u21E6 100 pixels"))
+                        GraphItems::GraphItemInfo{ _DT(L"\u21E6 100 pixels") }
                             .AnchorPoint(wxPoint(
                                 GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
                                 GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25)))
@@ -1306,7 +1306,7 @@ namespace Wisteria::Graphs
                     }
                 const auto bBox = GetBoundingBox(dc);
                 const GraphItems::Label infoLabel(
-                    GraphItems::GraphItemInfo(
+                    GraphItems::GraphItemInfo{
                         wxString::Format(
                             _DT(L"Scaling: %s\n"
                                 "Vertical Axes Top (x, y): %d, %d\n"
@@ -1327,7 +1327,7 @@ namespace Wisteria::Graphs
                             GetContentRect().GetY(), GetContentRect().GetWidth(),
                             GetContentRect().GetHeight(), m_calculatedTopPadding,
                             m_calculatedRightPadding, m_calculatedBottomPadding,
-                            m_calculatedLeftPadding, m_debugDrawInfoLabel))
+                            m_calculatedLeftPadding, m_debugDrawInfoLabel) }
                         .AnchorPoint(GetBoundingBox(dc).GetBottomRight())
                         .Anchoring(Anchoring::BottomRightCorner)
                         .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))

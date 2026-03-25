@@ -175,7 +175,7 @@ namespace Wisteria::UI
 
         void OnAddTopShape();
         void OnEditTopShape();
-        /// @brief Builds a display string for a ShapeInfo (e.g., "Square (32\u00d732)").
+        /// @brief Builds a display string for a ShapeInfo (e.g., "Square (32×32)").
         [[nodiscard]]
         static wxString FormatShapeLabel(const Wisteria::GraphItems::ShapeInfo& shp);
         void RefreshTopShapeList();

@@ -278,7 +278,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 // points on the middle ruler
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))

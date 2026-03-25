@@ -3360,7 +3360,7 @@ namespace Wisteria::Graphs
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
 
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
-                GraphItems::GraphItemInfo(innerPie.GetGroupLabel())
+                GraphItems::GraphItemInfo{ innerPie.GetGroupLabel() }
                     .Brush(sliceBrushToUse)
                     .BaseColor(sliceColorToUse)
                     .DPIScaling(GetDPIScaleFactor())
@@ -3512,7 +3512,7 @@ namespace Wisteria::Graphs
                 sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
-                GraphItems::GraphItemInfo(GetOuterPie().at(i).GetGroupLabel())
+                GraphItems::GraphItemInfo{ GetOuterPie().at(i).GetGroupLabel() }
                     .Brush(sliceBrush)
                     .BaseColor(sliceColor)
                     .DPIScaling(GetDPIScaleFactor())

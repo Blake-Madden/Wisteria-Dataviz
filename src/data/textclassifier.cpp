@@ -76,12 +76,12 @@ namespace Wisteria::Data
             {
             // make sure the regex is OK before loading it for later
             const wxString reValue = patternCol->GetLabelFromID(patternCol->GetValue(i));
-            const wxRegEx reg(reValue);
+            const wxRegEx reg{ reValue };
 
             const wxString negatingReValue =
                 (negationPatternCol != classifierData->GetCategoricalColumns().cend()) ?
                     negationPatternCol->GetLabelFromID(negationPatternCol->GetValue(i)) :
-                    wxString();
+                    wxString{};
 
             if (!reValue.empty() && reg.IsValid())
                 {

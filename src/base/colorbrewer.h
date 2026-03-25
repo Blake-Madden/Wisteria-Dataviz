@@ -557,7 +557,7 @@ namespace Wisteria::Colors
                 @param color The color to add.*/
             void AddColor(const wxColour& color)
                 {
-                assert(color.IsOk() && L"Invalid color passed to AddColor().");
+                wxASSERT_MSG(color.IsOk(), L"Invalid color passed to AddColor().");
                 m_colors.push_back(color);
                 }
 

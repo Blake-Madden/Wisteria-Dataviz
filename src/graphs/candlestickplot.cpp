@@ -222,7 +222,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
                 AddObject(std::move(wick));
 
                 auto candle = std::make_unique<GraphItems::Polygon>(
-                    GraphItems::GraphItemInfo(ohlcInfo).Brush(
+                    GraphItems::GraphItemInfo{ ohlcInfo }.Brush(
                         (ohlc.m_open <= ohlc.m_close ? m_gainBrush : m_lossBrush)),
                     points);
 

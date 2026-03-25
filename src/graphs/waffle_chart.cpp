@@ -136,7 +136,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 if (shpInfo.GetFillPercent() < math_constants::full)
                     {
                     AddObject(std::make_unique<GraphItems::FillableShape>(
-                        GraphItems::GraphItemInfo()
+                        GraphItems::GraphItemInfo{}
                             .Pen(shpInfo.GetPen())
                             .Brush(shpInfo.GetBrush())
                             .Selectable(false)
@@ -148,7 +148,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 else
                     {
                     AddObject(std::make_unique<GraphItems::Shape>(
-                        GraphItems::GraphItemInfo()
+                        GraphItems::GraphItemInfo{}
                             .Pen(shpInfo.GetPen())
                             .Brush(shpInfo.GetBrush())
                             .Selectable(false)

@@ -351,7 +351,7 @@ namespace Wisteria::UI
     //---------------------------------------------------
     size_t SideBar::GetFolderWidth(const size_t item)
         {
-        assert(item < GetFolderCount());
+        wxASSERT(item < GetFolderCount());
         if (item >= GetFolderCount())
             {
             return 0;
@@ -557,10 +557,10 @@ namespace Wisteria::UI
         };
 
         // draw the folders and subitems
-        assert(firstFolderToDraw.value() < m_folders.size() &&
-               L"Sidebar first folder index out of range!");
-        assert(lastFolderToDraw.value() < m_folders.size() &&
-               L"Sidebar last folder index out of range!");
+        wxASSERT_MSG(firstFolderToDraw.value() < m_folders.size(),
+                     L"Sidebar first folder index out of range!");
+        wxASSERT_MSG(lastFolderToDraw.value() < m_folders.size(),
+                     L"Sidebar last folder index out of range!");
         for (size_t i = firstFolderToDraw.value(); i <= lastFolderToDraw.value(); ++i)
             {
                 // draw the folder (i.e., parent label)

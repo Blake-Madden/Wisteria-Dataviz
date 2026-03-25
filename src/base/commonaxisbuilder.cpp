@@ -16,8 +16,8 @@ namespace Wisteria
                                   const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                                   AxisType axisType)
         {
-        assert((axisType == AxisType::LeftYAxis || axisType == AxisType::RightYAxis) &&
-               L"BuildYAxis() requires a left or right axis type to be specified!");
+        wxASSERT_MSG((axisType == AxisType::LeftYAxis || axisType == AxisType::RightYAxis),
+                     L"BuildYAxis() requires a left or right axis type to be specified!");
         // fix bogus axis type
         if (axisType != AxisType::LeftYAxis && axisType != AxisType::RightYAxis)
             {
@@ -107,8 +107,8 @@ namespace Wisteria
                                   const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                                   AxisType axisType, const bool useCommonLeftAxis /*= false*/)
         {
-        assert((axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis) &&
-               L"BuildXAxis() requires a bottom or top axis type to be specified!");
+        wxASSERT_MSG((axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis),
+                     L"BuildXAxis() requires a bottom or top axis type to be specified!");
         // fix bogus axis type
         if (axisType != AxisType::BottomXAxis && axisType != AxisType::TopXAxis)
             {

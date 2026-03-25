@@ -549,7 +549,7 @@ namespace Wisteria::Graphs
                 const std::optional<double> customWidth = std::nullopt)
                 : m_blocks(blocks), m_opacity(opacity), m_barEffect(effect),
                   m_axisLabel(std::move(axisLabel)),
-                  m_barLabel(GraphItems::GraphItemInfo(barLabel).Pen(wxNullPen)),
+                  m_barLabel(GraphItems::GraphItemInfo{ barLabel }.Pen(wxNullPen)),
                   m_customWidth(customWidth), m_axisPosition(axisPosition)
                 {
                 // set to sane value

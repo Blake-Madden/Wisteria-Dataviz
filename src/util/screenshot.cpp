@@ -166,7 +166,7 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
         }
 
     auto* ribbonBar = dynamic_cast<wxRibbonBar*>(foundWindow);
-    assert(ribbonBar);
+    wxASSERT(ribbonBar);
 
     if (!ribbonBar->SetActivePage(pageToSelect))
         {

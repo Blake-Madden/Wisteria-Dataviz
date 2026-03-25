@@ -168,7 +168,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                                     colorIndex,
                                     (IsUsingGrouping() ?
                                          groupColumn->GetLabelFromID(groupColumn->GetValue(i)) :
-                                         wxString()) },
+                                         wxString{}) },
                           GetDataset()->GetIdColumn().GetValue(i).wc_str());
             if ((GetRoundingMethod() == RoundingMethod::NoRounding) &&
                 has_fractional_part(continuousColumn->GetValue(i)))
@@ -393,7 +393,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         auto binSize = safe_divide<double>((maxVal - minVal), static_cast<double>(numOfBins));
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
             {
-            assert(!has_fractional_part(binSize));
+            wxASSERT(!has_fractional_part(binSize));
             // fit the ranges into neater intervals and unused bins will be discarded later
             if (m_neatRanges)
                 {
@@ -529,7 +529,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         for (size_t i = 0; i < bins.size(); ++i)
             {
             Bar theBar(startingBarAxisPosition + (static_cast<double>(i) * binSize),
-                       std::vector<BarBlock>(), wxEmptyString, GraphItems::Label(), GetBarEffect(),
+                       std::vector<BarBlock>{}, wxString{}, GraphItems::Label{}, GetBarEffect(),
                        GetBarOpacity(),
                        (GetIntervalDisplay() == IntervalDisplay::Cutpoints) ? binSize : 0);
 
@@ -570,13 +570,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     }
 
                 const wxString blockTag =
-                    (IsUsingGrouping() ? groupColumn->GetLabelFromID(block.first) : wxString());
+                    (IsUsingGrouping() ? groupColumn->GetLabelFromID(block.first) : wxString{});
 
-                BarBlock theBlock{ BarBlock(BarBlockInfo(block.second.first)
+                BarBlock theBlock{ BarBlock(BarBlockInfo{ block.second.first }
                                                 .Tag(blockTag)
                                                 .Brush(blockBrush)
                                                 .Color(blockColor)
-                                                .SelectionLabel(GraphItems::Label(blockLabel))) };
+                                                .SelectionLabel(GraphItems::Label{ blockLabel })) };
                 if (block.second.second.size() > 1)
                     {
                     theBlock.GetSelectionLabel().SetLabelStyle(
@@ -638,7 +638,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     }
                 else
                     {
-                    axisLabel += GetCustomBarLabelOrValue(startValue) + L"-" +
+                    axisLabel += GetCustomBarLabelOrValue(startValue) + L"–" +
                                  GetCustomBarLabelOrValue(endValue);
                     }
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)

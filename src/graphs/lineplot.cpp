@@ -258,7 +258,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                     isLineGhosted);
                 points->AddPoint(
                     GraphItems::Point2D{
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(GetMaybeGhostedColor(line.GetPen().GetColour(), isLineGhosted))
                             .Brush((ptColor.IsOk() ? ptColor :

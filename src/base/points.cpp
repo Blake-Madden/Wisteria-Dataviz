@@ -116,7 +116,7 @@ namespace Wisteria::GraphItems
                 {
                 const wxRect itemBoundingBox(point.GetBoundingBox(dc));
                 GraphItems::Label selectionLabel(
-                    GraphItemInfo(point.GetText())
+                    GraphItemInfo{ point.GetText() }
                         .Scaling(scaling)
                         .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                         .DPIScaling(GetDPIScaleFactor())
@@ -330,7 +330,7 @@ namespace Wisteria::GraphItems
             const auto boundingBox = GetBoundingBox(dc);
 
             // object that can handle drawing various shapes for the icons
-            Shape sh(GraphItemInfo()
+            Shape sh(GraphItemInfo{}
                          .Brush(GetBrush())
                          .Pen(GetPen())
                          .Scaling(GetScaling())

@@ -41,7 +41,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
         GetRightYAxis().Show(false);
 
         GetTitle() = GraphItems::Label(
-            GraphItems::GraphItemInfo(_(L"Lix standards")).Scaling(GetScaling()).Pen(wxNullPen));
+            GraphItems::GraphItemInfo{ _(L"Lix standards") }.Scaling(GetScaling()).Pen(wxNullPen));
         }
 
     //----------------------------------------------------------------
@@ -345,7 +345,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
                 // points on the middle ruler
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))

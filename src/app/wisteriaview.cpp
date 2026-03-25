@@ -6722,7 +6722,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
     dlg.ApplyGridSize();
 
     auto label = std::make_shared<Wisteria::GraphItems::Label>(
-        Wisteria::GraphItems::GraphItemInfo(dlg.GetLabelText()));
+        Wisteria::GraphItems::GraphItemInfo{ dlg.GetLabelText() });
     dlg.ApplyPageOptions(*label);
     dlg.ApplyToLabel(*label);
 
@@ -6769,7 +6769,7 @@ void WisteriaView::EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canva
         }
 
     auto newLabel = std::make_shared<Wisteria::GraphItems::Label>(
-        Wisteria::GraphItems::GraphItemInfo(dlg.GetLabelText()));
+        Wisteria::GraphItems::GraphItemInfo{ dlg.GetLabelText() });
     dlg.ApplyPageOptions(*newLabel);
     dlg.ApplyToLabel(*newLabel);
 

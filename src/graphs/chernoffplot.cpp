@@ -465,7 +465,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             const auto labelY = leftStartY + static_cast<int>(i + 1) * leftLabelSpacing;
 
-            GraphItems::Label label(GraphItems::GraphItemInfo(otherLeftFeatures[i].labelText)
+            GraphItems::Label label(GraphItems::GraphItemInfo{ otherLeftFeatures[i].labelText }
                                         .Pen(wxNullPen)
                                         .Scaling(labelScaling)
                                         .DPIScaling(GetDPIScaleFactor())
@@ -879,7 +879,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     const auto faceCenterX = x + safe_divide(faceSize, 2);
                     const auto faceCenterY = y + safe_divide(faceSize, 2);
                     auto noDataLabel = std::make_unique<GraphItems::Label>(
-                        GraphItems::GraphItemInfo(_(L"No data"))
+                        GraphItems::GraphItemInfo{ _(L"No data") }
                             .Pen(wxNullPen)
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
@@ -905,7 +905,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 if (m_showLabels && !m_faces[faceIndex].label.empty())
                     {
                     auto label = std::make_unique<GraphItems::Label>(
-                        GraphItems::GraphItemInfo(m_faces[faceIndex].label)
+                        GraphItems::GraphItemInfo{ m_faces[faceIndex].label }
                             .Pen(wxNullPen)
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())

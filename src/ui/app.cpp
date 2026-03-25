@@ -240,7 +240,7 @@ namespace Wisteria::UI
 
         // prepare font for drawing the app name
         GraphItems::Label appLabel(
-            GraphItems::GraphItemInfo(appName)
+            GraphItems::GraphItemInfo{ appName }
                 .Pen(wxNullPen)
                 .Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD,
                              false, theFontName))
@@ -306,9 +306,9 @@ namespace Wisteria::UI
             buildDate.ParseDate(__DATE__);
 
             GraphItems::Label copyrightInfo(
-                GraphItems::GraphItemInfo(wxString::Format(L"%s©%d %s. %s", copyrightPrefix,
-                                                           buildDate.GetYear(), vendorName,
-                                                           _(L"All rights reserved.")))
+                GraphItems::GraphItemInfo{ wxString::Format(L"%s©%d %s. %s", copyrightPrefix,
+                                                            buildDate.GetYear(), vendorName,
+                                                            _(L"All rights reserved.")) }
                     .Pen(wxNullPen)
                     .Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
                                  wxFONTWEIGHT_NORMAL, false, theFontName))

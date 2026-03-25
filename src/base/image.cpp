@@ -406,14 +406,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
 
                     // source pixel
                     auto w1 = (image.GetWidth() * 3 * y) + x;
-                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
                     const auto r = imgInData[w1];
                     const auto g = imgInData[w1 + 1];
                     const auto b = imgInData[w1 + 2];
 
                     // target pixel
                     w1 = w2 + columnCounter;
-                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
                     imgOutData[w1] = r;
                     imgOutData[w1 + 1] = g;
                     imgOutData[w1 + 2] = b;
@@ -433,14 +433,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
 
                     // Source pixel
                     auto w1 = (image.GetWidth() * 3 * y) + x;
-                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
                     const auto r = imgInData[w1];
                     const auto g = imgInData[w1 + 1];
                     const auto b = imgInData[w1 + 2];
 
                     // Target pixel
                     w1 = image.GetWidth() * 3 * rowCounter + columnCounter;
-                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
                     imgOutData[w1] = r;
                     imgOutData[w1 + 1] = g;
                     imgOutData[w1 + 2] = b;
@@ -555,7 +555,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         wxBitmap bmp(image, 32);
         wxMemoryDC memDC(bmp);
         auto* gc = wxGraphicsContext::Create(memDC);
-        assert(gc && L"Failed to get graphics context for filtered image!");
+        wxASSERT_MSG(gc, L"Failed to get graphics context for filtered image!");
         if (gc != nullptr)
             {
             gc->SetBrush(wxBrush(Colors::ColorContrast::ChangeOpacity(color, opacity)));
@@ -634,7 +634,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             {
             return wxNullImage;
             }
-        wxBitmap background(fillSize, 32);
+        wxBitmap background{ fillSize, 32 };
         SetOpacity(background, wxALPHA_TRANSPARENT, false);
         wxMemoryDC memDC(background);
 
@@ -646,8 +646,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
                 }
 
             const wxSize canvasSize = includeShadow ?
-                                          wxSize(background.GetSize().GetWidth(),
-                                                 background.GetSize().GetHeight() - shadowSize) :
+                                          wxSize{ background.GetSize().GetWidth(),
+                                                  background.GetSize().GetHeight() - shadowSize } :
                                           background.GetSize();
 
             const auto adjustedHeight = std::min(canvasSize.GetHeight(), stipple.GetHeight());
@@ -784,7 +784,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
     void Image::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                                [[maybe_unused]] const double parentScaling)
         {
-        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_MSG(!IsFreeFloating(),
+                     L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             {
             return;

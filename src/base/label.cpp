@@ -616,7 +616,7 @@ namespace Wisteria::GraphItems
                 middleOfCurrentRow += yOffset;
                 const wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                                  wxPoint(iconMiddleX, middleOfCurrentRow),
-                                             wxSize(1, 1))
+                                             wxSize{ 1, 1 })
                                           .Inflate(iconRadius) };
                 // icons only relevant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == Icons::IconShape::HorizontalSeparator ||
@@ -678,7 +678,7 @@ namespace Wisteria::GraphItems
                     }
                 else
                     {
-                    Shape sh(GraphItemInfo()
+                    Shape sh(GraphItemInfo{}
                                  .Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen())
                                  .Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush())
                                  .BaseColor(iconPos->m_baseColor)
@@ -1285,7 +1285,7 @@ namespace Wisteria::GraphItems
                     {
                     const auto bBox = GetBoundingBox(dc);
                     const Label infoLabel(
-                        GraphItemInfo(
+                        GraphItemInfo{
                             wxString::Format(_DT(L"Scaling: %s\n"
                                                  "Width: %s\n"
                                                  "Height: %s\n"
@@ -1302,7 +1302,7 @@ namespace Wisteria::GraphItems
                                                  wxNumberFormatter::Style::Style_WithThousandsSep),
                                              GetFont().GetFractionalPointSize(),
                                              wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)
-                                                 .GetFractionalPointSize()))
+                                                 .GetFractionalPointSize()) }
                             .AnchorPoint(bBox.GetTopLeft())
                             .Anchoring(Anchoring::TopLeftCorner)
                             .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
@@ -2112,7 +2112,7 @@ namespace Wisteria::GraphItems
             }
         wxASSERT_MSG(!theFont.GetFaceName().empty(), L"Corrected font face name is empty.");
         // if font is still messed up, fall back to system default
-        assert(theFont.IsOk());
+        wxASSERT(theFont.IsOk());
         if (!theFont.IsOk())
             {
             theFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);

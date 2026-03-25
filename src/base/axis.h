@@ -301,7 +301,7 @@ namespace Wisteria::GraphItems
                             wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2),
                         const BracketLineStyle lineStyle = BracketLineStyle::CurlyBraces)
                 : m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
-                  m_label(GraphItems::GraphItemInfo(std::move(label)).Pen(wxNullPen)),
+                  m_label(GraphItems::GraphItemInfo{ std::move(label) }.Pen(wxNullPen)),
                   m_linePen(pen), m_bracketLineStyle(lineStyle)
                 {
                 m_label.SetFontColor(pen.GetColour());
@@ -988,7 +988,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         std::vector<AxisPoint>& GetAxisPoints() noexcept
             {
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             return m_axisLabels;
             }
 
@@ -996,7 +996,7 @@ namespace Wisteria::GraphItems
         void ClearCustomLabels() noexcept
             {
             m_customAxisLabels.clear();
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /** @brief Sets the text of an axis tick label (overriding any default calculated label).
@@ -1047,7 +1047,7 @@ namespace Wisteria::GraphItems
         void SetFont(const wxFont& font) final
             {
             GraphItemBase::SetFont(font);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             for (auto& bracket : GetBrackets())
                 {
                 bracket.GetLabel().SetFont(GetFont());
@@ -1078,7 +1078,7 @@ namespace Wisteria::GraphItems
             if (color.IsOk())
                 {
                 GraphItemBase::SetFontBackgroundColor(color);
-                m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+                m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
                 for (auto& bracket : GetBrackets())
                     {
                     bracket.GetLabel().SetFontBackgroundColor(color);
@@ -1187,7 +1187,7 @@ namespace Wisteria::GraphItems
                 m_axisLabels.front().Show(display);
                 m_axisLabels.back().Show(display);
                 }
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /** @returns Whether the first and last axis labels are being shown
@@ -1326,7 +1326,7 @@ namespace Wisteria::GraphItems
                         const wxCoord left) noexcept final
             {
             GraphItemBase::SetPadding(top, right, bottom, left);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /** @brief Sets the bottom padding of the axis.
@@ -1335,7 +1335,7 @@ namespace Wisteria::GraphItems
         void SetBottomPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetBottomPadding(padding);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /** @brief Sets the top padding of the axis.
@@ -1344,7 +1344,7 @@ namespace Wisteria::GraphItems
         void SetTopPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetTopPadding(padding);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /** @brief Sets the right padding of the axis.
@@ -1353,7 +1353,7 @@ namespace Wisteria::GraphItems
         void SetRightPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetRightPadding(padding);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /** @brief Sets the left padding of the axis.
@@ -1362,7 +1362,7 @@ namespace Wisteria::GraphItems
         void SetLeftPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetLeftPadding(padding);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /// @}
@@ -1837,7 +1837,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         GraphItemInfo& GetGraphItemInfo() noexcept final
             {
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             return GraphItemBase::GetGraphItemInfo();
             }
 
@@ -1845,7 +1845,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxFont& GetFont() noexcept final
             {
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             return GraphItemBase::GetFont();
             }
 
@@ -2035,7 +2035,7 @@ namespace Wisteria::GraphItems
         void SetInterval(const double interval) noexcept
             {
             m_interval = interval;
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /// @brief Sets the scaling used just for the axis labels.
@@ -2046,7 +2046,7 @@ namespace Wisteria::GraphItems
         void SetAxisLabelScaling(const double scaling)
             {
             m_axisLabelScaling = scaling;
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
 
         /// @returns The font scaling used just for the axis labels.

@@ -389,7 +389,7 @@ namespace Wisteria::UI
         const auto nameOpt = Wisteria::ReportEnumConvert::ConvertIconToString(shp.GetShape());
         const auto name = nameOpt.has_value() ? nameOpt.value() : _(L"Unknown");
         const auto sz = shp.GetSizeDIPs();
-        return wxString::Format(L"%s (%d\u00d7%d)", name, sz.GetWidth(), sz.GetHeight());
+        return wxString::Format(L"%s (%d×%d)", name, sz.GetWidth(), sz.GetHeight());
         }
 
     //-------------------------------------------

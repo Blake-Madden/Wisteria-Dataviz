@@ -69,7 +69,7 @@ namespace Wisteria::GraphItems
         if (level == AxisResetLevel::TitleHeaderFooter || level == AxisResetLevel::AllSettings)
             {
             GetTitle() = GetHeader() = GetFooter() =
-                Label(GraphItemInfo(wxString{}).DPIScaling(GetDPIScaleFactor()));
+                Label(GraphItemInfo{ wxString{} }.DPIScaling(GetDPIScaleFactor()));
             }
         if (level == AxisResetLevel::RangeAndLabelValues || level == AxisResetLevel::AllSettings)
             {
@@ -90,7 +90,7 @@ namespace Wisteria::GraphItems
             m_tickMarkDisplayInterval = 1;
             m_minorTickMarkLength = 5;
             m_majorTickMarkLength = 10;
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
             }
         if (level == AxisResetLevel::AllSettings)
             {
@@ -111,7 +111,8 @@ namespace Wisteria::GraphItems
     void Axis::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                               [[maybe_unused]] const double parentScaling)
         {
-        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_MSG(!IsFreeFloating(),
+                     L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             {
             return;
@@ -1510,35 +1511,34 @@ namespace Wisteria::GraphItems
                 {
                 const auto bBox = GetBoundingBox(dc);
                 const auto bracketWidth{ CalcBracketsSpaceRequired(dc) };
-                Label infoLabel(
-                    GraphItemInfo(
-                        wxString::Format(
-                            _DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
-                                "Bracket Width: %d\n"
-                                "Axis Line Points: (%d, %d), (%d, %d)\n"
-                                "Scaling: %s\n"
-                                "Axis Label Scaling: %s\n"
-                                "Bracket Label Scaling: %s"),
-                            bBox.x, bBox.y, bBox.width, bBox.height, bracketWidth,
-                            GetBottomPoint().x, GetBottomPoint().y, GetTopPoint().x,
-                            GetTopPoint().y,
-                            wxNumberFormatter::ToString(
-                                GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                            wxNumberFormatter::ToString(
-                                GetAxisLabelScaling(), 1,
-                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                            wxNumberFormatter::ToString(
-                                !GetBrackets().empty() ?
-                                    GetBrackets().front().GetLabel().GetScaling() :
-                                    0.0,
-                                1, wxNumberFormatter::Style::Style_NoTrailingZeroes)))
-                        .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + (bBox.GetWidth() / 2),
-                                             bBox.GetBottomRight().y))
-                        .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Red))
-                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
-                        .DPIScaling(GetDPIScaleFactor())
-                        .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
-                        .Padding(2, 2, 2, 2));
+                Label infoLabel(GraphItemInfo{
+                    wxString::Format(
+                        _DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                            "Bracket Width: %d\n"
+                            "Axis Line Points: (%d, %d), (%d, %d)\n"
+                            "Scaling: %s\n"
+                            "Axis Label Scaling: %s\n"
+                            "Bracket Label Scaling: %s"),
+                        bBox.x, bBox.y, bBox.width, bBox.height, bracketWidth, GetBottomPoint().x,
+                        GetBottomPoint().y, GetTopPoint().x, GetTopPoint().y,
+                        wxNumberFormatter::ToString(
+                            GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                        wxNumberFormatter::ToString(
+                            GetAxisLabelScaling(), 1,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                        wxNumberFormatter::ToString(
+                            !GetBrackets().empty() ? GetBrackets().front().GetLabel().GetScaling() :
+                                                     0.0,
+                            1, wxNumberFormatter::Style::Style_NoTrailingZeroes)) }
+                                    .AnchorPoint(
+                                        wxPoint(bBox.GetBottomLeft().x + (bBox.GetWidth() / 2),
+                                                bBox.GetBottomRight().y))
+                                    .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Red))
+                                    .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
+                                    .DPIScaling(GetDPIScaleFactor())
+                                    .FontBackgroundColor(
+                                        Colors::ColorBrewer::GetColor(Colors::Color::White))
+                                    .Padding(2, 2, 2, 2));
                 if (GetAxisType() == AxisType::LeftYAxis)
                     {
                     infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner);
@@ -2214,7 +2214,7 @@ namespace Wisteria::GraphItems
                                         position1),
                                 wxPoint(connectionX, position3));
 
-                            const ShapeRenderer sh(GraphItemInfo()
+                            const ShapeRenderer sh(GraphItemInfo{}
                                                        .Pen(bracket.GetLinePen())
                                                        .Scaling(GetScaling())
                                                        .DPIScaling(GetDPIScaleFactor()));
@@ -2288,7 +2288,7 @@ namespace Wisteria::GraphItems
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
 
-                                const ShapeRenderer sh(GraphItemInfo()
+                                const ShapeRenderer sh(GraphItemInfo{}
                                                            .Pen(bracket.GetLinePen())
                                                            .Scaling(GetScaling())
                                                            .DPIScaling(GetDPIScaleFactor()));
@@ -2370,7 +2370,7 @@ namespace Wisteria::GraphItems
                                         position1),
                                 wxPoint(connectionX, position3));
 
-                            const ShapeRenderer sh(GraphItemInfo()
+                            const ShapeRenderer sh(GraphItemInfo{}
                                                        .Pen(bracket.GetLinePen())
                                                        .Scaling(GetScaling())
                                                        .DPIScaling(GetDPIScaleFactor()));
@@ -2444,7 +2444,7 @@ namespace Wisteria::GraphItems
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
 
-                                const ShapeRenderer sh(GraphItemInfo()
+                                const ShapeRenderer sh(GraphItemInfo{}
                                                            .Pen(bracket.GetLinePen())
                                                            .Scaling(GetScaling())
                                                            .DPIScaling(GetDPIScaleFactor()));
@@ -2526,7 +2526,7 @@ namespace Wisteria::GraphItems
                                 wxPoint(position3, connectionY + ScaleToScreenAndCanvas(
                                                                      bracket.GetTickmarkLength())));
 
-                            const ShapeRenderer sh(GraphItemInfo()
+                            const ShapeRenderer sh(GraphItemInfo{}
                                                        .Pen(bracket.GetLinePen())
                                                        .Scaling(GetScaling())
                                                        .DPIScaling(GetDPIScaleFactor()));
@@ -2601,7 +2601,7 @@ namespace Wisteria::GraphItems
                                                            ScaleToScreenAndCanvas(
                                                                bracket.GetTickmarkLength())));
 
-                                const ShapeRenderer sh(GraphItemInfo()
+                                const ShapeRenderer sh(GraphItemInfo{}
                                                            .Pen(bracket.GetLinePen())
                                                            .Scaling(GetScaling())
                                                            .DPIScaling(GetDPIScaleFactor()));
@@ -2679,7 +2679,7 @@ namespace Wisteria::GraphItems
                                                                      bracket.GetTickmarkLength())),
                                 wxPoint(position3, connectionY));
 
-                            const ShapeRenderer sh(GraphItemInfo()
+                            const ShapeRenderer sh(GraphItemInfo{}
                                                        .Pen(bracket.GetLinePen())
                                                        .Scaling(GetScaling())
                                                        .DPIScaling(GetDPIScaleFactor()));
@@ -2755,7 +2755,7 @@ namespace Wisteria::GraphItems
                                                            ScaleToScreenAndCanvas(
                                                                bracket.GetTickmarkLength())));
 
-                                const ShapeRenderer sh(GraphItemInfo()
+                                const ShapeRenderer sh(GraphItemInfo{}
                                                            .Pen(bracket.GetLinePen())
                                                            .Scaling(GetScaling())
                                                            .DPIScaling(GetDPIScaleFactor()));
@@ -2843,8 +2843,8 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     void Axis::CalcMaxLabelWidth()
         {
-        assert(GetTopPoint().IsFullySpecified());
-        assert(GetBottomPoint().IsFullySpecified());
+        wxASSERT(GetTopPoint().IsFullySpecified());
+        wxASSERT(GetBottomPoint().IsFullySpecified());
         const auto plotSize = IsVertical() ? std::abs(GetTopPoint().y - GetBottomPoint().y) :
                                              std::abs(GetBottomPoint().x - GetTopPoint().x);
 
@@ -2871,7 +2871,7 @@ namespace Wisteria::GraphItems
             {
             m_maxLabelWidth *= 2;
             }
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
         }
 
     //--------------------------------------
@@ -2883,8 +2883,8 @@ namespace Wisteria::GraphItems
             return GetScaling();
             }
 
-        assert(GetTopPoint().IsFullySpecified());
-        assert(GetBottomPoint().IsFullySpecified());
+        wxASSERT(GetTopPoint().IsFullySpecified());
+        wxASSERT(GetBottomPoint().IsFullySpecified());
 
         // If the biggest label is bigger than the width of the graph divided
         // by the number of displayed labels, then suggest a lower font-size scaling
@@ -2934,8 +2934,8 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     bool Axis::ShouldLabelsBeStackedToFit(wxDC& dc) const
         {
-        assert(GetTopPoint().IsFullySpecified());
-        assert(GetBottomPoint().IsFullySpecified());
+        wxASSERT(GetTopPoint().IsFullySpecified());
+        wxASSERT(GetBottomPoint().IsFullySpecified());
 
         // nothing to stack if not showing labels
         if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
@@ -2991,7 +2991,7 @@ namespace Wisteria::GraphItems
             }
 
         Label axisLabel(
-            GraphItemInfo()
+            GraphItemInfo{}
                 .Scaling(GetScaling())
                 .Pen(wxNullPen)
                 .Font(GetFont())
@@ -3028,8 +3028,8 @@ namespace Wisteria::GraphItems
         {
         if (bracketType == BracketType::FiscalQuarterly)
             {
-            assert((m_firstDay.IsValid() && m_lastDay.IsValid()) &&
-                   L"Date interval should be set via SetRange() if adding FY brackets!");
+            wxASSERT_MSG((m_firstDay.IsValid() && m_lastDay.IsValid()),
+                         L"Date interval should be set via SetRange() if adding FY brackets!");
             if (m_firstDay.IsValid() && m_lastDay.IsValid())
                 {
                 ClearBrackets();
@@ -3273,7 +3273,7 @@ namespace Wisteria::GraphItems
             {
             rangeStart = std::min<double>(0, rangeStart);
             }
-        assert(rangeEnd >= rangeStart);
+        wxASSERT(rangeEnd >= rangeStart);
         if (compare_doubles_less(rangeEnd, rangeStart))
             {
             return;
@@ -3366,13 +3366,13 @@ namespace Wisteria::GraphItems
     void Axis::SetRange(double rangeStart, double rangeEnd, const uint8_t precision,
                         double interval, const size_t displayInterval /*= 1*/)
         {
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
 
         if (IsStartingAtZero())
             {
             rangeStart = std::min<double>(0, rangeStart);
             }
-        assert(rangeEnd >= rangeStart);
+        wxASSERT(rangeEnd >= rangeStart);
         if (rangeEnd < rangeStart)
             {
             return;
@@ -3465,7 +3465,7 @@ namespace Wisteria::GraphItems
         {
         m_labelDisplay = display;
         LoadDefaultLabels();
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
         }
 
     //--------------------------------------
@@ -3511,7 +3511,7 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     void Axis::SetCustomLabel(const double tickValue, const Label& label)
         {
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
 
         Label theLabel = label;
         theLabel.SetDPIScaleFactor(GetDPIScaleFactor());
@@ -3563,7 +3563,7 @@ namespace Wisteria::GraphItems
             {
             if (IsPointDisplayingLabel(*axisPos))
                 {
-                Label axisLabel{ GraphItemInfo(GetDisplayableValue(*axisPos).GetText())
+                Label axisLabel{ GraphItemInfo{ GetDisplayableValue(*axisPos).GetText() }
                                      .Scaling(GetAxisLabelScaling())
                                      .Pen(wxNullPen)
                                      .Font(GetFont())
@@ -3584,7 +3584,7 @@ namespace Wisteria::GraphItems
                 return std::make_pair(axisLabel, axisPos->GetValue());
                 }
             }
-        return std::make_pair(Label(GraphItemInfo().DPIScaling(GetDPIScaleFactor())),
+        return std::make_pair(Label(GraphItemInfo{}.DPIScaling(GetDPIScaleFactor())),
                               std::numeric_limits<double>::quiet_NaN());
         }
 
@@ -3596,7 +3596,7 @@ namespace Wisteria::GraphItems
             {
             if (IsPointDisplayingLabel(*axisPos))
                 {
-                Label axisLabel{ GraphItemInfo(GetDisplayableValue(*axisPos).GetText())
+                Label axisLabel{ GraphItemInfo{ GetDisplayableValue(*axisPos).GetText() }
                                      .Scaling(GetAxisLabelScaling())
                                      .Pen(wxNullPen)
                                      .Font(GetFont())
@@ -3617,7 +3617,7 @@ namespace Wisteria::GraphItems
                 return std::make_pair(axisLabel, axisPos->GetValue());
                 }
             }
-        return std::make_pair(Label(GraphItemInfo().DPIScaling(GetDPIScaleFactor())),
+        return std::make_pair(Label(GraphItemInfo{}.DPIScaling(GetDPIScaleFactor())),
                               std::numeric_limits<double>::quiet_NaN());
         }
 
@@ -3700,7 +3700,7 @@ namespace Wisteria::GraphItems
             }
 
         // otherwise, reset and recalculate
-        m_tallestLabel = Label(GraphItemInfo().Ok(false).DPIScaling(GetDPIScaleFactor()));
+        m_tallestLabel = Label(GraphItemInfo{}.Ok(false).DPIScaling(GetDPIScaleFactor()));
         if (GetAxisPoints().empty())
             {
             return m_tallestLabel;
@@ -3709,7 +3709,7 @@ namespace Wisteria::GraphItems
         wxCoord tallestLabelHeight{ 0 };
         Label tallestAxisLabel;
         Label currentLabel(
-            GraphItemInfo()
+            GraphItemInfo{}
                 .Pen(wxNullPen)
                 .Scaling(GetAxisLabelScaling())
                 .Font(GetFont())
@@ -3753,7 +3753,7 @@ namespace Wisteria::GraphItems
             }
 
         // otherwise, reset and recalculate
-        m_widestLabel = Label(GraphItemInfo().Ok(false).DPIScaling(GetDPIScaleFactor()));
+        m_widestLabel = Label(GraphItemInfo{}.Ok(false).DPIScaling(GetDPIScaleFactor()));
         if (GetAxisPoints().empty())
             {
             return m_widestLabel;
@@ -3762,7 +3762,7 @@ namespace Wisteria::GraphItems
         wxCoord longestLabelWidth{ 0 };
         Label longestAxisLabel;
         Label currentLabel(
-            GraphItemInfo()
+            GraphItemInfo{}
                 .Pen(wxNullPen)
                 .Scaling(GetAxisLabelScaling())
                 .Font(GetFont())
@@ -3803,14 +3803,14 @@ namespace Wisteria::GraphItems
             std::ranges::reverse(m_axisLabels);
             }
         m_scaledReserved = reverse;
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
         }
 
     //-------------------------------------------
     void Axis::SetAxisLabelOrientation(const AxisLabelOrientation& orient)
         {
         m_labelOrientation = orient;
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
         }
 
     //-------------------------------------------
@@ -4278,7 +4278,7 @@ namespace Wisteria::GraphItems
             {
             m_axisLabels.at(i).Show(true);
             }
-        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
         }
 
     //-------------------------------------------
@@ -4316,14 +4316,15 @@ namespace Wisteria::GraphItems
         // just return a blank label
         if (!IsShowingLabels())
             {
-            return Label(GraphItemInfo().DPIScaling(GetDPIScaleFactor()));
+            return Label(GraphItemInfo{}.DPIScaling(GetDPIScaleFactor()));
             }
 
         const auto& customLabel = GetCustomLabel(pt.GetValue());
         if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues)
             {
-            return Label(GraphItemInfo(customLabel.GetText() + L"    " + pt.GetDisplayValue())
-                             .DPIScaling(GetDPIScaleFactor()));
+            return Label(
+                GraphItemInfo{ customLabel.GetText() + L"    " + pt.GetDisplayValue() }.DPIScaling(
+                    GetDPIScaleFactor()));
             }
         if (GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels)
             {
@@ -4331,12 +4332,13 @@ namespace Wisteria::GraphItems
             }
         if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues)
             {
-            return ((customLabel.IsOk() && !customLabel.GetText().empty()) ?
-                        customLabel :
-                        Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor())));
+            return (
+                (customLabel.IsOk() && !customLabel.GetText().empty()) ?
+                    customLabel :
+                    Label(GraphItemInfo{ pt.GetDisplayValue() }.DPIScaling(GetDPIScaleFactor())));
             }
         // AxisLabelDisplay::DisplayValues
-        return Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor()));
+        return Label(GraphItemInfo{ pt.GetDisplayValue() }.DPIScaling(GetDPIScaleFactor()));
         }
 
     //-------------------------------------------

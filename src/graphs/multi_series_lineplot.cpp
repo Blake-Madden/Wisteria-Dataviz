@@ -184,7 +184,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                 if (!IsXValid(i, xColumns) || std::isnan(yColumns[colCounter]->GetValue(i)))
                     {
                     points->AddPoint(
-                        GraphItems::Point2D(GraphItems::GraphItemInfo().AnchorPoint(
+                        GraphItems::Point2D(GraphItems::GraphItemInfo{}.AnchorPoint(
                                                 wxPoint(wxDefaultCoord, wxDefaultCoord)),
                                             1),
                         dc);
@@ -202,7 +202,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                     isLineGhosted);
                 points->AddPoint(
                     GraphItems::Point2D{
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(GetMaybeGhostedColor(GetLines()[colCounter].GetPen().GetColour(),
                                                       isLineGhosted))
@@ -225,7 +225,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         {
         SetLegendInfo(options);
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo()
+            GraphItems::GraphItemInfo{}
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
                 .DPIScaling(GetDPIScaleFactor())
                 .FontColor(GetLeftYAxis().GetFontColor()));

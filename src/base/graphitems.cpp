@@ -34,7 +34,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::StandardLineStyles,
             {
             const wxRect itemBoundingBox(GetBoundingBox(dc));
             GraphItems::Label selectionLabel(
-                GraphItemInfo(GetGraphItemInfo())
+                GraphItemInfo{ GetGraphItemInfo() }
                     .Scaling(scaling)
                     .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                     .DPIScaling(GetDPIScaleFactor())

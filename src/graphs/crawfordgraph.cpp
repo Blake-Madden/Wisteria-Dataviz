@@ -32,7 +32,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             }
         GetTitle() = GraphItems::Label(
             /* TRANSLATORS: Title is in all CAPS in the original article. */
-            GraphItems::GraphItemInfo(_(L"SPANISH READABILITY GRAPH"))
+            GraphItems::GraphItemInfo{ _(L"SPANISH READABILITY GRAPH") }
                 .Scaling(GetScaling())
                 .Pen(wxNullPen));
         GetLeftYAxis().GetTitle().SetText(_(L"Number of Syllables per 100 Words"));
@@ -85,7 +85,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         if (GetPhysicalCoordinates(2.0, 218, pt))
             {
             auto sentenceLabel = std::make_unique<GraphItems::Label>(
-                GraphItems::GraphItemInfo(_(L"Number of Sentences\nper 100 Words"))
+                GraphItems::GraphItemInfo{ _(L"Number of Sentences\nper 100 Words") }
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
                     .AnchorPoint(pt));
@@ -103,7 +103,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             if (GetPhysicalCoordinates(xValue, yValue, textPt))
                 {
                 AddObject(std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo()
+                    GraphItems::GraphItemInfo{}
                         .Scaling(GetScaling())
                         .DPIScaling(GetDPIScaleFactor())
                         .Pen(wxNullPen)
@@ -315,7 +315,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
                 {
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(
                                 Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))

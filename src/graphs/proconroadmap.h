@@ -131,8 +131,8 @@ namespace Wisteria::Graphs
             LockProportion(true);
 
          // add a title with a green banner background and white font
-         Label topTitle(GraphItemInfo(_(L"ERP Migration SWOT Analysis\n"
-            "Employee Survey Results Regarding Proposed Migration to new ERP Software")).
+         Label topTitle(GraphItemInfo{ _(L"ERP Migration SWOT Analysis\n"
+            "Employee Survey Results Regarding Proposed Migration to new ERP Software") }.
             Padding(5, 5, 5, 5).
             ChildAlignment(RelativeAlignment::FlushLeft).
             FontColor(Colors::ColorBrewer::GetColor(Colors::Color::White)).

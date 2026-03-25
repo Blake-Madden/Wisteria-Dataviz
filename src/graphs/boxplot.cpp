@@ -319,7 +319,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                 GetPlotAreaBoundingBox().GetX() + (GetPlotAreaBoundingBox().GetWidth() / 2),
                 GetPlotAreaBoundingBox().GetY() + (GetPlotAreaBoundingBox().GetHeight() / 2));
             auto invalidLabel = std::make_unique<GraphItems::Label>(
-                GraphItems::GraphItemInfo(_(L"Too many boxes. Plot cannot be drawn."))
+                GraphItems::GraphItemInfo{ _(L"Too many boxes. Plot cannot be drawn.") }
                     .Scaling(GetScaling())
                     .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                     .Font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeLarger())
@@ -392,34 +392,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
 
                 std::array<wxPoint, 2> linePoints = { box.m_upperOutlierRangeCoordinate,
                                                       box.m_lowerOutlierRangeCoordinate };
-                AddObject(
-                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo(whiskerLabel)
-                                                              .Pen(linePen)
-                                                              .Brush(lineBrush)
-                                                              .Scaling(GetScaling()),
-                                                          linePoints));
+                AddObject(std::make_unique<GraphItems::Polygon>(
+                    GraphItems::GraphItemInfo{ whiskerLabel }.Pen(linePen).Brush(lineBrush).Scaling(
+                        GetScaling()),
+                    linePoints));
 
                 linePoints[0] = wxPoint{ box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
                                          box.m_lowerOutlierRangeCoordinate.y };
                 linePoints[1] =
                     wxPoint(linePoints[0].x + (boxWidth / 2), box.m_lowerOutlierRangeCoordinate.y);
-                AddObject(
-                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo(whiskerLabel)
-                                                              .Pen(linePen)
-                                                              .Brush(lineBrush)
-                                                              .Scaling(GetScaling()),
-                                                          linePoints));
+                AddObject(std::make_unique<GraphItems::Polygon>(
+                    GraphItems::GraphItemInfo{ whiskerLabel }.Pen(linePen).Brush(lineBrush).Scaling(
+                        GetScaling()),
+                    linePoints));
 
                 linePoints[0] = wxPoint{ box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
                                          box.m_upperOutlierRangeCoordinate.y };
                 linePoints[1] =
                     wxPoint(linePoints[0].x + (boxWidth / 2), box.m_upperOutlierRangeCoordinate.y);
-                AddObject(
-                    std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo(whiskerLabel)
-                                                              .Pen(linePen)
-                                                              .Brush(lineBrush)
-                                                              .Scaling(GetScaling()),
-                                                          linePoints));
+                AddObject(std::make_unique<GraphItems::Polygon>(
+                    GraphItems::GraphItemInfo{ whiskerLabel }.Pen(linePen).Brush(lineBrush).Scaling(
+                        GetScaling()),
+                    linePoints));
 
                 // draw the whiskers with a wobbly stylized pen
                 if (IsBoxEffectStylized(box.GetBoxEffect()))
@@ -491,7 +485,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                 }
                             pts.push_back(to);
                             auto poly = std::make_unique<GraphItems::Polygon>(
-                                GraphItems::GraphItemInfo(whiskerLabel)
+                                GraphItems::GraphItemInfo{ whiskerLabel }
                                     .Pen(whiskerPen)
                                     .Brush(brushColor)
                                     .Scaling(GetScaling()),
@@ -552,7 +546,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
                                       -GetPlotAreaBoundingBox().GetY());
                     auto boxImage = std::make_unique<GraphItems::Image>(
-                        GraphItems::GraphItemInfo(boxLabel)
+                        GraphItems::GraphItemInfo{ boxLabel }
                             .Pen(GetImageOutlineColor())
                             .AnchorPoint(box.m_boxRect.GetLeftTop()),
                         scaledCommonImg.GetSubImage(imgSubRect));
@@ -566,7 +560,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     {
                     const auto& barScaledImage = GetImageScheme()->GetImage(boxIndex);
                     auto boxImage = std::make_unique<GraphItems::Image>(
-                        GraphItems::GraphItemInfo(boxLabel)
+                        GraphItems::GraphItemInfo{ boxLabel }
                             .Pen(GetImageOutlineColor())
                             .AnchorPoint(box.m_boxRect.GetLeftTop()),
                         GraphItems::Image::CropImageToRect(
@@ -583,7 +577,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                 else if (box.GetBoxEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
                     {
                     auto boxImage = std::make_unique<GraphItems::Image>(
-                        GraphItems::GraphItemInfo(boxLabel).Pen(wxNullPen).AnchorPoint(
+                        GraphItems::GraphItemInfo{ boxLabel }.Pen(wxNullPen).AnchorPoint(
                             box.m_boxRect.GetLeftTop()),
                         GraphItems::Image::CreateStippledImage(
                             GetStippleBrush()
@@ -647,7 +641,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                             box.m_boxRect.GetLeftBottom() + wxPoint(scaledShadowOffset, 0)
                         };
                         AddObject(std::make_unique<GraphItems::Polygon>(
-                            GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
+                            GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(
                                 GraphItemBase::GetShadowColor()),
                             shadowPts));
                         }
@@ -662,7 +656,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     brush.SetColour(
                         Colors::ColorContrast::ChangeOpacity(brush.GetColour(), box.GetOpacity()));
                     auto boxPoly = std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo(boxLabel)
+                        GraphItems::GraphItemInfo{ boxLabel }
                             .Pen(
                                 Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                             .Outline(true, true, true, true)
@@ -760,7 +754,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                 wxPoint(box.m_boxRect.GetX() + box.m_boxRect.GetWidth(), box.m_middleCoordinate.y)
             };
             AddObject(std::make_unique<GraphItems::Polygon>(
-                GraphItems::GraphItemInfo()
+                GraphItems::GraphItemInfo{}
                     .Pen(
                         wxPenInfo(Colors::ColorContrast::BlackOrWhiteContrast(
                                       GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour()))
@@ -806,27 +800,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     if (continuousColumn->GetValue(i) > box.GetUpperWhisker() ||
                         continuousColumn->GetValue(i) < box.GetLowerWhisker())
                         {
-                        outliers->AddPoint(
-                            GraphItems::Point2D(GraphItems::GraphItemInfo(
-                                                    box.GetDataset()->GetIdColumn().GetValue(i))
-                                                    .AnchorPoint(pt)
-                                                    .Brush(GetPointColor())
-                                                    .Pen(pointOutline),
-                                                Settings::GetPointRadius(),
-                                                GetShapeScheme()->GetShape(box.GetSchemeIndex())),
-                            dc);
+                        outliers->AddPoint(GraphItems::Point2D(
+                                               GraphItems::GraphItemInfo{
+                                                   box.GetDataset()->GetIdColumn().GetValue(i) }
+                                                   .AnchorPoint(pt)
+                                                   .Brush(GetPointColor())
+                                                   .Pen(pointOutline),
+                                               Settings::GetPointRadius(),
+                                               GetShapeScheme()->GetShape(box.GetSchemeIndex())),
+                                           dc);
                         }
                     else
                         {
-                        dataPoints->AddPoint(
-                            GraphItems::Point2D(GraphItems::GraphItemInfo(
-                                                    box.GetDataset()->GetIdColumn().GetValue(i))
-                                                    .AnchorPoint(pt)
-                                                    .Brush(GetPointColor())
-                                                    .Pen(pointOutline),
-                                                Settings::GetPointRadius(),
-                                                GetShapeScheme()->GetShape(box.GetSchemeIndex())),
-                            dc);
+                        dataPoints->AddPoint(GraphItems::Point2D(
+                                                 GraphItems::GraphItemInfo{
+                                                     box.GetDataset()->GetIdColumn().GetValue(i) }
+                                                     .AnchorPoint(pt)
+                                                     .Brush(GetPointColor())
+                                                     .Pen(pointOutline),
+                                                 Settings::GetPointRadius(),
+                                                 GetShapeScheme()->GetShape(box.GetSchemeIndex())),
+                                             dc);
                         }
                     }
                 }
@@ -868,7 +862,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                              m_boxes[i + 1].m_middleCoordinate.y }
                 };
                 AddObject(std::make_unique<GraphItems::Polygon>(
-                    GraphItems::GraphItemInfo().Pen(connectionPen).Scaling(GetScaling()),
+                    GraphItems::GraphItemInfo{}.Pen(connectionPen).Scaling(GetScaling()),
                     connectionPts));
                 }
             }
@@ -881,9 +875,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                     // draw the labels
                     {
                     auto middleLabel = std::make_unique<GraphItems::Label>(
-                        GraphItems::GraphItemInfo(
+                        GraphItems::GraphItemInfo{
                             wxNumberFormatter::ToString(box.GetMiddlePoint(), GetLabelPrecision(),
-                                                        Settings::GetDefaultNumberFormat()))
+                                                        Settings::GetDefaultNumberFormat()) }
                             .Scaling(GetScaling())
                             .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .FontBackgroundColor(
@@ -899,10 +893,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         // lower control limit
                         {
                         auto label = std::make_unique<GraphItems::Label>(
-                            GraphItems::GraphItemInfo(
+                            GraphItems::GraphItemInfo{
                                 wxNumberFormatter::ToString(box.GetLowerControlLimit(),
                                                             GetLabelPrecision(),
-                                                            Settings::GetDefaultNumberFormat()))
+                                                            Settings::GetDefaultNumberFormat()) }
                                 .Scaling(GetScaling())
                                 .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                                 .FontBackgroundColor(
@@ -916,10 +910,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         // upper control limit
                         {
                         auto label = std::make_unique<GraphItems::Label>(
-                            GraphItems::GraphItemInfo(
+                            GraphItems::GraphItemInfo{
                                 wxNumberFormatter::ToString(box.GetUpperControlLimit(),
                                                             GetLabelPrecision(),
-                                                            Settings::GetDefaultNumberFormat()))
+                                                            Settings::GetDefaultNumberFormat()) }
                                 .Scaling(GetScaling())
                                 .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                                 .FontBackgroundColor(
@@ -933,10 +927,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         // lower whisker
                         {
                         auto label = std::make_unique<GraphItems::Label>(
-                            GraphItems::GraphItemInfo(
+                            GraphItems::GraphItemInfo{
                                 wxNumberFormatter::ToString(box.GetLowerWhisker(),
                                                             GetLabelPrecision(),
-                                                            Settings::GetDefaultNumberFormat()))
+                                                            Settings::GetDefaultNumberFormat()) }
                                 .Scaling(GetScaling())
                                 .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                                 .FontBackgroundColor(
@@ -950,10 +944,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         // upper whisker
                         {
                         auto label = std::make_unique<GraphItems::Label>(
-                            GraphItems::GraphItemInfo(
+                            GraphItems::GraphItemInfo{
                                 wxNumberFormatter::ToString(box.GetUpperWhisker(),
                                                             GetLabelPrecision(),
-                                                            Settings::GetDefaultNumberFormat()))
+                                                            Settings::GetDefaultNumberFormat()) }
                                 .Scaling(GetScaling())
                                 .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                                 .FontBackgroundColor(
@@ -991,7 +985,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             }
 
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo().Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()));
+            GraphItems::GraphItemInfo{}.Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()));
         legend->GetGraphItemInfo().Text(
             wxString::Format(_(L"75th Percentile: %s\n"
                                "Median: %s\n" // 50th percentile

@@ -226,7 +226,7 @@ namespace Wisteria::UI
         int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
         wxClientDisplayRect(&x, &y, &width, &height);
         wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
-                                                   wxDefaultPosition, wxSize(width, height));
+                                                   wxDefaultPosition, wxSize{ width, height });
 
         frame->Centre(wxBOTH);
         frame->Initialize();

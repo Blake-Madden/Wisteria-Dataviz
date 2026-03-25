@@ -93,8 +93,8 @@ wxString XmlFormat::FormatFontAttributes(const wxFont& font)
 long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                       const wchar_t* attributeTag)
     {
-    assert(sectionStart && sectionEnd && attributeTag &&
-           L"Invalid pointer passed to GetAttributeLongValue()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && attributeTag,
+                 L"Invalid pointer passed to GetAttributeLongValue()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag == nullptr)
         {
         return 0;
@@ -119,8 +119,8 @@ double XmlFormat::GetAttributeDoubleValue(const wchar_t* sectionStart, const wch
                                           const wxString& entityTag, const wxString& attributeTag,
                                           const double defaultValue)
     {
-    assert(sectionStart && sectionEnd && !entityTag.empty() && !attributeTag.empty() &&
-           L"Invalid pointer passed to GetAttributeDoubleValue()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty() && !attributeTag.empty(),
+                 L"Invalid pointer passed to GetAttributeDoubleValue()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty() ||
         attributeTag.empty())
         {
@@ -153,8 +153,8 @@ long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t
                                       const wxString& entityTag, const wxString& attributeTag,
                                       const long defaultValue)
     {
-    assert(sectionStart && sectionEnd && !entityTag.empty() && !attributeTag.empty() &&
-           L"Invalid pointer passed to GetAttributeLongValue()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty() && !attributeTag.empty(),
+                 L"Invalid pointer passed to GetAttributeLongValue()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty() ||
         attributeTag.empty())
         {
@@ -185,8 +185,8 @@ long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t
 wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                        const wxString& attributeTag)
     {
-    assert(sectionStart && sectionEnd && !attributeTag.empty() &&
-           L"Invalid pointer passed to GetAttributeString()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !attributeTag.empty(),
+                 L"Invalid pointer passed to GetAttributeString()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag.empty())
         {
         return {};
@@ -219,8 +219,8 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
     wxFont font =
         defaultFont.IsOk() ? defaultFont : wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
 
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetFont()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetFont()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return font;
@@ -303,8 +303,8 @@ wxColour XmlFormat::GetColor(const wchar_t* sectionStart, const wchar_t* section
     {
     wxColour color = defaultValue;
 
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetColor()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetColor()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return color;
@@ -361,8 +361,8 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart, const 
     wxColour color = defaultValue;
     include = includeDefaultValue;
 
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetColorWithInclusionTag()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetColorWithInclusionTag()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return color;
@@ -422,8 +422,8 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart, const 
 bool XmlFormat::GetBoolean(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                            const wxString& entityTag, const bool defaultValue)
     {
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetBoolean()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetBoolean()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return defaultValue;
@@ -463,7 +463,7 @@ void XmlFormat::GetStringsWithExtraInfo(
     {
     strings.clear();
 
-    assert(sectionStart && sectionEnd && !entityTag.empty() && !attributeTag.empty());
+    wxASSERT(sectionStart && sectionEnd && !entityTag.empty() && !attributeTag.empty());
     if ((sectionStart == nullptr) || (sectionEnd == nullptr) || entityTag.empty() ||
         attributeTag.empty())
         {
@@ -520,8 +520,8 @@ void XmlFormat::GetStrings(const wchar_t* sectionStart, const wchar_t* sectionEn
     {
     strings.clear();
 
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetStrings()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetStrings()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return;
@@ -568,8 +568,8 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart, const wchar_t* sectio
                               const wxString& entityTag,
                               const wxString& defaultValue /*= wxString{}*/)
     {
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetString()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetString()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return defaultValue;
@@ -604,8 +604,8 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart, const wchar_t* sectio
 long XmlFormat::GetLong(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                         const wxString& entityTag, const long defaultValue)
     {
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetLong()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetLong()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return defaultValue;
@@ -643,8 +643,8 @@ long XmlFormat::GetLong(const wchar_t* sectionStart, const wchar_t* sectionEnd,
 double XmlFormat::GetDouble(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                             const wxString& entityTag, const double defaultValue)
     {
-    assert(sectionStart && sectionEnd && !entityTag.empty() &&
-           L"Invalid pointer passed to GetDouble()!");
+    wxASSERT_MSG(sectionStart && sectionEnd && !entityTag.empty(),
+                 L"Invalid pointer passed to GetDouble()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
         {
         return defaultValue;

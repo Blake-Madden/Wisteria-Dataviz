@@ -332,7 +332,7 @@ namespace Wisteria::UI
             wxString paramText;
             const bool hasParams = SplitFunctionAndParams(functionStr, paramText);
             auto* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
-            assert(styleWindow);
+            wxASSERT(styleWindow);
             if (hasParams)
                 {
                 styleWindow->AddText(functionStr + L"(");
@@ -378,7 +378,7 @@ namespace Wisteria::UI
 
         mainSizer->Add(listsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
-        m_functionDescriptionWindow = wxWebView::New(this, wxID_ANY, wxString(), wxDefaultPosition,
+        m_functionDescriptionWindow = wxWebView::New(this, wxID_ANY, wxString{}, wxDefaultPosition,
                                                      FromDIP(wxSize{ 500, 150 }));
         if (m_functionDescriptionWindow == nullptr)
             {

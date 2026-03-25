@@ -167,7 +167,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             middleRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             middleRuler.SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::CenterOnAxisLine);
             middleRuler.GetAxisLinePen() = wxNullPen;
-            middleRuler.SetOutlineSize(wxSize(15, 5));
+            middleRuler.SetOutlineSize(wxSize{ 15, 5 });
             middleRuler.SetCustomXPosition(1);
             middleRuler.SetCustomYPosition(maxYAxis);
             middleRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
@@ -343,7 +343,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             const auto currentScore = std::clamp<double>(scoresColumn->GetValue(i), 0, 100);
 
             wxCoord yPt{ 0 };
-            assert(middleRuler.GetPhysicalCoordinate(currentScore, yPt));
+            wxASSERT(middleRuler.GetPhysicalCoordinate(currentScore, yPt));
 
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
@@ -358,7 +358,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 // points on the middle ruler
                 points->AddPoint(
                     GraphItems::Point2D(
-                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
                             .AnchorPoint(pt)
                             .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                 GetPlotOrCanvasColor()))

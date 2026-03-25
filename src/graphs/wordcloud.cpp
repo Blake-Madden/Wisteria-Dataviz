@@ -156,7 +156,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                 wxSize(GetPlotAreaBoundingBox().GetWidth(),
                        GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
             auto currentLabel = std::make_unique<GraphItems::Label>(
-                GraphItems::GraphItemInfo(word.m_word)
+                GraphItems::GraphItemInfo{ word.m_word }
                     .Pen(wxNullPen)
                     .DPIScaling(GetDPIScaleFactor())
                     .Anchoring(Anchoring::TopLeftCorner)
@@ -239,7 +239,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             AddObject(std::make_unique<GraphItems::Polygon>(
-                GraphItems::GraphItemInfo().Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue)),
+                GraphItems::GraphItemInfo{}.Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue)),
                 polygon));
             }
 

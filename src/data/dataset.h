@@ -1336,7 +1336,7 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddDateColumn(const wxString& columnName)
             {
-            assert(!columnName.empty() && L"Date name is empty in call to AddDateColumn()!");
+            wxASSERT_MSG(!columnName.empty(), L"Date name is empty in call to AddDateColumn()!");
             // see if already in the dataset
             auto foundColumn = GetDateColumn(columnName);
             if (foundColumn != GetDateColumns().end())

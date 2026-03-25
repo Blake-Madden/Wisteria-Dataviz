@@ -197,7 +197,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
         const bool isBackToBack = IsUsingGrouping();
 
         // measure character dimensions
-        auto measuringLabel = GraphItems::Label(GraphItems::GraphItemInfo(L"0")
+        auto measuringLabel = GraphItems::Label(GraphItems::GraphItemInfo{ L"0" }
                                                     .Scaling(GetScaling())
                                                     .DPIScaling(GetDPIScaleFactor())
                                                     .Pen(wxNullPen));
