@@ -89,17 +89,17 @@ void LogFile::DoLogTextAtLevel(wxLogLevel level, const wxString& msg)
     case wxLOG_Debug:
         [[fallthrough]];
     case wxLOG_Trace:
-        prefix = _DT(L"\U0001F41E Debug: ", DTExplanation::LogMessage,
+        prefix = _DT(L"🐞 Debug: ", DTExplanation::LogMessage,
                      L"Don't expose these for translation; log messages are usually only needed "
                      "for developers, so translating them causes more problems than it solves");
         break;
     case wxLOG_FatalError:
         [[fallthrough]];
     case wxLOG_Error:
-        prefix = _DT(L"\U00002757 Error: ");
+        prefix = _DT(L"❗ Error: ");
         break;
     case wxLOG_Warning:
-        prefix = _DT(L"\u26A0 Warning: ");
+        prefix = _DT(L"⚠ Warning: ");
         break;
     default:
         prefix.clear();
@@ -116,15 +116,15 @@ void LogFile::DoLogRecord(const wxLogLevel level, const wxString& msg, const wxL
     case wxLOG_Debug:
         [[fallthrough]];
     case wxLOG_Trace:
-        prefix = _DT(L"\U0001F41E Debug: ");
+        prefix = _DT(L"🐞 Debug: ");
         break;
     case wxLOG_FatalError:
         [[fallthrough]];
     case wxLOG_Error:
-        prefix = _DT(L"\U00002757 Error: ");
+        prefix = _DT(L"❗ Error: ");
         break;
     case wxLOG_Warning:
-        prefix = _DT(L"\u26A0 Warning: ");
+        prefix = _DT(L"⚠ Warning: ");
         break;
     default:
         prefix.clear();
@@ -132,8 +132,9 @@ void LogFile::DoLogRecord(const wxLogLevel level, const wxString& msg, const wxL
     m_buffer += wxString::Format(
         _DT(L"%s%s\t%s\t%s\t%s: line %d\n"), prefix, msg,
         wxDateTime(static_cast<wxLongLong>(info.timestampMS)).FormatISOCombined(' '),
-        ((info.func != nullptr) ? wxString(info.func) : wxString(_DT(L"N/A"))),
-        ((info.filename != nullptr) ? wxFileName(info.filename).GetFullName() :
-                                      wxString(_DT(L"N/A"))),
+        ((info.func != nullptr) ? wxString{ info.func } :
+                                  wxString{ _DT(L"N/A", DTExplanation::LogMessage) }),
+        ((info.filename != nullptr) ? wxFileName{ info.filename }.GetFullName() :
+                                      wxString{ _DT(L"N/A") }),
         info.line);
     }

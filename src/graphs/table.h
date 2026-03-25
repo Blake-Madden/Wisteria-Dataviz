@@ -1521,7 +1521,7 @@ namespace Wisteria::Graphs
             @param cellValue The value (as a displayed string) to look for in the table,
                 which will have a citation number added after it.
             @param footnote The respective footnote to add to the caption.
-            @note Up to nine footnotes are supported. Also, if the provided @c cellValue
+            @note Up to twenty footnotes are supported. Also, if the provided @c cellValue
                 is not found in the table, then the footnote will not be added.\n
                 Also, if @c footnote is empty, then @c cellValue will have a number
                 shown after it, but no respective footnote entry will appear in the caption.

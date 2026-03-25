@@ -126,7 +126,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
             GetBottomXAxis().GetRangeDates().second.IsValid())
             {
             m_debugDrawInfoLabel = wxString::Format(
-                _DT(L"Date range: %s-%s"), GetBottomXAxis().GetRangeDates().first.FormatDate(),
+                _DT(L"Date range: %s–%s"), GetBottomXAxis().GetRangeDates().first.FormatDate(),
                 GetBottomXAxis().GetRangeDates().second.FormatDate());
             }
 

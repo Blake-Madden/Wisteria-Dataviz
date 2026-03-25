@@ -479,7 +479,7 @@ namespace Wisteria::UI
         wxArrayString items;
         for (const auto& bracket : m_questionBrackets)
             {
-            items.Add(bracket.m_question1 + L" \u2192 " + bracket.m_question2 + L": " +
+            items.Add(bracket.m_question1 + L" → " + bracket.m_question2 + L": " +
                       bracket.m_title);
             }
         m_bracketListBox->SetStrings(items);

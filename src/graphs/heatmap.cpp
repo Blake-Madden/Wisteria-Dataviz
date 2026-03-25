@@ -257,7 +257,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             // Free some space for the group labels above each column (even if one column).
             // First, label might be too long, so get best fitting font and measure again.
             GraphItems::Label groupHeaderLabelTemplate(GraphItems::GraphItemInfo{
-                wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
+                wxString::Format(L"%s %zu–%zu", GetGroupHeaderPrefix(),
                                  // largest possible range
                                  GetDataset()->GetRowCount(), GetDataset()->GetRowCount()) }
                                                            .Scaling(GetScaling())
@@ -283,7 +283,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 if (measuredSize.GetWidth() > drawArea.GetWidth())
                     {
                     groupHeaderLabelTemplate.SetText(
-                        wxString::Format(L"%s\n%zu-%zu", GetGroupHeaderPrefix(),
+                        wxString::Format(L"%s\n%zu–%zu", GetGroupHeaderPrefix(),
                                          GetDataset()->GetRowCount(), GetDataset()->GetRowCount()));
                     groupHeaderLabelHeight =
                         groupHeaderLabelTemplate.GetBoundingBox(dc).GetHeight();
@@ -344,7 +344,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         size_t currentGroupStart{ 0 };
         // go through the row's columns
         const wxString groupHeaderFormatString =
-            (groupHeaderLabelMultiline ? L"%s\n%zu-%zu" : L"%s %zu-%zu");
+            (groupHeaderLabelMultiline ? L"%s\n%zu–%zu" : L"%s %zu–%zu");
         const wxString singleGroupHeaderFormatString =
             (groupHeaderLabelMultiline ? L"%s\n%zu" : L"%s %zu");
         for (const auto& row : m_matrix)

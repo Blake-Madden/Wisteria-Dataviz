@@ -33,7 +33,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                  m_valueFormat == TableCellFormat::GeneralChange)
             {
             m_precision = 0;
-            m_prefix = L"\u2014"; // em dash, will be changed dynamically later based on value
+            m_prefix = L"—"; // em dash, will be changed dynamically later based on value
             m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
             }
         else if (m_valueFormat == TableCellFormat::Accounting)
@@ -1441,9 +1441,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                         ((cell.m_valueFormat == TableCellFormat::PercentChange ||
                           cell.m_valueFormat == TableCellFormat::GeneralChange)) ?
                             wxString::FromUTF8(std::isnan(cell.GetDoubleValue()) ? " " :
-                                               (cell.GetDoubleValue() == 0)      ? "\u2014" :
-                                               (cell.GetDoubleValue() < 0)       ? "\u25BC" :
-                                                                                   "\u25B2") :
+                                               (cell.GetDoubleValue() == 0)      ? "—" :
+                                               (cell.GetDoubleValue() < 0)       ? "▼" :
+                                                                                   "▲") :
                             cell.GetPrefix();
                     // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
                     const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor :
@@ -1993,16 +1993,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         // clang-format off
         static const std::map<uint8_t, std::wstring> footnoteChars =
             {
-            { 0, L"\u2070" },
-            { 1, L"\u00B9" },
-            { 2, L"\u00B2" },
-            { 3, L"\u00B3" },
-            { 4, L"\u2074" },
-            { 5, L"\u2075" },
-            { 6, L"\u2076" },
-            { 7, L"\u2077" },
-            { 8, L"\u2078" },
-            { 9, L"\u2079" }
+            { 0, L"⁰" },
+            { 1, L"¹" },
+            { 2, L"²" },
+            { 3, L"³" },
+            { 4, L"⁴" },
+            { 5, L"⁵" },
+            { 6, L"⁶" },
+            { 7, L"⁷" },
+            { 8, L"⁸" },
+            { 9, L"⁹" },
+            { 10, L"¹⁰" },
+            { 11, L"¹¹" },
+            { 12, L"¹²" },
+            { 13, L"¹³" },
+            { 14, L"¹⁴" },
+            { 15, L"¹⁵" },
+            { 16, L"¹⁶" },
+            { 17, L"¹⁷" },
+            { 18, L"¹⁸" },
+            { 19, L"¹⁹" },
+            { 20, L"²⁰" }
         };
         // clang-format on
 

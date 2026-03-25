@@ -89,7 +89,7 @@ namespace Wisteria::Graphs
          // add a story-telling note at the bottom corner
          auto storyNote = std::make_unique<Label>(
              GraphItemInfo{ _(L"Frank reported that he experienced a"
-                " \u201Cdownward spiral\u201D during his first year on campus.") }.
+                " “downward spiral” during his first year on campus.") }.
              Anchoring(Anchoring::BottomLeftCorner).
              FontBackgroundColor(ColorBrewer::GetColor(Color::Canary)).
              LabelAlignment(TextAlignment::RaggedRight).

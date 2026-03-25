@@ -1269,7 +1269,7 @@ namespace Wisteria::Graphs
                             wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(40)));
                         }
                     GraphItems::Label rulerLabel(
-                        GraphItems::GraphItemInfo{ _DT(L"\u21E6 100 pixels") }
+                        GraphItems::GraphItemInfo{ _DT(L"⇦ 100 pixels") }
                             .AnchorPoint(wxPoint(
                                 GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
                                 GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25)))
@@ -1283,7 +1283,7 @@ namespace Wisteria::Graphs
                     rulerLabel.SetMinimumUserSizeDIPs(90, std::nullopt);
                     rulerLabel.Draw(dc);
                     rulerLabel.SetAnchoring(Anchoring::TopLeftCorner);
-                    rulerLabel.SetText(_DT(L"100 pixels \u21E8"));
+                    rulerLabel.SetText(_DT(L"100 pixels ⇨"));
                     rulerLabel.SetAnchorPoint(
                         (wxPoint(GetBoundingBox(dc).GetTopLeft().x + ScaleToScreenAndCanvas(5),
                                  GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(5))));

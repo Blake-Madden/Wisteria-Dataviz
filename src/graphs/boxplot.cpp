@@ -371,7 +371,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             if (box.GetDataset()->GetRowCount() > 1)
                 {
                 const wxString whiskerLabel = wxString::Format(
-                    _(L"Non-outlier range: %s-%s"),
+                    _(L"Non-outlier range: %s–%s"),
                     wxNumberFormatter::ToString(box.GetLowerWhisker(), 3,
                                                 Settings::GetDefaultNumberFormat()),
                     wxNumberFormatter::ToString(box.GetUpperWhisker(), 3,
@@ -990,7 +990,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             wxString::Format(_(L"75th Percentile: %s\n"
                                "Median: %s\n" // 50th percentile
                                "25th Percentile: %s\n"
-                               "Non-outlier Range: %s-%s"),
+                               "Non-outlier Range: %s–%s"),
                              wxNumberFormatter::ToString(GetBox(0).GetUpperControlLimit(), 3,
                                                          Settings::GetDefaultNumberFormat()),
                              wxNumberFormatter::ToString(GetBox(0).GetMiddlePoint(), 3,

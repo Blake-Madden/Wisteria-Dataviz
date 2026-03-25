@@ -382,7 +382,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                                  GraphItems::Polygon::PointToPair(pts[9])));
 
                             auto streamRibbon{ std::make_unique<GraphItems::Polygon>(
-                                GraphItems::GraphItemInfo{ wxString::Format(L"%s \u2192 %s",
+                                GraphItems::GraphItemInfo{ wxString::Format(L"%s → %s",
                                                                             group.m_label,
                                                                             downstreamGroup.first) }
                                     .Pen(wxNullPen)

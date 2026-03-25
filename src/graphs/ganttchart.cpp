@@ -86,7 +86,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             GetDataset()->GetCategoricalColumn(resourceColumnName.value_or(wxString{}));
         const auto completionColumn =
             GetDataset()->GetContinuousColumn(completionColumnName.value_or(wxString{}));
-        // set the grouping column (or keep it as `std::nullopt` if not in use)
+        // set the grouping column (or keep it as std::nullopt if not in use)
         SetGroupColumn(groupColumnName);
         auto descriptionColumn =
             GetDataset()->GetCategoricalColumn(descriptionColumnName.value_or(wxString{}));
@@ -179,7 +179,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             GetScalingAxis().GetRangeDates().second.IsValid())
             {
             m_debugDrawInfoLabel = wxString::Format(
-                _DT(L"Date range: %s-%s"), GetScalingAxis().GetRangeDates().first.FormatDate(),
+                _DT(L"Date range: %s–%s"), GetScalingAxis().GetRangeDates().first.FormatDate(),
                 GetScalingAxis().GetRangeDates().second.FormatDate());
             }
         }
@@ -193,7 +193,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             {
             if (taskInfo.m_start.IsValid() && taskInfo.m_end.IsValid())
                 {
-                const GraphItems::Label axisLabel(taskInfo.m_name);
+                const GraphItems::Label axisLabel{ taskInfo.m_name };
 
                 const auto startPt = GetScalingAxis().FindDatePosition(taskInfo.m_start);
                 const auto endPt = GetScalingAxis().FindDatePosition(taskInfo.m_end);
@@ -212,36 +212,35 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     GetBars().size(),
                     { { BarBlock(
                           BarBlockInfo(daysFinished)
-                              .Brush(wxBrush(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                                 taskInfo.m_color),
-                                             wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH))
+                              .Brush(wxBrush{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                                  taskInfo.m_color),
+                                              wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH })
                               .Color(taskInfo.m_color)
-                              .SelectionLabel(GraphItems::Label(
-                                  wxString(
-                                      wxString::Format(
-                                          // TRANSLATORS: Description, # of days, then a date range
-                                          _(L"%s\n%d days\n(%s through %s)"),
-                                          wxString(taskInfo.m_resource + L"\n" +
-                                                   taskInfo.m_description)
-                                              .Trim(),
-                                          daysInTask, taskInfo.m_start.FormatDate(),
-                                          taskInfo.m_end.FormatDate()))
+                              .SelectionLabel(GraphItems::Label{
+                                  wxString::Format(
+                                      // TRANSLATORS: Description, # of days, then a date range
+                                      _(L"%s\n%d days\n(%s through %s)"),
+                                      wxString{ taskInfo.m_resource + L"\n" +
+                                                taskInfo.m_description }
+                                          .Trim(),
+                                      daysInTask, taskInfo.m_start.FormatDate(),
+                                      taskInfo.m_end.FormatDate())
                                       .Trim(true)
-                                      .Trim(false)))) },
+                                      .Trim(false) })) },
                       { BarBlock(BarBlockInfo(daysRemaining)
                                      .Brush(taskInfo.m_color)
-                                     .SelectionLabel(GraphItems::Label(
-                                         wxString(wxString::Format(
-                                                      // TRANSLATORS: Description, # of days,
-                                                      // then a date range
-                                                      _(L"%s\n%d days\n(%s through %s)"),
-                                                      wxString(taskInfo.m_resource + L"\n" +
-                                                               taskInfo.m_description)
-                                                          .Trim(),
-                                                      daysInTask, taskInfo.m_start.FormatDate(),
-                                                      taskInfo.m_end.FormatDate()))
+                                     .SelectionLabel(GraphItems::Label{
+                                         wxString{ wxString::Format(
+                                                       // TRANSLATORS: Description, # of days,
+                                                       // then a date range
+                                                       _(L"%s\n%d days\n(%s through %s)"),
+                                                       wxString{ taskInfo.m_resource + L"\n" +
+                                                                 taskInfo.m_description }
+                                                           .Trim(),
+                                                       daysInTask, taskInfo.m_start.FormatDate(),
+                                                       taskInfo.m_end.FormatDate()) }
                                              .Trim(true)
-                                             .Trim(false)))) } },
+                                             .Trim(false) })) } },
                     wxEmptyString, axisLabel, GetBarEffect(), GetBarOpacity());
                 // remove "completed" bar block if nothing is actually completed
                 if (taskInfo.m_percentFinished == 0)
@@ -252,8 +251,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     {
                     br.GetLabel().SetText(
                         taskInfo.m_percentFinished == 100 ?
-                            // TRANSLATORS: \u2713 is a checkmark character
-                            _(L"\u2713 Complete") :
+                            _(L"✓ Complete") :
                             wxString::Format(_(L"%d%% complete"), taskInfo.m_percentFinished));
                     }
                 // move bar to actual starting date
@@ -286,7 +284,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     decalStr = wxString::Format(
                         // TRANSLATORS: %s -> task description, %d -> number of days for a task
                         _(L"%s\n%d days"),
-                        wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).Trim(),
+                        wxString{ taskInfo.m_resource + L"\n" + taskInfo.m_description }.Trim(),
                         daysInTask);
                     break;
                 case TaskLabelDisplay::Days:
@@ -301,11 +299,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     }
                 decalStr.Trim();
 
-                br.GetBlocks().front().SetDecal(GraphItems::Label(
+                br.GetBlocks().front().SetDecal(GraphItems::Label{
                     GraphItems::GraphItemInfo{ decalStr }
                         .ChildAlignment(RelativeAlignment::FlushLeft)
                         .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                            br.GetBlocks().front().GetBrush().GetColour()))));
+                            br.GetBlocks().front().GetBrush().GetColour())) });
                 br.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(
                     m_maxDescriptionLength);
                 if (taskInfo.m_img.IsOk() && !taskInfo.m_name.empty())
@@ -318,7 +316,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 }
             else
                 {
-                const GraphItems::Label axisLabel(taskInfo.m_name);
+                const GraphItems::Label axisLabel{ taskInfo.m_name };
 
                 const auto startPoint = GetScalingAxis().FindDatePosition(taskInfo.m_start);
                 const auto endPoint = GetScalingAxis().FindDatePosition(taskInfo.m_end);
@@ -328,13 +326,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                                               GetScalingAxis().GetRange().first);
 
                 Bar arrowBar(GetBars().size(),
-                             { { BarBlock(BarBlockInfo(daysDiff)
+                             { { BarBlock(BarBlockInfo{ daysDiff }
                                               .Brush(taskInfo.m_color)
-                                              .SelectionLabel(GraphItems::Label(
+                                              .SelectionLabel(GraphItems::Label{
                                                   wxString(taskInfo.m_resource + L"\n" +
                                                            taskInfo.m_description)
                                                       .Trim(true)
-                                                      .Trim(false)))) } },
+                                                      .Trim(false) })) } },
                              wxString{}, axisLabel, GetBarEffect(), GetBarOpacity());
                 arrowBar.SetCustomScalingAxisStartPosition(startPoint);
                 arrowBar.SetShape(GetScalingAxis().IsReversed() ? BarShape::ReverseArrow :
@@ -357,7 +355,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     [[fallthrough]];
                 case TaskLabelDisplay::ResourceDescriptionAndDays:
                     decalStr =
-                        wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).Trim();
+                        wxString{ taskInfo.m_resource + L"\n" + taskInfo.m_description }.Trim();
                     break;
                 // Days makes no sense for a non-ending bar, so ignore it
                 case TaskLabelDisplay::Days:
@@ -370,8 +368,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 decalStr.Trim();
 
                 arrowBar.GetBlocks().front().SetDecal(
-                    GraphItems::Label(GraphItems::GraphItemInfo{ decalStr }.FontColor(
-                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(taskInfo.m_color))));
+                    GraphItems::Label{ GraphItems::GraphItemInfo{ decalStr }.FontColor(
+                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(taskInfo.m_color)) });
                 arrowBar.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(
                     m_maxDescriptionLength);
                 if (taskInfo.m_img.IsOk() && !taskInfo.m_name.empty())

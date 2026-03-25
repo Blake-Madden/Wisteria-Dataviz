@@ -4228,12 +4228,12 @@ namespace Wisteria::GraphItems
                 label.insert(0, 1, L'\'');
                 }
             // if using hyphens, replace with en dashes to be fancier
-            label.Replace(L"-", L"\u2013");
+            label.Replace(L"-", L"–");
             GetBrackets()[i].GetLabel().SetText(label);
             }
         // fix en dash in first label also
         wxString label = GetBrackets()[0].GetLabel().GetText();
-        label.Replace(L"-", L"\u2013");
+        label.Replace(L"-", L"–");
         GetBrackets()[0].GetLabel().SetText(label);
 
         return true;
