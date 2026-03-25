@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "wisteriaapp.h"
 #include "wisteriadoc.h"
+#include "wisteriaapp.h"
 #include "wisteriaview.h"
 #include <variant>
 
@@ -281,8 +281,7 @@ void WisteriaDoc::SaveProject(const wxString& filePath)
         const auto [rowCount, colCount] = canvas->GetFixedObjectsGridSize();
         for (size_t row = 0; row < rowCount; ++row)
             {
-            auto rowObj = wxSimpleJSON::Create(L"{\"items\": []}");
-            auto itemsArray = rowObj->GetProperty(L"items");
+            std::vector<wxSimpleJSON::Ptr_t> itemNodes;
             for (size_t col = 0; col < colCount; ++col)
                 {
                 const auto item = canvas->GetFixedObject(row, col);
@@ -299,12 +298,18 @@ void WisteriaDoc::SaveProject(const wxString& filePath)
                 auto itemNode = SavePageItem(item.get(), canvas);
                 if (itemNode != nullptr)
                     {
-                    itemsArray->ArrayAdd(itemNode);
+                    itemNodes.push_back(itemNode);
                     }
                 }
             // skip rows where all items were filtered out (e.g., legend-only rows)
-            if (itemsArray->ArraySize() > 0)
+            if (!itemNodes.empty())
                 {
+                auto rowObj = wxSimpleJSON::Create(L"{\"items\": []}");
+                auto itemsArray = rowObj->GetProperty(L"items");
+                for (auto& node : itemNodes)
+                    {
+                    itemsArray->ArrayAdd(node);
+                    }
                 rowsArray->ArrayAdd(rowObj);
                 }
             }
@@ -419,8 +424,8 @@ wxString WisteriaDoc::SaveBrushToStr(const wxBrush& brush) const
 
 //-------------------------------------------
 void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
-                            const Wisteria::GraphItems::GraphItemBase* item,
-                            const Wisteria::Canvas* canvas) const
+                           const Wisteria::GraphItems::GraphItemBase* item,
+                           const Wisteria::Canvas* canvas) const
     {
     if (item == nullptr || canvas == nullptr)
         {
@@ -709,7 +714,7 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* label,
-                                            const Wisteria::Canvas* canvas) const
+                                           const Wisteria::Canvas* canvas) const
     {
     if (label == nullptr)
         {
@@ -929,7 +934,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SaveImage(const Wisteria::GraphItems::Image* image,
-                                            const Wisteria::Canvas* canvas) const
+                                           const Wisteria::Canvas* canvas) const
     {
     if (image == nullptr)
         {
@@ -1026,7 +1031,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveImage(const Wisteria::GraphItems::Image* im
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SaveShape(const Wisteria::GraphItems::Shape* shape,
-                                            const Wisteria::Canvas* canvas) const
+                                           const Wisteria::Canvas* canvas) const
     {
     if (shape == nullptr)
         {
@@ -1118,7 +1123,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveShape(const Wisteria::GraphItems::Shape* sh
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SaveFillableShape(const Wisteria::GraphItems::FillableShape* shape,
-                                const Wisteria::Canvas* canvas) const
+                                                   const Wisteria::Canvas* canvas) const
     {
     if (shape == nullptr)
         {
@@ -1221,7 +1226,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveFillableShape(const Wisteria::GraphItems::F
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis* axis,
-                                                 const Wisteria::Canvas* canvas) const
+                                                const Wisteria::Canvas* canvas) const
     {
     if (axis == nullptr)
         {
@@ -1757,7 +1762,7 @@ void WisteriaDoc::SaveFormulas(
 
 //-------------------------------------------
 void WisteriaDoc::SaveSubsetFilters(wxSimpleJSON::Ptr_t& subsetNode,
-                                     const Wisteria::ReportBuilder::DatasetSubsetOptions& sOpts)
+                                    const Wisteria::ReportBuilder::DatasetSubsetOptions& sOpts)
     {
     using FT = Wisteria::ReportBuilder::DatasetSubsetOptions::FilterType;
 
@@ -2112,7 +2117,7 @@ void WisteriaDoc::SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& so
 
 //-------------------------------------------
 void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON::Ptr_t& graphNode,
-                             const Wisteria::Canvas* canvas) const
+                            const Wisteria::Canvas* canvas) const
     {
     if (graph == nullptr || canvas == nullptr)
         {
@@ -2940,7 +2945,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D* graph,
-                                                  const Wisteria::Canvas* canvas) const
+                                                 const Wisteria::Canvas* canvas) const
     {
     if (graph == nullptr)
         {
@@ -4300,7 +4305,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
 
 //-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
-                                               const Wisteria::Canvas* canvas) const
+                                              const Wisteria::Canvas* canvas) const
     {
     if (item == nullptr)
         {
