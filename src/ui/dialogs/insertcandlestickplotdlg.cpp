@@ -68,48 +68,51 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* dateLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Date:"));
+        auto* dateLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Date:"));
         dateLabel->SetFont(dateLabel->GetFont().Bold());
         varGrid->Add(dateLabel, wxSizerFlags{}.CenterVertical());
-        m_dateVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_dateVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_dateVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_dateVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* openLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Open:"));
+        auto* openLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Open:"));
         openLabel->SetFont(openLabel->GetFont().Bold());
         varGrid->Add(openLabel, wxSizerFlags{}.CenterVertical());
-        m_openVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_openVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_openVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_openVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* highLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"High:"));
+        auto* highLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"High:"));
         highLabel->SetFont(highLabel->GetFont().Bold());
         varGrid->Add(highLabel, wxSizerFlags{}.CenterVertical());
-        m_highVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_highVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_highVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_highVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* lowLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Low:"));
+        auto* lowLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Low:"));
         lowLabel->SetFont(lowLabel->GetFont().Bold());
         varGrid->Add(lowLabel, wxSizerFlags{}.CenterVertical());
-        m_lowVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_lowVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_lowVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_lowVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* closeLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Close:"));
+        auto* closeLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Close:"));
         closeLabel->SetFont(closeLabel->GetFont().Bold());
         varGrid->Add(closeLabel, wxSizerFlags{}.CenterVertical());
-        m_closeVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_closeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_closeVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_closeVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // plot type
         auto* plotTypeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

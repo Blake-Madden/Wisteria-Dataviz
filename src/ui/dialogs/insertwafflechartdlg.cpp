@@ -88,7 +88,7 @@ namespace Wisteria::UI
         gridRoundGrid->Add(m_gridRoundIndexSpin);
 
         gridRoundBox->Add(gridRoundGrid, wxSizerFlags{}.Border());
-        optionsSizer->Add(gridRoundBox, wxSizerFlags{}.Expand().Border());
+        optionsSizer->Add(gridRoundBox, wxSizerFlags{}.Border());
 
         // start grid rounding controls disabled
         m_gridRoundCellsSpin->Enable(false);
@@ -117,7 +117,7 @@ namespace Wisteria::UI
         rowCountGrid->Add(m_rowCountSpin);
 
         rowCountBox->Add(rowCountGrid, wxSizerFlags{}.Border());
-        optionsSizer->Add(rowCountBox, wxSizerFlags{}.Expand().Border());
+        optionsSizer->Add(rowCountBox, wxSizerFlags{}.Border());
 
         // start row count controls disabled
         m_rowCountSpin->Enable(false);

@@ -65,27 +65,32 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* questionsLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Questions:"));
+        auto* questionsLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Questions:"));
         questionsLabel->SetFont(questionsLabel->GetFont().Bold());
         varGrid->Add(questionsLabel, wxSizerFlags{}.CenterVertical());
-        m_questionsVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_questionsVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_questionsVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_questionsVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Group (optional):"));
+        auto* groupLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Group (optional):"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // checkboxes
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show response counts"),
@@ -479,8 +484,7 @@ namespace Wisteria::UI
         wxArrayString items;
         for (const auto& bracket : m_questionBrackets)
             {
-            items.Add(bracket.m_question1 + L" → " + bracket.m_question2 + L": " +
-                      bracket.m_title);
+            items.Add(bracket.m_question1 + L" → " + bracket.m_question2 + L": " + bracket.m_title);
             }
         m_bracketListBox->SetStrings(items);
         }

@@ -153,7 +153,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED,
         [this](wxRibbonButtonBarEvent& event) { event.PopupMenu(&m_saveMenu); }, ID_SAVE_PROJECT);
     m_frame->Bind(
-        wxEVT_MENU, [this](wxCommandEvent& event) { GetDocument()->SaveAs(); }, ID_SAVE_PROJECT_AS);
+        wxEVT_MENU,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { GetDocument()->SaveAs(); },
+        ID_SAVE_PROJECT_AS);
 
     // bind individual graph menu items
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertChernoffPlot, this, ID_NEW_CHERNOFFPLOT);
@@ -6854,8 +6857,8 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         }
 
     // resolve relative paths against the project directory
-    const wxString projectDir = doc->GetFilename().empty() ?
-                                    wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
+    const wxString projectDir =
+        doc->GetFilename().empty() ? wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
 
     // load and optionally stitch multiple images
     std::vector<wxBitmap> bmps;
@@ -6995,8 +6998,8 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
         }
 
     // resolve relative paths against the project directory
-    const wxString projectDir2 = doc->GetFilename().empty() ?
-                                     wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
+    const wxString projectDir2 =
+        doc->GetFilename().empty() ? wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
 
     // load and optionally stitch multiple images
     std::vector<wxBitmap> bmps;

@@ -68,34 +68,37 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* predLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Predictor:"));
+        auto* predLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Predictor:"));
         predLabel->SetFont(predLabel->GetFont().Bold());
         varGrid->Add(predLabel, wxSizerFlags{}.CenterVertical());
-        m_predictorVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_predictorVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_predictorVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_predictorVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* coefLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Coefficient:"));
+        auto* coefLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Coefficient:"));
         coefLabel->SetFont(coefLabel->GetFont().Bold());
         varGrid->Add(coefLabel, wxSizerFlags{}.CenterVertical());
-        m_coefficientVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_coefficientVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_coefficientVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_coefficientVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* pvalLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"P-value:"));
+        auto* pvalLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"p-value:"));
         pvalLabel->SetFont(pvalLabel->GetFont().Bold());
         varGrid->Add(pvalLabel, wxSizerFlags{}.CenterVertical());
-        m_pValueVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_pValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_pValueVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_pValueVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // dependent variable name
         auto* dvSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -122,7 +125,7 @@ namespace Wisteria::UI
 
         // p-value threshold
         auto* pLevelSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        pLevelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"P-value threshold:")),
+        pLevelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"p-value threshold:")),
                          wxSizerFlags{}.CenterVertical());
         m_pLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                             wxDefaultSize, wxSP_ARROW_KEYS, 0.001, 1.0, 0.05, 0.01);

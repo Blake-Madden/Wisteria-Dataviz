@@ -66,34 +66,37 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* yLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"y-axis:"));
+        auto* yLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Values:"));
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
-        m_yVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_yVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* xLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"x-ais:"));
+        auto* xLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Series:"));
         xLabel->SetFont(xLabel->GetFont().Bold());
         varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_xVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
+        auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // line options
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Auto spline"),
@@ -183,14 +186,14 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(/* TRANSLATORS: y-axis variable. */ _(L"y-axis (independent)"))
+                  .Label(/* TRANSLATORS: y-axis variable for line plot. */ _(L"Values"))
                   .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(/* TRANSLATORS: x-axis variable. */ _(L"x-axis (dependent)"))
+                  .Label(/* TRANSLATORS: x-axis variable for line plot. */ _(L"Series"))
                   .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :

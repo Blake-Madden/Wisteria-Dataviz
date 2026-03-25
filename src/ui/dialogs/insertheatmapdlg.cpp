@@ -65,27 +65,30 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* contLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Continuous:"));
+        auto* contLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Continuous:"));
         contLabel->SetFont(contLabel->GetFont().Bold());
         varGrid->Add(contLabel, wxSizerFlags{}.CenterVertical());
-        m_continuousVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_continuousVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_continuousVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_continuousVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Group:"));
+        auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Group:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // color scheme
         auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

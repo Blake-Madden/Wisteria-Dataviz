@@ -66,8 +66,10 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // feature-to-variable label grid
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
@@ -81,17 +83,18 @@ namespace Wisteria::UI
         for (size_t i = 0; i < FEATURE_COUNT; ++i)
             {
             auto* featureLabel = new wxStaticText(
-                optionsPage, wxID_ANY,
+                varsBox->GetStaticBox(), wxID_ANY,
                 Graphs::ChernoffFacesPlot::GetFeatureDisplayName(allFeatures[i]) + L":");
             featureLabel->SetFont(featureLabel->GetFont().Bold());
             featureGrid->Add(featureLabel, wxSizerFlags{}.CenterVertical());
 
-            m_featureVarLabels[i] = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+            m_featureVarLabels[i] = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
             m_featureVarLabels[i]->SetForegroundColour(GetVariableLabelColor());
             featureGrid->Add(m_featureVarLabels[i], wxSizerFlags{}.CenterVertical());
             }
 
-        optionsSizer->Add(featureGrid, wxSizerFlags{}.Border());
+        varsBox->Add(featureGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // appearance options
         auto* appearanceSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -151,7 +154,7 @@ namespace Wisteria::UI
         m_skinColorLighterPicker =
             new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 255, 239, 219 });
         skinColorSizer->Add(m_skinColorLighterPicker, wxSizerFlags{}.CenterVertical());
-        skinColorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, L"\x2013"),
+        skinColorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, L"–"),
                             wxSizerFlags{}.CenterVertical().Border(wxLEFT | wxRIGHT, FromDIP(4)));
         m_skinColorDarkerPicker =
             new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 255, 224, 189 });
@@ -181,7 +184,7 @@ namespace Wisteria::UI
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Use enhanced legend"),
                                          wxDefaultPosition, wxDefaultSize, 0,
                                          wxGenericValidator(&m_useEnhancedLegend)),
-                          wxSizerFlags{}.Border(wxLEFT));
+                          wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

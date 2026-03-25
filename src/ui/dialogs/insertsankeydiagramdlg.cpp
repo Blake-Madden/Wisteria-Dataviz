@@ -68,48 +68,53 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* fromLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"From:"));
+        auto* fromLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"From:"));
         fromLabel->SetFont(fromLabel->GetFont().Bold());
         varGrid->Add(fromLabel, wxSizerFlags{}.CenterVertical());
-        m_fromVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_fromVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_fromVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_fromVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* toLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"To:"));
+        auto* toLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"To:"));
         toLabel->SetFont(toLabel->GetFont().Bold());
         varGrid->Add(toLabel, wxSizerFlags{}.CenterVertical());
-        m_toVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_toVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_toVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_toVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* fromWeightLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"From weight:"));
+        auto* fromWeightLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"From weight:"));
         fromWeightLabel->SetFont(fromWeightLabel->GetFont().Bold());
         varGrid->Add(fromWeightLabel, wxSizerFlags{}.CenterVertical());
-        m_fromWeightVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_fromWeightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_fromWeightVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_fromWeightVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* toWeightLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"To weight:"));
+        auto* toWeightLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"To weight:"));
         toWeightLabel->SetFont(toWeightLabel->GetFont().Bold());
         varGrid->Add(toWeightLabel, wxSizerFlags{}.CenterVertical());
-        m_toWeightVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_toWeightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_toWeightVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_toWeightVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* fromGroupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"From group:"));
+        auto* fromGroupLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"From group:"));
         fromGroupLabel->SetFont(fromGroupLabel->GetFont().Bold());
         varGrid->Add(fromGroupLabel, wxSizerFlags{}.CenterVertical());
-        m_fromGroupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_fromGroupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_fromGroupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_fromGroupVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // flow shape
         auto* flowSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

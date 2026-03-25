@@ -67,34 +67,39 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Group (outer):"));
+        auto* groupLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Group (outer):"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* weightLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Weight:"));
+        auto* weightLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Weight:"));
         weightLabel->SetFont(weightLabel->GetFont().Bold());
         varGrid->Add(weightLabel, wxSizerFlags{}.CenterVertical());
-        m_weightVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_weightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_weightVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_weightVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* group2Label = new wxStaticText(optionsPage, wxID_ANY, _(L"Subgroup (inner):"));
+        auto* group2Label =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Subgroup (inner):"));
         group2Label->SetFont(group2Label->GetFont().Bold());
         varGrid->Add(group2Label, wxSizerFlags{}.CenterVertical());
-        m_group2VarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_group2VarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_group2VarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_group2VarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // color scheme
         auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -212,7 +217,7 @@ namespace Wisteria::UI
                                       0, wxGenericValidator(&m_useColorLabels)),
                        wxSizerFlags{}.Border());
 
-        optionsSizer->Add(labelsBox, wxSizerFlags{}.Expand().Border());
+        optionsSizer->Add(labelsBox, wxSizerFlags{}.Border());
 
         // donut hole area
         auto* donutBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Donut Hole"));
@@ -227,7 +232,7 @@ namespace Wisteria::UI
         m_editDonutLabelButton->Enable(m_includeDonutHole);
         donutBox->Add(m_editDonutLabelButton, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
-        optionsSizer->Add(donutBox, wxSizerFlags{}.Expand().Border());
+        optionsSizer->Add(donutBox, wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

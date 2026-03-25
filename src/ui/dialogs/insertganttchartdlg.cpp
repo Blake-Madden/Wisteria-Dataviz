@@ -67,62 +67,66 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* taskLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Task:"));
+        auto* taskLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Task:"));
         taskLabel->SetFont(taskLabel->GetFont().Bold());
         varGrid->Add(taskLabel, wxSizerFlags{}.CenterVertical());
-        m_taskVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_taskVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_taskVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_taskVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* startLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Start date:"));
+        auto* startLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Start date:"));
         startLabel->SetFont(startLabel->GetFont().Bold());
         varGrid->Add(startLabel, wxSizerFlags{}.CenterVertical());
-        m_startDateVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_startDateVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_startDateVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_startDateVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* endLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"End date:"));
+        auto* endLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"End date:"));
         endLabel->SetFont(endLabel->GetFont().Bold());
         varGrid->Add(endLabel, wxSizerFlags{}.CenterVertical());
-        m_endDateVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_endDateVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_endDateVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_endDateVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* resourceLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Resource:"));
+        auto* resourceLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Resource:"));
         resourceLabel->SetFont(resourceLabel->GetFont().Bold());
         varGrid->Add(resourceLabel, wxSizerFlags{}.CenterVertical());
-        m_resourceVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_resourceVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_resourceVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_resourceVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* descLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Description:"));
+        auto* descLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Description:"));
         descLabel->SetFont(descLabel->GetFont().Bold());
         varGrid->Add(descLabel, wxSizerFlags{}.CenterVertical());
-        m_descriptionVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_descriptionVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_descriptionVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_descriptionVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* completionLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Completion:"));
+        auto* completionLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Completion:"));
         completionLabel->SetFont(completionLabel->GetFont().Bold());
         varGrid->Add(completionLabel, wxSizerFlags{}.CenterVertical());
-        m_completionVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_completionVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_completionVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_completionVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* groupLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Grouping:"));
+        auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // color scheme
         auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

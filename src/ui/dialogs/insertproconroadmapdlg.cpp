@@ -69,41 +69,48 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* posLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Positive (pros):"));
+        auto* posLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Positive (pros):"));
         posLabel->SetFont(posLabel->GetFont().Bold());
         varGrid->Add(posLabel, wxSizerFlags{}.CenterVertical());
-        m_positiveVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_positiveVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_positiveVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_positiveVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* posValLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Positive values:"));
+        auto* posValLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Positive values:"));
         posValLabel->SetFont(posValLabel->GetFont().Bold());
         varGrid->Add(posValLabel, wxSizerFlags{}.CenterVertical());
-        m_positiveValueVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_positiveValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_positiveValueVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_positiveValueVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* negLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Negative (cons):"));
+        auto* negLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Negative (cons):"));
         negLabel->SetFont(negLabel->GetFont().Bold());
         varGrid->Add(negLabel, wxSizerFlags{}.CenterVertical());
-        m_negativeVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_negativeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_negativeVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_negativeVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* negValLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Negative values:"));
+        auto* negValLabel =
+            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Negative values:"));
         negValLabel->SetFont(negValLabel->GetFont().Bold());
         varGrid->Add(negValLabel, wxSizerFlags{}.CenterVertical());
-        m_negativeValueVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_negativeValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_negativeValueVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_negativeValueVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // minimum count
         auto* minCountSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });

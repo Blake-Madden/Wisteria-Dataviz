@@ -30,21 +30,6 @@ bool WisteriaDoc::DoSaveDocument(const wxString& filename)
     }
 
 //-------------------------------------------
-bool WisteriaDoc::DoOpenDocument(const wxString& filename)
-    {
-    try
-        {
-        return true;
-        }
-    catch (const std::exception& exc)
-        {
-        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
-                     wxGetApp().GetMainFrame());
-        return false;
-        }
-    }
-
-//-------------------------------------------
 bool WisteriaDoc::OnNewDocument()
     {
     if (!wxDocument::OnNewDocument())

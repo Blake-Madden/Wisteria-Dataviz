@@ -67,48 +67,51 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
-        auto* varButton = new wxButton(optionsPage, ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        optionsSizer->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
+        auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
+        auto* varButton =
+            new wxButton(varsBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Select..."));
+        varsBox->Add(varButton, wxSizerFlags{}.Border(wxLEFT));
 
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* seasonLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Season:"));
+        auto* seasonLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Season:"));
         seasonLabel->SetFont(seasonLabel->GetFont().Bold());
         varGrid->Add(seasonLabel, wxSizerFlags{}.CenterVertical());
-        m_seasonVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_seasonVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_seasonVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_seasonVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* wonLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Won/Lost:"));
+        auto* wonLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Won/Lost:"));
         wonLabel->SetFont(wonLabel->GetFont().Bold());
         varGrid->Add(wonLabel, wxSizerFlags{}.CenterVertical());
-        m_wonVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_wonVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_wonVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_wonVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* shutoutLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Shutout:"));
+        auto* shutoutLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Shutout:"));
         shutoutLabel->SetFont(shutoutLabel->GetFont().Bold());
         varGrid->Add(shutoutLabel, wxSizerFlags{}.CenterVertical());
-        m_shutoutVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_shutoutVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_shutoutVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_shutoutVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* homeLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Home game:"));
+        auto* homeLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Home game:"));
         homeLabel->SetFont(homeLabel->GetFont().Bold());
         varGrid->Add(homeLabel, wxSizerFlags{}.CenterVertical());
-        m_homeGameVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_homeGameVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_homeGameVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_homeGameVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* postLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Postseason:"));
+        auto* postLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Postseason:"));
         postLabel->SetFont(postLabel->GetFont().Bold());
         varGrid->Add(postLabel, wxSizerFlags{}.CenterVertical());
-        m_postseasonVarLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
+        m_postseasonVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_postseasonVarLabel->SetForegroundColour(GetVariableLabelColor());
         varGrid->Add(m_postseasonVarLabel, wxSizerFlags{}.CenterVertical());
 
-        optionsSizer->Add(varGrid, wxSizerFlags{}.Border());
+        varsBox->Add(varGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // highlight best records
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Highlight best records"),
