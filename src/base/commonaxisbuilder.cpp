@@ -204,11 +204,14 @@ namespace Wisteria
                     rangesMinMax = minMaxVals;
                     }
                 }
-            for (const auto& graph : graphs)
+            if (rangesMinMax.has_value())
                 {
-                graph->GetLeftYAxis().SetRange(rangesMinMax.value().first,
-                                               rangesMinMax.value().second,
-                                               graph->GetLeftYAxis().GetPrecision());
+                for (const auto& graph : graphs)
+                    {
+                    graph->GetLeftYAxis().SetRange(rangesMinMax.value().first,
+                                                   rangesMinMax.value().second,
+                                                   graph->GetLeftYAxis().GetPrecision());
+                    }
                 }
             }
 
