@@ -431,7 +431,8 @@ namespace Wisteria::UI
                 wxEVT_KEY_DOWN,
                 [&, this](wxKeyEvent& evt)
                 {
-                    if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_BACK)
+                    if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_NUMPAD_DELETE ||
+                        evt.GetKeyCode() == WXK_BACK)
                         {
                         MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
                         UpdateButtonStates();

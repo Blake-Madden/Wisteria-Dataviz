@@ -114,7 +114,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         wxEVT_RIBBONBUTTONBAR_CLICKED,
         [this]([[maybe_unused]]
                wxCommandEvent& event) { GetDocument()->Save(); },
-                  ID_SAVE_PROJECT);
+        ID_SAVE_PROJECT);
 
     // bind insert dataset button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
@@ -189,16 +189,17 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind DELETE key to delete selected item
     m_frame->Bind(wxEVT_CHAR_HOOK,
-                  [this](wxKeyEvent& event)
+                  [this](wxKeyEvent& evt)
                   {
-                      if (event.GetKeyCode() == WXK_DELETE)
+                      if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_NUMPAD_DELETE ||
+                          evt.GetKeyCode() == WXK_BACK)
                           {
                           wxCommandEvent cmd;
                           OnDeleteItem(cmd);
                           }
                       else
                           {
-                          event.Skip();
+                          evt.Skip();
                           }
                   });
 
@@ -429,7 +430,8 @@ void WisteriaView::LoadProject()
         wxEVT_KEY_DOWN,
         [this](wxKeyEvent& evt)
         {
-            if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_BACK)
+            if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_NUMPAD_DELETE ||
+                evt.GetKeyCode() == WXK_BACK)
                 {
                 const int row = m_constantsGrid->GetGridCursorRow();
                 const int col = m_constantsGrid->GetGridCursorCol();
