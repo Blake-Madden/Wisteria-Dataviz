@@ -61,8 +61,6 @@ class WisteriaView : public wxView
         return m_reportBuilder;
         }
 
-    void LoadProject();
-
   private:
     [[nodiscard]]
     Wisteria::UI::SideBar* GetSideBar() noexcept
@@ -76,35 +74,25 @@ class WisteriaView : public wxView
         return m_splitter;
         }
 
-    bool OnCreate(wxDocument* doc, long flags) override;
+    void LoadProject();
 
-    void OnDraw([[maybe_unused]] wxDC* dc) override {}
+    bool OnCreate(wxDocument* doc, long flags) final;
 
-    bool OnClose(bool deleteWindow) override;
+    void OnDraw([[maybe_unused]] wxDC* dc) final {}
+
+    bool OnClose(bool deleteWindow) final;
     void OnSidebarClick(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
-
     void OnInsertDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
     void OnEditPage(wxCommandEvent& event);
-    void
-    AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
-                        const wxString& name,
-                        const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo = {},
-                        const Wisteria::ReportBuilder::DatasetImportOptions& importOptions = {});
-    void AddPageToProject(size_t rows, size_t columns, const wxString& name);
-    void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
-    void AdjustGridColumnsForIcons(wxGrid* grid);
-    void PopulateConstantsGrid();
     void OnConstantEdited(wxGridEvent& event);
     void OnConstantsGridRightClick(wxGridEvent& event);
     void OnAddConstant(wxCommandEvent& event);
     void OnDeleteConstant(wxCommandEvent& event);
     void OnRibbonAddConstant(wxCommandEvent& event);
-
-    void BuildGraphMenus();
     void OnGraphDropdown(wxCommandEvent& event);
     void OnInsertChernoffPlot(wxCommandEvent& event);
     void OnInsertScatterPlot(wxCommandEvent& event);
@@ -192,6 +180,16 @@ class WisteriaView : public wxView
                               size_t graphRow, size_t graphCol,
                               Wisteria::UI::LegendPlacement legendPlacement);
     void UpdateGraphButtonStates();
+    void
+    AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                        const wxString& name,
+                        const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo = {},
+                        const Wisteria::ReportBuilder::DatasetImportOptions& importOptions = {});
+    void AddPageToProject(size_t rows, size_t columns, const wxString& name);
+    void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
+    void AdjustGridColumnsForIcons(wxGrid* grid);
+    void PopulateConstantsGrid();
+    void BuildGraphMenus();
     [[nodiscard]]
     Wisteria::Canvas* GetActiveCanvas() noexcept;
     [[nodiscard]]

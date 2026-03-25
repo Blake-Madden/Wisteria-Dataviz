@@ -16,7 +16,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(WisteriaDoc, wxDocument);
 //-------------------------------------------
 bool WisteriaDoc::DoSaveDocument(const wxString& filename)
     {
-    m_projectFilePath = filename;
     try
         {
         SaveProject(filename);
@@ -33,7 +32,6 @@ bool WisteriaDoc::DoSaveDocument(const wxString& filename)
 //-------------------------------------------
 bool WisteriaDoc::DoOpenDocument(const wxString& filename)
     {
-    m_projectFilePath = filename;
     try
         {
         return true;
@@ -4347,12 +4345,12 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SavePageItem(const Wisteria::GraphItems::GraphI
 //-------------------------------------------
 wxString WisteriaDoc::MakeRelativePath(const wxString& filePath) const
     {
-    if (!GetProjectPath().empty())
+    if (!GetFilename().empty())
         {
         wxFileName fn{ filePath };
         if (fn.IsAbsolute())
             {
-            const wxFileName projectDir{ GetProjectPath() };
+            const wxFileName projectDir{ GetFilename() };
             fn.MakeRelativeTo(projectDir.GetPath());
             return fn.GetFullPath(wxPATH_UNIX);
             }
@@ -4363,12 +4361,12 @@ wxString WisteriaDoc::MakeRelativePath(const wxString& filePath) const
 //-------------------------------------------
 wxString WisteriaDoc::ResolveFilePath(const wxString& filePath) const
     {
-    if (!GetProjectPath().empty())
+    if (!GetFilename().empty())
         {
         wxFileName fn{ filePath };
         if (fn.IsRelative())
             {
-            fn.MakeAbsolute(wxFileName{ GetProjectPath() }.GetPath());
+            fn.MakeAbsolute(wxFileName{ GetFilename() }.GetPath());
             return fn.GetFullPath();
             }
         }

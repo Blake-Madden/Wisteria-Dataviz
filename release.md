@@ -10,6 +10,7 @@
     - Tractor
 - Improved *Excel* importer performance
 - Likert chart now implicitly uses default response labels on legend (if none are found in dataset)
+- Fixed group-label display in heatmaps when data are not sorted by groups
 
 ## 1.1.0 Release
 

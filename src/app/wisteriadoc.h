@@ -25,26 +25,22 @@ class WisteriaDoc : public wxDocument
     WisteriaDoc(const WisteriaDoc&) = delete;
     WisteriaDoc& operator=(const WisteriaDoc&) = delete;
 
-    bool DoSaveDocument(const wxString& filename);
-    bool DoOpenDocument(const wxString& filename);
-
-    [[nodiscard]]
-    wxString GetProjectPath() const
-        {
-        return m_projectFilePath;
-        }
-
+    /** @returns The path of a file, relative to the project's path.
+        @param filePath The filepath to convert.*/
     [[nodiscard]]
     wxString MakeRelativePath(const wxString& filePath) const;
+
+    /** @returns The path of a (relative to the project) file,
+            expanded to its full path.
+        @param filePath The filepath to convert.*/
     [[nodiscard]]
     wxString ResolveFilePath(const wxString& filePath) const;
-
-    void SetProjectPath(const wxString& path) { m_projectFilePath = path; }
 
   private:
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
-
+    bool DoSaveDocument(const wxString& filename);
+    bool DoOpenDocument(const wxString& filename);
     void SaveProject(const wxString& filePath);
 
     // page item save helpers
@@ -104,8 +100,6 @@ class WisteriaDoc : public wxDocument
     static wxString EscapeJsonStr(const wxString& str);
     [[nodiscard]]
     wxString ColorToStr(const wxColour& color) const;
-
-    wxString m_projectFilePath;
     };
 
 #endif // WISTERIA_DOC_H

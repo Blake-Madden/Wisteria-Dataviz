@@ -6854,9 +6854,8 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         }
 
     // resolve relative paths against the project directory
-    const wxString projectDir = doc->GetProjectPath().empty() ?
-                                    wxString{} :
-                                    wxFileName{ doc->GetProjectPath() }.GetPathWithSep();
+    const wxString projectDir = doc->GetFilename().empty() ?
+                                    wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
 
     // load and optionally stitch multiple images
     std::vector<wxBitmap> bmps;
@@ -6996,9 +6995,8 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
         }
 
     // resolve relative paths against the project directory
-    const wxString projectDir2 = doc->GetProjectPath().empty() ?
-                                     wxString{} :
-                                     wxFileName{ doc->GetProjectPath() }.GetPathWithSep();
+    const wxString projectDir2 = doc->GetFilename().empty() ?
+                                     wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
 
     // load and optionally stitch multiple images
     std::vector<wxBitmap> bmps;
