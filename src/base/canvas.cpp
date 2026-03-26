@@ -1334,15 +1334,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             // resize all (or just non-fixed width) objects to fit
             else
                 {
+                // calculate how much width is taken by fixed-width items
+                double fixedWidthTotal{ 0 };
+                for (const auto& item : GetFixedObjects().at(row))
+                    {
+                    if (item != nullptr && item->IsFixedWidthOnCanvas())
+                        {
+                        fixedWidthTotal += item->GetCanvasWidthProportion();
+                        }
+                    }
+
+                // calculate what's left for the flexible items
+                const double availableForFlexible = std::max(0.0, 1.0 - fixedWidthTotal);
+                const double sharePerFlexible =
+                    safe_divide<double>(availableForFlexible, flexibleObjects);
+
                 for (auto& currentItem : GetFixedObjects().at(row))
                     {
-                    if (currentItem != nullptr &&
-                        // if all object are fixed width, then adjust all of them;
-                        // otherwise, just adjust non-fixed ones
-                        (!currentItem->IsFixedWidthOnCanvas() || flexibleObjects == 0))
+                    if (currentItem != nullptr && !currentItem->IsFixedWidthOnCanvas())
                         {
-                        currentItem->SetCanvasWidthProportion(
-                            currentItem->GetCanvasWidthProportion() - avgWidthDiff);
+                        // assign the equal share
+                        currentItem->SetCanvasWidthProportion(sharePerFlexible);
                         }
                     }
                 }
