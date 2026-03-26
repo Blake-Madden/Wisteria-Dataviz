@@ -26,7 +26,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertPageDlg::SelectCell(size_t row, size_t column)
         {
-        if (row < m_rowCount && std::cmp_less(column, m_columnCount))
+        if (std::cmp_less(row, m_rowCount) && std::cmp_less(column, m_columnCount))
             {
             m_selectedRow = row;
             m_selectedColumn = column;
