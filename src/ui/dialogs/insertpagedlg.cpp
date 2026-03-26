@@ -24,6 +24,20 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertPageDlg::SelectCell(size_t row, size_t column)
+        {
+        if (row < m_rowCount && column < m_columnCount)
+            {
+            m_selectedRow = row;
+            m_selectedColumn = column;
+            if (m_previewPanel != nullptr)
+                {
+                m_previewPanel->Refresh();
+                }
+            }
+        }
+
+    //-------------------------------------------
     void InsertPageDlg::CreateControls()
         {
         if (m_canvas != nullptr)
@@ -62,16 +76,16 @@ namespace Wisteria::UI
                                         wxDefaultSize, 0, wxGenericValidator(&m_pageName));
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
-        contentSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand().Border());
+        contentSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 
         // preview panel
-        const int previewHeight = FromDIP(200);
+        const int previewHeight = FromDIP(400);
         const int previewWidth = static_cast<int>(previewHeight * math_constants::golden_ratio);
         m_previewPanel =
-            new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(previewWidth, previewHeight),
+            new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize{ previewWidth, previewHeight },
                         wxTAB_TRAVERSAL | wxWANTS_CHARS);
         m_previewPanel->SetBackgroundStyle(wxBG_STYLE_PAINT);
-        m_previewPanel->SetMinSize(wxSize(previewWidth, previewHeight));
+        m_previewPanel->SetMinSize(wxSize{ previewWidth, previewHeight });
         contentSizer->Add(m_previewPanel, wxSizerFlags{ 1 }.Expand().Border());
 
         mainSizer->Add(contentSizer, wxSizerFlags{ 1 }.Expand());
@@ -122,6 +136,17 @@ namespace Wisteria::UI
                     dc.SetPen(*wxBLACK_PEN);
                     dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
 
+                    if (row == m_selectedRow && col == m_selectedColumn)
+                        {
+                        dc.SetPen(wxPen{ wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT), 2,
+                                         wxPENSTYLE_DOT });
+                        dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
+                        }
+                    else
+                        {
+                        dc.SetPen(*wxBLACK_PEN);
+                        dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
+                        }
                     dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop, cellW, cellH);
 
                     if (isOccupied)
@@ -143,6 +168,115 @@ namespace Wisteria::UI
                     }
                 }
         };
+
+        // click handler
+        m_previewPanel->Bind(
+            wxEVT_LEFT_DOWN,
+            [this](wxMouseEvent& evt)
+            {
+                m_previewPanel->SetFocus();
+                const auto clientRect = m_previewPanel->GetClientRect();
+                if (clientRect.IsEmpty())
+                    {
+                    return;
+                    }
+                const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
+                const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
+
+                if (cellWidth <= 0 || cellHeight <= 0)
+                    {
+                    return;
+                    }
+
+                const auto col = safe_divide<size_t>(evt.GetX() - clientRect.x, cellWidth);
+                const auto row = safe_divide<size_t>(evt.GetY() - clientRect.y, cellHeight);
+
+                SelectCell(std::min(row, static_cast<size_t>(m_rowCount - 1)),
+                           std::min(col, static_cast<size_t>(m_columnCount - 1)));
+            });
+
+        // keyboard handler (arrow keys navigate cells,
+        // Tab/Shift+Tab pass through for normal focus traversal)
+        m_previewPanel->Bind(
+            wxEVT_KEY_DOWN,
+            [this](wxKeyEvent& evt)
+            {
+                const auto keyCode = evt.GetKeyCode();
+                if (keyCode == WXK_RIGHT)
+                    {
+                    if (m_selectedColumn + 1 < m_columnCount)
+                        {
+                        SelectCell(m_selectedRow, m_selectedColumn + 1);
+                        }
+                    else if (m_selectedRow + 1 < m_rowCount)
+                        {
+                        SelectCell(m_selectedRow + 1, 0);
+                        }
+                    }
+                else if (keyCode == WXK_LEFT)
+                    {
+                    if (m_selectedColumn > 0)
+                        {
+                        SelectCell(m_selectedRow, m_selectedColumn - 1);
+                        }
+                    else if (m_selectedRow > 0)
+                        {
+                        SelectCell(m_selectedRow - 1, m_columnCount - 1);
+                        }
+                    }
+                else if (keyCode == WXK_UP)
+                    {
+                    if (m_selectedRow > 0)
+                        {
+                        SelectCell(m_selectedRow - 1, m_selectedColumn);
+                        }
+                    }
+                else if (keyCode == WXK_DOWN)
+                    {
+                    if (m_selectedRow + 1 < m_rowCount)
+                        {
+                        SelectCell(m_selectedRow + 1, m_selectedColumn);
+                        }
+                    }
+                if (keyCode == WXK_DELETE || keyCode == WXK_NUMPAD_DELETE || keyCode == WXK_BACK)
+                    {
+                    const auto [canvasRows, canvasColumns] = m_canvas->GetFixedObjectsGridSize();
+                    if (m_selectedRow < canvasRows && m_selectedColumn < canvasColumns &&
+                        m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn) != nullptr)
+                        {
+                        if (wxMessageBox(
+                                wxString::Format(
+                                    _(L"Are you sure you want to delete the selected %s?"),
+                                    m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn)
+                                        ->GetClassName()),
+                                _(L"Delete Item"), wxYES_NO | wxICON_QUESTION, this) == wxYES)
+                            {
+                            m_canvas->SetFixedObject(m_selectedRow, m_selectedColumn, nullptr);
+                            m_previewPanel->Refresh();
+                            }
+                        }
+                    }
+                else
+                    {
+                    evt.Skip();
+                    }
+            });
+
+        // focus handlers
+        m_previewPanel->Bind(wxEVT_SET_FOCUS,
+                             [this]([[maybe_unused]]
+                                    wxFocusEvent& evt)
+                             {
+                                 m_previewPanel->Refresh();
+                                 evt.Skip();
+                             });
+        m_previewPanel->Bind(wxEVT_KILL_FOCUS,
+                             [this]([[maybe_unused]]
+                                    wxFocusEvent& evt)
+                             {
+                                 m_previewPanel->Refresh();
+                                 evt.Skip();
+                             });
 
         m_previewPanel->Bind(wxEVT_PAINT, paintPreview);
         m_previewPanel->Bind(wxEVT_SIZE,

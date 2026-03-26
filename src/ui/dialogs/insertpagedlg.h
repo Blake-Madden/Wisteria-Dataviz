@@ -79,12 +79,15 @@ namespace Wisteria::UI
 
       private:
         void CreateControls();
+        void SelectCell(size_t row, size_t column);
 
         Canvas* m_canvas{ nullptr };
         wxPanel* m_previewPanel{ nullptr };
 
         int m_rowCount{ 1 };
         int m_columnCount{ 1 };
+        size_t m_selectedRow{ 0 };
+        size_t m_selectedColumn{ 0 };
         wxString m_pageName;
         };
     } // namespace Wisteria::UI
