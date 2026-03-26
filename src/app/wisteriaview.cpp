@@ -663,7 +663,7 @@ void WisteriaView::PopulateConstantsGrid()
 
     // build the dataset name choices for the dropdown
     // (empty string = top-level constant, otherwise a dataset name)
-    wxArrayString dsChoices;
+    wxArrayString dsChoices = { wxString{} };
     for (const auto& [dsName, dataset] : m_reportBuilder.GetDatasets())
         {
         if (!dsName.empty())
