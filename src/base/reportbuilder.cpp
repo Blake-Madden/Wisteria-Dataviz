@@ -250,13 +250,13 @@ namespace Wisteria
                                             else if (typeProperty->AsString().CmpNoCase(
                                                          L"win-loss-sparkline") == 0)
                                                 {
-                                                embeddedGraphs.push_back(WinLossSparkline(
+                                                embeddedGraphs.push_back(LoadWinLossSparkline(
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
                                                          L"waffle-chart") == 0)
                                                 {
-                                                embeddedGraphs.push_back(WaffleChart(
+                                                embeddedGraphs.push_back(LoadWaffleChart(
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
@@ -3603,8 +3603,8 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
-    ReportBuilder::WaffleChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
-                               size_t& currentRow, size_t& currentColumn)
+    ReportBuilder::LoadWaffleChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                   size_t& currentRow, size_t& currentColumn)
         {
         std::vector<GraphItems::ShapeInfo> shapes;
 
@@ -3653,8 +3653,8 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
-    ReportBuilder::WinLossSparkline(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
-                                    size_t& currentRow, size_t& currentColumn)
+    ReportBuilder::LoadWinLossSparkline(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                        size_t& currentRow, size_t& currentColumn)
         {
         const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
         const auto foundPos = m_datasets.find(dsName);

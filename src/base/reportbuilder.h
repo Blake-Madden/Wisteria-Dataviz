@@ -820,9 +820,9 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         [[nodiscard]]
-        std::shared_ptr<Graphs::Graph2D> WinLossSparkline(const wxSimpleJSON::Ptr_t& graphNode,
-                                                          Canvas* canvas, size_t& currentRow,
-                                                          size_t& currentColumn);
+        std::shared_ptr<Graphs::Graph2D> LoadWinLossSparkline(const wxSimpleJSON::Ptr_t& graphNode,
+                                                              Canvas* canvas, size_t& currentRow,
+                                                              size_t& currentColumn);
         /// @brief Loads a waffle chart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -830,9 +830,9 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         [[nodiscard]]
-        std::shared_ptr<Graphs::Graph2D> WaffleChart(const wxSimpleJSON::Ptr_t& graphNode,
-                                                     Canvas* canvas, size_t& currentRow,
-                                                     size_t& currentColumn);
+        std::shared_ptr<Graphs::Graph2D> LoadWaffleChart(const wxSimpleJSON::Ptr_t& graphNode,
+                                                         Canvas* canvas, size_t& currentRow,
+                                                         size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
         /// @param tableNode The table node to parse.
         /// @param canvas The canvas to add the graph to.

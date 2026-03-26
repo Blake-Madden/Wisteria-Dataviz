@@ -26,7 +26,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertPageDlg::SelectCell(size_t row, size_t column)
         {
-        if (row < m_rowCount && column < m_columnCount)
+        if (row < m_rowCount && std::cmp_less(column, m_columnCount))
             {
             m_selectedRow = row;
             m_selectedColumn = column;
@@ -204,11 +204,11 @@ namespace Wisteria::UI
                 const auto keyCode = evt.GetKeyCode();
                 if (keyCode == WXK_RIGHT)
                     {
-                    if (m_selectedColumn + 1 < m_columnCount)
+                    if (std::cmp_less(m_selectedColumn + 1, m_columnCount))
                         {
                         SelectCell(m_selectedRow, m_selectedColumn + 1);
                         }
-                    else if (m_selectedRow + 1 < m_rowCount)
+                    else if (std::cmp_less(m_selectedRow + 1, m_rowCount))
                         {
                         SelectCell(m_selectedRow + 1, 0);
                         }
@@ -233,7 +233,7 @@ namespace Wisteria::UI
                     }
                 else if (keyCode == WXK_DOWN)
                     {
-                    if (m_selectedRow + 1 < m_rowCount)
+                    if (std::cmp_less(m_selectedRow + 1, m_rowCount))
                         {
                         SelectCell(m_selectedRow + 1, m_selectedColumn);
                         }

@@ -1323,7 +1323,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 std::as_const(GetFixedObjects().at(row)), [](const auto& obj) noexcept
                 { return (obj != nullptr && !obj->IsFixedWidthOnCanvas()); });
             const double totalDiff{ totalPercent - 1.0 };
-            const auto avgWidthDiff = safe_divide<double>(totalDiff, flexibleObjects);
             // this is the only object in the row and doesn't have a fixed width, set it to 100%
             if (GetFixedObjects().at(row).size() == 1 &&
                 GetFixedObjects().at(row).at(0) != nullptr &&
