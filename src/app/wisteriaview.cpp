@@ -847,6 +847,7 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
         }
 
     PopulateConstantsGrid();
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -883,6 +884,8 @@ void WisteriaView::OnAddConstant([[maybe_unused]] wxCommandEvent& event)
     constants.push_back({ name, value });
     m_reportBuilder.SetConstants(constants);
     PopulateConstantsGrid();
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -924,6 +927,8 @@ void WisteriaView::OnDeleteConstant([[maybe_unused]] wxCommandEvent& event)
         m_reportBuilder.SetConstants(constants);
         PopulateConstantsGrid();
         }
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -1148,6 +1153,8 @@ void WisteriaView::AddDatasetToProject(
     m_workArea->Layout();
     m_sideBar->SaveState();
     m_sideBar->Refresh();
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -1197,6 +1204,8 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         const auto minWidth = m_sideBar->GetMinSize().GetWidth();
         m_splitter->SetSashPosition(minWidth);
         }
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -1222,6 +1231,8 @@ void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, con
     m_workArea->Layout();
     m_sideBar->Refresh();
     UpdateGraphButtonStates();
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
