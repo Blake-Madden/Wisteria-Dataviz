@@ -296,7 +296,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* dataPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Data"));
         auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, wxID_ANY);
 
-        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data.svg"),
+        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
                                  _(L"Import a dataset into the project"));
 
         dataButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"), ReadSvgIcon(L"pivot-wider.svg"),
@@ -407,4 +407,8 @@ void WisteriaApp::InitProjectSidebar()
     m_projectSideBarImageList.push_back(ReadSvgIcon(L"data.svg"));
     m_projectSideBarImageList.push_back(ReadSvgIcon(L"page.svg"));
     m_projectSideBarImageList.push_back(ReadSvgIcon(L"constants.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"pivot-wider.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"pivot-longer.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"subset.svg"));
+    m_projectSideBarImageList.push_back(ReadSvgIcon(L"join.svg"));
     }

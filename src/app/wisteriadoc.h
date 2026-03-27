@@ -16,7 +16,7 @@
 #include <wx/wx.h>
 
 /// @brief Document class for Wisteria Dataviz projects.
-class WisteriaDoc : public wxDocument
+class WisteriaDoc final : public wxDocument
     {
     wxDECLARE_DYNAMIC_CLASS(WisteriaDoc);
 

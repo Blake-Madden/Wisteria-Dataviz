@@ -18,6 +18,8 @@ constants-add.svg
 constants-delete.svg
 constants.svg
 copy.svg
+data-add.svg
+data-delete.svg
 data.svg
 date.svg
 delete.svg
@@ -38,6 +40,7 @@ histogram.svg
 home-dark-mode.svg
 home.svg
 image.svg
+join.svg
 label.svg
 likert3.svg
 likert7.svg
@@ -66,6 +69,7 @@ shape.svg
 sort.svg
 sparkline.svg
 stem-leaf.svg
+subset.svg
 table.svg
 waffle.svg
 wcurve.svg

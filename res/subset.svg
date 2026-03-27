@@ -5,7 +5,7 @@
    height="256"
    version="1.1"
    id="svg8"
-   sodipodi:docname="pivot-longer.svg"
+   sodipodi:docname="subset.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -22,9 +22,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="4.5585938"
-     inkscape:cx="128"
-     inkscape:cy="128"
+     inkscape:zoom="3.2234126"
+     inkscape:cx="29.626986"
+     inkscape:cy="41.725965"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
      inkscape:window-x="-8"
@@ -77,6 +77,40 @@
      stroke="white"
      stroke-width="1.5"
      id="line4" />
+  <rect
+     x="102.86118"
+     y="132.515"
+     width="108"
+     height="16"
+     rx="2"
+     fill="#2e86de"
+     opacity="0.95"
+     id="rect1-8" />
+  <rect
+     x="102.86118"
+     y="152.515"
+     width="108"
+     height="16"
+     rx="2"
+     fill="#27ae60"
+     opacity="0.85"
+     id="rect2-2" />
+  <line
+     x1="138.86118"
+     y1="132.515"
+     x2="138.86118"
+     y2="168.5527"
+     stroke="#ffffff"
+     stroke-width="1.2033"
+     id="line3-4" />
+  <line
+     x1="174.86118"
+     y1="132.515"
+     x2="174.86118"
+     y2="168.5527"
+     stroke="#ffffff"
+     stroke-width="1.20331"
+     id="line4-5" />
   <!-- Arrow curving down-right -->
   <path
      d="M 128 52 C 148 52, 156 72, 156 92 L 156 120"
@@ -90,59 +124,6 @@
      fill="#808080"
      id="polygon4" />
   <!-- Result: tall table (bottom-right) -->
-  <rect
-     x="132"
-     y="136"
-     width="64"
-     height="16"
-     rx="2"
-     fill="#2E86DE"
-     opacity="0.95"
-     id="rect4" />
-  <rect
-     x="132"
-     y="156"
-     width="64"
-     height="16"
-     rx="2"
-     fill="#F0A68C"
-     opacity="0.9"
-     id="rect5" />
-  <rect
-     x="132"
-     y="176"
-     width="64"
-     height="16"
-     rx="2"
-     fill="#F0A68C"
-     opacity="0.9"
-     id="rect6" />
-  <rect
-     x="132"
-     y="196"
-     width="64"
-     height="16"
-     rx="2"
-     fill="#F0A68C"
-     opacity="0.9"
-     id="rect7" />
-  <rect
-     x="132"
-     y="216"
-     width="64"
-     height="16"
-     rx="2"
-     fill="#F0A68C"
-     opacity="0.9"
-     id="rect8" />
   <!-- Column divider on result -->
-  <line
-     x1="164"
-     y1="136"
-     x2="164"
-     y2="232"
-     stroke="white"
-     stroke-width="1.5"
-     id="line8" />
   <!-- Label -->
 </svg>

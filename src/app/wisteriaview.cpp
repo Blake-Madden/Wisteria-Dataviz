@@ -490,7 +490,8 @@ void WisteriaView::LoadProject()
             grid->Hide();
             m_workWindows.AddWindow(grid);
 
-            m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId, DATA_ICON_INDEX);
+            m_sideBar->InsertSubItemById(dataFolderId, dsName, dsId,
+                                         GetDatasetIconFromName(dsName));
             }
 
         // populate constants grid with data from the loaded project
@@ -1136,7 +1137,8 @@ void WisteriaView::AddDatasetToProject(
     // add as subitem under the "Data" folder
     if (m_sideBar->GetFolderCount() > 0)
         {
-        m_sideBar->InsertSubItemById(m_sideBar->GetFolder(0).GetId(), name, dsId, DATA_ICON_INDEX);
+        m_sideBar->InsertSubItemById(m_sideBar->GetFolder(0).GetId(), name, dsId,
+                                     GetDatasetIconFromName(name));
         m_sideBar->SelectSubItemById(m_sideBar->GetFolder(0).GetId(), dsId);
         }
 
@@ -1300,6 +1302,8 @@ void WisteriaView::UpdateGraphButtonStates()
         m_objectsButtonBar->EnableButton(ID_NEW_LABEL, enabled);
         m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, enabled);
         m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, enabled);
+        m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
+        m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
     }
 
@@ -6058,7 +6062,7 @@ void WisteriaView::EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto wlSvg = wxGetApp().GetResourceManager().GetSVG(L"winlosssparkline.svg");
+    const auto wlSvg = wxGetApp().GetResourceManager().GetSVG(L"sparkline.svg");
     if (wlSvg.IsOk())
         {
         wxIcon icon;
@@ -7364,4 +7368,32 @@ void WisteriaView::UpdateCanvas(Wisteria::Canvas* canvas)
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
     canvas->Refresh();
+    }
+
+//-------------------------------------------
+size_t WisteriaView::GetDatasetIconFromName(const wxString& name)
+    {
+    if (const auto foundPos = GetReportBuilder().GetDatasetPivotOptions().find(name);
+        foundPos != GetReportBuilder().GetDatasetPivotOptions().cend())
+        {
+        if (foundPos->second.m_type == Wisteria::ReportBuilder::PivotType::Wider)
+            {
+            return DATA_PIVOT_WIDER_ICON_INDEX;
+            }
+        else
+            {
+            return DATA_PIVOT_LONGER_ICON_INDEX;
+            }
+        }
+    if (const auto foundPos = GetReportBuilder().GetDatasetSubsetOptions().find(name);
+        foundPos != GetReportBuilder().GetDatasetSubsetOptions().cend())
+        {
+        return DATA_SUBSET_ICON_INDEX;
+        }
+    if (const auto foundPos = GetReportBuilder().GetDatasetMergeOptions().find(name);
+        foundPos != GetReportBuilder().GetDatasetMergeOptions().cend())
+        {
+        return DATA_JOIN_ICON_INDEX;
+        }
+    return DATA_ICON_INDEX;
     }

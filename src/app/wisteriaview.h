@@ -29,7 +29,7 @@ namespace Wisteria::UI
     }
 
 /// @brief View class for Wisteria Dataviz projects.
-class WisteriaView : public wxView
+class WisteriaView final : public wxView
     {
   public:
     WisteriaView() = default;
@@ -191,6 +191,11 @@ class WisteriaView : public wxView
     void PopulateConstantsGrid();
     void BuildGraphMenus();
 
+    /// @returns The sidebar icon that displays where a dataset come from
+    ///     (i.e., imported vs. a pivot operation).
+    [[nodiscard]]
+    size_t GetDatasetIconFromName(const wxString& name);
+
     [[nodiscard]]
     Wisteria::Canvas* GetActiveCanvas() noexcept;
 
@@ -225,6 +230,10 @@ class WisteriaView : public wxView
     constexpr static size_t DATA_ICON_INDEX{ 0 };
     constexpr static size_t PAGE_ICON_INDEX{ 1 };
     constexpr static size_t CONSTANTS_ICON_INDEX{ 2 };
+    constexpr static size_t DATA_PIVOT_WIDER_ICON_INDEX{ 3 };
+    constexpr static size_t DATA_PIVOT_LONGER_ICON_INDEX{ 4 };
+    constexpr static size_t DATA_SUBSET_ICON_INDEX{ 5 };
+    constexpr static size_t DATA_JOIN_ICON_INDEX{ 6 };
 
     wxDECLARE_DYNAMIC_CLASS(WisteriaView);
     };
