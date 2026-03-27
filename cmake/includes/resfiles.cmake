@@ -46,6 +46,8 @@ lineplot.svg
 log-book.svg
 multiplot-common-axis.svg
 multiplot.svg
+page-add.svg
+page-delete.svg
 page-edit.svg
 page.svg
 piechart-subgrouped.svg

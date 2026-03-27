@@ -148,6 +148,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind page buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditPage, this, ID_EDIT_PAGE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeletePage, this, ID_DELETE_PAGE);
 
     // bind graph category dropdown buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
@@ -1191,6 +1192,43 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         const auto minWidth = m_sideBar->GetMinSize().GetWidth();
         m_splitter->SetSashPosition(minWidth);
         }
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnDeletePage([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        wxFAIL_MSG(L"No active canvas when deleting page?!");
+        return;
+        }
+
+    const auto selectedFolder = m_sideBar->GetSelectedFolder();
+    if (!selectedFolder)
+        {
+        wxFAIL_MSG(L"Sidebar folder not found when deleting page?!");
+        return;
+        }
+
+    wxWindowUpdateLocker wl{ m_frame };
+
+    m_sideBar->SelectFolder(0, false, false, false);
+    m_sideBar->DeleteFolder(selectedFolder.value());
+    m_sideBar->SelectFolder(selectedFolder.value() < m_sideBar->GetFolderCount() ?
+                                selectedFolder.value() :
+                                m_sideBar->GetFolderCount() - 1);
+
+    auto foundPage = std::ranges::find(m_pages, canvas);
+    if (foundPage == m_pages.end())
+        {
+        wxFAIL_MSG(L"Canvas not found when deleting page?!");
+        return;
+        }
+    m_pages.erase(foundPage);
+    m_workWindows.RemoveWindowById(canvas->GetId());
 
     GetDocument()->Modify(true);
     }

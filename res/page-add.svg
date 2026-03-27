@@ -4,17 +4,17 @@
    width="256"
    height="256"
    version="1.1"
-   id="svg21"
-   sodipodi:docname="page.svg"
+   id="svg17"
+   sodipodi:docname="page-add.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs21" />
+     id="defs17" />
   <sodipodi:namedview
-     id="namedview21"
+     id="namedview17"
      pagecolor="#ffffff"
      bordercolor="#000000"
      borderopacity="0.25"
@@ -30,7 +30,7 @@
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg21" />
+     inkscape:current-layer="svg17" />
   <!-- Paper background -->
   <rect
      x="38"
@@ -193,5 +193,32 @@
      d="M170,178 L148,196 A30,30 0 0,1 140,178 Z"
      fill="#ffb74d"
      id="path17" />
-  <!-- Pencil (diagonal, bottom-right area) -->
+  <g
+     id="g2"
+     transform="translate(2.3427676,0.0282745)">
+    <circle
+       cx="214.24078"
+       cy="217.97173"
+       r="32"
+       fill="#4a90d9"
+       id="circle2" />
+    <line
+       x1="214.24078"
+       y1="199.97173"
+       x2="214.24078"
+       y2="235.97173"
+       stroke="#ffffff"
+       stroke-width="8"
+       stroke-linecap="round"
+       id="line2-9" />
+    <line
+       x1="196.24078"
+       y1="217.97173"
+       x2="232.24078"
+       y2="217.97173"
+       stroke="#ffffff"
+       stroke-width="8"
+       stroke-linecap="round"
+       id="line3-8" />
+  </g>
 </svg>

@@ -319,15 +319,12 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
-        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"page.svg"),
+        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"page-add.svg"),
                                   _(L"Add a new page to the project"));
-
         pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"), ReadSvgIcon(L"page-edit.svg"),
                                   _(L"Edit the current page"));
-        pagesButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit Item"), ReadSvgIcon(L"edit.svg"),
-                                  _(L"Edit the selected item"));
-        pagesButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete Item"), ReadSvgIcon(L"delete.svg"),
-                                  _(L"Delete the selected item"));
+        pagesButtonBar->AddButton(ID_DELETE_PAGE, _(L"Delete"), ReadSvgIcon(L"page-delete.svg"),
+                                  _(L"Delete the current page"));
 
         // Graph category panel
         auto* graphPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Graphs"));
@@ -369,6 +366,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Insert an image"));
         objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
                                     _(L"Insert a shape"));
+        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
+                                    _(L"Edit the selected item"));
+        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),
+                                    _(L"Delete the selected item"));
         }
     else
         {

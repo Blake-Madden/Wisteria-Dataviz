@@ -88,6 +88,7 @@ class WisteriaView : public wxView
     void OnPivotLonger(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
     void OnEditPage(wxCommandEvent& event);
+    void OnDeletePage(wxCommandEvent& event);
     void OnConstantEdited(wxGridEvent& event);
     void OnAddConstant(wxCommandEvent& event);
     void OnDeleteConstant(wxCommandEvent& event);
