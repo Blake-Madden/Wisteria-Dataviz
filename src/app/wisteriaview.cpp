@@ -509,8 +509,10 @@ void WisteriaView::LoadProject()
             m_workWindows.AddWindow(canvas);
 
             m_sideBar->InsertItem(m_sideBar->GetFolderCount(),
-                                  wxString::Format(_(L"Page %zu"), pageNum), pageId,
-                                  PAGE_ICON_INDEX);
+                                  !canvas->GetNameTemplate().empty() ?
+                                      canvas->GetNameTemplate() :
+                                      wxString::Format(_(L"Page %zu"), pageNum),
+                                  pageId, PAGE_ICON_INDEX);
             ++pageNum;
             }
         }
@@ -1187,6 +1189,7 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
                                          m_sideBar->GetFolderText(selectedFolder.value());
         m_sideBar->SetFolderText(selectedFolder.value(), displayName);
         canvas->SetLabel(displayName);
+        canvas->SetNameTemplate(displayName);
 
         // adjust the splitter sash to match the sidebar's new min width
         const auto minWidth = m_sideBar->GetMinSize().GetWidth();
