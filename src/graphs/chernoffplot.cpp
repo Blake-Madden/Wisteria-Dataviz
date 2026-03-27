@@ -1020,7 +1020,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
 
         // draw hair over forehead for female (after face, before eyebrows)
-        if (gender == Gender::Female && hairStyle != HairStyle::Bald)
+        if (gender == Gender::Female && hairStyle != HairStyle::Bald &&
+            hairStyle != HairStyle::HighTopFade)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
