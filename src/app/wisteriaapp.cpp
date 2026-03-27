@@ -304,8 +304,16 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         dataButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
                                  ReadSvgIcon(L"pivot-longer.svg"),
                                  _(L"Pivot a dataset longer (stack)"));
-        dataButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add Constant"), ReadSvgIcon(L"constants.svg"),
-                                 _(L"Add a constant to the project"));
+
+        // Constant panel
+        auto* constantsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Constants"));
+        auto* constantsButtonBar = new wxRibbonButtonBar(constantsPanel, wxID_ANY);
+
+        constantsButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add"), ReadSvgIcon(L"constants-add.svg"),
+                                      _(L"Add a constant to the project"));
+        constantsButtonBar->AddButton(ID_DELETE_CONSTANT, _(L"Delete"),
+                                      ReadSvgIcon(L"constants-delete.svg"),
+                                      _(L"Delete the selected constant"));
 
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));

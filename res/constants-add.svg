@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 256 256"
+   width="256"
+   height="256"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="constants-add.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.2792969"
+     inkscape:cx="8.9940017"
+     inkscape:cy="91.036847"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs2">
+    <linearGradient
+       id="rootGrad"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="100%">
+      <stop
+         offset="0%"
+         stop-color="#6b4fa0"
+         id="stop1" />
+      <stop
+         offset="100%"
+         stop-color="#3a7bd5"
+         id="stop2" />
+    </linearGradient>
+  </defs>
+  <!-- Square root symbol -->
+  <polyline
+     points="30,168 70,168 108,216 168,56 226,56"
+     fill="none"
+     stroke="url(#rootGrad)"
+     stroke-width="16"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="polyline2" />
+  <!-- Overline (vinculum) -->
+  <line
+     x1="168"
+     y1="56"
+     x2="226"
+     y2="56"
+     stroke="url(#rootGrad)"
+     stroke-width="16"
+     stroke-linecap="round"
+     id="line2" />
+  <g
+     id="g2"
+     transform="translate(0,-5.9717255)">
+    <circle
+       cx="214.24078"
+       cy="217.97173"
+       r="32"
+       fill="#4a90d9"
+       id="circle2" />
+    <line
+       x1="214.24078"
+       y1="199.97173"
+       x2="214.24078"
+       y2="235.97173"
+       stroke="#ffffff"
+       stroke-width="8"
+       stroke-linecap="round"
+       id="line2-9" />
+    <line
+       x1="196.24078"
+       y1="217.97173"
+       x2="232.24078"
+       y2="217.97173"
+       stroke="#ffffff"
+       stroke-width="8"
+       stroke-linecap="round"
+       id="line3" />
+  </g>
+</svg>

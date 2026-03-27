@@ -198,6 +198,7 @@ constexpr wxWindowID ID_NEW_MULTI_SERIES_LINEPLOT{ wxID_HIGHEST + 46 };
 
 // Constants
 constexpr wxWindowID ID_ADD_CONSTANT{ wxID_HIGHEST + 47 };
+constexpr wxWindowID ID_DELETE_CONSTANT{ wxID_HIGHEST + 48 };
 
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };

@@ -14,6 +14,8 @@ chart-statistical.svg
 chart-survey.svg
 chernoffplot.svg
 clear.svg
+constants-add.svg
+constants-delete.svg
 constants.svg
 copy.svg
 data.svg

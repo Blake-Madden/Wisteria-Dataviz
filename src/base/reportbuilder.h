@@ -188,6 +188,20 @@ namespace Wisteria
         ///     for round-trip serialization).
         struct DatasetFormulaInfo
             {
+            /// @private
+            [[nodiscard]]
+            auto operator<=>(const DatasetFormulaInfo& that) const
+                {
+                return m_name.CmpNoCase(that.m_name) <=> 0;
+                }
+
+            /// @private
+            [[nodiscard]]
+            bool operator==(const DatasetFormulaInfo& that) const
+                {
+                return m_name.CmpNoCase(that.m_name) == 0;
+                }
+
             /// the name of the formula (used as the constant name).
             wxString m_name;
             /// The original formula string (e.g., "MAX(`Semester`)")
@@ -350,6 +364,14 @@ namespace Wisteria
 
         /// @returns The transform options for all datasets.
         [[nodiscard]]
+        std::map<wxString, DatasetTransformOptions, Data::wxStringLessNoCase>&
+        GetDatasetTransformOptions() noexcept
+            {
+            return m_datasetTransformOptions;
+            }
+
+        /// @private
+        [[nodiscard]]
         const std::map<wxString, DatasetTransformOptions, Data::wxStringLessNoCase>&
         GetDatasetTransformOptions() const noexcept
             {
@@ -392,26 +414,26 @@ namespace Wisteria
         /// @returns The top-level constants (name/value pairs from the
         ///     "constants" JSON section).
         [[nodiscard]]
-        const std::vector<DatasetFormulaInfo>& GetConstants() const noexcept
+        const std::set<DatasetFormulaInfo>& GetConstants() const noexcept
             {
             return m_constants;
             }
 
         /// @returns A mutable reference to the top-level constants.
         [[nodiscard]]
-        std::vector<DatasetFormulaInfo>& GetConstants() noexcept
+        std::set<DatasetFormulaInfo>& GetConstants() noexcept
             {
             return m_constants;
             }
 
         /// @brief Sets the top-level constants and updates the runtime values map.
         /// @param constants The new constants to set.
-        void SetConstants(const std::vector<DatasetFormulaInfo>& constants)
+        void SetConstants(const std::set<DatasetFormulaInfo>& constants)
             {
             // remove old constants from values map
-            for (const auto& c : m_constants)
+            for (const auto& cst : m_constants)
                 {
-                m_values.erase(c.m_name);
+                m_values.erase(cst.m_name);
                 }
             m_constants = constants;
             // add new constants to values map
@@ -1202,7 +1224,7 @@ namespace Wisteria
             m_datasetTransformOptions;
         std::map<wxString, DatasetSubsetOptions, Data::wxStringLessNoCase> m_datasetSubsetOptions;
         std::map<wxString, DatasetMergeOptions, Data::wxStringLessNoCase> m_datasetMergeOptions;
-        std::vector<DatasetFormulaInfo> m_constants;
+        std::set<DatasetFormulaInfo> m_constants;
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
         wxString m_watermarkLabel;

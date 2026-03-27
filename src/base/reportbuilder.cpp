@@ -1067,7 +1067,7 @@ namespace Wisteria
                         constInfo.m_value =
                             std::to_wstring(value->GetProperty(L"value")->AsDouble());
                         }
-                    m_constants.push_back(std::move(constInfo));
+                    m_constants.insert(std::move(constInfo));
                     }
                 }
             }

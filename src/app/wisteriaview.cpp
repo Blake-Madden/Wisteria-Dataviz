@@ -128,6 +128,22 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind add constant button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnRibbonAddConstant, this,
                   ID_ADD_CONSTANT);
+    m_frame->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
+        {
+            // select the Constants folder (index 1) in the sidebar
+            m_sideBar->SelectFolder(1, true);
+            // trigger the sidebar click so the constants grid is shown
+            wxCommandEvent sidebarEvt(Wisteria::UI::wxEVT_SIDEBAR_CLICK);
+            sidebarEvt.SetInt(m_constantsGrid->GetId());
+            OnSidebarClick(sidebarEvt);
+            // delete selected constant
+            wxCommandEvent delEvt(wxEVT_MENU, wxID_DELETE);
+            OnDeleteConstant(delEvt);
+        },
+        ID_DELETE_CONSTANT);
 
     // bind page buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
@@ -410,25 +426,6 @@ void WisteriaView::LoadProject()
     m_workWindows.AddWindow(m_constantsGrid);
 
     m_constantsGrid->Bind(wxEVT_GRID_CELL_CHANGED, &WisteriaView::OnConstantEdited, this);
-    m_constantsGrid->Bind(wxEVT_GRID_CELL_RIGHT_CLICK, &WisteriaView::OnConstantsGridRightClick,
-                          this);
-    m_constantsGrid->Bind(wxEVT_GRID_LABEL_RIGHT_CLICK, &WisteriaView::OnConstantsGridRightClick,
-                          this);
-    m_constantsGrid->GetGridWindow()->Bind(
-        wxEVT_RIGHT_UP,
-        [this](wxMouseEvent& evt)
-        {
-            // show context menu when right-clicking empty grid area
-            if (m_constantsGrid->GetNumberRows() == 0 ||
-                m_constantsGrid->YToRow(evt.GetPosition().y) == wxNOT_FOUND)
-                {
-                m_constantsGridClickedRow = -1;
-                wxMenu menu;
-                menu.Append(wxID_ADD, _(L"Add Constant"));
-                menu.Bind(wxEVT_MENU, &WisteriaView::OnAddConstant, this, wxID_ADD);
-                m_constantsGrid->PopupMenu(&menu, evt.GetPosition());
-                }
-        });
     m_constantsGrid->GetGridWindow()->Bind(
         wxEVT_KEY_DOWN,
         [this](wxKeyEvent& evt)
@@ -728,6 +725,7 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
     const wxString name = m_constantsGrid->GetCellValue(row, 1);
     const wxString value = m_constantsGrid->GetCellValue(row, 2);
 
+    // if dataset column was edited...
     if (col == 0)
         {
         // dataset column changed: move the constant between
@@ -739,11 +737,8 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             {
             // was a top-level constant
             auto& constants = m_reportBuilder.GetConstants();
-            constants.erase(
-                std::remove_if(constants.begin(), constants.end(),
-                               [&name](const Wisteria::ReportBuilder::DatasetFormulaInfo& c)
-                               { return c.m_name == name; }),
-                constants.end());
+            constants.erase({ name, value });
+            // force a reset of the calculated values mapped to the constants
             m_reportBuilder.SetConstants(constants);
             }
         else
@@ -768,7 +763,8 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             {
             // moving to top-level constants
             auto& constants = m_reportBuilder.GetConstants();
-            constants.push_back({ name, value });
+            constants.emplace(name, value);
+            // force a reset of the calculated values mapped to the constants
             m_reportBuilder.SetConstants(constants);
             }
         else
@@ -780,35 +776,29 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             m_reportBuilder.RecalcFormula(name, value, newDsName);
             }
         }
+    // ...or other columns of a "regular" constant
     else if (newDsName.empty())
         {
-        // editing Name or Value of a top-level constant
         auto& constants = m_reportBuilder.GetConstants();
-        int topLevelIdx = 0;
-        for (int r = 0; r < row; ++r)
-            {
-            if (m_constantsGrid->GetCellValue(r, 0).empty())
-                {
-                ++topLevelIdx;
-                }
-            }
-
-        if (static_cast<size_t>(topLevelIdx) >= constants.size())
-            {
-            return;
-            }
-
+        // if name changed, delete the old constant and insert new one
         if (col == 1)
             {
-            constants[topLevelIdx].m_name = name;
+            const wxString oldName = event.GetString();
+            constants.erase({ oldName, value });
+            constants.insert({ name, value });
             }
-        else if (col == 2)
+        // ...or value changed
+        else
             {
-            constants[topLevelIdx].m_value = value;
+            auto pos = constants.find({ name, value });
+            auto nh = constants.extract(pos);
+            nh.value().m_value = value;
+            constants.insert(std::move(nh));
             }
 
         m_reportBuilder.SetConstants(constants);
         }
+    // ...or other column of a dataset formula
     else
         {
         // editing Name or Value of a dataset formula
@@ -851,39 +841,9 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::OnConstantsGridRightClick(wxGridEvent& event)
-    {
-    m_constantsGridClickedRow = event.GetRow();
-
-    wxMenu menu;
-    menu.Append(wxID_ADD, _(L"Add Constant"));
-    if (m_constantsGrid->GetNumberRows() > 0 && m_constantsGridClickedRow >= 0 &&
-        m_constantsGrid->GetCellValue(m_constantsGridClickedRow, 0).empty())
-        {
-        menu.Append(wxID_DELETE, _(L"Delete Constant"));
-        }
-    menu.Bind(wxEVT_MENU, &WisteriaView::OnAddConstant, this, wxID_ADD);
-    menu.Bind(wxEVT_MENU, &WisteriaView::OnDeleteConstant, this, wxID_DELETE);
-    m_constantsGrid->PopupMenu(&menu, event.GetPosition());
-    }
-
-//-------------------------------------------
 void WisteriaView::OnAddConstant([[maybe_unused]] wxCommandEvent& event)
     {
-    wxString name =
-        wxGetTextFromUser(_(L"Enter constant name:"), _(L"Add Constant"), wxString{}, m_frame);
-    if (name.empty())
-        {
-        return;
-        }
-
-    wxString value =
-        wxGetTextFromUser(_(L"Enter constant value:"), _(L"Add Constant"), wxString{}, m_frame);
-
-    auto& constants = m_reportBuilder.GetConstants();
-    constants.push_back({ name, value });
-    m_reportBuilder.SetConstants(constants);
-    PopulateConstantsGrid();
+    m_constantsGrid->AppendRows();
 
     GetDocument()->Modify(true);
     }
@@ -891,42 +851,69 @@ void WisteriaView::OnAddConstant([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::OnDeleteConstant([[maybe_unused]] wxCommandEvent& event)
     {
-    const int row = m_constantsGridClickedRow;
-    if (row < 0)
+    std::set<int> selectedRows;
+
+    // rows where the entire row was selected (via labels)
+    wxArrayInt fullRows = m_constantsGrid->GetSelectedRows();
+    for (int row : fullRows)
         {
-        return;
+        selectedRows.insert(row);
         }
 
-    // only top-level constants can be deleted
-    if (!m_constantsGrid->GetCellValue(row, 0).empty())
+    // rows from rectangular block selections
+    wxGridBlocks blocks = m_constantsGrid->GetSelectedBlocks();
+    for (const auto& block : blocks)
         {
-        return;
-        }
-
-    const wxString name = m_constantsGrid->GetCellValue(row, 1);
-    if (wxMessageBox(wxString::Format(_(L"Delete constant \"%s\"?"), name), _(L"Delete Constant"),
-                     wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)
-        {
-        return;
-        }
-
-    // find the top-level constant index for this row
-    int topLevelIdx = 0;
-    for (int r = 0; r < row; ++r)
-        {
-        if (m_constantsGrid->GetCellValue(r, 0).empty())
+        for (int r = block.GetTopRow(); r <= block.GetBottomRow(); ++r)
             {
-            ++topLevelIdx;
+            selectedRows.insert(r);
             }
         }
 
-    auto& constants = m_reportBuilder.GetConstants();
-    if (static_cast<size_t>(topLevelIdx) < constants.size())
+    // rows from individually selected cells
+    wxGridCellCoordsArray cells = m_constantsGrid->GetSelectedCells();
+    for (const auto& cell : cells)
         {
-        constants.erase(std::next(constants.begin(), topLevelIdx));
-        m_reportBuilder.SetConstants(constants);
-        PopulateConstantsGrid();
+        selectedRows.insert(cell.GetRow());
         }
+
+    if (selectedRows.empty())
+        {
+        wxMessageBox(_(L"Please select a constant to delete."), _(L"Delete Constants"), wxOK,
+                     m_frame);
+        return;
+        }
+
+    if (wxMessageBox(wxPLURAL(L"Delete selected constant?", L"Delete selected constants?",
+                              selectedRows.size()),
+                     _(L"Delete Constants"), wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)
+        {
+        return;
+        }
+
+    for (auto row : selectedRows)
+        {
+        const auto constantName = m_constantsGrid->GetCellValue(row, 1);
+        if (m_constantsGrid->GetCellValue(row, 0).empty())
+            {
+            m_reportBuilder.GetConstants().erase({ constantName, wxString{} });
+            }
+        else
+            {
+            const wxString dsName{ m_constantsGrid->GetCellValue(row, 0) };
+            auto& txOpts = m_reportBuilder.GetDatasetTransformOptions();
+            auto txIt = txOpts.find(dsName);
+            if (txIt == txOpts.end())
+                {
+                return;
+                }
+            auto nh = txOpts.extract(txIt);
+            std::erase(nh.mapped().m_formulas,
+                       Wisteria::ReportBuilder::DatasetFormulaInfo{ constantName, wxString{} });
+            txOpts.insert(std::move(nh));
+            }
+        }
+    PopulateConstantsGrid();
 
     GetDocument()->Modify(true);
     }

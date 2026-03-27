@@ -89,7 +89,6 @@ class WisteriaView : public wxView
     void OnInsertPage(wxCommandEvent& event);
     void OnEditPage(wxCommandEvent& event);
     void OnConstantEdited(wxGridEvent& event);
-    void OnConstantsGridRightClick(wxGridEvent& event);
     void OnAddConstant(wxCommandEvent& event);
     void OnDeleteConstant(wxCommandEvent& event);
     void OnRibbonAddConstant(wxCommandEvent& event);
@@ -207,7 +206,6 @@ class WisteriaView : public wxView
     wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
     wxRibbonButtonBar* m_objectsButtonBar{ nullptr };
     wxGrid* m_constantsGrid{ nullptr };
-    int m_constantsGridClickedRow{ -1 };
     bool m_sidebarShown{ true };
 
     Wisteria::ReportBuilder m_reportBuilder;
