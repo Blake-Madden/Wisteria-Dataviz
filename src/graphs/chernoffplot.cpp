@@ -1763,8 +1763,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         {
             if (!columnName.empty())
                 {
-                legendText.append(
-                    wxString::Format(L"%s: %s\n", GetFeatureDisplayName(featureId), columnName));
+                legendText.append(wxString::Format(L"%s: %s\n", GetFeatureDisplayName(featureId),
+                                                   TruncateLabel(columnName)));
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
                                                       wxPen(m_outlineColor),
                                                       wxBrush(m_outlineColor));
