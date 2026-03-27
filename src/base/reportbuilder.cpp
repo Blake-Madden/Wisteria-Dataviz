@@ -3594,6 +3594,10 @@ namespace Wisteria
                     }
                 }
 
+            chernoffPlot->SetPropertyTemplate(
+                L"enhanced-legend",
+                graphNode->GetProperty(L"enhanced-legend")->AsBool(true) ? L"true" : L"false");
+
             LoadGraph(graphNode, canvas, currentRow, currentColumn, chernoffPlot);
             return chernoffPlot;
             }
@@ -7386,106 +7390,182 @@ namespace Wisteria
         const auto legendNode = graphNode->GetProperty(L"legend");
         if (legendNode->IsOk())
             {
+            const bool useEnhancedChernoffLegend =
+                (graph->IsKindOf(wxCLASSINFO(Graphs::ChernoffFacesPlot)) &&
+                 graph->GetPropertyTemplate(L"enhanced-legend") == L"true");
+            auto* chernoffPlot = useEnhancedChernoffLegend ?
+                                     dynamic_cast<Graphs::ChernoffFacesPlot*>(graph.get()) :
+                                     nullptr;
             const auto ringPerimeterStr = legendNode->GetProperty(L"ring")->AsString();
             const auto ringPerimeter =
                 (ringPerimeterStr.CmpNoCase(L"inner") == 0 ? Perimeter::Inner : Perimeter::Outer);
             const auto includeHeader = legendNode->GetProperty(L"include-header")->AsBool(true);
             const auto headerLabel = legendNode->GetProperty(L"title")->AsString();
             const auto placement = legendNode->GetProperty(L"placement")->AsString();
-            if (placement.CmpNoCase(L"left") == 0)
+
+            if (useEnhancedChernoffLegend && chernoffPlot != nullptr)
                 {
-                auto legend =
-                    graph->CreateLegend(Graphs::LegendOptions()
-                                            .RingPerimeter(ringPerimeter)
-                                            .IncludeHeader(includeHeader)
-                                            .Title(headerLabel)
-                                            .Placement(Side::Left)
-                                            .PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
-                if (legend != nullptr)
+                if (placement.CmpNoCase(L"left") == 0)
                     {
-                    if (!headerLabel.empty())
+                    auto legend = chernoffPlot->CreateEnhancedLegend(
+                        Graphs::LegendOptions{}
+                            .Placement(Side::Left)
+                            .PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
+                    if (legend != nullptr)
                         {
-                        legend->SetLine(0, headerLabel);
+                        canvas->SetFixedObject(currentRow, currentColumn + 1, graph);
+                        canvas->SetFixedObject(currentRow, currentColumn++, std::move(legend));
                         }
-                    legend->SetIsLegend(true);
-                    canvas->SetFixedObject(currentRow, currentColumn + 1, graph);
-                    canvas->SetFixedObject(currentRow, currentColumn++, std::move(legend));
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
                     }
-                else
+                else if (placement.CmpNoCase(L"bottom") == 0)
                     {
-                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    auto legend = chernoffPlot->CreateEnhancedLegend(
+                        Graphs::LegendOptions{}
+                            .Placement(Side::Bottom)
+                            .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+                    if (legend != nullptr)
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        canvas->SetFixedObject(++currentRow, currentColumn, std::move(legend));
+                        }
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
+                    }
+                else if (placement.CmpNoCase(L"top") == 0)
+                    {
+                    auto legend = chernoffPlot->CreateEnhancedLegend(
+                        Graphs::LegendOptions{}.Placement(Side::Top).PlacementHint(
+                            LegendCanvasPlacementHint::AboveOrBeneathGraph));
+                    if (legend != nullptr)
+                        {
+                        canvas->SetFixedObject(currentRow + 1, currentColumn, graph);
+                        canvas->SetFixedObject(currentRow++, currentColumn, std::move(legend));
+                        }
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
+                    }
+                else // right, the default
+                    {
+                    auto legend = chernoffPlot->CreateEnhancedLegend(
+                        Graphs::LegendOptions{}
+                            .Placement(Side::Right)
+                            .PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+                    if (legend != nullptr)
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legend));
+                        }
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
                     }
                 }
-            else if (placement.CmpNoCase(L"bottom") == 0)
+            else
                 {
-                auto legend = graph->CreateLegend(
-                    Graphs::LegendOptions()
-                        .RingPerimeter(ringPerimeter)
-                        .IncludeHeader(includeHeader)
-                        .Title(headerLabel)
-                        .Placement(Side::Bottom)
-                        .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
-                if (legend != nullptr)
+                if (placement.CmpNoCase(L"left") == 0)
                     {
-                    if (!headerLabel.empty())
+                    auto legend = graph->CreateLegend(
+                        Graphs::LegendOptions{}
+                            .RingPerimeter(ringPerimeter)
+                            .IncludeHeader(includeHeader)
+                            .Title(headerLabel)
+                            .Placement(Side::Left)
+                            .PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
+                    if (legend != nullptr)
                         {
-                        legend->SetLine(0, headerLabel);
+                        if (!headerLabel.empty())
+                            {
+                            legend->SetLine(0, headerLabel);
+                            }
+                        legend->SetIsLegend(true);
+                        canvas->SetFixedObject(currentRow, currentColumn + 1, graph);
+                        canvas->SetFixedObject(currentRow, currentColumn++, std::move(legend));
                         }
-                    legend->SetIsLegend(true);
-                    canvas->SetFixedObject(currentRow, currentColumn, graph);
-                    canvas->SetFixedObject(++currentRow, currentColumn, std::move(legend));
-                    }
-                else
-                    {
-                    canvas->SetFixedObject(currentRow, currentColumn, graph);
-                    }
-                }
-            else if (placement.CmpNoCase(L"top") == 0)
-                {
-                auto legend = graph->CreateLegend(
-                    Graphs::LegendOptions()
-                        .RingPerimeter(ringPerimeter)
-                        .IncludeHeader(includeHeader)
-                        .Title(headerLabel)
-                        .Placement(Side::Top)
-                        .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
-                if (legend != nullptr)
-                    {
-                    if (!headerLabel.empty())
+                    else
                         {
-                        legend->SetLine(0, headerLabel);
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
                         }
-                    legend->SetIsLegend(true);
-                    canvas->SetFixedObject(currentRow + 1, currentColumn, graph);
-                    canvas->SetFixedObject(currentRow++, currentColumn, std::move(legend));
                     }
-                else
+                else if (placement.CmpNoCase(L"bottom") == 0)
                     {
-                    canvas->SetFixedObject(currentRow, currentColumn, graph);
-                    }
-                }
-            else // right, the default
-                {
-                auto legend = graph->CreateLegend(
-                    Graphs::LegendOptions()
-                        .RingPerimeter(ringPerimeter)
-                        .IncludeHeader(includeHeader)
-                        .Title(headerLabel)
-                        .Placement(Side::Right)
-                        .PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
-                if (legend != nullptr)
-                    {
-                    if (!headerLabel.empty())
+                    auto legend = graph->CreateLegend(
+                        Graphs::LegendOptions{}
+                            .RingPerimeter(ringPerimeter)
+                            .IncludeHeader(includeHeader)
+                            .Title(headerLabel)
+                            .Placement(Side::Bottom)
+                            .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+                    if (legend != nullptr)
                         {
-                        legend->SetLine(0, headerLabel);
+                        if (!headerLabel.empty())
+                            {
+                            legend->SetLine(0, headerLabel);
+                            }
+                        legend->SetIsLegend(true);
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        canvas->SetFixedObject(++currentRow, currentColumn, std::move(legend));
                         }
-                    legend->SetIsLegend(true);
-                    canvas->SetFixedObject(currentRow, currentColumn, graph);
-                    canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legend));
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
                     }
-                else
+                else if (placement.CmpNoCase(L"top") == 0)
                     {
-                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    auto legend = graph->CreateLegend(
+                        Graphs::LegendOptions{}
+                            .RingPerimeter(ringPerimeter)
+                            .IncludeHeader(includeHeader)
+                            .Title(headerLabel)
+                            .Placement(Side::Top)
+                            .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+                    if (legend != nullptr)
+                        {
+                        if (!headerLabel.empty())
+                            {
+                            legend->SetLine(0, headerLabel);
+                            }
+                        legend->SetIsLegend(true);
+                        canvas->SetFixedObject(currentRow + 1, currentColumn, graph);
+                        canvas->SetFixedObject(currentRow++, currentColumn, std::move(legend));
+                        }
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
+                    }
+                else // right, the default
+                    {
+                    auto legend = graph->CreateLegend(
+                        Graphs::LegendOptions{}
+                            .RingPerimeter(ringPerimeter)
+                            .IncludeHeader(includeHeader)
+                            .Title(headerLabel)
+                            .Placement(Side::Right)
+                            .PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+                    if (legend != nullptr)
+                        {
+                        if (!headerLabel.empty())
+                            {
+                            legend->SetLine(0, headerLabel);
+                            }
+                        legend->SetIsLegend(true);
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legend));
+                        }
+                    else
+                        {
+                        canvas->SetFixedObject(currentRow, currentColumn, graph);
+                        }
                     }
                 }
             }

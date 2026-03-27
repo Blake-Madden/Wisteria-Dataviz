@@ -3777,6 +3777,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         const auto* chernoff = dynamic_cast<const Wisteria::Graphs::ChernoffFacesPlot*>(graph);
         node->Add(L"face-color", ColorToStr(chernoff->GetFaceColor()));
         node->Add(L"show-labels", chernoff->IsShowingLabels());
+        node->Add(L"enhanced-legend", chernoff->GetPropertyTemplate(L"enhanced-legend") == L"true");
         node->Add(L"outline-color", ColorToStr(chernoff->GetOutlineColor()));
         const auto gStr = Wisteria::ReportEnumConvert::ConvertGenderToString(chernoff->GetGender());
         if (gStr.has_value())

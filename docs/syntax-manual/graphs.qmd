@@ -299,6 +299,7 @@ Properties for `"chernoff-faces"` nodes:
   Available options are:
   - `"clean-shaven"`: No facial hair (the default).
   - `"five-o-clock-shadow"`: Light stubble.
+- `"enhanced-legend"`: `true` to display the enhanced version of the legend (default is `true`).
 - Some base properties available to [graphs](#graph-properties).
 
 Note: For effective visualization, this chart is limited to 36 observations (6x6 grid). \

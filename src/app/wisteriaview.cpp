@@ -1551,6 +1551,9 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         plot->SetHairColor(dlg.GetHairColor());
         plot->ShowLabels(dlg.GetShowLabels());
 
+        plot->SetPropertyTemplate(L"enhanced-legend",
+                                  dlg.GetUseEnhancedLegend() ? L"true" : L"false");
+
         using FID = Wisteria::Graphs::ChernoffFacesPlot::FeatureId;
         const auto optVar = [&dlg](FID id) -> std::optional<wxString>
         {
@@ -1601,11 +1604,17 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 dlg.GetUseEnhancedLegend() ?
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                      plot->CreateEnhancedLegend(Wisteria::Graphs::LegendOptions{}
                                                                     .IncludeHeader(true)
                                                                     .Placement(side)
                                                                     .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
                                  std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
@@ -2657,6 +2666,9 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
         plot->ShowLabels(dlg.GetShowLabels());
+
+        plot->SetPropertyTemplate(L"enhanced-legend",
+                                  dlg.GetUseEnhancedLegend() ? L"true" : L"false");
 
         using FID = Wisteria::Graphs::ChernoffFacesPlot::FeatureId;
         const auto optVar = [&dlg](FID id) -> std::optional<wxString>
