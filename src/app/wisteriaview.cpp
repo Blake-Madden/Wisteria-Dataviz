@@ -4720,6 +4720,31 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
                       dlg.GetBarLabelDisplay());
 
+        // apply custom bar sort
+        if (dlg.HasCustomBarSort())
+            {
+            plot->SetPropertyTemplate(L"bar-sort", L"true");
+            if (dlg.GetBarSortComparison().has_value())
+                {
+                plot->SortBars(dlg.GetBarSortComparison().value(), dlg.GetBarSortDirection());
+                }
+            else if (!dlg.GetBarSortLabels().empty())
+                {
+                plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
+                }
+            }
+
+        // apply bar groups
+        for (const auto& group : dlg.GetBarGroups())
+            {
+            plot->AddBarGroup(
+                group.m_startLabel, group.m_endLabel,
+                group.m_decal.empty() ? std::nullopt : std::optional<wxString>(group.m_decal),
+                group.m_color.IsOk() ? std::optional<wxColour>(group.m_color) : std::nullopt,
+                group.m_color.IsOk() ? std::optional<wxBrush>(wxBrush(group.m_color)) :
+                                       std::nullopt);
+            }
+
         plot->SetBarEffect(dlg.GetBoxEffect());
 
         // apply stipple shape or image settings based on the selected effect
@@ -4898,6 +4923,32 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
                       dlg.GetBarLabelDisplay());
+
+        // restore custom bar sort from the previous chart
+        if (dlg.HasCustomBarSort())
+            {
+            plot->SetPropertyTemplate(L"bar-sort", L"true");
+            if (dlg.GetBarSortComparison().has_value())
+                {
+                plot->SortBars(dlg.GetBarSortComparison().value(), dlg.GetBarSortDirection());
+                }
+            else if (!dlg.GetBarSortLabels().empty())
+                {
+                plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
+                }
+            }
+
+        // restore bar groups and placement
+        plot->SetBarGroupPlacement(dlg.GetBarGroupPlacement());
+        for (const auto& group : dlg.GetBarGroups())
+            {
+            plot->AddBarGroup(
+                group.m_startLabel, group.m_endLabel,
+                group.m_decal.empty() ? std::nullopt : std::optional<wxString>(group.m_decal),
+                group.m_color.IsOk() ? std::optional<wxColour>(group.m_color) : std::nullopt,
+                group.m_color.IsOk() ? std::optional<wxBrush>(wxBrush(group.m_color)) :
+                                       std::nullopt);
+            }
 
         plot->SetBarEffect(dlg.GetBoxEffect());
 

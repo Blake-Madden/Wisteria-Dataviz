@@ -31,6 +31,19 @@ namespace Wisteria::UI
             - Bar label display.
             - A color scheme choice.
             - Legend placement.*/
+    /// @brief Label-based bar group info for the dialog UI.
+    struct BarGroupInfo
+        {
+        /// @brief The axis label of the first bar in the group.
+        wxString m_startLabel;
+        /// @brief The axis label of the last bar in the group.
+        wxString m_endLabel;
+        /// @brief A label to draw on the group bar.
+        wxString m_decal;
+        /// @brief The color of the group bar.
+        wxColour m_color;
+        };
+
     class InsertCatBarChartDlg final : public InsertGraphDlg
         {
       public:
@@ -178,6 +191,37 @@ namespace Wisteria::UI
             return m_imageStitchDirection;
             }
 
+        /// @returns The bar groups (label-based, for applying via AddBarGroup).
+        [[nodiscard]]
+        const std::vector<BarGroupInfo>& GetBarGroups() const noexcept
+            {
+            return m_barGroups;
+            }
+
+        /// @returns How the bar groups are aligned with their respective bars.
+        [[nodiscard]]
+        LabelPlacement GetBarGroupPlacement() const noexcept
+            {
+            return m_barGroupPlacement;
+            }
+
+        /// @returns Whether a custom bar sort was explicitly set (not the default).
+        [[nodiscard]]
+        bool HasCustomBarSort() const noexcept;
+
+        /// @returns The bar sort direction.
+        [[nodiscard]]
+        SortDirection GetBarSortDirection() const noexcept;
+
+        /// @returns The bar sort comparison method, or @c std::nullopt if sorting
+        ///     by a custom label list.
+        [[nodiscard]]
+        std::optional<Graphs::BarChart::BarSortComparison> GetBarSortComparison() const noexcept;
+
+        /// @returns The custom bar sort label order (read from the list box).
+        [[nodiscard]]
+        std::vector<wxString> GetBarSortLabels() const;
+
         /// @brief Populates all dialog controls from an existing categorical bar chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -192,7 +236,9 @@ namespace Wisteria::UI
         void OnSelectStippleShape();
         void OnSelectImages();
         void OnBoxEffectChanged();
+        void OnBarSortChanged();
         void UpdateVariableLabels();
+        void SyncBarGroupsToList();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
@@ -222,6 +268,16 @@ namespace Wisteria::UI
         wxChoice* m_legendChoice{ nullptr };
         wxStaticText* m_legendLabel{ nullptr };
 
+        // bar sort controls
+        wxRadioButton* m_sortNoneRadio{ nullptr };
+        wxRadioButton* m_sortAscRadio{ nullptr };
+        wxRadioButton* m_sortDescRadio{ nullptr };
+        wxRadioButton* m_sortCustomRadio{ nullptr };
+        wxEditableListBox* m_sortLabelListBox{ nullptr };
+
+        // bar group controls
+        wxEditableListBox* m_barGroupListBox{ nullptr };
+
         // DDX data members
         int m_boxEffectIndex{ 0 };
         int m_barOrientationIndex{ 0 };
@@ -245,6 +301,10 @@ namespace Wisteria::UI
         Orientation m_imageStitchDirection{ Orientation::Horizontal };
 
         std::vector<wxString> m_datasetNames;
+
+        // bar group settings (label-based, preserved during editing)
+        std::vector<BarGroupInfo> m_barGroups;
+        LabelPlacement m_barGroupPlacement{ LabelPlacement::NextToParent };
         };
     } // namespace Wisteria::UI
 

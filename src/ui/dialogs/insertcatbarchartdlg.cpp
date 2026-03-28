@@ -29,8 +29,8 @@ namespace Wisteria::UI
         FinalizeControls();
 
         const auto currentSize = GetSize();
-        SetSize(currentSize.GetWidth() * 2, currentSize.GetHeight());
-        SetMinSize(wxSize{ currentSize.GetWidth() * 2, currentSize.GetHeight() });
+        SetSize(currentSize.GetWidth(), currentSize.GetHeight());
+        SetMinSize(wxSize{ currentSize.GetWidth(), currentSize.GetHeight() });
 
         Centre();
         }
@@ -42,9 +42,12 @@ namespace Wisteria::UI
         CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
-        auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
+        auto* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
         optionsPage->SetSizer(optionsSizer);
         GetSideBarBook()->AddPage(optionsPage, _(L"Bar Chart Options"), ID_OPTIONS_SECTION, true);
+
+        // left column: original options
+        auto* leftSizer = new wxBoxSizer(wxVERTICAL);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -68,7 +71,7 @@ namespace Wisteria::UI
             m_datasetChoice->SetSelection(0);
             }
 
-        optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
+        leftSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
         auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
@@ -103,7 +106,7 @@ namespace Wisteria::UI
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
-        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
+        leftSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // bar orientation
         auto* orientSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -115,7 +118,7 @@ namespace Wisteria::UI
         orientSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       orientations, 0, wxGenericValidator(&m_barOrientationIndex)),
                          wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(orientSizer, wxSizerFlags{}.Border());
+        leftSizer->Add(orientSizer, wxSizerFlags{}.Border());
 
         // bar label display
         auto* labelDispSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -133,11 +136,11 @@ namespace Wisteria::UI
                                          labelDisplays, 0,
                                          wxGenericValidator(&m_barLabelDisplayIndex)),
                             wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(labelDispSizer, wxSizerFlags{}.Border());
+        leftSizer->Add(labelDispSizer, wxSizerFlags{}.Border());
 
         // box effect
         auto* effectSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        effectSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Box effect:")),
+        effectSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar effect:")),
                          wxSizerFlags{}.CenterVertical());
         wxArrayString boxEffects;
         boxEffects.Add(_(L"Solid"));
@@ -155,7 +158,7 @@ namespace Wisteria::UI
         m_boxEffectChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          boxEffects, 0, wxGenericValidator(&m_boxEffectIndex));
         effectSizer->Add(m_boxEffectChoice, wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(effectSizer, wxSizerFlags{}.Border());
+        leftSizer->Add(effectSizer, wxSizerFlags{}.Border());
 
         // stipple shape button and label (enabled only for StippleShape effect)
         auto* shapeBtnSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -166,7 +169,7 @@ namespace Wisteria::UI
         m_shapeLabel->SetForegroundColour(GetVariableLabelColor());
         m_shapeLabel->Enable(false);
         shapeBtnSizer->Add(m_shapeLabel, wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(shapeBtnSizer, wxSizerFlags{}.Border(wxLEFT));
+        leftSizer->Add(shapeBtnSizer, wxSizerFlags{}.Border(wxLEFT));
 
         // images button and label (enabled only for image-based effects)
         auto* imgBtnSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -177,7 +180,7 @@ namespace Wisteria::UI
         m_imagesLabel->SetForegroundColour(GetVariableLabelColor());
         m_imagesLabel->Enable(false);
         imgBtnSizer->Add(m_imagesLabel, wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(imgBtnSizer, wxSizerFlags{}.Border(wxLEFT));
+        leftSizer->Add(imgBtnSizer, wxSizerFlags{}.Border(wxLEFT));
 
         // legend placement
         auto* legendGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -187,7 +190,222 @@ namespace Wisteria::UI
         m_legendChoice = CreateLegendPlacementChoice(optionsPage, 1);
         m_legendChoice->Enable(false);
         legendGrid->Add(m_legendChoice);
-        optionsSizer->Add(legendGrid, wxSizerFlags{}.Border());
+        leftSizer->Add(legendGrid, wxSizerFlags{}.Border());
+
+        optionsSizer->Add(leftSizer, wxSizerFlags{}.Expand());
+
+        // right column: bar sorting and bar groups
+        auto* rightSizer = new wxBoxSizer(wxVERTICAL);
+
+        // bar sorting
+        auto* sortBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Bar Sorting"));
+
+        m_sortNoneRadio = new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"No custom sort"),
+                                            wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+        sortBox->Add(m_sortNoneRadio, wxSizerFlags{}.Border());
+
+        m_sortAscRadio = new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort ascending"));
+        sortBox->Add(m_sortAscRadio, wxSizerFlags{}.Border());
+
+        m_sortDescRadio =
+            new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort descending"));
+        sortBox->Add(m_sortDescRadio, wxSizerFlags{}.Border());
+
+        m_sortCustomRadio =
+            new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Custom order:"));
+        sortBox->Add(m_sortCustomRadio, wxSizerFlags{}.Border());
+
+        m_sortLabelListBox =
+            new wxEditableListBox(sortBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                                  wxSize{ FromDIP(300), FromDIP(120) }, 0);
+        m_sortLabelListBox->Enable(false);
+        sortBox->Add(m_sortLabelListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        rightSizer->Add(sortBox, wxSizerFlags{ 1 }.Expand());
+
+        // bar groups
+        m_barGroupListBox = new wxEditableListBox(
+            optionsPage, wxID_ANY, _(L"Bar groups:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        rightSizer->Add(m_barGroupListBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
+
+        optionsSizer->Add(rightSizer, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New button to open a structured sub-dialog
+        m_barGroupListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const auto sortLabels = GetBarSortLabels();
+                wxArrayString barChoices;
+                if (!sortLabels.empty())
+                    {
+                    for (const auto& label : sortLabels)
+                        {
+                        barChoices.Add(label);
+                        }
+                    }
+                else
+                    {
+                    // fall back to the sort list box contents
+                    m_sortLabelListBox->GetStrings(barChoices);
+                    }
+                if (barChoices.size() < 2)
+                    {
+                    wxMessageBox(_(L"At least two bars are needed to define a group."),
+                                 _(L"Not Enough Bars"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+
+                wxDialog dlg(this, wxID_ANY, _(L"Add Bar Group"), wxDefaultPosition, wxDefaultSize,
+                             wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+                auto* sizer = new wxBoxSizer(wxVERTICAL);
+                auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                grid->AddGrowableCol(1, 1);
+
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start bar:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* startCtrl =
+                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+                startCtrl->SetSelection(0);
+                grid->Add(startCtrl, wxSizerFlags{}.Expand());
+
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End bar:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* endCtrl =
+                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+                endCtrl->SetSelection(static_cast<int>(barChoices.size()) - 1);
+                grid->Add(endCtrl, wxSizerFlags{}.Expand());
+
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+                grid->Add(decalCtrl, wxSizerFlags{}.Expand());
+
+                sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+                sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                           wxSizerFlags{}.Expand().Border());
+                dlg.SetSizer(sizer);
+                dlg.Fit();
+                dlg.SetMinSize(dlg.GetSize());
+
+                if (dlg.ShowModal() != wxID_OK)
+                    {
+                    return;
+                    }
+
+                const auto startSel = startCtrl->GetSelection();
+                const auto endSel = endCtrl->GetSelection();
+                if (startSel == wxNOT_FOUND || endSel == wxNOT_FOUND)
+                    {
+                    return;
+                    }
+
+                m_barGroups.push_back({ barChoices[startSel], barChoices[endSel],
+                                        decalCtrl->GetValue().Trim(true).Trim(false), wxColour{} });
+                SyncBarGroupsToList();
+            });
+
+        // override Edit button
+        m_barGroupListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                auto* listCtrl = m_barGroupListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_barGroups.size()))
+                    {
+                    return;
+                    }
+
+                auto& group = m_barGroups[sel];
+
+                const auto sortLabels = GetBarSortLabels();
+                wxArrayString barChoices;
+                if (!sortLabels.empty())
+                    {
+                    for (const auto& label : sortLabels)
+                        {
+                        barChoices.Add(label);
+                        }
+                    }
+                else
+                    {
+                    m_sortLabelListBox->GetStrings(barChoices);
+                    }
+                if (barChoices.size() < 2)
+                    {
+                    return;
+                    }
+
+                wxDialog dlg(this, wxID_ANY, _(L"Edit Bar Group"), wxDefaultPosition, wxDefaultSize,
+                             wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+                auto* sizer = new wxBoxSizer(wxVERTICAL);
+                auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                grid->AddGrowableCol(1, 1);
+
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start bar:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* startCtrl =
+                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+                startCtrl->SetStringSelection(group.m_startLabel);
+                grid->Add(startCtrl, wxSizerFlags{}.Expand());
+
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End bar:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* endCtrl =
+                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+                endCtrl->SetStringSelection(group.m_endLabel);
+                grid->Add(endCtrl, wxSizerFlags{}.Expand());
+
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY, group.m_decal);
+                grid->Add(decalCtrl, wxSizerFlags{}.Expand());
+
+                sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+                sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                           wxSizerFlags{}.Expand().Border());
+                dlg.SetSizer(sizer);
+                dlg.Fit();
+                dlg.SetMinSize(dlg.GetSize());
+
+                if (dlg.ShowModal() != wxID_OK)
+                    {
+                    return;
+                    }
+
+                const auto startSel2 = startCtrl->GetSelection();
+                const auto endSel2 = endCtrl->GetSelection();
+                if (startSel2 == wxNOT_FOUND || endSel2 == wxNOT_FOUND)
+                    {
+                    return;
+                    }
+
+                group.m_startLabel = barChoices[startSel2];
+                group.m_endLabel = barChoices[endSel2];
+                group.m_decal = decalCtrl->GetValue().Trim(true).Trim(false);
+                SyncBarGroupsToList();
+            });
+
+        // override Delete button
+        m_barGroupListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_barGroupListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_barGroups.size()))
+                    {
+                    return;
+                    }
+                m_barGroups.erase(m_barGroups.begin() + sel);
+                SyncBarGroupsToList();
+            });
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -204,6 +422,15 @@ namespace Wisteria::UI
 
         m_imagesButton->Bind(wxEVT_BUTTON,
                              [this]([[maybe_unused]] wxCommandEvent&) { OnSelectImages(); });
+
+        m_sortNoneRadio->Bind(wxEVT_RADIOBUTTON,
+                              [this]([[maybe_unused]] wxCommandEvent&) { OnBarSortChanged(); });
+        m_sortAscRadio->Bind(wxEVT_RADIOBUTTON,
+                             [this]([[maybe_unused]] wxCommandEvent&) { OnBarSortChanged(); });
+        m_sortDescRadio->Bind(wxEVT_RADIOBUTTON,
+                              [this]([[maybe_unused]] wxCommandEvent&) { OnBarSortChanged(); });
+        m_sortCustomRadio->Bind(wxEVT_RADIOBUTTON,
+                                [this]([[maybe_unused]] wxCommandEvent&) { OnBarSortChanged(); });
         }
 
     //-------------------------------------------
@@ -332,6 +559,59 @@ namespace Wisteria::UI
         // StippleImage (4), CommonImage (8), Image (9)
         m_imagesButton->Enable(sel == 4 || sel == 8 || sel == 9);
         m_imagesLabel->Enable(sel == 4 || sel == 8 || sel == 9);
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::OnBarSortChanged()
+        {
+        if (m_sortLabelListBox != nullptr)
+            {
+            m_sortLabelListBox->Enable(m_sortCustomRadio->GetValue());
+            }
+        m_barGroups.clear();
+        SyncBarGroupsToList();
+        }
+
+    //-------------------------------------------
+    bool InsertCatBarChartDlg::HasCustomBarSort() const noexcept
+        {
+        return !m_sortNoneRadio->GetValue();
+        }
+
+    //-------------------------------------------
+    SortDirection InsertCatBarChartDlg::GetBarSortDirection() const noexcept
+        {
+        if (m_sortDescRadio->GetValue())
+            {
+            return SortDirection::SortDescending;
+            }
+        return SortDirection::SortAscending;
+        }
+
+    //-------------------------------------------
+    std::optional<Graphs::BarChart::BarSortComparison>
+    InsertCatBarChartDlg::GetBarSortComparison() const noexcept
+        {
+        if (m_sortAscRadio->GetValue() || m_sortDescRadio->GetValue())
+            {
+            return Graphs::BarChart::BarSortComparison::SortByBarLength;
+            }
+        return std::nullopt;
+        }
+
+    //-------------------------------------------
+    std::vector<wxString> InsertCatBarChartDlg::GetBarSortLabels() const
+        {
+        wxArrayString strings;
+        m_sortLabelListBox->GetStrings(strings);
+
+        std::vector<wxString> labels;
+        labels.reserve(strings.GetCount());
+        for (const auto& str : strings)
+            {
+            labels.push_back(str);
+            }
+        return labels;
         }
 
     //-------------------------------------------
@@ -506,6 +786,10 @@ namespace Wisteria::UI
         m_weightVarLabel->SetLabel(m_weightVariable);
         m_groupVarLabel->SetLabel(m_groupVariable);
 
+        // bar groups reference bar indices that become invalid
+        // when the categorical variable changes
+        m_barGroups.clear();
+
         const bool hasGroup = !m_groupVariable.empty();
         if (m_legendLabel != nullptr)
             {
@@ -520,7 +804,68 @@ namespace Wisteria::UI
                 }
             }
 
+        // populate the sort list box with the categorical variable's labels
+        if (m_sortLabelListBox != nullptr)
+            {
+            // deselect all items before replacing the strings to avoid
+            // out-of-range access during internal list control events
+            auto* listCtrl = m_sortLabelListBox->GetListCtrl();
+            for (long i = listCtrl->GetItemCount() - 1; i >= 0; --i)
+                {
+                listCtrl->SetItemState(i, 0, wxLIST_STATE_SELECTED);
+                }
+            wxArrayString labels;
+            const auto dataset = GetSelectedDataset();
+            if (dataset != nullptr && !m_categoricalVariable.empty())
+                {
+                // check if using the ID column
+                if (dataset->GetIdColumn().GetName().CmpNoCase(m_categoricalVariable) == 0)
+                    {
+                    // collect unique ID values in order of appearance
+                    std::set<wxString, Data::wxStringLessNoCase> seen;
+                    for (size_t i = 0; i < dataset->GetRowCount(); ++i)
+                        {
+                        const auto& val = dataset->GetIdColumn().GetValue(i);
+                        if (seen.insert(val).second)
+                            {
+                            labels.Add(val);
+                            }
+                        }
+                    }
+                else
+                    {
+                    const auto catCol = dataset->GetCategoricalColumn(m_categoricalVariable);
+                    if (catCol != dataset->GetCategoricalColumns().cend())
+                        {
+                        // string table maps ID -> label, sorted by ID
+                        for (const auto& [id, label] : catCol->GetStringTable())
+                            {
+                            if (!label.empty())
+                                {
+                                labels.Add(label);
+                                }
+                            }
+                        }
+                    }
+                }
+            m_sortLabelListBox->SetStrings(labels);
+            }
+
+        SyncBarGroupsToList();
+
         GetSideBarBook()->GetCurrentPage()->Layout();
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::SyncBarGroupsToList()
+        {
+        wxArrayString items;
+        for (const auto& group : m_barGroups)
+            {
+            items.Add(group.m_startLabel + L" → " + group.m_endLabel +
+                      (group.m_decal.empty() ? wxString{} : L": " + group.m_decal));
+            }
+        m_barGroupListBox->SetStrings(items);
         }
 
     //-------------------------------------------
@@ -733,9 +1078,56 @@ namespace Wisteria::UI
                                          Orientation::Horizontal;
             }
 
+        // bar groups — convert from index-based to label-based
+        m_barGroups.clear();
+        const auto& bars = barChart->GetBars();
+        for (const auto& group : barChart->GetBarGroups())
+            {
+            const auto startIdx = group.m_barPositions.first;
+            const auto endIdx = group.m_barPositions.second;
+            if (startIdx < bars.size() && endIdx < bars.size())
+                {
+                m_barGroups.push_back({ bars[startIdx].GetAxisLabel().GetText(),
+                                        bars[endIdx].GetAxisLabel().GetText(), group.m_barDecal,
+                                        group.m_barColor });
+                }
+            }
+        m_barGroupPlacement = barChart->GetBarGroupPlacement();
+        SyncBarGroupsToList();
+
+        // select the appropriate sort radio button and populate the sort list box
+        if (!barChart->GetPropertyTemplate(L"bar-sort").empty())
+            {
+            if (!barChart->GetSortLabels().empty())
+                {
+                m_sortCustomRadio->SetValue(true);
+                // use the original label order passed to SortBars(),
+                // not the post-reversal bar order
+                wxArrayString sortLabels;
+                for (const auto& label : barChart->GetSortLabels())
+                    {
+                    sortLabels.Add(label);
+                    }
+                m_sortLabelListBox->SetStrings(sortLabels);
+                }
+            else if (barChart->GetSortDirection() == SortDirection::SortDescending)
+                {
+                m_sortDescRadio->SetValue(true);
+                }
+            else
+                {
+                m_sortAscRadio->SetValue(true);
+                }
+            }
+
         TransferDataToWindow();
 
         // update button enabled states after DDX transfers the box effect
         OnBoxEffectChanged();
+        // enable/disable the sort list box without clearing bar groups
+        if (m_sortLabelListBox != nullptr)
+            {
+            m_sortLabelListBox->Enable(m_sortCustomRadio->GetValue());
+            }
         }
     } // namespace Wisteria::UI
