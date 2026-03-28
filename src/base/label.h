@@ -42,7 +42,7 @@ namespace Wisteria::GraphItems
     /** @brief A text box that can be placed on a canvas. Can also be used as a legend.
         @note Call @c GetGraphItemInfo() to edit most of the appearance and layout
             functionality for a label.
-        @sa The [label](../../labels.md) overview for more information.
+        @sa The [label](../../docs/labels.md) overview for more information.
 
         @par Basic Markup Support
         Labels support basic HTML markup using the `<span>` element with the `style` attribute.

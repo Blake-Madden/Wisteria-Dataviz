@@ -32,11 +32,11 @@ It includes features such as:
 
 - Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
 - Interface for displaying tabular data
-- Built-in [printing](printing.md), copying, and exporting support
-- Data [importing](importing-data.md) (Excel, OpenDocument Spreadsheet, CSV, tab-delimited, or user-defined delimited files) support
-- Data [transformations](transforming-data.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
+- Built-in [printing](docs/printing.md), copying, and exporting support
+- Data [importing](docs/importing-data.md) (Excel, OpenDocument Spreadsheet, CSV, tab-delimited, or user-defined delimited files) support
+- Data [transformations](docs/transforming-data.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
 - Data exporting (CSV, tab-delimited, or user-defined delimited files) support
-- [Image](images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
+- [Image](docs/images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
 - Image effects, such as oil-painting and Sepia tone
 - Effects for boxes and bars, including transparency, a watercolor look, a glassy look, stipple brushes, and color fades
 - Reference lines and areas
@@ -45,22 +45,22 @@ It includes features such as:
   - Graphs can be embedded side-by-side on the same (scrollable) canvas
   - Includes support for setting a common axis for all graphs across a row or down a column
 
-See more in the [features overview](Features.md).
+See more in the [features overview](docs/features.md).
   
 General Workflow
 =============================
 
-- Setup the [library's settings](setup.md) (optionally) when your application starts
+- Setup the [library's settings](docs/setup.md) (optionally) when your application starts
 - Construct a `Wisteria::Canvas` object (which is a `wxScrolledWindow`-derived window), and embed it into
 a `wxFrame` or `wxDialog`
-- [Import data](importing-data.md) into a `Wisteria::Data::Dataset` (or [build](building-data.md) a dataset),
+- [Import data](docs/importing-data.md) into a `Wisteria::Data::Dataset` (or [build](docs/building-data.md) a dataset),
 specifying which columns to include and how to classify them
 - Construct a plot object (e.g., `Wisteria::Graphs::LinePlot`) and pass your dataset to it
 - Customize the plot, as needed
   - Change the colors and styles of the bars, lines, etc.
   - Change the plot background color, or use an image as the background
   - Add titles and captions
-  - Adjust the [axes](axes.md), add tick marks, add custom [labels](labels.md)
+  - Adjust the [axes](docs/axes.md), add tick marks, add custom [labels](docs/labels.md)
   - etc.
 - Add the plot (and its legend [if applicable]) to the canvas
 
@@ -166,7 +166,7 @@ Sports
 | :-------------- |
 | ![](docs/images/WinLossSparkline.svg) |
 
-See more in the [graphs gallery](gallery.md).
+See more in the [graphs gallery](docs/gallery.md).
 
 Release Notes
 =============================
