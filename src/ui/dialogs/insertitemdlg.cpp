@@ -556,14 +556,7 @@ namespace Wisteria::UI
         item.FitCanvasRowHeightToContent(GetFitRowToContent());
 
         const auto sides = GetOutlineSides();
-        if (sides.any())
-            {
-            item.GetPen() = GetOutlinePen();
-            }
-        else
-            {
-            item.GetPen() = wxNullPen;
-            }
+        item.GetPen() = GetOutlinePen();
         item.GetGraphItemInfo().Outline(sides[0], sides[1], sides[2], sides[3]);
         }
 
