@@ -13,14 +13,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: cppcheck
-        uses: deep5050/cppcheck-action@main
-        with:
-          std: c++20
-          inline_suppression: enable
-          exclude_check: ./tests
-          output_file: cppcheck_report.txt
-          other_options: --library=wxwidgets,windows
+      - name: Install Cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+      - name: Run Cppcheck
+        run: |
+          cppcheck --enable=all \
+                   --std=c++20 \
+                   --inline-suppr \
+                   --library=wxwidgets \
+                   --library=windows \
+                   --exclude=./tests \
+                   --output-file=cppcheck_report.txt \
+                   --xml-version=2 \
+                   . 2>&1 || true 
+          # Note: '|| true' prevents the step from failing early so your script can parse it.
+          # XML version 2 is often easier to parse, but keeping it as text for your script below.
+          # If you want plain text for your sed script, remove --xml-version=2.
+          
+          cppcheck --enable=all --std=c++20 --inline-suppr --library=wxwidgets,windows --exclude=./tests . > cppcheck_report.txt 2>&1 || true
 
       - name: print output
         run: |
@@ -28,20 +41,18 @@ jobs:
              WARNINGSFILE=./warnings.txt
              if test -f "$REPORTFILE"; then
                 # Filter innocuous warnings and write the remaining ones to another file.
-                # Note that you can add more warnings by adding it in the parenthesis,
-                # with "\|" in front of it. For example, "(missingIncludeSystem\|useStlAlgorithm\)"
                 sed 's/\[\(missingIncludeSystem\|assertWithSideEffect\|unknownMacro\|internalAstError\|missingInclude\|unusedFunction\|ConfigurationNotChecked\|toomanyconfigs\|unmatchedSuppression\|useStlAlgorithm\)\]//g' "$REPORTFILE" > "$WARNINGSFILE"
+                
                 # are there any remaining warnings?
                 if grep -qP '\[[a-zA-Z0-9]{5,}\]' "$WARNINGSFILE"; then
-                    # print the remaining warnings
                     echo Warnings detected:
                     echo ==================
-                    cat "$WARNINGSFILE" | grep -P '\[[a-zA-Z0-9]{5,}\]'
-                    # fail the job
+                    grep -P '\[[a-zA-Z0-9]{5,}\]' "$WARNINGSFILE"
                     exit 1
                 else
-                    echo No warnings detected
+                    echo "No relevant warnings detected"
                 fi
              else
                 echo "$REPORTFILE" not found
+                exit 1
              fi
