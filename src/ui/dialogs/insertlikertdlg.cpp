@@ -164,10 +164,10 @@ namespace Wisteria::UI
         optionsSizer->Add(labelSizer, wxSizerFlags{}.Border().Expand());
 
         // question brackets
-        m_bracketListBox =
-            new wxEditableListBox(optionsPage, wxID_ANY, _(L"Question brackets:"),
-                                  wxDefaultPosition, wxSize{ FromDIP(300), FromDIP(100) },
-                                  wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT);
+        m_bracketListBox = new wxEditableListBox(
+            optionsPage, wxID_ANY, _(L"Question brackets:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         optionsSizer->Add(m_bracketListBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // override New button to open a structured sub-dialog

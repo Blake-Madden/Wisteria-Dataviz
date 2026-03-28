@@ -178,10 +178,10 @@ namespace Wisteria::UI
         // top shapes
         auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shapes"));
 
-        m_topShapeListBox =
-            new wxEditableListBox(topShapeBox->GetStaticBox(), wxID_ANY, _(L"Shapes:"),
-                                  wxDefaultPosition, wxSize{ FromDIP(300), FromDIP(100) },
-                                  wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT);
+        m_topShapeListBox = new wxEditableListBox(
+            topShapeBox->GetStaticBox(), wxID_ANY, _(L"Shapes:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         topShapeBox->Add(m_topShapeListBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // override New to open shape dialog

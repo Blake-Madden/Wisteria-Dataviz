@@ -48,10 +48,10 @@ namespace Wisteria::UI
             }
 
         // image file paths
-        m_pathListBox =
-            new wxEditableListBox(imagePage, wxID_ANY, _(L"Image files:"), wxDefaultPosition,
-                                  wxSize{ FromDIP(300), FromDIP(120) },
-                                  wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT);
+        m_pathListBox = new wxEditableListBox(
+            imagePage, wxID_ANY, _(L"Image files:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         imageSizer->Add(m_pathListBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // change New button icon to image icon

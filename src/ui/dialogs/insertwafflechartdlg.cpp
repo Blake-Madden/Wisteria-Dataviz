@@ -43,10 +43,10 @@ namespace Wisteria::UI
                                   true);
 
         // shapes list
-        m_shapeListBox =
-            new wxEditableListBox(optionsPage, wxID_ANY, _(L"Shapes:"), wxDefaultPosition,
-                                  wxSize{ FromDIP(400), FromDIP(150) },
-                                  wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT);
+        m_shapeListBox = new wxEditableListBox(
+            optionsPage, wxID_ANY, _(L"Shapes:"), wxDefaultPosition,
+            wxSize{ FromDIP(400), FromDIP(150) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         optionsSizer->Add(m_shapeListBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // override New to open the shape sub-dialog
