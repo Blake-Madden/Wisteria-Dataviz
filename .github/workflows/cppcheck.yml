@@ -20,15 +20,14 @@ jobs:
 
       - name: Run Cppcheck
         run: |
+          # Use -i to ignore the tests directory. 
+          # Note: there is no space between -i and the directory name.
           cppcheck --enable=all \
                    --std=c++20 \
                    --inline-suppr \
-                   --library=wxwidgets \
-                   --library=windows \
-                   --exclude=./tests \
-                   --output-file=cppcheck_report.txt \
-                   --xml-version=2 \
-                   . 2>&1 || true 
+                   --library=wxwidgets,windows \
+                   -itests \
+                   . > cppcheck_report.txt 2>&1 || true
           # Note: '|| true' prevents the step from failing early so your script can parse it.
           # XML version 2 is often easier to parse, but keeping it as text for your script below.
           # If you want plain text for your sed script, remove --xml-version=2.
