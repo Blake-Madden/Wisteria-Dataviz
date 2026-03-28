@@ -111,16 +111,6 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_showConfidenceBands)),
                           wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
-
         // shape scheme
         auto* shapeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         shapeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Point shapes:")),
@@ -302,6 +292,11 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (!ValidateColorScheme())
+            {
+            return false;
+            }
+
         return true;
         }
 
@@ -345,9 +340,6 @@ namespace Wisteria::UI
         // scatter-specific options
         m_showRegressionLines = scatter->IsShowingRegressionLines();
         m_showConfidenceBands = scatter->IsShowingConfidenceBands();
-
-        // determine which color scheme is in use
-        m_colorSchemeIndex = ColorSchemeToIndex(scatter->GetColorScheme());
 
         // determine which shape scheme is in use
         const auto& scheme = scatter->GetShapeScheme();

@@ -1653,12 +1653,6 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -2310,12 +2304,6 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -2442,12 +2430,6 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
         plot->SetMinBubbleRadius(dlg.GetMinBubbleRadius());
         plot->SetMaxBubbleRadius(dlg.GetMaxBubbleRadius());
@@ -2525,12 +2507,6 @@ void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
         plot->SetMinBubbleRadius(dlg.GetMinBubbleRadius());
         plot->SetMaxBubbleRadius(dlg.GetMaxBubbleRadius());
@@ -2827,12 +2803,6 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -2905,12 +2875,6 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -3030,12 +2994,6 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariables(), dlg.GetXVariable());
@@ -3107,12 +3065,6 @@ void WisteriaView::EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph,
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariables(), dlg.GetXVariable());
@@ -3231,12 +3183,6 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -3310,12 +3256,6 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -3864,13 +3804,6 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetLabelDisplay(dlg.GetTaskLabelDisplay());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
-
         const std::optional<wxString> resourceCol =
             dlg.GetResourceVariable().empty() ? std::nullopt :
                                                 std::optional<wxString>(dlg.GetResourceVariable());
@@ -3968,13 +3901,6 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetLabelDisplay(dlg.GetTaskLabelDisplay());
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
-
         const std::optional<wxString> resourceCol =
             dlg.GetResourceVariable().empty() ? std::nullopt :
                                                 std::optional<wxString>(dlg.GetResourceVariable());
@@ -4389,12 +4315,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(
-            canvas,
-            (dlg.GetColorScheme() != nullptr) ?
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()) :
-                nullptr,
-            dlg.GetColorScheme());
+        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -4566,12 +4487,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(
-            canvas,
-            (dlg.GetColorScheme() != nullptr) ?
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()) :
-                nullptr,
-            dlg.GetColorScheme());
+        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -4789,12 +4705,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
-            canvas,
-            (dlg.GetColorScheme() != nullptr) ?
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()) :
-                nullptr,
-            dlg.GetColorScheme());
+        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -4973,12 +4884,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
-            canvas,
-            (dlg.GetColorScheme() != nullptr) ?
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()) :
-                nullptr,
-            dlg.GetColorScheme());
+        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5466,7 +5372,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas, dlg.GetColorScheme());
+        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5540,7 +5446,7 @@ void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas, dlg.GetColorScheme());
+        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5665,13 +5571,6 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
-
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
@@ -5748,13 +5647,6 @@ void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         auto plot = std::make_shared<Wisteria::Graphs::Histogram>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
-
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
 
         const std::optional<wxString> groupCol =
             dlg.GetGroupVariable().empty() ? std::nullopt :
@@ -5881,13 +5773,6 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
-
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetWeightVariable());
@@ -5941,13 +5826,6 @@ void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         auto plot = std::make_shared<Wisteria::Graphs::WordCloud>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
-
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
 
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
@@ -6406,13 +6284,6 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
-
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetWeightVariable());
@@ -6507,13 +6378,6 @@ void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(canvas);
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
-
-        if (dlg.GetColorScheme() != nullptr)
-            {
-            plot->SetColorScheme(dlg.GetColorScheme());
-            plot->SetBrushScheme(
-                std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*dlg.GetColorScheme()));
-            }
 
         const std::optional<wxString> weightCol =
             dlg.GetWeightVariable().empty() ? std::nullopt :

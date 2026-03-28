@@ -128,16 +128,6 @@ namespace Wisteria::UI
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
-
         // date interval
         auto* optGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -416,6 +406,11 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (!ValidateColorScheme())
+            {
+            return false;
+            }
+
         return true;
         }
 
@@ -513,9 +508,6 @@ namespace Wisteria::UI
         m_completionVariable = gantt->GetPropertyTemplate(L"variables.completion");
         m_groupVariable = gantt->GetPropertyTemplate(L"variables.group");
         UpdateVariableLabels();
-
-        // determine which color scheme is in use
-        m_colorSchemeIndex = ColorSchemeToIndex(gantt->GetColorScheme());
 
         // date interval
         switch (gantt->GetDateDisplayInterval())

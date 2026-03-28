@@ -18,6 +18,7 @@
 #include "insertitemdlg.h"
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
+#include <wx/editlbox.h>
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
 #include <wx/valtext.h>
@@ -134,6 +135,30 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetMirrorYAxis() const;
 
+        /// @returns @c true if the user chose a custom color list
+        ///     instead of a named color scheme.
+        [[nodiscard]]
+        bool IsUsingCustomColors() const noexcept
+            {
+            return m_useCustomColors;
+            }
+
+        /// @returns The selected named color scheme, or @c nullptr for default.
+        /// @note Only meaningful when IsUsingCustomColors() is @c false.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
+            {
+            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            }
+
+        /// @returns The user-defined custom color list.
+        /// @note Only meaningful when IsUsingCustomColors() is @c true.
+        [[nodiscard]]
+        const std::vector<wxColour>& GetCustomColors() const noexcept
+            {
+            return m_customColors;
+            }
+
         /// @brief Populates the graph options controls from an existing Graph2D.
         /// @param graph The graph to read options from.
         void LoadGraphOptions(const Graphs::Graph2D& graph);
@@ -166,6 +191,11 @@ namespace Wisteria::UI
         [[nodiscard]]
         static LegendPlacement SelectionToLegendPlacement(int selection);
 
+        /// @brief Validates the color scheme selection.
+        /// @returns @c true if valid, @c false if the user needs to fix something.
+        [[nodiscard]]
+        bool ValidateColorScheme();
+
         /** @brief Creates and adds the "Graph Options" sidebar page.
             @details This page contains controls common to all Graph2D types:
                 title, subtitle, caption, background color, background image,
@@ -196,6 +226,11 @@ namespace Wisteria::UI
         void EditLabelHelper(GraphItems::Label& label, wxStaticText* preview,
                              const wxString& caption);
         void OnEditBackgroundImage();
+        void OnAddCustomColor();
+        void OnEditCustomColor();
+        void OnRemoveCustomColor();
+        void RefreshCustomColorList();
+        void OnColorModeChanged();
 
         // DDX data members
         int m_legendPlacement{ 1 };
@@ -203,6 +238,9 @@ namespace Wisteria::UI
         bool m_mirrorYAxis{ false };
         int m_plotBgImageOpacity{ 255 };
         int m_plotBgImageFit{ 1 }; // Shrink
+        bool m_useCustomColors{ false };
+        int m_colorSchemeIndex{ 0 };
+        std::vector<wxColour> m_customColors;
 
         // title / subtitle / caption as full Labels
         GraphItems::Label m_titleLabel;
@@ -220,6 +258,10 @@ namespace Wisteria::UI
 
         // controls without DDX validator support
         wxColourPickerCtrl* m_plotBgColorPicker{ nullptr };
+        wxRadioButton* m_namedSchemeRadio{ nullptr };
+        wxRadioButton* m_customColorsRadio{ nullptr };
+        wxChoice* m_colorSchemeChoice{ nullptr };
+        wxEditableListBox* m_customColorListBox{ nullptr };
         };
     } // namespace Wisteria::UI
 

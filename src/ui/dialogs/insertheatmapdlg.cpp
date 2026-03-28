@@ -90,16 +90,6 @@ namespace Wisteria::UI
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
-
         // group column count
         auto* groupOptsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         m_groupColumnCountLabel =
@@ -310,6 +300,11 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (!ValidateColorScheme())
+            {
+            return false;
+            }
+
         return true;
         }
 
@@ -351,9 +346,6 @@ namespace Wisteria::UI
             }
         m_showGroupHeaders = heatmap->IsShowingGroupHeaders();
         m_groupHeaderPrefix = heatmap->GetGroupHeaderPrefix();
-
-        // color scheme
-        m_colorSchemeIndex = ColorSchemeToIndex(heatmap->GetColorScheme());
 
         TransferDataToWindow();
 

@@ -109,16 +109,6 @@ namespace Wisteria::UI
                                       wxTextValidator(wxFILTER_NONE, &m_timeIntervalLabel)));
         optionsSizer->Add(timeSizer, wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
-
         // shape scheme
         auto* shapeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         shapeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Point shapes:")),
@@ -302,6 +292,11 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (!ValidateColorScheme())
+            {
+            return false;
+            }
+
         return true;
         }
 
@@ -339,9 +334,6 @@ namespace Wisteria::UI
 
         // W-Curve-specific options
         m_timeIntervalLabel = wcurve->GetTimeIntervalLabel();
-
-        // determine which color scheme is in use
-        m_colorSchemeIndex = ColorSchemeToIndex(wcurve->GetColorScheme());
 
         // determine which shape scheme is in use
         const auto& scheme = wcurve->GetShapeScheme();

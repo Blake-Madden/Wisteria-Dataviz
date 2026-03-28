@@ -123,13 +123,6 @@ namespace Wisteria::UI
             return m_neatIntervals;
             }
 
-        /// @returns The selected color scheme, or @c nullptr for default.
-        [[nodiscard]]
-        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
-            {
-            return ColorSchemeFromIndex(m_colorSchemeIndex);
-            }
-
         /// @brief Populates all dialog controls from an existing histogram.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -154,7 +147,6 @@ namespace Wisteria::UI
         wxStaticText* m_groupVarLabel{ nullptr };
 
         // DDX data members
-        int m_colorSchemeIndex{ 0 };
         int m_binningMethod{ 2 };   // BinByIntegerRange
         int m_roundingMethod{ 3 };  // NoRounding
         int m_intervalDisplay{ 0 }; // Cutpoints

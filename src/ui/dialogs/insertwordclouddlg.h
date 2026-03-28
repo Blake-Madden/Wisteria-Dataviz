@@ -91,13 +91,6 @@ namespace Wisteria::UI
         [[nodiscard]]
         std::optional<size_t> GetMaxWords() const noexcept;
 
-        /// @returns The selected color scheme, or @c nullptr for default.
-        [[nodiscard]]
-        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
-            {
-            return ColorSchemeFromIndex(m_colorSchemeIndex);
-            }
-
         /// @brief Populates all dialog controls from an existing word cloud.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -125,8 +118,6 @@ namespace Wisteria::UI
         wxSpinCtrl* m_maxWordsSpin{ nullptr };
 
         // DDX data members
-        int m_colorSchemeIndex{ 0 };
-
         wxString m_wordVariable;
         wxString m_weightVariable;
 

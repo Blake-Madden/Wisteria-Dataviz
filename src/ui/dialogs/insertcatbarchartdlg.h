@@ -178,13 +178,6 @@ namespace Wisteria::UI
             return m_imageStitchDirection;
             }
 
-        /// @returns The selected color scheme, or @c nullptr for default.
-        [[nodiscard]]
-        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
-            {
-            return ColorSchemeFromIndex(m_colorSchemeIndex);
-            }
-
         /// @brief Populates all dialog controls from an existing categorical bar chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -230,7 +223,6 @@ namespace Wisteria::UI
         wxStaticText* m_legendLabel{ nullptr };
 
         // DDX data members
-        int m_colorSchemeIndex{ 0 };
         int m_boxEffectIndex{ 0 };
         int m_barOrientationIndex{ 0 };
         int m_barLabelDisplayIndex{ 0 };

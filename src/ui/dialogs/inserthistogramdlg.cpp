@@ -91,16 +91,6 @@ namespace Wisteria::UI
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
-        // color scheme
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Color scheme:")),
-                        wxSizerFlags{}.CenterVertical());
-        colorSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     GetColorSchemeNames(), 0,
-                                     wxGenericValidator(&m_colorSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
-
         // binning options
         auto* binSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -331,6 +321,11 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (!ValidateColorScheme())
+            {
+            return false;
+            }
+
         return true;
         }
 
@@ -364,9 +359,6 @@ namespace Wisteria::UI
         m_continuousVariable = histogram->GetContinuousColumnName();
         m_groupVariable = histogram->GetGroupColumnName().value_or(wxString{});
         UpdateVariableLabels();
-
-        // determine which color scheme is in use
-        m_colorSchemeIndex = ColorSchemeToIndex(histogram->GetColorScheme());
 
         // binning options
         m_binningMethod = static_cast<int>(histogram->GetBinningMethod());

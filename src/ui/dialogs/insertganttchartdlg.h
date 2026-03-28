@@ -128,13 +128,6 @@ namespace Wisteria::UI
         [[nodiscard]]
         Graphs::GanttChart::TaskLabelDisplay GetTaskLabelDisplay() const noexcept;
 
-        /// @returns The selected color scheme, or @c nullptr for default.
-        [[nodiscard]]
-        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
-            {
-            return ColorSchemeFromIndex(m_colorSchemeIndex);
-            }
-
         /// @brief Populates all dialog controls from an existing Gantt chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -164,7 +157,6 @@ namespace Wisteria::UI
         wxStaticText* m_groupVarLabel{ nullptr };
 
         // DDX data members
-        int m_colorSchemeIndex{ 0 };
         int m_dateInterval{ 1 };     // default: FiscalQuarterly
         int m_fyType{ 1 };           // default: USBusiness
         int m_taskLabelDisplay{ 3 }; // default: Days
