@@ -14,6 +14,7 @@ chart-statistical.svg
 chart-survey.svg
 chernoffplot.svg
 clear.svg
+color-wheel.svg
 constants-add.svg
 constants-delete.svg
 constants.svg
@@ -34,6 +35,7 @@ file-open.svg
 file-save.svg
 find.svg
 gantt.svg
+group.svg
 heatmap-grouped.svg
 heatmap.svg
 histogram.svg
@@ -58,6 +60,7 @@ piechart.svg
 pivot-longer.svg
 pivot-wider.svg
 print.svg
+question-mark.svg
 realtime.svg
 reload.svg
 roadmap.svg

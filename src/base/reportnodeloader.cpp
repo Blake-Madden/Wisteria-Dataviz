@@ -599,8 +599,7 @@ namespace Wisteria
         ApplyTableColumnFormatting(table, parse(table->GetPropertyTemplate(L"column-formatting")),
                                    parse(table->GetPropertyTemplate(L"column-color")),
                                    parse(table->GetPropertyTemplate(L"column-bold")),
-                                   parse(table->GetPropertyTemplate(L"column-borders")),
-                                   parse(table->GetPropertyTemplate(L"column-content-align")));
+                                   parse(table->GetPropertyTemplate(L"column-borders")));
 
         // column highlight
         applyIfPresent(L"column-highlight", [this](auto& tbl, const auto& node)

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertlabeldlg.h"
+#include "../../app/wisteriaapp.h"
 #include "../../base/reportenumconvert.h"
 #include "insertshapedlg.h"
 #include <utility>
@@ -187,6 +188,8 @@ namespace Wisteria::UI
         // override New to open shape dialog
         m_topShapeListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                 [this](wxCommandEvent&) { OnAddTopShape(); });
+        m_topShapeListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
 
         // override Edit to open shape dialog with selected shape
         m_topShapeListBox->GetEditButton()->Bind(wxEVT_BUTTON,

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertwafflechartdlg.h"
+#include "../../app/wisteriaapp.h"
 #include "../../base/reportenumconvert.h"
 #include <wx/valgen.h>
 
@@ -52,6 +53,8 @@ namespace Wisteria::UI
         // override New to open the shape sub-dialog
         m_shapeListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                              [this](wxCommandEvent&) { OnAddShape(); });
+        m_shapeListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
 
         // override Edit to open the shape sub-dialog for the selected item
         m_shapeListBox->GetEditButton()->Bind(wxEVT_BUTTON,

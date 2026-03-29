@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertlikertdlg.h"
+#include "../../app/wisteriaapp.h"
 #include "variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -240,6 +241,8 @@ namespace Wisteria::UI
                                                 titleVal);
                 SyncBracketsToList();
             });
+        m_bracketListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"question-mark.svg", wxSize{ 16, 16 }));
 
         // override Edit button to open a structured sub-dialog for the selected item
         m_bracketListBox->GetEditButton()->Bind(

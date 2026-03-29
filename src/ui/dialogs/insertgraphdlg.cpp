@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertgraphdlg.h"
+#include "../../app/wisteriaapp.h"
 #include "../../base/reportenumconvert.h"
 #include "../../graphs/graph2d.h"
 #include "insertimgdlg.h"
@@ -314,6 +315,8 @@ namespace Wisteria::UI
         // override New to open a color picker
         m_customColorListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                    [this](wxCommandEvent&) { OnAddCustomColor(); });
+        m_customColorListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"color-wheel.svg", wxSize{ 16, 16 }));
 
         // override Edit to open a color picker for the selected item
         m_customColorListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)

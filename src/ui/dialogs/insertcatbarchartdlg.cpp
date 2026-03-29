@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertcatbarchartdlg.h"
+#include "../../app/wisteriaapp.h"
 #include "../../base/reportenumconvert.h"
 #include "insertimgdlg.h"
 #include "insertshapedlg.h"
@@ -307,6 +308,8 @@ namespace Wisteria::UI
                                         decalCtrl->GetValue().Trim(true).Trim(false), wxColour{} });
                 SyncBarGroupsToList();
             });
+        m_barGroupListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"group.svg", wxSize{ 16, 16 }));
 
         // override Edit button
         m_barGroupListBox->GetEditButton()->Bind(
