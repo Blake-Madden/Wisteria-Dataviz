@@ -13,7 +13,7 @@ namespace Wisteria
     {
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableSort(std::shared_ptr<Graphs::Table>& table,
-                                          const wxSimpleJSON::Ptr_t& sortNode)
+                                          const wxSimpleJSON::Ptr_t& sortNode) const
         {
         const auto sortDirection =
             sortNode->GetProperty(L"direction")->AsString().CmpNoCase(_DT(L"descending")) == 0 ?
@@ -38,14 +38,14 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableGroupHeader(std::shared_ptr<Graphs::Table>& table,
-                                                 const wxSimpleJSON::Ptr_t& node)
+                                                 const wxSimpleJSON::Ptr_t& node) const
         {
         table->InsertGroupHeader(node->AsStrings());
         }
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableRowGrouping(std::shared_ptr<Graphs::Table>& table,
-                                                 const wxSimpleJSON::Ptr_t& node)
+                                                 const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& rowGrouping : node->AsDoubles())
             {
@@ -55,7 +55,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableColumnGrouping(std::shared_ptr<Graphs::Table>& table,
-                                                    const wxSimpleJSON::Ptr_t& node)
+                                                    const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& columnGrouping : node->AsDoubles())
             {
@@ -65,7 +65,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableAlternateRowColor(std::shared_ptr<Graphs::Table>& table,
-                                                       const wxSimpleJSON::Ptr_t& node)
+                                                       const wxSimpleJSON::Ptr_t& node) const
         {
         const auto startRow = LoadTablePosition(node->GetProperty(L"start"), table);
         const std::set<size_t> colStops = LoadTableStops(table, node->GetProperty(L"stops"));
@@ -79,7 +79,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableRowAdditions(std::shared_ptr<Graphs::Table>& table,
-                                                  const wxSimpleJSON::Ptr_t& node)
+                                                  const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& rowAddCommand : node->AsNodes())
             {
@@ -106,7 +106,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableRowSuppression(std::shared_ptr<Graphs::Table>& table,
-                                                    const wxSimpleJSON::Ptr_t& node)
+                                                    const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& rowSuppressionCommand : node->AsNodes())
             {
@@ -147,7 +147,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableColumnSuppression(std::shared_ptr<Graphs::Table>& table,
-                                                       const wxSimpleJSON::Ptr_t& node)
+                                                       const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& columnSuppressionCommand : node->AsNodes())
             {
@@ -188,7 +188,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableColumnHighlight(std::shared_ptr<Graphs::Table>& table,
-                                                     const wxSimpleJSON::Ptr_t& node)
+                                                     const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& columnHighlightsCommand : node->AsNodes())
             {
@@ -213,7 +213,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableAggregates(std::shared_ptr<Graphs::Table>& table,
-                                                const wxSimpleJSON::Ptr_t& node)
+                                                const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& columnRowAggregate : node->AsNodes())
             {
@@ -289,7 +289,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableRowTotals(std::shared_ptr<Graphs::Table>& table,
-                                               const wxSimpleJSON::Ptr_t& node)
+                                               const wxSimpleJSON::Ptr_t& node) const
         {
         const wxColour bkColor(m_reportBuilder.ConvertColor(node->GetProperty(L"background")));
         table->InsertRowTotals(bkColor.IsOk() ? std::optional<wxColour>(bkColor) : std::nullopt);
@@ -297,7 +297,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableCellUpdates(std::shared_ptr<Graphs::Table>& table,
-                                                 const wxSimpleJSON::Ptr_t& node)
+                                                 const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& cellUpdate : node->AsNodes())
             {
@@ -463,7 +463,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableAnnotations(std::shared_ptr<Graphs::Table>& table,
-                                                 const wxSimpleJSON::Ptr_t& node)
+                                                 const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& annotation : node->AsNodes())
             {
@@ -528,7 +528,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportNodeLoader::ApplyTableFootnotes(std::shared_ptr<Graphs::Table>& table,
-                                               const wxSimpleJSON::Ptr_t& node)
+                                               const wxSimpleJSON::Ptr_t& node) const
         {
         for (const auto& ftNode : node->AsNodes())
             {
@@ -563,15 +563,16 @@ namespace Wisteria
         };
 
         // sorting
-        applyIfPresent(L"row-sort", [](auto& tbl, const auto& node) { ApplyTableSort(tbl, node); });
+        applyIfPresent(L"row-sort",
+                       [this](auto& tbl, const auto& node) { ApplyTableSort(tbl, node); });
 
         // grouping
         applyIfPresent(L"insert-group-header",
-                       [](auto& tbl, const auto& node) { ApplyTableGroupHeader(tbl, node); });
+                       [this](auto& tbl, const auto& node) { ApplyTableGroupHeader(tbl, node); });
         applyIfPresent(L"row-group",
-                       [](auto& tbl, const auto& node) { ApplyTableRowGrouping(tbl, node); });
-        applyIfPresent(L"column-group",
-                       [](auto& tbl, const auto& node) { ApplyTableColumnGrouping(tbl, node); });
+                       [this](auto& tbl, const auto& node) { ApplyTableRowGrouping(tbl, node); });
+        applyIfPresent(L"column-group", [this](auto& tbl, const auto& node)
+                       { ApplyTableColumnGrouping(tbl, node); });
 
         // alternate row color
         applyIfPresent(L"alternate-row-color", [this](auto& tbl, const auto& node)
@@ -602,8 +603,8 @@ namespace Wisteria
                                    parse(table->GetPropertyTemplate(L"column-content-align")));
 
         // column highlight
-        applyIfPresent(L"column-highlight",
-                       [](auto& tbl, const auto& node) { ApplyTableColumnHighlight(tbl, node); });
+        applyIfPresent(L"column-highlight", [this](auto& tbl, const auto& node)
+                       { ApplyTableColumnHighlight(tbl, node); });
 
         // aggregates
         applyIfPresent(L"aggregates",
@@ -627,12 +628,10 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportNodeLoader::ApplyTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
-                                                   const wxSimpleJSON::Ptr_t& formattingNode,
-                                                   const wxSimpleJSON::Ptr_t& colorNode,
-                                                   const wxSimpleJSON::Ptr_t& boldNode,
-                                                   const wxSimpleJSON::Ptr_t& bordersNode,
-                                                   const wxSimpleJSON::Ptr_t& contentAlignNode)
+    void ReportNodeLoader::ApplyTableRowFormatting(
+        std::shared_ptr<Graphs::Table>& table, const wxSimpleJSON::Ptr_t& formattingNode,
+        const wxSimpleJSON::Ptr_t& colorNode, const wxSimpleJSON::Ptr_t& boldNode,
+        const wxSimpleJSON::Ptr_t& bordersNode, const wxSimpleJSON::Ptr_t& contentAlignNode) const
         {
         // change the rows' formatting
         const auto rowFormattingCommands = formattingNode->AsNodes();
@@ -927,12 +926,10 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportNodeLoader::ApplyTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
-                                                      const wxSimpleJSON::Ptr_t& formattingNode,
-                                                      const wxSimpleJSON::Ptr_t& colorNode,
-                                                      const wxSimpleJSON::Ptr_t& boldNode,
-                                                      const wxSimpleJSON::Ptr_t& bordersNode,
-                                                      const wxSimpleJSON::Ptr_t& contentAlignNode)
+    void ReportNodeLoader::ApplyTableColumnFormatting(
+        std::shared_ptr<Graphs::Table>& table, const wxSimpleJSON::Ptr_t& formattingNode,
+        const wxSimpleJSON::Ptr_t& colorNode, const wxSimpleJSON::Ptr_t& boldNode,
+        const wxSimpleJSON::Ptr_t& bordersNode, const wxSimpleJSON::Ptr_t& contentAlignNode) const
         {
         // change columns' cell formatting
         const auto columnFormattingCommands = formattingNode->AsNodes();

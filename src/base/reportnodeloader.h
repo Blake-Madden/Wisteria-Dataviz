@@ -51,55 +51,136 @@ namespace Wisteria
 
         /** @brief Re-applies all cached procedural features to a table.
             @details Parses each property template stored on the table and
-                calls the corresponding Apply* method in the correct order.
+                calls the corresponding Apply* method in the correct order.\n
+                The application order is: sorting, group headers, row/column grouping,
+                alternate row coloring, row additions, row/column suppression,
+                column/row formatting, column highlighting, aggregates, row totals,
+                cell updates, annotations, and footnotes.
             @param table The table to apply the features to.*/
         void ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table);
 
-        /// @name Individual feature methods
-        /// @brief Each method applies one JSON-driven feature to a table.
-        /// @{
-        static void ApplyTableSort(std::shared_ptr<Graphs::Table>& table,
-                                   const wxSimpleJSON::Ptr_t& sortNode);
-        static void ApplyTableGroupHeader(std::shared_ptr<Graphs::Table>& table,
-                                          const wxSimpleJSON::Ptr_t& node);
-        static void ApplyTableRowGrouping(std::shared_ptr<Graphs::Table>& table,
-                                          const wxSimpleJSON::Ptr_t& node);
-        static void ApplyTableColumnGrouping(std::shared_ptr<Graphs::Table>& table,
-                                             const wxSimpleJSON::Ptr_t& node);
+        /** @brief Applies sorting to a table.
+            @param table The table to sort.
+            @param sortNode The JSON node containing the sort configuration.*/
+        void ApplyTableSort(std::shared_ptr<Graphs::Table>& table,
+                            const wxSimpleJSON::Ptr_t& sortNode) const;
+
+        /** @brief Applies a group header to a table.
+            @param table The table to apply the group header to.
+            @param node The JSON node containing the group header configuration.*/
+        void ApplyTableGroupHeader(std::shared_ptr<Graphs::Table>& table,
+                                   const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies row grouping to a table.
+            @param table The table to apply row grouping to.
+            @param node The JSON node containing the row grouping configuration.*/
+        void ApplyTableRowGrouping(std::shared_ptr<Graphs::Table>& table,
+                                   const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies column grouping to a table.
+            @param table The table to apply column grouping to.
+            @param node The JSON node containing the column grouping configuration.*/
+        void ApplyTableColumnGrouping(std::shared_ptr<Graphs::Table>& table,
+                                      const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies alternate row coloring to a table.
+            @param table The table to apply alternate row coloring to.
+            @param node The JSON node containing the alternate row color configuration.*/
         void ApplyTableAlternateRowColor(std::shared_ptr<Graphs::Table>& table,
-                                         const wxSimpleJSON::Ptr_t& node);
+                                         const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies row additions (e.g., blank or separator rows) to a table.
+            @param table The table to add rows to.
+            @param node The JSON node containing the row addition configuration.*/
         void ApplyTableRowAdditions(std::shared_ptr<Graphs::Table>& table,
-                                    const wxSimpleJSON::Ptr_t& node);
+                                    const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies row suppression (hiding) to a table.
+            @param table The table to suppress rows in.
+            @param node The JSON node containing the row suppression configuration.*/
         void ApplyTableRowSuppression(std::shared_ptr<Graphs::Table>& table,
-                                      const wxSimpleJSON::Ptr_t& node);
-        void ApplyTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
-                                     const wxSimpleJSON::Ptr_t& formattingNode,
-                                     const wxSimpleJSON::Ptr_t& colorNode,
-                                     const wxSimpleJSON::Ptr_t& boldNode,
-                                     const wxSimpleJSON::Ptr_t& bordersNode,
-                                     const wxSimpleJSON::Ptr_t& contentAlignNode);
+                                      const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies column suppression (hiding) to a table.
+            @param table The table to suppress columns in.
+            @param node The JSON node containing the column suppression configuration.*/
         void ApplyTableColumnSuppression(std::shared_ptr<Graphs::Table>& table,
-                                         const wxSimpleJSON::Ptr_t& node);
+                                         const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies column formatting to a table.
+            @param table The table to format.
+            @param formattingNode The JSON node for number/date formatting.
+            @param colorNode The JSON node for column colors.
+            @param boldNode The JSON node for column bolding.
+            @param bordersNode The JSON node for column borders.
+            @param contentAlignNode The JSON node for column content alignment.*/
         void ApplyTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
                                         const wxSimpleJSON::Ptr_t& formattingNode,
                                         const wxSimpleJSON::Ptr_t& colorNode,
                                         const wxSimpleJSON::Ptr_t& boldNode,
                                         const wxSimpleJSON::Ptr_t& bordersNode,
-                                        const wxSimpleJSON::Ptr_t& contentAlignNode);
-        static void ApplyTableColumnHighlight(std::shared_ptr<Graphs::Table>& table,
-                                              const wxSimpleJSON::Ptr_t& node);
-        void ApplyTableAggregates(std::shared_ptr<Graphs::Table>& table,
-                                  const wxSimpleJSON::Ptr_t& node);
-        void ApplyTableRowTotals(std::shared_ptr<Graphs::Table>& table,
-                                 const wxSimpleJSON::Ptr_t& node);
-        void ApplyTableCellUpdates(std::shared_ptr<Graphs::Table>& table,
-                                   const wxSimpleJSON::Ptr_t& node);
-        void ApplyTableAnnotations(std::shared_ptr<Graphs::Table>& table,
-                                   const wxSimpleJSON::Ptr_t& node);
-        void ApplyTableFootnotes(std::shared_ptr<Graphs::Table>& table,
-                                 const wxSimpleJSON::Ptr_t& node);
+                                        const wxSimpleJSON::Ptr_t& contentAlignNode) const;
 
-        /// @}
+        /** @brief Applies row formatting to a table.
+            @param table The table to format.
+            @param formattingNode The JSON node for number/date formatting.
+            @param colorNode The JSON node for row colors.
+            @param boldNode The JSON node for row bolding.
+            @param bordersNode The JSON node for row borders.
+            @param contentAlignNode The JSON node for row content alignment.*/
+        void ApplyTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
+                                     const wxSimpleJSON::Ptr_t& formattingNode,
+                                     const wxSimpleJSON::Ptr_t& colorNode,
+                                     const wxSimpleJSON::Ptr_t& boldNode,
+                                     const wxSimpleJSON::Ptr_t& bordersNode,
+                                     const wxSimpleJSON::Ptr_t& contentAlignNode) const;
+
+        /** @brief Applies column highlighting to a table.
+            @param table The table to highlight columns in.
+            @param node The JSON node containing the column highlight configuration.*/
+        void ApplyTableColumnHighlight(std::shared_ptr<Graphs::Table>& table,
+                                       const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies aggregate columns (e.g., sum, average) to a table.
+            @param table The table to add aggregates to.
+            @param node The JSON node containing the aggregate configuration.*/
+        void ApplyTableAggregates(std::shared_ptr<Graphs::Table>& table,
+                                  const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies row totals to a table.
+            @param table The table to add row totals to.
+            @param node The JSON node containing the row totals configuration.*/
+        void ApplyTableRowTotals(std::shared_ptr<Graphs::Table>& table,
+                                 const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies cell-level updates to a table.
+            @param table The table to update cells in.
+            @param node The JSON node containing the cell update configuration.*/
+        void ApplyTableCellUpdates(std::shared_ptr<Graphs::Table>& table,
+                                   const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies annotations to a table.
+            @param table The table to annotate.
+            @param node The JSON node containing the annotation configuration.*/
+        void ApplyTableAnnotations(std::shared_ptr<Graphs::Table>& table,
+                                   const wxSimpleJSON::Ptr_t& node) const;
+
+        /** @brief Applies footnotes to a table.
+            @param table The table to add footnotes to.
+            @param node The JSON node containing the footnote configuration.*/
+        void ApplyTableFootnotes(std::shared_ptr<Graphs::Table>& table,
+                                 const wxSimpleJSON::Ptr_t& node) const;
+
+      private:
+        /// @brief Parses a row or column position from a JSON node.
+        /// @param positionNode The position node to parse.
+        /// @param table The table (used for named positions like "last-column").
+        /// @note Column and row counts should be the table's original column and row
+        ///     counts, prior to any aggregation columns being added.
+        /// @returns The row or column position.
+        [[nodiscard]]
+        static std::optional<size_t> LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
+                                                       std::shared_ptr<Graphs::Table> table);
 
         /// @brief Loads the positions from a row or column stops array.
         [[nodiscard]]
@@ -136,17 +217,6 @@ namespace Wisteria
             return std::tuple(position, startPosition, endPosition);
             }
 
-        /// @brief Parses a row or column position from a JSON node.
-        /// @param positionNode The position node to parse.
-        /// @param table The table (used for named positions like "last-column").
-        /// @note Column and row counts should be the table's original column and row
-        ///     counts, prior to any aggregation columns being added.
-        /// @returns The row or column position.
-        [[nodiscard]]
-        static std::optional<size_t> LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
-                                                       std::shared_ptr<Graphs::Table> table);
-
-      private:
         const ReportBuilder& m_reportBuilder;
         };
     } // namespace Wisteria

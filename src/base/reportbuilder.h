@@ -606,6 +606,10 @@ namespace Wisteria
         [[nodiscard]]
         wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode) const;
 
+        /// @brief Loads a number from a string.
+        /// @param node A number node to parse.
+        /// @returns The loaded number. Check with @c IsOk() to verify that the number
+        ///     was successfully loaded.
         [[nodiscard]]
         std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node) const
             {
@@ -624,7 +628,7 @@ namespace Wisteria
                 template on the item if it contained placeholders.
             @param item The item to cache the template on (can be @c nullptr).
             @param property The property name to cache under.
-            @param rawValue The raw string that may contain \{\{\}\} placeholders.
+            @param rawValue The raw string that may contain placeholders.
             @returns The expanded string.*/
         [[nodiscard]]
         wxString ExpandAndCache(GraphItems::GraphItemBase* item, const wxString& property,
@@ -640,7 +644,7 @@ namespace Wisteria
 
         /// @brief Loads properties from a JSON node into a pen.
         /// @param penNode The node to parse.
-        /// @param pen[in,out] The pen to apply the loaded settings to.
+        /// @param[in,out] pen The pen to apply the loaded settings to.
         /// @param item Optional item to cache color templates on.
         /// @param propertyPrefix Optional property prefix for caching
         ///     (e.g., "pen"). If empty, defaults to "pen.color".

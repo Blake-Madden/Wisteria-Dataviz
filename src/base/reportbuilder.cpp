@@ -5025,7 +5025,7 @@ namespace Wisteria
         const auto sortNode = tableNode->GetProperty(L"row-sort");
         if (sortNode->IsOk())
             {
-            ReportNodeLoader::ApplyTableSort(table, sortNode);
+            nodeLoader.ApplyTableSort(table, sortNode);
             table->SetPropertyTemplate(L"row-sort", sortNode->Print(false));
             }
 
@@ -5069,7 +5069,7 @@ namespace Wisteria
         if (tableNode->HasProperty(L"insert-group-header"))
             {
             const auto groupHeaderNode = tableNode->GetProperty(L"insert-group-header");
-            ReportNodeLoader::ApplyTableGroupHeader(table, groupHeaderNode);
+            nodeLoader.ApplyTableGroupHeader(table, groupHeaderNode);
             table->SetPropertyTemplate(L"insert-group-header", groupHeaderNode->Print(false));
             }
 
@@ -5077,7 +5077,7 @@ namespace Wisteria
         const auto rowGroupNode = tableNode->GetProperty(L"row-group");
         if (rowGroupNode->IsOk() && !rowGroupNode->AsDoubles().empty())
             {
-            ReportNodeLoader::ApplyTableRowGrouping(table, rowGroupNode);
+            nodeLoader.ApplyTableRowGrouping(table, rowGroupNode);
             table->SetPropertyTemplate(L"row-group", rowGroupNode->Print(false));
             }
 
@@ -5085,7 +5085,7 @@ namespace Wisteria
         const auto columnGroupNode = tableNode->GetProperty(L"column-group");
         if (columnGroupNode->IsOk() && !columnGroupNode->AsDoubles().empty())
             {
-            ReportNodeLoader::ApplyTableColumnGrouping(table, columnGroupNode);
+            nodeLoader.ApplyTableColumnGrouping(table, columnGroupNode);
             table->SetPropertyTemplate(L"column-group", columnGroupNode->Print(false));
             }
 
@@ -5114,11 +5114,9 @@ namespace Wisteria
             table->SetPropertyTemplate(L"row-suppression", rowSuppressionNode->Print(false));
             }
 
-        nodeLoader.ApplyTableRowFormatting(table,
-            tableNode->GetProperty(L"row-formatting"),
-            tableNode->GetProperty(L"row-color"),
-            tableNode->GetProperty(L"row-bold"),
-            tableNode->GetProperty(L"row-borders"),
+        nodeLoader.ApplyTableRowFormatting(
+            table, tableNode->GetProperty(L"row-formatting"), tableNode->GetProperty(L"row-color"),
+            tableNode->GetProperty(L"row-bold"), tableNode->GetProperty(L"row-borders"),
             tableNode->GetProperty(L"row-content-align"));
 
         // cache row formatting properties for round-trip serialization
@@ -5137,16 +5135,14 @@ namespace Wisteria
         if (!columnSuppressionNode->AsNodes().empty())
             {
             nodeLoader.ApplyTableColumnSuppression(table, columnSuppressionNode);
-            table->SetPropertyTemplate(L"column-suppression",
-                                       columnSuppressionNode->Print(false));
+            table->SetPropertyTemplate(L"column-suppression", columnSuppressionNode->Print(false));
             }
 
-        nodeLoader.ApplyTableColumnFormatting(table,
-            tableNode->GetProperty(L"column-formatting"),
-            tableNode->GetProperty(L"column-color"),
-            tableNode->GetProperty(L"column-bold"),
-            tableNode->GetProperty(L"column-borders"),
-            tableNode->GetProperty(L"column-content-align"));
+        nodeLoader.ApplyTableColumnFormatting(table, tableNode->GetProperty(L"column-formatting"),
+                                              tableNode->GetProperty(L"column-color"),
+                                              tableNode->GetProperty(L"column-bold"),
+                                              tableNode->GetProperty(L"column-borders"),
+                                              tableNode->GetProperty(L"column-content-align"));
 
         // cache column formatting properties for round-trip serialization
         for (const auto& prop : { L"column-formatting", L"column-color", L"column-bold",
@@ -5163,7 +5159,7 @@ namespace Wisteria
         const auto columnHighlightNode = tableNode->GetProperty(L"column-highlight");
         if (!columnHighlightNode->AsNodes().empty())
             {
-            ReportNodeLoader::ApplyTableColumnHighlight(table, columnHighlightNode);
+            nodeLoader.ApplyTableColumnHighlight(table, columnHighlightNode);
             table->SetPropertyTemplate(L"column-highlight", columnHighlightNode->Print(false));
             }
 
@@ -5195,8 +5191,7 @@ namespace Wisteria
         if (!cellAnnotationsNode->AsNodes().empty())
             {
             nodeLoader.ApplyTableAnnotations(table, cellAnnotationsNode);
-            table->SetPropertyTemplate(L"cell-annotations",
-                                       cellAnnotationsNode->Print(false));
+            table->SetPropertyTemplate(L"cell-annotations", cellAnnotationsNode->Print(false));
             }
 
         // assign footnotes after all cells have been updated
