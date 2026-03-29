@@ -1742,9 +1742,9 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             columns = dlg.GetSelectedVariables();
             }
 
+        table->SetDefaultBorders(true, true, true, true);
         table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
         dlg.ApplyAxisOverrides(*table);
-        table->SetDefaultBorders(true, true, true, true);
         table->SetMinWidthProportion(dlg.GetMinWidthProportion());
         table->SetMinHeightProportion(dlg.GetMinHeightProportion());
         table->ClearTrailingRowFormatting(dlg.GetClearTrailingRowFormatting());
@@ -1844,6 +1844,8 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
         dlg.ApplyGraphOptions(*table);
         dlg.ApplyPageOptions(*table);
 
+        const auto* origTable = dynamic_cast<const Wisteria::Graphs::Table*>(&graph);
+
         // resolve variables
         std::vector<wxString> columns;
         const auto varFormula = dlg.GetVariableFormula();
@@ -1861,28 +1863,24 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             columns = dlg.GetSelectedVariables();
             }
 
+        // set default borders before SetData so cells inherit them
+        if (origTable != nullptr)
+            {
+            table->SetDefaultBorders(
+                origTable->IsShowingTopBorder(), origTable->IsShowingRightBorder(),
+                origTable->IsShowingBottomBorder(), origTable->IsShowingLeftBorder());
+            }
+
         table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
         dlg.ApplyAxisOverrides(*table);
-        table->SetDefaultBorders(true, true, true, true);
         table->SetMinWidthProportion(dlg.GetMinWidthProportion());
         table->SetMinHeightProportion(dlg.GetMinHeightProportion());
         table->ClearTrailingRowFormatting(dlg.GetClearTrailingRowFormatting());
 
-        if (dlg.GetBoldHeaderRow())
+        // carry forward highlight pen from original table
+        if (origTable != nullptr)
             {
-            table->BoldRow(0);
-            }
-        if (dlg.GetCenterHeaderRow())
-            {
-            table->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
-            }
-        if (dlg.GetBoldFirstColumn())
-            {
-            table->BoldColumn(0);
-            }
-        if (dlg.GetAlternateRowColors())
-            {
-            table->ApplyAlternateRowColors(dlg.GetAlternateRowColor(), 1);
+            table->GetHighlightPen() = origTable->GetHighlightPen();
             }
 
         // cache property templates for round-tripping
@@ -1964,13 +1962,36 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                                   L"row-totals",
                                   L"cell-update",
                                   L"cell-annotations",
-                                  L"footnotes" })
+                                  L"footnotes",
+                                  L"link-id" })
             {
             const auto cached = graph.GetPropertyTemplate(prop);
             if (!cached.empty())
                 {
                 table->SetPropertyTemplate(wxString(prop), cached);
                 }
+            }
+
+        // re-apply procedural features from carried-forward templates
+        m_reportBuilder.ApplyTableFeatures(table);
+
+        // apply dialog-driven formatting after procedural features,
+        // since aggregates and row additions change the table structure
+        if (dlg.GetBoldHeaderRow())
+            {
+            table->BoldRow(0);
+            }
+        if (dlg.GetCenterHeaderRow())
+            {
+            table->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
+            }
+        if (dlg.GetBoldFirstColumn())
+            {
+            table->BoldColumn(0);
+            }
+        if (dlg.GetAlternateRowColors())
+            {
+            table->ApplyAlternateRowColors(dlg.GetAlternateRowColor(), 1);
             }
 
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},

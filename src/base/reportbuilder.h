@@ -13,6 +13,7 @@
 #define WISTERIA_REPORT_BUILDER_H
 
 #include "../base/reportenumconvert.h"
+#include "../base/reportnodeloader.h"
 #include "../base/tablelink.h"
 #include "../data/join.h"
 #include "../graphs/barchart.h"
@@ -574,6 +575,79 @@ namespace Wisteria
         static wxString ExpandColumnSelection(const wxString& formula,
                                               const std::shared_ptr<const Data::Dataset>& dataset);
 
+        /// @brief Re-applies procedural table features (sorting, row/column formatting,
+        ///     aggregates, cell updates, annotations, etc.) from the table's
+        ///     cached property templates.
+        /// @param table The table to apply the features to.
+        void ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table);
+
+        /// @returns The path to the configuration (project) file.
+        [[nodiscard]]
+        const wxString& GetConfigFilePath() const noexcept
+            {
+            return m_configFilePath;
+            }
+
+        /// @brief Loads a color from a string.
+        /// @param colorStr The string to parse and convert into a color.
+        /// @param item Optional item to cache the color template on.
+        /// @param property Optional property name for caching
+        ///     (e.g., "pen.color", "brush.color").
+        /// @returns The loaded color. Check with @c IsOk() to verify that the color
+        ///     was successfully loaded.
+        [[nodiscard]]
+        wxColour ConvertColor(wxString colorStr, GraphItems::GraphItemBase* item = nullptr,
+                              const wxString& property = wxString{}) const;
+
+        /// @brief Loads a color from a string.
+        /// @param colorNode A color node to parse.
+        /// @returns The loaded color. Check with @c IsOk() to verify that the color
+        ///     was successfully loaded.
+        [[nodiscard]]
+        wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode) const;
+
+        [[nodiscard]]
+        std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node) const
+            {
+            if (node->IsValueNumber())
+                {
+                return node->AsDouble();
+                }
+            if (node->IsValueString())
+                {
+                return ExpandNumericConstant(node->AsString());
+                }
+            return std::nullopt;
+            }
+
+        /** @brief Expands constants in a string and caches the original
+                template on the item if it contained placeholders.
+            @param item The item to cache the template on (can be @c nullptr).
+            @param property The property name to cache under.
+            @param rawValue The raw string that may contain \{\{\}\} placeholders.
+            @returns The expanded string.*/
+        [[nodiscard]]
+        wxString ExpandAndCache(GraphItems::GraphItemBase* item, const wxString& property,
+                                const wxString& rawValue) const
+            {
+            const wxString expanded = ExpandConstants(rawValue);
+            if (item != nullptr)
+                {
+                item->SetPropertyTemplate(property, rawValue);
+                }
+            return expanded;
+            }
+
+        /// @brief Loads properties from a JSON node into a pen.
+        /// @param penNode The node to parse.
+        /// @param pen[in,out] The pen to apply the loaded settings to.
+        /// @param item Optional item to cache color templates on.
+        /// @param propertyPrefix Optional property prefix for caching
+        ///     (e.g., "pen"). If empty, defaults to "pen.color".
+        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen,
+                     GraphItems::GraphItemBase* item = nullptr,
+                     const wxString& propertyPrefix = wxString{}) const;
+
       private:
         using ValuesType = std::variant<wxString, double>;
 
@@ -883,16 +957,6 @@ namespace Wisteria
         void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis,
                       const std::map<wxString, double>& labelPositions = {});
 
-        /// @brief Loads properties from a JSON node into a pen.
-        /// @param penNode The node to parse.
-        /// @param pen[in,out] The pen to apply the loaded settings to.
-        /// @param item Optional item to cache color templates on.
-        /// @param propertyPrefix Optional property prefix for caching
-        ///     (e.g., "pen"). If empty, defaults to "pen.color".
-        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen,
-                     GraphItems::GraphItemBase* item = nullptr,
-                     const wxString& propertyPrefix = wxString{}) const;
-
         /// @brief Loads properties from a JSON node into a brush.
         /// @param brushNode The node to parse.
         /// @param brush[in,out] The brush to apply the loaded settings to.
@@ -901,17 +965,6 @@ namespace Wisteria
         void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush,
                        GraphItems::GraphItemBase* item = nullptr,
                        const wxString& propertyPrefix = wxString{}) const;
-
-        /// @brief Loads a row or column position for a table from a node.
-        /// @details This support loading the @c origin and @c offset properties.
-        /// @param positionNode The node to parse.
-        /// @param table The table being reviewed.
-        /// @note column and row counts should be the table's original column and row
-        ///     counts, prior to any aggregation columns being added.
-        /// @returns The row or column position.
-        [[nodiscard]]
-        static std::optional<size_t> LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
-                                                       std::shared_ptr<Graphs::Table> table);
 
         /// @brief Loads an image node.
         /// @param imageNode The image node to parse.
@@ -988,79 +1041,6 @@ namespace Wisteria
         [[nodiscard]]
         wxString NormalizeFilePath(const wxString& path) const;
 
-        /// @brief Loads the positions from a row or column stops array.
-        [[nodiscard]]
-        auto LoadTableStops(std::shared_ptr<Graphs::Table>& table, const auto& stopsNode)
-            {
-            std::set<size_t> rowOrColumnStops;
-            const auto stops = stopsNode->AsNodes();
-            if (stops.size())
-                {
-                for (const auto& stop : stops)
-                    {
-                    const std::optional<size_t> stopPosition =
-                        LoadTablePosition(stop->GetProperty(L"position"), table);
-                    if (stopPosition.has_value())
-                        {
-                        rowOrColumnStops.insert(stopPosition.value());
-                        }
-                    }
-                }
-            return rowOrColumnStops;
-            }
-
-        /// @brief Reads a single position and range of positions (start and end).
-        [[nodiscard]]
-        auto ReadPositions(std::shared_ptr<Graphs::Table>& table,
-                           const wxSimpleJSON::Ptr_t& theNode)
-            {
-            const std::optional<size_t> position =
-                LoadTablePosition(theNode->GetProperty(L"position"), table);
-            const std::optional<size_t> startPosition =
-                LoadTablePosition(theNode->GetProperty(L"start"), table);
-            const std::optional<size_t> endPosition =
-                LoadTablePosition(theNode->GetProperty(L"end"), table);
-            return std::tuple(position, startPosition, endPosition);
-            }
-
-        void LoadTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
-                                    const wxSimpleJSON::Ptr_t& tableNode);
-
-        void LoadTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
-                                       const wxSimpleJSON::Ptr_t& tableNode);
-
-        /// @brief Loads a color from a string.
-        /// @param colorStr The string to parse and convert into a color.
-        /// @param item Optional item to cache the color template on.
-        /// @param property Optional property name for caching
-        ///     (e.g., "pen.color", "brush.color").
-        /// @returns The loaded color. Check with @c IsOk() to verify that the color
-        ///     was successfully loaded.
-        [[nodiscard]]
-        wxColour ConvertColor(wxString colorStr, GraphItems::GraphItemBase* item = nullptr,
-                              const wxString& property = wxString{}) const;
-
-        /// @brief Loads a color from a string.
-        /// @param colorNode A color node to parse.
-        /// @returns The loaded color. Check with @c IsOk() to verify that the color
-        ///     was successfully loaded.
-        [[nodiscard]]
-        wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode) const;
-
-        [[nodiscard]]
-        std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node) const
-            {
-            if (node->IsValueNumber())
-                {
-                return node->AsDouble();
-                }
-            if (node->IsValueString())
-                {
-                return ExpandNumericConstant(node->AsString());
-                }
-            return std::nullopt;
-            }
-
         [[nodiscard]]
         std::vector<wxString> ExpandConstants(std::vector<wxString> strs) const
             {
@@ -1069,24 +1049,6 @@ namespace Wisteria
                 str = ExpandConstants(str);
                 }
             return strs;
-            }
-
-        /** @brief Expands constants in a string and caches the original
-                template on the item if it contained placeholders.
-            @param item The item to cache the template on (can be @c nullptr).
-            @param property The property name to cache under.
-            @param rawValue The raw string that may contain \{\{\}\} placeholders.
-            @returns The expanded string.*/
-        [[nodiscard]]
-        wxString ExpandAndCache(GraphItems::GraphItemBase* item, const wxString& property,
-                                const wxString& rawValue) const
-            {
-            const wxString expanded = ExpandConstants(rawValue);
-            if (item != nullptr)
-                {
-                item->SetPropertyTemplate(property, rawValue);
-                }
-            return expanded;
             }
 
         /** @brief Expands constants in a vector of strings and caches

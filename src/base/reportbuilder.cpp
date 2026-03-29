@@ -4942,530 +4942,10 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
-                                               const wxSimpleJSON::Ptr_t& tableNode)
+    void ReportBuilder::ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table)
         {
-        // change the rows' formatting
-        const auto rowFormattingCommands = tableNode->GetProperty(L"row-formatting")->AsNodes();
-        if (!rowFormattingCommands.empty())
-            {
-            for (const auto& rowFormattingCommand : rowFormattingCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, rowFormattingCommand);
-                const auto formatValue = ReportEnumConvert::ConvertTableCellFormat(
-                    rowFormattingCommand->GetProperty(L"format")->AsString());
-
-                const std::set<size_t> colStops =
-                    LoadTableStops(table, rowFormattingCommand->GetProperty(L"stops"));
-                if (formatValue.has_value())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetRowFormat(position.value(), formatValue.value(), colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowFormat(i, formatValue.value(), colStops);
-                            }
-                        }
-                    }
-                }
-            }
-
-        // color the rows
-        const auto rowColorCommands = tableNode->GetProperty(L"row-color")->AsNodes();
-        if (!rowColorCommands.empty())
-            {
-            for (const auto& rowColorCommand : rowColorCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, rowColorCommand);
-                const wxColour bgcolor(ConvertColor(rowColorCommand->GetProperty(L"background")));
-                const std::set<size_t> colStops =
-                    LoadTableStops(table, rowColorCommand->GetProperty(L"stops"));
-                if (bgcolor.IsOk())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetRowBackgroundColor(position.value(), bgcolor, colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowBackgroundColor(i, bgcolor, colStops);
-                            }
-                        }
-                    }
-                }
-            }
-
-        // bold the rows
-        const auto rowBoldCommands = tableNode->GetProperty(L"row-bold")->AsNodes();
-        if (!rowBoldCommands.empty())
-            {
-            for (const auto& rowBoldCommand : rowBoldCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, rowBoldCommand);
-                const std::set<size_t> colStops =
-                    LoadTableStops(table, rowBoldCommand->GetProperty(L"stops"));
-                if (position.has_value())
-                    {
-                    table->BoldRow(position.value(), colStops);
-                    }
-                // range
-                if (startPosition.has_value() && endPosition.has_value())
-                    {
-                    for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                        {
-                        table->BoldRow(i, colStops);
-                        }
-                    }
-                }
-            }
-
-        // change rows' borders
-        const auto rowBordersCommands = tableNode->GetProperty(L"row-borders")->AsNodes();
-        if (!rowBordersCommands.empty())
-            {
-            for (const auto& rowBordersCommand : rowBordersCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, rowBordersCommand);
-                const auto borderFlags = rowBordersCommand->GetProperty(L"borders")->AsBools();
-
-                const std::set<size_t> rowStops =
-                    LoadTableStops(table, rowBordersCommand->GetProperty(L"stops"));
-                if (!borderFlags.empty())
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowBorders(
-                            position.value(),
-                            (!borderFlags.empty() ? borderFlags[0] : table->IsShowingTopBorder()),
-                            (borderFlags.size() > 1 ? borderFlags[1] :
-                                                      table->IsShowingRightBorder()),
-                            (borderFlags.size() > 2 ? borderFlags[2] :
-                                                      table->IsShowingBottomBorder()),
-                            (borderFlags.size() > 3 ? borderFlags[3] :
-                                                      table->IsShowingLeftBorder()),
-                            rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowBorders(
-                                i,
-                                (!borderFlags.empty() ? borderFlags[0] :
-                                                        table->IsShowingTopBorder()),
-                                (borderFlags.size() > 1 ? borderFlags[1] :
-                                                          table->IsShowingRightBorder()),
-                                (borderFlags.size() > 2 ? borderFlags[2] :
-                                                          table->IsShowingBottomBorder()),
-                                (borderFlags.size() > 3 ? borderFlags[3] :
-                                                          table->IsShowingLeftBorder()),
-                                rowStops);
-                            }
-                        }
-                    }
-
-                // borders specified individually
-                if (rowBordersCommand->HasProperty(L"top-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowBorders(position.value(),
-                                             rowBordersCommand->GetProperty(L"top-border")
-                                                 ->AsBool(table->IsShowingTopBorder()),
-                                             std::nullopt, std::nullopt, std::nullopt, rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowBorders(i,
-                                                 rowBordersCommand->GetProperty(L"top-border")
-                                                     ->AsBool(table->IsShowingTopBorder()),
-                                                 std::nullopt, std::nullopt, std::nullopt,
-                                                 rowStops);
-                            }
-                        }
-                    }
-                if (rowBordersCommand->HasProperty(L"right-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowBorders(position.value(), std::nullopt,
-                                             rowBordersCommand->GetProperty(L"right-border")
-                                                 ->AsBool(table->IsShowingRightBorder()),
-                                             std::nullopt, std::nullopt, rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowBorders(i, std::nullopt,
-                                                 rowBordersCommand->GetProperty(L"right-border")
-                                                     ->AsBool(table->IsShowingRightBorder()),
-                                                 std::nullopt, std::nullopt, rowStops);
-                            }
-                        }
-                    }
-                if (rowBordersCommand->HasProperty(L"bottom-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowBorders(position.value(), std::nullopt, std::nullopt,
-                                             rowBordersCommand->GetProperty(L"bottom-border")
-                                                 ->AsBool(table->IsShowingBottomBorder()),
-                                             std::nullopt);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowBorders(i, std::nullopt, std::nullopt,
-                                                 rowBordersCommand->GetProperty(L"bottom-border")
-                                                     ->AsBool(table->IsShowingBottomBorder()),
-                                                 std::nullopt);
-                            }
-                        }
-                    }
-                if (rowBordersCommand->HasProperty(L"left-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowBorders(position.value(), std::nullopt, std::nullopt,
-                                             std::nullopt,
-                                             rowBordersCommand->GetProperty(L"left-border")
-                                                 ->AsBool(table->IsShowingLeftBorder()),
-                                             rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowBorders(i, std::nullopt, std::nullopt, std::nullopt,
-                                                 rowBordersCommand->GetProperty(L"left-border")
-                                                     ->AsBool(table->IsShowingLeftBorder()),
-                                                 rowStops);
-                            }
-                        }
-                    }
-                }
-            }
-
-        // change rows' content alignment
-        const auto rowContentCommands = tableNode->GetProperty(L"row-content-align")->AsNodes();
-        if (!rowContentCommands.empty())
-            {
-            for (const auto& rowContentCommand : rowContentCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, rowContentCommand);
-                const auto hPageAlignment =
-                    rowContentCommand->GetProperty(L"horizontal-page-alignment")->AsString();
-                const std::set<size_t> colStops =
-                    LoadTableStops(table, rowContentCommand->GetProperty(L"stops"));
-                if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowHorizontalPageAlignment(
-                            position.value(), PageHorizontalAlignment::LeftAligned, colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowHorizontalPageAlignment(
-                                i, PageHorizontalAlignment::LeftAligned, colStops);
-                            }
-                        }
-                    }
-                else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowHorizontalPageAlignment(
-                            position.value(), PageHorizontalAlignment::RightAligned, colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowHorizontalPageAlignment(
-                                i, PageHorizontalAlignment::RightAligned, colStops);
-                            }
-                        }
-                    }
-                else if (hPageAlignment.CmpNoCase(L"centered") == 0)
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetRowHorizontalPageAlignment(
-                            position.value(), PageHorizontalAlignment::Centered, colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowHorizontalPageAlignment(
-                                i, PageHorizontalAlignment::Centered, colStops);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    //---------------------------------------------------
-    void ReportBuilder::LoadTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
-                                                  const wxSimpleJSON::Ptr_t& tableNode)
-        {
-        // change columns' cell formatting
-        const auto columnFormattingCommands =
-            tableNode->GetProperty(L"column-formatting")->AsNodes();
-        if (!columnFormattingCommands.empty())
-            {
-            for (const auto& columnFormattingCommand : columnFormattingCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, columnFormattingCommand);
-                const auto formatValue = ReportEnumConvert::ConvertTableCellFormat(
-                    columnFormattingCommand->GetProperty(L"format")->AsString());
-
-                const std::set<size_t> rowStops =
-                    LoadTableStops(table, columnFormattingCommand->GetProperty(L"stops"));
-                if (formatValue.has_value())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetColumnFormat(position.value(), formatValue.value(), rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnFormat(i, formatValue.value(), rowStops);
-                            }
-                        }
-                    }
-                }
-            }
-
-        // color the columns
-        const auto colColorCommands = tableNode->GetProperty(L"column-color")->AsNodes();
-        if (!colColorCommands.empty())
-            {
-            for (const auto& colColorCommand : colColorCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, colColorCommand);
-                const wxColour bgcolor(ConvertColor(colColorCommand->GetProperty(L"background")));
-                const std::set<size_t> rowStops =
-                    LoadTableStops(table, colColorCommand->GetProperty(L"stops"));
-                if (bgcolor.IsOk())
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetColumnBackgroundColor(position.value(), bgcolor, rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnBackgroundColor(i, bgcolor, rowStops);
-                            }
-                        }
-                    }
-                }
-            }
-
-        // bold the columns
-        const auto colBoldCommands = tableNode->GetProperty(L"column-bold")->AsNodes();
-        if (!colBoldCommands.empty())
-            {
-            for (const auto& colBoldCommand : colBoldCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, colBoldCommand);
-                const std::set<size_t> rowStops =
-                    LoadTableStops(table, colBoldCommand->GetProperty(L"stops"));
-                if (position.has_value())
-                    {
-                    table->BoldColumn(position.value(), rowStops);
-                    }
-                // range
-                if (startPosition.has_value() && endPosition.has_value())
-                    {
-                    for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                        {
-                        table->BoldColumn(i, rowStops);
-                        }
-                    }
-                }
-            }
-
-        // change columns' borders
-        const auto columnBordersCommands = tableNode->GetProperty(L"column-borders")->AsNodes();
-        if (!columnBordersCommands.empty())
-            {
-            for (const auto& columnBordersCommand : columnBordersCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, columnBordersCommand);
-                const auto borderFlags = columnBordersCommand->GetProperty(L"borders")->AsBools();
-
-                const std::set<size_t> rowStops =
-                    LoadTableStops(table, columnBordersCommand->GetProperty(L"stops"));
-                if (!borderFlags.empty())
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetColumnBorders(
-                            position.value(),
-                            (!borderFlags.empty() ? borderFlags[0] : table->IsShowingTopBorder()),
-                            (borderFlags.size() > 1 ? borderFlags[1] :
-                                                      table->IsShowingRightBorder()),
-                            (borderFlags.size() > 2 ? borderFlags[2] :
-                                                      table->IsShowingBottomBorder()),
-                            (borderFlags.size() > 3 ? borderFlags[3] :
-                                                      table->IsShowingLeftBorder()),
-                            rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnBorders(
-                                i,
-                                (!borderFlags.empty() ? borderFlags[0] :
-                                                        table->IsShowingTopBorder()),
-                                (borderFlags.size() > 1 ? borderFlags[1] :
-                                                          table->IsShowingRightBorder()),
-                                (borderFlags.size() > 2 ? borderFlags[2] :
-                                                          table->IsShowingBottomBorder()),
-                                (borderFlags.size() > 3 ? borderFlags[3] :
-                                                          table->IsShowingLeftBorder()),
-                                rowStops);
-                            }
-                        }
-                    }
-
-                // borders specified individually
-                if (columnBordersCommand->HasProperty(L"top-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetColumnBorders(position.value(),
-                                                columnBordersCommand->GetProperty(L"top-border")
-                                                    ->AsBool(table->IsShowingTopBorder()),
-                                                std::nullopt, std::nullopt, std::nullopt, rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnBorders(i,
-                                                    columnBordersCommand->GetProperty(L"top-border")
-                                                        ->AsBool(table->IsShowingTopBorder()),
-                                                    std::nullopt, std::nullopt, std::nullopt,
-                                                    rowStops);
-                            }
-                        }
-                    }
-                if (columnBordersCommand->HasProperty(L"right-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetColumnBorders(position.value(), std::nullopt,
-                                                columnBordersCommand->GetProperty(L"right-border")
-                                                    ->AsBool(table->IsShowingRightBorder()),
-                                                std::nullopt, std::nullopt, rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnBorders(
-                                i, std::nullopt,
-                                columnBordersCommand->GetProperty(L"right-border")
-                                    ->AsBool(table->IsShowingRightBorder()),
-                                std::nullopt, std::nullopt, rowStops);
-                            }
-                        }
-                    }
-                if (columnBordersCommand->HasProperty(L"bottom-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetColumnBorders(position.value(), std::nullopt, std::nullopt,
-                                                columnBordersCommand->GetProperty(L"bottom-border")
-                                                    ->AsBool(table->IsShowingBottomBorder()),
-                                                std::nullopt);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnBorders(
-                                i, std::nullopt, std::nullopt,
-                                columnBordersCommand->GetProperty(L"bottom-border")
-                                    ->AsBool(table->IsShowingBottomBorder()),
-                                std::nullopt);
-                            }
-                        }
-                    }
-                if (columnBordersCommand->HasProperty(L"left-border"))
-                    {
-                    if (position.has_value())
-                        {
-                        table->SetColumnBorders(position.value(), std::nullopt, std::nullopt,
-                                                std::nullopt,
-                                                columnBordersCommand->GetProperty(L"left-border")
-                                                    ->AsBool(table->IsShowingLeftBorder()),
-                                                rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnBorders(
-                                i, std::nullopt, std::nullopt, std::nullopt,
-                                columnBordersCommand->GetProperty(L"left-border")
-                                    ->AsBool(table->IsShowingLeftBorder()),
-                                rowStops);
-                            }
-                        }
-                    }
-                }
-            }
+        ReportNodeLoader loader(*this);
+        loader.ApplyTableFeatures(table);
         }
 
     //---------------------------------------------------
@@ -5473,6 +4953,8 @@ namespace Wisteria
                                                               Canvas* canvas, size_t& currentRow,
                                                               size_t& currentColumn)
         {
+        ReportNodeLoader nodeLoader(*this);
+
         const wxString dsName = tableNode->GetProperty(L"dataset")->AsString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
@@ -5543,26 +5025,7 @@ namespace Wisteria
         const auto sortNode = tableNode->GetProperty(L"row-sort");
         if (sortNode->IsOk())
             {
-            const auto sortDirection =
-                sortNode->GetProperty(L"direction")->AsString().CmpNoCase(_DT(L"descending")) == 0 ?
-                    SortDirection::SortDescending :
-                    SortDirection::SortAscending;
-            const std::optional<size_t> sortColumn =
-                LoadTablePosition(sortNode->GetProperty(L"column"), table);
-
-            // if sorting by a list of labels with a custom order
-            if (sortColumn)
-                {
-                if (const auto labelsNode = sortNode->GetProperty(L"labels");
-                    labelsNode->IsOk() && labelsNode->IsValueArray())
-                    {
-                    table->Sort(sortColumn.value(), labelsNode->AsStrings(), sortDirection);
-                    }
-                else
-                    {
-                    table->Sort(sortColumn.value(), sortDirection);
-                    }
-                }
+            ReportNodeLoader::ApplyTableSort(table, sortNode);
             table->SetPropertyTemplate(L"row-sort", sortNode->Print(false));
             }
 
@@ -5605,128 +5068,58 @@ namespace Wisteria
 
         if (tableNode->HasProperty(L"insert-group-header"))
             {
-            table->InsertGroupHeader(tableNode->GetProperty(L"insert-group-header")->AsStrings());
-            table->SetPropertyTemplate(
-                L"insert-group-header",
-                tableNode->GetProperty(L"insert-group-header")->Print(false));
+            const auto groupHeaderNode = tableNode->GetProperty(L"insert-group-header");
+            ReportNodeLoader::ApplyTableGroupHeader(table, groupHeaderNode);
+            table->SetPropertyTemplate(L"insert-group-header", groupHeaderNode->Print(false));
             }
 
         // group the rows
         const auto rowGroupNode = tableNode->GetProperty(L"row-group");
-        const auto rowGroupings = rowGroupNode->AsDoubles();
-        for (const auto& rowGrouping : rowGroupings)
+        if (rowGroupNode->IsOk() && !rowGroupNode->AsDoubles().empty())
             {
-            table->GroupRow(rowGrouping);
-            }
-        if (!rowGroupings.empty())
-            {
+            ReportNodeLoader::ApplyTableRowGrouping(table, rowGroupNode);
             table->SetPropertyTemplate(L"row-group", rowGroupNode->Print(false));
             }
 
         // group the columns
         const auto columnGroupNode = tableNode->GetProperty(L"column-group");
-        const auto columnGroupings = columnGroupNode->AsDoubles();
-        for (const auto& columnGrouping : columnGroupings)
+        if (columnGroupNode->IsOk() && !columnGroupNode->AsDoubles().empty())
             {
-            table->GroupColumn(columnGrouping);
-            }
-        if (!columnGroupings.empty())
-            {
+            ReportNodeLoader::ApplyTableColumnGrouping(table, columnGroupNode);
             table->SetPropertyTemplate(L"column-group", columnGroupNode->Print(false));
             }
 
-        // apply zebra stripes to loaded data before we start adding custom rows/columns, manually
-        // changing row/column colors, etc.
+        // apply zebra stripes to loaded data before we start adding custom rows/columns,
+        // manually changing row/column colors, etc.
         if (tableNode->HasProperty(L"alternate-row-color"))
             {
             const auto altRowColorNode = tableNode->GetProperty(L"alternate-row-color");
-            const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"), table);
-            const std::set<size_t> colStops =
-                LoadTableStops(table, altRowColorNode->GetProperty(L"stops"));
-            auto rowColor{ ConvertColor(altRowColorNode->GetProperty(L"color")) };
-            if (!rowColor.IsOk())
-                {
-                rowColor = Colors::ColorBrewer::GetColor(Colors::Color::White);
-                }
-            table->ApplyAlternateRowColors(rowColor, startRow.value_or(0), colStops);
+            nodeLoader.ApplyTableAlternateRowColor(table, altRowColorNode);
             table->SetPropertyTemplate(L"alternate-row-color", altRowColorNode->Print(false));
             }
 
         // add rows
         const auto rowAddNode = tableNode->GetProperty(L"row-add");
-        auto rowAddCommands = rowAddNode->AsNodes();
-        if (!rowAddCommands.empty())
+        if (!rowAddNode->AsNodes().empty())
             {
-            for (const auto& rowAddCommand : rowAddCommands)
-                {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowAddCommand->GetProperty(L"position"), table);
-                if (!position.has_value())
-                    {
-                    continue;
-                    }
-                table->InsertRow(position.value());
-                // fill the values across the row
-                const auto values = rowAddCommand->GetProperty(L"values")->AsStrings();
-                for (size_t i = 0; i < values.size(); ++i)
-                    {
-                    table->GetCell(position.value(), i).SetValue(values[i]);
-                    }
-                const wxColour bgcolor(ConvertColor(rowAddCommand->GetProperty(L"background")));
-                if (bgcolor.IsOk())
-                    {
-                    table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt);
-                    }
-                }
+            nodeLoader.ApplyTableRowAdditions(table, rowAddNode);
             table->SetPropertyTemplate(L"row-add", rowAddNode->Print(false));
             }
 
         // change the rows' suppression
         const auto rowSuppressionNode = tableNode->GetProperty(L"row-suppression");
-        const auto rowSuppressionCommands = rowSuppressionNode->AsNodes();
-        if (!rowSuppressionCommands.empty())
+        if (!rowSuppressionNode->AsNodes().empty())
             {
-            for (const auto& rowSuppressionCommand : rowSuppressionCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, rowSuppressionCommand);
-                const auto threshold =
-                    ConvertNumber(rowSuppressionCommand->GetProperty(L"threshold"));
-                const auto suppressionLabel =
-                    ExpandAndCache(table.get(), L"row-suppression.label",
-                                   rowSuppressionCommand->GetProperty(L"label")->AsString());
-
-                const std::set<size_t> colStops =
-                    LoadTableStops(table, rowSuppressionCommand->GetProperty(L"stops"));
-                if (threshold.has_value())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetRowSuppression(position.value(), threshold,
-                                                 !suppressionLabel.empty() ?
-                                                     std::optional<wxString>(suppressionLabel) :
-                                                     std::nullopt,
-                                                 colStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetRowSuppression(i, threshold,
-                                                     !suppressionLabel.empty() ?
-                                                         std::optional<wxString>(suppressionLabel) :
-                                                         std::nullopt,
-                                                     colStops);
-                            }
-                        }
-                    }
-                }
+            nodeLoader.ApplyTableRowSuppression(table, rowSuppressionNode);
             table->SetPropertyTemplate(L"row-suppression", rowSuppressionNode->Print(false));
             }
 
-        LoadTableRowFormatting(table, tableNode);
+        nodeLoader.ApplyTableRowFormatting(table,
+            tableNode->GetProperty(L"row-formatting"),
+            tableNode->GetProperty(L"row-color"),
+            tableNode->GetProperty(L"row-bold"),
+            tableNode->GetProperty(L"row-borders"),
+            tableNode->GetProperty(L"row-content-align"));
 
         // cache row formatting properties for round-trip serialization
         for (const auto& prop :
@@ -5741,51 +5134,19 @@ namespace Wisteria
 
         // change the columns' suppression
         const auto columnSuppressionNode = tableNode->GetProperty(L"column-suppression");
-        const auto columnSuppressionCommands = columnSuppressionNode->AsNodes();
-        if (!columnSuppressionCommands.empty())
+        if (!columnSuppressionNode->AsNodes().empty())
             {
-            for (const auto& columnSuppressionCommand : columnSuppressionCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, columnSuppressionCommand);
-                const auto threshold =
-                    ConvertNumber(columnSuppressionCommand->GetProperty(L"threshold"));
-                const auto suppressionLabel =
-                    ExpandAndCache(table.get(), L"column-suppression.label",
-                                   columnSuppressionCommand->GetProperty(L"label")->AsString());
-
-                const std::set<size_t> rowStops =
-                    LoadTableStops(table, columnSuppressionCommand->GetProperty(L"stops"));
-                if (threshold.has_value())
-                    {
-                    // single column
-                    if (position.has_value())
-                        {
-                        table->SetColumnSuppression(position.value(), threshold,
-                                                    !suppressionLabel.empty() ?
-                                                        std::optional<wxString>(suppressionLabel) :
-                                                        std::nullopt,
-                                                    rowStops);
-                        }
-                    // range
-                    if (startPosition.has_value() && endPosition.has_value())
-                        {
-                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                            {
-                            table->SetColumnSuppression(
-                                i, threshold,
-                                !suppressionLabel.empty() ?
-                                    std::optional<wxString>(suppressionLabel) :
-                                    std::nullopt,
-                                rowStops);
-                            }
-                        }
-                    }
-                }
-            table->SetPropertyTemplate(L"column-suppression", columnSuppressionNode->Print(false));
+            nodeLoader.ApplyTableColumnSuppression(table, columnSuppressionNode);
+            table->SetPropertyTemplate(L"column-suppression",
+                                       columnSuppressionNode->Print(false));
             }
 
-        LoadTableColumnFormatting(table, tableNode);
+        nodeLoader.ApplyTableColumnFormatting(table,
+            tableNode->GetProperty(L"column-formatting"),
+            tableNode->GetProperty(L"column-color"),
+            tableNode->GetProperty(L"column-bold"),
+            tableNode->GetProperty(L"column-borders"),
+            tableNode->GetProperty(L"column-content-align"));
 
         // cache column formatting properties for round-trip serialization
         for (const auto& prop : { L"column-formatting", L"column-color", L"column-bold",
@@ -5800,377 +5161,49 @@ namespace Wisteria
 
         // highlight cells down a column
         const auto columnHighlightNode = tableNode->GetProperty(L"column-highlight");
-        const auto columnHighlightsCommands = columnHighlightNode->AsNodes();
-        if (!columnHighlightsCommands.empty())
+        if (!columnHighlightNode->AsNodes().empty())
             {
-            for (const auto& columnHighlightsCommand : columnHighlightsCommands)
-                {
-                const auto [position, startPosition, endPosition] =
-                    ReadPositions(table, columnHighlightsCommand);
-
-                std::set<size_t> rowStops =
-                    LoadTableStops(table, columnHighlightsCommand->GetProperty(L"stops"));
-                if (position.has_value())
-                    {
-                    table->HighlightColumn(position.value(), rowStops);
-                    }
-                // range
-                if (startPosition.has_value() && endPosition.has_value())
-                    {
-                    for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
-                        {
-                        table->HighlightColumn(i, rowStops);
-                        }
-                    }
-                }
+            ReportNodeLoader::ApplyTableColumnHighlight(table, columnHighlightNode);
             table->SetPropertyTemplate(L"column-highlight", columnHighlightNode->Print(false));
             }
 
         // column/row aggregates
         const auto aggregatesNode = tableNode->GetProperty(L"aggregates");
-        const auto columnRowAggregates = aggregatesNode->AsNodes();
-        if (!columnRowAggregates.empty())
+        if (!aggregatesNode->AsNodes().empty())
             {
-            for (const auto& columnRowAggregate : columnRowAggregates)
-                {
-                const auto aggName = columnRowAggregate->GetProperty(_DT(L"name"))->AsString();
-                const auto whereType = columnRowAggregate->GetProperty(L"type")->AsString();
-                const auto aggType = columnRowAggregate->GetProperty(L"aggregate-type")->AsString();
-
-                // starting column/row
-                const std::optional<size_t> startColumn =
-                    LoadTablePosition(columnRowAggregate->GetProperty(L"start"), table);
-                // ending column/row
-                const std::optional<size_t> endingColumn =
-                    LoadTablePosition(columnRowAggregate->GetProperty(L"end"), table);
-                // position
-                const std::optional<size_t> insertionPosition =
-                    LoadTablePosition(columnRowAggregate->GetProperty(L"position"), table);
-                // (optional) overriding cell borders
-                const auto cellBorders = columnRowAggregate->GetProperty(L"borders")->AsBools();
-                std::bitset<4> borders{ 0 };
-                borders[0] = (!cellBorders.empty() ? cellBorders[0] : table->IsShowingTopBorder());
-                borders[1] =
-                    (cellBorders.size() > 1 ? cellBorders[1] : table->IsShowingRightBorder());
-                borders[2] =
-                    (cellBorders.size() > 2 ? cellBorders[2] : table->IsShowingBottomBorder());
-                borders[3] =
-                    (cellBorders.size() > 3 ? cellBorders[3] : table->IsShowingLeftBorder());
-
-                const wxColour bkColor(
-                    ConvertColor(columnRowAggregate->GetProperty(L"background")));
-
-                Graphs::Table::AggregateInfo aggInfo;
-                if (startColumn.has_value())
-                    {
-                    aggInfo.FirstCell(startColumn.value());
-                    }
-                if (endingColumn.has_value())
-                    {
-                    aggInfo.LastCell(endingColumn.value());
-                    }
-
-                if (aggType.CmpNoCase(L"percent-change") == 0)
-                    {
-                    aggInfo.Type(AggregateType::ChangePercent);
-                    }
-                else if (aggType.CmpNoCase(L"change") == 0)
-                    {
-                    aggInfo.Type(AggregateType::Change);
-                    }
-                else if (aggType.CmpNoCase(L"total") == 0)
-                    {
-                    aggInfo.Type(AggregateType::Total);
-                    }
-                else if (aggType.CmpNoCase(L"ratio") == 0)
-                    {
-                    aggInfo.Type(AggregateType::Ratio);
-                    }
-                // invalid agg column type
-                else
-                    {
-                    continue;
-                    }
-
-                if (whereType.CmpNoCase(L"column") == 0)
-                    {
-                    table->InsertAggregateColumn(
-                        aggInfo, aggName, insertionPosition,
-                        columnRowAggregate->GetProperty(L"use-adjacent-color")->AsBool(),
-                        (bkColor.IsOk() ? std::optional<wxColour>(bkColor) : std::nullopt),
-                        (!cellBorders.empty() ? std::optional<std::bitset<4>>(borders) :
-                                                std::nullopt));
-                    }
-                else if (whereType.CmpNoCase(L"row") == 0)
-                    {
-                    table->InsertAggregateRow(
-                        aggInfo, aggName, insertionPosition,
-                        (bkColor.IsOk() ? std::optional<wxColour>(bkColor) : std::nullopt),
-                        (!cellBorders.empty() ? std::optional<std::bitset<4>>(borders) :
-                                                std::nullopt));
-                    }
-                }
+            nodeLoader.ApplyTableAggregates(table, aggregatesNode);
             table->SetPropertyTemplate(L"aggregates", aggregatesNode->Print(false));
             }
 
         // row totals
-        const auto rowTotals = tableNode->GetProperty(L"row-totals");
-        if (rowTotals->IsOk())
+        const auto rowTotalsNode = tableNode->GetProperty(L"row-totals");
+        if (rowTotalsNode->IsOk())
             {
-            const wxColour bkColor(ConvertColor(rowTotals->GetProperty(L"background")));
-            table->InsertRowTotals(bkColor.IsOk() ? std::optional<wxColour>(bkColor) :
-                                                    std::nullopt);
-            table->SetPropertyTemplate(L"row-totals", rowTotals->Print(false));
+            nodeLoader.ApplyTableRowTotals(table, rowTotalsNode);
+            table->SetPropertyTemplate(L"row-totals", rowTotalsNode->Print(false));
             }
 
         // cell updating
         const auto cellUpdateNode = tableNode->GetProperty(L"cell-update");
-        const auto cellUpdates = cellUpdateNode->AsNodes();
-        if (!cellUpdates.empty())
+        if (!cellUpdateNode->AsNodes().empty())
             {
-            for (const auto& cellUpdate : cellUpdates)
-                {
-                // last column and row will be the last aggregates at this point
-                // (if applicable)
-                const std::optional<size_t> rowPosition =
-                    LoadTablePosition(cellUpdate->GetProperty(L"row"), table);
-                const std::optional<size_t> columnPosition =
-                    LoadTablePosition(cellUpdate->GetProperty(L"column"), table);
-                Graphs::Table::TableCell* currentCell =
-                    ((rowPosition.has_value() && columnPosition.has_value() &&
-                      rowPosition.value() < table->GetRowCount() &&
-                      columnPosition.value() < table->GetColumnCount()) ?
-                         &table->GetCell(rowPosition.value(), columnPosition.value()) :
-                         table->FindCell(cellUpdate->GetProperty(L"value-to-find")->AsString()));
-
-                if (currentCell != nullptr)
-                    {
-                    // column count
-                    const auto columnCountProperty = cellUpdate->GetProperty(L"column-count");
-                    if (columnCountProperty->IsOk())
-                        {
-                        if (columnCountProperty->IsValueString() &&
-                            columnCountProperty->AsString().CmpNoCase(L"all") == 0)
-                            {
-                            currentCell->SetColumnCount(table->GetColumnCount());
-                            }
-                        else if (columnCountProperty->IsValueNumber())
-                            {
-                            currentCell->SetColumnCount(columnCountProperty->AsDouble());
-                            }
-                        }
-                    // row count
-                    const auto rowCountProperty = cellUpdate->GetProperty(L"row-count");
-                    if (rowCountProperty->IsOk())
-                        {
-                        if (rowCountProperty->IsValueString() &&
-                            rowCountProperty->AsString().CmpNoCase(L"all") == 0)
-                            {
-                            currentCell->SetRowCount(table->GetRowCount());
-                            }
-                        else if (rowCountProperty->IsValueNumber())
-                            {
-                            currentCell->SetRowCount(rowCountProperty->AsDouble());
-                            }
-                        }
-                    // value
-                    const auto valueProperty = cellUpdate->GetProperty(L"value");
-                    if (valueProperty->IsOk())
-                        {
-                        if (valueProperty->IsValueString())
-                            {
-                            currentCell->SetValue(valueProperty->AsString());
-                            }
-                        else if (valueProperty->IsValueNumber())
-                            {
-                            currentCell->SetValue(valueProperty->AsDouble());
-                            }
-                        else if (valueProperty->IsValueNull())
-                            {
-                            currentCell->SetValue(wxEmptyString);
-                            }
-                        }
-                    // background color
-                    const wxColour bgcolor(ConvertColor(cellUpdate->GetProperty(L"background")));
-                    if (bgcolor.IsOk())
-                        {
-                        currentCell->SetBackgroundColor(bgcolor);
-                        }
-
-                    // an image to the left side of it
-                    const auto leftSideNode = cellUpdate->GetProperty(L"left-image");
-                    if (leftSideNode->IsOk())
-                        {
-                        auto path = leftSideNode->GetProperty(L"path")->AsString();
-                        if (!path.empty())
-                            {
-                            if (!wxFileName::FileExists(path))
-                                {
-                                path = wxFileName(m_configFilePath).GetPathWithSep() + path;
-                                if (!wxFileName::FileExists(path))
-                                    {
-                                    throw std::runtime_error(
-                                        wxString::Format(_(L"%s: label side image not found."),
-                                                         path)
-                                            .ToUTF8());
-                                    }
-                                }
-                            currentCell->SetLeftImage(GraphItems::Image::LoadFile(path));
-                            }
-                        }
-
-                    // prefix
-                    if (cellUpdate->HasProperty(L"prefix"))
-                        {
-                        currentCell->SetPrefix(cellUpdate->GetProperty(L"prefix")->AsString());
-                        }
-
-                    // is it highlighted
-                    if (cellUpdate->HasProperty(L"highlight"))
-                        {
-                        currentCell->Highlight(cellUpdate->GetProperty(L"highlight")->AsBool());
-                        }
-
-                    // font attributes
-                    if (cellUpdate->HasProperty(L"bold"))
-                        {
-                        if (cellUpdate->GetProperty(L"bold")->AsBool())
-                            {
-                            currentCell->GetFont().MakeBold();
-                            }
-                        else
-                            {
-                            currentCell->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
-                            }
-                        }
-
-                    // outer border toggles
-                    const auto outerBorderToggles =
-                        cellUpdate->GetProperty(L"show-borders")->AsBools();
-                    if (!outerBorderToggles.empty())
-                        {
-                        currentCell->ShowTopBorder(outerBorderToggles[0]);
-                        }
-                    if (outerBorderToggles.size() >= 2)
-                        {
-                        currentCell->ShowRightBorder(outerBorderToggles[1]);
-                        }
-                    if (outerBorderToggles.size() >= 3)
-                        {
-                        currentCell->ShowBottomBorder(outerBorderToggles[2]);
-                        }
-                    if (outerBorderToggles.size() >= 4)
-                        {
-                        currentCell->ShowLeftBorder(outerBorderToggles[3]);
-                        }
-
-                    const auto textAlignment = ReportEnumConvert::ConvertTextAlignment(
-                        cellUpdate->GetProperty(L"text-alignment")->AsString());
-                    if (textAlignment.has_value())
-                        {
-                        currentCell->SetTextAlignment(textAlignment.value());
-                        }
-
-                    // horizontal page alignment
-                    const auto hPageAlignment =
-                        cellUpdate->GetProperty(L"horizontal-page-alignment")->AsString();
-                    if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
-                        {
-                        currentCell->SetPageHorizontalAlignment(
-                            PageHorizontalAlignment::LeftAligned);
-                        }
-                    else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
-                        {
-                        currentCell->SetPageHorizontalAlignment(
-                            PageHorizontalAlignment::RightAligned);
-                        }
-                    else if (hPageAlignment.CmpNoCase(L"centered") == 0)
-                        {
-                        currentCell->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-                        }
-                    }
-                }
+            nodeLoader.ApplyTableCellUpdates(table, cellUpdateNode);
             table->SetPropertyTemplate(L"cell-update", cellUpdateNode->Print(false));
             }
 
         const auto cellAnnotationsNode = tableNode->GetProperty(L"cell-annotations");
-        const auto annotationsNode = cellAnnotationsNode->AsNodes();
-        if (!annotationsNode.empty())
+        if (!cellAnnotationsNode->AsNodes().empty())
             {
-            for (const auto& annotation : annotationsNode)
-                {
-                Graphs::Table::CellAnnotation cellAnnotation{
-                    annotation->GetProperty(L"value")->AsString(),
-                    std::vector<Graphs::Table::CellPosition>{}, Side::Right, std::nullopt,
-                    wxColour{}
-                };
-                if (annotation->HasProperty(L"side"))
-                    {
-                    cellAnnotation.m_side =
-                        (annotation->GetProperty(L"side")->AsString().CmpNoCase(L"left") == 0) ?
-                            Side::Left :
-                            Side::Right;
-                    }
-                cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
-                LoadPen(annotation->GetProperty(L"pen"),
-                        cellAnnotation.m_connectionLinePen.value());
-                cellAnnotation.m_bgColor = ConvertColor(annotation->GetProperty(L"background"));
-
-                const auto cellsNode = annotation->GetProperty(L"cells");
-                if (cellsNode->IsOk() && cellsNode->IsValueObject())
-                    {
-                    const auto outliersNode = cellsNode->GetProperty(L"column-outliers");
-                    const auto topNNode = cellsNode->GetProperty(L"column-top-n");
-                    const auto rangeNode = cellsNode->GetProperty(L"range");
-                    if (outliersNode->IsOk() && outliersNode->IsValueString())
-                        {
-                        const auto colIndex = table->FindColumnIndex(outliersNode->AsString());
-                        if (colIndex.has_value())
-                            {
-                            cellAnnotation.m_cells = table->GetOutliers(colIndex.value());
-                            table->AddCellAnnotation(cellAnnotation);
-                            }
-                        }
-                    else if (topNNode->IsOk() && topNNode->IsValueString())
-                        {
-                        const auto colIndex = table->FindColumnIndex(topNNode->AsString());
-                        if (colIndex.has_value())
-                            {
-                            cellAnnotation.m_cells = table->GetTopN(
-                                colIndex.value(), cellsNode->GetProperty(L"n")->AsDouble(1));
-                            table->AddCellAnnotation(cellAnnotation);
-                            }
-                        }
-                    else if (rangeNode->IsOk() && rangeNode->HasProperty(L"start") &&
-                             rangeNode->HasProperty(L"end"))
-                        {
-                        const auto startCell =
-                            table->FindCellPosition(rangeNode->GetProperty(L"start")->AsString());
-                        const auto endCell =
-                            table->FindCellPosition(rangeNode->GetProperty(L"end")->AsString());
-                        if (startCell && endCell)
-                            {
-                            cellAnnotation.m_cells = { startCell.value(), endCell.value() };
-                            table->AddCellAnnotation(cellAnnotation);
-                            }
-                        }
-                    }
-                }
-            table->SetPropertyTemplate(L"cell-annotations", cellAnnotationsNode->Print(false));
+            nodeLoader.ApplyTableAnnotations(table, cellAnnotationsNode);
+            table->SetPropertyTemplate(L"cell-annotations",
+                                       cellAnnotationsNode->Print(false));
             }
 
         // assign footnotes after all cells have been updated
         const auto footnotesJsonNode = tableNode->GetProperty(L"footnotes");
-        const auto footnotesNode = footnotesJsonNode->AsNodes();
-        if (!footnotesNode.empty())
+        if (!footnotesJsonNode->AsNodes().empty())
             {
-            for (const auto& ftNode : footnotesNode)
-                {
-                table->AddFootnote(ExpandAndCache(table.get(), L"footnote.value",
-                                                  ftNode->GetProperty(L"value")->AsString()),
-                                   ExpandAndCache(table.get(), L"footnote.text",
-                                                  ftNode->GetProperty(L"footnote")->AsString()));
-                }
+            nodeLoader.ApplyTableFootnotes(table, footnotesJsonNode);
             table->SetPropertyTemplate(L"footnotes", footnotesJsonNode->Print(false));
             }
 
@@ -6347,87 +5380,6 @@ namespace Wisteria
             retColor = Colors::ColorContrast::ChangeOpacity(retColor, opacity);
             }
         return retColor;
-        }
-
-    //---------------------------------------------------
-    std::optional<size_t> ReportBuilder::LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
-                                                           std::shared_ptr<Graphs::Table> table)
-        {
-        if (!positionNode->IsOk())
-            {
-            return std::nullopt;
-            }
-
-        std::optional<size_t> position;
-
-        const auto loadStringToPosition = [&](const auto& originStr)
-        {
-            if (originStr.CmpNoCase(L"last-column") == 0)
-                {
-                position = table->GetLastDataColumn();
-                }
-            else if (originStr.CmpNoCase(L"last-row") == 0)
-                {
-                position = table->GetLastDataRow();
-                }
-            else if (originStr.StartsWith(L"column:"))
-                {
-                if (const auto colPos =
-                        (table ? table->FindColumnIndex(originStr.substr(7)) : std::nullopt);
-                    colPos.has_value())
-                    {
-                    position = colPos;
-                    }
-                }
-            else if (originStr.StartsWith(L"row:"))
-                {
-                if (const auto colPos =
-                        (table ? table->FindRowIndex(originStr.substr(4)) : std::nullopt);
-                    colPos.has_value())
-                    {
-                    position = colPos;
-                    }
-                }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"%s: unknown table position origin value."), originStr)
-                        .ToUTF8());
-                }
-        };
-
-        const auto origin = positionNode->GetProperty(L"origin");
-        if (origin->IsOk())
-            {
-            if (origin->IsValueString())
-                {
-                loadStringToPosition(origin->AsString());
-                }
-            else if (origin->IsValueNumber())
-                {
-                position = origin->AsDouble();
-                }
-            }
-        else if (positionNode->IsValueString())
-            {
-            loadStringToPosition(positionNode->AsString());
-            }
-        else if (positionNode->IsValueNumber())
-            {
-            position = positionNode->AsDouble();
-            }
-        const std::optional<double> doubleStartOffset =
-            positionNode->HasProperty(L"offset") ?
-                std::optional<double>(positionNode->GetProperty(L"offset")->AsDouble()) :
-                std::nullopt;
-        if (position.has_value() && doubleStartOffset.has_value())
-            {
-            // value() should work here, but GCC throws an
-            // 'uninitialized value' false positive warning
-            position = position.value_or(0) + doubleStartOffset.value_or(0);
-            }
-
-        return position;
         }
 
     //---------------------------------------------------

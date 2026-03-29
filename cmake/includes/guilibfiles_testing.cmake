@@ -19,6 +19,7 @@ SET(WISTERIA_SRC
     ../../src/base/polygon.cpp
     ../../src/base/reportbuilder.cpp
     ../../src/base/reportbuildercolors.cpp
+    ../../src/base/reportnodeloader.cpp
     ../../src/base/reportprintout.cpp
     ../../src/base/shapes.cpp
     ../../src/data/clone.cpp
