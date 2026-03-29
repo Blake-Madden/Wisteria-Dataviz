@@ -12,6 +12,7 @@
 #ifndef INSERT_GRAPH_DIALOG_H
 #define INSERT_GRAPH_DIALOG_H
 
+#include "../../base/axis.h"
 #include "../../base/colorbrewer.h"
 #include "../../base/image.h"
 #include "../../base/label.h"
@@ -75,6 +76,12 @@ namespace Wisteria::UI
                 the dialog's current control values.
             @param graph The graph to apply the options to.*/
         void ApplyGraphOptions(Graphs::Graph2D& graph) const;
+
+        /** @brief Restores axis state from the original graph.
+            @details Call this after SetData() since SetData() rebuilds axes,
+                discarding titles, brackets, pens, custom labels, etc.
+            @param graph The graph to apply the saved axis state to.*/
+        void ApplyAxisOverrides(Graphs::Graph2D& graph) const;
 
         /// @returns The selected legend placement.
         [[nodiscard]]
@@ -249,6 +256,12 @@ namespace Wisteria::UI
 
         // background image
         GraphItems::Image m_plotBgImage;
+
+        /// @brief Saved axes for round-tripping through the edit flow.
+        /// @details SetData() rebuilds axes from scratch, so the full axis
+        ///     state (title, pens, brackets, custom labels, etc.) must be
+        ///     captured before the edit and restored afterward.
+        std::map<AxisType, GraphItems::Axis> m_savedAxes;
 
         // preview controls
         wxStaticText* m_titlePreview{ nullptr };

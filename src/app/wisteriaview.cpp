@@ -1743,6 +1743,7 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             }
 
         table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
+        dlg.ApplyAxisOverrides(*table);
         table->SetDefaultBorders(true, true, true, true);
         table->SetMinWidthProportion(dlg.GetMinWidthProportion());
         table->SetMinHeightProportion(dlg.GetMinHeightProportion());
@@ -1861,6 +1862,7 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             }
 
         table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
+        dlg.ApplyAxisOverrides(*table);
         table->SetDefaultBorders(true, true, true, true);
         table->SetMinWidthProportion(dlg.GetMinWidthProportion());
         table->SetMinHeightProportion(dlg.GetMinHeightProportion());
@@ -2310,6 +2312,7 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         // unless the user changed the value
@@ -2516,6 +2519,7 @@ void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(),
                       dlg.GetSizeVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldBubble = dynamic_cast<const Wisteria::Graphs::BubblePlot*>(&graph);
         const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
@@ -2658,6 +2662,7 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
                       optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
                       optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
                       optVar(FID::EarSize));
+        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         // unless the user changed the value
@@ -2881,6 +2886,7 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
         const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
@@ -3068,6 +3074,7 @@ void WisteriaView::EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph,
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariables(), dlg.GetXVariable());
+        dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
         const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
@@ -3262,6 +3269,7 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->SetTimeIntervalLabel(dlg.GetTimeIntervalLabel());
 
@@ -3386,6 +3394,7 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetPredictorVariable(),
                       dlg.GetCoefficientVariable(), pValueCol, dlg.GetPLevel(),
                       dlg.GetPredictorsToInclude(), dvName);
+        dlg.ApplyAxisOverrides(*plot);
 
         if (dlg.GetAddDefaultCaption())
             {
@@ -3466,6 +3475,7 @@ void WisteriaView::EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetPredictorVariable(),
                       dlg.GetCoefficientVariable(), pValueCol, dlg.GetPLevel(),
                       dlg.GetPredictorsToInclude(), dvName);
+        dlg.ApplyAxisOverrides(*plot);
 
         if (dlg.GetAddDefaultCaption())
             {
@@ -3593,6 +3603,7 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
                 std::optional<wxString>(dlg.GetNegativeValueVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetPositiveVariable(), posValueCol,
                       dlg.GetNegativeVariable(), negValueCol, dlg.GetMinimumCount());
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->SetPositiveLegendLabel(dlg.GetPositiveLabel());
         plot->SetNegativeLegendLabel(dlg.GetNegativeLabel());
@@ -3682,6 +3693,7 @@ void WisteriaView::EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria:
                 std::optional<wxString>(dlg.GetNegativeValueVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetPositiveVariable(), posValueCol,
                       dlg.GetNegativeVariable(), negValueCol, dlg.GetMinimumCount());
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->SetPositiveLegendLabel(dlg.GetPositiveLabel());
         plot->SetNegativeLegendLabel(dlg.GetNegativeLabel());
@@ -3919,6 +3931,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateInterval(), dlg.GetFiscalYearType(),
                       dlg.GetTaskVariable(), dlg.GetStartDateVariable(), dlg.GetEndDateVariable(),
                       resourceCol, descCol, compCol, groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
                                                   const wxString& oldExpanded)
@@ -4091,6 +4104,7 @@ void WisteriaView::EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteri
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateVariable(), dlg.GetOpenVariable(),
                       dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
+        dlg.ApplyAxisOverrides(*plot);
 
         const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
                                                   const wxString& oldExpanded)
@@ -4247,6 +4261,7 @@ void WisteriaView::EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria:
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
                       fromWeightCol, toWeightCol, fromGroupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
                                                   const wxString& oldExpanded)
@@ -4323,6 +4338,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->SetBoxEffect(dlg.GetBoxEffect());
         plot->ShowAllPoints(dlg.GetShowAllPoints());
@@ -4495,6 +4511,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->SetBoxEffect(dlg.GetBoxEffect());
         plot->ShowAllPoints(dlg.GetShowAllPoints());
@@ -4994,6 +5011,8 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                 std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
             }
 
+        dlg.ApplyAxisOverrides(*plot);
+
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldBarChart =
             dynamic_cast<const Wisteria::Graphs::CategoricalBarChart*>(&graph);
@@ -5200,6 +5219,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
 
         plot->SetData(dataset, questions, groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->ShowResponseCounts(dlg.GetShowResponseCounts());
         plot->ShowPercentages(dlg.GetShowPercentages());
@@ -5323,6 +5343,7 @@ void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.ApplyPageOptions(*plot);
 
         plot->SetData(dataset, questions, groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->ShowResponseCounts(dlg.GetShowResponseCounts());
         plot->ShowPercentages(dlg.GetShowPercentages());
@@ -5432,6 +5453,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
                       static_cast<size_t>(dlg.GetGroupColumnCount()));
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->ShowGroupHeaders(dlg.GetShowGroupHeaders());
         plot->SetGroupHeaderPrefix(dlg.GetGroupHeaderPrefix());
@@ -5506,6 +5528,7 @@ void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
                       static_cast<size_t>(dlg.GetGroupColumnCount()));
+        dlg.ApplyAxisOverrides(*plot);
 
         plot->ShowGroupHeaders(dlg.GetShowGroupHeaders());
         plot->SetGroupHeaderPrefix(dlg.GetGroupHeaderPrefix());
@@ -5710,6 +5733,7 @@ void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
             static_cast<Wisteria::BinLabelDisplay>(dlg.GetBinLabelDisplay()),
             dlg.GetShowFullRange(), std::nullopt, std::make_pair(std::nullopt, std::nullopt),
             dlg.GetNeatIntervals());
+        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldHistogram = dynamic_cast<const Wisteria::Graphs::Histogram*>(&graph);
@@ -5883,6 +5907,7 @@ void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
                                               std::optional<wxString>(dlg.GetWeightVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetWordVariable(), weightCol,
                       dlg.GetMinFrequency(), dlg.GetMaxFrequency(), dlg.GetMaxWords());
+        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldWC = dynamic_cast<const Wisteria::Graphs::WordCloud*>(&graph);
@@ -6031,6 +6056,7 @@ void WisteriaView::EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                 std::optional<wxString>(dlg.GetPostseasonVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetSeasonVariable(), dlg.GetWonVariable(),
                       dlg.GetShutoutVariable(), dlg.GetHomeGameVariable(), postseasonCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldWL = dynamic_cast<const Wisteria::Graphs::WinLossSparkline*>(&graph);
@@ -6223,6 +6249,7 @@ void WisteriaView::EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             dlg.GetGroupVariable().empty() ? std::nullopt :
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldSL = dynamic_cast<const Wisteria::Graphs::StemAndLeafPlot*>(&graph);
@@ -6342,6 +6369,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
             dlg.GetGroup2Variable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetGroup2Variable());
         plot->SetData(dlg.GetSelectedDataset(), weightCol, dlg.GetGroupVariable(), group2Col);
+        dlg.ApplyAxisOverrides(*plot);
 
         // apply styling options
         plot->IncludeDonutHole(dlg.GetIncludeDonutHole());
@@ -6437,6 +6465,7 @@ void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
             dlg.GetGroup2Variable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetGroup2Variable());
         plot->SetData(dlg.GetSelectedDataset(), weightCol, dlg.GetGroupVariable(), group2Col);
+        dlg.ApplyAxisOverrides(*plot);
 
         // apply styling options
         plot->IncludeDonutHole(dlg.GetIncludeDonutHole());
@@ -6626,6 +6655,7 @@ void WisteriaView::EditWaffleChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             canvas, dlg.GetShapes(), dlg.GetGridRounding(), dlg.GetRowCount());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
+        dlg.ApplyAxisOverrides(*plot);
 
         // clear old legend if present
         canvas->SetFixedObject(graphRow, graphCol, nullptr);

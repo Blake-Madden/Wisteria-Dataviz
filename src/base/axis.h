@@ -717,6 +717,10 @@ namespace Wisteria::GraphItems
         Axis(const Axis& that) = default;
         /// @private
         Axis(Axis&& that) noexcept = default;
+        /// @private
+        Axis& operator=(const Axis& that) = default;
+        /// @private
+        Axis& operator=(Axis&& that) noexcept = default;
 
         /** @private
             @brief Sets the DPI scaling for the axis.

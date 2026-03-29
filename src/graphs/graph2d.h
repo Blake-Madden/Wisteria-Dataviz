@@ -326,6 +326,16 @@ namespace Wisteria::Graphs
                                                          GetRightYAxis();
             }
 
+        /// @private
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetAxis(const AxisType axisType) const noexcept
+            {
+            return (axisType == AxisType::BottomXAxis) ? GetBottomXAxis() :
+                   (axisType == AxisType::TopXAxis)    ? GetTopXAxis() :
+                   (axisType == AxisType::LeftYAxis)   ? GetLeftYAxis() :
+                                                         GetRightYAxis();
+            }
+
         /// @returns The opposite axis from the provided type.
         /// @param axisType The axis to access.
         [[nodiscard]]

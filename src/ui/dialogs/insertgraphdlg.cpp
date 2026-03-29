@@ -705,6 +705,14 @@ namespace Wisteria::UI
         m_mirrorXAxis = graph.IsXAxisMirrored();
         m_mirrorYAxis = graph.IsYAxisMirrored();
 
+        // save all four axes for round-tripping (SetData() rebuilds them)
+        m_savedAxes.clear();
+        for (const auto axisType : { AxisType::BottomXAxis, AxisType::TopXAxis, AxisType::LeftYAxis,
+                                     AxisType::RightYAxis })
+            {
+            m_savedAxes.emplace(axisType, graph.GetAxis(axisType));
+            }
+
         // legend placement
         const auto& legendInfo = graph.GetLegendInfo();
         if (legendInfo.has_value())
@@ -955,6 +963,15 @@ namespace Wisteria::UI
         case 32: return wxString{ L"urbanoasis" };
         case 0:  [[fallthrough]];
         default: return wxString{};
+            }
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::ApplyAxisOverrides(Graphs::Graph2D& graph) const
+        {
+        for (const auto& [axisType, saved] : m_savedAxes)
+            {
+            graph.GetAxis(axisType) = saved;
             }
         }
 
