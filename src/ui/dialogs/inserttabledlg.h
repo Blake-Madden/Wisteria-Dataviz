@@ -188,6 +188,7 @@ namespace Wisteria::UI
         wxRadioBox* m_varModeRadio{ nullptr };
         wxTextCtrl* m_varPatternCtrl{ nullptr };
         wxButton* m_varButton{ nullptr };
+        wxStaticText* m_varsLabelCaption{ nullptr };
         wxStaticText* m_varsLabel{ nullptr };
         wxColourPickerCtrl* m_altRowColorPicker{ nullptr };
 

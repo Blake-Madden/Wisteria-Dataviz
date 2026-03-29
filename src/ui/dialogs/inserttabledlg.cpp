@@ -96,14 +96,13 @@ namespace Wisteria::UI
             new wxButton(columnBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Variables..."));
         columnBox->Add(m_varButton, wxSizerFlags{}.Border(wxLEFT));
 
-        auto* varsLabelCaption =
-            new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, _(L"Selected:"));
-        varsLabelCaption->SetFont(varsLabelCaption->GetFont().Bold());
+        m_varsLabelCaption = new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, _(L"Selected:"));
+        m_varsLabelCaption->SetFont(m_varsLabelCaption->GetFont().Bold());
         m_varsLabel = new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, wxString{});
         m_varsLabel->SetForegroundColour(GetVariableLabelColor());
 
         auto* varsLabelSizer = new wxBoxSizer(wxHORIZONTAL);
-        varsLabelSizer->Add(varsLabelCaption, wxSizerFlags{}.CenterVertical());
+        varsLabelSizer->Add(m_varsLabelCaption, wxSizerFlags{}.CenterVertical());
         varsLabelSizer->AddSpacer(FromDIP(8));
         varsLabelSizer->Add(m_varsLabel, wxSizerFlags{}.CenterVertical());
         columnBox->Add(varsLabelSizer, wxSizerFlags{}.Border());
@@ -113,6 +112,8 @@ namespace Wisteria::UI
         // set initial enabled states
         m_varPatternCtrl->Disable();
         m_varButton->Disable();
+        m_varsLabelCaption->Disable();
+        m_varsLabel->Disable();
 
         // header & layout
         auto* headerBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Header && Layout"));
@@ -214,6 +215,8 @@ namespace Wisteria::UI
 
         m_varPatternCtrl->Enable(isPattern);
         m_varButton->Enable(isCustom);
+        m_varsLabelCaption->Enable(isCustom);
+        m_varsLabel->Enable(isCustom);
         }
 
     //-------------------------------------------
@@ -401,20 +404,37 @@ namespace Wisteria::UI
             }
 
         // restore variable selection mode from property template
-        // (formulas are stored with surrounding quotes, e.g.,
-        // "\"{{Everything()}}\"")
+        // The template may be a raw JSON string ("{{Everything()}}") or
+        // a JSON array (["{{Everything()}}"]).  Unwrap both forms so that
+        // formula detection below sees a plain {{...}} string.
         auto varsTemplate = table->GetPropertyTemplate(L"variables");
         // strip surrounding quotes if present
         if (varsTemplate.starts_with(L"\"") && varsTemplate.ends_with(L"\"") &&
             varsTemplate.length() >= 2)
             {
-            varsTemplate = varsTemplate.Mid(1, varsTemplate.length() - 2);
+            varsTemplate = varsTemplate.substr(1, varsTemplate.length() - 2);
             }
-        if (varsTemplate.starts_with(L"{{Everything()"))
+        // unwrap a single-element JSON array (e.g., ["{{Everything()}}"])
+        if (varsTemplate.starts_with(L"[") && varsTemplate.ends_with(L"]"))
+            {
+            auto inner = varsTemplate.substr(1, varsTemplate.length() - 2).Trim().Trim(false);
+            // if the single element is a formula, extract it;
+            // otherwise leave varsTemplate as-is for custom column parsing
+            if (inner.starts_with(L"\"") && inner.ends_with(L"\"") && inner.length() >= 2)
+                {
+                inner = inner.substr(1, inner.length() - 2);
+                }
+            if (inner.starts_with(L"{{") && inner.ends_with(L"}}") && !inner.Contains(L","))
+                {
+                varsTemplate = inner;
+                }
+            }
+        const auto varsTemplateLower = varsTemplate.Lower();
+        if (varsTemplateLower.starts_with(L"{{everything()"))
             {
             m_varModeIndex = static_cast<int>(VarMode::Everything);
             }
-        else if (varsTemplate.starts_with(L"{{Matches("))
+        else if (varsTemplateLower.starts_with(L"{{matches("))
             {
             m_varModeIndex = static_cast<int>(VarMode::Matches);
             // extract pattern from {{Matches(`pattern`)}}
@@ -425,7 +445,7 @@ namespace Wisteria::UI
                 m_varPattern = varsTemplate.substr(startPos + 1, endPos - startPos - 1);
                 }
             }
-        else if (varsTemplate.starts_with(L"{{EverythingExcept("))
+        else if (varsTemplateLower.starts_with(L"{{everythingexcept("))
             {
             m_varModeIndex = static_cast<int>(VarMode::EverythingExcept);
             const auto startPos = varsTemplate.find(L'`');

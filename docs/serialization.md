@@ -59,6 +59,7 @@ A project file contains top-level sections for `name`, `watermark`, `print`, `da
 ## Loading (JSON to Live Objects)
 
 Entry point: `ReportBuilder::LoadConfigurationFile()`.
+JSON syntax is documented in Quarto files in `docs\syntax-manual`.
 
 ### Step 1: Load constants and datasets
 
