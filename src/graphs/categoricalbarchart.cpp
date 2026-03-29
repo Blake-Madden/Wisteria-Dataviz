@@ -189,7 +189,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                                                 .Color(blockColor)
                                                 .Tag(blockTable.first.m_groupName)
                                                 .SelectionLabel(blockLabel)) },
-                                 wxEmptyString, GraphItems::Label(blockTable.first.m_binName),
+                                 wxString{}, GraphItems::Label(blockTable.first.m_binName),
                                  GetBarEffect(), GetBarOpacity());
                 AddBar(theBar);
                 }

@@ -748,7 +748,7 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
         else
             {
             // was a dataset formula
-            auto txOpts = m_reportBuilder.GetDatasetTransformOptions();
+            auto& txOpts = m_reportBuilder.GetDatasetTransformOptions();
             auto txIt = txOpts.find(oldDsName);
             if (txIt != txOpts.end())
                 {
@@ -774,7 +774,7 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
         else
             {
             // moving to a dataset's formulas
-            auto allTxOpts = m_reportBuilder.GetDatasetTransformOptions();
+            auto& allTxOpts = m_reportBuilder.GetDatasetTransformOptions();
             allTxOpts[newDsName].m_formulas.emplace_back(name, value);
             m_reportBuilder.SetDatasetTransformOptions(newDsName, allTxOpts[newDsName]);
             m_reportBuilder.RecalcFormula(name, value, newDsName);
@@ -787,7 +787,7 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
         // if name changed, delete the old constant and insert new one
         if (col == 1)
             {
-            const wxString oldName = event.GetString();
+            const wxString oldName{ event.GetString() };
             constants.erase({ oldName, value });
             constants.insert({ name, value });
             }
@@ -806,14 +806,14 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
     else
         {
         // editing Name or Value of a dataset formula
-        auto txOpts = m_reportBuilder.GetDatasetTransformOptions();
+        auto& txOpts = m_reportBuilder.GetDatasetTransformOptions();
         auto txIt = txOpts.find(newDsName);
         if (txIt == txOpts.end())
             {
             return;
             }
 
-        int formulaIdx = 0;
+        int formulaIdx{ 0 };
         for (int r = 0; r < row; ++r)
             {
             if (m_constantsGrid->GetCellValue(r, 0) == newDsName)
@@ -959,7 +959,7 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
     try
         {
         const auto columnPreview = importDlg.GetColumnPreviewInfo();
-        const auto fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
+        const auto& fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
         const auto importInfo = importDlg.GetImportInfo();
         const auto worksheet = importDlg.GetWorksheet();
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
@@ -7349,7 +7349,7 @@ void WisteriaView::UpdateCanvas(Wisteria::Canvas* canvas)
     }
 
 //-------------------------------------------
-size_t WisteriaView::GetDatasetIconFromName(const wxString& name)
+size_t WisteriaView::GetDatasetIconFromName(const wxString& name) const
     {
     if (const auto foundPos = GetReportBuilder().GetDatasetPivotOptions().find(name);
         foundPos != GetReportBuilder().GetDatasetPivotOptions().cend())

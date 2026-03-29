@@ -1673,7 +1673,7 @@ namespace Wisteria
                 return *strVal;
                 }
 
-            return wxEmptyString;
+            return {};
             }
 
         return columnStr;
@@ -5282,7 +5282,7 @@ namespace Wisteria
                     if (std::isnan(*dVal))
                         {
                         replacements.insert_or_assign(std::wstring(processText.substr(start, len)),
-                                                      wxEmptyString);
+                                                      wxString{});
                         }
                     else
                         {

@@ -56,7 +56,7 @@ namespace Wisteria::UI
         // rows
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Rows:")),
                        wxSizerFlags{}.CenterVertical());
-        auto* rowsSpin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
+        auto* rowsSpin = new wxSpinCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
                                         wxDefaultSize, wxSP_ARROW_KEYS, 1, 100, 1);
         rowsSpin->SetValidator(wxGenericValidator(&m_rowCount));
         gridSizer->Add(rowsSpin, wxSizerFlags{}.Expand());
@@ -64,7 +64,7 @@ namespace Wisteria::UI
         // columns
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Columns:")),
                        wxSizerFlags{}.CenterVertical());
-        auto* columnsSpin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
+        auto* columnsSpin = new wxSpinCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
                                            wxDefaultSize, wxSP_ARROW_KEYS, 1, 100, 1);
         columnsSpin->SetValidator(wxGenericValidator(&m_columnCount));
         gridSizer->Add(columnsSpin, wxSizerFlags{}.Expand());

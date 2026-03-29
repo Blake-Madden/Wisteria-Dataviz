@@ -93,9 +93,9 @@ namespace Wisteria::UI
 
         fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Line spacing:")),
                       wxSizerFlags{}.CenterVertical());
-        m_lineSpacingSpin = new wxSpinCtrlDouble(fontBox->GetStaticBox(), wxID_ANY, wxEmptyString,
-                                                 wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
-                                                 -100.0, 100.0, 1.0, 0.5);
+        m_lineSpacingSpin =
+            new wxSpinCtrlDouble(fontBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, -100.0, 100.0, 1.0, 0.5);
         m_lineSpacingSpin->SetDigits(1);
         fontGrid->Add(m_lineSpacingSpin);
 
@@ -138,9 +138,9 @@ namespace Wisteria::UI
         headerGrid->Add(
             new wxStaticText(headerBox->GetStaticBox(), wxID_ANY, _(L"Relative scaling:")),
             wxSizerFlags{}.CenterVertical());
-        m_headerScalingSpin = new wxSpinCtrlDouble(headerBox->GetStaticBox(), wxID_ANY,
-                                                   wxEmptyString, wxDefaultPosition, wxDefaultSize,
-                                                   wxSP_ARROW_KEYS, 0.5, 3.0, 1.0, 0.1);
+        m_headerScalingSpin =
+            new wxSpinCtrlDouble(headerBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, 0.5, 3.0, 1.0, 0.1);
         headerGrid->Add(m_headerScalingSpin);
 
         headerBox->Add(headerGrid, wxSizerFlags{}.Border());

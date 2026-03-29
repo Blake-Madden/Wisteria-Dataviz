@@ -109,7 +109,7 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
 wxIMPLEMENT_CLASS(Wisteria::UI::BaseMainFrame, wxDocParentFrame);
 
 //----------------------------------------------------------
-void Wisteria::UI::BaseMainFrame::DisplayHelp(const wxString& topic /*= wxEmptyString*/) const
+void Wisteria::UI::BaseMainFrame::DisplayHelp(const wxString& topic /*= wxString{}*/) const
     {
     const wxString helpPath =
         !topic.empty() ? GetHelpDirectory() + wxFileName::GetPathSeparator() + topic :

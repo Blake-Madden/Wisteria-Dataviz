@@ -203,7 +203,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         // add an empty bar at position 1 if there isn't one there already
         // and caller wants the axis to start at a specific point
         if (GetBinsStart() && !std::isnan(GetBinsStart().value()) && IsShowingFullRangeOfValues() &&
-            !groups.get_data().contains(BinBlock{ GetBinsStart().value(), 0, 0, wxEmptyString }))
+            !groups.get_data().contains(BinBlock{ GetBinsStart().value(), 0, 0, wxString{} }))
             {
             const Bar theBar(
                 GetBinsStart().value(),
@@ -257,9 +257,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                                           .Brush(blockBrush)
                                           .Color(blockColor)
                                           .SelectionLabel(GraphItems::Label(blockLabel))) },
-                           wxEmptyString,
+                           wxString{},
                            IsShowingFullRangeOfValues() ?
-                               GraphItems::Label(wxEmptyString) :
+                               GraphItems::Label(wxString{}) :
                                GraphItems::Label(wxNumberFormatter::ToString(
                                    blockTable.first.m_bin,
                                    (has_fractional_part(blockTable.first.m_bin)) ? 2 : 0,

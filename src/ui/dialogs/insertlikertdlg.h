@@ -169,6 +169,8 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditQuestionsBracket([[maybe_unused]] wxCommandEvent& event);
+        void OnRemoveQuestionsBracket([[maybe_unused]] wxCommandEvent& event);
         void UpdateVariableLabels();
         void SyncBracketsToList();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;

@@ -1227,7 +1227,7 @@ namespace Wisteria::Data
         ///     functions should be called first to create the structure of the dataset.)
         void Resize(const size_t rowCount)
             {
-            m_idColumn.Resize(rowCount, wxEmptyString);
+            m_idColumn.Resize(rowCount, wxString{});
             for (auto& column : m_dateColumns)
                 {
                 column.Resize(rowCount, wxInvalidDateTime);
@@ -1237,8 +1237,7 @@ namespace Wisteria::Data
                 auto mdCode = column.FindMissingDataCode();
                 if (!mdCode.has_value())
                     {
-                    column.GetStringTable().insert(
-                        std::make_pair(column.GetNextKey(), wxEmptyString));
+                    column.GetStringTable().insert(std::make_pair(column.GetNextKey(), wxString{}));
                     mdCode = column.FindMissingDataCode();
                     wxASSERT_MSG(mdCode, L"Error creating MD label when resizing column!");
                     }

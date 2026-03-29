@@ -55,8 +55,7 @@ class Screenshot
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshotOfDialogWithPropertyGrid(
         const wxString& filePath, const wxWindowID propertyGridId = wxID_ANY,
-        const wxString& startIdToHighlight = wxEmptyString,
-        wxString endIdToHighlight = wxEmptyString,
+        const wxString& startIdToHighlight = wxString{}, wxString endIdToHighlight = wxString{},
         const std::pair<bool, wxCoord>& cropToGridHeightAndMinSize =
             std::make_pair(false, wxDefaultCoord));
     /** @brief Saves a screenshot of a text window.

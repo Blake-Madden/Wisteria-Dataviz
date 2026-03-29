@@ -43,7 +43,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                 _(L"%s%%"), percStr));
             break;
         case BinLabelDisplay::NoDisplay:
-            pieLabel->SetText(wxEmptyString);
+            pieLabel->SetText(wxString{});
             break;
         case BinLabelDisplay::BinNameAndValue:
             pieLabel->SetText(wxString::Format(
@@ -196,7 +196,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                 _(L"%s%%"), percStr));
             break;
         case BinLabelDisplay::NoDisplay:
-            pieLabel->SetText(wxEmptyString);
+            pieLabel->SetText(wxString{});
             break;
         case BinLabelDisplay::BinNameAndValue:
             pieLabel->SetText(wxString::Format(

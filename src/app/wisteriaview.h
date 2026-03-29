@@ -194,7 +194,7 @@ class WisteriaView final : public wxView
     /// @returns The sidebar icon that displays where a dataset come from
     ///     (i.e., imported vs. a pivot operation).
     [[nodiscard]]
-    size_t GetDatasetIconFromName(const wxString& name);
+    size_t GetDatasetIconFromName(const wxString& name) const;
 
     [[nodiscard]]
     Wisteria::Canvas* GetActiveCanvas() noexcept;

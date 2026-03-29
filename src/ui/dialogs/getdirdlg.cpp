@@ -82,8 +82,8 @@ namespace Wisteria::UI
         mainSizer->Add(fileBrowseBoxSizer, wxSizerFlags{}.Expand().Border());
 
         auto* filePathEdit =
-            new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                           wxSize(FromDIP(wxSize{ 600, 600 }).GetWidth(), -1),
+            new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxSize{ FromDIP(wxSize{ 600, 600 }).GetWidth(), -1 },
                            wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
         filePathEdit->AutoCompleteFileNames();
         fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());

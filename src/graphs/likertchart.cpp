@@ -1326,7 +1326,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                               .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                               .ChildAlignment(RelativeAlignment::FlushRight)))
                       .Show(IsShowingResponseCounts())) },
-            wxEmptyString, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
+            wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_threePointCategories.size());
         AddBar(questionBar);
@@ -1758,7 +1758,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                               .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                               .ChildAlignment(RelativeAlignment::FlushRight)))
                       .Show(IsShowingResponseCounts())) },
-            wxEmptyString, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
+            wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_fivePointCategories.size());
         AddBar(questionBar);
@@ -2253,7 +2253,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                               .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                               .ChildAlignment(RelativeAlignment::FlushRight)))
                       .Show(IsShowingResponseCounts())) },
-            wxEmptyString, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
+            wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_sevenPointCategories.size());
         AddBar(questionBar);

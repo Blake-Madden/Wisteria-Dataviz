@@ -171,6 +171,26 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         optionsSizer->Add(m_bracketListBox, wxSizerFlags{ 1 }.Expand().Border());
 
+        m_bracketListBox->Bind(wxEVT_LIST_BEGIN_LABEL_EDIT,
+                               [](wxListEvent& event) { event.Veto(); });
+        m_bracketListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED, &InsertLikertDlg::OnEditQuestionsBracket,
+                               this);
+        m_bracketListBox->Bind(wxEVT_LIST_KEY_DOWN,
+                               [this](wxListEvent& evt)
+                               {
+                                   if (evt.GetKeyCode() == WXK_DELETE ||
+                                       evt.GetKeyCode() == WXK_NUMPAD_DELETE ||
+                                       evt.GetKeyCode() == WXK_BACK)
+                                       {
+                                       wxCommandEvent dummy;
+                                       OnRemoveQuestionsBracket(dummy);
+                                       }
+                                   else
+                                       {
+                                       evt.Skip();
+                                       }
+                               });
+
         // override New button to open a structured sub-dialog
         m_bracketListBox->GetNewButton()->Bind(
             wxEVT_BUTTON,
@@ -187,8 +207,8 @@ namespace Wisteria::UI
 
                 wxDialog dlg(this, wxID_ANY, _(L"Add Question Bracket"), wxDefaultPosition,
                              wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-                auto* sizer = new wxBoxSizer(wxVERTICAL);
-                auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* sizer = new wxBoxSizer{ wxVERTICAL };
+                auto* grid = new wxFlexGridSizer{ 2, wxSize{ FromDIP(8), FromDIP(4) } };
                 grid->AddGrowableCol(1, 1);
 
                 wxArrayString questionChoices;
@@ -235,111 +255,21 @@ namespace Wisteria::UI
                     {
                     return;
                     }
-                const auto titleVal = titleCtrl->GetValue().Trim(true).Trim(false);
 
                 m_questionBrackets.emplace_back(questionChoices[startSel], questionChoices[endSel],
-                                                titleVal);
+                                                titleCtrl->GetValue().Trim(true).Trim(false));
                 SyncBracketsToList();
             });
         m_bracketListBox->GetNewButton()->SetBitmapLabel(
             wxGetApp().ReadSvgIcon(L"question-mark.svg", wxSize{ 16, 16 }));
 
         // override Edit button to open a structured sub-dialog for the selected item
-        m_bracketListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                auto* listCtrl = m_bracketListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_questionBrackets.size()))
-                    {
-                    return;
-                    }
-
-                if (m_questionVariables.size() < 2)
-                    {
-                    wxMessageBox(_(L"At least two question variables are needed "
-                                   "to define a bracket."),
-                                 _(L"Not Enough Variables"), wxOK | wxICON_INFORMATION, this);
-                    return;
-                    }
-
-                auto& bracket = m_questionBrackets[sel];
-
-                wxDialog dlg(this, wxID_ANY, _(L"Edit Question Bracket"), wxDefaultPosition,
-                             wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-                auto* sizer = new wxBoxSizer(wxVERTICAL);
-                auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-                grid->AddGrowableCol(1, 1);
-
-                wxArrayString questionChoices;
-                for (const auto& var : m_questionVariables)
-                    {
-                    questionChoices.Add(var);
-                    }
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start question:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* startCtrl =
-                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, questionChoices);
-                startCtrl->SetStringSelection(bracket.m_question1);
-                grid->Add(startCtrl, wxSizerFlags{}.Expand());
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End question:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* endCtrl =
-                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, questionChoices);
-                endCtrl->SetStringSelection(bracket.m_question2);
-                grid->Add(endCtrl, wxSizerFlags{}.Expand());
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Title:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* titleCtrl = new wxTextCtrl(&dlg, wxID_ANY, bracket.m_title);
-                grid->Add(titleCtrl, wxSizerFlags{}.Expand());
-
-                sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
-                sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
-                           wxSizerFlags{}.Expand().Border());
-                dlg.SetSizer(sizer);
-                dlg.Fit();
-                const auto fitSize = dlg.GetSize();
-                dlg.SetMinSize(fitSize);
-
-                if (dlg.ShowModal() != wxID_OK)
-                    {
-                    return;
-                    }
-
-                const auto startSel = startCtrl->GetSelection();
-                const auto endSel = endCtrl->GetSelection();
-                if (startSel == wxNOT_FOUND || endSel == wxNOT_FOUND)
-                    {
-                    return;
-                    }
-
-                bracket.m_question1 = questionChoices[startSel];
-                bracket.m_question2 = questionChoices[endSel];
-                bracket.m_title = titleCtrl->GetValue().Trim(true).Trim(false);
-                SyncBracketsToList();
-            });
+        m_bracketListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                &InsertLikertDlg::OnEditQuestionsBracket, this);
 
         // override Delete button to remove from the backing vector
-        m_bracketListBox->GetDelButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                const long sel = m_bracketListBox->GetListCtrl()->GetNextItem(
-                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_questionBrackets.size()))
-                    {
-                    return;
-                    }
-
-                m_questionBrackets.erase(m_questionBrackets.begin() + sel);
-                SyncBracketsToList();
-            });
+        m_bracketListBox->GetDelButton()->Bind(wxEVT_BUTTON,
+                                               &InsertLikertDlg::OnRemoveQuestionsBracket, this);
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -563,6 +493,102 @@ namespace Wisteria::UI
         return (m_noResponseColorPicker != nullptr) ?
                    m_noResponseColorPicker->GetColour() :
                    Colors::ColorBrewer::GetColor(Colors::Color::White);
+        }
+
+    //-------------------------------------------
+    void InsertLikertDlg::OnRemoveQuestionsBracket([[maybe_unused]] wxCommandEvent& event)
+        {
+        const long sel = m_bracketListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                      wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_questionBrackets.size()))
+            {
+            return;
+            }
+
+        if (wxMessageBox(L"Delete selected bracket?", _(L"Delete Bracket"),
+                         wxYES_NO | wxICON_QUESTION, this) != wxYES)
+            {
+            return;
+            }
+
+        m_questionBrackets.erase(m_questionBrackets.begin() + sel);
+        SyncBracketsToList();
+        }
+
+    //-------------------------------------------
+    void InsertLikertDlg::OnEditQuestionsBracket([[maybe_unused]] wxCommandEvent& event)
+        {
+        auto* listCtrl = m_bracketListBox->GetListCtrl();
+        const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_questionBrackets.size()))
+            {
+            return;
+            }
+
+        if (m_questionVariables.size() < 2)
+            {
+            wxMessageBox(_(L"At least two question variables are needed "
+                           "to define a bracket."),
+                         _(L"Not Enough Variables"), wxOK | wxICON_INFORMATION, this);
+            return;
+            }
+
+        auto& bracket = m_questionBrackets[sel];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Question Bracket"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxBoxSizer(wxVERTICAL);
+        auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        grid->AddGrowableCol(1, 1);
+
+        wxArrayString questionChoices;
+        for (const auto& var : m_questionVariables)
+            {
+            questionChoices.Add(var);
+            }
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start question:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* startCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, questionChoices);
+        startCtrl->SetStringSelection(bracket.m_question1);
+        grid->Add(startCtrl, wxSizerFlags{}.Expand());
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End question:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* endCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, questionChoices);
+        endCtrl->SetStringSelection(bracket.m_question2);
+        grid->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Title:")), wxSizerFlags{}.CenterVertical());
+        auto* titleCtrl = new wxTextCtrl(&dlg, wxID_ANY, bracket.m_title);
+        grid->Add(titleCtrl, wxSizerFlags{}.Expand());
+
+        sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+        sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                   wxSizerFlags{}.Expand().Border());
+        dlg.SetSizer(sizer);
+        dlg.Fit();
+        const auto fitSize = dlg.GetSize();
+        dlg.SetMinSize(fitSize);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto startSel = startCtrl->GetSelection();
+        const auto endSel = endCtrl->GetSelection();
+        if (startSel == wxNOT_FOUND || endSel == wxNOT_FOUND)
+            {
+            return;
+            }
+
+        bracket.m_question1 = questionChoices[startSel];
+        bracket.m_question2 = questionChoices[endSel];
+        bracket.m_title = titleCtrl->GetValue().Trim(true).Trim(false);
+        SyncBracketsToList();
         }
 
     //-------------------------------------------

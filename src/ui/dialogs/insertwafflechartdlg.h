@@ -77,13 +77,13 @@ namespace Wisteria::UI
         void LoadFromGraph(const Graphs::Graph2D& graph);
 
       protected:
-        void CreateControls() override;
+        void CreateControls() final;
 
       private:
-        bool Validate() override;
-        void OnAddShape();
-        void OnEditShape();
-        void OnRemoveShape();
+        bool Validate() final;
+        void OnAddShape([[maybe_unused]] wxCommandEvent& event);
+        void OnEditShape([[maybe_unused]] wxCommandEvent& event);
+        void OnRemoveShape([[maybe_unused]] wxCommandEvent& event);
         void RefreshShapeList();
         static void BuildShapeFromDlg(const InsertShapeDlg& dlg, GraphItems::ShapeInfo& shapeInfo);
         wxString FormatShapeDescription(const GraphItems::ShapeInfo& shapeInfo) const;

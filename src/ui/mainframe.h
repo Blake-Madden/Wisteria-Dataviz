@@ -80,7 +80,7 @@ namespace Wisteria::UI
         /// @brief Opens the default help topic ("index.html" in the defined help folder).
         /// @param topic The name of the file to display.
         /// @sa SetHelpDirectory().
-        void DisplayHelp(const wxString& topic = wxEmptyString) const;
+        void DisplayHelp(const wxString& topic = wxString{}) const;
 
         /// @private
         wxDocument* OpenFile(const wxString& path);

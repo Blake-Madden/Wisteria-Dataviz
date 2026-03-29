@@ -224,7 +224,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         descriptions.Add(openTag + _DT(L"Web Picture") + closeTag +
                          _(L"A replacement for JPEG, PNG, and GIF file formats "
                            "which supports both lossy and lossless compression."));
-        UI::RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
+        UI::RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxString{},
                                        _(L"Image formats:"), _(L"Export Image"), choices,
                                        descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
@@ -261,7 +261,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         default:
             fileFilter = L"PNG (*.png)|*.png";
             };
-        wxFileDialog dialog(this, _(L"Save Image"), wxEmptyString, GetLabel(), fileFilter,
+        wxFileDialog dialog(this, _(L"Save Image"), wxString{}, GetLabel(), fileFilter,
                             wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
         if (dialog.ShowModal() != wxID_OK)

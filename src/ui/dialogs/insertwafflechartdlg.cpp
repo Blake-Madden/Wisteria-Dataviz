@@ -50,19 +50,36 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         optionsSizer->Add(m_shapeListBox, wxSizerFlags{ 1 }.Expand().Border());
 
+        m_shapeListBox->Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, [](wxListEvent& event) { event.Veto(); });
+        m_shapeListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED, &InsertWaffleChartDlg::OnEditShape, this);
+        m_shapeListBox->Bind(wxEVT_LIST_KEY_DOWN,
+                             [this](wxListEvent& evt)
+                             {
+                                 if (evt.GetKeyCode() == WXK_DELETE ||
+                                     evt.GetKeyCode() == WXK_NUMPAD_DELETE ||
+                                     evt.GetKeyCode() == WXK_BACK)
+                                     {
+                                     wxCommandEvent dummy;
+                                     OnRemoveShape(dummy);
+                                     }
+                                 else
+                                     {
+                                     evt.Skip();
+                                     }
+                             });
+
         // override New to open the shape sub-dialog
-        m_shapeListBox->GetNewButton()->Bind(wxEVT_BUTTON,
-                                             [this](wxCommandEvent&) { OnAddShape(); });
+        m_shapeListBox->GetNewButton()->Bind(wxEVT_BUTTON, &InsertWaffleChartDlg::OnAddShape, this);
         m_shapeListBox->GetNewButton()->SetBitmapLabel(
             wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
 
         // override Edit to open the shape sub-dialog for the selected item
-        m_shapeListBox->GetEditButton()->Bind(wxEVT_BUTTON,
-                                              [this](wxCommandEvent&) { OnEditShape(); });
+        m_shapeListBox->GetEditButton()->Bind(wxEVT_BUTTON, &InsertWaffleChartDlg::OnEditShape,
+                                              this);
 
         // override Delete to remove the selected shape from our vector
-        m_shapeListBox->GetDelButton()->Bind(wxEVT_BUTTON,
-                                             [this](wxCommandEvent&) { OnRemoveShape(); });
+        m_shapeListBox->GetDelButton()->Bind(wxEVT_BUTTON, &InsertWaffleChartDlg::OnRemoveShape,
+                                             this);
 
         // grid rounding
         auto* gridRoundBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Grid Rounding"));
@@ -170,7 +187,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWaffleChartDlg::OnAddShape()
+    void InsertWaffleChartDlg::OnAddShape([[maybe_unused]] wxCommandEvent& event)
         {
         InsertShapeDlg dlg(GetCanvas(), nullptr, this, _(L"Add Shape"), wxID_ANY, wxDefaultPosition,
                            wxDefaultSize,
@@ -192,7 +209,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWaffleChartDlg::OnEditShape()
+    void InsertWaffleChartDlg::OnEditShape([[maybe_unused]] wxCommandEvent& event)
         {
         const auto sel =
             m_shapeListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -222,11 +239,17 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWaffleChartDlg::OnRemoveShape()
+    void InsertWaffleChartDlg::OnRemoveShape([[maybe_unused]] wxCommandEvent& event)
         {
         const auto sel =
             m_shapeListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_shapes.size()))
+            {
+            return;
+            }
+
+        if (wxMessageBox(L"Delete selected shape?", _(L"Delete Shape"), wxYES_NO | wxICON_QUESTION,
+                         this) != wxYES)
             {
             return;
             }

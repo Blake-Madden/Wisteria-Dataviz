@@ -359,7 +359,7 @@ namespace Wisteria
                     }
                 else if (valueProperty->IsValueNull())
                     {
-                    currentCell->SetValue(wxEmptyString);
+                    currentCell->SetValue(wxString{});
                     }
                 }
             // background color

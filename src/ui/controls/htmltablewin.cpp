@@ -242,7 +242,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void HtmlTableWindow::OnSave([[maybe_unused]] wxCommandEvent& event)
         {
-        wxFileDialog dialog(this, _(L"Save As"), wxEmptyString, GetLabel(),
+        wxFileDialog dialog(this, _(L"Save As"), wxString{}, GetLabel(),
                             L"HTML (*.htm;*.html)|*.htm;*.html", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
         if (dialog.ShowModal() != wxID_OK)

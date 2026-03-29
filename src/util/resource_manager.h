@@ -67,7 +67,7 @@ class ResourceManager
     /** @returns The path to a file in the loaded archive or resource folder.
         @param subFile The file to look for in the archive.*/
     [[nodiscard]]
-    wxString GetResourceFilePath(const wxString& subFile = wxEmptyString) const
+    wxString GetResourceFilePath(const wxString& subFile = wxString{}) const
         {
         if (subFile.empty())
             {

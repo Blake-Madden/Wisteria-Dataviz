@@ -34,7 +34,7 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
         explicit DialogWithHelp(wxWindow* parent, wxWindowID id = wxID_ANY,
-                                const wxString& caption = wxEmptyString,
+                                const wxString& caption = wxString{},
                                 const wxPoint& pos = wxDefaultPosition,
                                 const wxSize& size = wxDefaultSize,
                                 long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |

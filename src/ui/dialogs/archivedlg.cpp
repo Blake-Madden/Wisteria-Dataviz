@@ -58,7 +58,7 @@ namespace Wisteria::UI
     void ArchiveDlg::OnFileButtonClick([[maybe_unused]] wxCommandEvent& event)
         {
         TransferDataFromWindow();
-        wxFileDialog dialog(this, _(L"Select Archive File"), wxEmptyString, wxEmptyString,
+        wxFileDialog dialog(this, _(L"Select Archive File"), wxString{}, wxString{},
                             _(L"Archive files (*.zip)|*.zip"),
                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
@@ -80,7 +80,7 @@ namespace Wisteria::UI
         mainSizer->Add(fileBrowseBoxSizer, wxSizerFlags{}.Expand().Border());
 
         auto* filePathEdit =
-            new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+            new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
                            wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
         filePathEdit->AutoCompleteFileNames();
         fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());

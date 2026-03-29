@@ -151,7 +151,7 @@ namespace Wisteria::UI
             compressionChoices.Add(_DT(L"JPEG"));
             compressionChoices.Add(_(L"Deflate"));
             m_tiffCompressionCombo = new wxComboBox(
-                tiffOptionsBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition,
+                tiffOptionsBoxSizer->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
                 wxDefaultSize, compressionChoices, wxCB_DROPDOWN | wxCB_READONLY);
             m_tiffCompressionCombo->SetSelection(
                 (m_options.m_tiffCompression == TiffCompression::CompressionNone)    ? 0 :

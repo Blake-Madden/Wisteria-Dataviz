@@ -514,8 +514,8 @@ bool Screenshot::SaveScreenshotOfTextWindow(
 //---------------------------------------------------
 bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath,
                                                         const wxWindowID propertyGridId /*= wxID_ANY*/,
-                                                        const wxString& startIdToHighlight /*= wxEmptyString*/,
-                                                        wxString endIdToHighlight /*= wxEmptyString*/,
+                                                        const wxString& startIdToHighlight /*= wxString{}*/,
+                                                        wxString endIdToHighlight /*= wxString{}*/,
                                                         const std::pair<bool, wxCoord>& cropToGridHeightAndMinSize /*=
                                                          std::make_pair(false, wxDefaultCoord*/)
     {

@@ -285,8 +285,8 @@ namespace Wisteria::UI
             auto* fillGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
             fillGrid->Add(new wxStaticText(fillBox->GetStaticBox(), wxID_ANY, _(L"Fill percent:")),
                           wxSizerFlags{}.CenterVertical());
-            m_fillPercentSpin = new wxSpinCtrlDouble(
-                fillBox->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+            m_fillPercentSpin = new wxSpinCtrlDouble(fillBox->GetStaticBox(), wxID_ANY, wxString{},
+                                                     wxDefaultPosition, wxDefaultSize,
                 wxSP_ARROW_KEYS, 0.0, 1.0, 0.0, 0.05);
             fillGrid->Add(m_fillPercentSpin);
 

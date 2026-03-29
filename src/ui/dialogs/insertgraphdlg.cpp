@@ -190,7 +190,7 @@ namespace Wisteria::UI
             btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditTitle(); });
             textSizer->Add(btn, wxGBPosition(0, 1));
             }
-        m_titlePreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+        m_titlePreview = new wxStaticText(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                           wxDefaultSize, wxST_ELLIPSIZE_END);
         m_titlePreview->SetForegroundColour(previewColor);
         textSizer->Add(m_titlePreview, wxGBPosition(0, 2), wxDefaultSpan,
@@ -203,7 +203,7 @@ namespace Wisteria::UI
             btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditSubtitle(); });
             textSizer->Add(btn, wxGBPosition(1, 1));
             }
-        m_subtitlePreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+        m_subtitlePreview = new wxStaticText(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                              wxDefaultSize, wxST_ELLIPSIZE_END);
         m_subtitlePreview->SetForegroundColour(previewColor);
         textSizer->Add(m_subtitlePreview, wxGBPosition(1, 2), wxDefaultSpan,
@@ -216,7 +216,7 @@ namespace Wisteria::UI
             btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditCaption(); });
             textSizer->Add(btn, wxGBPosition(2, 1));
             }
-        m_captionPreview = new wxStaticText(graphPage, wxID_ANY, wxEmptyString, wxDefaultPosition,
+        m_captionPreview = new wxStaticText(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                             wxDefaultSize, wxST_ELLIPSIZE_END);
         m_captionPreview->SetForegroundColour(previewColor);
         textSizer->Add(m_captionPreview, wxGBPosition(2, 2), wxDefaultSpan,
@@ -246,7 +246,7 @@ namespace Wisteria::UI
             btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnEditBackgroundImage(); });
             bgImgSizer->Add(btn);
             }
-        m_bgImagePreview = new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, wxEmptyString,
+        m_bgImagePreview = new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, wxString{},
                                             wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
         m_bgImagePreview->SetForegroundColour(previewColor);
         bgImgSizer->Add(m_bgImagePreview, wxSizerFlags{}.CenterVertical());
@@ -405,7 +405,7 @@ namespace Wisteria::UI
             m_plotBgImage = GraphItems::Image{};
             if (m_bgImagePreview != nullptr)
                 {
-                m_bgImagePreview->SetLabel(wxEmptyString);
+                m_bgImagePreview->SetLabel(wxString{});
                 }
             return;
             }

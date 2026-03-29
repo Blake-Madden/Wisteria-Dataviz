@@ -2232,13 +2232,13 @@ namespace Wisteria::GraphItems
         const wxRegEx reSpanOpen(L"<span[^>]*>", wxRE_ICASE);
         if (reSpanOpen.IsValid())
             {
-            reSpanOpen.ReplaceAll(&result, wxEmptyString);
+            reSpanOpen.ReplaceAll(&result, wxString{});
             }
         // remove </span> closing tags (case insensitive)
         const wxRegEx reSpanClose(L"</span>", wxRE_ICASE);
         if (reSpanClose.IsValid())
             {
-            reSpanClose.ReplaceAll(&result, wxEmptyString);
+            reSpanClose.ReplaceAll(&result, wxString{});
             }
         return result;
         }

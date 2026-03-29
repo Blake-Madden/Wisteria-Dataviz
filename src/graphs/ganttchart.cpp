@@ -241,7 +241,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                                                        taskInfo.m_end.FormatDate()) }
                                              .Trim(true)
                                              .Trim(false) })) } },
-                    wxEmptyString, axisLabel, GetBarEffect(), GetBarOpacity());
+                    wxString{}, axisLabel, GetBarEffect(), GetBarOpacity());
                 // remove "completed" bar block if nothing is actually completed
                 if (taskInfo.m_percentFinished == 0)
                     {

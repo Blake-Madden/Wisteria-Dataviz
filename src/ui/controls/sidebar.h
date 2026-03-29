@@ -264,7 +264,7 @@ namespace Wisteria::UI
             {
             if (item >= GetFolderCount())
                 {
-                return wxEmptyString;
+                return {};
                 }
             return m_folders[item].m_label;
             }

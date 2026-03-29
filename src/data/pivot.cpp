@@ -43,7 +43,7 @@ namespace Wisteria::Data
     std::shared_ptr<Dataset> Pivot::PivotWider(
         const std::shared_ptr<const Dataset>& dataset, const std::vector<wxString>& IdColumns,
         const wxString& namesFromColumn, const std::vector<wxString>& valuesFromColumns,
-        const wxString& namesSep /*= L"_"*/, const wxString& namesPrefix /*= wxEmptyString*/,
+        const wxString& namesSep /*= L"_"*/, const wxString& namesPrefix /*= wxString{}*/,
         const double fillValue /*= std::numeric_limits<double>::quiet_NaN()*/)
         {
         if (dataset == nullptr)
@@ -274,7 +274,7 @@ namespace Wisteria::Data
                                                 const std::vector<wxString>& fromColumns,
                                                 const std::vector<wxString>& namesTo,
                                                 const wxString& valuesTo,
-                                                const wxString& namesPattern /*= wxEmptyString*/)
+                                                const wxString& namesPattern /*= wxString{}*/)
         {
         if (dataset == nullptr)
             {
@@ -313,7 +313,7 @@ namespace Wisteria::Data
             {
             for (size_t i = 0; i < fromColumns.size(); ++i)
                 {
-                nST.insert(std::make_pair(i, wxEmptyString));
+                nST.insert(std::make_pair(i, wxString{}));
                 }
             }
         const wxRegEx namesSplit(!namesPattern.empty() ? namesPattern : wxString(L"(.*)"));

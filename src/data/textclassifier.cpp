@@ -68,7 +68,7 @@ namespace Wisteria::Data
         if (!subCatMDCode)
             {
             subCatMDCode = ColumnWithStringTable::GetNextKey(m_subCategoriesStringTable);
-            m_subCategoriesStringTable.insert(std::make_pair(subCatMDCode.value(), wxEmptyString));
+            m_subCategoriesStringTable.insert(std::make_pair(subCatMDCode.value(), wxString{}));
             }
 
         // build a map of unique categories and all the regexes connected to them.

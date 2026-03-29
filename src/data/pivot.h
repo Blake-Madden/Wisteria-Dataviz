@@ -93,7 +93,7 @@ namespace Wisteria::Data
         PivotWider(const std::shared_ptr<const Dataset>& dataset,
                    const std::vector<wxString>& IdColumns, const wxString& namesFromColumn,
                    const std::vector<wxString>& valuesFromColumns, const wxString& namesSep = L"_",
-                   const wxString& namesPrefix = wxEmptyString,
+                   const wxString& namesPrefix = wxString{},
                    double fillValue = std::numeric_limits<double>::quiet_NaN());
 
         /** @brief Combines multiple columns into a grouping column and value column.\n
@@ -130,7 +130,7 @@ namespace Wisteria::Data
         PivotLonger(const std::shared_ptr<const Dataset>& dataset,
                     const std::vector<wxString>& columnsToKeep,
                     const std::vector<wxString>& fromColumns, const std::vector<wxString>& namesTo,
-                    const wxString& valuesTo, const wxString& namesPattern = wxEmptyString);
+                    const wxString& valuesTo, const wxString& namesPattern = wxString{});
         };
     } // namespace Wisteria::Data
 
