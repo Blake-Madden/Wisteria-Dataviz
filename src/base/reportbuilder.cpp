@@ -5141,12 +5141,11 @@ namespace Wisteria
         nodeLoader.ApplyTableColumnFormatting(table, tableNode->GetProperty(L"column-formatting"),
                                               tableNode->GetProperty(L"column-color"),
                                               tableNode->GetProperty(L"column-bold"),
-                                              tableNode->GetProperty(L"column-borders"),
-                                              tableNode->GetProperty(L"column-content-align"));
+                                              tableNode->GetProperty(L"column-borders"));
 
         // cache column formatting properties for round-trip serialization
-        for (const auto& prop : { L"column-formatting", L"column-color", L"column-bold",
-                                  L"column-borders", L"column-content-align" })
+        for (const auto& prop :
+             { L"column-formatting", L"column-color", L"column-bold", L"column-borders" })
             {
             const auto node = tableNode->GetProperty(prop);
             if (node->IsOk() && !node->AsNodes().empty())

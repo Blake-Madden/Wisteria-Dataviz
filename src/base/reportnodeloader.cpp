@@ -926,10 +926,11 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportNodeLoader::ApplyTableColumnFormatting(
-        std::shared_ptr<Graphs::Table>& table, const wxSimpleJSON::Ptr_t& formattingNode,
-        const wxSimpleJSON::Ptr_t& colorNode, const wxSimpleJSON::Ptr_t& boldNode,
-        const wxSimpleJSON::Ptr_t& bordersNode, const wxSimpleJSON::Ptr_t& contentAlignNode) const
+    void ReportNodeLoader::ApplyTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
+                                                      const wxSimpleJSON::Ptr_t& formattingNode,
+                                                      const wxSimpleJSON::Ptr_t& colorNode,
+                                                      const wxSimpleJSON::Ptr_t& boldNode,
+                                                      const wxSimpleJSON::Ptr_t& bordersNode) const
         {
         // change columns' cell formatting
         const auto columnFormattingCommands = formattingNode->AsNodes();

@@ -112,14 +112,12 @@ namespace Wisteria
             @param formattingNode The JSON node for number/date formatting.
             @param colorNode The JSON node for column colors.
             @param boldNode The JSON node for column bolding.
-            @param bordersNode The JSON node for column borders.
-            @param contentAlignNode The JSON node for column content alignment.*/
+            @param bordersNode The JSON node for column borders.*/
         void ApplyTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
                                         const wxSimpleJSON::Ptr_t& formattingNode,
                                         const wxSimpleJSON::Ptr_t& colorNode,
                                         const wxSimpleJSON::Ptr_t& boldNode,
-                                        const wxSimpleJSON::Ptr_t& bordersNode,
-                                        const wxSimpleJSON::Ptr_t& contentAlignNode) const;
+                                        const wxSimpleJSON::Ptr_t& bordersNode) const;
 
         /** @brief Applies row formatting to a table.
             @param table The table to format.
