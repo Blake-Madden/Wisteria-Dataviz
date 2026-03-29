@@ -1223,16 +1223,16 @@ namespace Wisteria::Data
             if (colInfo.m_type == Data::Dataset::ColumnImportType::Discrete ||
                 colInfo.m_type == Data::Dataset::ColumnImportType::DichotomousDiscrete)
                 {
-                catInfo.push_back({ colInfo.m_name, CategoricalImportMethod::ReadAsIntegers });
+                catInfo.emplace_back(colInfo.m_name, CategoricalImportMethod::ReadAsIntegers);
                 }
             else if (colInfo.m_type == Data::Dataset::ColumnImportType::String ||
                      colInfo.m_type == Data::Dataset::ColumnImportType::DichotomousString)
                 {
-                catInfo.push_back({ colInfo.m_name, CategoricalImportMethod::ReadAsStrings });
+                catInfo.emplace_back(colInfo.m_name, CategoricalImportMethod::ReadAsStrings);
                 }
             else if (colInfo.m_type == Data::Dataset::ColumnImportType::Date)
                 {
-                dateInfo.push_back({ colInfo.m_name, DateImportMethod::Automatic, wxString{} });
+                dateInfo.emplace_back(colInfo.m_name, DateImportMethod::Automatic, wxString{});
                 }
             else if (colInfo.m_type == Data::Dataset::ColumnImportType::Numeric)
                 {
@@ -1504,8 +1504,8 @@ namespace Wisteria::Data
             // silently ignore columns with no name (missing header)
             if (!preview.get_header_names().at(colIndex).empty())
                 {
-                columnInfo.push_back({ preview.get_header_names().at(colIndex).c_str(),
-                                       currentColumnType, detectedCurrencySymbol });
+                columnInfo.emplace_back(preview.get_header_names().at(colIndex).c_str(),
+                                        currentColumnType, detectedCurrencySymbol);
                 }
             }
         return columnInfo;

@@ -281,7 +281,7 @@ namespace Wisteria::UI
                 // check ID column
                 if (m_hasId && m_dataset->GetIdColumn().GetName().CmpNoCase(col.m_name) == 0)
                     {
-                    m_columnOrder.push_back({ DatasetGridColumnType::Id, 0 /* unused default */ });
+                    m_columnOrder.emplace_back(DatasetGridColumnType::Id, 0 /* unused default */);
                     continue;
                     }
                 // check categorical columns
@@ -291,7 +291,7 @@ namespace Wisteria::UI
                     if (m_dataset->GetCategoricalColumns().at(i).GetName().CmpNoCase(col.m_name) ==
                         0)
                         {
-                        m_columnOrder.push_back({ DatasetGridColumnType::Categorical, i });
+                        m_columnOrder.emplace_back(DatasetGridColumnType::Categorical, i);
                         found = true;
                         break;
                         }
@@ -305,7 +305,7 @@ namespace Wisteria::UI
                     {
                     if (m_dataset->GetDateColumns().at(i).GetName().CmpNoCase(col.m_name) == 0)
                         {
-                        m_columnOrder.push_back({ DatasetGridColumnType::Date, i });
+                        m_columnOrder.emplace_back(DatasetGridColumnType::Date, i);
                         found = true;
                         break;
                         }
@@ -320,7 +320,7 @@ namespace Wisteria::UI
                     if (m_dataset->GetContinuousColumns().at(i).GetName().CmpNoCase(col.m_name) ==
                         0)
                         {
-                        m_columnOrder.push_back({ DatasetGridColumnType::Continuous, i });
+                        m_columnOrder.emplace_back(DatasetGridColumnType::Continuous, i);
                         found = true;
                         break;
                         }

@@ -304,8 +304,8 @@ namespace Wisteria::UI
                     return;
                     }
 
-                m_barGroups.push_back({ barChoices[startSel], barChoices[endSel],
-                                        decalCtrl->GetValue().Trim(true).Trim(false), wxColour{} });
+                m_barGroups.emplace_back(barChoices[startSel], barChoices[endSel],
+                                         decalCtrl->GetValue().Trim(true).Trim(false), wxColour{});
                 SyncBarGroupsToList();
             });
         m_barGroupListBox->GetNewButton()->SetBitmapLabel(
@@ -1090,9 +1090,9 @@ namespace Wisteria::UI
             const auto endIdx = group.m_barPositions.second;
             if (startIdx < bars.size() && endIdx < bars.size())
                 {
-                m_barGroups.push_back({ bars[startIdx].GetAxisLabel().GetText(),
-                                        bars[endIdx].GetAxisLabel().GetText(), group.m_barDecal,
-                                        group.m_barColor });
+                m_barGroups.emplace_back(bars[startIdx].GetAxisLabel().GetText(),
+                                         bars[endIdx].GetAxisLabel().GetText(), group.m_barDecal,
+                                         group.m_barColor);
                 }
             }
         m_barGroupPlacement = barChart->GetBarGroupPlacement();

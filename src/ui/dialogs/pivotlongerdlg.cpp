@@ -327,20 +327,20 @@ namespace Wisteria::UI
 
         if (dataset.HasValidIdData())
             {
-            info.push_back({ dataset.GetIdColumn().GetName(),
-                             Data::Dataset::ColumnImportType::String, wxString{} });
+            info.emplace_back(dataset.GetIdColumn().GetName(),
+                              Data::Dataset::ColumnImportType::String, wxString{});
             }
         for (const auto& col : dataset.GetCategoricalColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::String, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::String, wxString{});
             }
         for (const auto& col : dataset.GetDateColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{});
             }
         for (const auto& col : dataset.GetContinuousColumns())
             {
-            info.push_back({ col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{} });
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{});
             }
 
         return info;

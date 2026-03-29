@@ -74,9 +74,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
                 {
                 continue;
                 }
-            m_ohlcs.push_back({ dateColumn->GetValue(i), openColumn->GetValue(i),
-                                highColumn->GetValue(i), lowColumn->GetValue(i),
-                                closeColumn->GetValue(i) });
+            m_ohlcs.emplace_back(dateColumn->GetValue(i), openColumn->GetValue(i),
+                                 highColumn->GetValue(i), lowColumn->GetValue(i),
+                                 closeColumn->GetValue(i));
             }
         Calculate(data, openColumnName, highColumnName, lowColumnName, closeColumnName);
         }

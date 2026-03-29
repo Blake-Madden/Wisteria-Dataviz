@@ -989,7 +989,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 if (const auto val = GetCell(row, column).GetDoubleValue();
                     !std::isnan(val) && compare_doubles_greater_or_equal(val, maxValBaseline))
                     {
-                    topNPositions.push_back({ row, column });
+                    topNPositions.emplace_back(row, column);
                     }
                 }
             }
@@ -1032,7 +1032,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                     if (const auto zScore = statistics::z_score(val, meanVal, sdVal);
                         std::abs(zScore) > outlierThreshold)
                         {
-                        outlierPositions.push_back({ row, column });
+                        outlierPositions.emplace_back(row, column);
                         }
                     }
                 }

@@ -775,7 +775,7 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             {
             // moving to a dataset's formulas
             auto allTxOpts = m_reportBuilder.GetDatasetTransformOptions();
-            allTxOpts[newDsName].m_formulas.push_back({ name, value });
+            allTxOpts[newDsName].m_formulas.emplace_back(name, value);
             m_reportBuilder.SetDatasetTransformOptions(newDsName, allTxOpts[newDsName]);
             m_reportBuilder.RecalcFormula(name, value, newDsName);
             }
