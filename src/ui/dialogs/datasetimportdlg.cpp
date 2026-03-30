@@ -124,18 +124,24 @@ namespace Wisteria::UI
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         // options section
-        auto* optionsSizer = new wxFlexGridSizer(2, FromDIP(5), FromDIP(10));
+        auto* optionsSizer = new wxFlexGridSizer{ 2, FromDIP(5), FromDIP(10) };
         optionsSizer->AddGrowableCol(1, 1);
 
-        const bool isSpreadsheet =
-            (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0);
+        // show filepath
+        optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Filepath: ")),
+                          wxSizerFlags{}.CenterVertical());
+        auto* fileLabel = new wxStaticText(this, wxID_ANY, m_filePath);
+        fileLabel->SetForegroundColour(wxColour{ 0, 102, 204 });
+        optionsSizer->Add(fileLabel, wxSizerFlags{}.CenterVertical());
 
         // worksheet selector (spreadsheets only)
+        const bool isSpreadsheet =
+            (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0);
         auto* worksheetLabel = new wxStaticText(this, wxID_ANY, _(L"Worksheet:"));
         optionsSizer->Add(worksheetLabel, wxSizerFlags{}.CenterVertical());
 
         auto* worksheetChoice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                             nullptr, 0, wxGenericValidator(&m_worksheet));
+                                             nullptr, 0, wxGenericValidator{ &m_worksheet });
         for (const auto& name : m_worksheetNames)
             {
             worksheetChoice->Append(name);
@@ -158,7 +164,7 @@ namespace Wisteria::UI
         const auto spinSize = FromDIP(wxSize{ 90, -1 });
         auto* skipRowsSpin = new wxSpinCtrl(this, wxID_ANY, L"0", wxDefaultPosition, spinSize,
                                             wxSP_ARROW_KEYS, 0, 1000, m_skipRows);
-        skipRowsSpin->SetValidator(wxGenericValidator(&m_skipRows));
+        skipRowsSpin->SetValidator(wxGenericValidator{ &m_skipRows });
         optionsSizer->Add(skipRowsSpin, wxSizerFlags{});
 
         // max discrete value
