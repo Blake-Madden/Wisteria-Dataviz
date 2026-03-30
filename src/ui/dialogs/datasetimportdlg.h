@@ -49,6 +49,26 @@ namespace Wisteria::UI
                          const wxString& caption = _(L"Import Dataset"),
                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                          long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        /** @brief Constructor that pre-populates the dialog with existing import settings.
+            @param parent The parent window.
+            @param filePath The path to the data file to import.
+            @param importInfo The import settings to pre-populate.
+            @param columnInfo The full column preview information (including excluded
+                columns and user type overrides).
+            @param worksheet The worksheet selection (1-based index or name),
+                as returned by GetWorksheet().
+            @param id The dialog's ID.
+            @param caption The dialog's caption.
+            @param pos The dialog's position.
+            @param size The dialog's size.
+            @param style The dialog's style.*/
+        DatasetImportDlg(wxWindow* parent, const wxString& filePath,
+                         const Data::ImportInfo& importInfo,
+                         const Data::Dataset::ColumnPreviewInfo& columnInfo,
+                         const std::variant<wxString, size_t>& worksheet, wxWindowID id = wxID_ANY,
+                         const wxString& caption = _(L"Edit Import Settings"),
+                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                         long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
         /// @private
         DatasetImportDlg() = delete;

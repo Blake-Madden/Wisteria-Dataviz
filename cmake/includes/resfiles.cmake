@@ -21,6 +21,7 @@ constants.svg
 copy.svg
 data-add.svg
 data-delete.svg
+data-edit.svg
 data.svg
 date.svg
 delete.svg

@@ -298,6 +298,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
         dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
                                  _(L"Import a dataset into the project"));
+        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"data-edit.svg"),
+                                 _(L"Edit the selected dataset's import options"));
 
         dataButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"), ReadSvgIcon(L"pivot-wider.svg"),
                                  _(L"Pivot a dataset wider (unstack)"));

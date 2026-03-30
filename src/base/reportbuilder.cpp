@@ -2646,22 +2646,25 @@ namespace Wisteria
                             .CategoricalColumns(catInfo);
 
                         // build ColumnPreviewInfo from explicit column definitions
+                        // (mark as user-overridden since the user specified
+                        //  these types in the JSON)
                         if (!idColumn.empty())
                             {
                             columnPreviewInfo.emplace_back(idColumn,
                                                            Data::Dataset::ColumnImportType::String,
-                                                           wxString{}, false);
+                                                           wxString{}, false, true);
                             }
                         for (const auto& di : dateInfo)
                             {
                             columnPreviewInfo.emplace_back(di.m_columnName,
                                                            Data::Dataset::ColumnImportType::Date,
-                                                           wxString{}, false);
+                                                           wxString{}, false, true);
                             }
                         for (const auto& cv : continuousVars)
                             {
-                            columnPreviewInfo.emplace_back(
-                                cv, Data::Dataset::ColumnImportType::Numeric, wxString{}, false);
+                            columnPreviewInfo.emplace_back(cv,
+                                                           Data::Dataset::ColumnImportType::Numeric,
+                                                           wxString{}, false, true);
                             }
                         for (const auto& ci : catInfo)
                             {

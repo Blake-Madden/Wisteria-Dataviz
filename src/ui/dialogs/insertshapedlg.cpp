@@ -287,7 +287,7 @@ namespace Wisteria::UI
                           wxSizerFlags{}.CenterVertical());
             m_fillPercentSpin = new wxSpinCtrlDouble(fillBox->GetStaticBox(), wxID_ANY, wxString{},
                                                      wxDefaultPosition, wxDefaultSize,
-                wxSP_ARROW_KEYS, 0.0, 1.0, 0.0, 0.05);
+                                                     wxSP_ARROW_KEYS, 0.0, 1.0, 0.0, 0.05);
             fillGrid->Add(m_fillPercentSpin);
 
             fillBox->Add(fillGrid, wxSizerFlags{}.Border());

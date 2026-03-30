@@ -26,14 +26,51 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    PivotWiderDlg::PivotWiderDlg(const ReportBuilder* reportBuilder,
+                                 const PivotWiderOptions& pivotOptions, wxWindow* parent,
+                                 const wxWindowID id, const wxPoint& pos, const wxSize& size,
+                                 const long style)
+        : wxDialog(parent, id, _(L"Edit Pivot Wider"), pos, size, style),
+          m_reportBuilder(reportBuilder), m_idColumns(pivotOptions.m_idColumns),
+          m_namesFromColumn(pivotOptions.m_namesFromColumn),
+          m_valuesFromColumns(pivotOptions.m_valuesFromColumns), m_mode(Mode::Edit)
+        {
+        CreateControls();
+
+        // pre-select the source dataset
+        const int dsIdx = m_datasetChoice->FindString(pivotOptions.m_sourceDatasetName);
+        if (dsIdx != wxNOT_FOUND)
+            {
+            m_datasetChoice->SetSelection(dsIdx);
+            }
+
+        // pre-populate options
+        m_namesSepCtrl->SetValue(pivotOptions.m_namesSep);
+        m_namesPrefixCtrl->SetValue(pivotOptions.m_namesPrefix);
+        m_fillValueCtrl->SetValue(
+            std::isnan(pivotOptions.m_fillValue) ?
+                NaNLabel() :
+                wxNumberFormatter::ToString(pivotOptions.m_fillValue, 6,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
+        m_outputNameCtrl->SetValue(pivotOptions.m_outputName);
+
+        UpdateColumnLabels();
+        UpdatePreview();
+
+        SetMinSize(FromDIP(wxSize{ 500, 550 }));
+        SetSize(FromDIP(wxSize{ 550, 800 }));
+        Centre();
+        }
+
+    //-------------------------------------------
     void PivotWiderDlg::CreateControls()
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        datasetSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Dataset:")),
-                          wxSizerFlags{}.CenterVertical());
+        auto* datasetLabel{ new wxStaticText(this, wxID_ANY, _(L"Dataset:")) };
+        datasetSizer->Add(datasetLabel, wxSizerFlags{}.CenterVertical());
         m_datasetChoice = new wxChoice(this, wxID_ANY);
         if (m_reportBuilder != nullptr)
             {
@@ -47,6 +84,8 @@ namespace Wisteria::UI
             {
             m_datasetChoice->SetSelection(0);
             }
+        datasetLabel->Enable(m_mode == Mode::Insert);
+        m_datasetChoice->Enable(m_mode == Mode::Insert);
         datasetSizer->Add(m_datasetChoice, wxSizerFlags{}.Expand());
         mainSizer->Add(datasetSizer, wxSizerFlags{}.Expand().Border());
 
@@ -104,14 +143,17 @@ namespace Wisteria::UI
         optionsBox->Add(optGrid, wxSizerFlags{}.Expand().Border());
         mainSizer->Add(optionsBox, wxSizerFlags{}.Expand().Border());
 
-        // output name
+        // output name (only if inserting new,
+        // can't edit name once created because that is the lookup key)
         auto* nameSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         nameSizer->AddGrowableCol(1, 1);
-        nameSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Output name:")),
-                       wxSizerFlags{}.CenterVertical());
+        auto* nameLabel = new wxStaticText(this, wxID_ANY, _(L"Output name:"));
+        nameSizer->Add(nameLabel, wxSizerFlags{}.CenterVertical());
         m_outputNameCtrl = new wxTextCtrl(this, wxID_ANY, wxString{});
         nameSizer->Add(m_outputNameCtrl, wxSizerFlags{}.Expand());
         mainSizer->Add(nameSizer, wxSizerFlags{}.Expand().Border());
+        nameLabel->Enable(m_mode == Mode::Insert);
+        m_outputNameCtrl->Enable(m_mode == Mode::Insert);
 
         // preview grid
         auto* previewBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
@@ -119,6 +161,7 @@ namespace Wisteria::UI
         m_previewGrid->CreateGrid(0, 0);
         m_previewGrid->EnableEditing(false);
         m_previewGrid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
+        m_previewGrid->SetMinSize(FromDIP(wxSize{ 600, 400 }));
         previewBox->Add(m_previewGrid, wxSizerFlags{ 1 }.Expand().Border());
         auto* previewNote =
             new wxStaticText(previewBox->GetStaticBox(), wxID_ANY,
@@ -190,7 +233,9 @@ namespace Wisteria::UI
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete })
+                  .DefaultVariables(m_idColumns.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ m_idColumns }),
               VLI{}
                   .Label(_(L"Names From"))
                   .SingleSelection(true)
@@ -198,11 +243,17 @@ namespace Wisteria::UI
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete })
+                  .DefaultVariables(m_namesFromColumn.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_namesFromColumn }),
               VLI{}
                   .Label(_(L"Values From"))
                   .Required(false)
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric })
+                  .DefaultVariables(m_valuesFromColumns.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_valuesFromColumns }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -250,15 +301,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void PivotWiderDlg::UpdatePreview()
         {
-        // clear existing grid
-        if (m_previewGrid->GetNumberRows() > 0)
-            {
-            m_previewGrid->DeleteRows(0, m_previewGrid->GetNumberRows());
-            }
-        if (m_previewGrid->GetNumberCols() > 0)
-            {
-            m_previewGrid->DeleteCols(0, m_previewGrid->GetNumberCols());
-            }
+        m_previewGrid->ClearGrid();
 
         m_pivotedDataset.reset();
 
@@ -433,7 +476,8 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_reportBuilder != nullptr && m_reportBuilder->GetDatasets().contains(GetOutputName()))
+        if (m_mode == Mode::Insert && m_reportBuilder != nullptr &&
+            m_reportBuilder->GetDatasets().contains(GetOutputName()))
             {
             wxMessageBox(_(L"A dataset with this name already exists. "
                            "Please choose a different output name."),

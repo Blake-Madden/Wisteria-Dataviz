@@ -42,6 +42,83 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
+    DatasetImportDlg::DatasetImportDlg(wxWindow* parent, const wxString& filePath,
+                                       const Data::ImportInfo& importInfo,
+                                       const Data::Dataset::ColumnPreviewInfo& columnInfo,
+                                       const std::variant<wxString, size_t>& worksheet,
+                                       wxWindowID id, const wxString& caption, const wxPoint& pos,
+                                       const wxSize& size, long style)
+        : m_filePath(filePath), m_fileExt(wxFileName{ filePath }.GetExt()),
+          m_columnInfo(columnInfo), m_skipRows(static_cast<int>(importInfo.GetSkipRows())),
+          m_maxDiscrete(static_cast<int>(importInfo.GetMaxDiscreteValue())),
+          m_leadingZeros(importInfo.GetTreatLeadingZerosAsText()),
+          m_yearsAsText(importInfo.GetTreatYearsAsText())
+        {
+        // build the MD values string from the codes
+        if (importInfo.GetMDCodes().has_value())
+            {
+            for (const auto& code : importInfo.GetMDCodes().value())
+                {
+                if (!m_mdValues.empty())
+                    {
+                    m_mdValues += L", ";
+                    }
+                m_mdValues += code;
+                }
+            }
+
+        wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+        Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
+
+        // load worksheet names for spreadsheet files
+        if (m_fileExt.CmpNoCase(L"xlsx") == 0)
+            {
+            Data::ExcelReader xlReader(m_filePath);
+            m_worksheetNames = xlReader.GetWorksheetNames();
+            }
+        else if (m_fileExt.CmpNoCase(L"ods") == 0)
+            {
+            Data::OdsReader odsReader(m_filePath);
+            m_worksheetNames = odsReader.GetWorksheetNames();
+            }
+
+        // resolve worksheet selection to 0-based index
+        if (const auto* wsIndex = std::get_if<size_t>(&worksheet))
+            {
+            m_worksheet = (*wsIndex > 0) ? static_cast<int>(*wsIndex - 1) : 0;
+            }
+        else if (const auto* wsName = std::get_if<wxString>(&worksheet))
+            {
+            for (size_t i = 0; i < m_worksheetNames.size(); ++i)
+                {
+                if (wsName->CmpNoCase(m_worksheetNames[i]) == 0)
+                    {
+                    m_worksheet = static_cast<int>(i);
+                    break;
+                    }
+                }
+            }
+
+        CreateControls();
+        TransferDataToWindow();
+
+        // select the ID column from the import settings
+        if (!importInfo.GetIdColumn().empty())
+            {
+            const int idx = m_idColumnChoice->FindString(importInfo.GetIdColumn());
+            if (idx != wxNOT_FOUND)
+                {
+                m_idColumnChoice->SetSelection(idx);
+                }
+            }
+
+        RefreshPreviewFromColumnInfo();
+
+        GetSizer()->SetSizeHints(this);
+        Centre();
+        }
+
+    //----------------------------------------------
     void DatasetImportDlg::CreateControls()
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -65,7 +142,10 @@ namespace Wisteria::UI
             }
         if (!m_worksheetNames.empty())
             {
-            worksheetChoice->SetSelection(0);
+            worksheetChoice->SetSelection(
+                (m_worksheet >= 0 && std::cmp_less(m_worksheet, m_worksheetNames.size())) ?
+                    m_worksheet :
+                    0);
             }
         optionsSizer->Add(worksheetChoice, wxSizerFlags{});
 
@@ -128,17 +208,22 @@ namespace Wisteria::UI
         mdCodesSizer->Add(
             new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):")),
             wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
-        for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
+        // populate with common MD codes only if not already set
+        // (the editing constructor pre-populates m_mdValues)
+        if (m_mdValues.empty())
             {
-            if (!m_mdValues.empty())
+            for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
                 {
-                m_mdValues += L", ";
+                if (!m_mdValues.empty())
+                    {
+                    m_mdValues += L", ";
+                    }
+                m_mdValues += code;
                 }
-            m_mdValues += code;
             }
         auto* mdValuesText =
             new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
-                           wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator(&m_mdValues));
+                           wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator{ &m_mdValues });
         mdCodesSizer->Add(mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
         mainSizer->Add(mdCodesSizer,
                        wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
@@ -225,7 +310,7 @@ namespace Wisteria::UI
             else
                 {
                 std::vector<std::wstring> mdCodes;
-                wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_RET_EMPTY);
+                wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
                 while (mdTokenizer.HasMoreTokens())
                     {
                     mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
@@ -250,18 +335,14 @@ namespace Wisteria::UI
                 if (prevIt != previousColumnInfo.cend())
                     {
                     col.m_excluded = prevIt->m_excluded;
-                    // Preserve the user's column type overrides unless:
-                    // - Numeric -> String AND LeadingZeros is ON
-                    // - String -> Numeric AND LeadingZeros is OFF
-                    if ((prevIt->m_type != Data::Dataset::ColumnImportType::Numeric ||
-                         col.m_type != Data::Dataset::ColumnImportType::String ||
-                         !previewInfo.GetTreatLeadingZerosAsText()) &&
-                        (prevIt->m_type != Data::Dataset::ColumnImportType::String ||
-                         col.m_type != Data::Dataset::ColumnImportType::Numeric ||
-                         previewInfo.GetTreatLeadingZerosAsText()))
+                    if (prevIt->m_userOverridden)
                         {
+                        // always preserve explicit user type overrides
                         col.m_type = prevIt->m_type;
+                        col.m_userOverridden = true;
                         }
+                    // for non-user-overridden types, let the fresh
+                    // deduction win (e.g., when LeadingZeros changes)
                     }
                 }
 
@@ -336,7 +417,7 @@ namespace Wisteria::UI
         else
             {
             std::vector<std::wstring> mdCodes;
-            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_RET_EMPTY);
+            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
             while (mdTokenizer.HasMoreTokens())
                 {
                 mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
@@ -559,6 +640,7 @@ namespace Wisteria::UI
             if (newType != colInfo.m_type)
                 {
                 colInfo.m_type = newType;
+                colInfo.m_userOverridden = true;
                 needsReimport = true;
                 }
             else if (wasExcluded)
@@ -637,7 +719,7 @@ namespace Wisteria::UI
         else
             {
             std::vector<std::wstring> mdCodes;
-            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_RET_EMPTY);
+            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
             while (mdTokenizer.HasMoreTokens())
                 {
                 mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());

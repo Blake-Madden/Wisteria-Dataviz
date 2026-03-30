@@ -68,6 +68,18 @@ namespace Wisteria::UI
                       wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
                       const wxSize& size = wxDefaultSize,
                       long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+        /** @brief Constructor that pre-populates the dialog with existing pivot settings.
+            @param reportBuilder The report builder containing the project's datasets.
+            @param pivotOptions The pivot options to pre-populate.
+            @param parent The parent window.
+            @param id The window ID.
+            @param pos The screen position.
+            @param size The window size.
+            @param style The window style.*/
+        PivotWiderDlg(const ReportBuilder* reportBuilder, const PivotWiderOptions& pivotOptions,
+                      wxWindow* parent, wxWindowID id = wxID_ANY,
+                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                      long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
 
         /// @private
         PivotWiderDlg(const PivotWiderDlg&) = delete;
@@ -133,6 +145,13 @@ namespace Wisteria::UI
 
         std::shared_ptr<Data::Dataset> m_pivotedDataset;
         std::vector<wxString> m_datasetNames;
+
+        enum class Mode
+            {
+            Insert,
+            Edit
+            };
+        Mode m_mode{ Mode::Insert };
         };
     } // namespace Wisteria::UI
 

@@ -505,7 +505,7 @@ namespace Wisteria::UI
             return;
             }
 
-        if (wxMessageBox(L"Delete selected bracket?", _(L"Delete Bracket"),
+        if (wxMessageBox(_(L"Delete selected bracket?"), _(L"Delete Bracket"),
                          wxYES_NO | wxICON_QUESTION, this) != wxYES)
             {
             return;

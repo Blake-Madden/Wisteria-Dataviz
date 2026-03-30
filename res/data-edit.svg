@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 256 256"
+   width="256"
+   height="256"
+   version="1.1"
+   id="svg15"
+   sodipodi:docname="data-edit.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs15" />
+  <sodipodi:namedview
+     id="namedview15"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4.5585938"
+     inkscape:cx="128.21936"
+     inkscape:cy="128"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg15" />
+  <!-- Colorful data table icon, pivot-longer style -->
+  <!-- Header row -->
+  <rect
+     x="28"
+     y="28"
+     width="200"
+     height="24"
+     rx="3"
+     fill="#2E86DE"
+     opacity="0.95"
+     id="rect1" />
+  <!-- Data rows -->
+  <rect
+     x="28"
+     y="56"
+     width="200"
+     height="24"
+     rx="2"
+     fill="#27AE60"
+     opacity="0.85"
+     id="rect2" />
+  <rect
+     x="28"
+     y="84"
+     width="200"
+     height="24"
+     rx="2"
+     fill="#F0A68C"
+     opacity="0.9"
+     id="rect3" />
+  <rect
+     x="28"
+     y="112"
+     width="200"
+     height="24"
+     rx="2"
+     fill="#27AE60"
+     opacity="0.85"
+     id="rect4" />
+  <rect
+     x="28"
+     y="140"
+     width="200"
+     height="24"
+     rx="2"
+     fill="#F0A68C"
+     opacity="0.9"
+     id="rect5" />
+  <rect
+     x="28"
+     y="168"
+     width="200"
+     height="24"
+     rx="2"
+     fill="#27AE60"
+     opacity="0.85"
+     id="rect6" />
+  <rect
+     x="28"
+     y="196"
+     width="200"
+     height="24"
+     rx="2"
+     fill="#F0A68C"
+     opacity="0.9"
+     id="rect7" />
+  <!-- Column dividers (white) -->
+  <line
+     x1="78"
+     y1="28"
+     x2="78"
+     y2="220"
+     stroke="white"
+     stroke-width="2"
+     id="line7" />
+  <line
+     x1="128"
+     y1="28"
+     x2="128"
+     y2="220"
+     stroke="white"
+     stroke-width="2"
+     id="line8" />
+  <line
+     x1="178"
+     y1="28"
+     x2="178"
+     y2="220"
+     stroke="white"
+     stroke-width="2"
+     id="line9" />
+  <!-- Row dividers (white, between data rows) -->
+  <line
+     x1="28"
+     y1="56"
+     x2="228"
+     y2="56"
+     stroke="white"
+     stroke-width="1.5"
+     id="line10" />
+  <line
+     x1="28"
+     y1="84"
+     x2="228"
+     y2="84"
+     stroke="white"
+     stroke-width="1.5"
+     id="line11" />
+  <line
+     x1="28"
+     y1="112"
+     x2="228"
+     y2="112"
+     stroke="white"
+     stroke-width="1.5"
+     id="line12" />
+  <line
+     x1="28"
+     y1="140"
+     x2="228"
+     y2="140"
+     stroke="white"
+     stroke-width="1.5"
+     id="line13" />
+  <line
+     x1="28"
+     y1="168"
+     x2="228"
+     y2="168"
+     stroke="white"
+     stroke-width="1.5"
+     id="line14" />
+  <line
+     x1="28"
+     y1="196"
+     x2="228"
+     y2="196"
+     stroke="white"
+     stroke-width="1.5"
+     id="line15" />
+  <g
+     transform="rotate(-45,409.96822,-168.88206)"
+     id="g21">
+    <!-- Pencil body -->
+    <rect
+       x="-8"
+       y="-120"
+       width="16"
+       height="100"
+       rx="2"
+       ry="2"
+       fill="#f0c040"
+       stroke="#c89820"
+       stroke-width="1.5"
+       id="rect17" />
+    <!-- Pencil stripe -->
+    <rect
+       x="-8"
+       y="-70"
+       width="16"
+       height="6"
+       fill="#e8a020"
+       id="rect18" />
+    <!-- Pencil ferrule (metal band) -->
+    <rect
+       x="-9"
+       y="-20"
+       width="18"
+       height="14"
+       rx="1"
+       fill="#c0c0c0"
+       stroke="#a0a0a0"
+       stroke-width="0.75"
+       id="rect19" />
+    <!-- Pencil eraser -->
+    <rect
+       x="-7"
+       y="-120"
+       width="14"
+       height="12"
+       rx="3"
+       fill="#e87070"
+       id="rect20" />
+    <!-- Pencil tip -->
+    <polygon
+       points="0,14 -8,-6 8,-6 "
+       fill="#f5deb3"
+       stroke="#c89820"
+       stroke-width="0.75"
+       id="polygon20" />
+    <!-- Pencil lead -->
+    <polygon
+       points="0,14 -2,4 2,4 "
+       fill="#404040"
+       id="polygon21" />
+  </g>
+</svg>

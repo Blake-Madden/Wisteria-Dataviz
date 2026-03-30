@@ -116,9 +116,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                wxCommandEvent& event) { GetDocument()->Save(); },
         ID_SAVE_PROJECT);
 
-    // bind insert dataset button
+    // bind insert and edit dataset buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
                   ID_INSERT_DATASET);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditDataset, this,
+                  ID_EDIT_DATASET);
 
     // bind pivot buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotWider, this, ID_PIVOT_WIDER);
@@ -937,6 +939,200 @@ void WisteriaView::OnRibbonAddConstant([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
+    {
+    // get the selected dataset
+    const auto [parentFolder, subItem] = m_sideBar->GetSelectedSubItemId();
+    if (m_sideBar->GetSelectedFolder() != 0 || !subItem)
+        {
+        wxMessageBox(_(L"Please select a dataset."), _(L"Dataset Selection"), wxOK | wxICON_WARNING,
+                     m_frame);
+        return;
+        }
+
+    const auto selectedDatasetName = m_sideBar->GetSelectedLabel();
+    const auto foundDs = GetReportBuilder().GetDatasets().find(selectedDatasetName);
+    if (foundDs == GetReportBuilder().GetDatasets().cend())
+        {
+        wxFAIL_MSG(L"Didn't find dataset when editing?!");
+        return;
+        }
+    // check if this is an imported dataset
+    const auto foundDsImportOptions =
+        GetReportBuilder().GetDatasetImportOptions().find(selectedDatasetName);
+    // check if this is a pivoted dataset
+    const auto foundPivotOptions =
+        GetReportBuilder().GetDatasetPivotOptions().find(selectedDatasetName);
+
+    if (foundDsImportOptions != GetReportBuilder().GetDatasetImportOptions().cend())
+        {
+        // edit an imported dataset
+        Wisteria::UI::DatasetImportDlg importDlg(m_frame, foundDsImportOptions->second.m_filePath,
+                                                 foundDsImportOptions->second.m_importInfo,
+                                                 foundDsImportOptions->second.m_columnPreviewInfo,
+                                                 foundDsImportOptions->second.m_worksheet, wxID_ANY,
+                                                 _(L"Edit Import Options"));
+        if (importDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        try
+            {
+            const auto columnPreview = importDlg.GetColumnPreviewInfo();
+            const auto& fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
+            const auto importInfo = importDlg.GetImportInfo();
+            const auto worksheet = importDlg.GetWorksheet();
+            const auto& filePath = foundDsImportOptions->second.m_filePath;
+
+            // re-import the dataset with the new settings
+            auto dataset = std::make_shared<Wisteria::Data::Dataset>();
+            dataset->Import(filePath, importInfo, worksheet);
+            dataset->SetName(selectedDatasetName.ToStdWstring());
+
+            // update the report builder's stored dataset and import options
+            m_reportBuilder.GetDatasets()[selectedDatasetName] = dataset;
+            m_reportBuilder.GetDatasetImportOptions()[selectedDatasetName] = {
+                filePath, foundDsImportOptions->second.m_importer, worksheet, fullColumnPreview,
+                importInfo
+            };
+
+            // replace the existing grid contents
+            if (auto* window = m_workWindows.FindWindowById(subItem.value());
+                window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
+                {
+                auto* grid = dynamic_cast<wxGrid*>(window);
+                auto* table = columnPreview.empty() ?
+                                  new Wisteria::UI::DatasetGridTable(dataset) :
+                                  new Wisteria::UI::DatasetGridTable(dataset, columnPreview);
+
+                // apply currency symbols
+                size_t contIdx{ 0 };
+                for (const auto& col : columnPreview)
+                    {
+                    if (col.m_type == Wisteria::Data::Dataset::ColumnImportType::Numeric)
+                        {
+                        if (!col.m_currencySymbol.empty())
+                            {
+                            table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                            }
+                        ++contIdx;
+                        }
+                    }
+
+                grid->SetTable(table, true);
+                ApplyColumnHeaderIcons(grid, table);
+                grid->AutoSizeColumns(false);
+                AdjustGridColumnsForIcons(grid);
+                grid->ForceRefresh();
+                }
+
+            GetDocument()->Modify(true);
+            }
+        catch (const std::exception& exc)
+            {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
+                         m_frame);
+            }
+        }
+    else if (foundPivotOptions != GetReportBuilder().GetDatasetPivotOptions().cend())
+        {
+        // edit a pivoted dataset
+        const auto& storedOpts = foundPivotOptions->second;
+        std::shared_ptr<Wisteria::Data::Dataset> pivotedDataset;
+        wxString outputName;
+
+        if (storedOpts.m_type == Wisteria::ReportBuilder::PivotType::Wider)
+            {
+            const Wisteria::UI::PivotWiderOptions widerOpts{
+                storedOpts.m_sourceDatasetName, selectedDatasetName,
+                storedOpts.m_idColumns,         storedOpts.m_namesFromColumn,
+                storedOpts.m_valuesFromColumns, storedOpts.m_namesSep,
+                storedOpts.m_namesPrefix,       storedOpts.m_fillValue
+            };
+
+            Wisteria::UI::PivotWiderDlg dlg(&m_reportBuilder, widerOpts, m_frame);
+            if (dlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+
+            pivotedDataset = dlg.GetPivotedDataset();
+            outputName = dlg.GetOutputName();
+
+            if (pivotedDataset == nullptr)
+                {
+                return;
+                }
+
+            // update stored pivot options from dialog results
+            const auto dlgOpts = dlg.GetPivotOptions();
+            auto& pivotOpts = m_reportBuilder.GetDatasetPivotOptions()[outputName];
+            pivotOpts.m_type = Wisteria::ReportBuilder::PivotType::Wider;
+            pivotOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+            pivotOpts.m_idColumns = dlgOpts.m_idColumns;
+            pivotOpts.m_namesFromColumn = dlgOpts.m_namesFromColumn;
+            pivotOpts.m_valuesFromColumns = dlgOpts.m_valuesFromColumns;
+            pivotOpts.m_namesSep = dlgOpts.m_namesSep;
+            pivotOpts.m_namesPrefix = dlgOpts.m_namesPrefix;
+            pivotOpts.m_fillValue = dlgOpts.m_fillValue;
+            }
+        else
+            {
+            const Wisteria::UI::PivotLongerOptions longerOpts{
+                storedOpts.m_sourceDatasetName, selectedDatasetName,  storedOpts.m_columnsToKeep,
+                storedOpts.m_fromColumns,       storedOpts.m_namesTo, storedOpts.m_valuesTo,
+                storedOpts.m_namesPattern
+            };
+
+            Wisteria::UI::PivotLongerDlg dlg(&m_reportBuilder, longerOpts, m_frame);
+            if (dlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+
+            pivotedDataset = dlg.GetPivotedDataset();
+            outputName = dlg.GetOutputName();
+
+            if (pivotedDataset == nullptr)
+                {
+                return;
+                }
+
+            // update stored pivot options from dialog results
+            const auto dlgOpts = dlg.GetPivotOptions();
+            auto& pivotOpts = m_reportBuilder.GetDatasetPivotOptions()[outputName];
+            pivotOpts.m_type = Wisteria::ReportBuilder::PivotType::Longer;
+            pivotOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+            pivotOpts.m_columnsToKeep = dlgOpts.m_columnsToKeep;
+            pivotOpts.m_fromColumns = dlgOpts.m_fromColumns;
+            pivotOpts.m_namesTo = dlgOpts.m_namesTo;
+            pivotOpts.m_valuesTo = dlgOpts.m_valuesTo;
+            pivotOpts.m_namesPattern = dlgOpts.m_namesPattern;
+            }
+
+        // update stored dataset
+        pivotedDataset->SetName(outputName.ToStdWstring());
+        m_reportBuilder.GetDatasets()[outputName] = pivotedDataset;
+
+        // replace the existing grid contents
+        if (auto* window = m_workWindows.FindWindowById(subItem.value());
+            window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
+            {
+            auto* grid = dynamic_cast<wxGrid*>(window);
+            auto* table = new Wisteria::UI::DatasetGridTable(pivotedDataset);
+            grid->SetTable(table, true);
+            ApplyColumnHeaderIcons(grid, table);
+            grid->AutoSizeColumns(false);
+            AdjustGridColumnsForIcons(grid);
+            grid->ForceRefresh();
+            }
+
+        GetDocument()->Modify(true);
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog fileDlg(m_frame, _(L"Select Dataset"), wxString{}, wxString{},
@@ -1029,8 +1225,6 @@ void WisteriaView::OnPivotWider([[maybe_unused]] wxCommandEvent& event)
         }
 
     const auto outputName = dlg.GetOutputName();
-    AddDatasetToProject(pivotedDataset, outputName);
-
     const auto dlgOpts = dlg.GetPivotOptions();
     Wisteria::ReportBuilder::DatasetPivotOptions pivotOpts;
     pivotOpts.m_type = Wisteria::ReportBuilder::PivotType::Wider;
@@ -1041,7 +1235,9 @@ void WisteriaView::OnPivotWider([[maybe_unused]] wxCommandEvent& event)
     pivotOpts.m_namesSep = dlgOpts.m_namesSep;
     pivotOpts.m_namesPrefix = dlgOpts.m_namesPrefix;
     pivotOpts.m_fillValue = dlgOpts.m_fillValue;
+
     m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
+    AddDatasetToProject(pivotedDataset, outputName);
 
     // adjust the splitter sash to match the sidebar's new min width
     const auto minWidth = m_sideBar->GetMinSize().GetWidth();
@@ -1073,8 +1269,6 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
         }
 
     const auto outputName = dlg.GetOutputName();
-    AddDatasetToProject(pivotedDataset, outputName);
-
     const auto dlgOpts = dlg.GetPivotOptions();
     Wisteria::ReportBuilder::DatasetPivotOptions pivotOpts;
     pivotOpts.m_type = Wisteria::ReportBuilder::PivotType::Longer;
@@ -1084,7 +1278,9 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
     pivotOpts.m_namesTo = dlgOpts.m_namesTo;
     pivotOpts.m_valuesTo = dlgOpts.m_valuesTo;
     pivotOpts.m_namesPattern = dlgOpts.m_namesPattern;
+
     m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
+    AddDatasetToProject(pivotedDataset, outputName);
 
     // adjust the splitter sash to match the sidebar's new min width
     const auto minWidth = m_sideBar->GetMinSize().GetWidth();
@@ -1094,10 +1290,49 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                                       const wxString& name)
+    {
+    m_reportBuilder.GetDatasets().insert_or_assign(name, dataset);
+
+    const wxWindowID dsId = wxNewId();
+
+    auto* table = new Wisteria::UI::DatasetGridTable(dataset);
+
+    auto* grid = new wxGrid(m_workArea, dsId);
+    grid->SetDoubleBuffered(true);
+    grid->GetGridWindow()->SetDoubleBuffered(true);
+    grid->SetTable(table, true);
+    grid->SetDefaultCellFitMode(wxGridFitMode::Ellipsize());
+    grid->EnableEditing(false);
+    ApplyColumnHeaderIcons(grid, table);
+    m_workArea->GetSizer()->Add(grid, wxSizerFlags{ 1 }.Expand());
+    m_workArea->Layout();
+    grid->AutoSizeColumns(false);
+    AdjustGridColumnsForIcons(grid);
+    grid->Hide();
+    m_workWindows.AddWindow(grid);
+
+    // add as subitem under the "Data" folder
+    if (m_sideBar->GetFolderCount() > 0)
+        {
+        m_sideBar->InsertSubItemById(m_sideBar->GetFolder(0).GetId(), name, dsId,
+                                     GetDatasetIconFromName(name));
+        m_sideBar->SelectSubItemById(m_sideBar->GetFolder(0).GetId(), dsId);
+        }
+
+    m_workArea->Layout();
+    m_sideBar->SaveState();
+    m_sideBar->Refresh();
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
 void WisteriaView::AddDatasetToProject(
     const std::shared_ptr<Wisteria::Data::Dataset>& dataset, const wxString& name,
-    const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo /*= {}*/,
-    const Wisteria::ReportBuilder::DatasetImportOptions& importOptions /*= {}*/)
+    const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo,
+    const Wisteria::ReportBuilder::DatasetImportOptions& importOptions)
     {
     m_reportBuilder.AddDataset(name, dataset, importOptions);
 

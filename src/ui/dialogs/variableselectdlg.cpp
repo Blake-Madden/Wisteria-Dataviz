@@ -201,7 +201,7 @@ namespace Wisteria::UI
         m_listImages->Add(wxArtProvider::GetBitmapBundle("ID_DICHOTOMOUS_DISCRETE")
                               .GetBitmap(wxSize{ FromDIP(16), FromDIP(16) }));
         m_mainVarlist->SetImageList(m_listImages, wxIMAGE_LIST_SMALL);
-        for (const auto& [name, type, currencySymbol, excluded] : m_columnInfo)
+        for (const auto& [name, type, currencySymbol, excluded, userOverridden] : m_columnInfo)
             {
             if (excluded)
                 {
@@ -346,7 +346,7 @@ namespace Wisteria::UI
             // build a legend showing only the variable types actually in the main list
             {
             std::set<Data::Dataset::ColumnImportType> usedTypes;
-            for (const auto& [name, type, currencySymbol, excluded] : m_columnInfo)
+            for (const auto& [name, type, currencySymbol, excluded, userOverridden] : m_columnInfo)
                 {
                 if (!excluded)
                     {

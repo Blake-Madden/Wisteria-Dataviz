@@ -84,6 +84,7 @@ class WisteriaView final : public wxView
     void OnSidebarClick(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
+    void OnEditDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
@@ -183,8 +184,11 @@ class WisteriaView final : public wxView
     void
     AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                         const wxString& name,
-                        const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo = {},
-                        const Wisteria::ReportBuilder::DatasetImportOptions& importOptions = {});
+                        const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo,
+                        const Wisteria::ReportBuilder::DatasetImportOptions& importOptions);
+    // non-imported datasets (e.g., subsets or pivots from imported data)
+    void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                             const wxString& name);
     void AddPageToProject(size_t rows, size_t columns, const wxString& name);
     void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     void AdjustGridColumnsForIcons(wxGrid* grid);

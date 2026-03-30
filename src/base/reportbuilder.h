@@ -299,6 +299,14 @@ namespace Wisteria
             return m_datasets;
             }
 
+        /// @returns The datasets in the report (mutable).
+        [[nodiscard]]
+        std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase>&
+        GetDatasets() noexcept
+            {
+            return m_datasets;
+            }
+
         /// @returns The insertion order of top-level (imported) datasets.
         [[nodiscard]]
         const std::vector<wxString>& GetDatasetInsertionOrder() const noexcept
@@ -338,6 +346,14 @@ namespace Wisteria
             return m_datasetImportOptions;
             }
 
+        /// @returns The import options for all datasets (mutable).
+        [[nodiscard]]
+        std::map<wxString, DatasetImportOptions, Data::wxStringLessNoCase>&
+        GetDatasetImportOptions() noexcept
+            {
+            return m_datasetImportOptions;
+            }
+
         /// @brief Associates pivot options with a named dataset.
         /// @param name The name of the pivoted dataset.
         /// @param pivotOptions The options describing how it was created.
@@ -350,6 +366,14 @@ namespace Wisteria
         [[nodiscard]]
         const std::map<wxString, DatasetPivotOptions, Data::wxStringLessNoCase>&
         GetDatasetPivotOptions() const noexcept
+            {
+            return m_datasetPivotOptions;
+            }
+
+        /// @private
+        [[nodiscard]]
+        std::map<wxString, DatasetPivotOptions, Data::wxStringLessNoCase>&
+        GetDatasetPivotOptions() noexcept
             {
             return m_datasetPivotOptions;
             }

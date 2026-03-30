@@ -385,7 +385,7 @@ namespace Wisteria::UI
         std::pair<std::optional<wxWindowID>, std::optional<wxWindowID>>
         GetSelectedSubItemId() const;
         /** @returns The label of the selected folder
-                (or subitem if the folder has a select subitem).*/
+                (or subitem if the folder has a selected subitem).*/
         [[nodiscard]]
         wxString GetSelectedLabel() const;
 

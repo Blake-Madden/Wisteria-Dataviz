@@ -1142,6 +1142,9 @@ namespace Wisteria::Data
             wxString m_currencySymbol;
             /// Whether the column should be excluded from import.
             bool m_excluded{ false };
+            /// Whether the column type was explicitly set by the user
+            /// (as opposed to being deduced from the data).
+            bool m_userOverridden{ false };
             };
 
         /// @brief The names and data types of columns in a dataset.
