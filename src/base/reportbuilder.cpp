@@ -2671,8 +2671,21 @@ namespace Wisteria
                             }
                         }
 
-                    // reorder ColumnPreviewInfo to match original spreadsheet order
-                    const auto colOrder = datasetNode->GetProperty(L"columns-order")->AsStrings();
+                    // reorder ColumnPreviewInfo to match original data file order
+                    auto colOrder = datasetNode->GetProperty(L"columns-order")->AsStrings();
+                    // if no explicit order, read from the file itself
+                    if (colOrder.empty())
+                        {
+                        Data::ImportInfo headerInfo;
+                        headerInfo.SkipRows(importDefines.GetSkipRows());
+                        const auto fileColumnInfo =
+                            Data::Dataset::ReadColumnInfo(path, headerInfo, 1, worksheet);
+                        colOrder.reserve(fileColumnInfo.size());
+                        for (const auto& fc : fileColumnInfo)
+                            {
+                            colOrder.push_back(fc.m_name);
+                            }
+                        }
                     if (!colOrder.empty())
                         {
                         Data::Dataset::ColumnPreviewInfo reordered;
