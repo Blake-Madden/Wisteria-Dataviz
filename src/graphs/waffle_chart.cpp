@@ -132,6 +132,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 const auto& shpInfo{ m_matrix[row][column] };
                 const wxPoint topLeft{ offsetX + static_cast<int>(column) * cellSize,
                                        offsetY + static_cast<int>(row) * cellSize };
+                const wxSize cellSizeDIPs{ static_cast<int>(DownscaleFromScreenAndCanvas(cellSize)),
+                                           static_cast<int>(
+                                               DownscaleFromScreenAndCanvas(cellSize)) };
 
                 if (shpInfo.GetFillPercent() < math_constants::full)
                     {
@@ -139,22 +142,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                         GraphItems::GraphItemInfo{}
                             .Pen(shpInfo.GetPen())
                             .Brush(shpInfo.GetBrush())
+                            .Scaling(GetScaling())
+                            .DPIScaling(GetDPIScaleFactor())
                             .Selectable(false)
                             .Anchoring(Anchoring::TopLeftCorner)
                             .AnchorPoint(topLeft),
-                        shpInfo.GetShape(), wxSize{ cellSize, cellSize },
-                        shpInfo.GetFillPercent()));
+                        shpInfo.GetShape(), cellSizeDIPs, shpInfo.GetFillPercent()));
                     }
                 else
                     {
-                    AddObject(std::make_unique<GraphItems::Shape>(
-                        GraphItems::GraphItemInfo{}
-                            .Pen(shpInfo.GetPen())
-                            .Brush(shpInfo.GetBrush())
-                            .Selectable(false)
-                            .Anchoring(Anchoring::TopLeftCorner)
-                            .AnchorPoint(topLeft),
-                        shpInfo.GetShape(), wxSize{ cellSize, cellSize }));
+                    AddObject(
+                        std::make_unique<GraphItems::Shape>(GraphItems::GraphItemInfo{}
+                                                                .Pen(shpInfo.GetPen())
+                                                                .Brush(shpInfo.GetBrush())
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false)
+                                                                .Anchoring(Anchoring::TopLeftCorner)
+                                                                .AnchorPoint(topLeft),
+                                                            shpInfo.GetShape(), cellSizeDIPs));
                     }
                 }
             }
