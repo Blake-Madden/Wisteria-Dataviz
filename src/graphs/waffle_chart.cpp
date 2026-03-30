@@ -24,6 +24,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         GetLeftYAxis().Show(false);
         GetTopXAxis().Show(false);
         GetRightYAxis().Show(false);
+        GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 
         LoadShapeGrid(shapes, gridRound, rowCount);
         }
@@ -104,6 +108,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
 
         // size the boxes to fit in the area available
         const wxRect drawArea = GetPlotAreaBoundingBox();
+        if (drawArea.IsEmpty())
+            {
+            return;
+            }
 
         const int rows{ static_cast<int>(m_matrix.size()) };
 
@@ -125,6 +133,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         const int offsetY{ drawArea.GetY() +
                            safe_divide<int>(drawArea.GetHeight() - totalGridHeight, 2) };
 
+        const wxSize cellSizeDIPs{
+            static_cast<int>(std::round(DownscaleFromScreenAndCanvas(cellSize))),
+            static_cast<int>(std::round(DownscaleFromScreenAndCanvas(cellSize)))
+        };
+
         for (size_t row = 0; row < m_matrix.size(); ++row)
             {
             for (size_t column = 0; column < m_matrix[row].size(); ++column)
@@ -132,9 +145,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 const auto& shpInfo{ m_matrix[row][column] };
                 const wxPoint topLeft{ offsetX + static_cast<int>(column) * cellSize,
                                        offsetY + static_cast<int>(row) * cellSize };
-                const wxSize cellSizeDIPs{ static_cast<int>(DownscaleFromScreenAndCanvas(cellSize)),
-                                           static_cast<int>(
-                                               DownscaleFromScreenAndCanvas(cellSize)) };
 
                 if (shpInfo.GetFillPercent() < math_constants::full)
                     {
