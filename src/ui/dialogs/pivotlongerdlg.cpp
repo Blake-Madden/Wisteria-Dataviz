@@ -37,7 +37,7 @@ namespace Wisteria::UI
         {
         CreateControls();
 
-        // pre-select the source dataset
+        // preselect the source dataset
         const int dsIdx = m_datasetChoice->FindString(pivotOptions.m_sourceDatasetName);
         if (dsIdx != wxNOT_FOUND)
             {

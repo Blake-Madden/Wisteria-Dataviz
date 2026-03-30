@@ -49,10 +49,10 @@ namespace Wisteria::UI
                                        wxWindowID id, const wxString& caption, const wxPoint& pos,
                                        const wxSize& size, long style)
         : m_filePath(filePath), m_fileExt(wxFileName{ filePath }.GetExt()),
-          m_columnInfo(columnInfo), m_skipRows(static_cast<int>(importInfo.GetSkipRows())),
+          m_skipRows(static_cast<int>(importInfo.GetSkipRows())),
           m_maxDiscrete(static_cast<int>(importInfo.GetMaxDiscreteValue())),
           m_leadingZeros(importInfo.GetTreatLeadingZerosAsText()),
-          m_yearsAsText(importInfo.GetTreatYearsAsText())
+          m_yearsAsText(importInfo.GetTreatYearsAsText()), m_columnInfo(columnInfo)
         {
         // build the MD values string from the codes
         if (importInfo.GetMDCodes().has_value())

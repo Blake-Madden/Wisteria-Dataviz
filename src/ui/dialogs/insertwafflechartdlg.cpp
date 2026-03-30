@@ -248,8 +248,8 @@ namespace Wisteria::UI
             return;
             }
 
-        if (wxMessageBox(_(L"Delete selected shape?"), _(L"Delete Shape"), wxYES_NO | wxICON_QUESTION,
-                         this) != wxYES)
+        if (wxMessageBox(_(L"Delete selected shape?"), _(L"Delete Shape"),
+                         wxYES_NO | wxICON_QUESTION, this) != wxYES)
             {
             return;
             }

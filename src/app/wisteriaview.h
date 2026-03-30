@@ -181,11 +181,10 @@ class WisteriaView final : public wxView
                               size_t graphRow, size_t graphCol,
                               Wisteria::UI::LegendPlacement legendPlacement);
     void UpdateGraphButtonStates();
-    void
-    AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
-                        const wxString& name,
-                        const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo,
-                        const Wisteria::ReportBuilder::DatasetImportOptions& importOptions);
+    void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
+                             const wxString& name,
+                             const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo,
+                             const Wisteria::ReportBuilder::DatasetImportOptions& importOptions);
     // non-imported datasets (e.g., subsets or pivots from imported data)
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name);
