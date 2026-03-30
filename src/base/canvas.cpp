@@ -2055,8 +2055,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     double Canvas::CalcMinHeightProportion(GraphItems::GraphItemBase & item)
         {
         wxGCDC gdc(this);
-        const CanvasItemScalingChanger sc(item);
+        const CanvasItemScalingChanger sc{ item };
         item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+        item.SetCanvasHeightProportion(std::nullopt);
         item.RecalcSizes(gdc);
         const auto bBox = item.GetBoundingBox(gdc);
         auto bBoxHeight = bBox.GetHeight();
@@ -2076,8 +2077,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 bBoxHeight *= (safe_divide<double>(canvasWidth, bBox.GetWidth()));
                 }
             }
-        return safe_divide<double>(bBoxHeight + gdc.FromDIP(item.GetTopCanvasMargin()) +
-                                       gdc.FromDIP(item.GetBottomCanvasMargin()),
-                                   gdc.FromDIP(GetCanvasMinHeightDIPs()));
+        return std::min(1.0,
+                        safe_divide<double>(bBoxHeight + gdc.FromDIP(item.GetTopCanvasMargin()) +
+                                                gdc.FromDIP(item.GetBottomCanvasMargin()),
+                                            gdc.FromDIP(GetCanvasMinHeightDIPs())));
         }
     } // namespace Wisteria
