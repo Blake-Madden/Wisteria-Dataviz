@@ -2666,8 +2666,12 @@ namespace Wisteria
                         for (const auto& ci : catInfo)
                             {
                             columnPreviewInfo.emplace_back(
-                                ci.m_columnName, Data::Dataset::ColumnImportType::Discrete,
-                                wxString{}, false);
+                                ci.m_columnName,
+                                (ci.m_importMethod ==
+                                         Data::CategoricalImportMethod::ReadAsIntegers ?
+                                     Data::Dataset::ColumnImportType::Discrete :
+                                     Data::Dataset::ColumnImportType::String),
+                                wxString{}, false, true);
                             }
                         }
 
