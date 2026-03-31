@@ -180,6 +180,7 @@ constexpr wxWindowID ID_PAGES_BUTTONBAR{ wxID_HIGHEST + 35 };
 constexpr wxWindowID ID_EDIT_DATASET{ wxID_HIGHEST + 50 };
 constexpr wxWindowID ID_PIVOT_WIDER{ wxID_HIGHEST + 36 };
 constexpr wxWindowID ID_PIVOT_LONGER{ wxID_HIGHEST + 37 };
+constexpr wxWindowID ID_SUBSET_DATASET{ wxID_HIGHEST + 51 };
 
 // Project
 constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };

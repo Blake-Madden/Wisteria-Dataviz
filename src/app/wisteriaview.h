@@ -87,6 +87,7 @@ class WisteriaView final : public wxView
     void OnEditDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);
+    void OnSubsetDataset(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
     void OnEditPage(wxCommandEvent& event);
     void OnDeletePage(wxCommandEvent& event);

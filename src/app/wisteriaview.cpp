@@ -38,6 +38,7 @@
 #include "../ui/dialogs/insertwordclouddlg.h"
 #include "../ui/dialogs/pivotlongerdlg.h"
 #include "../ui/dialogs/pivotwiderrdlg.h"
+#include "../ui/dialogs/subsetdlg.h"
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
 
@@ -122,10 +123,12 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditDataset, this,
                   ID_EDIT_DATASET);
 
-    // bind pivot buttons
+    // bind pivot and subset buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotWider, this, ID_PIVOT_WIDER);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotLonger, this,
                   ID_PIVOT_LONGER);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSubsetDataset, this,
+                  ID_SUBSET_DATASET);
 
     // bind add constant button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnRibbonAddConstant, this,
@@ -1035,6 +1038,78 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
                          m_frame);
             }
         }
+    else if (const auto foundSubsetOptions =
+                 GetReportBuilder().GetDatasetSubsetOptions().find(selectedDatasetName);
+             foundSubsetOptions != GetReportBuilder().GetDatasetSubsetOptions().cend())
+        {
+        // edit a subsetted dataset
+        const auto& storedOpts = foundSubsetOptions->second;
+
+        Wisteria::UI::SubsetOptions subsetOpts;
+        subsetOpts.m_sourceDatasetName = storedOpts.m_sourceDatasetName;
+        subsetOpts.m_outputName = selectedDatasetName;
+        subsetOpts.m_filterType =
+            static_cast<Wisteria::UI::SubsetOptions::FilterType>(storedOpts.m_filterType);
+        for (const auto& filt : storedOpts.m_filters)
+            {
+            subsetOpts.m_filters.push_back({ filt.m_column, filt.m_operator, filt.m_values });
+            }
+        subsetOpts.m_sectionColumn = storedOpts.m_sectionColumn;
+        subsetOpts.m_sectionStartLabel = storedOpts.m_sectionStartLabel;
+        subsetOpts.m_sectionEndLabel = storedOpts.m_sectionEndLabel;
+        subsetOpts.m_sectionIncludeSentinelLabels = storedOpts.m_sectionIncludeSentinelLabels;
+
+        Wisteria::UI::SubsetDlg dlg(&m_reportBuilder, subsetOpts, m_frame);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto subsettedDataset = dlg.GetSubsettedDataset();
+        if (subsettedDataset == nullptr)
+            {
+            return;
+            }
+
+        const auto outputName = dlg.GetOutputName();
+        const auto dlgOpts = dlg.GetSubsetOptions();
+
+        // update stored subset options from dialog results
+        auto& updatedOpts = m_reportBuilder.GetDatasetSubsetOptions()[outputName];
+        updatedOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+        updatedOpts.m_filterType =
+            static_cast<Wisteria::ReportBuilder::DatasetSubsetOptions::FilterType>(
+                dlgOpts.m_filterType);
+        updatedOpts.m_filters.clear();
+        for (const auto& criterion : dlgOpts.m_filters)
+            {
+            updatedOpts.m_filters.push_back(
+                { criterion.m_column, criterion.m_operator, criterion.m_values });
+            }
+        updatedOpts.m_sectionColumn = dlgOpts.m_sectionColumn;
+        updatedOpts.m_sectionStartLabel = dlgOpts.m_sectionStartLabel;
+        updatedOpts.m_sectionEndLabel = dlgOpts.m_sectionEndLabel;
+        updatedOpts.m_sectionIncludeSentinelLabels = dlgOpts.m_sectionIncludeSentinelLabels;
+
+        // update stored dataset
+        subsettedDataset->SetName(outputName.ToStdWstring());
+        m_reportBuilder.GetDatasets()[outputName] = subsettedDataset;
+
+        // replace the existing grid contents
+        if (auto* window = m_workWindows.FindWindowById(subItem.value());
+            window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
+            {
+            auto* grid = dynamic_cast<wxGrid*>(window);
+            auto* table = new Wisteria::UI::DatasetGridTable(subsettedDataset);
+            grid->SetTable(table, true);
+            ApplyColumnHeaderIcons(grid, table);
+            grid->AutoSizeColumns(false);
+            AdjustGridColumnsForIcons(grid);
+            grid->ForceRefresh();
+            }
+
+        GetDocument()->Modify(true);
+        }
     else if (foundPivotOptions != GetReportBuilder().GetDatasetPivotOptions().cend())
         {
         // edit a pivoted dataset
@@ -1281,6 +1356,56 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
 
     m_reportBuilder.SetDatasetPivotOptions(outputName, pivotOpts);
     AddDatasetToProject(pivotedDataset, outputName);
+
+    // adjust the splitter sash to match the sidebar's new min width
+    const auto minWidth = m_sideBar->GetMinSize().GetWidth();
+    m_splitter->SetSashPosition(minWidth);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnSubsetDataset([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_reportBuilder.GetDatasets().empty())
+        {
+        wxMessageBox(_(L"Please import a dataset first."), _(L"No Datasets"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    Wisteria::UI::SubsetDlg dlg(&m_reportBuilder, m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const auto subsettedDataset = dlg.GetSubsettedDataset();
+    if (subsettedDataset == nullptr)
+        {
+        return;
+        }
+
+    const auto outputName = dlg.GetOutputName();
+    const auto dlgOpts = dlg.GetSubsetOptions();
+
+    Wisteria::ReportBuilder::DatasetSubsetOptions subsetOpts;
+    subsetOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+    subsetOpts.m_filterType =
+        static_cast<Wisteria::ReportBuilder::DatasetSubsetOptions::FilterType>(
+            dlgOpts.m_filterType);
+    for (const auto& criterion : dlgOpts.m_filters)
+        {
+        subsetOpts.m_filters.push_back(
+            { criterion.m_column, criterion.m_operator, criterion.m_values });
+        }
+    subsetOpts.m_sectionColumn = dlgOpts.m_sectionColumn;
+    subsetOpts.m_sectionStartLabel = dlgOpts.m_sectionStartLabel;
+    subsetOpts.m_sectionEndLabel = dlgOpts.m_sectionEndLabel;
+    subsetOpts.m_sectionIncludeSentinelLabels = dlgOpts.m_sectionIncludeSentinelLabels;
+
+    m_reportBuilder.SetDatasetSubsetOptions(outputName, subsetOpts);
+    AddDatasetToProject(subsettedDataset, outputName);
 
     // adjust the splitter sash to match the sidebar's new min width
     const auto minWidth = m_sideBar->GetMinSize().GetWidth();

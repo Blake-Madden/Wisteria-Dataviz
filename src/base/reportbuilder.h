@@ -420,6 +420,14 @@ namespace Wisteria
             return m_datasetSubsetOptions;
             }
 
+        /// @private
+        [[nodiscard]]
+        std::map<wxString, DatasetSubsetOptions, Data::wxStringLessNoCase>&
+        GetDatasetSubsetOptions() noexcept
+            {
+            return m_datasetSubsetOptions;
+            }
+
         /// @brief Associates merge options with a named dataset.
         /// @param name The name of the merged dataset.
         /// @param mergeOptions The options describing how it was created.

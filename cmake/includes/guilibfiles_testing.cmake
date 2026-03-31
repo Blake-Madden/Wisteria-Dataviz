@@ -132,6 +132,7 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/pivotwiderrdlg.cpp
     ../../src/ui/dialogs/printerheaderfooterdlg.cpp
     ../../src/ui/dialogs/radioboxdlg.cpp
+    ../../src/ui/dialogs/subsetdlg.cpp
     ../../src/ui/dialogs/variableselectdlg.cpp
     ../../src/ui/dialogs/warningmessagesdlg.cpp
     ../../src/ui/mainframe.cpp
