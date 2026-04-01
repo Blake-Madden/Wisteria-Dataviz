@@ -306,7 +306,7 @@ set_target_properties(${WISTERIA_APP} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app")
 
 # Link required libraries to the executable
-if(WIN32)
+if(WIN32 OR APPLE)
     target_link_libraries(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     find_library(TBB_LIB tbb)

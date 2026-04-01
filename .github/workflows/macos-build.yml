@@ -27,7 +27,7 @@ jobs:
              brew install tbb
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
  
-      - name: Build and demo
+      - name: Build
         run: |
              cmake ./
              cmake --build . -j4
