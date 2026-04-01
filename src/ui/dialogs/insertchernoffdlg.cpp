@@ -22,9 +22,7 @@ namespace Wisteria::UI
         CreateControls();
         FinalizeControls();
 
-        const auto currentSize = GetSize();
-        SetSize(currentSize.GetWidth() * 2, currentSize.GetHeight());
-        SetMinSize(wxSize{ currentSize.GetWidth() * 2, currentSize.GetHeight() });
+        SetMinSize(GetSize());
 
         Centre();
         }

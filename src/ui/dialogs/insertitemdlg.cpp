@@ -145,7 +145,7 @@ namespace Wisteria::UI
                             wxSize{ previewWidth, previewHeight }, wxTAB_TRAVERSAL | wxWANTS_CHARS);
             m_gridPanel->SetBackgroundStyle(wxBG_STYLE_PAINT);
             m_gridPanel->SetMinSize(wxSize{ previewWidth, previewHeight });
-            pageSizer->Add(m_gridPanel, wxSizerFlags{ 1 }.Expand().Border());
+            pageSizer->Add(m_gridPanel, wxSizerFlags{ 1 }.CenterHorizontal().Border());
 
             // paint handler
             m_gridPanel->Bind(
@@ -320,6 +320,16 @@ namespace Wisteria::UI
                               });
             }
 
+        // two-column layout for the remaining controls
+        auto* columnsSizer = new wxBoxSizer(wxHORIZONTAL);
+        pageSizer->Add(columnsSizer, wxSizerFlags{}.Expand());
+
+        auto* leftColumnSizer = new wxBoxSizer(wxVERTICAL);
+        columnsSizer->Add(leftColumnSizer, wxSizerFlags{}.Expand());
+
+        auto* rightColumnSizer = new wxBoxSizer(wxVERTICAL);
+        columnsSizer->Add(rightColumnSizer, wxSizerFlags{}.Expand().Border(wxLEFT));
+
         // item placement properties
         auto* propsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -358,7 +368,7 @@ namespace Wisteria::UI
         m_scalingSpin->SetDigits(1);
         propsSizer->Add(m_scalingSpin);
 
-        pageSizer->Add(propsSizer, wxSizerFlags{}.Border());
+        leftColumnSizer->Add(propsSizer, wxSizerFlags{}.Border());
 
         // canvas margins (top, right, bottom, left)
         auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas margins"));
@@ -379,7 +389,7 @@ namespace Wisteria::UI
         addMarginSpin(_(L"Left:"), &m_marginLeft);
 
         marginBox->Add(marginGrid, wxSizerFlags{}.Border());
-        pageSizer->Add(marginBox, wxSizerFlags{}.Border());
+        rightColumnSizer->Add(marginBox, wxSizerFlags{}.Border());
 
         // padding (top, right, bottom, left)
         auto* paddingBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Padding"));
@@ -400,18 +410,19 @@ namespace Wisteria::UI
         addPaddingSpin(_(L"Left:"), &m_paddingLeft);
 
         paddingBox->Add(paddingGrid, wxSizerFlags{}.Border());
-        pageSizer->Add(paddingBox, wxSizerFlags{}.Border());
+        rightColumnSizer->Add(paddingBox, wxSizerFlags{}.Border());
 
         // fit row to content
-        pageSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"),
-                                      wxDefaultPosition, wxDefaultSize, 0,
-                                      wxGenericValidator(&m_fitRowToContent)),
-                       wxSizerFlags{}.Border());
+        leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"),
+                                            wxDefaultPosition, wxDefaultSize, 0,
+                                            wxGenericValidator(&m_fitRowToContent)),
+                             wxSizerFlags{}.Border());
 
         // fixed width
-        pageSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"), wxDefaultPosition,
-                                      wxDefaultSize, 0, wxGenericValidator(&m_fixedWidth)),
-                       wxSizerFlags{}.Border());
+        leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"),
+                                            wxDefaultPosition, wxDefaultSize, 0,
+                                            wxGenericValidator(&m_fixedWidth)),
+                             wxSizerFlags{}.Border());
 
         // outline pen
         auto* outlineBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Outline"));
@@ -463,7 +474,7 @@ namespace Wisteria::UI
                                         wxGenericValidator(&m_outlineLeft)));
         outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
 
-        pageSizer->Add(outlineBox, wxSizerFlags{}.Border());
+        leftColumnSizer->Add(outlineBox, wxSizerFlags{}.Border());
 
         SetSizer(mainSizer);
         }
@@ -525,7 +536,7 @@ namespace Wisteria::UI
         const auto styleIndex = static_cast<size_t>(m_outlineStyle);
         const auto penStyle =
             (styleIndex < std::size(penStyles)) ? penStyles[styleIndex] : wxPENSTYLE_SOLID;
-        return wxPen(m_outlineColorPicker->GetColour(), m_outlineWidth, penStyle);
+        return { m_outlineColorPicker->GetColour(), m_outlineWidth, penStyle };
         }
 
     //-------------------------------------------

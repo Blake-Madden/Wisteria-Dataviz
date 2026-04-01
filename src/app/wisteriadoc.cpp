@@ -59,7 +59,7 @@ bool WisteriaDoc::OnOpenDocument(const wxString& filename)
     }
 
 //-------------------------------------------
-void WisteriaDoc::SaveProject(const wxString& filePath)
+void WisteriaDoc::SaveProject(const wxString& filePath) const
     {
     auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
     if (view == nullptr)
@@ -329,7 +329,7 @@ wxString WisteriaDoc::ColorToStr(const wxColour& color) const
         return {};
         }
 
-    const auto hexStr = color.GetAsString(wxC2S_HTML_SYNTAX);
+    auto hexStr = color.GetAsString(wxC2S_HTML_SYNTAX);
     // check constants table first (preserves {{ConstantName}} syntax)
     for (const auto& constant : view->GetReportBuilder().GetConstants())
         {
@@ -408,7 +408,7 @@ wxString WisteriaDoc::SaveBrushToStr(const wxBrush& brush) const
 //-------------------------------------------
 void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
                            const Wisteria::GraphItems::GraphItemBase* item,
-                           const Wisteria::Canvas* canvas) const
+                           const Wisteria::Canvas* canvas)
     {
     if (item == nullptr || canvas == nullptr)
         {
@@ -1478,7 +1478,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
 
 //-------------------------------------------
 void WisteriaDoc::SaveDatasetImportOptions(
-    wxSimpleJSON::Ptr_t& dsNode, const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
+    const wxSimpleJSON::Ptr_t& dsNode, const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
     const Wisteria::Data::ImportInfo& info)
     {
     using CIT = Wisteria::Data::Dataset::ColumnImportType;
@@ -1621,7 +1621,8 @@ void WisteriaDoc::SaveDatasetImportOptions(
 
 //-------------------------------------------
 void WisteriaDoc::SaveTransformOptions(
-    wxSimpleJSON::Ptr_t& dsNode, const Wisteria::ReportBuilder::DatasetTransformOptions& txOpts)
+    const wxSimpleJSON::Ptr_t& dsNode,
+    const Wisteria::ReportBuilder::DatasetTransformOptions& txOpts)
     {
     if (!txOpts.m_recodeREs.empty())
         {
@@ -1726,7 +1727,7 @@ void WisteriaDoc::SaveTransformOptions(
 
 //-------------------------------------------
 void WisteriaDoc::SaveFormulas(
-    wxSimpleJSON::Ptr_t& dsNode,
+    const wxSimpleJSON::Ptr_t& dsNode,
     const std::vector<Wisteria::ReportBuilder::DatasetFormulaInfo>& formulas)
     {
     if (formulas.empty())
@@ -1744,7 +1745,7 @@ void WisteriaDoc::SaveFormulas(
     }
 
 //-------------------------------------------
-void WisteriaDoc::SaveSubsetFilters(wxSimpleJSON::Ptr_t& subsetNode,
+void WisteriaDoc::SaveSubsetFilters(const wxSimpleJSON::Ptr_t& subsetNode,
                                     const Wisteria::ReportBuilder::DatasetSubsetOptions& sOpts)
     {
     using FT = Wisteria::ReportBuilder::DatasetSubsetOptions::FilterType;
@@ -1831,7 +1832,8 @@ void WisteriaDoc::SaveSubsetFilters(wxSimpleJSON::Ptr_t& subsetNode,
     }
 
 //-------------------------------------------
-void WisteriaDoc::SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
+void WisteriaDoc::SaveSubsets(const wxSimpleJSON::Ptr_t& parentNode,
+                              const wxString& sourceName) const
     {
     auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
     if (view == nullptr)
@@ -1886,7 +1888,8 @@ void WisteriaDoc::SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& s
     }
 
 //-------------------------------------------
-void WisteriaDoc::SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
+void WisteriaDoc::SavePivots(const wxSimpleJSON::Ptr_t& parentNode,
+                             const wxString& sourceName) const
     {
     auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
     if (view == nullptr)
@@ -2022,7 +2025,8 @@ void WisteriaDoc::SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& so
     }
 
 //-------------------------------------------
-void WisteriaDoc::SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const
+void WisteriaDoc::SaveMerges(const wxSimpleJSON::Ptr_t& parentNode,
+                             const wxString& sourceName) const
     {
     auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
     if (view == nullptr)
@@ -2145,8 +2149,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
     // write indexed variables as arrays
     for (auto& [baseName, entries] : indexedVars)
         {
-        std::sort(entries.begin(), entries.end(),
-                  [](const auto& a, const auto& b) { return a.first < b.first; });
+        std::ranges::sort(entries, [](const auto& a, const auto& b) { return a.first < b.first; });
         if (!varsStr.empty())
             {
             varsStr += L", ";

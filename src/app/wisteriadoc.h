@@ -40,14 +40,15 @@ class WisteriaDoc final : public wxDocument
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
     bool DoSaveDocument(const wxString& filename) override;
-    void SaveProject(const wxString& filePath);
+    void SaveProject(const wxString& filePath) const;
 
     // page item save helpers
     [[nodiscard]]
     wxSimpleJSON::Ptr_t SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
                                      const Wisteria::Canvas* canvas) const;
-    void SaveItem(wxSimpleJSON::Ptr_t& itemNode, const Wisteria::GraphItems::GraphItemBase* item,
-                  const Wisteria::Canvas* canvas) const;
+    static void SaveItem(wxSimpleJSON::Ptr_t& itemNode,
+                         const Wisteria::GraphItems::GraphItemBase* item,
+                         const Wisteria::Canvas* canvas);
     [[nodiscard]]
     wxString SavePenToStr(const wxPen& pen) const;
     [[nodiscard]]
@@ -73,20 +74,20 @@ class WisteriaDoc final : public wxDocument
     wxSimpleJSON::Ptr_t SaveGraphByType(const Wisteria::Graphs::Graph2D* graph,
                                         const Wisteria::Canvas* canvas) const;
 
-    static void SaveDatasetImportOptions(wxSimpleJSON::Ptr_t& dsNode,
+    static void SaveDatasetImportOptions(const wxSimpleJSON::Ptr_t& dsNode,
                                          const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
                                          const Wisteria::Data::ImportInfo& info);
     static void
-    SaveTransformOptions(wxSimpleJSON::Ptr_t& dsNode,
+    SaveTransformOptions(const wxSimpleJSON::Ptr_t& dsNode,
                          const Wisteria::ReportBuilder::DatasetTransformOptions& txOpts);
     static void
-    SaveFormulas(wxSimpleJSON::Ptr_t& dsNode,
+    SaveFormulas(const wxSimpleJSON::Ptr_t& dsNode,
                  const std::vector<Wisteria::ReportBuilder::DatasetFormulaInfo>& formulas);
-    static void SaveSubsetFilters(wxSimpleJSON::Ptr_t& subsetNode,
+    static void SaveSubsetFilters(const wxSimpleJSON::Ptr_t& subsetNode,
                                   const Wisteria::ReportBuilder::DatasetSubsetOptions& sOpts);
-    void SaveSubsets(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
-    void SavePivots(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
-    void SaveMerges(wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
+    void SaveSubsets(const wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
+    void SavePivots(const wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
+    void SaveMerges(const wxSimpleJSON::Ptr_t& parentNode, const wxString& sourceName) const;
     [[nodiscard]]
     wxSimpleJSON::Ptr_t SaveCommonAxis(const Wisteria::GraphItems::Axis* axis,
                                        const Wisteria::Canvas* canvas) const;

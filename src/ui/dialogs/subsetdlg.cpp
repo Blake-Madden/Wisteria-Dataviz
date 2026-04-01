@@ -164,8 +164,10 @@ namespace Wisteria::UI
         auto* filterTypeBox = new wxStaticBoxSizer(wxHORIZONTAL, this, _(L"Filter Type"));
         m_singleRadio = new wxRadioButton(filterTypeBox->GetStaticBox(), wxID_ANY, _(L"Single"),
                                           wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-        m_andRadio = new wxRadioButton(filterTypeBox->GetStaticBox(), wxID_ANY, _(L"AND"));
-        m_orRadio = new wxRadioButton(filterTypeBox->GetStaticBox(), wxID_ANY, _(L"OR"));
+        m_andRadio = new wxRadioButton(filterTypeBox->GetStaticBox(), wxID_ANY,
+                                       _DT(L"AND", DTExplanation::Syntax));
+        m_orRadio = new wxRadioButton(filterTypeBox->GetStaticBox(), wxID_ANY,
+                                      _DT(L"OR", DTExplanation::Syntax));
         m_sectionRadio = new wxRadioButton(filterTypeBox->GetStaticBox(), wxID_ANY, _(L"Section"));
         m_singleRadio->SetValue(true);
         filterTypeBox->Add(m_singleRadio, wxSizerFlags{}.CenterVertical().Border());

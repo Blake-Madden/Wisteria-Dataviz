@@ -25,9 +25,7 @@ namespace Wisteria::UI
         FinalizeControls();
         TransferDataToWindow();
 
-        const auto currentSize = GetSize();
-        SetSize(currentSize.GetWidth() * 2, currentSize.GetHeight());
-        SetMinSize(wxSize{ currentSize.GetWidth() * 2, currentSize.GetHeight() });
+        SetMinSize(GetSize());
 
         Centre();
         }
@@ -199,7 +197,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertImageDlg::OnEnableCustomSize(const bool enable)
+    void InsertImageDlg::OnEnableCustomSize(const bool enable) const
         {
         if (m_widthSpin != nullptr)
             {
@@ -212,7 +210,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertImageDlg::SetImagePaths(const wxArrayString& paths)
+    void InsertImageDlg::SetImagePaths(const wxArrayString& paths) const
         {
         if (m_pathListBox != nullptr)
             {

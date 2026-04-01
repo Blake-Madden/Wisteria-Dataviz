@@ -118,7 +118,7 @@ namespace Wisteria::UI
 
         /// @brief Pre-populates the path list with the given file paths.
         /// @param paths The image file paths to load.
-        void SetImagePaths(const wxArrayString& paths);
+        void SetImagePaths(const wxArrayString& paths) const;
 
         /// @brief Sets whether custom size is enabled and the dimensions.
         /// @param enable Whether to enable custom sizing.
@@ -158,7 +158,7 @@ namespace Wisteria::UI
       private:
         void CreateControls() final;
         bool Validate() final;
-        void OnEnableCustomSize(bool enable);
+        void OnEnableCustomSize(bool enable) const;
 
         // starts at +3 to avoid collision with InsertItemDlg (+1)
         // and InsertLabelDlg (+2)

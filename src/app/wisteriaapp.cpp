@@ -128,7 +128,7 @@ void WisteriaApp::LoadInterface()
     GetMainFrame()->GetSizer()->Add(m_startPage, wxSizerFlags{ 1 }.Expand());
 
     GetMainFrame()->Bind(wxEVT_STARTPAGE_CLICKED,
-                         [this](wxCommandEvent& event)
+                         [this](const wxCommandEvent& event)
                          {
                              if (m_startPage->IsCustomButtonId(event.GetId()))
                                  {
@@ -408,11 +408,11 @@ void WisteriaApp::InitProjectSidebar()
     // fill in the icons for the projects' sidebars
     // Do NOT change the ordering of these (indices are used by LoadProject());
     // new ones always get added at the bottom.
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"data.svg"));
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"page.svg"));
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"constants.svg"));
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"pivot-wider.svg"));
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"pivot-longer.svg"));
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"subset.svg"));
-    m_projectSideBarImageList.push_back(ReadSvgIcon(L"join.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"data.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"page.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"constants.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"pivot-wider.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"pivot-longer.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"subset.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"join.svg"));
     }
