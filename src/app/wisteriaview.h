@@ -38,7 +38,7 @@ class WisteriaView final : public wxView
 
     /// @brief Shows or hides the sidebar.
     /// @param show @c true to show the sidebar, @c false to hide it.
-    void ShowSideBar(const bool show = true);
+    void ShowSideBar(bool show = true);
 
     /// @returns @c true if the sidebar is currently shown.
     [[nodiscard]]
@@ -81,7 +81,7 @@ class WisteriaView final : public wxView
     void OnDraw([[maybe_unused]] wxDC* dc) final {}
 
     bool OnClose(bool deleteWindow) final;
-    void OnSidebarClick(wxCommandEvent& event);
+    void OnSidebarClick(const wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
     void OnEditDataset(wxCommandEvent& event);
@@ -116,72 +116,72 @@ class WisteriaView final : public wxView
     void OnInsertStemAndLeaf(wxCommandEvent& event);
     void OnInsertPieChart(wxCommandEvent& event);
     void OnInsertWaffleChart(wxCommandEvent& event);
-    void EditWaffleChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol);
+    void EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol) const;
     void OnInsertTable(wxCommandEvent& event);
     void OnInsertCatBarChart(wxCommandEvent& event);
     void EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol);
+                         size_t graphRow, size_t graphCol) const;
     void OnInsertLabel(wxCommandEvent& event);
-    void EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas, size_t labelRow,
-                   size_t labelCol);
+    void EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
+                   size_t labelRow, size_t labelCol) const;
     void OnInsertImage(wxCommandEvent& event);
     void EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas, size_t imageRow,
-                   size_t imageCol);
+                   size_t imageCol) const;
     void OnInsertShape(wxCommandEvent& event);
-    void EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas, size_t shapeRow,
-                   size_t shapeCol);
-    void EditFillableShape(Wisteria::GraphItems::FillableShape& shape, Wisteria::Canvas* canvas,
-                           size_t shapeRow, size_t shapeCol);
+    void EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas,
+                   size_t shapeRow, size_t shapeCol) const;
+    void EditFillableShape(const Wisteria::GraphItems::FillableShape& shape,
+                           Wisteria::Canvas* canvas, size_t shapeRow, size_t shapeCol) const;
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
-    void EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol);
-    void EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                        size_t graphCol);
-    void EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                          size_t graphRow, size_t graphCol);
-    void EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                      size_t graphCol);
-    void EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 size_t graphRow, size_t graphCol);
-    void EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                        size_t graphCol);
-    void EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                       size_t graphCol);
-    void EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                           size_t graphRow, size_t graphCol);
+    void EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol) const;
+    void EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                        size_t graphRow, size_t graphCol) const;
+    void EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                          size_t graphRow, size_t graphCol) const;
+    void EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                      size_t graphRow, size_t graphCol) const;
+    void EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                 size_t graphRow, size_t graphCol) const;
+    void EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                        size_t graphRow, size_t graphCol) const;
+    void EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                       size_t graphRow, size_t graphCol) const;
+    void EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                           size_t graphRow, size_t graphCol) const;
     void EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                     size_t graphCol);
-    void EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol);
-    void EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                     size_t graphCol);
-    void EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                       size_t graphCol);
-    void EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                       size_t graphCol);
-    void EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol);
-    void EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol);
-    void EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                      size_t graphCol);
+                     size_t graphCol) const;
+    void EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol) const;
+    void EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                     size_t graphRow, size_t graphCol) const;
+    void EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                       size_t graphRow, size_t graphCol) const;
+    void EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                       size_t graphRow, size_t graphCol) const;
+    void EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol) const;
+    void EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol) const;
+    void EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                      size_t graphRow, size_t graphCol) const;
     void EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                        size_t graphCol);
-    void EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                             size_t graphRow, size_t graphCol);
-    void EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                           size_t graphRow, size_t graphCol);
+                        size_t graphCol) const;
+    void EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                             size_t graphRow, size_t graphCol) const;
+    void EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                           size_t graphRow, size_t graphCol) const;
     void EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                    size_t graphCol);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
                               size_t graphRow, size_t graphCol,
-                              Wisteria::UI::LegendPlacement legendPlacement);
-    void UpdateGraphButtonStates();
+                              Wisteria::UI::LegendPlacement legendPlacement) const;
+    void UpdateGraphButtonStates() const;
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name,
                              const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo,
@@ -190,10 +190,41 @@ class WisteriaView final : public wxView
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name);
     void AddPageToProject(size_t rows, size_t columns, const wxString& name);
-    void ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
-    void AdjustGridColumnsForIcons(wxGrid* grid);
+    static void ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
+    static void AdjustGridColumnsForIcons(wxGrid* grid);
     void PopulateConstantsGrid();
     void BuildGraphMenus();
+
+    /// @brief Sets an icon (from an SVG) for a dialog.
+    /// @param dlg The dialog to set the icon for.
+    /// @param svgName The SVG resource name.
+    static void SetDialogIcon(wxDialog& dlg, const wxString& svgName);
+
+    /// @brief Helper to get the side and hint for a legend's placement.
+    /// @param placement The legend's placement.
+    /// @returns The side and hint for the legend's placement.
+    [[nodiscard]]
+    static std::pair<Wisteria::Side, Wisteria::LegendCanvasPlacementHint>
+    GetLegendSideAndHint(Wisteria::UI::LegendPlacement placement);
+
+    /// @brief Clears a graph and its legend from a canvas.
+    /// @param canvas The canvas to clear from.
+    /// @param graph The graph to clear.
+    /// @param graphRow The row of the graph.
+    /// @param graphCol The column of the graph.
+    static void ClearGraphAndLegend(Wisteria::Canvas* canvas,
+                                    const Wisteria::Graphs::Graph2D& graph, size_t graphRow,
+                                    size_t graphCol);
+
+    /// @brief Carries forward a property template from an old graph to a new one.
+    /// @param oldGraph The old graph.
+    /// @param newGraph The new graph.
+    /// @param prop The property name.
+    /// @param newVal The new value for the property.
+    /// @param oldExpanded The old expanded value of the property.
+    static void CarryForwardProperty(const Wisteria::Graphs::Graph2D& oldGraph,
+                                     Wisteria::Graphs::Graph2D& newGraph, const wxString& prop,
+                                     const wxString& newVal, const wxString& oldExpanded);
 
     /// @returns The sidebar icon that displays where a dataset come from
     ///     (i.e., imported vs. a pivot operation).
@@ -201,7 +232,7 @@ class WisteriaView final : public wxView
     size_t GetDatasetIconFromName(const wxString& name) const;
 
     [[nodiscard]]
-    Wisteria::Canvas* GetActiveCanvas() noexcept;
+    Wisteria::Canvas* GetActiveCanvas() const noexcept;
 
     [[nodiscard]]
     bool IsPageSelected() const noexcept;

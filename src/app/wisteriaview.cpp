@@ -95,11 +95,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // find button bars for enabling/disabling
     m_graphButtonBar =
-        dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_GRAPH_BUTTONBAR));
+        dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_GRAPH_BUTTONBAR));
     m_pagesButtonBar =
-        dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_PAGES_BUTTONBAR));
+        dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_PAGES_BUTTONBAR));
     m_objectsButtonBar =
-        dynamic_cast<wxRibbonButtonBar*>(m_frame->FindWindowById(ID_OBJECTS_BUTTONBAR));
+        dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_OBJECTS_BUTTONBAR));
 
     // build the graph dropdown menus
     BuildGraphMenus();
@@ -537,7 +537,7 @@ void WisteriaView::LoadProject()
     }
 
 //-------------------------------------------
-void WisteriaView::OnSidebarClick(wxCommandEvent& event)
+void WisteriaView::OnSidebarClick(const wxCommandEvent& event)
     {
     // hide all work windows
     for (auto* window : m_workWindows.GetWindows())
@@ -600,7 +600,7 @@ void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGridTable* table)
+void WisteriaView::ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::DatasetGridTable* table)
     {
     const auto iconSize = wxSize{ grid->FromDIP(16), grid->FromDIP(16) };
 
@@ -611,8 +611,7 @@ void WisteriaView::ApplyColumnHeaderIcons(wxGrid* grid, Wisteria::UI::DatasetGri
         switch (table->GetColumnType(col))
             {
         case Wisteria::UI::DatasetGridColumnType::Id:
-            svgName = L"categorical.svg";
-            break;
+            [[fallthrough]];
         case Wisteria::UI::DatasetGridColumnType::Categorical:
             svgName = L"categorical.svg";
             break;
@@ -1578,6 +1577,12 @@ void WisteriaView::OnDeletePage([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    if (wxMessageBox(_(L"Are you sure you want to delete the selected page?"), _(L"Delete Page"),
+                     wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)
+        {
+        return;
+        }
+
     wxWindowUpdateLocker wl{ m_frame };
 
     m_sideBar->SelectFolder(0, false, false, false);
@@ -1633,13 +1638,14 @@ bool WisteriaView::IsPageSelected() const noexcept
     }
 
 //-------------------------------------------
-void WisteriaView::UpdateGraphButtonStates()
+void WisteriaView::UpdateGraphButtonStates() const
     {
     const bool enabled = IsPageSelected();
 
     if (m_pagesButtonBar != nullptr)
         {
         m_pagesButtonBar->EnableButton(ID_EDIT_PAGE, enabled);
+        m_pagesButtonBar->EnableButton(ID_DELETE_PAGE, enabled);
         m_pagesButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
         m_pagesButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
@@ -1777,7 +1783,87 @@ void WisteriaView::BuildGraphMenus()
     }
 
 //-------------------------------------------
-Wisteria::Canvas* WisteriaView::GetActiveCanvas() noexcept
+void WisteriaView::SetDialogIcon(wxDialog& dlg, const wxString& svgName)
+    {
+    const auto svg = wxGetApp().GetResourceManager().GetSVG(svgName);
+    if (svg.IsOk())
+        {
+        wxIcon icon;
+        icon.CopyFromBitmap(svg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
+        dlg.SetIcon(icon);
+        }
+    }
+
+//-------------------------------------------
+std::pair<Wisteria::Side, Wisteria::LegendCanvasPlacementHint>
+WisteriaView::GetLegendSideAndHint(Wisteria::UI::LegendPlacement placement)
+    {
+    const auto hint = (placement == Wisteria::UI::LegendPlacement::Right) ?
+                          Wisteria::LegendCanvasPlacementHint::RightOfGraph :
+                      (placement == Wisteria::UI::LegendPlacement::Left) ?
+                          Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
+                          Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
+    const auto side = (placement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
+                      (placement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
+                      (placement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
+                                                                            Wisteria::Side::Bottom;
+    return { side, hint };
+    }
+
+//-------------------------------------------
+void WisteriaView::ClearGraphAndLegend(Wisteria::Canvas* canvas,
+                                       const Wisteria::Graphs::Graph2D& graph, size_t graphRow,
+                                       size_t graphCol)
+    {
+    canvas->SetFixedObject(graphRow, graphCol, nullptr);
+    const auto& oldLegendInfo = graph.GetLegendInfo();
+    if (oldLegendInfo.has_value())
+        {
+        const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
+        const auto oldSide = oldLegendInfo->GetPlacement();
+        const bool hasLegendCell = (oldSide == Wisteria::Side::Top && graphRow > 0) ||
+                                   (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
+                                   (oldSide == Wisteria::Side::Left && graphCol > 0) ||
+                                   (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
+        if (hasLegendCell)
+            {
+            const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
+                                     (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
+                                                                           graphRow;
+            const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
+                                     (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
+                                                                          graphCol;
+            auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
+            if (legendItem != nullptr)
+                {
+                auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
+                if (label != nullptr && label->IsLegend())
+                    {
+                    canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                    }
+                }
+            }
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::CarryForwardProperty(const Wisteria::Graphs::Graph2D& oldGraph,
+                                        Wisteria::Graphs::Graph2D& newGraph, const wxString& prop,
+                                        const wxString& newVal, const wxString& oldExpanded)
+    {
+    if (newVal != oldExpanded || newVal.empty())
+        {
+        newGraph.SetPropertyTemplate(prop, newVal);
+        }
+    else
+        {
+        const auto oldTemplate = oldGraph.GetPropertyTemplate(prop);
+        newGraph.SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
+        }
+    }
+
+//-------------------------------------------
+Wisteria::Canvas* WisteriaView::GetActiveCanvas() const noexcept
     {
     for (auto* canvas : m_pages)
         {
@@ -1793,7 +1879,7 @@ Wisteria::Canvas* WisteriaView::GetActiveCanvas() noexcept
 void WisteriaView::PlaceGraphWithLegend(
     Wisteria::Canvas* canvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
     std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
-    const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement)
+    const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement) const
     {
     auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
 
@@ -1885,13 +1971,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto chernoffSvg = wxGetApp().GetResourceManager().GetSVG(L"chernoffplot.svg");
-    if (chernoffSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(chernoffSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"chernoffplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1951,16 +2031,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -1994,13 +2065,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertScatterPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto scatterSvg = wxGetApp().GetResourceManager().GetSVG(L"scatterplot.svg");
-    if (scatterSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(scatterSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"scatterplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2030,16 +2095,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -2067,13 +2123,7 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertTableDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto tableSvg = wxGetApp().GetResourceManager().GetSVG(L"table.svg");
-    if (tableSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(tableSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"table.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2183,13 +2233,7 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto tableSvg = wxGetApp().GetResourceManager().GetSVG(L"table.svg");
-    if (tableSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(tableSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"table.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -2244,22 +2288,8 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             }
 
         // cache property templates for round-tripping
-        const auto carryForward = [&graph, &table](const wxString& prop, const wxString& newVal,
-                                                   const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                table->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                table->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *table, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
 
         if (!varFormula.empty())
             {
@@ -2557,7 +2587,7 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const auto isLegend = [](const auto item)
+    const auto isLegend = [](const auto& item)
     {
         if (item == nullptr)
             {
@@ -2658,20 +2688,14 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertScatterPlotDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Scatter Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto scatterSvg = wxGetApp().GetResourceManager().GetSVG(L"scatterplot.svg");
-    if (scatterSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(scatterSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"scatterplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -2697,44 +2721,22 @@ void WisteriaView::EditScatterPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 
         // carry forward property templates, preserving {{placeholders}}
         // unless the user changed the value
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
         const auto* oldScatter = dynamic_cast<const Wisteria::Graphs::ScatterPlot*>(&graph);
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.x", dlg.GetXVariable(),
-                     oldScatter != nullptr ? oldScatter->GetXColumnName() : wxString{});
-        carryForward(L"variables.y", dlg.GetYVariable(),
-                     oldScatter != nullptr ? oldScatter->GetYColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
+                             oldScatter != nullptr ? oldScatter->GetXColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
+                             oldScatter != nullptr ? oldScatter->GetYColumnName() : wxString{});
         const auto oldGroupName =
             (oldScatter != nullptr && !oldScatter->GetSeriesList().empty()) ?
                 oldScatter->GetSeriesList().front().GetGroupColumnName().value_or(wxString{}) :
                 wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         // clear the old graph and its legend (if any)
         canvas->SetFixedObject(graphRow, graphCol, nullptr);
@@ -2795,13 +2797,7 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertBubblePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto bubbleSvg = wxGetApp().GetResourceManager().GetSVG(L"bubbleplot.svg");
-    if (bubbleSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(bubbleSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"bubbleplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2834,16 +2830,7 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -2862,20 +2849,14 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                  const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertBubblePlotDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Bubble Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto bubbleSvg = wxGetApp().GetResourceManager().GetSVG(L"bubbleplot.svg");
-    if (bubbleSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(bubbleSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"bubbleplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -2903,76 +2884,25 @@ void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldBubble = dynamic_cast<const Wisteria::Graphs::BubblePlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.x", dlg.GetXVariable(),
-                     oldBubble != nullptr ? oldBubble->GetXColumnName() : wxString{});
-        carryForward(L"variables.y", dlg.GetYVariable(),
-                     oldBubble != nullptr ? oldBubble->GetYColumnName() : wxString{});
-        carryForward(L"variables.size", dlg.GetSizeVariable(),
-                     oldBubble != nullptr ? oldBubble->GetSizeColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
+                             oldBubble != nullptr ? oldBubble->GetXColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
+                             oldBubble != nullptr ? oldBubble->GetYColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.size", dlg.GetSizeVariable(),
+                             oldBubble != nullptr ? oldBubble->GetSizeColumnName() : wxString{});
         const auto oldGroupName =
             (oldBubble != nullptr && !oldBubble->GetSeriesList().empty()) ?
                 oldBubble->GetSeriesList().front().GetGroupColumnName().value_or(wxString{}) :
                 wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -2991,21 +2921,16 @@ void WisteriaView::EditBubblePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
     }
 
 //-------------------------------------------
-void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                    const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
+                                    Wisteria::Canvas* canvas, const size_t graphRow,
+                                    const size_t graphCol) const
     {
     Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame,
                                         _(L"Edit Chernoff Faces Plot"), wxID_ANY, wxDefaultPosition,
                                         wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto chernoffSvg = wxGetApp().GetResourceManager().GetSVG(L"chernoffplot.svg");
-    if (chernoffSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(chernoffSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"chernoffplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3048,22 +2973,8 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
         // carry forward property templates, preserving {{placeholders}}
         // unless the user changed the value
         const auto* oldChernoff = dynamic_cast<const Wisteria::Graphs::ChernoffFacesPlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
 
         const std::pair<FID, wxString> featureProps[] = { { FID::FaceWidth, L"face-width" },
                                                           { FID::FaceHeight, L"face-height" },
@@ -3082,20 +2993,11 @@ void WisteriaView::EditChernoffPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::
             const auto var = dlg.GetFeatureVariable(fid);
             const auto oldExpanded =
                 (oldChernoff != nullptr) ? oldChernoff->GetFeatureColumnName(fid) : wxString{};
-            carryForward(L"variables." + propName, var, oldExpanded);
+            CarryForwardProperty(graph, *plot, L"variables." + propName, var, oldExpanded);
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         // clear the old graph and its legend (if any)
         canvas->SetFixedObject(graphRow, graphCol, nullptr);
@@ -3171,13 +3073,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto lineSvg = wxGetApp().GetResourceManager().GetSVG(L"lineplot.svg");
-    if (lineSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(lineSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"lineplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3205,16 +3101,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3233,20 +3120,14 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Line Plot"),
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto lineSvg = wxGetApp().GetResourceManager().GetSVG(L"lineplot.svg");
-    if (lineSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(lineSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"lineplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3270,72 +3151,22 @@ void WisteriaView::EditLinePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
         dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.x", dlg.GetXVariable(),
-                     oldLine != nullptr ? oldLine->GetXColumnName() : wxString{});
-        carryForward(L"variables.y", dlg.GetYVariable(),
-                     oldLine != nullptr ? oldLine->GetYColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
+                             oldLine != nullptr ? oldLine->GetXColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
+                             oldLine != nullptr ? oldLine->GetYColumnName() : wxString{});
         const auto oldGroupName =
             (oldLine != nullptr) ? oldLine->GetGroupColumnName().value_or(wxString{}) : wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3363,13 +3194,7 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
         }
 
     Wisteria::UI::InsertMultiSeriesLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto lineSvg = wxGetApp().GetResourceManager().GetSVG(L"lineplot.svg");
-    if (lineSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(lineSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"lineplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3394,16 +3219,7 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
         plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3422,22 +3238,16 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
     }
 
 //-------------------------------------------
-void WisteriaView::EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph,
+void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& graph,
                                            Wisteria::Canvas* canvas, const size_t graphRow,
-                                           const size_t graphCol)
+                                           const size_t graphCol) const
     {
     Wisteria::UI::InsertMultiSeriesLinePlotDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Multi-Series Line Plot"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto lineSvg = wxGetApp().GetResourceManager().GetSVG(L"lineplot.svg");
-    if (lineSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(lineSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"lineplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3458,75 +3268,24 @@ void WisteriaView::EditMultiSeriesLinePlot(Wisteria::Graphs::Graph2D& graph,
         dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.x", dlg.GetXVariable(),
-                     oldLine != nullptr ? oldLine->GetXColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
+                             oldLine != nullptr ? oldLine->GetXColumnName() : wxString{});
 
         // cache indexed Y variable templates
         const auto& yVars = dlg.GetYVariables();
         for (size_t i = 0; i < yVars.size(); ++i)
             {
             const auto key = wxString::Format(L"variables.y[%zu]", i);
-            carryForward(key, yVars[i], graph.GetPropertyTemplate(key));
+            CarryForwardProperty(graph, *plot, key, yVars[i], graph.GetPropertyTemplate(key));
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3554,13 +3313,7 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWCurveDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto wcurveSvg = wxGetApp().GetResourceManager().GetSVG(L"wcurve.svg");
-    if (wcurveSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(wcurveSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"wcurve.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3589,16 +3342,7 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3617,20 +3361,14 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                  const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertWCurveDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit W-Curve Plot"),
                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto wcurveSvg = wxGetApp().GetResourceManager().GetSVG(L"wcurve.svg");
-    if (wcurveSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(wcurveSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"wcurve.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3655,73 +3393,23 @@ void WisteriaView::EditWCurvePlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         plot->SetTimeIntervalLabel(dlg.GetTimeIntervalLabel());
 
         const auto* oldWCurve = dynamic_cast<const Wisteria::Graphs::WCurvePlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.x", dlg.GetXVariable(),
-                     oldWCurve != nullptr ? oldWCurve->GetXColumnName() : wxString{});
-        carryForward(L"variables.y", dlg.GetYVariable(),
-                     oldWCurve != nullptr ? oldWCurve->GetYColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
+                             oldWCurve != nullptr ? oldWCurve->GetXColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
+                             oldWCurve != nullptr ? oldWCurve->GetYColumnName() : wxString{});
         const auto oldGroupName = (oldWCurve != nullptr) ?
                                       oldWCurve->GetGroupColumnName().value_or(wxString{}) :
                                       wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3749,13 +3437,7 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLRRoadmapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto roadmapSvg = wxGetApp().GetResourceManager().GetSVG(L"roadmap.svg");
-    if (roadmapSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(roadmapSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"roadmap.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3791,16 +3473,7 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3819,21 +3492,15 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                 const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertLRRoadmapDlg dlg(canvas, &m_reportBuilder, m_frame,
                                          _(L"Edit Linear Regression Roadmap"), wxID_ANY,
                                          wxDefaultPosition, wxDefaultSize,
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto roadmapSvg = wxGetApp().GetResourceManager().GetSVG(L"roadmap.svg");
-    if (roadmapSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(roadmapSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"roadmap.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3864,71 +3531,23 @@ void WisteriaView::EditLRRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
             }
 
         const auto* oldRoadmap = dynamic_cast<const Wisteria::Graphs::LRRoadmap*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.predictor", dlg.GetPredictorVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetPredictorColumnName() : wxString{});
-        carryForward(L"variables.coefficient", dlg.GetCoefficientVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetCoefficientColumnName() : wxString{});
-        carryForward(L"variables.pvalue", dlg.GetPValueVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetPValueColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.predictor", dlg.GetPredictorVariable(),
+                             oldRoadmap != nullptr ? oldRoadmap->GetPredictorColumnName() :
+                                                     wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.coefficient", dlg.GetCoefficientVariable(),
+                             oldRoadmap != nullptr ? oldRoadmap->GetCoefficientColumnName() :
+                                                     wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.pvalue", dlg.GetPValueVariable(),
+                             oldRoadmap != nullptr ? oldRoadmap->GetPValueColumnName() :
+                                                     wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -3956,13 +3575,7 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertProConRoadmapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto roadmapSvg = wxGetApp().GetResourceManager().GetSVG(L"roadmap.svg");
-    if (roadmapSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(roadmapSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"roadmap.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4007,16 +3620,7 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -4035,21 +3639,16 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                     const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
+                                     Wisteria::Canvas* canvas, const size_t graphRow,
+                                     const size_t graphCol) const
     {
     Wisteria::UI::InsertProConRoadmapDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Pro && Con Roadmap"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto roadmapSvg = wxGetApp().GetResourceManager().GetSVG(L"roadmap.svg");
-    if (roadmapSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(roadmapSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"roadmap.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4085,73 +3684,26 @@ void WisteriaView::EditProConRoadmap(Wisteria::Graphs::Graph2D& graph, Wisteria:
             }
 
         const auto* oldRoadmap = dynamic_cast<const Wisteria::Graphs::ProConRoadmap*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.positive", dlg.GetPositiveVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetPositiveColumnName() : wxString{});
-        carryForward(L"variables.positive-value", dlg.GetPositiveValueVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetPositiveValueColumnName() : wxString{});
-        carryForward(L"variables.negative", dlg.GetNegativeVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetNegativeColumnName() : wxString{});
-        carryForward(L"variables.negative-value", dlg.GetNegativeValueVariable(),
-                     oldRoadmap != nullptr ? oldRoadmap->GetNegativeValueColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.positive", dlg.GetPositiveVariable(),
+                             oldRoadmap != nullptr ? oldRoadmap->GetPositiveColumnName() :
+                                                     wxString{});
+        CarryForwardProperty(
+            graph, *plot, L"variables.positive-value", dlg.GetPositiveValueVariable(),
+            oldRoadmap != nullptr ? oldRoadmap->GetPositiveValueColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.negative", dlg.GetNegativeVariable(),
+                             oldRoadmap != nullptr ? oldRoadmap->GetNegativeColumnName() :
+                                                     wxString{});
+        CarryForwardProperty(
+            graph, *plot, L"variables.negative-value", dlg.GetNegativeValueVariable(),
+            oldRoadmap != nullptr ? oldRoadmap->GetNegativeValueColumnName() : wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -4179,13 +3731,7 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertGanttChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto ganttSvg = wxGetApp().GetResourceManager().GetSVG(L"gantt.svg");
-    if (ganttSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(ganttSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"gantt.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4238,16 +3784,7 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -4267,19 +3804,13 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol)
+                                  const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertGanttChartDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Gantt Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto ganttSvg = wxGetApp().GetResourceManager().GetSVG(L"gantt.svg");
-    if (ganttSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(ganttSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"gantt.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4314,79 +3845,27 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                       resourceCol, descCol, compCol, groupCol);
         dlg.ApplyAxisOverrides(*plot);
 
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.task", dlg.GetTaskVariable(),
-                     graph.GetPropertyTemplate(L"variables.task"));
-        carryForward(L"variables.start-date", dlg.GetStartDateVariable(),
-                     graph.GetPropertyTemplate(L"variables.start-date"));
-        carryForward(L"variables.end-date", dlg.GetEndDateVariable(),
-                     graph.GetPropertyTemplate(L"variables.end-date"));
-        carryForward(L"variables.resource", dlg.GetResourceVariable(),
-                     graph.GetPropertyTemplate(L"variables.resource"));
-        carryForward(L"variables.description", dlg.GetDescriptionVariable(),
-                     graph.GetPropertyTemplate(L"variables.description"));
-        carryForward(L"variables.completion", dlg.GetCompletionVariable(),
-                     graph.GetPropertyTemplate(L"variables.completion"));
-        carryForward(L"variables.group", dlg.GetGroupVariable(),
-                     graph.GetPropertyTemplate(L"variables.group"));
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.task", dlg.GetTaskVariable(),
+                             graph.GetPropertyTemplate(L"variables.task"));
+        CarryForwardProperty(graph, *plot, L"variables.start-date", dlg.GetStartDateVariable(),
+                             graph.GetPropertyTemplate(L"variables.start-date"));
+        CarryForwardProperty(graph, *plot, L"variables.end-date", dlg.GetEndDateVariable(),
+                             graph.GetPropertyTemplate(L"variables.end-date"));
+        CarryForwardProperty(graph, *plot, L"variables.resource", dlg.GetResourceVariable(),
+                             graph.GetPropertyTemplate(L"variables.resource"));
+        CarryForwardProperty(graph, *plot, L"variables.description", dlg.GetDescriptionVariable(),
+                             graph.GetPropertyTemplate(L"variables.description"));
+        CarryForwardProperty(graph, *plot, L"variables.completion", dlg.GetCompletionVariable(),
+                             graph.GetPropertyTemplate(L"variables.completion"));
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             graph.GetPropertyTemplate(L"variables.group"));
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -4414,13 +3893,7 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
         }
 
     Wisteria::UI::InsertCandlestickPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto candleSvg = wxGetApp().GetResourceManager().GetSVG(L"candlestick.svg");
-    if (candleSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(candleSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"candlestick.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4454,20 +3927,15 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
     }
 
 //-------------------------------------------
-void WisteriaView::EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                       const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
+                                       Wisteria::Canvas* canvas, const size_t graphRow,
+                                       const size_t graphCol) const
     {
     Wisteria::UI::InsertCandlestickPlotDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Candlestick Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto candleSvg = wxGetApp().GetResourceManager().GetSVG(L"candlestick.svg");
-    if (candleSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(candleSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"candlestick.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4487,32 +3955,18 @@ void WisteriaView::EditCandlestickPlot(Wisteria::Graphs::Graph2D& graph, Wisteri
                       dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
         dlg.ApplyAxisOverrides(*plot);
 
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.date", dlg.GetDateVariable(),
-                     graph.GetPropertyTemplate(L"variables.date"));
-        carryForward(L"variables.open", dlg.GetOpenVariable(),
-                     graph.GetPropertyTemplate(L"variables.open"));
-        carryForward(L"variables.high", dlg.GetHighVariable(),
-                     graph.GetPropertyTemplate(L"variables.high"));
-        carryForward(L"variables.low", dlg.GetLowVariable(),
-                     graph.GetPropertyTemplate(L"variables.low"));
-        carryForward(L"variables.close", dlg.GetCloseVariable(),
-                     graph.GetPropertyTemplate(L"variables.close"));
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.date", dlg.GetDateVariable(),
+                             graph.GetPropertyTemplate(L"variables.date"));
+        CarryForwardProperty(graph, *plot, L"variables.open", dlg.GetOpenVariable(),
+                             graph.GetPropertyTemplate(L"variables.open"));
+        CarryForwardProperty(graph, *plot, L"variables.high", dlg.GetHighVariable(),
+                             graph.GetPropertyTemplate(L"variables.high"));
+        CarryForwardProperty(graph, *plot, L"variables.low", dlg.GetLowVariable(),
+                             graph.GetPropertyTemplate(L"variables.low"));
+        CarryForwardProperty(graph, *plot, L"variables.close", dlg.GetCloseVariable(),
+                             graph.GetPropertyTemplate(L"variables.close"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
@@ -4534,13 +3988,7 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertSankeyDiagramDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto sankeySvg = wxGetApp().GetResourceManager().GetSVG(L"sankey.svg");
-    if (sankeySvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(sankeySvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"sankey.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4597,20 +4045,15 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                     const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
+                                     Wisteria::Canvas* canvas, const size_t graphRow,
+                                     const size_t graphCol) const
     {
     Wisteria::UI::InsertSankeyDiagramDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Sankey Diagram"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto sankeySvg = wxGetApp().GetResourceManager().GetSVG(L"sankey.svg");
-    if (sankeySvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(sankeySvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"sankey.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4644,32 +4087,18 @@ void WisteriaView::EditSankeyDiagram(Wisteria::Graphs::Graph2D& graph, Wisteria:
                       fromWeightCol, toWeightCol, fromGroupCol);
         dlg.ApplyAxisOverrides(*plot);
 
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
-
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.from", dlg.GetFromVariable(),
-                     graph.GetPropertyTemplate(L"variables.from"));
-        carryForward(L"variables.to", dlg.GetToVariable(),
-                     graph.GetPropertyTemplate(L"variables.to"));
-        carryForward(L"variables.from-weight", dlg.GetFromWeightVariable(),
-                     graph.GetPropertyTemplate(L"variables.from-weight"));
-        carryForward(L"variables.to-weight", dlg.GetToWeightVariable(),
-                     graph.GetPropertyTemplate(L"variables.to-weight"));
-        carryForward(L"variables.from-group", dlg.GetFromGroupVariable(),
-                     graph.GetPropertyTemplate(L"variables.from-group"));
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.from", dlg.GetFromVariable(),
+                             graph.GetPropertyTemplate(L"variables.from"));
+        CarryForwardProperty(graph, *plot, L"variables.to", dlg.GetToVariable(),
+                             graph.GetPropertyTemplate(L"variables.to"));
+        CarryForwardProperty(graph, *plot, L"variables.from-weight", dlg.GetFromWeightVariable(),
+                             graph.GetPropertyTemplate(L"variables.from-weight"));
+        CarryForwardProperty(graph, *plot, L"variables.to-weight", dlg.GetToWeightVariable(),
+                             graph.GetPropertyTemplate(L"variables.to-weight"));
+        CarryForwardProperty(graph, *plot, L"variables.from-group", dlg.GetFromGroupVariable(),
+                             graph.GetPropertyTemplate(L"variables.from-group"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
@@ -4697,13 +4126,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertBoxPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto bpSvg = wxGetApp().GetResourceManager().GetSVG(L"boxplot.svg");
-    if (bpSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(bpSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"boxplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4825,16 +4248,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -4854,7 +4268,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                               const size_t graphRow, const size_t graphCol)
+                               const size_t graphRow, const size_t graphCol) const
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
     if (doc == nullptr)
@@ -4867,13 +4281,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto bpSvg = wxGetApp().GetResourceManager().GetSVG(L"boxplot.svg");
-    if (bpSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(bpSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"boxplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4943,28 +4351,17 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldBoxPlot = dynamic_cast<const Wisteria::Graphs::BoxPlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.aggregate", dlg.GetContinuousVariable(),
-                     oldBoxPlot != nullptr ? oldBoxPlot->GetContinuousColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetContinuousVariable(),
+                             oldBoxPlot != nullptr ? oldBoxPlot->GetContinuousColumnName() :
+                                                     wxString{});
         const auto oldGroupName = (oldBoxPlot != nullptr) ?
                                       oldBoxPlot->GetGroupColumnName().value_or(wxString{}) :
                                       wxString{};
-        carryForward(L"variables.group-1", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group-1", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         // cache stipple shape and image settings for round-tripping
         const auto shapeStr =
@@ -5015,47 +4412,9 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -5089,13 +4448,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertCatBarChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto bcSvg = wxGetApp().GetResourceManager().GetSVG(L"barchart.svg");
-    if (bcSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(bcSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"barchart.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5248,16 +4601,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -5277,7 +4621,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol)
+                                   const size_t graphRow, const size_t graphCol) const
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
     if (doc == nullptr)
@@ -5290,13 +4634,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         canvas, &m_reportBuilder, m_frame, _(L"Edit Bar Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto bcSvg = wxGetApp().GetResourceManager().GetSVG(L"barchart.svg");
-    if (bcSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(bcSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"barchart.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -5397,32 +4735,22 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldBarChart =
             dynamic_cast<const Wisteria::Graphs::CategoricalBarChart*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.category", dlg.GetCategoricalVariable(),
-                     oldBarChart != nullptr ? oldBarChart->GetCategoricalColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.category", dlg.GetCategoricalVariable(),
+                             oldBarChart != nullptr ? oldBarChart->GetCategoricalColumnName() :
+                                                      wxString{});
         const auto oldWeightName = (oldBarChart != nullptr) ?
                                        oldBarChart->GetWeightColumnName().value_or(wxString{}) :
                                        wxString{};
-        carryForward(L"variables.aggregate", dlg.GetWeightVariable(), oldWeightName);
+        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetWeightVariable(),
+                             oldWeightName);
         const auto oldGroupName = (oldBarChart != nullptr) ?
                                       oldBarChart->GetGroupColumnName().value_or(wxString{}) :
                                       wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         // cache stipple shape and image settings for round-tripping
         const auto shapeStr =
@@ -5473,47 +4801,9 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -5541,13 +4831,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto lkSvg = wxGetApp().GetResourceManager().GetSVG(L"likert7.svg");
-    if (lkSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(lkSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"likert7.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5627,16 +4911,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -5655,20 +4930,14 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Likert Chart"),
                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto lkSvg = wxGetApp().GetResourceManager().GetSVG(L"likert7.svg");
-    if (lkSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(lkSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"likert7.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -5751,39 +5020,9 @@ void WisteriaView::EditLikertChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const auto legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                       (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                             graphRow;
-                const auto legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                       (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                            graphCol;
-                canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -5811,13 +5050,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto hmSvg = wxGetApp().GetResourceManager().GetSVG(L"heatmap.svg");
-    if (hmSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(hmSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"heatmap.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5848,16 +5081,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -5876,20 +5100,14 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                               const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                               const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Heat Map"),
                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto hmSvg = wxGetApp().GetResourceManager().GetSVG(L"heatmap.svg");
-    if (hmSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(hmSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"heatmap.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -5916,71 +5134,22 @@ void WisteriaView::EditHeatMap(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldHeatMap = dynamic_cast<const Wisteria::Graphs::HeatMap*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.continuous", dlg.GetContinuousVariable(),
-                     oldHeatMap != nullptr ? oldHeatMap->GetContinuousColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.continuous", dlg.GetContinuousVariable(),
+                             oldHeatMap != nullptr ? oldHeatMap->GetContinuousColumnName() :
+                                                     wxString{});
         const auto oldGroupName = (oldHeatMap != nullptr) ?
                                       oldHeatMap->GetGroupColumnName().value_or(wxString{}) :
                                       wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6008,13 +5177,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertHistogramDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto histSvg = wxGetApp().GetResourceManager().GetSVG(L"histogram.svg");
-    if (histSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(histSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"histogram.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -6047,16 +5210,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6075,20 +5229,14 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                 const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertHistogramDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Histogram"),
                                          wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto histSvg = wxGetApp().GetResourceManager().GetSVG(L"histogram.svg");
-    if (histSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(histSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"histogram.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -6118,72 +5266,22 @@ void WisteriaView::EditHistogram(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldHistogram = dynamic_cast<const Wisteria::Graphs::Histogram*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.continuous", dlg.GetContinuousVariable(),
-                     oldHistogram != nullptr ? oldHistogram->GetContinuousColumnName() :
-                                               wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.continuous", dlg.GetContinuousVariable(),
+                             oldHistogram != nullptr ? oldHistogram->GetContinuousColumnName() :
+                                                       wxString{});
         const auto oldGroupName = (oldHistogram != nullptr) ?
                                       oldHistogram->GetGroupColumnName().value_or(wxString{}) :
                                       wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6211,13 +5309,7 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWordCloudDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto wcSvg = wxGetApp().GetResourceManager().GetSVG(L"wordcloud.svg");
-    if (wcSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(wcSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"wordcloud.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -6255,20 +5347,14 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                 const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertWordCloudDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Word Cloud"),
                                          wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto wcSvg = wxGetApp().GetResourceManager().GetSVG(L"wordcloud.svg");
-    if (wcSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(wcSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"wordcloud.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -6292,26 +5378,13 @@ void WisteriaView::EditWordCloud(Wisteria::Graphs::Graph2D& graph, Wisteria::Can
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldWC = dynamic_cast<const Wisteria::Graphs::WordCloud*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.word", dlg.GetWordVariable(),
-                     oldWC != nullptr ? oldWC->GetWordColumnName() : wxString{});
-        carryForward(L"variables.weight", dlg.GetWeightVariable(),
-                     oldWC != nullptr ? oldWC->GetWeightColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.word", dlg.GetWordVariable(),
+                             oldWC != nullptr ? oldWC->GetWordColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.weight", dlg.GetWeightVariable(),
+                             oldWC != nullptr ? oldWC->GetWeightColumnName() : wxString{});
 
         // word clouds do not support legends; clear old graph directly
         canvas->SetFixedObject(graphRow, graphCol, nullptr);
@@ -6335,13 +5408,7 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWLSparklineDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto wlSvg = wxGetApp().GetResourceManager().GetSVG(L"sparkline.svg");
-    if (wlSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(wlSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"sparkline.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -6373,16 +5440,7 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6401,21 +5459,15 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertWLSparklineDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Win/Loss Sparkline"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto wlSvg = wxGetApp().GetResourceManager().GetSVG(L"sparkline.svg");
-    if (wlSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(wlSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"sparkline.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -6441,75 +5493,24 @@ void WisteriaView::EditWLSparkline(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldWL = dynamic_cast<const Wisteria::Graphs::WinLossSparkline*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.season", dlg.GetSeasonVariable(),
-                     oldWL != nullptr ? oldWL->GetSeasonColumnName() : wxString{});
-        carryForward(L"variables.won", dlg.GetWonVariable(),
-                     oldWL != nullptr ? oldWL->GetWonColumnName() : wxString{});
-        carryForward(L"variables.shutout", dlg.GetShutoutVariable(),
-                     oldWL != nullptr ? oldWL->GetShutoutColumnName() : wxString{});
-        carryForward(L"variables.home-game", dlg.GetHomeGameVariable(),
-                     oldWL != nullptr ? oldWL->GetHomeGameColumnName() : wxString{});
-        carryForward(L"variables.postseason", dlg.GetPostseasonVariable(),
-                     oldWL != nullptr ? oldWL->GetPostseasonColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.season", dlg.GetSeasonVariable(),
+                             oldWL != nullptr ? oldWL->GetSeasonColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.won", dlg.GetWonVariable(),
+                             oldWL != nullptr ? oldWL->GetWonColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.shutout", dlg.GetShutoutVariable(),
+                             oldWL != nullptr ? oldWL->GetShutoutColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.home-game", dlg.GetHomeGameVariable(),
+                             oldWL != nullptr ? oldWL->GetHomeGameColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.postseason", dlg.GetPostseasonVariable(),
+                             oldWL != nullptr ? oldWL->GetPostseasonColumnName() : wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6537,13 +5538,7 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertStemAndLeafDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto slSvg = wxGetApp().GetResourceManager().GetSVG(L"stem-leaf.svg");
-    if (slSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(slSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"stem-leaf.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -6569,16 +5564,7 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6597,21 +5583,15 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertStemAndLeafDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Stem-and-Leaf Plot"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto slSvg = wxGetApp().GetResourceManager().GetSVG(L"stem-leaf.svg");
-    if (slSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(slSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"stem-leaf.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -6634,70 +5614,20 @@ void WisteriaView::EditStemAndLeaf(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldSL = dynamic_cast<const Wisteria::Graphs::StemAndLeafPlot*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.continuous", dlg.GetContinuousVariable(),
-                     oldSL != nullptr ? oldSL->GetContinuousColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.continuous", dlg.GetContinuousVariable(),
+                             oldSL != nullptr ? oldSL->GetContinuousColumnName() : wxString{});
         const auto oldGroupName =
             (oldSL != nullptr) ? oldSL->GetGroupColumnName().value_or(wxString{}) : wxString{};
-        carryForward(L"variables.group", dlg.GetGroupVariable(), oldGroupName);
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6725,13 +5655,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto pieSvg = wxGetApp().GetResourceManager().GetSVG(L"piechart.svg");
-    if (pieSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(pieSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"piechart.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -6783,16 +5707,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6811,20 +5726,14 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Pie Chart"),
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto pieSvg = wxGetApp().GetResourceManager().GetSVG(L"piechart.svg");
-    if (pieSvg.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(pieSvg.GetBitmap(dlg.FromDIP(wxSize{ 32, 32 })));
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"piechart.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -6868,71 +5777,20 @@ void WisteriaView::EditPieChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canv
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldPie = dynamic_cast<const Wisteria::Graphs::PieChart*>(&graph);
-        const auto carryForward = [&graph, &plot](const wxString& prop, const wxString& newVal,
-                                                  const wxString& oldExpanded)
-        {
-            if (newVal != oldExpanded || newVal.empty())
-                {
-                plot->SetPropertyTemplate(prop, newVal);
-                }
-            else
-                {
-                const auto oldTemplate = graph.GetPropertyTemplate(prop);
-                plot->SetPropertyTemplate(prop, oldTemplate.empty() ? newVal : oldTemplate);
-                }
-        };
 
-        carryForward(L"dataset", dlg.GetSelectedDatasetName(),
-                     graph.GetPropertyTemplate(L"dataset"));
-        carryForward(L"variables.group-1", dlg.GetGroupVariable(),
-                     oldPie != nullptr ? oldPie->GetGroupColumn1Name() : wxString{});
-        carryForward(L"variables.aggregate", dlg.GetWeightVariable(),
-                     oldPie != nullptr ? oldPie->GetWeightColumnName() : wxString{});
-        carryForward(L"variables.group-2", dlg.GetGroup2Variable(),
-                     oldPie != nullptr ? oldPie->GetGroupColumn2Name() : wxString{});
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.group-1", dlg.GetGroupVariable(),
+                             oldPie != nullptr ? oldPie->GetGroupColumn1Name() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetWeightVariable(),
+                             oldPie != nullptr ? oldPie->GetWeightColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.group-2", dlg.GetGroup2Variable(),
+                             oldPie != nullptr ? oldPie->GetGroupColumn2Name() : wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -6960,13 +5818,7 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWaffleChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    const auto waffleBmp = wxGetApp().ReadSvgIcon(L"waffle.svg");
-    if (waffleBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(waffleBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"waffle.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -6980,16 +5832,7 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -7008,20 +5851,14 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditWaffleChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol)
+void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
     {
     Wisteria::UI::InsertWaffleChartDlg dlg(
         canvas, &m_reportBuilder, m_frame, _(L"Edit Waffle Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto waffleBmp = wxGetApp().ReadSvgIcon(L"waffle.svg");
-    if (waffleBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(waffleBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"waffle.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -7039,48 +5876,10 @@ void WisteriaView::EditWaffleChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         dlg.ApplyAxisOverrides(*plot);
 
         // clear old legend if present
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto hint = (legendPlacement == Wisteria::UI::LegendPlacement::Right) ?
-                              Wisteria::LegendCanvasPlacementHint::RightOfGraph :
-                          (legendPlacement == Wisteria::UI::LegendPlacement::Left) ?
-                              Wisteria::LegendCanvasPlacementHint::LeftOfGraph :
-                              Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph;
-        const auto side =
-            (legendPlacement == Wisteria::UI::LegendPlacement::Right) ? Wisteria::Side::Right :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Left)  ? Wisteria::Side::Left :
-            (legendPlacement == Wisteria::UI::LegendPlacement::Top)   ? Wisteria::Side::Top :
-                                                                        Wisteria::Side::Bottom;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         PlaceGraphWithLegend(canvas, plot,
                              (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
@@ -7108,13 +5907,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame);
-    const auto labelBmp = wxGetApp().ReadSvgIcon(L"label.svg");
-    if (labelBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(labelBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"label.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -7143,20 +5936,14 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditLabel(Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
-                             const size_t labelRow, const size_t labelCol)
+void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
+                             const size_t labelRow, const size_t labelCol) const
     {
     Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame, _(L"Edit Label"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto labelBmp = wxGetApp().ReadSvgIcon(L"label.svg");
-    if (labelBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(labelBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"label.svg");
     dlg.SetSelectedCell(labelRow, labelCol);
     dlg.LoadFromLabel(label);
 
@@ -7201,13 +5988,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertImageDlg dlg(canvas, nullptr, m_frame);
-    const auto imgBmp = wxGetApp().ReadSvgIcon(L"image.svg");
-    if (imgBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(imgBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"image.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -7237,7 +6018,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
         if (loadedBmp.IsOk())
             {
-            bmps.push_back(loadedBmp);
+            bmps.emplace_back(loadedBmp);
             }
         }
     if (bmps.empty())
@@ -7324,7 +6105,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas,
-                             const size_t imageRow, const size_t imageCol)
+                             const size_t imageRow, const size_t imageCol) const
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
     if (doc == nullptr)
@@ -7337,13 +6118,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto imgBmp = wxGetApp().ReadSvgIcon(L"image.svg");
-    if (imgBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(imgBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"image.svg");
     dlg.SetSelectedCell(imageRow, imageCol);
     dlg.LoadFromImage(image);
 
@@ -7374,7 +6149,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
         auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
         if (loadedBmp.IsOk())
             {
-            bmps.push_back(loadedBmp);
+            bmps.emplace_back(loadedBmp);
             }
         }
     if (bmps.empty())
@@ -7469,13 +6244,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame);
-    const auto shapeBmp = wxGetApp().ReadSvgIcon(L"shape.svg");
-    if (shapeBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(shapeBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"shape.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -7542,20 +6311,14 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas,
-                             const size_t shapeRow, const size_t shapeCol)
+void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas,
+                             const size_t shapeRow, const size_t shapeCol) const
     {
     Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame, _(L"Edit Shape"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto shapeBmp = wxGetApp().ReadSvgIcon(L"shape.svg");
-    if (shapeBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(shapeBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"shape.svg");
     dlg.SetSelectedCell(shapeRow, shapeCol);
     dlg.LoadFromShape(shape);
 
@@ -7620,21 +6383,15 @@ void WisteriaView::EditShape(Wisteria::GraphItems::Shape& shape, Wisteria::Canva
     }
 
 //-------------------------------------------
-void WisteriaView::EditFillableShape(Wisteria::GraphItems::FillableShape& shape,
+void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& shape,
                                      Wisteria::Canvas* canvas, const size_t shapeRow,
-                                     const size_t shapeCol)
+                                     const size_t shapeCol) const
     {
     Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame, _(L"Edit Fillable Shape"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    const auto shapeBmp = wxGetApp().ReadSvgIcon(L"shape.svg");
-    if (shapeBmp.IsOk())
-        {
-        wxIcon icon;
-        icon.CopyFromBitmap(shapeBmp);
-        dlg.SetIcon(icon);
-        }
+    SetDialogIcon(dlg, L"shape.svg");
     dlg.SetSelectedCell(shapeRow, shapeCol);
     dlg.LoadFromFillableShape(shape);
 
