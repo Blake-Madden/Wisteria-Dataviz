@@ -176,7 +176,8 @@ namespace Wisteria::UI
         auto* graphPage = new wxPanel(GetSideBarBook());
         auto* graphSizer = new wxBoxSizer(wxVERTICAL);
         graphPage->SetSizer(graphSizer);
-        GetSideBarBook()->AddPage(graphPage, _(L"Graph Options"), ID_GRAPH_OPTIONS_SECTION, false);
+        GetSideBarBook()->AddPage(graphPage, _(L"General Graph Options"), ID_GRAPH_OPTIONS_SECTION,
+                                  false);
 
         // title, subtitle, caption — each opens a full Label editor
         auto* textSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
@@ -276,15 +277,6 @@ namespace Wisteria::UI
 
         graphSizer->Add(bgBox, wxSizerFlags{}.Border());
 
-        // axis mirroring
-        graphSizer->Add(new wxCheckBox(graphPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,
-                                       wxDefaultSize, 0, wxGenericValidator(&m_mirrorXAxis)),
-                        wxSizerFlags{}.Border());
-
-        graphSizer->Add(new wxCheckBox(graphPage, wxID_ANY, _(L"Mirror Y axis"), wxDefaultPosition,
-                                       wxDefaultSize, 0, wxGenericValidator(&m_mirrorYAxis)),
-                        wxSizerFlags{}.Border());
-
         // color scheme / custom colors
         auto* colorBox = new wxStaticBoxSizer(wxVERTICAL, graphPage, _(L"Colors"));
 
@@ -337,6 +329,23 @@ namespace Wisteria::UI
                                  { OnColorModeChanged(); });
         m_customColorsRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                   { OnColorModeChanged(); });
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::CreateAxisOptionsPage()
+        {
+        auto* axisPage = new wxPanel(GetSideBarBook());
+        auto* axisSizer = new wxBoxSizer(wxVERTICAL);
+        axisPage->SetSizer(axisSizer);
+        GetSideBarBook()->AddPage(axisPage, _(L"Axis Options"), ID_AXIS_OPTIONS_SECTION, true);
+
+        axisSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,
+                                      wxDefaultSize, 0, wxGenericValidator(&m_mirrorXAxis)),
+                       wxSizerFlags{}.Border());
+
+        axisSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror Y axis"), wxDefaultPosition,
+                                      wxDefaultSize, 0, wxGenericValidator(&m_mirrorYAxis)),
+                       wxSizerFlags{}.Border());
         }
 
     //-------------------------------------------

@@ -205,12 +205,19 @@ namespace Wisteria::UI
 
         /** @brief Creates and adds the "Graph Options" sidebar page.
             @details This page contains controls common to all Graph2D types:
-                title, subtitle, caption, background color, background image,
-                and axis mirroring options.
+                title, subtitle, caption, background color, and background image.
             @note Call this from derived CreateControls() after the base
                 InsertGraphDlg::CreateControls() and before adding
                 chart-specific pages.*/
         void CreateGraphOptionsPage();
+
+        /** @brief Creates and adds the "Axis Options" sidebar page.
+            @details This page contains axis-related options such as
+                mirroring the X and Y axes.
+            @note Call this from derived CreateControls() for graph types
+                that display axes. Omit for graphs that hide all axes
+                (e.g., heat maps, waffle charts, word clouds).*/
+        void CreateAxisOptionsPage();
 
         /// @brief Creates a color scheme from a dropdown index.
         /// @param index The zero-based selection index (0 = default/none).
@@ -225,6 +232,8 @@ namespace Wisteria::UI
 
         /// @brief ID for the Graph Options sidebar section.
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
+        /// @brief ID for the Axis Options sidebar section.
+        constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 101 };
 
       private:
         void OnEditTitle();
