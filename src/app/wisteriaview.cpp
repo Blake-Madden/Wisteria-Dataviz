@@ -2363,6 +2363,8 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             }
 
         // re-apply procedural features from carried-forward templates
+        // (alternate-row-color is applied here, in the correct order —
+        // before row additions and aggregates)
         m_reportBuilder.ApplyTableFeatures(table);
 
         // apply dialog-driven formatting after procedural features,
@@ -2378,10 +2380,6 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
         if (dlg.GetBoldFirstColumn())
             {
             table->BoldColumn(0);
-            }
-        if (dlg.GetAlternateRowColors())
-            {
-            table->ApplyAlternateRowColors(dlg.GetAlternateRowColor(), 1);
             }
 
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
