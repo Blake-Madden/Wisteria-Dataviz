@@ -268,6 +268,27 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /// @returns The name of the scores column.
+        [[nodiscard]]
+        const wxString& GetScoresColumnName() const noexcept
+            {
+            return m_scoresColumnName;
+            }
+
+        /// @returns The main scale values.
+        [[nodiscard]]
+        const std::vector<double>& GetMainScaleValues() const noexcept
+            {
+            return m_scaleValues;
+            }
+
+        /// @returns The precision used for the main scale values.
+        [[nodiscard]]
+        uint8_t GetMainScalePrecision() const noexcept
+            {
+            return m_precision;
+            }
+
         /// @returns Whether the score is being showcased.
         /// @sa ShowcaseScore().
         [[nodiscard]]
@@ -282,14 +303,19 @@ namespace Wisteria::Graphs
         /// @param showcase @c true to showcase where the score is.
         /// @note If there are multiple scores, then every area that has a score in it
         ///     will be showcased.
-        void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
+        void ShowcaseScore(const bool showcase) noexcept
+            {
+            m_showcaseScore = showcase;
+            UpdateShowcase();
+            }
 
       private:
         void RecalcSizes(wxDC& dc) override;
 
         void AdjustAxes();
 
-        void GhostAllBars();
+        /// @brief Applies the showcase (inverse of ghosting) to the bars.
+        void UpdateShowcase();
 
         wxString m_scoresColumnName;
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };

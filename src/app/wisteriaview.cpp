@@ -28,6 +28,7 @@
 #include "../ui/dialogs/insertpiechartdlg.h"
 #include "../ui/dialogs/insertproconroadmapdlg.h"
 #include "../ui/dialogs/insertsankeydiagramdlg.h"
+#include "../ui/dialogs/insertscalechartdlg.h"
 #include "../ui/dialogs/insertscatterplotdlg.h"
 #include "../ui/dialogs/insertshapedlg.h"
 #include "../ui/dialogs/insertstemandleafdlg.h"
@@ -203,6 +204,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaffleChart, this, ID_NEW_WAFFLE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScaleChart, this, ID_NEW_SCALE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertTable, this, ID_NEW_TABLE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertImage, this, ID_NEW_IMAGE);
@@ -2521,6 +2523,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
         {
         EditBoxPlot(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
+        {
+        EditScaleChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
         {
@@ -5272,6 +5278,181 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
                                                        wxString{});
         const auto oldGroupName = (oldHistogram != nullptr) ?
                                       oldHistogram->GetGroupColumnName().value_or(wxString{}) :
+                                      wxString{};
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldGroupName);
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertScaleChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"scale.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::ScaleChart>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->ShowcaseScore(dlg.GetShowcaseScore());
+
+        // add user-defined scales
+        for (const auto& scale : dlg.GetScales())
+            {
+            std::vector<Wisteria::Graphs::BarChart::BarBlock> blocks;
+            blocks.reserve(scale.m_blocks.size());
+            for (const auto& blk : scale.m_blocks)
+                {
+                blocks.emplace_back(
+                    Wisteria::Graphs::BarChart::BarBlockInfo(blk.m_length)
+                        .Brush(blk.m_color)
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ blk.m_label }.LabelFitting(
+                                Wisteria::LabelFit::ScaleFontToFit))));
+                }
+            plot->AddScale(blocks, scale.m_startPosition, scale.m_header);
+            }
+
+        // main scale values, precision, and column headers
+        const auto mainScaleValues = dlg.GetMainScaleValues();
+        if (!mainScaleValues.empty())
+            {
+            plot->SetMainScaleValues(mainScaleValues,
+                                     static_cast<uint8_t>(dlg.GetMainScalePrecision()));
+            }
+        plot->SetMainScaleColumnHeader(dlg.GetMainScaleHeader());
+        plot->SetDataColumnHeader(dlg.GetDataColumnHeader());
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.score", dlg.GetScoreVariable());
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
+            }
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetScoreVariable(), groupCol);
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+
+        PlaceGraphWithLegend(canvas, plot,
+                             (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                     plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                                            .IncludeHeader(true)
+                                                            .Placement(side)
+                                                            .PlacementHint(hint))) :
+                                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                  const size_t graphRow, const size_t graphCol) const
+    {
+    Wisteria::UI::InsertScaleChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Scale Chart"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"scale.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::ScaleChart>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->ShowcaseScore(dlg.GetShowcaseScore());
+
+        // add user-defined scales
+        for (const auto& scale : dlg.GetScales())
+            {
+            std::vector<Wisteria::Graphs::BarChart::BarBlock> blocks;
+            blocks.reserve(scale.m_blocks.size());
+            for (const auto& blk : scale.m_blocks)
+                {
+                blocks.emplace_back(
+                    Wisteria::Graphs::BarChart::BarBlockInfo(blk.m_length)
+                        .Brush(blk.m_color)
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ blk.m_label }.LabelFitting(
+                                Wisteria::LabelFit::ScaleFontToFit))));
+                }
+            plot->AddScale(blocks, scale.m_startPosition, scale.m_header);
+            }
+
+        // main scale values, precision, and column headers
+        const auto mainScaleValues = dlg.GetMainScaleValues();
+        if (!mainScaleValues.empty())
+            {
+            plot->SetMainScaleValues(mainScaleValues,
+                                     static_cast<uint8_t>(dlg.GetMainScalePrecision()));
+            }
+        plot->SetMainScaleColumnHeader(dlg.GetMainScaleHeader());
+        plot->SetDataColumnHeader(dlg.GetDataColumnHeader());
+
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetScoreVariable(), groupCol);
+
+        // carry forward property templates, preserving {{placeholders}}
+        const auto* oldScaleChart = dynamic_cast<const Wisteria::Graphs::ScaleChart*>(&graph);
+
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.score", dlg.GetScoreVariable(),
+                             oldScaleChart != nullptr ? oldScaleChart->GetScoresColumnName() :
+                                                        wxString{});
+        const auto oldGroupName = (oldScaleChart != nullptr) ?
+                                      oldScaleChart->GetGroupColumnName().value_or(wxString{}) :
                                       wxString{};
         CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
                              oldGroupName);

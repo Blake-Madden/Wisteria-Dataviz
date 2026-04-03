@@ -1136,6 +1136,13 @@ namespace Wisteria::Graphs
             return (GetBarOrientation() == Orientation::Vertical) ? GetTopXAxis() : GetRightYAxis();
             }
 
+        /// @private
+        [[nodiscard]]
+        const GraphItems::Axis& GetOppositeBarAxis() const noexcept
+            {
+            return (GetBarOrientation() == Orientation::Vertical) ? GetTopXAxis() : GetRightYAxis();
+            }
+
         /// @returns Whether the bars are laid out vertically or
         ///    horizontally across the chart.
         [[nodiscard]]

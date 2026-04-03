@@ -118,6 +118,9 @@ class WisteriaView final : public wxView
     void OnInsertWaffleChart(wxCommandEvent& event);
     void EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol) const;
+    void OnInsertScaleChart(wxCommandEvent& event);
+    void EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                        size_t graphRow, size_t graphCol) const;
     void OnInsertTable(wxCommandEvent& event);
     void OnInsertCatBarChart(wxCommandEvent& event);
     void EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,

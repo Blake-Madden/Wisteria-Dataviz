@@ -3155,6 +3155,121 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"question-brackets", wxSimpleJSON::Create(bArr));
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
+        {
+        const auto* scaleChart = dynamic_cast<const Wisteria::Graphs::ScaleChart*>(graph);
+        if (scaleChart->IsShowcasingScore())
+            {
+            node->Add(L"showcase-score", true);
+            }
+        // main scale values and precision
+        if (!scaleChart->GetMainScaleValues().empty())
+            {
+            wxString scaleValsArr = L"[";
+            for (const auto val : scaleChart->GetMainScaleValues())
+                {
+                if (scaleValsArr.length() > 1)
+                    {
+                    scaleValsArr += L", ";
+                    }
+                scaleValsArr += std::to_wstring(val);
+                }
+            scaleValsArr += L"]";
+            node->Add(L"main-scale-values", wxSimpleJSON::Create(scaleValsArr));
+            node->Add(L"main-scale-precision",
+                      static_cast<double>(scaleChart->GetMainScalePrecision()));
+            }
+        // main-scale and data column headers (from opposite bar axis)
+        const auto& bars = scaleChart->GetBars();
+        if (!bars.empty())
+            {
+            const auto& mainHeader =
+                scaleChart->GetOppositeBarAxis().GetCustomLabel(bars[0].GetAxisPosition());
+            const auto mainHeaderTmpl = mainHeader.GetPropertyTemplate(L"text");
+            const auto& mainHeaderText =
+                mainHeaderTmpl.empty() ? mainHeader.GetText() : mainHeaderTmpl;
+            if (!mainHeaderText.empty())
+                {
+                node->Add(L"main-scale-header", mainHeaderText);
+                }
+            if (bars.size() > 1)
+                {
+                const auto& dataHeader =
+                    scaleChart->GetOppositeBarAxis().GetCustomLabel(bars[1].GetAxisPosition());
+                const auto dataHeaderTmpl = dataHeader.GetPropertyTemplate(L"text");
+                const auto& dataHeaderText =
+                    dataHeaderTmpl.empty() ? dataHeader.GetText() : dataHeaderTmpl;
+                if (!dataHeaderText.empty())
+                    {
+                    node->Add(L"data-column-header", dataHeaderText);
+                    }
+                }
+            }
+        // scales (skip first two placeholder bars)
+        if (bars.size() > 2)
+            {
+            wxString scalesArr = L"[";
+            for (size_t barIdx = 2; barIdx < bars.size(); ++barIdx)
+                {
+                if (scalesArr.length() > 1)
+                    {
+                    scalesArr += L", ";
+                    }
+                const auto& scaleBar = bars[barIdx];
+                const auto& scaleHeader =
+                    scaleChart->GetOppositeBarAxis().GetCustomLabel(scaleBar.GetAxisPosition());
+                const auto scaleHeaderTmpl = scaleHeader.GetPropertyTemplate(L"text");
+                const auto& scaleHeaderText =
+                    scaleHeaderTmpl.empty() ? scaleHeader.GetText() : scaleHeaderTmpl;
+
+                scalesArr += L"{";
+                if (!scaleHeaderText.empty())
+                    {
+                    scalesArr += L"\"header\": \"" + EscapeJsonStr(scaleHeaderText) + L"\"";
+                    }
+                if (scaleBar.GetCustomScalingAxisStartPosition().has_value())
+                    {
+                    if (!scaleHeaderText.empty())
+                        {
+                        scalesArr += L", ";
+                        }
+                    scalesArr +=
+                        L"\"start\": " +
+                        std::to_wstring(scaleBar.GetCustomScalingAxisStartPosition().value());
+                    }
+
+                wxString blocksArr = L"[";
+                for (const auto& block : scaleBar.GetBlocks())
+                    {
+                    if (blocksArr.length() > 1)
+                        {
+                        blocksArr += L", ";
+                        }
+                    const auto labelTmpl = block.GetDecal().GetPropertyTemplate(L"text");
+                    const auto& labelText =
+                        labelTmpl.empty() ? block.GetDecal().GetText() : labelTmpl;
+
+                    blocksArr += L"{\"length\": " + std::to_wstring(block.GetLength()) +
+                                 L", \"color\": \"" + ColorToStr(block.GetBrush().GetColour()) +
+                                 L"\"";
+                    if (!labelText.empty())
+                        {
+                        blocksArr += L", \"label\": \"" + EscapeJsonStr(labelText) + L"\"";
+                        }
+                    blocksArr += L"}";
+                    }
+                blocksArr += L"]";
+                if (!scaleHeaderText.empty() ||
+                    scaleBar.GetCustomScalingAxisStartPosition().has_value())
+                    {
+                    scalesArr += L", ";
+                    }
+                scalesArr += L"\"blocks\": " + blocksArr + L"}";
+                }
+            scalesArr += L"]";
+            node->Add(L"scales", wxSimpleJSON::Create(scalesArr));
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);
@@ -4401,6 +4516,10 @@ wxString WisteriaDoc::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
         {
         return _DT(L"histogram");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
+        {
+        return _DT(L"scale-chart");
         }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
