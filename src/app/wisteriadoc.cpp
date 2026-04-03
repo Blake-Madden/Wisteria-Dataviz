@@ -480,7 +480,11 @@ void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
         }
     else
         {
-        itemNode->DeleteProperty(L"outline");
+        auto olArray = itemNode->GetProperty(L"outline");
+        olArray->ArrayAdd(false);
+        olArray->ArrayAdd(false);
+        olArray->ArrayAdd(false);
+        olArray->ArrayAdd(false);
         }
 
     // show (default is true)
