@@ -537,7 +537,7 @@ namespace Wisteria::UI
             // just update the window if the log file changed
             const auto previousModTime{ m_sourceFileLastModified };
             m_sourceFileLastModified =
-                wxFileName(m_logFile->GetLogFilePath()).GetModificationTime();
+                wxFileName{ m_logFile->GetLogFilePath() }.GetModificationTime();
             if (m_sourceFileLastModified.IsValid() && previousModTime.IsValid() &&
                 previousModTime < m_sourceFileLastModified)
                 {

@@ -681,7 +681,7 @@ namespace Wisteria::UI
             }
         else if (m_imagePaths.GetCount() == 1)
             {
-            m_imagesLabel->SetLabel(wxFileName(m_imagePaths[0]).GetFullName());
+            m_imagesLabel->SetLabel(wxFileName{ m_imagePaths[0] }.GetFullName());
             }
         else
             {
@@ -1025,7 +1025,7 @@ namespace Wisteria::UI
                 }
             if (m_imagePaths.GetCount() == 1)
                 {
-                m_imagesLabel->SetLabel(wxFileName(m_imagePaths[0]).GetFullName());
+                m_imagesLabel->SetLabel(wxFileName{ m_imagePaths[0] }.GetFullName());
                 }
             else if (m_imagePaths.GetCount() > 1)
                 {

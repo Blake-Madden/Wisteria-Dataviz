@@ -379,8 +379,8 @@ namespace Wisteria
                     {
                     if (!wxFileName::FileExists(path))
                         {
-                        path =
-                            wxFileName(m_reportBuilder.GetConfigFilePath()).GetPathWithSep() + path;
+                        path = wxFileName{ m_reportBuilder.GetConfigFilePath() }.GetPathWithSep() +
+                               path;
                         if (!wxFileName::FileExists(path))
                             {
                             throw std::runtime_error(

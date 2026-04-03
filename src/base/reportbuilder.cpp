@@ -2495,7 +2495,7 @@ namespace Wisteria
                         }
                     if (!wxFileName::FileExists(path))
                         {
-                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                        path = wxFileName{ m_configFilePath }.GetPathWithSep() + path;
                         if (!wxFileName::FileExists(path))
                             {
                             throw std::runtime_error(
@@ -2728,7 +2728,7 @@ namespace Wisteria
                         }
 
                     // import using the user-provided parser or deduce from the file extension
-                    const auto fileExt(wxFileName(path).GetExt());
+                    const auto fileExt(wxFileName{ path }.GetExt());
                     if (importer.CmpNoCase(L"csv") == 0 || fileExt.CmpNoCase(L"csv") == 0)
                         {
                         dataset->ImportCSV(path, importDefines);
@@ -4081,7 +4081,7 @@ namespace Wisteria
                         {
                         if (!wxFileName::FileExists(path))
                             {
-                            path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                            path = wxFileName{ m_configFilePath }.GetPathWithSep() + path;
                             if (!wxFileName::FileExists(path))
                                 {
                                 throw std::runtime_error(
@@ -5683,7 +5683,7 @@ namespace Wisteria
             }
         if (!wxFileName::FileExists(expandedPath))
             {
-            expandedPath = wxFileName(m_configFilePath).GetPathWithSep() + expandedPath;
+            expandedPath = wxFileName{ m_configFilePath }.GetPathWithSep() + expandedPath;
             if (!wxFileName::FileExists(expandedPath))
                 {
                 throw std::runtime_error(

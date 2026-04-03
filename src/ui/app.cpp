@@ -371,8 +371,8 @@ namespace Wisteria::UI
         if (wxDebugReportPreviewStd().Show(*report))
             {
             report->Process();
-            const wxString newReportPath = wxFileName(wxStandardPaths::Get().GetDocumentsDir(),
-                                                      GetAppName() + " CrashReport.zip")
+            const wxString newReportPath = wxFileName{ wxStandardPaths::Get().GetDocumentsDir(),
+                                                       GetAppName() + " CrashReport.zip" }
                                                .GetFullPath();
             if (wxCopyFile(report->GetCompressedFileName(), newReportPath, true))
                 {
@@ -560,7 +560,7 @@ namespace Wisteria::UI
 #endif
         // ...or, program dir + subfolder
         foundFolder =
-            wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPathWithSep() + subDir;
+            wxFileName{ wxStandardPaths::Get().GetExecutablePath() }.GetPathWithSep() + subDir;
         if (wxFileName::DirExists(foundFolder))
             {
             return foundFolder;

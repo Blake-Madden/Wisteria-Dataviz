@@ -267,8 +267,8 @@ namespace Wisteria::UI
         // create the folder to the filepath, if necessary
         wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
-        wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
-        wxFile file(path.GetFullPath(), wxFile::write);
+        wxFileName{ path.GetFullPath() }.SetPermissions(wxS_DEFAULT);
+        wxFile file{ path.GetFullPath(), wxFile::write };
         wxASSERT(GetParser());
         std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
         lily_of_the_valley::html_format::strip_body_attributes(htmlText);

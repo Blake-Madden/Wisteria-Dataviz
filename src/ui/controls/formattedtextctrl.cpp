@@ -775,8 +775,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         {
         const wxString pangoBody = GetUnthemedFormattedText();
 
-        wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
-        wxFile file(path.GetFullPath(), wxFile::write);
+        wxFileName{ path.GetFullPath() }.SetPermissions(wxS_DEFAULT);
+        wxFile file{ path.GetFullPath(), wxFile::write };
         const bool retVal = file.Write(pangoBody);
         if (!retVal)
             {
@@ -794,8 +794,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
 
         const wxString htmlText = L"<!DOCTYPE html>\n<html>" + htmlBody + L"\n</html>";
 
-        wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
-        wxFile file(path.GetFullPath(), wxFile::write);
+        wxFileName{ path.GetFullPath() }.SetPermissions(wxS_DEFAULT);
+        wxFile file{ path.GetFullPath(), wxFile::write };
         const bool retVal = file.Write(htmlText);
         if (!retVal)
             {
@@ -808,8 +808,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
     //------------------------------------------------------
     bool FormattedTextCtrl::SaveAsRtf(const wxFileName& path)
         {
-        wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
-        wxFile file(path.GetFullPath(), wxFile::write);
+        wxFileName{ path.GetFullPath() }.SetPermissions(wxS_DEFAULT);
+        wxFile file{ path.GetFullPath(), wxFile::write };
         // export unthemed text (if available)
         const bool retVal =
             file.Write((!GetUnthemedFormattedText().empty()) ? GetUnthemedFormattedTextRtf() :

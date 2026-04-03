@@ -85,7 +85,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
             {
             if (wxFileName::FileExists(downloadPath))
                 {
-                wxFileName(downloadPath).SetPermissions(wxS_DEFAULT);
+                wxFileName{ downloadPath }.SetPermissions(wxS_DEFAULT);
                 }
 
             if (!wxRenameFile(evt.GetDataFile(), downloadPath) &&
@@ -508,7 +508,7 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
 
             if (wxFileName::FileExists(m_downloadPath))
                 {
-                wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT);
+                wxFileName{ m_downloadPath }.SetPermissions(wxS_DEFAULT);
                 }
 
             /* Check size constraints (if in use)

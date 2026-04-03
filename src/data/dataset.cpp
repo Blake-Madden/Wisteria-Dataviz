@@ -1252,7 +1252,7 @@ namespace Wisteria::Data
                             std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
                             const std::variant<wxString, size_t>& worksheet /*= 1*/)
         {
-        const wxString fileExt{ wxFileName(filePath).GetExt() };
+        const wxString fileExt{ wxFileName{ filePath }.GetExt() };
         const wchar_t delim = GetDelimiterFromExtension(filePath);
 
         wxString fileText;
@@ -1958,7 +1958,7 @@ namespace Wisteria::Data
 
         ImportTextRaw(fileText, info, delimiter);
 
-        m_name = wxFileName(filePath).GetName();
+        m_name = wxFileName{ filePath }.GetName();
         }
 
     //----------------------------------------------

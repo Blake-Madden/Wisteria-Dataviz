@@ -3319,8 +3319,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                          exportOptions.m_includeColumnHeaders);
             }
 
-        wxFileName(path).SetPermissions(wxS_DEFAULT);
-        wxFile file(path.GetFullPath(), wxFile::write);
+        wxFileName{ path }.SetPermissions(wxS_DEFAULT);
+        wxFile file{ path.GetFullPath(), wxFile::write };
         const bool retval = file.Write(outputText, wxConvUTF8);
         if (!retval)
             {

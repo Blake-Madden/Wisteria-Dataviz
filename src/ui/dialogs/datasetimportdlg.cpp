@@ -17,7 +17,7 @@ namespace Wisteria::UI
     DatasetImportDlg::DatasetImportDlg(wxWindow* parent, const wxString& filePath, wxWindowID id,
                                        const wxString& caption, const wxPoint& pos,
                                        const wxSize& size, long style)
-        : m_filePath(filePath), m_fileExt(wxFileName(filePath).GetExt())
+        : m_filePath(filePath), m_fileExt(wxFileName{ filePath }.GetExt())
         {
         wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);

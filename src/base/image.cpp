@@ -958,7 +958,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
     //-------------------------------------------
     wxBitmapType Image::GetImageFileTypeFromExtension(wxString & ext)
         {
-        ext = (ext.find(L'.') == std::wstring::npos) ? ext : wxFileName(ext).GetExt();
+        ext = (ext.find(L'.') == std::wstring::npos) ? ext : wxFileName{ ext }.GetExt();
         wxBitmapType imageType{ wxBITMAP_TYPE_PNG };
         if (ext.CmpNoCase(L"jpg") == 0 || ext.CmpNoCase(L"jpeg") == 0 || ext.CmpNoCase(L"jpe") == 0)
             {

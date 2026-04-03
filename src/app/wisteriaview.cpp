@@ -6190,7 +6190,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     for (const auto& path : paths)
         {
         wxString resolvedPath = path;
-        if (!wxFileName(path).IsAbsolute() && !projectDir.empty())
+        if (!wxFileName{ path }.IsAbsolute() && !projectDir.empty())
             {
             resolvedPath = projectDir + path;
             }
@@ -6321,7 +6321,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
     for (const auto& path : paths)
         {
         wxString resolvedPath = path;
-        if (!wxFileName(path).IsAbsolute() && !projectDir2.empty())
+        if (!wxFileName{ path }.IsAbsolute() && !projectDir2.empty())
             {
             resolvedPath = projectDir2 + path;
             }

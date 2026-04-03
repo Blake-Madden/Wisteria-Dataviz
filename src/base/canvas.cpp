@@ -347,7 +347,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // create the folder to the filepath, if necessary
         wxFileName::Mkdir(filePath.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
-        wxFileName(filePath.GetFullPath()).SetPermissions(wxS_DEFAULT);
+        wxFileName{ filePath.GetFullPath() }.SetPermissions(wxS_DEFAULT);
 
         wxCoord width = GetCanvasRectDIPs().GetWidth(), height = GetCanvasRectDIPs().GetHeight();
 

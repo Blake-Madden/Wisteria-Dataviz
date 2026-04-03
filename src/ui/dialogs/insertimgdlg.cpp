@@ -266,7 +266,7 @@ namespace Wisteria::UI
             {
             // only validate absolute paths; relative paths are resolved
             // against the project directory at load time
-            if (wxFileName(path).IsAbsolute() && !wxFileExists(path))
+            if (wxFileName{ path }.IsAbsolute() && !wxFileExists(path))
                 {
                 wxMessageBox(wxString::Format(_(L"The image file \"%s\" does not exist."), path),
                              _(L"File Not Found"), wxOK | wxICON_WARNING, this);

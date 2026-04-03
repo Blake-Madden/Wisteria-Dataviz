@@ -29,7 +29,8 @@ namespace Wisteria::UI
 
         m_horizontalThumbsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this);
 
-        m_baseImagePath = wxFileName{ (!imgPaths.empty() ? wxFileName(imgPaths[0]) : wxString{}) };
+        m_baseImagePath =
+            wxFileName{ (!imgPaths.empty() ? wxFileName{ imgPaths[0] } : wxString{}) };
 
         wxString imageNames;
         for (const auto& imgPath : imgPaths)

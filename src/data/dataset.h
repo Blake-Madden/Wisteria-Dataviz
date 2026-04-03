@@ -1719,7 +1719,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         static wchar_t GetDelimiterFromExtension(const wxString& filePath)
             {
-            return ((wxFileName(filePath).GetExt().CmpNoCase(L"csv") == 0) ? L',' : L'\t');
+            return ((wxFileName{ filePath }.GetExt().CmpNoCase(L"csv") == 0) ? L',' : L'\t');
             }
 
         /** @brief Reads the column names from a file and deduces their data types.

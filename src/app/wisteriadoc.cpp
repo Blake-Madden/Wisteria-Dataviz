@@ -72,7 +72,7 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
 
     // project name
     const wxString projectName = view->GetReportBuilder().GetName().empty() ?
-                                     wxFileName(filePath).GetName() :
+                                     wxFileName{ filePath }.GetName() :
                                      view->GetReportBuilder().GetName();
 
     auto root = wxSimpleJSON::Create(

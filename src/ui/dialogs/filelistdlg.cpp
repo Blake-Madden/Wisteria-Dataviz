@@ -111,7 +111,7 @@ namespace Wisteria::UI
                     fn.GetTimes(&accessedDt, &modifiedDt, &createdDt);
                     const wxString fileInfo = wxString::Format(
                         _(L"Name: %s\nSize: %s\nCreated: %s %s\nModified: %s %s"),
-                        wxFileName(m_listCtrl->GetSelectedText()).GetFullName(),
+                        wxFileName{ m_listCtrl->GetSelectedText() }.GetFullName(),
                         fn.GetHumanReadableSize(), createdDt.FormatDate(), createdDt.FormatTime(),
                         modifiedDt.FormatDate(), modifiedDt.FormatTime());
                     m_label->SetLabel(fileInfo);
