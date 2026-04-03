@@ -736,9 +736,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //---------------------------------------------------
     void Canvas::CalcAllSizes(wxDC & dc)
         {
-        wxASSERT_MSG((std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
+        wxASSERT_MSG(compare_doubles_less_or_equal(
+                         std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
                                       [](const auto initVal, const auto val) noexcept
-                                      { return initVal + val.GetHeightProportion(); })) <= 1,
+                                         { return initVal + val.GetHeightProportion(); }),
+                         1),
                      L"Canvas row proportions are more than 100%!");
 
         /* The rendering area must have a minimum size of 700x500;
