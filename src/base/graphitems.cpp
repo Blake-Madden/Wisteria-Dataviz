@@ -28,7 +28,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::StandardLineStyles,
 
     //-------------------------------------------
     void GraphItemBase::DrawSelectionLabel(wxDC & dc, const double scaling,
-                                           const wxRect boundingBox /*= wxRect()*/) const
+                                           const wxRect boundingBox /*= wxRect{}*/) const
         {
         if (IsSelected() && IsShowingLabelWhenSelected() && !GetText().empty())
             {

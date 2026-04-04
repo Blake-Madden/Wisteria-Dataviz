@@ -42,6 +42,14 @@ namespace Wisteria::UI
         Bottom /*!< Legend below the graph.*/
         };
 
+    /// @brief Flags controlling which sections are visible in InsertGraphDlg.
+    enum GraphDlgOptions : int
+        {
+        GraphDlgIncludeColorScheme = 1 << 0, ///< Show the color scheme controls.
+        /// @brief All options enabled (the default).
+        GraphDlgIncludeAll = GraphDlgIncludeColorScheme
+        };
+
     /** @brief Intermediate base dialog for inserting a graph into a canvas cell.
         @details Extends InsertItemDlg with common graph options such as
             legend placement. Derived dialogs for specific chart types
@@ -63,7 +71,8 @@ namespace Wisteria::UI
                        const wxString& caption, wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                       EditMode editMode = EditMode::Insert);
+                       EditMode editMode = EditMode::Insert,
+                       GraphDlgOptions options = GraphDlgIncludeAll);
 
         /// @private
         InsertGraphDlg(const InsertGraphDlg&) = delete;
@@ -247,6 +256,8 @@ namespace Wisteria::UI
         void OnRemoveCustomColor();
         void RefreshCustomColorList();
         void OnColorModeChanged();
+
+        GraphDlgOptions m_options{ GraphDlgIncludeAll };
 
         // DDX data members
         int m_legendPlacement{ 1 };

@@ -161,7 +161,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 context = renderer->CreateContext(memDc);
                 }
 
-            if (context)
+            if (context != nullptr)
                 {
                 wxGCDC gcdc(context);
                 OnDraw(gcdc);
@@ -370,9 +370,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             canvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), canvasMinSize.GetWidth()));
             canvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), canvasMinSize.GetHeight()));
 
-            wxSVGFileDC svg(filePath.GetFullPath(), canvasMinSize.GetWidth(),
-                            canvasMinSize.GetHeight(), 72.0, GetLabel());
-            svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler());
+            wxSVGFileDC svg{ filePath.GetFullPath(), canvasMinSize.GetWidth(),
+                             canvasMinSize.GetHeight(), 72.0, GetLabel() };
+            svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler{});
             // rescale everything to the SVG DC's scaling
             const wxEventBlocker blocker(this); // prevent resize event
             CalcAllSizes(svg);
@@ -401,7 +401,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             context = renderer->CreateContext(memDc);
             }
 
-        if (context)
+        if (context != nullptr)
             {
             wxGCDC gcdc(context);
             OnDraw(gcdc);
@@ -738,7 +738,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         {
         wxASSERT_MSG(compare_doubles_less_or_equal(
                          std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
-                                      [](const auto initVal, const auto val) noexcept
+                                         [](const auto initVal, const auto val) noexcept
                                          { return initVal + val.GetHeightProportion(); }),
                          1),
                      L"Canvas row proportions are more than 100%!");
@@ -1435,7 +1435,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             context = renderer->CreateContext(pdc);
             }
 
-        if (context)
+        if (context != nullptr)
             {
             wxGCDC dc(context);
             PrepareDC(dc);
@@ -1470,10 +1470,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             // If background color is bad, then just fill the canvas with white.
             // Otherwise, fill with color
-            const wxDCBrushChanger bc(
-                dc, !GetBackgroundColor().IsOk() ?
-                        wxBrush{ Colors::ColorBrewer::GetColor(Colors::Color::White) } :
-                        wxBrush(GetBackgroundColor()));
+            const wxDCBrushChanger bc{ dc, !GetBackgroundColor().IsOk() ?
+                                               wxBrush{ Colors::ColorBrewer::GetColor(
+                                                   Colors::Color::White) } :
+                                               wxBrush{ GetBackgroundColor() } };
             dc.DrawRectangle(GetCanvasRect(dc));
             }
 

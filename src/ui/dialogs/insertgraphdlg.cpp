@@ -22,8 +22,9 @@ namespace Wisteria::UI
     InsertGraphDlg::InsertGraphDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                    wxWindow* parent, const wxString& caption, const wxWindowID id,
                                    const wxPoint& pos, const wxSize& size, const long style,
-                                   EditMode editMode)
-        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
+                                   EditMode editMode, GraphDlgOptions options)
+        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
+          m_options(options)
         {
         }
 
@@ -116,18 +117,21 @@ namespace Wisteria::UI
         graph.MirrorYAxis(GetMirrorYAxis());
 
         // apply color/brush scheme
-        if (IsUsingCustomColors())
+        if (m_options & GraphDlgIncludeColorScheme)
             {
-            const auto& colors = GetCustomColors();
-            auto colorScheme = std::make_shared<Colors::Schemes::ColorScheme>(colors);
-            graph.SetColorScheme(colorScheme);
-            graph.SetBrushScheme(std::make_shared<Brushes::Schemes::BrushScheme>(*colorScheme));
-            }
-        else if (GetColorScheme() != nullptr)
-            {
-            graph.SetColorScheme(GetColorScheme());
-            graph.SetBrushScheme(
-                std::make_shared<Brushes::Schemes::BrushScheme>(*GetColorScheme()));
+            if (IsUsingCustomColors())
+                {
+                const auto& colors = GetCustomColors();
+                auto colorScheme = std::make_shared<Colors::Schemes::ColorScheme>(colors);
+                graph.SetColorScheme(colorScheme);
+                graph.SetBrushScheme(std::make_shared<Brushes::Schemes::BrushScheme>(*colorScheme));
+                }
+            else if (GetColorScheme() != nullptr)
+                {
+                graph.SetColorScheme(GetColorScheme());
+                graph.SetBrushScheme(
+                    std::make_shared<Brushes::Schemes::BrushScheme>(*GetColorScheme()));
+                }
             }
         }
 
@@ -278,57 +282,62 @@ namespace Wisteria::UI
         graphSizer->Add(bgBox, wxSizerFlags{}.Border());
 
         // color scheme / custom colors
-        auto* colorBox = new wxStaticBoxSizer(wxVERTICAL, graphPage, _(L"Colors"));
+        if (m_options & GraphDlgIncludeColorScheme)
+            {
+            auto* colorBox = new wxStaticBoxSizer(wxVERTICAL, graphPage, _(L"Colors"));
 
-        // radio: named scheme + choice on same row
-        auto* namedSchemeSizer = new wxBoxSizer(wxHORIZONTAL);
-        m_namedSchemeRadio =
-            new wxRadioButton(colorBox->GetStaticBox(), wxID_ANY, _(L"Color scheme:"),
-                              wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-        namedSchemeSizer->Add(m_namedSchemeRadio, wxSizerFlags{}.CenterVertical());
-        m_colorSchemeChoice =
-            new wxChoice(colorBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                         GetColorSchemeNames(), 0, wxGenericValidator(&m_colorSchemeIndex));
-        namedSchemeSizer->Add(m_colorSchemeChoice, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
-        colorBox->Add(namedSchemeSizer, wxSizerFlags{}.Border());
+            // radio: named scheme + choice on same row
+            auto* namedSchemeSizer = new wxBoxSizer(wxHORIZONTAL);
+            m_namedSchemeRadio =
+                new wxRadioButton(colorBox->GetStaticBox(), wxID_ANY, _(L"Color scheme:"),
+                                  wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+            namedSchemeSizer->Add(m_namedSchemeRadio, wxSizerFlags{}.CenterVertical());
+            m_colorSchemeChoice =
+                new wxChoice(colorBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                             GetColorSchemeNames(), 0, wxGenericValidator(&m_colorSchemeIndex));
+            namedSchemeSizer->Add(m_colorSchemeChoice,
+                                  wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+            colorBox->Add(namedSchemeSizer, wxSizerFlags{}.Border());
 
-        // radio: custom colors
-        m_customColorsRadio =
-            new wxRadioButton(colorBox->GetStaticBox(), wxID_ANY, _(L"Custom color list:"));
-        colorBox->Add(m_customColorsRadio, wxSizerFlags{}.Border());
+            // radio: custom colors
+            m_customColorsRadio =
+                new wxRadioButton(colorBox->GetStaticBox(), wxID_ANY, _(L"Custom color list:"));
+            colorBox->Add(m_customColorsRadio, wxSizerFlags{}.Border());
 
-        m_customColorListBox = new wxEditableListBox(
-            colorBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-            wxSize{ FromDIP(300), FromDIP(120) },
-            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
-        RefreshCustomColorList();
-        colorBox->Add(m_customColorListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+            m_customColorListBox = new wxEditableListBox(
+                colorBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                wxSize{ FromDIP(300), FromDIP(120) },
+                wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+            RefreshCustomColorList();
+            colorBox->Add(m_customColorListBox,
+                          wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-        // override New to open a color picker
-        m_customColorListBox->GetNewButton()->Bind(wxEVT_BUTTON,
-                                                   [this](wxCommandEvent&) { OnAddCustomColor(); });
-        m_customColorListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"color-wheel.svg", wxSize{ 16, 16 }));
+            // override New to open a color picker
+            m_customColorListBox->GetNewButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                       { OnAddCustomColor(); });
+            m_customColorListBox->GetNewButton()->SetBitmapLabel(
+                wxGetApp().ReadSvgIcon(L"color-wheel.svg", wxSize{ 16, 16 }));
 
-        // override Edit to open a color picker for the selected item
-        m_customColorListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
-                                                    { OnEditCustomColor(); });
+            // override Edit to open a color picker for the selected item
+            m_customColorListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                        { OnEditCustomColor(); });
 
-        // override Delete to remove the selected color from our vector
-        m_customColorListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
-                                                   { OnRemoveCustomColor(); });
+            // override Delete to remove the selected color from our vector
+            m_customColorListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                       { OnRemoveCustomColor(); });
 
-        graphSizer->Add(colorBox, wxSizerFlags{}.Border());
+            graphSizer->Add(colorBox, wxSizerFlags{}.Border());
 
-        // initial enable state — named scheme selected by default
-        m_namedSchemeRadio->SetValue(true);
-        m_colorSchemeChoice->Enable(true);
-        m_customColorListBox->Enable(false);
+            // initial enable state — named scheme selected by default
+            m_namedSchemeRadio->SetValue(true);
+            m_colorSchemeChoice->Enable(true);
+            m_customColorListBox->Enable(false);
 
-        m_namedSchemeRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
-                                 { OnColorModeChanged(); });
-        m_customColorsRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
-                                  { OnColorModeChanged(); });
+            m_namedSchemeRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                                     { OnColorModeChanged(); });
+            m_customColorsRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                                      { OnColorModeChanged(); });
+            }
         }
 
     //-------------------------------------------
@@ -393,11 +402,12 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertGraphDlg::OnEditBackgroundImage()
         {
-        InsertImageDlg dlg(GetCanvas(), GetReportBuilder(), this, _(L"Edit Background Image"),
-                           wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                           wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                           m_plotBgImage.IsOk() ? EditMode::Edit : EditMode::Insert,
-                           ImageDlgIncludeAll & ~ImageDlgIncludePageOptions);
+        InsertImageDlg dlg(
+            GetCanvas(), GetReportBuilder(), this, _(L"Edit Background Image"), wxID_ANY,
+            wxDefaultPosition, wxDefaultSize,
+            wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+            m_plotBgImage.IsOk() ? EditMode::Edit : EditMode::Insert,
+            static_cast<ImageDlgOptions>(ImageDlgIncludeAll & ~ImageDlgIncludePageOptions));
         if (m_plotBgImage.IsOk())
             {
             dlg.LoadFromImage(m_plotBgImage);
@@ -607,6 +617,10 @@ namespace Wisteria::UI
     //-------------------------------------------
     bool InsertGraphDlg::ValidateColorScheme()
         {
+        if (!(m_options & GraphDlgIncludeColorScheme))
+            {
+            return true;
+            }
         if (m_useCustomColors && m_customColors.empty())
             {
             wxMessageBox(_(L"Please enter at least one color."), _(L"No Colors Specified"),
@@ -754,27 +768,30 @@ namespace Wisteria::UI
             }
 
         // color scheme
-        const auto& brushScheme = graph.GetBrushScheme();
-        const auto namedIndex = ColorSchemeToIndex(graph.GetColorScheme());
-        if (namedIndex == 0 && brushScheme != nullptr && !brushScheme->GetBrushes().empty())
+        if (m_options & GraphDlgIncludeColorScheme)
             {
-            m_useCustomColors = true;
-            m_customColors.clear();
-            for (const auto& brush : brushScheme->GetBrushes())
+            const auto& brushScheme = graph.GetBrushScheme();
+            const auto namedIndex = ColorSchemeToIndex(graph.GetColorScheme());
+            if (namedIndex == 0 && brushScheme != nullptr && !brushScheme->GetBrushes().empty())
                 {
-                m_customColors.push_back(brush.GetColour());
+                m_useCustomColors = true;
+                m_customColors.clear();
+                for (const auto& brush : brushScheme->GetBrushes())
+                    {
+                    m_customColors.push_back(brush.GetColour());
+                    }
+                m_customColorsRadio->SetValue(true);
+                RefreshCustomColorList();
+                m_colorSchemeIndex = 0;
                 }
-            m_customColorsRadio->SetValue(true);
-            RefreshCustomColorList();
-            m_colorSchemeIndex = 0;
+            else
+                {
+                m_useCustomColors = false;
+                m_colorSchemeIndex = namedIndex;
+                m_namedSchemeRadio->SetValue(true);
+                }
+            OnColorModeChanged();
             }
-        else
-            {
-            m_useCustomColors = false;
-            m_colorSchemeIndex = namedIndex;
-            m_namedSchemeRadio->SetValue(true);
-            }
-        OnColorModeChanged();
 
         LoadPageOptions(graph);
         }

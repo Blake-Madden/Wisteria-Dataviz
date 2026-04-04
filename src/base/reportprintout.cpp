@@ -88,7 +88,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
             context = renderer->CreateContext(memDc);
             }
 
-        if (context)
+        if (context != nullptr)
             {
             wxGCDC gcdc(context);
 

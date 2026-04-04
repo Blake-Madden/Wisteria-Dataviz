@@ -157,8 +157,8 @@ Properties for `"likert-chart"` nodes:
   - ``{{Everything()}}``: Returns all columns from the dataset. \
       The column order will be the ID column (if in use), the categoricals, the continuous columns, and finally the date columns.
   - ``{{EverythingExcept(`value`)}}``: Returns all columns from the dataset that do not match the
-      regular expression pattern *value*. The column order will be the ID column (if in use),
-      the categoricals, the continuous columns, and finally the date columns.
+      regular expression pattern *value*.
+      The column order will be the ID column (if in use), the categoricals, the continuous columns, and finally the date columns.
   - `"group"`: The grouping column (this is optional).
 - `"survey-format"`: string specifying the scale used for all questions. \
   Available options are:
@@ -544,16 +544,16 @@ Properties for `"scale-chart"` nodes:
 - `"variables"`: An item containing the following properties:
   - `"score"`: The continuous column containing the score values.
   - `"group"`: The grouping column (this is optional).
-- `"showcase-score"`: `true` to make most areas of the chart translucent,
-  except for where the score falls. This draws attention to the relevant
-  areas of the scales. Default is `false`.
-- `"main-scale-values"`: An array of numbers defining the tick marks
-  on the main scale axis (e.g., `[10, 20, 30, 40, 50, 60, 70, 80, 90]`).
-- `"main-scale-precision"`: The number of decimal places for the main
-  scale values. Default is `0`.
+- `"showcase-score"`: `true` to make most areas of the chart translucent, except for where the score falls.
+  This draws attention to the relevant areas of the scales.
+  Default is `false`.
+- `"main-scale-values"`: An array of numbers defining the tick marks on the main scale axis (e.g., `[10, 20, 30, 40, 50, 60, 70, 80, 90]`).
+- `"main-scale-precision"`: The number of decimal places for the main scale values.
+  Default is `0`.
 - `"main-scale-header"`: The header label above the main scale column.
 - `"data-column-header"`: The header label above the data column.
-- `"scales"`: An array of scale objects. Each scale contains:
+- `"scales"`: An array of scale objects.
+  Each scale contains:
   - `"header"`: The header label for the scale column.
   - `"start"`: The starting position on the scaling axis (optional).
   - `"blocks"`: An array of block objects defining the colored segments:

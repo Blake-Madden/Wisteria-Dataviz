@@ -67,7 +67,8 @@ namespace Wisteria::UI
                        const wxString& caption = _(L"Insert Image"), wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                       EditMode editMode = EditMode::Insert, int options = ImageDlgIncludeAll);
+                       EditMode editMode = EditMode::Insert,
+                       ImageDlgOptions options = ImageDlgIncludeAll);
 
         /// @private
         InsertImageDlg(const InsertImageDlg&) = delete;
@@ -164,7 +165,7 @@ namespace Wisteria::UI
         // and InsertLabelDlg (+2)
         constexpr static wxWindowID ID_IMAGE_SECTION{ wxID_HIGHEST + 3 };
 
-        int m_options{ ImageDlgIncludeAll };
+        ImageDlgOptions m_options{ ImageDlgIncludeAll };
 
         // controls
         wxEditableListBox* m_pathListBox{ nullptr };

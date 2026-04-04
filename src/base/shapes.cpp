@@ -149,15 +149,16 @@ namespace Wisteria::GraphItems
         // draw the outline
         if (IsSelected())
             {
-            const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
-            const wxDCPenChanger pc(dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            const wxDCBrushChanger bc{ dc, wxColour{ 0, 0, 0, 0 } };
+            const wxDCPenChanger pc{ dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT) };
             dc.DrawRectangle(bBox);
             if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
-                const wxDCPenChanger pcDebug(
+                const wxDCPenChanger pcDebug{
                     dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
-                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT)
+                };
                 dc.DrawRectangle(drawRect);
                 }
             }
