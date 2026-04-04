@@ -292,33 +292,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
                                   _(L"Print all pages"));
 
-        // Data panel
-        auto* dataPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Data"));
-        auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, wxID_ANY);
-
-        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
-                                 _(L"Import a dataset into the project"));
-        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"data-edit.svg"),
-                                 _(L"Edit the selected dataset's import options"));
-
-        dataButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"), ReadSvgIcon(L"pivot-wider.svg"),
-                                 _(L"Pivot a dataset wider (unstack)"));
-        dataButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
-                                 ReadSvgIcon(L"pivot-longer.svg"),
-                                 _(L"Pivot a dataset longer (stack)"));
-        dataButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
-                                 _(L"Create a subset of a dataset"));
-
-        // Constant panel
-        auto* constantsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Constants"));
-        auto* constantsButtonBar = new wxRibbonButtonBar(constantsPanel, wxID_ANY);
-
-        constantsButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add"), ReadSvgIcon(L"constants-add.svg"),
-                                      _(L"Add a constant to the project"));
-        constantsButtonBar->AddButton(ID_DELETE_CONSTANT, _(L"Delete"),
-                                      ReadSvgIcon(L"constants-delete.svg"),
-                                      _(L"Delete the selected constant"));
-
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
@@ -330,8 +303,61 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         pagesButtonBar->AddButton(ID_DELETE_PAGE, _(L"Delete"), ReadSvgIcon(L"page-delete.svg"),
                                   _(L"Delete the current page"));
 
+        // Objects panel (labels, images, shapes)
+        auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
+        auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
+
+        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
+                                    _(L"Insert a text label"));
+        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
+                                    _(L"Insert an image"));
+        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
+                                    _(L"Insert a shape"));
+        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
+                                    _(L"Edit the selected item"));
+        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),
+                                    _(L"Delete the selected item"));
+
+        // Data tab
+        auto* dataPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Data"));
+
+        // Datasets panel
+        auto* dataPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Datasets"));
+        auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, wxID_ANY);
+
+        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
+                                 _(L"Import a dataset into the project"));
+        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"data-edit.svg"),
+                                 _(L"Edit the selected dataset's import options"));
+
+        // Transformations panel
+        auto* transformPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Transformations"));
+        auto* transformButtonBar = new wxRibbonButtonBar(transformPanel, wxID_ANY);
+
+        transformButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"),
+                                      ReadSvgIcon(L"pivot-wider.svg"),
+                                      _(L"Pivot a dataset wider (unstack)"));
+        transformButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
+                                      ReadSvgIcon(L"pivot-longer.svg"),
+                                      _(L"Pivot a dataset longer (stack)"));
+        transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
+                                      _(L"Create a subset of a dataset"));
+
+        // Constants panel
+        auto* constantsPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Constants"));
+        auto* constantsButtonBar = new wxRibbonButtonBar(constantsPanel, wxID_ANY);
+
+        constantsButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add"), ReadSvgIcon(L"constants-add.svg"),
+                                      _(L"Add a constant to the project"));
+        constantsButtonBar->AddButton(ID_DELETE_CONSTANT, _(L"Delete"),
+                                      ReadSvgIcon(L"constants-delete.svg"),
+                                      _(L"Delete the selected constant"));
+
+        // Analyses tab
+        auto* analysesPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Analyses"));
+
         // Graph category panel
-        auto* graphPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Graphs"));
+        auto* graphPanel = new wxRibbonPanel(analysesPage, wxID_ANY, _(L"Graphs"));
         auto* graphButtonBar = new wxRibbonButtonBar(graphPanel, ID_GRAPH_BUTTONBAR);
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BASIC, _(L"Basic"),
@@ -359,21 +385,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
                                           ReadSvgIcon(L"chart-sports.svg"), _(L"Sports graphs"));
-
-        // Objects panel (labels, images, shapes)
-        auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
-        auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
-
-        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
-                                    _(L"Insert a text label"));
-        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
-                                    _(L"Insert an image"));
-        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
-                                    _(L"Insert a shape"));
-        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
-                                    _(L"Edit the selected item"));
-        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),
-                                    _(L"Delete the selected item"));
         }
     else
         {

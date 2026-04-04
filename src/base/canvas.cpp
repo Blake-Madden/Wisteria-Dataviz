@@ -361,8 +361,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             height = options.m_imageSize.GetHeight();
             }
 
-        const wxWindowUpdateLocker wl(this);
-        const FitToSaveOptionsChanger fpc(this, wxSize(width, height));
+        const wxWindowUpdateLocker wl{ this };
+        const FitToSaveOptionsChanger fpc(this, wxSize{ width, height });
 
         if (filePath.GetExt().CmpNoCase(L"svg") == 0)
             {
@@ -371,7 +371,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             canvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), canvasMinSize.GetHeight()));
 
             wxSVGFileDC svg{ filePath.GetFullPath(), canvasMinSize.GetWidth(),
-                             canvasMinSize.GetHeight(), 72.0, GetLabel() };
+                             canvasMinSize.GetHeight(), wxSVG_DEFAULT_DPI, GetLabel() };
             svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler{});
             // rescale everything to the SVG DC's scaling
             const wxEventBlocker blocker(this); // prevent resize event

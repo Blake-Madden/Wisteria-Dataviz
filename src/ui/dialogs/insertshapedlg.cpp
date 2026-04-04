@@ -147,6 +147,13 @@ namespace Wisteria::UI
         // which are self-contained items with their own pen/brush controls.
         GetSideBarBook()->DeletePage(0);
 
+        auto* columnGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(4), FromDIP(4) });
+        auto* leftColSizer = new wxBoxSizer(wxVERTICAL);
+        auto* rightColSizer = new wxBoxSizer(wxVERTICAL);
+        columnGrid->Add(leftColSizer, wxSizerFlags{}.Expand());
+        columnGrid->Add(rightColSizer, wxSizerFlags{}.Expand());
+        shapeSizer->Add(columnGrid, wxSizerFlags{}.Expand().Border());
+
         // shape type
         auto* shapeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -157,7 +164,7 @@ namespace Wisteria::UI
         PopulateShapeChoice();
         shapeGrid->Add(m_shapeChoice);
 
-        shapeSizer->Add(shapeGrid, wxSizerFlags{}.Border());
+        leftColSizer->Add(shapeGrid, wxSizerFlags{}.Border());
 
         // size
         if ((m_options & ShapeDlgIncludeSize) != 0)
@@ -180,7 +187,7 @@ namespace Wisteria::UI
             sizeGrid->Add(m_heightSpin);
 
             sizeBox->Add(sizeGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(sizeBox, wxSizerFlags{}.Expand().Border());
+            leftColSizer->Add(sizeBox, wxSizerFlags{}.Expand().Border());
             }
 
         // pen options
@@ -214,7 +221,7 @@ namespace Wisteria::UI
             penGrid->Add(penStyleChoice);
 
             penBox->Add(penGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(penBox, wxSizerFlags{}.Expand().Border());
+            leftColSizer->Add(penBox, wxSizerFlags{}.Expand().Border());
             }
 
         // brush options
@@ -245,7 +252,7 @@ namespace Wisteria::UI
             brushGrid->Add(brushStyleChoice);
 
             brushBox->Add(brushGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(brushBox, wxSizerFlags{}.Expand().Border());
+            leftColSizer->Add(brushBox, wxSizerFlags{}.Expand().Border());
             }
 
         // label options
@@ -267,7 +274,7 @@ namespace Wisteria::UI
             labelGrid->Add(m_labelColorPicker);
 
             labelBox->Add(labelGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
+            leftColSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
             }
 
         // fillable options
@@ -289,7 +296,7 @@ namespace Wisteria::UI
             fillGrid->Add(m_fillPercentSpin);
 
             fillBox->Add(fillGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(fillBox, wxSizerFlags{}.Expand().Border());
+            rightColSizer->Add(fillBox, wxSizerFlags{}.Expand().Border());
 
             // fill controls start disabled
             OnEnableFillable(false);
@@ -311,7 +318,7 @@ namespace Wisteria::UI
             repeatGrid->Add(m_repeatTextCtrl, wxSizerFlags{}.Expand());
 
             repeatBox->Add(repeatGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(repeatBox, wxSizerFlags{}.Expand().Border());
+            leftColSizer->Add(repeatBox, wxSizerFlags{}.Expand().Border());
             }
 
         // alignment
@@ -341,7 +348,7 @@ namespace Wisteria::UI
             alignGrid->Add(vAlignChoice);
 
             alignBox->Add(alignGrid, wxSizerFlags{}.Border());
-            shapeSizer->Add(alignBox, wxSizerFlags{}.Expand().Border());
+            rightColSizer->Add(alignBox, wxSizerFlags{}.Expand().Border());
             }
         }
 
