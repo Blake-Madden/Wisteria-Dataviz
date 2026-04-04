@@ -24,6 +24,7 @@ namespace Wisteria::UI
               canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
               static_cast<GraphDlgOptions>(GraphDlgIncludeAll & ~GraphDlgIncludeColorScheme))
         {
+        SetFitRowToContent(true);
         CreateControls();
         FinalizeControls();
 
