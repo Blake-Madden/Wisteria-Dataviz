@@ -204,13 +204,13 @@ namespace Wisteria::UI
         m_startLabelLabel =
             new wxStaticText(m_sectionBox->GetStaticBox(), wxID_ANY, _(L"Start label:"));
         sectionGrid->Add(m_startLabelLabel, wxSizerFlags{}.CenterVertical());
-        m_startLabelCtrl = new wxTextCtrl(m_sectionBox->GetStaticBox(), wxID_ANY);
+        m_startLabelCtrl = new wxComboBox(m_sectionBox->GetStaticBox(), wxID_ANY);
         sectionGrid->Add(m_startLabelCtrl, wxSizerFlags{}.Expand());
 
         m_endLabelLabel =
             new wxStaticText(m_sectionBox->GetStaticBox(), wxID_ANY, _(L"End label:"));
         sectionGrid->Add(m_endLabelLabel, wxSizerFlags{}.CenterVertical());
-        m_endLabelCtrl = new wxTextCtrl(m_sectionBox->GetStaticBox(), wxID_ANY);
+        m_endLabelCtrl = new wxComboBox(m_sectionBox->GetStaticBox(), wxID_ANY);
         sectionGrid->Add(m_endLabelCtrl, wxSizerFlags{}.Expand());
 
         sectionGrid->AddSpacer(0);
@@ -277,7 +277,11 @@ namespace Wisteria::UI
 
         // bind section controls for live preview
         m_sectionColumnChoice->Bind(wxEVT_CHOICE,
-                                    [this]([[maybe_unused]] wxCommandEvent&) { UpdatePreview(); });
+                                    [this]([[maybe_unused]] wxCommandEvent&)
+                                    {
+                                        PopulateSectionLabelChoices();
+                                        UpdatePreview();
+                                    });
         m_startLabelCtrl->Bind(wxEVT_TEXT,
                                [this]([[maybe_unused]] wxCommandEvent&) { UpdatePreview(); });
         m_endLabelCtrl->Bind(wxEVT_TEXT,
@@ -300,11 +304,14 @@ namespace Wisteria::UI
             {
             m_filterRows.front().m_columnChoice->SetSelection(wxNOT_FOUND);
             m_filterRows.front().m_operatorChoice->SetSelection(0);
+            m_filterRows.front().m_valuesCtrl->Clear();
             m_filterRows.front().m_valuesCtrl->SetValue(wxString{});
             }
 
         m_sectionColumnChoice->SetSelection(wxNOT_FOUND);
+        m_startLabelCtrl->Clear();
         m_startLabelCtrl->SetValue(wxString{});
+        m_endLabelCtrl->Clear();
         m_endLabelCtrl->SetValue(wxString{});
         m_includeSentinelsCheck->SetValue(true);
 
@@ -331,8 +338,8 @@ namespace Wisteria::UI
         row.m_operatorChoice->Append(
             std::vector<wxString>{ L"=", L"!=", L"<", L"<=", L">", L">=" });
         row.m_operatorChoice->SetSelection(0);
-        row.m_valuesCtrl = new wxTextCtrl(m_filterBox->GetStaticBox(), wxID_ANY, wxString{},
-                                          wxDefaultPosition, wxDefaultSize);
+        row.m_valuesCtrl = new wxComboBox(m_filterBox->GetStaticBox(), wxID_ANY, wxString{},
+                                          wxDefaultPosition, wxDefaultSize, 0, nullptr);
         row.m_valuesCtrl->SetToolTip(_(L"Values to filter on, comma-separated. "
                                        "Multiple values are OR'd within this criterion."));
 
@@ -366,8 +373,13 @@ namespace Wisteria::UI
         m_filterRows.push_back(row);
 
         // bind filter row controls for live preview
-        row.m_columnChoice->Bind(wxEVT_CHOICE,
-                                 [this]([[maybe_unused]] wxCommandEvent&) { UpdatePreview(); });
+        row.m_columnChoice->Bind(
+            wxEVT_CHOICE,
+            [this, rowIndex = m_filterRows.size() - 1]([[maybe_unused]] wxCommandEvent&)
+            {
+                PopulateFilterValueChoices(m_filterRows[rowIndex]);
+                UpdatePreview();
+            });
         row.m_operatorChoice->Bind(wxEVT_CHOICE,
                                    [this]([[maybe_unused]] wxCommandEvent&) { UpdatePreview(); });
         row.m_valuesCtrl->Bind(wxEVT_TEXT,
@@ -410,7 +422,7 @@ namespace Wisteria::UI
         {
         const auto dataset = GetSelectedDataset();
 
-        // populate the section column choice
+        // populate the section column choice (ID and categorical only)
         m_sectionColumnChoice->Clear();
         if (dataset != nullptr)
             {
@@ -419,14 +431,6 @@ namespace Wisteria::UI
                 m_sectionColumnChoice->Append(dataset->GetIdColumn().GetName());
                 }
             for (const auto& name : dataset->GetCategoricalColumnNames())
-                {
-                m_sectionColumnChoice->Append(name);
-                }
-            for (const auto& name : dataset->GetDateColumnNames())
-                {
-                m_sectionColumnChoice->Append(name);
-                }
-            for (const auto& name : dataset->GetContinuousColumnNames())
                 {
                 m_sectionColumnChoice->Append(name);
                 }
@@ -469,17 +473,80 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void SubsetDlg::PopulateFilterValueChoices(FilterRow& row)
+        {
+        row.m_valuesCtrl->Clear();
+
+        const auto dataset = GetSelectedDataset();
+        if (dataset == nullptr)
+            {
+            return;
+            }
+
+        const wxString column = row.m_columnChoice->GetStringSelection();
+        if (column.empty())
+            {
+            return;
+            }
+
+        const auto catCol = dataset->GetCategoricalColumn(column);
+        if (catCol != dataset->GetCategoricalColumns().cend())
+            {
+            for (const auto& [id, label] : catCol->GetStringTable())
+                {
+                if (!label.empty())
+                    {
+                    row.m_valuesCtrl->Append(label);
+                    }
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void SubsetDlg::PopulateSectionLabelChoices()
+        {
+        m_startLabelCtrl->Clear();
+        m_endLabelCtrl->Clear();
+
+        const auto dataset = GetSelectedDataset();
+        if (dataset == nullptr)
+            {
+            return;
+            }
+
+        const wxString column = m_sectionColumnChoice->GetStringSelection();
+        if (column.empty())
+            {
+            return;
+            }
+
+        const auto catCol = dataset->GetCategoricalColumn(column);
+        if (catCol != dataset->GetCategoricalColumns().cend())
+            {
+            for (const auto& [id, label] : catCol->GetStringTable())
+                {
+                if (!label.empty())
+                    {
+                    m_startLabelCtrl->Append(label);
+                    m_endLabelCtrl->Append(label);
+                    }
+                }
+            }
+        }
+
+    //-------------------------------------------
     void SubsetDlg::EnableControlsForFilterType()
         {
         const bool isSection = m_sectionRadio->GetValue();
         const bool isSingle = m_singleRadio->GetValue();
 
         // enable/disable filter criteria controls
-        for (const auto& row : m_filterRows)
+        for (size_t i = 0; i < m_filterRows.size(); ++i)
             {
-            row.m_columnChoice->Enable(!isSection);
-            row.m_operatorChoice->Enable(!isSection);
-            row.m_valuesCtrl->Enable(!isSection);
+            const bool enabled = !isSection && (!isSingle || i == 0);
+            m_filterRows[i].m_columnChoice->Enable(enabled);
+            m_filterRows[i].m_operatorChoice->Enable(enabled);
+            m_filterRows[i].m_valuesCtrl->Enable(enabled);
             }
         // show add/remove only in AND/OR mode
         const bool isMultiFilter = !isSingle && !isSection;
@@ -548,13 +615,20 @@ namespace Wisteria::UI
             if (filterType == SubsetOptions::FilterType::Section)
                 {
                 const wxString column = m_sectionColumnChoice->GetStringSelection();
-                const wxString startLabel = m_startLabelCtrl->GetValue().Strip(wxString::both);
-                const wxString endLabel = m_endLabelCtrl->GetValue().Strip(wxString::both);
+                wxString startLabel = m_startLabelCtrl->GetValue().Strip(wxString::both);
+                wxString endLabel = m_endLabelCtrl->GetValue().Strip(wxString::both);
 
                 if (column.empty() || startLabel.empty() || endLabel.empty())
                     {
                     ResetPreviewGrid();
                     return;
+                    }
+
+                // expand constant placeholders (e.g., {{MaxFall}})
+                if (m_reportBuilder != nullptr)
+                    {
+                    startLabel = m_reportBuilder->ExpandConstants(startLabel);
+                    endLabel = m_reportBuilder->ExpandConstants(endLabel);
                     }
 
                 m_subsettedDataset = dataSubsetter.SubsetSection(

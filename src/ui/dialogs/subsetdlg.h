@@ -139,6 +139,7 @@ namespace Wisteria::UI
         void OnAddFilter();
         void OnRemoveFilter();
         void PopulateColumnChoices();
+        void PopulateSectionLabelChoices();
         void EnableControlsForFilterType();
         void UpdatePreview();
         void ResetPreviewGrid();
@@ -169,8 +170,10 @@ namespace Wisteria::UI
             {
             wxChoice* m_columnChoice{ nullptr };
             wxChoice* m_operatorChoice{ nullptr };
-            wxTextCtrl* m_valuesCtrl{ nullptr };
+            wxComboBox* m_valuesCtrl{ nullptr };
             };
+
+        void PopulateFilterValueChoices(FilterRow& row);
 
         std::vector<FilterRow> m_filterRows;
         wxButton* m_addFilterBtn{ nullptr };
@@ -181,9 +184,9 @@ namespace Wisteria::UI
         wxStaticText* m_sectionColumnLabel{ nullptr };
         wxChoice* m_sectionColumnChoice{ nullptr };
         wxStaticText* m_startLabelLabel{ nullptr };
-        wxTextCtrl* m_startLabelCtrl{ nullptr };
+        wxComboBox* m_startLabelCtrl{ nullptr };
         wxStaticText* m_endLabelLabel{ nullptr };
-        wxTextCtrl* m_endLabelCtrl{ nullptr };
+        wxComboBox* m_endLabelCtrl{ nullptr };
         wxCheckBox* m_includeSentinelsCheck{ nullptr };
 
         std::shared_ptr<Data::Dataset> m_subsettedDataset;
