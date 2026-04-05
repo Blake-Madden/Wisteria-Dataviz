@@ -21,6 +21,7 @@ SET(WISTERIA_SRC
     src/base/reportnodeloader.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
+    src/base/svgreportprintout.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
     src/data/excelreader.cpp

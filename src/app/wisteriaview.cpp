@@ -8,6 +8,7 @@
 
 #include "wisteriaview.h"
 #include "../base/reportprintout.h"
+#include "../base/svgreportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/insertboxplotdlg.h"
@@ -110,6 +111,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
+
+    // bind SVG export button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
 
     // bind save button
     m_frame->Bind(
@@ -599,6 +603,24 @@ void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
                          _(L"Print"), wxOK | wxICON_WARNING);
             }
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_pages.empty())
+        {
+        return;
+        }
+
+    wxFileDialog fileDlg(m_frame, _(L"Export to SVG"), wxString{}, wxString{},
+                         _(L"SVG files (*.svg)|*.svg"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    Wisteria::SVGReportPrintout(m_pages, fileDlg.GetPath());
     }
 
 //-------------------------------------------

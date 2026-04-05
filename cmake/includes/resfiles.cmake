@@ -64,6 +64,7 @@ print.svg
 question-mark.svg
 realtime.svg
 reload.svg
+report.svg
 roadmap.svg
 sankey.svg
 scale.svg

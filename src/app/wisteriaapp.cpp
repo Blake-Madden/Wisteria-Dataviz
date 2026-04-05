@@ -285,6 +285,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         {
         projectButtonBar->AddHybridButton(ID_SAVE_PROJECT, _(L"Save"),
                                           ReadSvgIcon(L"file-save.svg"), _(L"Save the project"));
+        projectButtonBar->AddButton(ID_SVG_EXPORT, _(L"SVG Export"), ReadSvgIcon(L"report.svg"),
+                                    _(L"Export all pages to SVG"));
 
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
