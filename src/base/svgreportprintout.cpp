@@ -112,7 +112,7 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
     constexpr double dipsPerInch = 96.0;
     if (paperType != nullptr)
         {
-        wxSize sizeMM = paperType->GetSize();
+        const wxSize sizeMM = paperType->GetSize();
         const int widthDIPs =
             wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
         const int heightDIPs =

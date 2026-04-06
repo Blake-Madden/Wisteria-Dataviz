@@ -321,7 +321,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
         if (maxRightWidth > rightLabelAreaWidth && rightLabelAreaWidth > 0)
             {
-            const double rightScale = safe_divide<double>(rightLabelAreaWidth, maxRightWidth);
+            const auto rightScale = safe_divide<double>(rightLabelAreaWidth, maxRightWidth);
             labelScaling = std::min(labelScaling, GetScaling() * 0.6 * rightScale);
             }
 
@@ -840,11 +840,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // calculate grid dimensions
         const size_t faceCount = m_faces.size();
         const auto cols = static_cast<size_t>(std::ceil(std::sqrt(static_cast<double>(faceCount))));
-        const auto rows = static_cast<size_t>(
-            std::ceil(safe_divide<double>(faceCount, static_cast<double>(cols))));
+        const auto rows = static_cast<size_t>(std::ceil(
+            safe_divide<double>(static_cast<double>(faceCount), static_cast<double>(cols))));
 
         // calculate cell size, leaving room for labels
-        const int labelHeight = m_showLabels ? ScaleToScreenAndCanvas(20) : 0;
+        const int labelHeight = m_showLabels ? static_cast<int>(ScaleToScreenAndCanvas(20)) : 0;
         const int cellWidth = safe_divide<int>(drawArea.GetWidth(), static_cast<int>(cols));
         const int cellHeight = safe_divide<int>(drawArea.GetHeight(), static_cast<int>(rows));
         const int faceSize = std::min(cellWidth, cellHeight - labelHeight);
@@ -1506,14 +1506,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double offset = (i - 1) * eyeRadius * 0.5;
                 const double angle = (i - 1) * 0.3; // angle outward
 
-                // left eye lashes
+                // left eyelashes
                 wxGraphicsPath leftLash = gc->CreatePath();
                 leftLash.MoveToPoint(cx - eyeSpacing + offset, eyeTop);
                 leftLash.AddLineToPoint(cx - eyeSpacing + offset - angle * lashLength,
                                         eyeTop - lashLength);
                 gc->StrokePath(leftLash);
 
-                // right eye lashes
+                // right eyelashes
                 wxGraphicsPath rightLash = gc->CreatePath();
                 rightLash.MoveToPoint(cx + eyeSpacing + offset, eyeTop);
                 rightLash.AddLineToPoint(cx + eyeSpacing + offset + angle * lashLength,

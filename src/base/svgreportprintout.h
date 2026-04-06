@@ -17,7 +17,7 @@
 
 namespace Wisteria
     {
-    /// @brief Exports a collection of canvases into a multi-page SVG file.
+    /// @brief Exports a collection of canvases into a multipage SVG file.
     /// @details Each canvas is rendered into its own @c \<page\> element,
     ///     wrapped in a @c \<pageset\> inside a standard SVG document.
     ///     The page dimensions are derived from the paper size stored in

@@ -781,11 +781,12 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             if (txIt != txOpts.end())
                 {
                 auto& formulas = txIt->second.m_formulas;
-                formulas.erase(
-                    std::remove_if(formulas.begin(), formulas.end(),
+                formulas.erase(std::ranges::remove_if(
+                                   formulas,
                                    [&name](const Wisteria::ReportBuilder::DatasetFormulaInfo& f)
-                                   { return f.m_name == name; }),
-                    formulas.end());
+                                   { return f.m_name == name; })
+                                   .begin(),
+                               formulas.end());
                 m_reportBuilder.SetDatasetTransformOptions(oldDsName, txIt->second);
                 }
             }
@@ -1657,8 +1658,8 @@ void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, con
 //-------------------------------------------
 bool WisteriaView::IsPageSelected() const noexcept
     {
-    return std::any_of(m_pages.cbegin(), m_pages.cend(),
-                       [](const auto* canvas) { return canvas != nullptr && canvas->IsShown(); });
+    return std::ranges::any_of(m_pages, [](const auto* canvas)
+                               { return canvas != nullptr && canvas->IsShown(); });
     }
 
 //-------------------------------------------

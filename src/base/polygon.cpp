@@ -218,8 +218,8 @@ namespace Wisteria::GraphItems
                              GetBackgroundFill().GetDirection() == FillDirection::West  ? wxWEST :
                                                                                           wxSOUTH));
                         const wxDCBrushChanger bc2(dc, wxColour{ 0, 0, 0, 0 });
-                        const wxDCPenChanger pc2(dc,
-                                                 (usingCustomOutline ? wxNullPen : dc.GetPen()));
+                        const wxDCPenChanger pc2(
+                            dc, (usingCustomOutline ? *wxTRANSPARENT_PEN : dc.GetPen()));
                         dc.DrawRectangle(theRect);
                         }
                     // draw the outline
@@ -346,7 +346,8 @@ namespace Wisteria::GraphItems
                 {
                     // draw brush area
                     {
-                    const wxDCPenChanger pc2(dc, (usingCustomOutline ? wxNullPen : dc.GetPen()));
+                    const wxDCPenChanger pc2{ dc, (usingCustomOutline ? *wxTRANSPARENT_PEN :
+                                                                        dc.GetPen()) };
                     dc.DrawRectangle(boundingBox);
                     }
                 // draw the outline
