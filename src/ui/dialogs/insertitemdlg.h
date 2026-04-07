@@ -108,10 +108,7 @@ namespace Wisteria::UI
 
         /// @brief Sets the default value for "fit row to content."
         /// @param fit @c true to fit the row height to the item's content.
-        void SetFitRowToContent(const bool fit) noexcept
-            {
-            m_fitRowToContent = fit;
-            }
+        void SetFitRowToContent(const bool fit) noexcept { m_fitRowToContent = fit; }
 
         /// @returns Whether the item should use a fixed width on the canvas.
         [[nodiscard]]

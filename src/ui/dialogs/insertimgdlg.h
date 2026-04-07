@@ -23,6 +23,7 @@ namespace Wisteria::UI
     /// @brief Flags controlling which sections are visible in InsertImageDlg.
     enum ImageDlgOptions : int
         {
+        ImageDlgIncludeNone = 0,              ///< No options enabled.
         ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Page Options" section.
         ImageDlgIncludeStitch = 1 << 1,       ///< Show the stitch direction control.
         ImageDlgIncludeSize = 1 << 2,         ///< Show the size override controls.
