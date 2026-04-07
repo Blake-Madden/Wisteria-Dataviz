@@ -13,11 +13,10 @@
 
 //------------------------------------------------------
 Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canvases,
-                                               const wxString& filePath)
+                                               const wxString& filePath,
+                                               const wxSize& pageSize /*= wxDefaultSize*/)
     {
-    // collect page sizes to compute the overall SVG dimensions
-    int maxWidth{ 0 };
-    int totalHeight{ 0 };
+    // collect per-canvas paper sizes for rendering
     std::vector<wxSize> pageSizes;
     pageSizes.reserve(canvases.size());
     for (const auto* canvas : canvases)
@@ -26,10 +25,20 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             {
             continue;
             }
-        const wxSize paperSize = GetPaperSizeDIPs(canvas);
-        pageSizes.push_back(paperSize);
-        maxWidth = std::max(maxWidth, paperSize.GetWidth());
-        totalHeight += paperSize.GetHeight();
+        pageSizes.push_back(GetPaperSizeDIPs(canvas));
+        }
+
+    // the layout size controls the viewBox and page spacing;
+    // the rendering size (pageSizes) stays at each canvas's own paper size
+    const bool useOverrideSize = (pageSize != wxDefaultSize);
+    int maxWidth{ 0 };
+    int totalHeight{ 0 };
+    for (const auto& ps : pageSizes)
+        {
+        const int layoutWidth = useOverrideSize ? pageSize.GetWidth() : ps.GetWidth();
+        const int layoutHeight = useOverrideSize ? pageSize.GetHeight() : ps.GetHeight();
+        maxWidth = std::max(maxWidth, layoutWidth);
+        totalHeight += layoutHeight;
         }
 
     wxString svgContent;
@@ -40,7 +49,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
     svgContent += wxString::Format(L"<svg xmlns=\"http://www.w3.org/2000/svg\" "
                                    "xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" "
                                    "width=\"100%%\" height=\"%d\" "
-                                   "preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 %d %d\">\n",
+                                   "preserveAspectRatio=\"xMidYMin meet\" viewBox=\"0 0 %d %d\">\n",
                                    totalHeight, maxWidth, totalHeight);
     svgContent += L"<g id=\"pageset\">\n";
 
@@ -53,29 +62,34 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             continue;
             }
 
-        const wxSize paperSize = pageSizes[pageIndex++];
+        const wxSize renderSize = pageSizes[pageIndex];
+        const int layoutWidth = useOverrideSize ? pageSize.GetWidth() : renderSize.GetWidth();
+        const int layoutHeight = useOverrideSize ? pageSize.GetHeight() : renderSize.GetHeight();
+        ++pageIndex;
 
-        wxSVGFileDC svgDC{ wxString{}, paperSize.GetWidth(), paperSize.GetHeight(),
-                           wxSVG_DEFAULT_DPI, canvas->GetLabel() };
+        // render at the layout size so bitmaps are rasterized at the target resolution
+        wxSVGFileDC svgDC{ wxString{}, layoutWidth, layoutHeight, wxSVG_DEFAULT_DPI,
+                           canvas->GetLabel() };
         svgDC.SetBitmapHandler(new wxSVGBitmapEmbedHandler{});
 
         // freeze the canvas to hide the resize flicker
         const wxWindowUpdateLocker updateLocker{ canvas };
 
-        // temporarily resize the canvas to match the paper's aspect ratio
+        // temporarily resize the canvas to match the target page dimensions
         const int origMinWidth = canvas->GetCanvasMinWidthDIPs();
         const int origMinHeight = canvas->GetCanvasMinHeightDIPs();
         const wxSize origSize = canvas->GetSize();
 
         if (canvas->IsFittingToPageWhenPrinting())
             {
-            const auto scaledHeight = geometry::rescaled_height(
-                std::make_pair(paperSize.GetWidth(), paperSize.GetHeight()), origMinWidth);
+            const auto scaledHeight =
+                geometry::rescaled_height(std::make_pair(layoutWidth, layoutHeight), layoutWidth);
             if (scaledHeight > 0)
                 {
+                canvas->SetCanvasMinWidthDIPs(layoutWidth);
                 canvas->SetCanvasMinHeightDIPs(scaledHeight);
                 canvas->CalcRowDimensions();
-                canvas->SetSize(canvas->FromDIP(wxSize(origMinWidth, scaledHeight)));
+                canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
                 }
             }
 
@@ -101,11 +115,12 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         svgContent += wxString::Format(L"<g class=\"page\" data-width=\"%d\" data-height=\"%d\" "
                                        "transform=\"translate(0,%d)\">\n",
-                                       paperSize.GetWidth(), paperSize.GetHeight(), yOffset);
+                                       layoutWidth, layoutHeight, yOffset);
         svgContent += StripSvgTags(svgDC.GetSVGDocument());
+
         svgContent += L"\n</g>\n";
 
-        yOffset += paperSize.GetHeight();
+        yOffset += layoutHeight;
         }
 
     svgContent += L"</g>\n";

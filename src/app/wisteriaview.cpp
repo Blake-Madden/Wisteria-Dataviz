@@ -41,6 +41,7 @@
 #include "../ui/dialogs/pivotlongerdlg.h"
 #include "../ui/dialogs/pivotwiderrdlg.h"
 #include "../ui/dialogs/subsetdlg.h"
+#include "../ui/dialogs/svgexportdlg.h"
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
 
@@ -613,6 +614,19 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    const wxSize defaultPageSize =
+        (m_lastSvgPageSize != wxDefaultSize) ?
+            m_lastSvgPageSize :
+            Wisteria::SVGReportPrintout::GetPaperSizeDIPs(m_pages.front());
+
+    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize);
+    if (sizeDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    m_lastSvgPageSize = sizeDlg.GetPageSize();
+
     wxFileDialog fileDlg(m_frame, _(L"Export to SVG"), wxString{}, wxString{},
                          _(L"SVG files (*.svg)|*.svg"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (fileDlg.ShowModal() != wxID_OK)
@@ -620,7 +634,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::SVGReportPrintout(m_pages, fileDlg.GetPath());
+    Wisteria::SVGReportPrintout(m_pages, fileDlg.GetPath(), m_lastSvgPageSize);
     }
 
 //-------------------------------------------

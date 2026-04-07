@@ -109,6 +109,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp
     src/ui/dialogs/subsetdlg.cpp
+    src/ui/dialogs/svgexportdlg.cpp
     src/ui/dialogs/variableselectdlg.cpp
     src/util/fileutil.cpp
     src/util/formulaformat.cpp

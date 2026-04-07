@@ -28,15 +28,18 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param canvases The canvases (pages) to export.
         /// @param filePath The file path to save the SVG to.
-        SVGReportPrintout(const std::vector<Canvas*>& canvases, const wxString& filePath);
+        /// @param pageSize If valid, overrides the per-canvas paper sizes
+        ///     with this uniform size (in DIPs) for all pages.
+        SVGReportPrintout(const std::vector<Canvas*>& canvases, const wxString& filePath,
+                          const wxSize& pageSize = wxDefaultSize);
 
-      private:
         /// @brief Retrieves the paper size (in DIPs) for the given canvas.
         /// @param canvas The canvas whose paper size to query.
         /// @returns The paper size as a wxSize.
         [[nodiscard]]
         static wxSize GetPaperSizeDIPs(const Canvas* canvas);
 
+      private:
         /// @brief Strips the outer @c \<svg\> and @c \</svg\> tags from an SVG string,
         ///     returning just the body content.
         /// @param svgDoc The full SVG document string.
