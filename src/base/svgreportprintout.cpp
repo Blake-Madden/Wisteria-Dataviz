@@ -36,7 +36,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
     svgContent += L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
     svgContent += L"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
-                  L"\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+                  "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
     svgContent += wxString::Format(L"<svg xmlns=\"http://www.w3.org/2000/svg\" "
                                    "xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" "
                                    "width=\"100%%\" height=\"%d\" "
@@ -59,17 +59,48 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                            wxSVG_DEFAULT_DPI, canvas->GetLabel() };
         svgDC.SetBitmapHandler(new wxSVGBitmapEmbedHandler{});
 
-        // rescale everything to the SVG DC's scaling
-        const wxEventBlocker blocker{ canvas };
-        canvas->CalcAllSizes(svgDC);
-        canvas->OnDraw(svgDC);
-        canvas->DrawWatermarkLabel(svgDC);
-        // readjust the measurements to the canvas's DC
-        wxGCDC gdc(canvas);
-        canvas->CalcAllSizes(gdc);
+        // freeze the canvas to hide the resize flicker
+        const wxWindowUpdateLocker updateLocker{ canvas };
+
+        // temporarily resize the canvas to match the paper's aspect ratio
+        const int origMinWidth = canvas->GetCanvasMinWidthDIPs();
+        const int origMinHeight = canvas->GetCanvasMinHeightDIPs();
+        const wxSize origSize = canvas->GetSize();
+
+        if (canvas->IsFittingToPageWhenPrinting())
+            {
+            const auto scaledHeight = geometry::rescaled_height(
+                std::make_pair(paperSize.GetWidth(), paperSize.GetHeight()), origMinWidth);
+            if (scaledHeight > 0)
+                {
+                canvas->SetCanvasMinHeightDIPs(scaledHeight);
+                canvas->CalcRowDimensions();
+                canvas->SetSize(canvas->FromDIP(wxSize(origMinWidth, scaledHeight)));
+                }
+            }
+
+            {
+            // block events only during rendering to the SVG DC
+            const wxEventBlocker blocker{ canvas };
+            canvas->CalcAllSizes(svgDC);
+            canvas->OnDraw(svgDC);
+            canvas->DrawWatermarkLabel(svgDC);
+            }
+
+        // restore original canvas dimensions
+        if (canvas->IsFittingToPageWhenPrinting())
+            {
+            canvas->SetCanvasMinWidthDIPs(origMinWidth);
+            canvas->SetCanvasMinHeightDIPs(origMinHeight);
+            canvas->CalcRowDimensions();
+            canvas->SetSize(origSize);
+            }
+        canvas->ResetResizeDelay();
+        canvas->SendSizeEvent();
+        canvas->Refresh();
 
         svgContent += wxString::Format(L"<g class=\"page\" data-width=\"%d\" data-height=\"%d\" "
-                                       L"transform=\"translate(0,%d)\">\n",
+                                       "transform=\"translate(0,%d)\">\n",
                                        paperSize.GetWidth(), paperSize.GetHeight(), yOffset);
         svgContent += StripSvgTags(svgDC.GetSVGDocument());
         svgContent += L"\n</g>\n";
@@ -111,7 +142,7 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
     constexpr double dipsPerInch = 96.0;
     if (paperType != nullptr)
         {
-        wxSize sizeMM = paperType->GetSize();
+        const wxSize sizeMM = paperType->GetSize();
         const int widthDIPs =
             wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
         const int heightDIPs =
