@@ -38,9 +38,10 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
     svgContent += L"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
                   L"\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
     svgContent += wxString::Format(L"<svg xmlns=\"http://www.w3.org/2000/svg\" "
-                                   L"xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" "
-                                   L"width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
-                                   maxWidth, totalHeight, maxWidth, totalHeight);
+                                   "xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" "
+                                   "width=\"100%%\" height=\"%d\" "
+                                   "preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 %d %d\">\n",
+                                   totalHeight, maxWidth, totalHeight);
     svgContent += L"<g id=\"pageset\">\n";
 
     int yOffset{ 0 };
@@ -67,12 +68,10 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         wxGCDC gdc(canvas);
         canvas->CalcAllSizes(gdc);
 
-        const wxString svgBody = StripSvgTags(svgDC.GetSVGDocument());
-
         svgContent += wxString::Format(L"<g class=\"page\" data-width=\"%d\" data-height=\"%d\" "
                                        L"transform=\"translate(0,%d)\">\n",
                                        paperSize.GetWidth(), paperSize.GetHeight(), yOffset);
-        svgContent += svgBody;
+        svgContent += StripSvgTags(svgDC.GetSVGDocument());
         svgContent += L"\n</g>\n";
 
         yOffset += paperSize.GetHeight();
@@ -112,7 +111,7 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
     constexpr double dipsPerInch = 96.0;
     if (paperType != nullptr)
         {
-        const wxSize sizeMM = paperType->GetSize();
+        wxSize sizeMM = paperType->GetSize();
         const int widthDIPs =
             wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
         const int heightDIPs =
