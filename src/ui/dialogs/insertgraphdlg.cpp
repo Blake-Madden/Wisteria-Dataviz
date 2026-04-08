@@ -407,6 +407,7 @@ namespace Wisteria::UI
             wxDefaultPosition, wxDefaultSize,
             wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
             m_plotBgImage.IsOk() ? EditMode::Edit : EditMode::Insert,
+            // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
             static_cast<ImageDlgOptions>(ImageDlgIncludeAll & ~ImageDlgIncludePageOptions));
         if (m_plotBgImage.IsOk())
             {
