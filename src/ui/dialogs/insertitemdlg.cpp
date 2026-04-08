@@ -42,9 +42,9 @@ namespace Wisteria::UI
     InsertItemDlg::InsertItemDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                  wxWindow* parent, const wxString& caption, const wxWindowID id,
                                  const wxPoint& pos, const wxSize& size, const long style,
-                                 EditMode editMode)
+                                 EditMode editMode, const int pageOptions)
         : DialogWithHelp(parent, id, caption, pos, size, style), m_canvas(canvas),
-          m_reportBuilder(reportBuilder), m_editMode(editMode)
+          m_reportBuilder(reportBuilder), m_editMode(editMode), m_pageOptions(pageOptions)
         {
         const auto gridSize = m_canvas->GetFixedObjectsGridSize();
         m_rows = std::max<size_t>(gridSize.first, 1);
@@ -337,161 +337,166 @@ namespace Wisteria::UI
                               });
             }
 
-        // two-column layout for the remaining controls
-        auto* columnsSizer = new wxBoxSizer(wxHORIZONTAL);
-        pageSizer->Add(columnsSizer, wxSizerFlags{}.Expand());
-
-        auto* leftColumnSizer = new wxBoxSizer(wxVERTICAL);
-        columnsSizer->Add(leftColumnSizer, wxSizerFlags{}.Expand());
-
-        auto* rightColumnSizer = new wxBoxSizer(wxVERTICAL);
-        columnsSizer->Add(rightColumnSizer, wxSizerFlags{}.Expand().Border(wxLEFT));
-
-        // item placement properties
-        auto* propsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-
-        // horizontal page alignment
-        propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Horizontal alignment:")),
-                        wxSizerFlags{}.CenterVertical());
+        // page-level settings (alignment, scaling, margins, padding, outline, etc.)
+        if ((m_pageOptions & ItemDlgIncludePageSettings) != 0)
             {
-            auto* hAlignChoice =
-                new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_horizontalAlign));
-            hAlignChoice->Append(_(L"Left"));
-            hAlignChoice->Append(_(L"Centered"));
-            hAlignChoice->Append(_(L"Right"));
-            propsSizer->Add(hAlignChoice);
-            }
+            // two-column layout for the remaining controls
+            auto* columnsSizer = new wxBoxSizer(wxHORIZONTAL);
+            pageSizer->Add(columnsSizer, wxSizerFlags{}.Expand());
 
-        // vertical page alignment
-        propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Vertical alignment:")),
-                        wxSizerFlags{}.CenterVertical());
-            {
-            auto* vAlignChoice = new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                              0, nullptr, 0, wxGenericValidator(&m_verticalAlign));
-            vAlignChoice->Append(_(L"Top"));
-            vAlignChoice->Append(_(L"Centered"));
-            vAlignChoice->Append(_(L"Bottom"));
-            propsSizer->Add(vAlignChoice);
-            }
+            auto* leftColumnSizer = new wxBoxSizer(wxVERTICAL);
+            columnsSizer->Add(leftColumnSizer, wxSizerFlags{}.Expand());
 
-        // scaling
-        propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Scaling:")),
-                        wxSizerFlags{}.CenterVertical());
-        m_scalingSpin = new wxSpinCtrlDouble(pagePage, wxID_ANY);
-        m_scalingSpin->SetRange(0.1, 10.0);
-        m_scalingSpin->SetValue(1.0);
-        m_scalingSpin->SetIncrement(0.1);
-        m_scalingSpin->SetDigits(1);
-        propsSizer->Add(m_scalingSpin);
+            auto* rightColumnSizer = new wxBoxSizer(wxVERTICAL);
+            columnsSizer->Add(rightColumnSizer, wxSizerFlags{}.Expand().Border(wxLEFT));
 
-        leftColumnSizer->Add(propsSizer, wxSizerFlags{}.Border());
+            // item placement properties
+            auto* propsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
-        // canvas margins (top, right, bottom, left)
-        auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas margins"));
-        auto* marginGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
-
-        const auto addMarginSpin = [&](const wxString& label, int* value)
-        {
-            marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, label),
+            // horizontal page alignment
+            propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Horizontal alignment:")),
                             wxSizerFlags{}.CenterVertical());
-            auto* spin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
-            spin->SetRange(0, 100);
-            spin->SetValidator(wxGenericValidator(value));
-            marginGrid->Add(spin);
-        };
-        addMarginSpin(_(L"Top:"), &m_marginTop);
-        addMarginSpin(_(L"Right:"), &m_marginRight);
-        addMarginSpin(_(L"Bottom:"), &m_marginBottom);
-        addMarginSpin(_(L"Left:"), &m_marginLeft);
+                {
+                auto* hAlignChoice =
+                    new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
+                                 0, wxGenericValidator(&m_horizontalAlign));
+                hAlignChoice->Append(_(L"Left"));
+                hAlignChoice->Append(_(L"Centered"));
+                hAlignChoice->Append(_(L"Right"));
+                propsSizer->Add(hAlignChoice);
+                }
 
-        marginBox->Add(marginGrid, wxSizerFlags{}.Border());
-        rightColumnSizer->Add(marginBox, wxSizerFlags{}.Border());
+            // vertical page alignment
+            propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Vertical alignment:")),
+                            wxSizerFlags{}.CenterVertical());
+                {
+                auto* vAlignChoice =
+                    new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
+                                 0, wxGenericValidator(&m_verticalAlign));
+                vAlignChoice->Append(_(L"Top"));
+                vAlignChoice->Append(_(L"Centered"));
+                vAlignChoice->Append(_(L"Bottom"));
+                propsSizer->Add(vAlignChoice);
+                }
 
-        // padding (top, right, bottom, left)
-        auto* paddingBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Padding"));
-        auto* paddingGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
+            // scaling
+            propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Scaling:")),
+                            wxSizerFlags{}.CenterVertical());
+            m_scalingSpin = new wxSpinCtrlDouble(pagePage, wxID_ANY);
+            m_scalingSpin->SetRange(0.1, 10.0);
+            m_scalingSpin->SetValue(1.0);
+            m_scalingSpin->SetIncrement(0.1);
+            m_scalingSpin->SetDigits(1);
+            propsSizer->Add(m_scalingSpin);
 
-        const auto addPaddingSpin = [&](const wxString& label, int* value)
-        {
-            paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, label),
+            leftColumnSizer->Add(propsSizer, wxSizerFlags{}.Border());
+
+            // canvas margins (top, right, bottom, left)
+            auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas margins"));
+            auto* marginGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
+
+            const auto addMarginSpin = [&](const wxString& label, int* value)
+            {
+                marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, label),
+                                wxSizerFlags{}.CenterVertical());
+                auto* spin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
+                spin->SetRange(0, 100);
+                spin->SetValidator(wxGenericValidator(value));
+                marginGrid->Add(spin);
+            };
+            addMarginSpin(_(L"Top:"), &m_marginTop);
+            addMarginSpin(_(L"Right:"), &m_marginRight);
+            addMarginSpin(_(L"Bottom:"), &m_marginBottom);
+            addMarginSpin(_(L"Left:"), &m_marginLeft);
+
+            marginBox->Add(marginGrid, wxSizerFlags{}.Border());
+            rightColumnSizer->Add(marginBox, wxSizerFlags{}.Border());
+
+            // padding (top, right, bottom, left)
+            auto* paddingBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Padding"));
+            auto* paddingGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
+
+            const auto addPaddingSpin = [&](const wxString& label, int* value)
+            {
+                paddingGrid->Add(new wxStaticText(paddingBox->GetStaticBox(), wxID_ANY, label),
+                                 wxSizerFlags{}.CenterVertical());
+                auto* spin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
+                spin->SetRange(0, 100);
+                spin->SetValidator(wxGenericValidator(value));
+                paddingGrid->Add(spin);
+            };
+            addPaddingSpin(_(L"Top:"), &m_paddingTop);
+            addPaddingSpin(_(L"Right:"), &m_paddingRight);
+            addPaddingSpin(_(L"Bottom:"), &m_paddingBottom);
+            addPaddingSpin(_(L"Left:"), &m_paddingLeft);
+
+            paddingBox->Add(paddingGrid, wxSizerFlags{}.Border());
+            rightColumnSizer->Add(paddingBox, wxSizerFlags{}.Border());
+
+            // fit row to content
+            leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"),
+                                                wxDefaultPosition, wxDefaultSize, 0,
+                                                wxGenericValidator(&m_fitRowToContent)),
+                                 wxSizerFlags{}.Border());
+
+            // fixed width
+            leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"),
+                                                wxDefaultPosition, wxDefaultSize, 0,
+                                                wxGenericValidator(&m_fixedWidth)),
+                                 wxSizerFlags{}.Border());
+
+            // outline pen
+            auto* outlineBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Outline"));
+            auto* outlineGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
                              wxSizerFlags{}.CenterVertical());
-            auto* spin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
-            spin->SetRange(0, 100);
-            spin->SetValidator(wxGenericValidator(value));
-            paddingGrid->Add(spin);
-        };
-        addPaddingSpin(_(L"Top:"), &m_paddingTop);
-        addPaddingSpin(_(L"Right:"), &m_paddingRight);
-        addPaddingSpin(_(L"Bottom:"), &m_paddingBottom);
-        addPaddingSpin(_(L"Left:"), &m_paddingLeft);
+            m_outlineColorPicker =
+                new wxColourPickerCtrl(outlineBox->GetStaticBox(), wxID_ANY, *wxBLACK);
+            outlineGrid->Add(m_outlineColorPicker);
+            outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                             wxSizerFlags{}.CenterVertical());
+                {
+                auto* outlineWidthSpin = new wxSpinCtrl(outlineBox->GetStaticBox(), wxID_ANY);
+                outlineWidthSpin->SetRange(1, 20);
+                outlineWidthSpin->SetValidator(wxGenericValidator(&m_outlineWidth));
+                outlineGrid->Add(outlineWidthSpin);
+                }
+            outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
+                             wxSizerFlags{}.CenterVertical());
+                {
+                auto* outlineStyleChoice =
+                    new wxChoice(outlineBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                                 wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_outlineStyle));
+                outlineStyleChoice->Append(_(L"Solid"));
+                outlineStyleChoice->Append(_(L"Dot"));
+                outlineStyleChoice->Append(_(L"Long dash"));
+                outlineStyleChoice->Append(_(L"Short dash"));
+                outlineStyleChoice->Append(_(L"Dot dash"));
+                outlineGrid->Add(outlineStyleChoice);
+                }
+            outlineBox->Add(outlineGrid, wxSizerFlags{}.Border());
 
-        paddingBox->Add(paddingGrid, wxSizerFlags{}.Border());
-        rightColumnSizer->Add(paddingBox, wxSizerFlags{}.Border());
-
-        // fit row to content
-        leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"),
+            // border sides
+            auto* borderSizer = new wxBoxSizer(wxHORIZONTAL);
+            borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Top"),
                                             wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator(&m_fitRowToContent)),
-                             wxSizerFlags{}.Border());
-
-        // fixed width
-        leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"),
+                                            wxGenericValidator(&m_outlineTop)),
+                             wxSizerFlags{}.Border(wxRIGHT));
+            borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Right"),
                                             wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator(&m_fixedWidth)),
-                             wxSizerFlags{}.Border());
+                                            wxGenericValidator(&m_outlineRight)),
+                             wxSizerFlags{}.Border(wxRIGHT));
+            borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Bottom"),
+                                            wxDefaultPosition, wxDefaultSize, 0,
+                                            wxGenericValidator(&m_outlineBottom)),
+                             wxSizerFlags{}.Border(wxRIGHT));
+            borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Left"),
+                                            wxDefaultPosition, wxDefaultSize, 0,
+                                            wxGenericValidator(&m_outlineLeft)));
+            outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
 
-        // outline pen
-        auto* outlineBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Outline"));
-        auto* outlineGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
-                         wxSizerFlags{}.CenterVertical());
-        m_outlineColorPicker =
-            new wxColourPickerCtrl(outlineBox->GetStaticBox(), wxID_ANY, *wxBLACK);
-        outlineGrid->Add(m_outlineColorPicker);
-        outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
-                         wxSizerFlags{}.CenterVertical());
-            {
-            auto* outlineWidthSpin = new wxSpinCtrl(outlineBox->GetStaticBox(), wxID_ANY);
-            outlineWidthSpin->SetRange(1, 20);
-            outlineWidthSpin->SetValidator(wxGenericValidator(&m_outlineWidth));
-            outlineGrid->Add(outlineWidthSpin);
+            leftColumnSizer->Add(outlineBox, wxSizerFlags{}.Border());
             }
-        outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
-                         wxSizerFlags{}.CenterVertical());
-            {
-            auto* outlineStyleChoice =
-                new wxChoice(outlineBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_outlineStyle));
-            outlineStyleChoice->Append(_(L"Solid"));
-            outlineStyleChoice->Append(_(L"Dot"));
-            outlineStyleChoice->Append(_(L"Long dash"));
-            outlineStyleChoice->Append(_(L"Short dash"));
-            outlineStyleChoice->Append(_(L"Dot dash"));
-            outlineGrid->Add(outlineStyleChoice);
-            }
-        outlineBox->Add(outlineGrid, wxSizerFlags{}.Border());
-
-        // border sides
-        auto* borderSizer = new wxBoxSizer(wxHORIZONTAL);
-        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Top"),
-                                        wxDefaultPosition, wxDefaultSize, 0,
-                                        wxGenericValidator(&m_outlineTop)),
-                         wxSizerFlags{}.Border(wxRIGHT));
-        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Right"),
-                                        wxDefaultPosition, wxDefaultSize, 0,
-                                        wxGenericValidator(&m_outlineRight)),
-                         wxSizerFlags{}.Border(wxRIGHT));
-        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Bottom"),
-                                        wxDefaultPosition, wxDefaultSize, 0,
-                                        wxGenericValidator(&m_outlineBottom)),
-                         wxSizerFlags{}.Border(wxRIGHT));
-        borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Left"),
-                                        wxDefaultPosition, wxDefaultSize, 0,
-                                        wxGenericValidator(&m_outlineLeft)));
-        outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
-
-        leftColumnSizer->Add(outlineBox, wxSizerFlags{}.Border());
 
         SetSizer(mainSizer);
         }

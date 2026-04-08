@@ -28,6 +28,18 @@
 
 namespace Wisteria::UI
     {
+    /// @brief Flags controlling which parts of the "Page Options" page are visible.
+    enum ItemDlgPageOptions : int
+        {
+        /// @brief Show the canvas placement grid.
+        ItemDlgIncludeCanvasPlacement = 1 << 0,
+        /// @brief Show the page-level controls (alignment, scaling, margins,
+        ///     padding, outline, etc.).
+        ItemDlgIncludePageSettings = 1 << 1,
+        /// @brief Show all page options (the default).
+        ItemDlgIncludeAllPageOptions = ItemDlgIncludeCanvasPlacement | ItemDlgIncludePageSettings
+        };
+
     /** @brief Base dialog for inserting an item into a canvas cell.
         @details Provides a sidebar with a "Page" section showing the canvas grid.
             Users click (or Tab/Shift+Tab through) cells to select where
@@ -56,12 +68,15 @@ namespace Wisteria::UI
             @param pos The screen position.
             @param size The window size.
             @param style The window style.
-            @param editMode Whether the item is being inserted or edited.*/
+            @param editMode Whether the item is being inserted or edited.
+            @param pageOptions Bitmask of ItemDlgPageOptions controlling which
+                parts of the "Page Options" page are shown.*/
         InsertItemDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                       const wxString& caption, wxWindowID id = wxID_ANY,
                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                       long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                      EditMode editMode = EditMode::Insert);
+                      EditMode editMode = EditMode::Insert,
+                      int pageOptions = ItemDlgIncludeAllPageOptions);
 
         /// @private
         InsertItemDlg(const InsertItemDlg&) = delete;
@@ -201,6 +216,13 @@ namespace Wisteria::UI
             return m_canvas;
             }
 
+        /// @returns The edit mode.
+        [[nodiscard]]
+        EditMode GetEditMode() const noexcept
+            {
+            return m_editMode;
+            }
+
         /// @brief ID for the Page sidebar section.
         /// @note Subclass IDs start at wxID_HIGHEST + 2 to avoid collision with this.
         constexpr static wxWindowID ID_PAGE_SECTION{ wxID_HIGHEST + 1 };
@@ -239,6 +261,8 @@ namespace Wisteria::UI
         bool m_outlineRight{ false };
         bool m_outlineBottom{ false };
         bool m_outlineLeft{ false };
+
+        int m_pageOptions{ ItemDlgIncludeAllPageOptions };
 
         // controls without DDX validator support
         wxSpinCtrlDouble* m_scalingSpin{ nullptr };

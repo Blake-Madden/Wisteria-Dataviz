@@ -16,7 +16,8 @@ namespace Wisteria::UI
                                    wxWindow* parent, const wxString& caption, const wxWindowID id,
                                    const wxPoint& pos, const wxSize& size, const long style,
                                    EditMode editMode, const int options)
-        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
+        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
+                        ItemDlgIncludeCanvasPlacement),
           m_options(options)
         {
         CreateControls();
@@ -145,7 +146,10 @@ namespace Wisteria::UI
 
         // page options (background color, outline, etc.) are not relevant for shapes,
         // which are self-contained items with their own pen/brush controls.
-        GetSideBarBook()->DeletePage(0);
+        if (GetEditMode() == EditMode::Edit)
+            {
+            GetSideBarBook()->DeletePage(0);
+            }
 
         auto* columnGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(4), FromDIP(4) });
         auto* leftColSizer = new wxBoxSizer(wxVERTICAL);
