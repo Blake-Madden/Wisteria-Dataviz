@@ -1956,8 +1956,8 @@ namespace Wisteria
                         }
 
                     const auto mergeType =
-                        merge->GetProperty(L"type")->AsString(L"left-join-unique");
-                    if (mergeType.CmpNoCase(L"left-join-unique") == 0)
+                        merge->GetProperty(L"type")->AsString(L"left-join-unique-last");
+                    if (mergeType.CmpNoCase(L"left-join-unique-last") == 0)
                         {
                         std::vector<std::pair<wxString, wxString>> bys;
                         const auto byCols = merge->GetProperty(L"by")->AsNodes();
@@ -1968,7 +1968,7 @@ namespace Wisteria
                                              byCol->GetProperty(L"right-column")->AsString());
                             }
                         const auto suffix = merge->GetProperty(L"suffix")->AsString(L".x");
-                        auto mergedData = Data::DatasetJoin::LeftJoinUnique(
+                        auto mergedData = Data::DatasetJoin::LeftJoinUniqueLast(
                             datasetToMerge, foundPos->second, bys, suffix);
 
                         if (mergedData)

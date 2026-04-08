@@ -284,8 +284,8 @@ namespace Wisteria
             wxString m_sourceDatasetName;
             /// the name of the secondary (right) dataset to merge with.
             wxString m_otherDatasetName;
-            /// the merge type (e.g., "left-join-unique", "inner-join").
-            wxString m_type{ L"left-join-unique" };
+            /// the merge type (e.g., "left-join-unique-last", "inner-join").
+            wxString m_type{ L"left-join-unique-last" };
             /// left-column / right-column pairs
             std::vector<std::pair<wxString, wxString>> m_byColumns;
             /// the suffix appended to disambiguate duplicate column names.

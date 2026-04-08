@@ -12,10 +12,10 @@ namespace Wisteria::Data
     {
     //---------------------------------------------------
     std::shared_ptr<Dataset>
-    DatasetJoin::LeftJoinUnique(const std::shared_ptr<const Dataset>& leftDataset,
-                                const std::shared_ptr<const Dataset>& rightDataset,
-                                const std::vector<std::pair<wxString, wxString>>& byColumns,
-                                const wxString& suffix /*= L".x"*/)
+    DatasetJoin::LeftJoinUniqueLast(const std::shared_ptr<const Dataset>& leftDataset,
+                                    const std::shared_ptr<const Dataset>& rightDataset,
+                                    const std::vector<std::pair<wxString, wxString>>& byColumns,
+                                    const wxString& suffix /*= L".x"*/)
         {
         if (leftDataset == nullptr)
             {

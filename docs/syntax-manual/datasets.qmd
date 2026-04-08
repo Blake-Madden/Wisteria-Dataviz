@@ -331,7 +331,8 @@ This is an array of pivot specifications which contain the following properties:
   This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
 - `"type"`: A string specifying which type of merge to use. \
   Available options are:
-  - `"left-join-unique"`: A (unique) left join of the dataset with another dataset (the default).
+  - `"left-join-unique-last"`: A left join of the dataset with another dataset (the default). \
+    If a duplicate item from the right dataset is encountered, the last encountered value will be used.
 - `"other-dataset"`: The other dataset to merge the current dataset with. \
   This should be a name referencing a previously loaded dataset.
 - `"by"`: An array of properties specifying which columns to join by. \

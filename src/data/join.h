@@ -30,7 +30,7 @@ namespace Wisteria::Data
         virtual ~DatasetJoin() = default;
         /** @brief Left joins one dataset with another.\n
                 In the case of duplicate keys from the right dataset, only the last
-                instance's data will be included in the results. This is useful preventing
+                instance's data will be included in the results. This is useful for preventing
                 duplicate keys in the right dataset from causing duplicate rows in the results.
             @param leftDataset The left dataset which will be joined with. All rows and columns
                 from this dataset will be preserved in the output.
@@ -63,10 +63,10 @@ namespace Wisteria::Data
                 throws an exception.*/
         [[nodiscard]]
         static std::shared_ptr<Dataset>
-        LeftJoinUnique(const std::shared_ptr<const Dataset>& leftDataset,
-                       const std::shared_ptr<const Dataset>& rightDataset,
-                       const std::vector<std::pair<wxString, wxString>>& byColumns,
-                       const wxString& suffix = L".x");
+        LeftJoinUniqueLast(const std::shared_ptr<const Dataset>& leftDataset,
+                           const std::shared_ptr<const Dataset>& rightDataset,
+                           const std::vector<std::pair<wxString, wxString>>& byColumns,
+                           const wxString& suffix = L".x");
         };
     } // namespace Wisteria::Data
 
