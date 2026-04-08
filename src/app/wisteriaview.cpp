@@ -629,14 +629,15 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
 
     m_lastSvgPageSize = sizeDlg.GetPageSize();
 
-    wxFileDialog fileDlg(m_frame, _(L"Export to SVG"), wxString{}, wxString{},
-                         _(L"SVG files (*.svg)|*.svg"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    wxFileDialog fileDlg(m_frame, _(L"Export to SVG"), wxString{},
+                         GetDocument()->GetUserReadableName(), _(L"SVG files (*.svg)|*.svg"),
+                         wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (fileDlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
-    Wisteria::SVGReportPrintout(m_pages, fileDlg.GetPath(), m_lastSvgPageSize);
+    Wisteria::SVGReportPrintout svgReport(m_pages, fileDlg.GetPath(), m_lastSvgPageSize);
     }
 
 //-------------------------------------------

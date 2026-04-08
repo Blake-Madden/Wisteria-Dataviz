@@ -431,3 +431,128 @@ void WisteriaApp::InitProjectSidebar()
     m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"subset.svg"));
     m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"join.svg"));
     }
+
+//-------------------------------------------
+wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase* item)
+    {
+    if (item == nullptr)
+        {
+        return {};
+        }
+    // check most-derived types first
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
+        {
+        return L"bubbleplot.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
+        {
+        return L"scatterplot.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
+        {
+        return L"lineplot.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
+        {
+        return L"wcurve.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
+        {
+        return L"lineplot.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
+        {
+        return L"candlestick.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
+        {
+        return L"chernoffplot.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
+        {
+        return L"gantt.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
+        {
+        return L"histogram.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        return L"likert7.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
+        {
+        return L"barchart.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
+        {
+        return L"scale.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
+        {
+        return L"barchart.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
+        {
+        return L"boxplot.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
+        {
+        return L"heatmap.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
+        {
+        return L"piechart.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
+        {
+        return L"table.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
+        {
+        return L"sankey.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
+        {
+        return L"waffle.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
+        {
+        return L"stem-leaf.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
+        {
+        return L"wordcloud.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
+        {
+        return L"roadmap.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
+        {
+        return L"roadmap.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
+        {
+        return L"sparkline.svg";
+        }
+    // non-graph items
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
+        {
+        return L"label.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Image)))
+        {
+        return L"image.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::FillableShape)))
+        {
+        return L"shape.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Shape)))
+        {
+        return L"shape.svg";
+        }
+
+    return {};
+    }

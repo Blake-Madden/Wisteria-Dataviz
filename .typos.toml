@@ -40,6 +40,7 @@ Som = "Som"
 mor = "mor"
 WORL = "WORL"
 thm = "thm"
+optin = "optin"
 
 [type.svg]
 extend-glob = ["*.svg"]

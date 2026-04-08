@@ -24,6 +24,11 @@
 #include <wx/splitter.h>
 #include <wx/wx.h>
 
+namespace Wisteria::GraphItems
+    {
+    class GraphItemBase;
+    }
+
 /// @brief The Wisteria Dataviz application.
 class WisteriaApp final : public Wisteria::UI::BaseApp
     {
@@ -63,6 +68,15 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
             m_logWindow = nullptr;
             }
         }
+
+    /// @brief Returns the SVG icon filename for a canvas item,
+    ///     based on its RTTI type.
+    /// @param item The canvas item to look up.
+    /// @returns The SVG filename (e.g., @c "barchart.svg"), or an empty
+    ///     string if the type is not recognized.
+    [[nodiscard]]
+    static wxString GetItemIconName(
+        const Wisteria::GraphItems::GraphItemBase* item);
 
     /// @brief Shows or hides the log report window.
     void OnViewLogReport();

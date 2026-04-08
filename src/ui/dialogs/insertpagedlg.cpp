@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertpagedlg.h"
+#include "../../app/wisteriaapp.h"
 #include <wx/dcbuffer.h>
 #include <wx/valgen.h>
 
@@ -113,7 +114,6 @@ namespace Wisteria::UI
             const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
 
             const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
-            const auto labelFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).Smaller();
 
             for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
                 {
@@ -151,19 +151,33 @@ namespace Wisteria::UI
 
                     if (isOccupied)
                         {
-                        const auto label = item->GetClassName();
-                        if (!label.empty())
+                        const auto svgName = WisteriaApp::GetItemIconName(item.get());
+                        if (!svgName.empty())
                             {
-                            dc.SetFont(labelFont);
-                            dc.SetTextForeground(
-                                wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
-                            const auto textExtent = dc.GetTextExtent(label);
-                            const auto textLeft =
-                                clientRect.x + cellLeft + (cellW - textExtent.GetWidth()) / 2;
-                            const auto textTop =
-                                clientRect.y + cellTop + (cellH - textExtent.GetHeight()) / 2;
-                            dc.DrawText(label, textLeft, textTop);
+                            const auto iconSize = std::min(cellW, cellH) * 3 / 4;
+                            const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
+                            if (bmpBundle.IsOk())
+                                {
+                                const auto bmp = bmpBundle.GetBitmap(wxSize{ iconSize, iconSize });
+                                const auto iconLeft =
+                                    clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
+                                const auto iconTop =
+                                    clientRect.y + cellTop + (cellH - bmp.GetHeight()) / 2;
+                                dc.DrawBitmap(bmp, iconLeft, iconTop, true);
+                                }
                             }
+                        }
+                    else
+                        {
+                        const auto emptyLabel = _(L"[Empty]");
+                        dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).Smaller());
+                        dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
+                        const auto textExtent = dc.GetTextExtent(emptyLabel);
+                        const auto textLeft =
+                            clientRect.x + cellLeft + (cellW - textExtent.GetWidth()) / 2;
+                        const auto textTop =
+                            clientRect.y + cellTop + (cellH - textExtent.GetHeight()) / 2;
+                        dc.DrawText(emptyLabel, textLeft, textTop);
                         }
                     }
                 }
@@ -298,5 +312,31 @@ namespace Wisteria::UI
                               TransferDataFromWindow();
                               m_previewPanel->Refresh();
                           });
+
+        Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]] wxCommandEvent&)
+            {
+                TransferDataFromWindow();
+
+                if (m_canvas != nullptr)
+                    {
+                    const auto [canvasRows, canvasCols] = m_canvas->GetFixedObjectsGridSize();
+                    if (m_selectedRow < canvasRows && m_selectedColumn < canvasCols &&
+                        m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn) != nullptr)
+                        {
+                        if (wxMessageBox(_(L"The selected cell already contains an item. "
+                                           "Do you want to replace it?"),
+                                         _(L"Replace Item"), wxYES_NO | wxICON_QUESTION,
+                                         this) != wxYES)
+                            {
+                            return;
+                            }
+                        }
+                    }
+
+                EndModal(wxID_OK);
+            },
+            wxID_OK);
         }
     } // namespace Wisteria::UI

@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "svgexportdlg.h"
+#include <wx/dcgraph.h>
+#include <wx/graphics.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -94,15 +96,44 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void SvgExportDlg::OnPaintPreview([[maybe_unused]] wxPaintEvent& event)
         {
-        wxPaintDC dc(m_previewPanel);
-        dc.SetBackground(wxBrush{ m_previewPanel->GetBackgroundColour() });
+        wxPaintDC pdc(m_previewPanel);
+        wxGCDC dc(pdc);
+
+        const wxColour bgColour = m_previewPanel->GetBackgroundColour();
+        dc.SetBackground(wxBrush{ bgColour });
         dc.Clear();
 
         const wxSize panelSize = m_previewPanel->GetClientSize();
-        const wxString label = _(L"[Preview]");
-        const wxSize textSize = dc.GetTextExtent(label);
-        dc.DrawText(label, (panelSize.GetWidth() - textSize.GetWidth()) / 2,
-                    (panelSize.GetHeight() - textSize.GetHeight()) / 2);
+        constexpr int margin = 15;
+        const int diameter = std::min(panelSize.GetWidth(), panelSize.GetHeight()) - (margin * 2);
+
+        if (diameter <= 0)
+            {
+            return;
+            }
+
+        const int x = (panelSize.GetWidth() - diameter) / 2;
+        const int y = (panelSize.GetHeight() - diameter) / 2;
+        const wxPoint center(x + diameter / 2, y + diameter / 2);
+        const int radius = diameter / 2;
+
+        // draw the main black circle
+        dc.SetPen(*wxBLACK_PEN);
+        dc.SetBrush(*wxBLACK_BRUSH);
+        dc.DrawEllipse(x, y, diameter, diameter);
+
+        // draw the "Pie Slice" lines
+        wxPen slicePen(bgColour, 2);
+        dc.SetPen(slicePen);
+
+        // line 1: straight up (12 o'clock)
+        dc.DrawLine(center, wxPoint(center.x, center.y - radius));
+
+        // line 2: to the right-middle (roughly 4 o'clock)
+        dc.DrawLine(center, wxPoint(center.x + (radius * 0.86), center.y + (radius * 0.5)));
+
+        // line 3: to the left-bottom (roughly 8 o'clock)
+        dc.DrawLine(center, wxPoint(center.x - (radius * 0.5), center.y + (radius * 0.86)));
         }
 
     //------------------------------------------------------
