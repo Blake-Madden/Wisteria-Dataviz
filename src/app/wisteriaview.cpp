@@ -128,6 +128,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_INSERT_DATASET);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditDataset, this,
                   ID_EDIT_DATASET);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeleteDataset, this,
+                  ID_DELETE_DATASET);
 
     // bind pivot and subset buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPivotWider, this, ID_PIVOT_WIDER);
@@ -1243,6 +1245,127 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
 
         GetDocument()->Modify(true);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnDeleteDataset([[maybe_unused]] wxCommandEvent& event)
+    {
+    // verify a dataset is selected in the Data folder
+    const auto [parentFolder, subItem] = m_sideBar->GetSelectedSubItemId();
+    if (m_sideBar->GetSelectedFolder() != 0 || !subItem)
+        {
+        wxMessageBox(_(L"Please select a dataset."), _(L"Dataset Selection"), wxOK | wxICON_WARNING,
+                     m_frame);
+        return;
+        }
+
+    const auto selectedDatasetName = m_sideBar->GetSelectedLabel();
+    if (m_reportBuilder.GetDatasets().find(selectedDatasetName) ==
+        m_reportBuilder.GetDatasets().cend())
+        {
+        wxFAIL_MSG(L"Didn't find dataset when deleting?!");
+        return;
+        }
+
+    // collect dependent datasets (subsets, pivots, merges sourced from this dataset)
+    std::vector<wxString> dependentNames;
+    for (const auto& [name, opts] : m_reportBuilder.GetDatasetPivotOptions())
+        {
+        if (opts.m_sourceDatasetName.CmpNoCase(selectedDatasetName) == 0)
+            {
+            dependentNames.emplace_back(name);
+            }
+        }
+    for (const auto& [name, opts] : m_reportBuilder.GetDatasetSubsetOptions())
+        {
+        if (opts.m_sourceDatasetName.CmpNoCase(selectedDatasetName) == 0)
+            {
+            dependentNames.emplace_back(name);
+            }
+        }
+    for (const auto& [name, opts] : m_reportBuilder.GetDatasetMergeOptions())
+        {
+        if (opts.m_sourceDatasetName.CmpNoCase(selectedDatasetName) == 0)
+            {
+            dependentNames.emplace_back(name);
+            }
+        }
+
+    // build confirmation message
+    wxString confirmMsg = wxString::Format(
+        _(L"Are you sure you want to delete the dataset \"%s\"?"), selectedDatasetName);
+    if (!dependentNames.empty())
+        {
+        confirmMsg += _(L"\n\nThe following derived datasets will also be removed:\n");
+        for (const auto& depName : dependentNames)
+            {
+            confirmMsg += L"\n    • " + depName;
+            }
+        }
+
+    if (wxMessageBox(confirmMsg, _(L"Delete Dataset"), wxYES_NO | wxICON_QUESTION, m_frame) !=
+        wxYES)
+        {
+        return;
+        }
+
+    wxWindowUpdateLocker wl{ m_frame };
+
+    const auto dataFolderId = m_sideBar->GetFolder(0).GetId();
+
+    // helper to remove a single dataset by name from all storage
+    const auto removeDataset = [this, dataFolderId](const wxString& dsName)
+    {
+        // the sidebar subitem and grid share the same window ID,
+        // so find the subitem by label and use its ID to locate the grid
+        const auto [folderIdx, subIdx] = m_sideBar->FindSubItem(dsName);
+        if (folderIdx.has_value() && subIdx.has_value())
+            {
+            const auto dsWindowId =
+                m_sideBar->GetFolder(folderIdx.value()).GetSubItemId(subIdx.value());
+            if (auto* window = m_workWindows.FindWindowById(dsWindowId); window != nullptr)
+                {
+                m_workWindows.RemoveWindowById(dsWindowId);
+                window->Destroy();
+                }
+            m_sideBar->DeleteSubItemById(dataFolderId, dsWindowId);
+            }
+
+        // remove from all report builder maps
+        m_reportBuilder.GetDatasets().erase(dsName);
+        m_reportBuilder.GetDatasetImportOptions().erase(dsName);
+        m_reportBuilder.GetDatasetPivotOptions().erase(dsName);
+        m_reportBuilder.GetDatasetSubsetOptions().erase(dsName);
+        m_reportBuilder.GetDatasetMergeOptions().erase(dsName);
+        m_reportBuilder.GetDatasetTransformOptions().erase(dsName);
+        std::erase(m_reportBuilder.GetDatasetInsertionOrder(), dsName);
+    };
+
+    // remove dependent datasets first
+    for (const auto& depName : dependentNames)
+        {
+        removeDataset(depName);
+        }
+
+    // remove the selected dataset itself
+    removeDataset(selectedDatasetName);
+
+    // select the next dataset in the data folder, if any
+    const auto& dataFolder = m_sideBar->GetFolder(0);
+    if (dataFolder.GetSubItemCount() > 0)
+        {
+        m_sideBar->SelectSubItem(0, 0);
+        }
+    else
+        {
+        m_sideBar->SelectFolder(0, true, true);
+        }
+
+    m_workArea->Layout();
+    m_sideBar->SaveState();
+    m_sideBar->Refresh();
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------

@@ -331,6 +331,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                  _(L"Import a dataset into the project"));
         dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"data-edit.svg"),
                                  _(L"Edit the selected dataset's import options"));
+        dataButtonBar->AddButton(ID_DELETE_DATASET, _(L"Delete"), ReadSvgIcon(L"data-delete.svg"),
+                                 _(L"Delete the selected dataset from the project"));
 
         // Transformations panel
         auto* transformPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Transformations"));

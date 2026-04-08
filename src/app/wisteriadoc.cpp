@@ -2054,7 +2054,7 @@ void WisteriaDoc::SaveMerges(const wxSimpleJSON::Ptr_t& parentNode,
                                  L"\"mutate-categorical-columns\": [], \"collapse-min\": [], "
                                  L"\"collapse-except\": [], \"formulas\": []}",
                                  EscapeJsonStr(mrgName)));
-            if (!mOpts.m_type.empty() && mOpts.m_type != L"left-join-unique")
+            if (!mOpts.m_type.empty() && mOpts.m_type != L"left-join-unique-last")
                 {
                 mrgObj->Add(L"type", mOpts.m_type);
                 }

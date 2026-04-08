@@ -86,6 +86,7 @@ class WisteriaView final : public wxView
     void OnSvgExport(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
     void OnEditDataset(wxCommandEvent& event);
+    void OnDeleteDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);
     void OnSubsetDataset(wxCommandEvent& event);

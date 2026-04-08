@@ -203,6 +203,9 @@ constexpr wxWindowID ID_NEW_MULTI_SERIES_LINEPLOT{ wxID_HIGHEST + 46 };
 constexpr wxWindowID ID_ADD_CONSTANT{ wxID_HIGHEST + 47 };
 constexpr wxWindowID ID_DELETE_CONSTANT{ wxID_HIGHEST + 48 };
 
+// Dataset deletion
+constexpr wxWindowID ID_DELETE_DATASET{ wxID_HIGHEST + 53 };
+
 // Export
 constexpr wxWindowID ID_SVG_EXPORT{ wxID_HIGHEST + 52 };
 

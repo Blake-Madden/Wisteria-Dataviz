@@ -308,9 +308,16 @@ namespace Wisteria
             return m_datasets;
             }
 
-        /// @returns The insertion order of top-level (imported) datasets.
+        /// @private
         [[nodiscard]]
         const std::vector<wxString>& GetDatasetInsertionOrder() const noexcept
+            {
+            return m_datasetInsertionOrder;
+            }
+
+        /// @returns The insertion order of top-level (imported) datasets.
+        [[nodiscard]]
+        std::vector<wxString>& GetDatasetInsertionOrder() noexcept
             {
             return m_datasetInsertionOrder;
             }
@@ -441,6 +448,14 @@ namespace Wisteria
         [[nodiscard]]
         const std::map<wxString, DatasetMergeOptions, Data::wxStringLessNoCase>&
         GetDatasetMergeOptions() const noexcept
+            {
+            return m_datasetMergeOptions;
+            }
+
+        /// @private
+        [[nodiscard]]
+        std::map<wxString, DatasetMergeOptions, Data::wxStringLessNoCase>&
+        GetDatasetMergeOptions() noexcept
             {
             return m_datasetMergeOptions;
             }
