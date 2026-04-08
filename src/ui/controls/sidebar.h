@@ -126,6 +126,16 @@ namespace Wisteria::UI
                 return m_subItems.size();
                 }
 
+            /// @returns The ID of a child item at the given index.
+            /// @param index The index of the subitem.
+            [[nodiscard]]
+            wxWindowID GetSubItemId(const size_t index) const
+                {
+                wxASSERT_MSG(index < m_subItems.size(),
+                             L"Invalid index in call to GetSubItemId()!");
+                return m_subItems.at(index).m_id;
+                }
+
             /// @returns @c true if the selected item in the sidebar is
             ///     one of this folder's children.
             /// @warning Folders store the selected subitem even when it isn't active.
@@ -193,6 +203,35 @@ namespace Wisteria::UI
                 (e.g., will fail if parent item is not found).*/
         bool InsertSubItemById(const wxWindowID parentItemId, const wxString& label,
                                const wxWindowID Id, std::optional<size_t> iconIndex);
+
+        /** @brief Deletes a subitem from its parent folder.
+            @param parentItemId The ID of the parent folder.
+            @param subItemId The ID of the subitem to delete.
+            @returns @c true if the subitem was found and removed.*/
+        bool DeleteSubItemById(const wxWindowID parentItemId, const wxWindowID subItemId)
+            {
+            for (auto& folder : m_folders)
+                {
+                if (folder.m_id == parentItemId)
+                    {
+                    for (auto pos = folder.m_subItems.cbegin(); pos != folder.m_subItems.cend();
+                         ++pos)
+                        {
+                        if (pos->m_id == subItemId)
+                            {
+                            folder.m_subItems.erase(pos);
+                            folder.m_selectedItem.reset();
+                            folder.m_highlightedItem.reset();
+                            RecalcSizes();
+                            Refresh();
+                            return true;
+                            }
+                        }
+                    return false;
+                    }
+                }
+            return false;
+            }
 
         /** @brief Accesses a (root-level) item.
             @param item The item to access (by index).
