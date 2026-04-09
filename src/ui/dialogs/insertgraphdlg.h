@@ -152,6 +152,20 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetMirrorYAxis() const;
 
+        /// @returns The user-defined reference lines.
+        [[nodiscard]]
+        const std::vector<GraphItems::ReferenceLine>& GetReferenceLines() const noexcept
+            {
+            return m_referenceLines;
+            }
+
+        /// @returns The user-defined reference areas.
+        [[nodiscard]]
+        const std::vector<GraphItems::ReferenceArea>& GetReferenceAreas() const noexcept
+            {
+            return m_referenceAreas;
+            }
+
         /// @returns @c true if the user chose a custom color list
         ///     instead of a named color scheme.
         [[nodiscard]]
@@ -260,6 +274,16 @@ namespace Wisteria::UI
         void RefreshCustomColorList();
         void OnColorModeChanged();
 
+        void OnAddReferenceLine();
+        void OnEditReferenceLine();
+        void OnRemoveReferenceLine();
+        void RefreshReferenceLineList();
+
+        void OnAddReferenceArea();
+        void OnEditReferenceArea();
+        void OnRemoveReferenceArea();
+        void RefreshReferenceAreaList();
+
         GraphDlgOptions m_options{ GraphDlgIncludeAll };
 
         // DDX data members
@@ -271,6 +295,9 @@ namespace Wisteria::UI
         bool m_useCustomColors{ false };
         int m_colorSchemeIndex{ 0 };
         std::vector<wxColour> m_customColors;
+
+        std::vector<GraphItems::ReferenceLine> m_referenceLines;
+        std::vector<GraphItems::ReferenceArea> m_referenceAreas;
 
         // title / subtitle / caption as full Labels
         GraphItems::Label m_titleLabel;
@@ -298,6 +325,8 @@ namespace Wisteria::UI
         wxRadioButton* m_customColorsRadio{ nullptr };
         wxChoice* m_colorSchemeChoice{ nullptr };
         wxEditableListBox* m_customColorListBox{ nullptr };
+        wxEditableListBox* m_refLineListBox{ nullptr };
+        wxEditableListBox* m_refAreaListBox{ nullptr };
         };
     } // namespace Wisteria::UI
 

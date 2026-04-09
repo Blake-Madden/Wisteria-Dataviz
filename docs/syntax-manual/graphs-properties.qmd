@@ -47,8 +47,7 @@ Properties common to all graphs:
     - `"y"`: The y-axis position of the point. \
       Note that either position can be a number, an axis label, or a date (depending on the axis type).
   - `"anchor"`: The point to anchor the label. \
-     Note that the `label`'s `"anchoring"` property will control which part of the label that the
-     anchoring point refers to. \
+     Note that the `label`'s `"anchoring"` property will control which part of the label that the anchoring point refers to. \
      If not specified, the graph will attempt to place it at the best location. \
      This contains the following properties:
      - `"x"`: The x-axis position of the point.

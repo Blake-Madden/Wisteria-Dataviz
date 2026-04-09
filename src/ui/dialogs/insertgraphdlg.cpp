@@ -116,6 +116,19 @@ namespace Wisteria::UI
         graph.MirrorXAxis(GetMirrorXAxis());
         graph.MirrorYAxis(GetMirrorYAxis());
 
+        // replace reference lines and areas (clear first to avoid
+        // duplicating existing entries when editing a graph)
+        graph.GetReferenceLines().clear();
+        for (const auto& rl : m_referenceLines)
+            {
+            graph.AddReferenceLine(rl);
+            }
+        graph.GetReferenceAreas().clear();
+        for (const auto& ra : m_referenceAreas)
+            {
+            graph.AddReferenceArea(ra);
+            }
+
         // apply color/brush scheme
         if (m_options & GraphDlgIncludeColorScheme)
             {
@@ -422,6 +435,48 @@ namespace Wisteria::UI
         axisSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror Y axis"), wxDefaultPosition,
                                       wxDefaultSize, 0, wxGenericValidator(&m_mirrorYAxis)),
                        wxSizerFlags{}.Border());
+
+        // reference lines
+        auto* refLineBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Reference Lines"));
+        m_refLineListBox = new wxEditableListBox(
+            refLineBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        RefreshReferenceLineList();
+        refLineBox->Add(m_refLineListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        m_refLineListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                               [this](wxCommandEvent&) { OnAddReferenceLine(); });
+        m_refLineListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+        m_refLineListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                [this](wxCommandEvent&) { OnEditReferenceLine(); });
+        m_refLineListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                               { OnRemoveReferenceLine(); });
+        m_refLineListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                               [this](wxListEvent&) { OnEditReferenceLine(); });
+        axisSizer->Add(refLineBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // reference areas
+        auto* refAreaBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Reference Areas"));
+        m_refAreaListBox = new wxEditableListBox(
+            refAreaBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        RefreshReferenceAreaList();
+        refAreaBox->Add(m_refAreaListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        m_refAreaListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                               [this](wxCommandEvent&) { OnAddReferenceArea(); });
+        m_refAreaListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+        m_refAreaListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                [this](wxCommandEvent&) { OnEditReferenceArea(); });
+        m_refAreaListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                               { OnRemoveReferenceArea(); });
+        m_refAreaListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                               [this](wxListEvent&) { OnEditReferenceArea(); });
+        axisSizer->Add(refAreaBox, wxSizerFlags{ 1 }.Expand().Border());
         }
 
     //-------------------------------------------
@@ -683,6 +738,380 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::RefreshReferenceLineList()
+        {
+        wxArrayString strings;
+        strings.reserve(m_referenceLines.size());
+        for (const auto& rl : m_referenceLines)
+            {
+            const auto atStr = ReportEnumConvert::ConvertAxisTypeToString(rl.GetAxisType());
+            strings.Add(wxString::Format(
+                /* TRANSLATORS: value at an axis position on a graph */ _(L"%s at %g: %s"),
+                atStr.value_or(L"?"), rl.GetAxisPosition(), rl.GetLabel()));
+            }
+        m_refLineListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAddReferenceLine()
+        {
+        wxDialog dlg(this, wxID_ANY, _(L"Add Reference Line"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        sizer->AddGrowableCol(1, 1);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
+        auto* axisChoice = new wxChoice(&dlg, wxID_ANY);
+        axisChoice->Append(_(L"Bottom X"));
+        axisChoice->Append(_(L"Top X"));
+        axisChoice->Append(_(L"Left Y"));
+        axisChoice->Append(_(L"Right Y"));
+        axisChoice->SetSelection(0);
+        sizer->Add(axisChoice, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Position:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* posSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY);
+        posSpin->SetRange(-1e9, 1e9);
+        posSpin->SetIncrement(1);
+        posSpin->SetDigits(4);
+        sizer->Add(posSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
+        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
+        auto* colorPicker = new wxColourPickerCtrl(
+            &dlg, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::LightGray));
+        sizer->Add(colorPicker);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label placement:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* placementChoice = new wxChoice(&dlg, wxID_ANY);
+        placementChoice->Append(_(L"Legend"));
+        placementChoice->Append(_(L"Opposite axis"));
+        placementChoice->SetSelection(0);
+        sizer->Add(placementChoice, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        constexpr AxisType axisTypes[] = { AxisType::BottomXAxis, AxisType::TopXAxis,
+                                           AxisType::LeftYAxis, AxisType::RightYAxis };
+        const auto axisType = axisTypes[axisChoice->GetSelection()];
+        const auto labelPlacement = (placementChoice->GetSelection() == 1) ?
+                                        ReferenceLabelPlacement::OppositeAxis :
+                                        ReferenceLabelPlacement::Legend;
+        m_referenceLines.emplace_back(
+            axisType, posSpin->GetValue(), labelCtrl->GetValue(),
+            wxPen{ colorPicker->GetColour(), 1, wxPenStyle::wxPENSTYLE_LONG_DASH }, labelPlacement);
+        RefreshReferenceLineList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnEditReferenceLine()
+        {
+        const auto sel = m_refLineListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                      wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_referenceLines.size()))
+            {
+            return;
+            }
+
+        auto& rl = m_referenceLines[static_cast<size_t>(sel)];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Reference Line"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        sizer->AddGrowableCol(1, 1);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
+        auto* axisChoice = new wxChoice(&dlg, wxID_ANY);
+        axisChoice->Append(_(L"Bottom X"));
+        axisChoice->Append(_(L"Top X"));
+        axisChoice->Append(_(L"Left Y"));
+        axisChoice->Append(_(L"Right Y"));
+        constexpr AxisType axisTypes[] = { AxisType::BottomXAxis, AxisType::TopXAxis,
+                                           AxisType::LeftYAxis, AxisType::RightYAxis };
+        for (int i = 0; i < 4; ++i)
+            {
+            if (axisTypes[i] == rl.GetAxisType())
+                {
+                axisChoice->SetSelection(i);
+                break;
+                }
+            }
+        sizer->Add(axisChoice, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Position:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* posSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY);
+        posSpin->SetRange(-1e9, 1e9);
+        posSpin->SetIncrement(1);
+        posSpin->SetDigits(4);
+        posSpin->SetValue(rl.GetAxisPosition());
+        sizer->Add(posSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
+        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY, rl.GetLabel());
+        sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
+        auto* colorPicker = new wxColourPickerCtrl(&dlg, wxID_ANY, rl.GetPen().GetColour());
+        sizer->Add(colorPicker);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label placement:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* placementChoice = new wxChoice(&dlg, wxID_ANY);
+        placementChoice->Append(_(L"Legend"));
+        placementChoice->Append(_(L"Opposite axis"));
+        placementChoice->SetSelection(
+            rl.GetLabelPlacement() == ReferenceLabelPlacement::OppositeAxis ? 1 : 0);
+        sizer->Add(placementChoice, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto axisType = axisTypes[axisChoice->GetSelection()];
+        const auto labelPlacement = (placementChoice->GetSelection() == 1) ?
+                                        ReferenceLabelPlacement::OppositeAxis :
+                                        ReferenceLabelPlacement::Legend;
+        rl = GraphItems::ReferenceLine(
+            axisType, posSpin->GetValue(), labelCtrl->GetValue(),
+            wxPen{ colorPicker->GetColour(), 1, wxPenStyle::wxPENSTYLE_LONG_DASH }, labelPlacement);
+        RefreshReferenceLineList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnRemoveReferenceLine()
+        {
+        const auto sel = m_refLineListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                      wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_referenceLines.size()))
+            {
+            return;
+            }
+
+        m_referenceLines.erase(m_referenceLines.begin() + sel);
+        RefreshReferenceLineList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::RefreshReferenceAreaList()
+        {
+        wxArrayString strings;
+        strings.reserve(m_referenceAreas.size());
+        for (const auto& ra : m_referenceAreas)
+            {
+            const auto atStr = ReportEnumConvert::ConvertAxisTypeToString(ra.GetAxisType());
+            strings.Add(wxString::Format(L"%s [%g–%g]: %s", atStr.value_or(L"?"),
+                                         ra.GetAxisPosition(), ra.GetAxisPosition2(),
+                                         ra.GetLabel()));
+            }
+        m_refAreaListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAddReferenceArea()
+        {
+        wxDialog dlg(this, wxID_ANY, _(L"Add Reference Area"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        sizer->AddGrowableCol(1, 1);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
+        auto* axisChoice = new wxChoice(&dlg, wxID_ANY);
+        axisChoice->Append(_(L"Bottom X"));
+        axisChoice->Append(_(L"Top X"));
+        axisChoice->Append(_(L"Left Y"));
+        axisChoice->Append(_(L"Right Y"));
+        axisChoice->SetSelection(0);
+        sizer->Add(axisChoice, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")), wxSizerFlags{}.CenterVertical());
+        auto* startSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY);
+        startSpin->SetRange(-1e9, 1e9);
+        startSpin->SetIncrement(1);
+        startSpin->SetDigits(4);
+        sizer->Add(startSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")), wxSizerFlags{}.CenterVertical());
+        auto* endSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY);
+        endSpin->SetRange(-1e9, 1e9);
+        endSpin->SetIncrement(1);
+        endSpin->SetDigits(4);
+        sizer->Add(endSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
+        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
+        auto* colorPicker = new wxColourPickerCtrl(
+            &dlg, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::LightGray));
+        sizer->Add(colorPicker);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Style:")), wxSizerFlags{}.CenterVertical());
+        auto* styleChoice = new wxChoice(&dlg, wxID_ANY);
+        styleChoice->Append(_(L"Solid"));
+        styleChoice->Append(_(L"Fade from left to right"));
+        styleChoice->Append(_(L"Fade from right to left"));
+        styleChoice->SetSelection(0);
+        sizer->Add(styleChoice, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        constexpr AxisType axisTypes[] = { AxisType::BottomXAxis, AxisType::TopXAxis,
+                                           AxisType::LeftYAxis, AxisType::RightYAxis };
+        constexpr ReferenceAreaStyle areaStyles[] = { ReferenceAreaStyle::Solid,
+                                                      ReferenceAreaStyle::FadeFromLeftToRight,
+                                                      ReferenceAreaStyle::FadeFromRightToLeft };
+        m_referenceAreas.emplace_back(
+            axisTypes[axisChoice->GetSelection()], startSpin->GetValue(), endSpin->GetValue(),
+            labelCtrl->GetValue(),
+            wxPen{ colorPicker->GetColour(), 1, wxPenStyle::wxPENSTYLE_LONG_DASH },
+            areaStyles[styleChoice->GetSelection()]);
+        RefreshReferenceAreaList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnEditReferenceArea()
+        {
+        const auto sel = m_refAreaListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                      wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_referenceAreas.size()))
+            {
+            return;
+            }
+
+        auto& ra = m_referenceAreas[static_cast<size_t>(sel)];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Reference Area"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer{ 2, wxSize{ FromDIP(8), FromDIP(4) } };
+        sizer->AddGrowableCol(1, 1);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
+        auto* axisChoice = new wxChoice(&dlg, wxID_ANY);
+        axisChoice->Append(_(L"Bottom X"));
+        axisChoice->Append(_(L"Top X"));
+        axisChoice->Append(_(L"Left Y"));
+        axisChoice->Append(_(L"Right Y"));
+        constexpr AxisType axisTypes[] = { AxisType::BottomXAxis, AxisType::TopXAxis,
+                                           AxisType::LeftYAxis, AxisType::RightYAxis };
+        for (int i = 0; i < 4; ++i)
+            {
+            if (axisTypes[i] == ra.GetAxisType())
+                {
+                axisChoice->SetSelection(i);
+                break;
+                }
+            }
+        sizer->Add(axisChoice, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")), wxSizerFlags{}.CenterVertical());
+        auto* startSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY);
+        startSpin->SetRange(-1e9, 1e9);
+        startSpin->SetIncrement(1);
+        startSpin->SetDigits(4);
+        startSpin->SetValue(ra.GetAxisPosition());
+        sizer->Add(startSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")), wxSizerFlags{}.CenterVertical());
+        auto* endSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY);
+        endSpin->SetRange(-1e9, 1e9);
+        endSpin->SetIncrement(1);
+        endSpin->SetDigits(4);
+        endSpin->SetValue(ra.GetAxisPosition2());
+        sizer->Add(endSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
+        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY, ra.GetLabel());
+        sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
+        auto* colorPicker = new wxColourPickerCtrl(&dlg, wxID_ANY, ra.GetPen().GetColour());
+        sizer->Add(colorPicker);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Style:")), wxSizerFlags{}.CenterVertical());
+        auto* styleChoice = new wxChoice(&dlg, wxID_ANY);
+        styleChoice->Append(_(L"Solid"));
+        styleChoice->Append(_(L"Fade from left to right"));
+        styleChoice->Append(_(L"Fade from right to left"));
+        constexpr std::array<ReferenceAreaStyle, 3> areaStyles{
+            ReferenceAreaStyle::Solid, ReferenceAreaStyle::FadeFromLeftToRight,
+            ReferenceAreaStyle::FadeFromRightToLeft
+        };
+        for (int i = 0; i < areaStyles.size(); ++i)
+            {
+            if (areaStyles[i] == ra.GetReferenceAreaStyle())
+                {
+                styleChoice->SetSelection(i);
+                break;
+                }
+            }
+        sizer->Add(styleChoice, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        ra = GraphItems::ReferenceArea(
+            axisTypes[axisChoice->GetSelection()], startSpin->GetValue(), endSpin->GetValue(),
+            labelCtrl->GetValue(),
+            wxPen{ colorPicker->GetColour(), 1, wxPenStyle::wxPENSTYLE_LONG_DASH },
+            areaStyles[styleChoice->GetSelection()]);
+        RefreshReferenceAreaList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnRemoveReferenceArea()
+        {
+        const auto sel = m_refAreaListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                      wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_referenceAreas.size()))
+            {
+            return;
+            }
+
+        m_referenceAreas.erase(m_referenceAreas.begin() + sel);
+        RefreshReferenceAreaList();
+        }
+
+    //-------------------------------------------
     bool InsertGraphDlg::ValidateColorScheme()
         {
         if (!(m_options & GraphDlgIncludeColorScheme))
@@ -798,6 +1227,18 @@ namespace Wisteria::UI
 
         m_mirrorXAxis = graph.IsXAxisMirrored();
         m_mirrorYAxis = graph.IsYAxisMirrored();
+
+        // load reference lines and areas
+        m_referenceLines = graph.GetReferenceLines();
+        m_referenceAreas = graph.GetReferenceAreas();
+        if (m_refLineListBox != nullptr)
+            {
+            RefreshReferenceLineList();
+            }
+        if (m_refAreaListBox != nullptr)
+            {
+            RefreshReferenceAreaList();
+            }
 
         // save all four axes for round-tripping (SetData() rebuilds them)
         m_savedAxes.clear();
