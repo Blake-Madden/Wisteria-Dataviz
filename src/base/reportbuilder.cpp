@@ -1968,7 +1968,7 @@ namespace Wisteria
                                              byCol->GetProperty(L"right-column")->AsString());
                             }
                         const auto suffix = merge->GetProperty(L"suffix")->AsString(L".x");
-                        auto mergedData = Data::DatasetJoin::LeftJoinUniqueLast(
+                        auto mergedData = Data::DatasetLeftJoin::LeftJoinUniqueLast(
                             datasetToMerge, foundPos->second, bys, suffix);
 
                         if (mergedData)

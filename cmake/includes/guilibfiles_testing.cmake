@@ -26,7 +26,7 @@ SET(WISTERIA_SRC
     ../../src/data/clone.cpp
     ../../src/data/dataset.cpp
     ../../src/data/excelreader.cpp
-    ../../src/data/join.cpp
+    ../../src/data/join_left.cpp
     ../../src/data/odsreader.cpp
     ../../src/data/pivot.cpp
     ../../src/data/subset.cpp

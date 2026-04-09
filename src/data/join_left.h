@@ -17,17 +17,17 @@
 namespace Wisteria::Data
     {
     /// @brief Interface for joining datasets.
-    class DatasetJoin
+    class DatasetLeftJoin
         {
       public:
         /// @private
-        DatasetJoin() = default;
+        DatasetLeftJoin() = default;
         /// @private
-        DatasetJoin(const DatasetJoin&) = delete;
+        DatasetLeftJoin(const DatasetLeftJoin&) = delete;
         /// @private
-        DatasetJoin& operator=(const DatasetJoin&) = delete;
+        DatasetLeftJoin& operator=(const DatasetLeftJoin&) = delete;
         /// @private
-        virtual ~DatasetJoin() = default;
+        virtual ~DatasetLeftJoin() = default;
         /** @brief Left joins one dataset with another.\n
                 In the case of duplicate keys from the right dataset, only the last
                 instance's data will be included in the results. This is useful for preventing

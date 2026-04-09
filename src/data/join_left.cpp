@@ -1,21 +1,21 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        join.cpp
+// Name:        join_left.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "join.h"
+#include "join_left.h"
 
 namespace Wisteria::Data
     {
     //---------------------------------------------------
     std::shared_ptr<Dataset>
-    DatasetJoin::LeftJoinUniqueLast(const std::shared_ptr<const Dataset>& leftDataset,
-                                    const std::shared_ptr<const Dataset>& rightDataset,
-                                    const std::vector<std::pair<wxString, wxString>>& byColumns,
-                                    const wxString& suffix /*= L".x"*/)
+    DatasetLeftJoin::LeftJoinUniqueLast(const std::shared_ptr<const Dataset>& leftDataset,
+                                        const std::shared_ptr<const Dataset>& rightDataset,
+                                        const std::vector<std::pair<wxString, wxString>>& byColumns,
+                                        const wxString& suffix /*= L".x"*/)
         {
         if (leftDataset == nullptr)
             {

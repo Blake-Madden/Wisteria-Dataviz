@@ -159,7 +159,7 @@ namespace Wisteria::UI
                             const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
                             if (bmpBundle.IsOk())
                                 {
-                                const auto bmp = bmpBundle.GetBitmap(wxSize{ iconSize, iconSize });
+                                const auto bmp = bmpBundle.GetBitmap(wxSize(iconSize, iconSize));
                                 const auto iconLeft =
                                     clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
                                 const auto iconTop =

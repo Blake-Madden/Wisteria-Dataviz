@@ -1,5 +1,5 @@
 #include "../../src/data/dataset.h"
-#include "../../src/data/join.h"
+#include "../../src/data/join_left.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
@@ -59,7 +59,7 @@ TEST_CASE("LeftJoinUnique: basic join on ID", "[Join][LeftJoinUnique]")
     AddRow(right, wxString{ "B" }, {}, { 20.0 });
 
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "ID", "ID" } });
 
     // left row count preserved
@@ -93,7 +93,7 @@ TEST_CASE("LeftJoinUnique: right duplicates last-wins", "[Join][LeftJoinUnique]"
     AddRow(right, wxString{ "X" }, {}, { 999.0 }); // duplicate, should override
 
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "ID", "ID" } });
 
     auto r = out->GetContinuousColumn("RVal");
@@ -117,7 +117,7 @@ TEST_CASE("LeftJoinUnique: name collision applies suffix", "[Join][LeftJoinUniqu
     AddRow(left, wxString{ "K1" }, {}, { 1.0 });
     AddRow(right, wxString{ "K1" }, {}, { 2.0 });
 
-    auto out = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+    auto out = DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                            std::make_shared<const Dataset>(right),
                                            { { "ID", "ID" } }, L".x");
 
@@ -153,7 +153,7 @@ TEST_CASE("LeftJoinUnique: join by categorical keys", "[Join][LeftJoinUnique]")
     AddRow(right, std::nullopt, { 0 }, { 10.0 }); // A
     AddRow(right, std::nullopt, { 1 }, { 20.0 }); // B
 
-    auto out = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+    auto out = DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                            std::make_shared<const Dataset>(right),
                                            { { "Group", "Group" } });
 
@@ -182,7 +182,7 @@ TEST_CASE("LeftJoinUnique: ignore right-only keys; unmatched remain missing",
     AddRow(right, wxString{ "NOPE" }, {}, { 42.0 }); // no match
 
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "ID", "ID" } });
 
     auto r = out->GetContinuousColumn("R");
@@ -217,7 +217,7 @@ TEST_CASE("LeftJoinUnique: copy right ID when left has none", "[Join][LeftJoinUn
     AddRow(right, wxString{ "r2" }, { 1 }, { 2.0 });
 
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "Key", "Key" } });
 
     // ID column name should be copied from Right
@@ -247,7 +247,7 @@ TEST_CASE("LeftJoinUnique: both have IDs; not joining by ID", "[Join][LeftJoinUn
     AddRow(right, wxString{ "R_B" }, { 1 }, { 22.0 });
 
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "Key", "Key" } });
 
     // Left ID should remain; Right ID should not overwrite ID column
@@ -271,16 +271,16 @@ TEST_CASE("LeftJoinUnique: throws on invalid arguments", "[Join][LeftJoinUnique]
     ds->GetIdColumn().SetName("ID");
 
     // nullptr left
-    REQUIRE_THROWS(DatasetJoin::LeftJoinUnique(nullptr, ds, { { "ID", "ID" } }));
+    REQUIRE_THROWS(DatasetLeftJoin::LeftJoinUnique(nullptr, ds, { { "ID", "ID" } }));
 
     // nullptr right
-    REQUIRE_THROWS(DatasetJoin::LeftJoinUnique(ds, nullptr, { { "ID", "ID" } }));
+    REQUIRE_THROWS(DatasetLeftJoin::LeftJoinUnique(ds, nullptr, { { "ID", "ID" } }));
 
     // empty 'by'
-    REQUIRE_THROWS(DatasetJoin::LeftJoinUnique(ds, ds, {}));
+    REQUIRE_THROWS(DatasetLeftJoin::LeftJoinUnique(ds, ds, {}));
 
     // empty suffix
-    REQUIRE_THROWS(DatasetJoin::LeftJoinUnique(ds, ds, { { "ID", "ID" } }, wxString{}));
+    REQUIRE_THROWS(DatasetLeftJoin::LeftJoinUnique(ds, ds, { { "ID", "ID" } }, wxString{}));
     }
 
 namespace
@@ -338,7 +338,7 @@ TEST_CASE("LeftJoinUnique: date join by ID (unmatched stays missing)", "[Join][D
     AddRow(right, wxString{ "Z" }, { DMY(2025, wxDateTime::Jun, 25) }); // right-only, ignored
 
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "ID", "ID" } });
 
     // shape checks
@@ -380,7 +380,7 @@ TEST_CASE("LeftJoinUnique: date name collision applies suffix", "[Join][Date][Su
 
     // use default suffix ".x"
     auto out =
-        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+        DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                     std::make_shared<const Dataset>(right), { { "ID", "ID" } });
 
     // left's "When" must remain unchanged
@@ -440,7 +440,7 @@ TEST_CASE("LeftJoinUnique: chained suffix collision (categorical)", "[Join][Suff
     AddRow(right, "K2", std::vector<GroupIdType>{ 1 });
 
     // One-step suffixer will try to append "Group.x" again
-    auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+    auto joined = DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                               std::make_shared<const Dataset>(right),
                                               { { "ID", "ID" } }, L".x");
     CHECK(joined->ContainsColumn(L"Group.x2"));
@@ -490,7 +490,7 @@ TEST_CASE("LeftJoinUnique: chained suffix collision (continuous)", "[Join][Suffi
         }
 
     // Attempting to add "Score" from Right → suffix to "Score.x"
-    auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+    auto joined = DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                               std::make_shared<const Dataset>(right),
                                               { { "ID", "ID" } }, L".x");
     CHECK(joined->ContainsColumn(L"Score.x2"));
@@ -533,7 +533,7 @@ TEST_CASE("LeftJoinUnique: chained suffix collision (date)", "[Join][Suffix][Dat
         }
 
     // Right's "When" → wants to become "When.x" by suffix
-    auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+    auto joined = DatasetLeftJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
                                               std::make_shared<const Dataset>(right),
                                               { { "ID", "ID" } }, L".x");
     CHECK(joined->ContainsColumn(L"When.x2"));
