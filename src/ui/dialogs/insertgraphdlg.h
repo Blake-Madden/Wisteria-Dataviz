@@ -245,6 +245,8 @@ namespace Wisteria::UI
         /// @brief ID for the Axis Options sidebar section.
         constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 101 };
 
+        bool ConfirmOverwrite() final;
+
       private:
         void OnEditTitle();
         void OnEditSubtitle();

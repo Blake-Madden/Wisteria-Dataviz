@@ -175,6 +175,73 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    bool InsertGraphDlg::ConfirmOverwrite()
+        {
+        if (!InsertItemDlg::ConfirmOverwrite())
+            {
+            return false;
+            }
+
+        const auto legendPlace = GetLegendPlacement();
+        if (GetEditMode() != EditMode::Insert || legendPlace == LegendPlacement::None ||
+            GetCanvas() == nullptr)
+            {
+            return true;
+            }
+
+        const auto [gridRows, gridCols] = GetCanvas()->GetFixedObjectsGridSize();
+        const auto graphRow = GetSelectedRow();
+        const auto graphCol = GetSelectedColumn();
+
+        // determine the cell where the legend would be placed
+        // (mirrors the logic in WisteriaView::PlaceGraphWithLegend)
+        size_t legendRow = graphRow;
+        size_t legendCol = graphCol;
+        bool legendCellExists = false;
+
+        if (legendPlace == LegendPlacement::Right)
+            {
+            legendCol = graphCol + 1;
+            legendCellExists = (legendCol < gridCols);
+            }
+        else if (legendPlace == LegendPlacement::Left)
+            {
+            if (graphCol > 0)
+                {
+                legendCol = graphCol - 1;
+                legendCellExists = true;
+                }
+            // graphCol == 0: grid will be expanded, no existing cell to overwrite
+            }
+        else if (legendPlace == LegendPlacement::Bottom)
+            {
+            legendRow = graphRow + 1;
+            legendCellExists = (legendRow < gridRows);
+            }
+        else if (legendPlace == LegendPlacement::Top)
+            {
+            if (graphRow > 0)
+                {
+                legendRow = graphRow - 1;
+                legendCellExists = true;
+                }
+            // graphRow == 0: grid will be expanded, no existing cell to overwrite
+            }
+
+        if (legendCellExists && GetCanvas()->GetFixedObject(legendRow, legendCol) != nullptr)
+            {
+            if (wxMessageBox(_(L"The legend cell already contains an "
+                               "item. Do you want to replace it?"),
+                             _(L"Replace Item"), wxYES_NO | wxICON_QUESTION, this) != wxYES)
+                {
+                return false;
+                }
+            }
+
+        return true;
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::CreateGraphOptionsPage()
         {
         auto* graphPage = new wxPanel(GetSideBarBook());

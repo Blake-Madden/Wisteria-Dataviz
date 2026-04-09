@@ -95,7 +95,7 @@ namespace Wisteria::UI
         m_sideBarBook->AddPage(pagePage, _(L"Page Options"), ID_PAGE_SECTION, true);
 
         // grid size controls (only for new items being added to the canvas)
-        if (m_editMode == EditMode::Insert)
+        if (GetEditMode() == EditMode::Insert)
             {
             auto* gridSizeSizer = new wxFlexGridSizer(4, wxSize{ FromDIP(8), FromDIP(4) });
             gridSizeSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Rows:")),
@@ -133,7 +133,7 @@ namespace Wisteria::UI
             }
 
         // grid preview (only for new items being added to the canvas)
-        if (m_editMode == EditMode::Insert)
+        if (GetEditMode() == EditMode::Insert)
             {
             pageSizer->Add(new wxStaticText(pagePage, wxID_ANY,
                                             _(L"Select the cell where the item will be placed:")),
@@ -689,6 +689,26 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    bool InsertItemDlg::ConfirmOverwrite()
+        {
+        if (GetEditMode() == EditMode::Insert && m_canvas != nullptr)
+            {
+            const auto [canvasRows, canvasCols] = m_canvas->GetFixedObjectsGridSize();
+            if (m_selectedRow < canvasRows && m_selectedColumn < canvasCols &&
+                m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn) != nullptr)
+                {
+                if (wxMessageBox(_(L"The selected cell already contains an "
+                                   "item. Do you want to replace it?"),
+                                 _(L"Replace Item"), wxYES_NO | wxICON_QUESTION, this) != wxYES)
+                    {
+                    return false;
+                    }
+                }
+            }
+        return true;
+        }
+
+    //-------------------------------------------
     void InsertItemDlg::FinalizeControls()
         {
         GetSizer()->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
@@ -700,21 +720,11 @@ namespace Wisteria::UI
             [this](wxCommandEvent& evt)
             {
                 ApplyGridSize();
+                TransferDataFromWindow();
 
-                if (m_editMode == EditMode::Insert && m_canvas != nullptr)
+                if (!ConfirmOverwrite())
                     {
-                    const auto [canvasRows, canvasCols] = m_canvas->GetFixedObjectsGridSize();
-                    if (m_selectedRow < canvasRows && m_selectedColumn < canvasCols &&
-                        m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn) != nullptr)
-                        {
-                        if (wxMessageBox(_(L"The selected cell already contains an "
-                                           "item. Do you want to replace it?"),
-                                         _(L"Replace Item"), wxYES_NO | wxICON_QUESTION,
-                                         this) != wxYES)
-                            {
-                            return;
-                            }
-                        }
+                    return;
                     }
 
                 evt.Skip();

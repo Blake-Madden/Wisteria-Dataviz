@@ -195,6 +195,14 @@ namespace Wisteria::UI
         /// @details Must be called after all sidebar pages have been added.
         void FinalizeControls();
 
+        /// @brief Checks whether placing the item would overwrite existing
+        ///     canvas cells and prompts the user for confirmation.
+        /// @details The base implementation checks only the selected cell.
+        ///     Derived classes (e.g., InsertGraphDlg) can override this to
+        ///     also check cells used by related items such as legends.
+        /// @returns @c true if placement should proceed, @c false to cancel.
+        virtual bool ConfirmOverwrite();
+
         /// @returns The sidebar book control.
         [[nodiscard]]
         SideBarBook* GetSideBarBook() noexcept
