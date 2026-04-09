@@ -92,9 +92,6 @@ class WisteriaDoc final : public wxDocument
     wxSimpleJSON::Ptr_t SaveCommonAxis(const Wisteria::GraphItems::Axis* axis,
                                        const Wisteria::Canvas* canvas) const;
 
-    [[nodiscard]]
-    static wxString GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph);
-
     // save helpers
     [[nodiscard]]
     static wxString EscapeJsonStr(const wxString& str);

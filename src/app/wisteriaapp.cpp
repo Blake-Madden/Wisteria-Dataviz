@@ -338,16 +338,16 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* transformPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Transformations"));
         auto* transformButtonBar = new wxRibbonButtonBar(transformPanel, wxID_ANY);
 
+        transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
+                                      _(L"Create a subset of a dataset"));
+        transformButtonBar->AddButton(ID_JOIN_DATASET, _(L"Join"), ReadSvgIcon(L"join.svg"),
+                                      _(L"Join two datasets"));
         transformButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"),
                                       ReadSvgIcon(L"pivot-wider.svg"),
                                       _(L"Pivot a dataset wider (unstack)"));
         transformButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
                                       ReadSvgIcon(L"pivot-longer.svg"),
                                       _(L"Pivot a dataset longer (stack)"));
-        transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
-                                      _(L"Create a subset of a dataset"));
-        transformButtonBar->AddButton(ID_JOIN_DATASET, _(L"Join"), ReadSvgIcon(L"join.svg"),
-                                      _(L"Join two datasets"));
 
         // Constants panel
         auto* constantsPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Constants"));
@@ -432,6 +432,109 @@ void WisteriaApp::InitProjectSidebar()
     m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"pivot-longer.svg"));
     m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"subset.svg"));
     m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"join.svg"));
+    }
+
+//-------------------------------------------
+wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
+    {
+    if (graph == nullptr)
+        {
+        return {};
+        }
+
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
+        {
+        return _DT(L"multi-series-line-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
+        {
+        return _DT(L"w-curve-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
+        {
+        return _DT(L"line-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
+        {
+        return _DT(L"bubble-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
+        {
+        return _DT(L"scatter-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+        {
+        return _DT(L"likert-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
+        {
+        return _DT(L"categorical-bar-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
+        {
+        return _DT(L"histogram");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
+        {
+        return _DT(L"scale-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
+        {
+        return _DT(L"bar-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
+        {
+        return _DT(L"box-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
+        {
+        return _DT(L"pie-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
+        {
+        return _DT(L"heatmap");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
+        {
+        return _DT(L"table");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
+        {
+        return _DT(L"gantt-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
+        {
+        return _DT(L"candlestick-plot");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
+        {
+        return _DT(L"linear-regression-roadmap");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
+        {
+        return _DT(L"pro-con-roadmap");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
+        {
+        return _DT(L"waffle-chart");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
+        {
+        return _DT(L"word-cloud");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
+        {
+        return _DT(L"sankey-diagram");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
+        {
+        return _DT(L"win-loss-sparkline");
+        }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
+        {
+        return _DT(L"chernoff-faces");
+        }
+    return {};
     }
 
 //-------------------------------------------

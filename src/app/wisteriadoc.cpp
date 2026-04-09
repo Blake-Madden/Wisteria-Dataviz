@@ -2942,7 +2942,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         return wxSimpleJSON::Ptr_t{};
         }
 
-    const auto typeStr = GetGraphTypeString(graph);
+    const auto typeStr = WisteriaApp::GetGraphTypeString(graph);
     if (typeStr.empty())
         {
         return wxSimpleJSON::Ptr_t{};
@@ -4479,107 +4479,4 @@ wxString WisteriaDoc::ResolveFilePath(const wxString& filePath) const
             }
         }
     return filePath;
-    }
-
-//-------------------------------------------
-wxString WisteriaDoc::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
-    {
-    if (graph == nullptr)
-        {
-        return {};
-        }
-
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
-        {
-        return _DT(L"multi-series-line-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
-        {
-        return _DT(L"w-curve-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
-        {
-        return _DT(L"line-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
-        {
-        return _DT(L"bubble-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
-        {
-        return _DT(L"scatter-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
-        {
-        return _DT(L"likert-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
-        {
-        return _DT(L"categorical-bar-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
-        {
-        return _DT(L"histogram");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
-        {
-        return _DT(L"scale-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
-        {
-        return _DT(L"bar-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
-        {
-        return _DT(L"box-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
-        {
-        return _DT(L"pie-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
-        {
-        return _DT(L"heatmap");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
-        {
-        return _DT(L"table");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
-        {
-        return _DT(L"gantt-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
-        {
-        return _DT(L"candlestick-plot");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
-        {
-        return _DT(L"linear-regression-roadmap");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
-        {
-        return _DT(L"pro-con-roadmap");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
-        {
-        return _DT(L"waffle-chart");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
-        {
-        return _DT(L"word-cloud");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
-        {
-        return _DT(L"sankey-diagram");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
-        {
-        return _DT(L"win-loss-sparkline");
-        }
-    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
-        {
-        return _DT(L"chernoff-faces");
-        }
-    return {};
     }

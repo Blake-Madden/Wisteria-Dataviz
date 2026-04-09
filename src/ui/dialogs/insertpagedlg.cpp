@@ -54,12 +54,19 @@ namespace Wisteria::UI
         auto* gridSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         gridSizer->AddGrowableCol(1, 1);
 
+        // name
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Name:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* nameCtrl = new wxTextCtrl(this, wxID_ANY, m_pageName, wxDefaultPosition,
+                                        wxDefaultSize, 0, wxGenericValidator{ &m_pageName });
+        gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
+
         // rows
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Rows:")),
                        wxSizerFlags{}.CenterVertical());
         auto* rowsSpin = new wxSpinCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
                                         wxDefaultSize, wxSP_ARROW_KEYS, 1, 100, 1);
-        rowsSpin->SetValidator(wxGenericValidator(&m_rowCount));
+        rowsSpin->SetValidator(wxGenericValidator{ &m_rowCount });
         gridSizer->Add(rowsSpin, wxSizerFlags{}.Expand());
 
         // columns
@@ -67,15 +74,8 @@ namespace Wisteria::UI
                        wxSizerFlags{}.CenterVertical());
         auto* columnsSpin = new wxSpinCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
                                            wxDefaultSize, wxSP_ARROW_KEYS, 1, 100, 1);
-        columnsSpin->SetValidator(wxGenericValidator(&m_columnCount));
+        columnsSpin->SetValidator(wxGenericValidator{ &m_columnCount });
         gridSizer->Add(columnsSpin, wxSizerFlags{}.Expand());
-
-        // name
-        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Name:")),
-                       wxSizerFlags{}.CenterVertical());
-        auto* nameCtrl = new wxTextCtrl(this, wxID_ANY, m_pageName, wxDefaultPosition,
-                                        wxDefaultSize, 0, wxGenericValidator(&m_pageName));
-        gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
         contentSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 

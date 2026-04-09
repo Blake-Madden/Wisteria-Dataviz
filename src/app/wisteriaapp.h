@@ -78,6 +78,14 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     static wxString GetItemIconName(
         const Wisteria::GraphItems::GraphItemBase* item);
 
+    /// @brief Returns the serializable type name for a graph,
+    ///     based on its RTTI type.
+    /// @param graph The graph type to look up.
+    /// @returns The type string for the graph, or an empty
+    ///     string if the type is not recognized.
+    [[nodiscard]]
+    static wxString GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph);
+
     /// @brief Shows or hides the log report window.
     void OnViewLogReport();
 
