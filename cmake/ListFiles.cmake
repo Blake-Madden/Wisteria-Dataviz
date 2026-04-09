@@ -7,15 +7,23 @@ odt_odp_extract|doc_extract|docx_extract|ui/app[.]cpp|codeeditor[.]cpp|htmltable
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
 htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdlg[.]cpp|\
-listctrlsortdlg[.]cpp|artmetro[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
+listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\
 sidebarbook[.]cpp|downloadfile[.]cpp|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern)")
 
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
-codeeditor[.]cpp|functionbrowserdlg[.]cpp|demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|\
-utfcpp/extern)")
+codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern)")
+
+# Exclusion filter for main application (in addition to other filters)
+set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
+codeeditor[.]cpp|functionbrowserdlg[.]cpp|demo[.]cpp|main[.]cpp|\
+htmltablewinprintout[.]cpp|htmltablewin[.]cpp|archivedlg[.]cpp|htmltablepanel[.]cpp|\
+screenshot[.]cpp|idhelpers[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
+(cpp|doc|docx|html|markdown|ods|odt|postscript|rtf|odt_odp)_extract_text[.]cpp|\
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern)")
 
 # Use the directory containing this file to find the project root
 # (works correctly whether included from main CMakeLists.txt or test CMakeLists.txt)
@@ -122,11 +130,8 @@ block()
          "${FILE_SRC_PATH}/src/*cJSON[.]c")
     list(APPEND LISTED_SRC_FILES ${C_SRC_FILES})
     list(SORT LISTED_SRC_FILES CASE INSENSITIVE)
-    # Filter out unwanted files (only exclude test, demo, and submodule extras)
-    list(FILTER LISTED_SRC_FILES EXCLUDE REGEX ${WISTERIA_GUI_LIB_EXCLUDE_FILTER})
-    # Add back the app source files (excluded by the shared filter above)
-    file(GLOB APP_SPECIFIC_FILES LIST_DIRECTORIES false RELATIVE ${FILE_SRC_PATH}
-         "${FILE_SRC_PATH}/src/app/*.cpp")
+    # Filter out unwanted files
+    list(FILTER LISTED_SRC_FILES EXCLUDE REGEX ${WISTERIA_APP_EXCLUDE_FILTER})
     list(APPEND LISTED_SRC_FILES ${APP_SPECIFIC_FILES})
     list(SORT LISTED_SRC_FILES CASE INSENSITIVE)
 
