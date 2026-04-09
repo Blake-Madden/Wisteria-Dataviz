@@ -154,7 +154,8 @@ namespace Wisteria::UI
                         const auto svgName = WisteriaApp::GetItemIconName(item.get());
                         if (!svgName.empty())
                             {
-                            const auto iconSize = std::min(cellW, cellH) * 3 / 4;
+                            const auto iconSize =
+                                std::min(cellW, cellH) * math_constants::three_fourths;
                             const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
                             if (bmpBundle.IsOk())
                                 {

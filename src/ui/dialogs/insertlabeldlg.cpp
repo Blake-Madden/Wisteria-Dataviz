@@ -23,6 +23,7 @@ namespace Wisteria::UI
         : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
           m_includePageOptions(includePageOptions)
         {
+        SetFitRowToContent(true);
         CreateControls();
         FinalizeControls();
         TransferDataToWindow();
