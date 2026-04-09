@@ -30,6 +30,7 @@ SET(APP_WISTERIA_SRC
     src/data/clone.cpp
     src/data/dataset.cpp
     src/data/excelreader.cpp
+    src/data/join_inner.cpp
     src/data/join_left.cpp
     src/data/odsreader.cpp
     src/data/pivot.cpp
@@ -70,20 +71,9 @@ SET(APP_WISTERIA_SRC
     src/graphs/wcurveplot.cpp
     src/graphs/win_loss_sparkline.cpp
     src/graphs/wordcloud.cpp
-    src/import/cpp_extract_text.cpp
-    src/import/doc_extract_text.cpp
-    src/import/docx_extract_text.cpp
-    src/import/html_extract_text.cpp
-    src/import/markdown_extract_text.cpp
-    src/import/ods_extract_text.cpp
-    src/import/odt_odp_extract_text.cpp
-    src/import/postscript_extract_text.cpp
-    src/import/rtf_extract_text.cpp
     src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/ui/app.cpp
-    src/ui/controls/htmltablewin.cpp
-    src/ui/controls/htmltablewinprintout.cpp
     src/ui/controls/listctrlex.cpp
     src/ui/controls/listctrlexcelexporter.cpp
     src/ui/controls/listctrlexdataprovider.cpp
@@ -91,13 +81,9 @@ SET(APP_WISTERIA_SRC
     src/ui/controls/sidebar.cpp
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
-    src/ui/dialogs/archivedlg.cpp
     src/ui/dialogs/datasetimportdlg.cpp
     src/ui/dialogs/excelpreviewdlg.cpp
-    src/ui/dialogs/filelistdlg.cpp
-    src/ui/dialogs/getdirdlg.cpp
     src/ui/dialogs/gridexportdlg.cpp
-    src/ui/dialogs/htmltablepanel.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp
     src/ui/dialogs/insertboxplotdlg.cpp
@@ -129,6 +115,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/insertwcurvedlg.cpp
     src/ui/dialogs/insertwlsparklinedlg.cpp
     src/ui/dialogs/insertwordclouddlg.cpp
+    src/ui/dialogs/joindlg.cpp
     src/ui/dialogs/listctrlitemviewdlg.cpp
     src/ui/dialogs/listctrlsortdlg.cpp
     src/ui/dialogs/listdlg.cpp
@@ -148,11 +135,9 @@ SET(APP_WISTERIA_SRC
     src/util/formulaformat.cpp
     src/util/hardwareinfo.cpp
     src/util/i18n_string_util.cpp
-    src/util/idhelpers.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
     src/util/resource_manager.cpp
-    src/util/screenshot.cpp
     src/util/textreplace.cpp
     src/util/textstream.cpp
     src/util/warningmanager.cpp

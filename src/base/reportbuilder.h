@@ -15,6 +15,7 @@
 #include "../base/reportenumconvert.h"
 #include "../base/reportnodeloader.h"
 #include "../base/tablelink.h"
+#include "../data/join_inner.h"
 #include "../data/join_left.h"
 #include "../graphs/barchart.h"
 #include "../graphs/boxplot.h"

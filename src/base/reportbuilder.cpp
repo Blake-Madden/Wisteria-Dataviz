@@ -1957,7 +1957,10 @@ namespace Wisteria
 
                     const auto mergeType =
                         merge->GetProperty(L"type")->AsString(L"left-join-unique-last");
-                    if (mergeType.CmpNoCase(L"left-join-unique-last") == 0)
+                    if (mergeType.CmpNoCase(L"left-join-unique-last") == 0 ||
+                        mergeType.CmpNoCase(L"left-join-unique-first") == 0 ||
+                        mergeType.CmpNoCase(L"left-join") == 0 ||
+                        mergeType.CmpNoCase(L"inner-join") == 0)
                         {
                         std::vector<std::pair<wxString, wxString>> bys;
                         const auto byCols = merge->GetProperty(L"by")->AsNodes();
@@ -1968,8 +1971,17 @@ namespace Wisteria
                                              byCol->GetProperty(L"right-column")->AsString());
                             }
                         const auto suffix = merge->GetProperty(L"suffix")->AsString(L".x");
-                        auto mergedData = Data::DatasetLeftJoin::LeftJoinUniqueLast(
-                            datasetToMerge, foundPos->second, bys, suffix);
+                        auto mergedData = (mergeType.CmpNoCase(L"inner-join") == 0) ?
+                                              Data::DatasetInnerJoin::InnerJoin(
+                                                  datasetToMerge, foundPos->second, bys, suffix) :
+                                          (mergeType.CmpNoCase(L"left-join-unique-first") == 0) ?
+                                              Data::DatasetLeftJoin::LeftJoinUniqueFirst(
+                                                  datasetToMerge, foundPos->second, bys, suffix) :
+                                          (mergeType.CmpNoCase(L"left-join") == 0) ?
+                                              Data::DatasetLeftJoin::LeftJoin(
+                                                  datasetToMerge, foundPos->second, bys, suffix) :
+                                              Data::DatasetLeftJoin::LeftJoinUniqueLast(
+                                                  datasetToMerge, foundPos->second, bys, suffix);
 
                         if (mergedData)
                             {

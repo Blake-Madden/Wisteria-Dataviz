@@ -332,7 +332,16 @@ This is an array of pivot specifications which contain the following properties:
 - `"type"`: A string specifying which type of merge to use. \
   Available options are:
   - `"left-join-unique-last"`: A left join of the dataset with another dataset (the default). \
-    If a duplicate item from the right dataset is encountered, the last encountered value will be used.
+    If a key in the left dataset has one-to-many matching keys in the right dataset, only the last matching right row's data will be used.
+  - `"left-join-unique-first"`: A left join of the dataset with another dataset. \
+    If a key in the left dataset has one-to-many matching keys in the right dataset, only the first matching right row's data will be used.
+  - `"left-join"`: A standard left join. \
+    If a key in the left dataset has one-to-many matching keys in the right dataset, the left row will be duplicated for each matching right row.
+    The output may have more rows than the left dataset.
+  - `"inner-join"`: An inner join. \
+    Returns only rows where the keys match in both datasets.
+    If a key has one-to-many matches, the row is duplicated for each match.
+    Rows from either dataset with no matching key in the other are excluded.
 - `"other-dataset"`: The other dataset to merge the current dataset with. \
   This should be a name referencing a previously loaded dataset.
 - `"by"`: An array of properties specifying which columns to join by. \

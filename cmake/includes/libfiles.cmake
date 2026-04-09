@@ -25,6 +25,7 @@ SET(WISTERIA_SRC
     src/data/clone.cpp
     src/data/dataset.cpp
     src/data/excelreader.cpp
+    src/data/join_inner.cpp
     src/data/join_left.cpp
     src/data/odsreader.cpp
     src/data/pivot.cpp
@@ -102,6 +103,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertwcurvedlg.cpp
     src/ui/dialogs/insertwlsparklinedlg.cpp
     src/ui/dialogs/insertwordclouddlg.cpp
+    src/ui/dialogs/joindlg.cpp
     src/ui/dialogs/odspreviewdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/pivotlongerdlg.cpp

@@ -38,6 +38,7 @@
 #include "../ui/dialogs/insertwcurvedlg.h"
 #include "../ui/dialogs/insertwlsparklinedlg.h"
 #include "../ui/dialogs/insertwordclouddlg.h"
+#include "../ui/dialogs/joindlg.h"
 #include "../ui/dialogs/pivotlongerdlg.h"
 #include "../ui/dialogs/pivotwiderrdlg.h"
 #include "../ui/dialogs/subsetdlg.h"
@@ -137,6 +138,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_PIVOT_LONGER);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSubsetDataset, this,
                   ID_SUBSET_DATASET);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnJoinDataset, this,
+                  ID_JOIN_DATASET);
 
     // bind add constant button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnRibbonAddConstant, this,
@@ -1246,6 +1249,92 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
 
         GetDocument()->Modify(true);
         }
+    else if (const auto foundMergeOptions =
+                 GetReportBuilder().GetDatasetMergeOptions().find(selectedDatasetName);
+             foundMergeOptions != GetReportBuilder().GetDatasetMergeOptions().cend())
+        {
+        // edit a joined dataset
+        const auto& storedOpts = foundMergeOptions->second;
+
+        Wisteria::UI::JoinOptions joinOpts;
+        joinOpts.m_sourceDatasetName = storedOpts.m_sourceDatasetName;
+        joinOpts.m_otherDatasetName = storedOpts.m_otherDatasetName;
+        joinOpts.m_outputName = selectedDatasetName;
+        joinOpts.m_byColumns = storedOpts.m_byColumns;
+        joinOpts.m_suffix = storedOpts.m_suffix;
+        if (storedOpts.m_type == L"left-join-unique-first")
+            {
+            joinOpts.m_type = Wisteria::UI::JoinOptions::JoinType::LeftJoinUniqueFirst;
+            }
+        else if (storedOpts.m_type == L"left-join")
+            {
+            joinOpts.m_type = Wisteria::UI::JoinOptions::JoinType::LeftJoin;
+            }
+        else if (storedOpts.m_type == L"inner-join")
+            {
+            joinOpts.m_type = Wisteria::UI::JoinOptions::JoinType::InnerJoin;
+            }
+        else
+            {
+            joinOpts.m_type = Wisteria::UI::JoinOptions::JoinType::LeftJoinUniqueLast;
+            }
+
+        Wisteria::UI::JoinDlg dlg(&m_reportBuilder, joinOpts, m_frame);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto joinedDataset = dlg.GetJoinedDataset();
+        if (joinedDataset == nullptr)
+            {
+            return;
+            }
+
+        const auto outputName = dlg.GetOutputName();
+        const auto dlgOpts = dlg.GetJoinOptions();
+
+        // update stored merge options from dialog results
+        auto& updatedOpts = m_reportBuilder.GetDatasetMergeOptions()[outputName];
+        updatedOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+        updatedOpts.m_otherDatasetName = dlgOpts.m_otherDatasetName;
+        updatedOpts.m_byColumns = dlgOpts.m_byColumns;
+        updatedOpts.m_suffix = dlgOpts.m_suffix;
+        switch (dlgOpts.m_type)
+            {
+        case Wisteria::UI::JoinOptions::JoinType::LeftJoinUniqueLast:
+            updatedOpts.m_type = L"left-join-unique-last";
+            break;
+        case Wisteria::UI::JoinOptions::JoinType::LeftJoinUniqueFirst:
+            updatedOpts.m_type = L"left-join-unique-first";
+            break;
+        case Wisteria::UI::JoinOptions::JoinType::LeftJoin:
+            updatedOpts.m_type = L"left-join";
+            break;
+        case Wisteria::UI::JoinOptions::JoinType::InnerJoin:
+            updatedOpts.m_type = L"inner-join";
+            break;
+            }
+
+        // update stored dataset
+        joinedDataset->SetName(outputName.ToStdWstring());
+        m_reportBuilder.GetDatasets()[outputName] = joinedDataset;
+
+        // replace the existing grid contents
+        if (auto* window = m_workWindows.FindWindowById(subItem.value());
+            window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
+            {
+            auto* grid = dynamic_cast<wxGrid*>(window);
+            auto* table = new Wisteria::UI::DatasetGridTable(joinedDataset);
+            grid->SetTable(table, true);
+            ApplyColumnHeaderIcons(grid, table);
+            grid->AutoSizeColumns(false);
+            AdjustGridColumnsForIcons(grid);
+            grid->ForceRefresh();
+            }
+
+        GetDocument()->Modify(true);
+        }
     }
 
 //-------------------------------------------
@@ -1568,6 +1657,62 @@ void WisteriaView::OnSubsetDataset([[maybe_unused]] wxCommandEvent& event)
 
     m_reportBuilder.SetDatasetSubsetOptions(outputName, subsetOpts);
     AddDatasetToProject(subsettedDataset, outputName);
+
+    // adjust the splitter sash to match the sidebar's new min width
+    const auto minWidth = m_sideBar->GetMinSize().GetWidth();
+    m_splitter->SetSashPosition(minWidth);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnJoinDataset([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_reportBuilder.GetDatasets().size() < 2)
+        {
+        wxMessageBox(_(L"Please import at least two datasets first."), _(L"Not Enough Datasets"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    Wisteria::UI::JoinDlg dlg(&m_reportBuilder, m_frame);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const auto joinedDataset = dlg.GetJoinedDataset();
+    if (joinedDataset == nullptr)
+        {
+        return;
+        }
+
+    const auto outputName = dlg.GetOutputName();
+    const auto dlgOpts = dlg.GetJoinOptions();
+
+    Wisteria::ReportBuilder::DatasetMergeOptions mergeOpts;
+    mergeOpts.m_sourceDatasetName = dlgOpts.m_sourceDatasetName;
+    mergeOpts.m_otherDatasetName = dlgOpts.m_otherDatasetName;
+    mergeOpts.m_byColumns = dlgOpts.m_byColumns;
+    mergeOpts.m_suffix = dlgOpts.m_suffix;
+    switch (dlgOpts.m_type)
+        {
+    case Wisteria::UI::JoinOptions::JoinType::LeftJoinUniqueLast:
+        mergeOpts.m_type = L"left-join-unique-last";
+        break;
+    case Wisteria::UI::JoinOptions::JoinType::LeftJoinUniqueFirst:
+        mergeOpts.m_type = L"left-join-unique-first";
+        break;
+    case Wisteria::UI::JoinOptions::JoinType::LeftJoin:
+        mergeOpts.m_type = L"left-join";
+        break;
+    case Wisteria::UI::JoinOptions::JoinType::InnerJoin:
+        mergeOpts.m_type = L"inner-join";
+        break;
+        }
+
+    m_reportBuilder.SetDatasetMergeOptions(outputName, mergeOpts);
+    AddDatasetToProject(joinedDataset, outputName);
 
     // adjust the splitter sash to match the sidebar's new min width
     const auto minWidth = m_sideBar->GetMinSize().GetWidth();

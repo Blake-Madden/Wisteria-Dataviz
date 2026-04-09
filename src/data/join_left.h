@@ -29,16 +29,16 @@ namespace Wisteria::Data
         /// @private
         virtual ~DatasetLeftJoin() = default;
         /** @brief Left joins one dataset with another.\n
-                In the case of duplicate keys from the right dataset, only the last
-                instance's data will be included in the results. This is useful for preventing
-                duplicate keys in the right dataset from causing duplicate rows in the results.
+                If a key in the left dataset has one-to-many matching keys in the right
+                dataset, only the data from the last matching right row will be used.
+                This is useful for collapsing one-to-many relationships into a single row.
             @param leftDataset The left dataset which will be joined with. All rows and columns
                 from this dataset will be preserved in the output.
             @param rightDataset The dataset being joined with the left one. All columns except for
                 the 'by' (i.e., matching ID) columns will be added to the output.\n
                 Only data that matches against the left dataset will be imported; in other words,
-                ID rows in this dataset that don't appear in the left dataset will be ignored.
-                Also, when duplicate ID columns appear in this dataset, only the last occurrence
+                rows in this dataset whose keys don't appear in the left dataset will be ignored.
+                Also, when multiple rows share the same key, only data from the last row
                 will be imported.
             @param byColumns Pairs of columns to join by between the two datasets. Columns can be
                 the ID columns from the datasets, as well as categorical columns.
@@ -46,19 +46,13 @@ namespace Wisteria::Data
                 having a column with the same name in the left file, @c suffix will be added to
                 the column when being copied to make it unique.
             @returns The joined dataset.
-            @note This method differs from how left joins usually work in that if there are
-                multiple rows in the right dataset with the same key, only the data from the
-                last instance will be used.\n
-                Normally, left joins will create empty rows in
-                the results for these duplicate rows. This will result in the final dataset
-                having more rows than the original left dataset, adding what could be considered
-                duplicate rows.\n
-                This function instead will not add additional rows compared to the left dataset,
-                but instead merge data from the last row from any duplicate keys from the
-                right dataset.\n
-                Also, if duplicate keys are encountered in the right dataset, a warning will
+            @note Unlike a standard left join (see LeftJoin()), this function will not add
+                additional rows when a left key matches multiple right rows. Instead, each
+                prior match is overwritten, so that only the last matching right row's data
+                is retained.\n
+                If one-to-many keys are encountered in the right dataset, a warning will
                 be issued via @c wxLogWarning().\n
-                Finally, categorical labels must match textually between datasets.
+                Categorical labels must match textually between datasets.
             @throws std::runtime_error If invalid columns or dataset are provided,
                 throws an exception.*/
         [[nodiscard]]
@@ -67,6 +61,70 @@ namespace Wisteria::Data
                            const std::shared_ptr<const Dataset>& rightDataset,
                            const std::vector<std::pair<wxString, wxString>>& byColumns,
                            const wxString& suffix = L".x");
+        /** @brief Left joins one dataset with another.\n
+                If a key in the left dataset has one-to-many matching keys in the right
+                dataset, only the data from the first matching right row will be used.
+                This is useful for collapsing one-to-many relationships into a single row.
+            @param leftDataset The left dataset which will be joined with. All rows and columns
+                from this dataset will be preserved in the output.
+            @param rightDataset The dataset being joined with the left one. All columns except for
+                the 'by' (i.e., matching ID) columns will be added to the output.\n
+                Only data that matches against the left dataset will be imported; in other words,
+                rows in this dataset whose keys don't appear in the left dataset will be ignored.
+                Also, when multiple rows share the same key, only data from the first row
+                will be imported.
+            @param byColumns Pairs of columns to join by between the two datasets. Columns can be
+                the ID columns from the datasets, as well as categorical columns.
+            @param suffix In the case of a (non-joining) column from the right dataset already
+                having a column with the same name in the left file, @c suffix will be added to
+                the column when being copied to make it unique.
+            @returns The joined dataset.
+            @note Unlike a standard left join (see LeftJoin()), this function will not add
+                additional rows when a left key matches multiple right rows. Instead, only
+                the first matching right row's data is retained, and subsequent matches
+                are ignored.\n
+                If one-to-many keys are encountered in the right dataset, a warning will
+                be issued via @c wxLogWarning().\n
+                Categorical labels must match textually between datasets.
+            @throws std::runtime_error If invalid columns or dataset are provided,
+                throws an exception.*/
+        [[nodiscard]]
+        static std::shared_ptr<Dataset>
+        LeftJoinUniqueFirst(const std::shared_ptr<const Dataset>& leftDataset,
+                            const std::shared_ptr<const Dataset>& rightDataset,
+                            const std::vector<std::pair<wxString, wxString>>& byColumns,
+                            const wxString& suffix = L".x");
+        /** @brief Left joins one dataset with another.\n
+                This performs a standard left join. If a key in the left dataset has
+                one-to-many matching keys in the right dataset, the left row will be
+                duplicated for each matching right row. This means the output may have
+                more rows than the left dataset.
+            @param leftDataset The left dataset which will be joined with. All rows and columns
+                from this dataset will be preserved in the output.
+            @param rightDataset The dataset being joined with the left one. All columns except for
+                the 'by' (i.e., matching ID) columns will be added to the output.\n
+                Only data that matches against the left dataset will be imported; in other words,
+                rows in this dataset whose keys don't appear in the left dataset will be ignored.
+            @param byColumns Pairs of columns to join by between the two datasets. Columns can be
+                the ID columns from the datasets, as well as categorical columns.
+            @param suffix In the case of a (non-joining) column from the right dataset already
+                having a column with the same name in the left file, @c suffix will be added to
+                the column when being copied to make it unique.
+            @returns The joined dataset.
+            @note For example, if a key in the left dataset matches three rows in the
+                right dataset, the output will contain three rows for that key, each with
+                the left data combined with the respective right row's data.\n
+                If a left row has no matching right rows, it is still included in the output
+                with missing data in the right columns.\n
+                Categorical labels must match textually between datasets.
+            @throws std::runtime_error If invalid columns or dataset are provided,
+                throws an exception.*/
+        [[nodiscard]]
+        static std::shared_ptr<Dataset>
+        LeftJoin(const std::shared_ptr<const Dataset>& leftDataset,
+                 const std::shared_ptr<const Dataset>& rightDataset,
+                 const std::vector<std::pair<wxString, wxString>>& byColumns,
+                 const wxString& suffix = L".x");
         };
     } // namespace Wisteria::Data
 

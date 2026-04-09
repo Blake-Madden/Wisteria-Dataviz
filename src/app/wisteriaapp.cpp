@@ -346,6 +346,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                       _(L"Pivot a dataset longer (stack)"));
         transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
                                       _(L"Create a subset of a dataset"));
+        transformButtonBar->AddButton(ID_JOIN_DATASET, _(L"Join"), ReadSvgIcon(L"join.svg"),
+                                      _(L"Join two datasets"));
 
         // Constants panel
         auto* constantsPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Constants"));

@@ -26,6 +26,7 @@ SET(WISTERIA_SRC
     ../../src/data/clone.cpp
     ../../src/data/dataset.cpp
     ../../src/data/excelreader.cpp
+    ../../src/data/join_inner.cpp
     ../../src/data/join_left.cpp
     ../../src/data/odsreader.cpp
     ../../src/data/pivot.cpp
@@ -96,35 +97,7 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/htmltablepanel.cpp
     ../../src/ui/dialogs/imageexportdlg.cpp
     ../../src/ui/dialogs/imagemergedlg.cpp
-    ../../src/ui/dialogs/insertboxplotdlg.cpp
-    ../../src/ui/dialogs/insertbubbleplotdlg.cpp
-    ../../src/ui/dialogs/insertcandlestickplotdlg.cpp
-    ../../src/ui/dialogs/insertcatbarchartdlg.cpp
-    ../../src/ui/dialogs/insertchernoffdlg.cpp
-    ../../src/ui/dialogs/insertganttchartdlg.cpp
-    ../../src/ui/dialogs/insertgraphdlg.cpp
-    ../../src/ui/dialogs/insertheatmapdlg.cpp
-    ../../src/ui/dialogs/inserthistogramdlg.cpp
-    ../../src/ui/dialogs/insertimgdlg.cpp
-    ../../src/ui/dialogs/insertitemdlg.cpp
-    ../../src/ui/dialogs/insertlabeldlg.cpp
-    ../../src/ui/dialogs/insertlikertdlg.cpp
-    ../../src/ui/dialogs/insertlineplotdlg.cpp
-    ../../src/ui/dialogs/insertlrroadmapdlg.cpp
-    ../../src/ui/dialogs/insertmultiserieslineplotdlg.cpp
-    ../../src/ui/dialogs/insertpagedlg.cpp
-    ../../src/ui/dialogs/insertpiechartdlg.cpp
-    ../../src/ui/dialogs/insertproconroadmapdlg.cpp
-    ../../src/ui/dialogs/insertsankeydiagramdlg.cpp
-    ../../src/ui/dialogs/insertscalechartdlg.cpp
-    ../../src/ui/dialogs/insertscatterplotdlg.cpp
-    ../../src/ui/dialogs/insertshapedlg.cpp
-    ../../src/ui/dialogs/insertstemandleafdlg.cpp
-    ../../src/ui/dialogs/inserttabledlg.cpp
-    ../../src/ui/dialogs/insertwafflechartdlg.cpp
-    ../../src/ui/dialogs/insertwcurvedlg.cpp
-    ../../src/ui/dialogs/insertwlsparklinedlg.cpp
-    ../../src/ui/dialogs/insertwordclouddlg.cpp
+    ../../src/ui/dialogs/joindlg.cpp
     ../../src/ui/dialogs/listctrlitemviewdlg.cpp
     ../../src/ui/dialogs/listctrlsortdlg.cpp
     ../../src/ui/dialogs/listdlg.cpp
