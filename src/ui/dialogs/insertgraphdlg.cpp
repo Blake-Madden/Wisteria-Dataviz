@@ -117,8 +117,36 @@ namespace Wisteria::UI
         graph.MirrorXAxis(GetMirrorXAxis());
         graph.MirrorYAxis(GetMirrorYAxis());
 
-        // replace reference lines and areas (clear first to avoid
+        // replace annotations (clear first to avoid
         // duplicating existing entries when editing a graph)
+        graph.ClearAnnotations();
+        for (const auto& ann : m_annotations)
+            {
+            auto label = std::make_shared<GraphItems::Label>(ann.label);
+            // expand constants and set template for round-tripping,
+            // mirroring how titles/subtitles/captions are handled
+            const auto rawText = label->GetText();
+            const auto* builder = GetReportBuilder();
+            if (builder != nullptr)
+                {
+                const auto expanded = builder->ExpandConstants(rawText);
+                label->SetText(expanded);
+                if (expanded != rawText)
+                    {
+                    label->SetPropertyTemplate(L"text", rawText);
+                    }
+                else
+                    {
+                    // user changed the text to a literal value;
+                    // clear any stale template so serialization
+                    // picks up the actual text
+                    label->SetPropertyTemplate(L"text", wxString{});
+                    }
+                }
+            graph.AddAnnotation(label, ann.anchor, ann.interestPts);
+            }
+
+        // replace reference lines and areas
         graph.GetReferenceLines().clear();
         for (const auto& rl : m_referenceLines)
             {
@@ -267,8 +295,7 @@ namespace Wisteria::UI
         auto* graphPage = new wxPanel(GetSideBarBook());
         auto* graphSizer = new wxBoxSizer(wxVERTICAL);
         graphPage->SetSizer(graphSizer);
-        GetSideBarBook()->AddPage(graphPage, _(L"General"), ID_GRAPH_OPTIONS_SECTION,
-                                  false);
+        GetSideBarBook()->AddPage(graphPage, _(L"General"), ID_GRAPH_OPTIONS_SECTION, false);
 
         // title, subtitle, caption — each opens a full Label editor
         auto* textSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
@@ -483,6 +510,33 @@ namespace Wisteria::UI
             m_customShapeRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                      { OnShapeModeChanged(); });
             }
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::CreateAnnotationsPage()
+        {
+        auto* annotPage = new wxPanel(GetSideBarBook());
+        auto* annotSizer = new wxBoxSizer(wxVERTICAL);
+        annotPage->SetSizer(annotSizer);
+        GetSideBarBook()->AddPage(annotPage, _(L"Annotations"), ID_ANNOTATIONS_SECTION, true);
+
+        m_annotationListBox = new wxEditableListBox(
+            annotPage, wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(150) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        RefreshAnnotationList();
+        annotSizer->Add(m_annotationListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        m_annotationListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                                  [this](wxCommandEvent&) { OnAddAnnotation(); });
+        m_annotationListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+        m_annotationListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                   [this](wxCommandEvent&) { OnEditAnnotation(); });
+        m_annotationListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                  { OnRemoveAnnotation(); });
+        m_annotationListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                  [this](wxListEvent&) { OnEditAnnotation(); });
         }
 
     //-------------------------------------------
@@ -1271,6 +1325,526 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::RefreshAnnotationList()
+        {
+        wxArrayString strings;
+        strings.reserve(m_annotations.size());
+        for (const auto& ann : m_annotations)
+            {
+            wxString summary = ann.label.GetText().substr(0, 40);
+            summary.Replace(L"\n", L" ");
+            if (ann.label.GetText().length() > 40)
+                {
+                summary += L"…";
+                }
+            // TRANSLATORS: annotation summary shown in the list;
+            // %s is the annotation text, %.4g values are X and Y coordinates
+            strings.Add(wxString::Format(_(L"\"%s\" at (%.4g, %.4g)"), summary, ann.anchor.m_x,
+                                         ann.anchor.m_y));
+            }
+        m_annotationListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAddAnnotation()
+        {
+        wxDialog dlg(this, wxID_ANY, _(L"Add Annotation"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+
+        // label section
+        auto* labelBox = new wxStaticBoxSizer(wxHORIZONTAL, &dlg, _(L"Label"));
+        auto* labelPreview = new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"(none)"),
+                                              wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+        labelPreview->SetMinSize(FromDIP(wxSize{ 200, -1 }));
+        labelBox->Add(labelPreview, wxSizerFlags{ 1 }.CenterVertical().Border());
+        GraphItems::Label annotLabel;
+        auto* editLabelBtn = new wxButton(labelBox->GetStaticBox(), wxID_ANY, _(L"Edit..."));
+        editLabelBtn->Bind(
+            wxEVT_BUTTON, [this, &annotLabel, labelPreview](wxCommandEvent&)
+            { EditLabelHelper(annotLabel, labelPreview, _(L"Edit Annotation Label")); });
+        labelBox->Add(editLabelBtn, wxSizerFlags{}.Border());
+        topSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
+
+        // anchoring
+        auto* anchoringBox = new wxStaticBoxSizer(wxHORIZONTAL, &dlg, _(L"Anchoring"));
+        anchoringBox->Add(new wxStaticText(anchoringBox->GetStaticBox(), wxID_ANY, _(L"Mode:")),
+                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        auto* anchoringChoice = new wxChoice(anchoringBox->GetStaticBox(), wxID_ANY);
+        anchoringChoice->Append(_(L"Center"));
+        anchoringChoice->Append(_(L"Top-left corner"));
+        anchoringChoice->Append(_(L"Top-right corner"));
+        anchoringChoice->Append(_(L"Bottom-left corner"));
+        anchoringChoice->Append(_(L"Bottom-right corner"));
+        anchoringChoice->SetSelection(0);
+        anchoringBox->Add(anchoringChoice, wxSizerFlags{}.Border());
+        topSizer->Add(anchoringBox, wxSizerFlags{}.Expand().Border());
+
+        // anchor point
+        auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
+        auto* anchorGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        anchorGrid->AddGrowableCol(1, 1);
+
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"X:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* anchorXSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
+        anchorXSpin->SetRange(-1e9, 1e9);
+        anchorXSpin->SetIncrement(1);
+        anchorXSpin->SetDigits(4);
+        anchorGrid->Add(anchorXSpin, wxSizerFlags{}.Expand());
+
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"Y:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* anchorYSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
+        anchorYSpin->SetRange(-1e9, 1e9);
+        anchorYSpin->SetIncrement(1);
+        anchorYSpin->SetDigits(4);
+        anchorGrid->Add(anchorYSpin, wxSizerFlags{}.Expand());
+
+        anchorBox->Add(anchorGrid, wxSizerFlags{}.Expand().Border(wxLEFT | wxBOTTOM));
+        topSizer->Add(anchorBox, wxSizerFlags{}.Expand().Border());
+
+        // interest points
+        auto* ipBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Interest Points"));
+        auto* ipList = new wxEditableListBox(
+            ipBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(280), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        std::vector<wxPoint2DDouble> interestPts;
+
+        const auto refreshIpList = [ipList, &interestPts]()
+        {
+            wxArrayString strings;
+            strings.reserve(interestPts.size());
+            for (const auto& pt : interestPts)
+                {
+                strings.Add(wxString::Format(L"(%.4g, %.4g)", pt.m_x, pt.m_y));
+                }
+            ipList->SetStrings(strings);
+        };
+
+        ipList->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this, &interestPts, refreshIpList](wxCommandEvent&)
+            {
+                wxDialog ipDlg(this, wxID_ANY, _(L"Add Interest Point"), wxDefaultPosition,
+                               wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                sizer->AddGrowableCol(1, 1);
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                xSpin->SetRange(-1e9, 1e9);
+                xSpin->SetIncrement(1);
+                xSpin->SetDigits(4);
+                sizer->Add(xSpin, wxSizerFlags{}.Expand());
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                ySpin->SetRange(-1e9, 1e9);
+                ySpin->SetIncrement(1);
+                ySpin->SetDigits(4);
+                sizer->Add(ySpin, wxSizerFlags{}.Expand());
+
+                auto* ts = new wxBoxSizer(wxVERTICAL);
+                ts->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+                ts->Add(ipDlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                        wxSizerFlags{}.Expand().Border());
+                ipDlg.SetSizerAndFit(ts);
+
+                if (ipDlg.ShowModal() == wxID_OK)
+                    {
+                    interestPts.emplace_back(xSpin->GetValue(), ySpin->GetValue());
+                    refreshIpList();
+                    }
+            });
+        ipList->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this, ipList, &interestPts, refreshIpList](wxCommandEvent&)
+            {
+                const auto sel =
+                    ipList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, interestPts.size()))
+                    {
+                    return;
+                    }
+                auto& pt = interestPts[static_cast<size_t>(sel)];
+
+                wxDialog ipDlg(this, wxID_ANY, _(L"Edit Interest Point"), wxDefaultPosition,
+                               wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                sizer->AddGrowableCol(1, 1);
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                xSpin->SetRange(-1e9, 1e9);
+                xSpin->SetIncrement(1);
+                xSpin->SetDigits(4);
+                xSpin->SetValue(pt.m_x);
+                sizer->Add(xSpin, wxSizerFlags{}.Expand());
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                ySpin->SetRange(-1e9, 1e9);
+                ySpin->SetIncrement(1);
+                ySpin->SetDigits(4);
+                ySpin->SetValue(pt.m_y);
+                sizer->Add(ySpin, wxSizerFlags{}.Expand());
+
+                auto* ts = new wxBoxSizer(wxVERTICAL);
+                ts->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+                ts->Add(ipDlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                        wxSizerFlags{}.Expand().Border());
+                ipDlg.SetSizerAndFit(ts);
+
+                if (ipDlg.ShowModal() == wxID_OK)
+                    {
+                    pt.m_x = xSpin->GetValue();
+                    pt.m_y = ySpin->GetValue();
+                    refreshIpList();
+                    }
+            });
+        ipList->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [ipList, &interestPts, refreshIpList](wxCommandEvent&)
+            {
+                const auto sel =
+                    ipList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, interestPts.size()))
+                    {
+                    return;
+                    }
+                interestPts.erase(interestPts.begin() + sel);
+                refreshIpList();
+            });
+        ipList->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                     [ipList](wxListEvent&)
+                     {
+                         wxCommandEvent evt(wxEVT_BUTTON);
+                         ipList->GetEditButton()->ProcessWindowEvent(evt);
+                     });
+
+        ipBox->Add(ipList, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+        topSizer->Add(ipBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        if (annotLabel.GetText().empty())
+            {
+            return;
+            }
+
+        // apply anchoring selection
+        constexpr Anchoring anchorings[] = { Anchoring::Center, Anchoring::TopLeftCorner,
+                                             Anchoring::TopRightCorner, Anchoring::BottomLeftCorner,
+                                             Anchoring::BottomRightCorner };
+        annotLabel.SetAnchoring(anchorings[anchoringChoice->GetSelection()]);
+
+        // apply pen and background if not already set
+        if (!annotLabel.GetPen().IsOk())
+            {
+            annotLabel.GetPen() = wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+            }
+        if (!annotLabel.GetFontBackgroundColor().IsOk())
+            {
+            annotLabel.SetFontBackgroundColor(
+                Colors::ColorContrast::BlackOrWhiteContrast(annotLabel.GetFontColor()));
+            }
+        annotLabel.SetPadding(5, 5, 5, 5);
+
+        m_annotations.push_back(
+            { std::move(annotLabel),
+              wxPoint2DDouble{ anchorXSpin->GetValue(), anchorYSpin->GetValue() },
+              std::move(interestPts) });
+        RefreshAnnotationList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnEditAnnotation()
+        {
+        const auto sel = m_annotationListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                         wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_annotations.size()))
+            {
+            return;
+            }
+
+        auto& ann = m_annotations[static_cast<size_t>(sel)];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Annotation"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+
+        // label section
+        auto* labelBox = new wxStaticBoxSizer(wxHORIZONTAL, &dlg, _(L"Label"));
+        auto* labelPreview = new wxStaticText(
+            labelBox->GetStaticBox(), wxID_ANY,
+            ann.label.GetText().empty() ? _(L"(none)") : ann.label.GetText().substr(0, 60),
+            wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+        labelPreview->SetMinSize(FromDIP(wxSize{ 200, -1 }));
+        labelBox->Add(labelPreview, wxSizerFlags{ 1 }.CenterVertical().Border());
+        GraphItems::Label annotLabel = ann.label;
+        auto* editLabelBtn = new wxButton(labelBox->GetStaticBox(), wxID_ANY, _(L"Edit..."));
+        editLabelBtn->Bind(
+            wxEVT_BUTTON, [this, &annotLabel, labelPreview](wxCommandEvent&)
+            { EditLabelHelper(annotLabel, labelPreview, _(L"Edit Annotation Label")); });
+        labelBox->Add(editLabelBtn, wxSizerFlags{}.Border());
+        topSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
+
+        // anchoring
+        auto* anchoringBox = new wxStaticBoxSizer(wxHORIZONTAL, &dlg, _(L"Anchoring"));
+        anchoringBox->Add(new wxStaticText(anchoringBox->GetStaticBox(), wxID_ANY, _(L"Mode:")),
+                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        auto* anchoringChoice = new wxChoice(anchoringBox->GetStaticBox(), wxID_ANY);
+        anchoringChoice->Append(_(L"Center"));
+        anchoringChoice->Append(_(L"Top-left corner"));
+        anchoringChoice->Append(_(L"Top-right corner"));
+        anchoringChoice->Append(_(L"Bottom-left corner"));
+        anchoringChoice->Append(_(L"Bottom-right corner"));
+            // map current anchoring to selection
+            {
+            int anchorSel = 0;
+            switch (ann.label.GetAnchoring())
+                {
+            case Anchoring::Center:
+                anchorSel = 0;
+                break;
+            case Anchoring::TopLeftCorner:
+                anchorSel = 1;
+                break;
+            case Anchoring::TopRightCorner:
+                anchorSel = 2;
+                break;
+            case Anchoring::BottomLeftCorner:
+                anchorSel = 3;
+                break;
+            case Anchoring::BottomRightCorner:
+                anchorSel = 4;
+                break;
+                }
+            anchoringChoice->SetSelection(anchorSel);
+            }
+        anchoringBox->Add(anchoringChoice, wxSizerFlags{}.Border());
+        topSizer->Add(anchoringBox, wxSizerFlags{}.Expand().Border());
+
+        // anchor point
+        auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
+        auto* anchorGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        anchorGrid->AddGrowableCol(1, 1);
+
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"X:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* anchorXSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
+        anchorXSpin->SetRange(-1e9, 1e9);
+        anchorXSpin->SetIncrement(1);
+        anchorXSpin->SetDigits(4);
+        anchorXSpin->SetValue(ann.anchor.m_x);
+        anchorGrid->Add(anchorXSpin, wxSizerFlags{}.Expand());
+
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"Y:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* anchorYSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
+        anchorYSpin->SetRange(-1e9, 1e9);
+        anchorYSpin->SetIncrement(1);
+        anchorYSpin->SetDigits(4);
+        anchorYSpin->SetValue(ann.anchor.m_y);
+        anchorGrid->Add(anchorYSpin, wxSizerFlags{}.Expand());
+
+        anchorBox->Add(anchorGrid, wxSizerFlags{}.Expand().Border(wxLEFT | wxBOTTOM));
+        topSizer->Add(anchorBox, wxSizerFlags{}.Expand().Border());
+
+        // interest points
+        auto* ipBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Interest Points"));
+        auto* ipList = new wxEditableListBox(
+            ipBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(280), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        std::vector<wxPoint2DDouble> interestPts = ann.interestPts;
+
+        const auto refreshIpList = [ipList, &interestPts]()
+        {
+            wxArrayString strings;
+            strings.reserve(interestPts.size());
+            for (const auto& pt : interestPts)
+                {
+                strings.Add(wxString::Format(L"(%.4g, %.4g)", pt.m_x, pt.m_y));
+                }
+            ipList->SetStrings(strings);
+        };
+        refreshIpList();
+
+        ipList->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this, &interestPts, refreshIpList](wxCommandEvent&)
+            {
+                wxDialog ipDlg(this, wxID_ANY, _(L"Add Interest Point"), wxDefaultPosition,
+                               wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                sizer->AddGrowableCol(1, 1);
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                xSpin->SetRange(-1e9, 1e9);
+                xSpin->SetIncrement(1);
+                xSpin->SetDigits(4);
+                sizer->Add(xSpin, wxSizerFlags{}.Expand());
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                ySpin->SetRange(-1e9, 1e9);
+                ySpin->SetIncrement(1);
+                ySpin->SetDigits(4);
+                sizer->Add(ySpin, wxSizerFlags{}.Expand());
+
+                auto* ts = new wxBoxSizer(wxVERTICAL);
+                ts->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+                ts->Add(ipDlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                        wxSizerFlags{}.Expand().Border());
+                ipDlg.SetSizerAndFit(ts);
+
+                if (ipDlg.ShowModal() == wxID_OK)
+                    {
+                    interestPts.emplace_back(xSpin->GetValue(), ySpin->GetValue());
+                    refreshIpList();
+                    }
+            });
+        ipList->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this, ipList, &interestPts, refreshIpList](wxCommandEvent&)
+            {
+                const auto sel =
+                    ipList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, interestPts.size()))
+                    {
+                    return;
+                    }
+                auto& pt = interestPts[static_cast<size_t>(sel)];
+
+                wxDialog ipDlg(this, wxID_ANY, _(L"Edit Interest Point"), wxDefaultPosition,
+                               wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                sizer->AddGrowableCol(1, 1);
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                xSpin->SetRange(-1e9, 1e9);
+                xSpin->SetIncrement(1);
+                xSpin->SetDigits(4);
+                xSpin->SetValue(pt.m_x);
+                sizer->Add(xSpin, wxSizerFlags{}.Expand());
+
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                           wxSizerFlags{}.CenterVertical());
+                auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
+                ySpin->SetRange(-1e9, 1e9);
+                ySpin->SetIncrement(1);
+                ySpin->SetDigits(4);
+                ySpin->SetValue(pt.m_y);
+                sizer->Add(ySpin, wxSizerFlags{}.Expand());
+
+                auto* ts = new wxBoxSizer(wxVERTICAL);
+                ts->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+                ts->Add(ipDlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                        wxSizerFlags{}.Expand().Border());
+                ipDlg.SetSizerAndFit(ts);
+
+                if (ipDlg.ShowModal() == wxID_OK)
+                    {
+                    pt.m_x = xSpin->GetValue();
+                    pt.m_y = ySpin->GetValue();
+                    refreshIpList();
+                    }
+            });
+        ipList->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [ipList, &interestPts, refreshIpList](wxCommandEvent&)
+            {
+                const auto sel =
+                    ipList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, interestPts.size()))
+                    {
+                    return;
+                    }
+                interestPts.erase(interestPts.begin() + sel);
+                refreshIpList();
+            });
+        ipList->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                     [ipList](wxListEvent&)
+                     {
+                         wxCommandEvent evt(wxEVT_BUTTON);
+                         ipList->GetEditButton()->ProcessWindowEvent(evt);
+                     });
+
+        ipBox->Add(ipList, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+        topSizer->Add(ipBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        if (annotLabel.GetText().empty())
+            {
+            return;
+            }
+
+        // apply anchoring selection
+        constexpr Anchoring anchorings[] = { Anchoring::Center, Anchoring::TopLeftCorner,
+                                             Anchoring::TopRightCorner, Anchoring::BottomLeftCorner,
+                                             Anchoring::BottomRightCorner };
+        annotLabel.SetAnchoring(anchorings[anchoringChoice->GetSelection()]);
+
+        // apply pen and background if not already set
+        if (!annotLabel.GetPen().IsOk())
+            {
+            annotLabel.GetPen() = wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+            }
+        if (!annotLabel.GetFontBackgroundColor().IsOk())
+            {
+            annotLabel.SetFontBackgroundColor(
+                Colors::ColorContrast::BlackOrWhiteContrast(annotLabel.GetFontColor()));
+            }
+        annotLabel.SetPadding(5, 5, 5, 5);
+
+        ann.label = std::move(annotLabel);
+        ann.anchor = wxPoint2DDouble{ anchorXSpin->GetValue(), anchorYSpin->GetValue() };
+        ann.interestPts = std::move(interestPts);
+        RefreshAnnotationList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnRemoveAnnotation()
+        {
+        const auto sel = m_annotationListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                         wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_annotations.size()))
+            {
+            return;
+            }
+
+        m_annotations.erase(m_annotations.begin() + sel);
+        RefreshAnnotationList();
+        }
+
+    //-------------------------------------------
     bool InsertGraphDlg::ValidateColorScheme()
         {
         if (!(m_options & GraphDlgIncludeColorScheme))
@@ -1386,6 +1960,33 @@ namespace Wisteria::UI
 
         m_mirrorXAxis = graph.IsXAxisMirrored();
         m_mirrorYAxis = graph.IsYAxisMirrored();
+
+        // load annotations
+        m_annotations.clear();
+        for (const auto& embObj : graph.GetAnnotations())
+            {
+            const auto* labelPtr = dynamic_cast<const GraphItems::Label*>(embObj.GetObject().get());
+            if (labelPtr != nullptr)
+                {
+                AnnotationInfo info{ *labelPtr, embObj.GetAnchorPoint(),
+                                     embObj.GetInterestPoints() };
+                // restore the label's original scaling so that
+                // AddAnnotation + the graph's recalc don't double-scale
+                info.label.SetScaling(embObj.GetOriginalScaling());
+                // show the unexpanded template text in the editor
+                // so the user sees {{constants}} rather than values
+                const auto tmpl = info.label.GetPropertyTemplate(L"text");
+                if (!tmpl.empty())
+                    {
+                    info.label.SetText(tmpl);
+                    }
+                m_annotations.push_back(std::move(info));
+                }
+            }
+        if (m_annotationListBox != nullptr)
+            {
+            RefreshAnnotationList();
+            }
 
         // load reference lines and areas
         m_referenceLines = graph.GetReferenceLines();

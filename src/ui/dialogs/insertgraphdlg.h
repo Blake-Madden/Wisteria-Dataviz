@@ -53,6 +53,17 @@ namespace Wisteria::UI
         GraphDlgIncludeMost = GraphDlgIncludeColorScheme
         };
 
+    /** @brief Stores annotation data for the dialog before it is applied to a graph.
+        @details Mirrors the information in Graph2D::EmbeddedObject but uses
+            a Label value (rather than a shared_ptr<GraphItemBase>) so the
+            dialog can own and edit annotation state independently.*/
+    struct AnnotationInfo
+        {
+        GraphItems::Label label;                  /*!< The annotation label.*/
+        wxPoint2DDouble anchor;                   /*!< Anchor point in data coords.*/
+        std::vector<wxPoint2DDouble> interestPts; /*!< Points to draw lines to.*/
+        };
+
     /** @brief Intermediate base dialog for inserting a graph into a canvas cell.
         @details Extends InsertItemDlg with common graph options such as
             legend placement. Derived dialogs for specific chart types
@@ -168,6 +179,13 @@ namespace Wisteria::UI
             return m_referenceAreas;
             }
 
+        /// @returns The user-defined annotations.
+        [[nodiscard]]
+        const std::vector<AnnotationInfo>& GetAnnotations() const noexcept
+            {
+            return m_annotations;
+            }
+
         /// @returns @c true if the user chose a custom color list
         ///     instead of a named color scheme.
         [[nodiscard]]
@@ -266,6 +284,15 @@ namespace Wisteria::UI
                 chart-specific pages.*/
         void CreateGraphOptionsPage();
 
+        /** @brief Creates and adds the "Annotations" sidebar page.
+            @details This page lets the user add, edit, and remove
+                text annotations that are embedded on the plot, each
+                with an anchor point and optional interest points.
+            @note Call this from derived CreateControls() for graph types
+                that use data-coordinate annotations (typically those
+                with axes). Place the call before CreateAxisOptionsPage().*/
+        void CreateAnnotationsPage();
+
         /** @brief Creates and adds the "Axis" sidebar page.
             @details This page contains axis-related options such as
                 mirroring the X and Y axes.
@@ -314,8 +341,10 @@ namespace Wisteria::UI
 
         /// @brief ID for the Graph Options sidebar section.
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
+        /// @brief ID for the Annotations sidebar section.
+        constexpr static wxWindowID ID_ANNOTATIONS_SECTION{ wxID_HIGHEST + 101 };
         /// @brief ID for the Axis Options sidebar section.
-        constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 101 };
+        constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 102 };
 
         bool ConfirmOverwrite() final;
 
@@ -336,6 +365,11 @@ namespace Wisteria::UI
         void OnRemoveCustomShape();
         void RefreshCustomShapeList();
         void OnShapeModeChanged();
+
+        void OnAddAnnotation();
+        void OnEditAnnotation();
+        void OnRemoveAnnotation();
+        void RefreshAnnotationList();
 
         void OnAddReferenceLine();
         void OnEditReferenceLine();
@@ -362,6 +396,7 @@ namespace Wisteria::UI
         int m_shapeSchemeIndex{ 0 };
         std::vector<Icons::IconShape> m_customShapes;
 
+        std::vector<AnnotationInfo> m_annotations;
         std::vector<GraphItems::ReferenceLine> m_referenceLines;
         std::vector<GraphItems::ReferenceArea> m_referenceAreas;
 
@@ -395,6 +430,7 @@ namespace Wisteria::UI
         wxRadioButton* m_customShapeRadio{ nullptr };
         wxChoice* m_shapeSchemeChoice{ nullptr };
         wxEditableListBox* m_customShapeListBox{ nullptr };
+        wxEditableListBox* m_annotationListBox{ nullptr };
         wxEditableListBox* m_refLineListBox{ nullptr };
         wxEditableListBox* m_refAreaListBox{ nullptr };
         };

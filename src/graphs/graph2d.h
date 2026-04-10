@@ -242,6 +242,9 @@ namespace Wisteria::Graphs
             return m_embeddedObjects;
             }
 
+        /// @brief Removes all embedded annotation objects from the plot.
+        void ClearAnnotations() noexcept { m_embeddedObjects.clear(); }
+
         /** @name Title Functions
             @brief Functions related to the titles and caption.*/
         /// @{
