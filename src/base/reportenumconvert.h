@@ -30,6 +30,93 @@ namespace Wisteria
     class ReportEnumConvert
         {
         // NOLINTBEGIN
+        inline static const std::map<std::wstring_view, Icons::IconShape> m_iconEnums = {
+            { L"blank", Icons::IconShape::Blank },
+            { L"horizontal-line", Icons::IconShape::HorizontalLine },
+            { L"vertical-line", Icons::IconShape::VerticalLine },
+            { L"crossed-out", Icons::IconShape::CrossedOut },
+            { L"arrow-right", Icons::IconShape::ArrowRight },
+            { L"circle", Icons::IconShape::Circle },
+            { L"image", Icons::IconShape::Image },
+            { L"horizontal-separator", Icons::IconShape::HorizontalSeparator },
+            { L"horizontal-arrow-right-separator",
+              Icons::IconShape::HorizontalArrowRightSeparator },
+            { L"color-gradient", Icons::IconShape::ColorGradient },
+            { L"square", Icons::IconShape::Square },
+            { L"triangle-upward", Icons::IconShape::TriangleUpward },
+            { L"triangle-downward", Icons::IconShape::TriangleDownward },
+            { L"triangle-right", Icons::IconShape::TriangleRight },
+            { L"triangle-left", Icons::IconShape::TriangleLeft },
+            { L"diamond", Icons::IconShape::Diamond },
+            { L"plus", Icons::IconShape::Plus },
+            { L"asterisk", Icons::IconShape::Asterisk },
+            { L"hexagon", Icons::IconShape::Hexagon },
+            { L"box-plot", Icons::IconShape::BoxPlot },
+            { L"location-marker", Icons::IconShape::LocationMarker },
+            { L"go-road-sign", Icons::IconShape::GoRoadSign },
+            { L"warning-road-sign", Icons::IconShape::WarningRoadSign },
+            { L"sun", Icons::IconShape::Sun },
+            { L"flower", Icons::IconShape::Flower },
+            { L"fall-leaf", Icons::IconShape::FallLeaf },
+            { L"top-curly-brace", Icons::IconShape::TopCurlyBrace },
+            { L"right-curly-brace", Icons::IconShape::RightCurlyBrace },
+            { L"bottom-curly-brace", Icons::IconShape::BottomCurlyBrace },
+            { L"left-curly-brace", Icons::IconShape::LeftCurlyBrace },
+            { L"man", Icons::IconShape::Man },
+            { L"woman", Icons::IconShape::Woman },
+            { L"business-woman", Icons::IconShape::BusinessWoman },
+            { L"chevron-downward", Icons::IconShape::ChevronDownward },
+            { L"chevron-upward", Icons::IconShape::ChevronUpward },
+            { L"text", Icons::IconShape::Text },
+            { L"tack", Icons::IconShape::Tack },
+            { L"banner", Icons::IconShape::Banner },
+            { L"watercolor-rectangle", Icons::IconShape::WaterColorRectangle },
+            { L"thick-watercolor-rectangle", Icons::IconShape::ThickWaterColorRectangle },
+            { L"marker-rectangle", Icons::IconShape::MarkerRectangle },
+            { L"pencil-rectangle", Icons::IconShape::PencilRectangle },
+            { L"graduation-cap", Icons::IconShape::GraduationCap },
+            { L"book", Icons::IconShape::Book },
+            { L"tire", Icons::IconShape::Tire },
+            { L"snowflake", Icons::IconShape::Snowflake },
+            { L"newspaper", Icons::IconShape::Newspaper },
+            { L"car", Icons::IconShape::Car },
+            { L"blackboard", Icons::IconShape::Blackboard },
+            { L"clock", Icons::IconShape::Clock },
+            { L"ruler", Icons::IconShape::Ruler },
+            { L"ivbag", Icons::IconShape::IVBag },
+            { L"cold-thermometer", Icons::IconShape::ColdThermometer },
+            { L"hot-thermometer", Icons::IconShape::HotThermometer },
+            { L"apple", Icons::IconShape::Apple },
+            { L"granny-smith-apple", Icons::IconShape::GrannySmithApple },
+            { L"heart", Icons::IconShape::Heart },
+            { L"immaculate-heart", Icons::IconShape::ImmaculateHeart },
+            { L"flame", Icons::IconShape::Flame },
+            { L"office", Icons::IconShape::Office },
+            { L"factory", Icons::IconShape::Factory },
+            { L"house", Icons::IconShape::House },
+            { L"barn", Icons::IconShape::Barn },
+            { L"farm", Icons::IconShape::Farm },
+            { L"hundred-dollar-bill", Icons::IconShape::HundredDollarBill },
+            { L"monitor", Icons::IconShape::Monitor },
+            { L"sword", Icons::IconShape::Sword },
+            { L"immaculate-heart-with-sword", Icons::IconShape::ImmaculateHeartWithSword },
+            { L"crescent-top", Icons::IconShape::CrescentTop },
+            { L"crescent-bottom", Icons::IconShape::CrescentBottom },
+            { L"crescent-right", Icons::IconShape::CrescentRight },
+            { L"sunflower", Icons::IconShape::Sunflower },
+            { L"curving-road", Icons::IconShape::CurvingRoad },
+            { L"pumpkin", Icons::IconShape::Pumpkin },
+            { L"jack-o-lantern", Icons::IconShape::JackOLantern },
+            { L"number-range", Icons::IconShape::NumberRange },
+            { L"cheese-pizza", Icons::IconShape::CheesePizza },
+            { L"pepperoni-pizza", Icons::IconShape::PepperoniPizza },
+            { L"hawaiian-pizza", Icons::IconShape::HawaiianPizza },
+            { L"chocolate-chip-cookie", Icons::IconShape::ChocolateChipCookie },
+            { L"coffee-shop-cup", Icons::IconShape::CoffeeShopCup },
+            { L"pill", Icons::IconShape::Pill },
+            { L"tractor", Icons::IconShape::Tractor }
+        };
+
         inline static const std::map<std::wstring, wxPaperSize> m_paperSizeValues = {
             { L"paper-letter", wxPaperSize::wxPAPER_LETTER },
             { L"paper-legal", wxPaperSize::wxPAPER_LEGAL },
@@ -204,98 +291,24 @@ namespace Wisteria
         [[nodiscard]]
         static std::optional<Icons::IconShape> ConvertIcon(wxString iconStr)
             {
-            // use standard string, wxString should not be constructed globally
-            static const std::map<std::wstring_view, Icons::IconShape> iconEnums = {
-                { L"blank", Icons::IconShape::Blank },
-                { L"horizontal-line", Icons::IconShape::HorizontalLine },
-                { L"vertical-line", Icons::IconShape::VerticalLine },
-                { L"crossed-out", Icons::IconShape::CrossedOut },
-                { L"arrow-right", Icons::IconShape::ArrowRight },
-                { L"circle", Icons::IconShape::Circle },
-                { L"image", Icons::IconShape::Image },
-                { L"horizontal-separator", Icons::IconShape::HorizontalSeparator },
-                { L"horizontal-arrow-right-separator",
-                  Icons::IconShape::HorizontalArrowRightSeparator },
-                { L"color-gradient", Icons::IconShape::ColorGradient },
-                { L"square", Icons::IconShape::Square },
-                { L"triangle-upward", Icons::IconShape::TriangleUpward },
-                { L"triangle-downward", Icons::IconShape::TriangleDownward },
-                { L"triangle-right", Icons::IconShape::TriangleRight },
-                { L"triangle-left", Icons::IconShape::TriangleLeft },
-                { L"diamond", Icons::IconShape::Diamond },
-                { L"plus", Icons::IconShape::Plus },
-                { L"asterisk", Icons::IconShape::Asterisk },
-                { L"hexagon", Icons::IconShape::Hexagon },
-                { L"box-plot", Icons::IconShape::BoxPlot },
-                { L"location-marker", Icons::IconShape::LocationMarker },
-                { L"go-road-sign", Icons::IconShape::GoRoadSign },
-                { L"warning-road-sign", Icons::IconShape::WarningRoadSign },
-                { L"sun", Icons::IconShape::Sun },
-                { L"flower", Icons::IconShape::Flower },
-                { L"fall-leaf", Icons::IconShape::FallLeaf },
-                { L"top-curly-brace", Icons::IconShape::TopCurlyBrace },
-                { L"right-curly-brace", Icons::IconShape::RightCurlyBrace },
-                { L"bottom-curly-brace", Icons::IconShape::BottomCurlyBrace },
-                { L"left-curly-brace", Icons::IconShape::LeftCurlyBrace },
-                { L"man", Icons::IconShape::Man },
-                { L"woman", Icons::IconShape::Woman },
-                { L"business-woman", Icons::IconShape::BusinessWoman },
-                { L"chevron-downward", Icons::IconShape::ChevronDownward },
-                { L"chevron-upward", Icons::IconShape::ChevronUpward },
-                { L"text", Icons::IconShape::Text },
-                { L"tack", Icons::IconShape::Tack },
-                { L"banner", Icons::IconShape::Banner },
-                { L"watercolor-rectangle", Icons::IconShape::WaterColorRectangle },
-                { L"thick-watercolor-rectangle", Icons::IconShape::ThickWaterColorRectangle },
-                { L"marker-rectangle", Icons::IconShape::MarkerRectangle },
-                { L"pencil-rectangle", Icons::IconShape::PencilRectangle },
-                { L"graduation-cap", Icons::IconShape::GraduationCap },
-                { L"book", Icons::IconShape::Book },
-                { L"tire", Icons::IconShape::Tire },
-                { L"snowflake", Icons::IconShape::Snowflake },
-                { L"newspaper", Icons::IconShape::Newspaper },
-                { L"car", Icons::IconShape::Car },
-                { L"blackboard", Icons::IconShape::Blackboard },
-                { L"clock", Icons::IconShape::Clock },
-                { L"ruler", Icons::IconShape::Ruler },
-                { L"ivbag", Icons::IconShape::IVBag },
-                { L"cold-thermometer", Icons::IconShape::ColdThermometer },
-                { L"hot-thermometer", Icons::IconShape::HotThermometer },
-                { L"apple", Icons::IconShape::Apple },
-                { L"granny-smith-apple", Icons::IconShape::GrannySmithApple },
-                { L"heart", Icons::IconShape::Heart },
-                { L"immaculate-heart", Icons::IconShape::ImmaculateHeart },
-                { L"flame", Icons::IconShape::Flame },
-                { L"office", Icons::IconShape::Office },
-                { L"factory", Icons::IconShape::Factory },
-                { L"house", Icons::IconShape::House },
-                { L"barn", Icons::IconShape::Barn },
-                { L"farm", Icons::IconShape::Farm },
-                { L"hundred-dollar-bill", Icons::IconShape::HundredDollarBill },
-                { L"monitor", Icons::IconShape::Monitor },
-                { L"sword", Icons::IconShape::Sword },
-                { L"immaculate-heart-with-sword", Icons::IconShape::ImmaculateHeartWithSword },
-                { L"crescent-top", Icons::IconShape::CrescentTop },
-                { L"crescent-bottom", Icons::IconShape::CrescentBottom },
-                { L"crescent-right", Icons::IconShape::CrescentRight },
-                { L"sunflower", Icons::IconShape::Sunflower },
-                { L"curving-road", Icons::IconShape::CurvingRoad },
-                { L"pumpkin", Icons::IconShape::Pumpkin },
-                { L"jack-o-lantern", Icons::IconShape::JackOLantern },
-                { L"number-range", Icons::IconShape::NumberRange },
-                { L"cheese-pizza", Icons::IconShape::CheesePizza },
-                { L"pepperoni-pizza", Icons::IconShape::PepperoniPizza },
-                { L"hawaiian-pizza", Icons::IconShape::HawaiianPizza },
-                { L"chocolate-chip-cookie", Icons::IconShape::ChocolateChipCookie },
-                { L"coffee-shop-cup", Icons::IconShape::CoffeeShopCup },
-                { L"pill", Icons::IconShape::Pill },
-                { L"tractor", Icons::IconShape::Tractor }
-            };
-
-            const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
-            return (foundPos != iconEnums.cend() ?
+            const auto foundPos = m_iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
+            return (foundPos != m_iconEnums.cend() ?
                         std::optional<Icons::IconShape>(foundPos->second) :
                         std::nullopt);
+            }
+
+        /// @brief Returns a sorted list of all known icon/shape names.
+        /// @returns A vector of icon name strings (e.g., "blank", "circle").
+        [[nodiscard]]
+        static std::vector<wxString> GetIconNames()
+            {
+            std::vector<wxString> names;
+            names.reserve(m_iconEnums.size());
+            for (const auto& [name, shape] : m_iconEnums)
+                {
+                names.emplace_back(name);
+                }
+            return names;
             }
 
         //---------------------------------------------------

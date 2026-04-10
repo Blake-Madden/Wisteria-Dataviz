@@ -14,6 +14,7 @@
 
 #include "../../base/axis.h"
 #include "../../base/colorbrewer.h"
+#include "../../base/icons.h"
 #include "../../base/image.h"
 #include "../../base/label.h"
 #include "insertitemdlg.h"
@@ -47,8 +48,9 @@ namespace Wisteria::UI
         {
         GraphDlgIncludeNone = 0,             ///< No options enabled.
         GraphDlgIncludeColorScheme = 1 << 0, ///< Show the color scheme controls.
+        GraphDlgIncludeShapeScheme = 1 << 1, ///< Show the shape scheme controls.
         /// @brief All options enabled (the default).
-        GraphDlgIncludeAll = GraphDlgIncludeColorScheme
+        GraphDlgIncludeMost = GraphDlgIncludeColorScheme
         };
 
     /** @brief Intermediate base dialog for inserting a graph into a canvas cell.
@@ -73,7 +75,7 @@ namespace Wisteria::UI
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                        EditMode editMode = EditMode::Insert,
-                       GraphDlgOptions options = GraphDlgIncludeAll);
+                       GraphDlgOptions options = GraphDlgIncludeMost);
 
         /// @private
         InsertGraphDlg(const InsertGraphDlg&) = delete;
@@ -190,6 +192,35 @@ namespace Wisteria::UI
             return m_customColors;
             }
 
+        /// @returns @c true if the user chose a custom shape scheme
+        ///     instead of a named shape scheme.
+        [[nodiscard]]
+        bool IsUsingCustomShapeScheme() const noexcept
+            {
+            return m_useCustomShapeScheme;
+            }
+
+        /// @returns The selected shape scheme (named or custom).
+        /// @details If using a custom scheme, builds an IconScheme from the
+        ///     custom shapes list. Otherwise, returns the named scheme.
+        [[nodiscard]]
+        std::shared_ptr<Icons::Schemes::IconScheme> GetShapeScheme() const
+            {
+            if (m_useCustomShapeScheme)
+                {
+                return std::make_shared<Icons::Schemes::IconScheme>(m_customShapes);
+                }
+            return ShapeSchemeFromIndex(m_shapeSchemeIndex);
+            }
+
+        /// @returns The user-defined custom shape list.
+        /// @note Only meaningful when IsUsingCustomShapeScheme() is @c true.
+        [[nodiscard]]
+        const std::vector<Icons::IconShape>& GetCustomShapes() const noexcept
+            {
+            return m_customShapes;
+            }
+
         /// @brief Populates the graph options controls from an existing Graph2D.
         /// @param graph The graph to read options from.
         void LoadGraphOptions(const Graphs::Graph2D& graph);
@@ -254,6 +285,33 @@ namespace Wisteria::UI
         [[nodiscard]]
         static wxArrayString GetColorSchemeNames();
 
+        /// @brief Creates a shape scheme from a dropdown index.
+        /// @param index The zero-based selection index (0 = Standard Shapes).
+        /// @returns The corresponding shape scheme.
+        [[nodiscard]]
+        static std::shared_ptr<Icons::Schemes::IconScheme> ShapeSchemeFromIndex(int index);
+
+        /// @brief Maps an existing shape scheme to a dropdown index.
+        /// @param scheme The shape scheme to identify (may be @c nullptr).
+        /// @returns The corresponding index (0 if unrecognized or @c nullptr).
+        [[nodiscard]]
+        static int ShapeSchemeToIndex(const std::shared_ptr<Icons::Schemes::IconScheme>& scheme);
+
+        /// @brief Returns the list of shape scheme display names for a @c wxChoice.
+        /// @returns The array of shape scheme names.
+        [[nodiscard]]
+        static wxArrayString GetShapeSchemeNames();
+
+        /// @brief Returns the list of point-usable shape names for selection dialogs.
+        /// @returns The array of shape display names (e.g., "blank", "circle").
+        [[nodiscard]]
+        static wxArrayString GetPointShapeNames();
+
+        /// @brief Validates the shape scheme selection.
+        /// @returns @c true if valid, @c false if the user needs to fix something.
+        [[nodiscard]]
+        bool ValidateShapeScheme();
+
         /// @brief ID for the Graph Options sidebar section.
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
         /// @brief ID for the Axis Options sidebar section.
@@ -273,6 +331,11 @@ namespace Wisteria::UI
         void OnRemoveCustomColor();
         void RefreshCustomColorList();
         void OnColorModeChanged();
+        void OnAddCustomShape();
+        void OnEditCustomShape();
+        void OnRemoveCustomShape();
+        void RefreshCustomShapeList();
+        void OnShapeModeChanged();
 
         void OnAddReferenceLine();
         void OnEditReferenceLine();
@@ -284,7 +347,7 @@ namespace Wisteria::UI
         void OnRemoveReferenceArea();
         void RefreshReferenceAreaList();
 
-        GraphDlgOptions m_options{ GraphDlgIncludeAll };
+        GraphDlgOptions m_options{ GraphDlgIncludeMost };
 
         // DDX data members
         int m_legendPlacement{ 1 };
@@ -295,6 +358,9 @@ namespace Wisteria::UI
         bool m_useCustomColors{ false };
         int m_colorSchemeIndex{ 0 };
         std::vector<wxColour> m_customColors;
+        bool m_useCustomShapeScheme{ false };
+        int m_shapeSchemeIndex{ 0 };
+        std::vector<Icons::IconShape> m_customShapes;
 
         std::vector<GraphItems::ReferenceLine> m_referenceLines;
         std::vector<GraphItems::ReferenceArea> m_referenceAreas;
@@ -325,6 +391,10 @@ namespace Wisteria::UI
         wxRadioButton* m_customColorsRadio{ nullptr };
         wxChoice* m_colorSchemeChoice{ nullptr };
         wxEditableListBox* m_customColorListBox{ nullptr };
+        wxRadioButton* m_namedShapeRadio{ nullptr };
+        wxRadioButton* m_customShapeRadio{ nullptr };
+        wxChoice* m_shapeSchemeChoice{ nullptr };
+        wxEditableListBox* m_customShapeListBox{ nullptr };
         wxEditableListBox* m_refLineListBox{ nullptr };
         wxEditableListBox* m_refAreaListBox{ nullptr };
         };

@@ -12,6 +12,7 @@
 #include "../../graphs/graph2d.h"
 #include "insertimgdlg.h"
 #include "insertlabeldlg.h"
+#include <wx/choicdlg.h>
 #include <wx/colordlg.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
@@ -145,6 +146,12 @@ namespace Wisteria::UI
                 graph.SetBrushScheme(
                     std::make_shared<Brushes::Schemes::BrushScheme>(*GetColorScheme()));
                 }
+            }
+
+        // apply shape scheme
+        if (m_options & GraphDlgIncludeShapeScheme)
+            {
+            graph.SetShapeScheme(GetShapeScheme());
             }
         }
 
@@ -417,6 +424,64 @@ namespace Wisteria::UI
                                      { OnColorModeChanged(); });
             m_customColorsRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                       { OnColorModeChanged(); });
+            }
+
+        // shape scheme
+        if (m_options & GraphDlgIncludeShapeScheme)
+            {
+            auto* shapeBox = new wxStaticBoxSizer(wxVERTICAL, graphPage, _(L"Point Shapes"));
+
+            // radio: named scheme + choice on same row
+            auto* namedShapeSizer = new wxBoxSizer(wxHORIZONTAL);
+            m_namedShapeRadio =
+                new wxRadioButton(shapeBox->GetStaticBox(), wxID_ANY, _(L"Shape scheme:"),
+                                  wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+            namedShapeSizer->Add(m_namedShapeRadio, wxSizerFlags{}.CenterVertical());
+            m_shapeSchemeChoice =
+                new wxChoice(shapeBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                             GetShapeSchemeNames(), 0, wxGenericValidator(&m_shapeSchemeIndex));
+            namedShapeSizer->Add(m_shapeSchemeChoice,
+                                 wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+            shapeBox->Add(namedShapeSizer, wxSizerFlags{}.Border());
+
+            // radio: custom shape list
+            m_customShapeRadio =
+                new wxRadioButton(shapeBox->GetStaticBox(), wxID_ANY, _(L"Custom shape list:"));
+            shapeBox->Add(m_customShapeRadio, wxSizerFlags{}.Border());
+
+            m_customShapeListBox = new wxEditableListBox(
+                shapeBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                wxSize{ FromDIP(300), FromDIP(120) },
+                wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+            RefreshCustomShapeList();
+            shapeBox->Add(m_customShapeListBox,
+                          wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+            // override New to open a shape picker
+            m_customShapeListBox->GetNewButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                       { OnAddCustomShape(); });
+            m_customShapeListBox->GetNewButton()->SetBitmapLabel(
+                wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
+
+            // override Edit to open a shape picker for the selected item
+            m_customShapeListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                        { OnEditCustomShape(); });
+
+            // override Delete to remove the selected shape
+            m_customShapeListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                       { OnRemoveCustomShape(); });
+
+            graphSizer->Add(shapeBox, wxSizerFlags{}.Border());
+
+            // initial enable state — named scheme selected by default
+            m_namedShapeRadio->SetValue(true);
+            m_shapeSchemeChoice->Enable(true);
+            m_customShapeListBox->Enable(false);
+
+            m_namedShapeRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                                    { OnShapeModeChanged(); });
+            m_customShapeRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                                     { OnShapeModeChanged(); });
             }
         }
 
@@ -735,6 +800,100 @@ namespace Wisteria::UI
         m_useCustomColors = useCustom;
         m_colorSchemeChoice->Enable(!useCustom);
         m_customColorListBox->Enable(useCustom);
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnShapeModeChanged()
+        {
+        const bool useCustom = m_customShapeRadio->GetValue();
+        m_useCustomShapeScheme = useCustom;
+        m_shapeSchemeChoice->Enable(!useCustom);
+        m_customShapeListBox->Enable(useCustom);
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAddCustomShape()
+        {
+        const auto shapeNames = GetPointShapeNames();
+        wxSingleChoiceDialog dlg(this, _(L"Select a shape:"), _(L"Add Shape"), shapeNames);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto shape = ReportEnumConvert::ConvertIcon(dlg.GetStringSelection());
+        if (shape.has_value())
+            {
+            m_customShapes.push_back(shape.value());
+            RefreshCustomShapeList();
+            }
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnEditCustomShape()
+        {
+        const auto sel = m_customShapeListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                          wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_customShapes.size()))
+            {
+            return;
+            }
+
+        const auto shapeNames = GetPointShapeNames();
+
+        // pre-select the current shape
+        const auto currentName =
+            ReportEnumConvert::ConvertIconToString(m_customShapes[static_cast<size_t>(sel)]);
+        int defaultSel = 0;
+        if (currentName.has_value())
+            {
+            defaultSel = shapeNames.Index(currentName.value());
+            if (defaultSel == wxNOT_FOUND)
+                {
+                defaultSel = 0;
+                }
+            }
+
+        wxSingleChoiceDialog dlg(this, _(L"Select a shape:"), _(L"Edit Shape"), shapeNames);
+        dlg.SetSelection(defaultSel);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto shape = ReportEnumConvert::ConvertIcon(dlg.GetStringSelection());
+        if (shape.has_value())
+            {
+            m_customShapes[static_cast<size_t>(sel)] = shape.value();
+            RefreshCustomShapeList();
+            }
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnRemoveCustomShape()
+        {
+        const auto sel = m_customShapeListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                          wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_customShapes.size()))
+            {
+            return;
+            }
+
+        m_customShapes.erase(m_customShapes.begin() + sel);
+        RefreshCustomShapeList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::RefreshCustomShapeList()
+        {
+        wxArrayString strings;
+        strings.reserve(m_customShapes.size());
+        for (const auto& shape : m_customShapes)
+            {
+            const auto name = ReportEnumConvert::ConvertIconToString(shape);
+            strings.Add(name.value_or(_(L"unknown")));
+            }
+        m_customShapeListBox->SetStrings(strings);
         }
 
     //-------------------------------------------
@@ -1068,7 +1227,7 @@ namespace Wisteria::UI
             ReferenceAreaStyle::Solid, ReferenceAreaStyle::FadeFromLeftToRight,
             ReferenceAreaStyle::FadeFromRightToLeft
         };
-        for (int i = 0; i < areaStyles.size(); ++i)
+        for (int i = 0; std::cmp_less(i, areaStyles.size()); ++i)
             {
             if (areaStyles[i] == ra.GetReferenceAreaStyle())
                 {
@@ -1302,6 +1461,30 @@ namespace Wisteria::UI
             OnColorModeChanged();
             }
 
+        // shape scheme
+        if (m_options & GraphDlgIncludeShapeScheme)
+            {
+            const auto& shapeScheme = graph.GetShapeScheme();
+            const auto namedIndex = ShapeSchemeToIndex(shapeScheme);
+            if (namedIndex == 0 && shapeScheme != nullptr &&
+                !shapeScheme->IsKindOf(wxCLASSINFO(Icons::Schemes::StandardShapes)))
+                {
+                // custom scheme — copy the shapes into the editable list
+                m_useCustomShapeScheme = true;
+                m_customShapes = shapeScheme->GetShapes();
+                m_shapeSchemeIndex = 0;
+                m_customShapeRadio->SetValue(true);
+                RefreshCustomShapeList();
+                }
+            else
+                {
+                m_useCustomShapeScheme = false;
+                m_shapeSchemeIndex = namedIndex;
+                m_namedShapeRadio->SetValue(true);
+                }
+            OnShapeModeChanged();
+            }
+
         LoadPageOptions(graph);
         }
 
@@ -1511,6 +1694,75 @@ namespace Wisteria::UI
             {
             graph.GetAxis(axisType) = saved;
             }
+        }
+
+    //-------------------------------------------
+    wxArrayString InsertGraphDlg::GetShapeSchemeNames()
+        {
+        wxArrayString names;
+        names.Add(_(L"Standard Shapes"));
+        names.Add(_(L"Semesters"));
+        return names;
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Icons::Schemes::IconScheme>
+    InsertGraphDlg::ShapeSchemeFromIndex(const int index)
+        {
+        switch (index)
+            {
+        case 1:
+            return std::make_shared<Icons::Schemes::Semesters>();
+        case 0:
+            [[fallthrough]];
+        default:
+            return std::make_shared<Icons::Schemes::StandardShapes>();
+            }
+        }
+
+    //-------------------------------------------
+    int InsertGraphDlg::ShapeSchemeToIndex(
+        const std::shared_ptr<Icons::Schemes::IconScheme>& scheme)
+        {
+        if (scheme == nullptr)
+            {
+            return 0;
+            }
+        if (scheme->IsKindOf(wxCLASSINFO(Icons::Schemes::Semesters)))
+            {
+            return 1;
+            }
+        return 0;
+        }
+
+    //-------------------------------------------
+    bool InsertGraphDlg::ValidateShapeScheme()
+        {
+        if (!(m_options & GraphDlgIncludeShapeScheme))
+            {
+            return true;
+            }
+        if (m_useCustomShapeScheme && m_customShapes.empty())
+            {
+            wxMessageBox(_(L"Please add at least one shape."),
+                         _(L"No Shapes Specified"),
+                         wxOK | wxICON_WARNING, this);
+            return false;
+            }
+        return true;
+        }
+
+    //-------------------------------------------
+    wxArrayString InsertGraphDlg::GetPointShapeNames()
+        {
+        const auto allNames = ReportEnumConvert::GetIconNames();
+        wxArrayString names;
+        names.reserve(allNames.size());
+        for (const auto& name : allNames)
+            {
+            names.Add(name);
+            }
+        return names;
         }
 
     // clang-format on

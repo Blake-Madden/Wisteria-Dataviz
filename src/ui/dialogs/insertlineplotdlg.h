@@ -12,7 +12,6 @@
 #ifndef INSERT_LINEPLOT_DIALOG_H
 #define INSERT_LINEPLOT_DIALOG_H
 
-#include "../../base/icons.h"
 #include "insertgraphdlg.h"
 #include <vector>
 #include <wx/wx.h>
@@ -94,21 +93,6 @@ namespace Wisteria::UI
             return m_autoSpline;
             }
 
-        /// @returns The selected shape scheme for the line plot points.
-        [[nodiscard]]
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> GetShapeScheme() const
-            {
-            switch (m_shapeSchemeIndex)
-                {
-            case 1:
-                return std::make_shared<Wisteria::Icons::Schemes::Semesters>();
-            case 0:
-                [[fallthrough]];
-            default:
-                return std::make_shared<Wisteria::Icons::Schemes::StandardShapes>();
-                }
-            }
-
         /// @brief Populates all dialog controls from an existing line plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -135,7 +119,6 @@ namespace Wisteria::UI
 
         // DDX data members
         bool m_autoSpline{ true };
-        int m_shapeSchemeIndex{ 0 };
 
         wxString m_xVariable;
         wxString m_yVariable;

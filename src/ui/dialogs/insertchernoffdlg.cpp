@@ -19,7 +19,7 @@ namespace Wisteria::UI
                                          const wxSize& size, const long style, EditMode editMode)
         : InsertGraphDlg(
               canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-              static_cast<GraphDlgOptions>(GraphDlgIncludeAll & ~GraphDlgIncludeColorScheme))
+              static_cast<GraphDlgOptions>(GraphDlgIncludeMost & ~GraphDlgIncludeColorScheme))
         {
         CreateControls();
         FinalizeControls();

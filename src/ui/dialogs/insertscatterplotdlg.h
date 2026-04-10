@@ -12,7 +12,6 @@
 #ifndef INSERT_SCATTERPLOT_DIALOG_H
 #define INSERT_SCATTERPLOT_DIALOG_H
 
-#include "../../base/icons.h"
 #include "insertgraphdlg.h"
 #include <vector>
 #include <wx/wx.h>
@@ -102,21 +101,6 @@ namespace Wisteria::UI
             return m_showConfidenceBands;
             }
 
-        /// @returns The selected shape scheme for the scatter plot points.
-        [[nodiscard]]
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> GetShapeScheme() const
-            {
-            switch (m_shapeSchemeIndex)
-                {
-            case 1:
-                return std::make_shared<Wisteria::Icons::Schemes::Semesters>();
-            case 0:
-                [[fallthrough]];
-            default:
-                return std::make_shared<Wisteria::Icons::Schemes::StandardShapes>();
-                }
-            }
-
         /// @brief Populates all dialog controls from an existing scatter plot.
         /// @param plot The scatter plot to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& plot);
@@ -144,7 +128,6 @@ namespace Wisteria::UI
         // DDX data members
         bool m_showRegressionLines{ true };
         bool m_showConfidenceBands{ true };
-        int m_shapeSchemeIndex{ 0 };
 
         wxString m_xVariable;
         wxString m_yVariable;

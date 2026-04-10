@@ -75,8 +75,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @returns The SVG filename (e.g., @c "barchart.svg"), or an empty
     ///     string if the type is not recognized.
     [[nodiscard]]
-    static wxString GetItemIconName(
-        const Wisteria::GraphItems::GraphItemBase* item);
+    static wxString GetItemIconName(const Wisteria::GraphItems::GraphItemBase* item);
 
     /// @brief Returns the serializable type name for a graph,
     ///     based on its RTTI type.

@@ -21,7 +21,7 @@ namespace Wisteria::UI
                                      EditMode editMode)
         : InsertGraphDlg(
               canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-              static_cast<GraphDlgOptions>(GraphDlgIncludeAll & ~GraphDlgIncludeColorScheme))
+              GraphDlgIncludeShapeScheme)
         {
         CreateControls();
         FinalizeControls();
@@ -109,18 +109,6 @@ namespace Wisteria::UI
                                       wxDefaultSize, 0,
                                       wxTextValidator(wxFILTER_NONE, &m_timeIntervalLabel)));
         optionsSizer->Add(timeSizer, wxSizerFlags{}.Border());
-
-        // shape scheme
-        auto* shapeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        shapeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Point shapes:")),
-                        wxSizerFlags{}.CenterVertical());
-        wxArrayString shapeSchemes;
-        shapeSchemes.Add(_(L"Standard Shapes"));
-        shapeSchemes.Add(_(L"Semesters"));
-        shapeSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     shapeSchemes, 0, wxGenericValidator(&m_shapeSchemeIndex)),
-                        wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(shapeSizer, wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -335,17 +323,6 @@ namespace Wisteria::UI
 
         // W-Curve-specific options
         m_timeIntervalLabel = wcurve->GetTimeIntervalLabel();
-
-        // determine which shape scheme is in use
-        const auto& scheme = wcurve->GetShapeScheme();
-        if (scheme != nullptr && scheme->IsKindOf(wxCLASSINFO(Icons::Schemes::Semesters)))
-            {
-            m_shapeSchemeIndex = 1;
-            }
-        else
-            {
-            m_shapeSchemeIndex = 0;
-            }
 
         TransferDataToWindow();
         }
