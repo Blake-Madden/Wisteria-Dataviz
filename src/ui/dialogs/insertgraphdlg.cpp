@@ -1725,13 +1725,13 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [this, ipList, &interestPts, refreshIpList](wxCommandEvent&)
             {
-                const auto sel =
+                const auto selected =
                     ipList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, interestPts.size()))
+                if (selected == wxNOT_FOUND || std::cmp_greater_equal(selected, interestPts.size()))
                     {
                     return;
                     }
-                auto& pt = interestPts[static_cast<size_t>(sel)];
+                auto& pt = interestPts[static_cast<size_t>(selected)];
 
                 wxDialog ipDlg(this, wxID_ANY, _(L"Edit Interest Point"), wxDefaultPosition,
                                wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
@@ -1773,13 +1773,13 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [ipList, &interestPts, refreshIpList](wxCommandEvent&)
             {
-                const auto sel =
+                const auto selected =
                     ipList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, interestPts.size()))
+                if (selected == wxNOT_FOUND || std::cmp_greater_equal(selected, interestPts.size()))
                     {
                     return;
                     }
-                interestPts.erase(interestPts.begin() + sel);
+                interestPts.erase(interestPts.begin() + selected);
                 refreshIpList();
             });
         ipList->Bind(wxEVT_LIST_ITEM_ACTIVATED,
