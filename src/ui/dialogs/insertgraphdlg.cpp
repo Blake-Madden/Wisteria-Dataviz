@@ -895,7 +895,7 @@ namespace Wisteria::UI
 
         const auto shapeNames = GetPointShapeNames();
 
-        // pre-select the current shape
+        // preselect the current shape
         const auto currentName =
             ReportEnumConvert::ConvertIconToString(m_customShapes[static_cast<size_t>(sel)]);
         int defaultSel = 0;
@@ -1385,7 +1385,7 @@ namespace Wisteria::UI
         auto* anchorGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         anchorGrid->AddGrowableCol(1, 1);
 
-        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"X:")),
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"x-axis:")),
                         wxSizerFlags{}.CenterVertical());
         auto* anchorXSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
         anchorXSpin->SetRange(-1e9, 1e9);
@@ -1393,7 +1393,7 @@ namespace Wisteria::UI
         anchorXSpin->SetDigits(4);
         anchorGrid->Add(anchorXSpin, wxSizerFlags{}.Expand());
 
-        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"Y:")),
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"y-axis:")),
                         wxSizerFlags{}.CenterVertical());
         auto* anchorYSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
         anchorYSpin->SetRange(-1e9, 1e9);
@@ -1432,7 +1432,7 @@ namespace Wisteria::UI
                 auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
                 sizer->AddGrowableCol(1, 1);
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 xSpin->SetRange(-1e9, 1e9);
@@ -1440,7 +1440,7 @@ namespace Wisteria::UI
                 xSpin->SetDigits(4);
                 sizer->Add(xSpin, wxSizerFlags{}.Expand());
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"y-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 ySpin->SetRange(-1e9, 1e9);
@@ -1477,7 +1477,7 @@ namespace Wisteria::UI
                 auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
                 sizer->AddGrowableCol(1, 1);
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 xSpin->SetRange(-1e9, 1e9);
@@ -1486,7 +1486,7 @@ namespace Wisteria::UI
                 xSpin->SetValue(pt.m_x);
                 sizer->Add(xSpin, wxSizerFlags{}.Expand());
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"y-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 ySpin->SetRange(-1e9, 1e9);
@@ -1643,7 +1643,7 @@ namespace Wisteria::UI
         auto* anchorGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         anchorGrid->AddGrowableCol(1, 1);
 
-        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"X:")),
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"x-axis:")),
                         wxSizerFlags{}.CenterVertical());
         auto* anchorXSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
         anchorXSpin->SetRange(-1e9, 1e9);
@@ -1652,7 +1652,7 @@ namespace Wisteria::UI
         anchorXSpin->SetValue(ann.anchor.m_x);
         anchorGrid->Add(anchorXSpin, wxSizerFlags{}.Expand());
 
-        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"Y:")),
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"y-axis:")),
                         wxSizerFlags{}.CenterVertical());
         auto* anchorYSpin = new wxSpinCtrlDouble(anchorBox->GetStaticBox(), wxID_ANY);
         anchorYSpin->SetRange(-1e9, 1e9);
@@ -1693,7 +1693,7 @@ namespace Wisteria::UI
                 auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
                 sizer->AddGrowableCol(1, 1);
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 xSpin->SetRange(-1e9, 1e9);
@@ -1701,7 +1701,7 @@ namespace Wisteria::UI
                 xSpin->SetDigits(4);
                 sizer->Add(xSpin, wxSizerFlags{}.Expand());
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"y-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 ySpin->SetRange(-1e9, 1e9);
@@ -1738,7 +1738,7 @@ namespace Wisteria::UI
                 auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
                 sizer->AddGrowableCol(1, 1);
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"X:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* xSpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 xSpin->SetRange(-1e9, 1e9);
@@ -1747,7 +1747,7 @@ namespace Wisteria::UI
                 xSpin->SetValue(pt.m_x);
                 sizer->Add(xSpin, wxSizerFlags{}.Expand());
 
-                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"Y:")),
+                sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"y-axisY:")),
                            wxSizerFlags{}.CenterVertical());
                 auto* ySpin = new wxSpinCtrlDouble(&ipDlg, wxID_ANY);
                 ySpin->SetRange(-1e9, 1e9);

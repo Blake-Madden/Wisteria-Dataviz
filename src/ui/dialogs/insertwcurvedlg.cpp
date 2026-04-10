@@ -19,9 +19,8 @@ namespace Wisteria::UI
                                      wxWindow* parent, const wxString& caption, const wxWindowID id,
                                      const wxPoint& pos, const wxSize& size, const long style,
                                      EditMode editMode)
-        : InsertGraphDlg(
-              canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-              GraphDlgIncludeShapeScheme)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
+                         GraphDlgIncludeShapeScheme)
         {
         CreateControls();
         FinalizeControls();
