@@ -3226,7 +3226,7 @@ namespace Wisteria
             const auto groupVarName = ExpandConstants(groupVarNameRaw);
 
             auto wcurvePlot = std::make_shared<Graphs::WCurvePlot>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                canvas, LoadGraphColorScheme(graphNode),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
             if (!groupVarNameRaw.empty())
@@ -3322,7 +3322,7 @@ namespace Wisteria
             const auto groupVarName = ExpandConstants(groupVarNameRaw);
 
             auto linePlot = std::make_shared<Graphs::LinePlot>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                canvas, LoadGraphColorScheme(graphNode),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
             if (!groupVarNameRaw.empty())
@@ -3382,7 +3382,7 @@ namespace Wisteria
         if (variablesNode->IsOk())
             {
             auto linePlot = std::make_shared<Graphs::MultiSeriesLinePlot>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                canvas, LoadGraphColorScheme(graphNode),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
             linePlot->SetData(foundPos->second,
@@ -3419,7 +3419,7 @@ namespace Wisteria
             const auto groupVarName = ExpandConstants(groupVarNameRaw);
 
             auto scatterPlot = std::make_shared<Graphs::ScatterPlot>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                canvas, LoadGraphColorScheme(graphNode),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"regression-line-scheme")));
             if (!groupVarNameRaw.empty())
@@ -3478,7 +3478,7 @@ namespace Wisteria
             const auto groupVarName = ExpandConstants(groupVarNameRaw);
 
             auto bubblePlot = std::make_shared<Graphs::BubblePlot>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                canvas, LoadGraphColorScheme(graphNode),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"regression-line-scheme")));
             if (!groupVarNameRaw.empty())
@@ -3756,8 +3756,8 @@ namespace Wisteria
             const auto groupVarNameRaw = variablesNode->GetProperty(L"group")->AsString();
             const auto groupVarName = ExpandConstants(groupVarNameRaw);
 
-            auto heatmap = std::make_shared<Graphs::HeatMap>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+            auto heatmap =
+                std::make_shared<Graphs::HeatMap>(canvas, LoadGraphColorScheme(graphNode));
             if (!groupVarNameRaw.empty())
                 {
                 heatmap->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
@@ -4523,7 +4523,7 @@ namespace Wisteria
             const auto groupName = ExpandConstants(groupNameRaw);
 
             auto chart = std::make_shared<Graphs::ScaleChart>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                canvas, LoadGraphColorScheme(graphNode),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
             if (!scoreVarNameRaw.empty())
                 {
@@ -4783,8 +4783,8 @@ namespace Wisteria
             const auto wordColNameRaw = variablesNode->GetProperty(L"words")->AsString();
             const auto wordColName = ExpandConstants(wordColNameRaw);
 
-            auto wordCloud = std::make_shared<Graphs::WordCloud>(
-                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+            auto wordCloud =
+                std::make_shared<Graphs::WordCloud>(canvas, LoadGraphColorScheme(graphNode));
             if (!aggVarNameRaw.empty())
                 {
                 wordCloud->SetPropertyTemplate(L"variables.aggregate", aggVarNameRaw);
@@ -5551,6 +5551,22 @@ namespace Wisteria
                 }
             }
         return nullptr;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Colors::Schemes::ColorScheme>
+    ReportBuilder::LoadGraphColorScheme(const wxSimpleJSON::Ptr_t& graphNode) const
+        {
+        auto colorScheme = LoadColorScheme(graphNode->GetProperty(L"color-scheme"));
+        if (colorScheme == nullptr)
+            {
+            const auto brushSchemeNode = graphNode->GetProperty(L"brush-scheme");
+            if (brushSchemeNode->IsOk())
+                {
+                colorScheme = LoadColorScheme(brushSchemeNode->GetProperty(L"color-scheme"));
+                }
+            }
+        return colorScheme;
         }
 
     //---------------------------------------------------

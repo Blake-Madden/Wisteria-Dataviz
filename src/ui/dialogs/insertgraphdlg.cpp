@@ -1439,7 +1439,8 @@ namespace Wisteria::UI
         if (m_options & GraphDlgIncludeColorScheme)
             {
             const auto& brushScheme = graph.GetBrushScheme();
-            const auto namedIndex = ColorSchemeToIndex(graph.GetColorScheme());
+            const auto& colorScheme = graph.GetColorScheme();
+            const auto namedIndex = ColorSchemeToIndex(colorScheme);
             if (namedIndex == 0 && brushScheme != nullptr && !brushScheme->GetBrushes().empty())
                 {
                 m_useCustomColors = true;
@@ -1447,6 +1448,18 @@ namespace Wisteria::UI
                 for (const auto& brush : brushScheme->GetBrushes())
                     {
                     m_customColors.push_back(brush.GetColour());
+                    }
+                m_customColorsRadio->SetValue(true);
+                RefreshCustomColorList();
+                m_colorSchemeIndex = 0;
+                }
+            else if (namedIndex == 0 && colorScheme != nullptr && !colorScheme->GetColors().empty())
+                {
+                m_useCustomColors = true;
+                m_customColors.clear();
+                for (const auto& clr : colorScheme->GetColors())
+                    {
+                    m_customColors.push_back(clr);
                     }
                 m_customColorsRadio->SetValue(true);
                 RefreshCustomColorList();

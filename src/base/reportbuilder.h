@@ -1060,6 +1060,14 @@ namespace Wisteria
         [[nodiscard]]
         std::shared_ptr<GraphItems::Label> LoadEmptySpacer() const;
 
+        /// @brief Loads a color scheme from a graph node, checking both the
+        ///     top-level "color-scheme" and the embedded "brush-scheme/color-scheme".
+        /// @param graphNode The graph node to parse.
+        /// @returns The loaded color scheme, or null upon failure.
+        [[nodiscard]]
+        std::shared_ptr<Colors::Schemes::ColorScheme>
+        LoadGraphColorScheme(const wxSimpleJSON::Ptr_t& graphNode) const;
+
         /// @brief Loads a color scheme from a node.
         /// @param colorSchemeNode The node to parse.
         /// @returns The loaded color scheme, or null upon failure.
