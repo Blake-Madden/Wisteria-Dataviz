@@ -20,7 +20,7 @@
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a table into a canvas cell.
-        @details Extends InsertGraphDlg with a "Table Options" page containing:
+        @details Extends InsertGraphDlg with a "Table" page containing:
             - A dataset selector (from the project's datasets).
             - A variable selection mode (all columns, pattern match,
               pattern exclusion, or custom selection via VariableSelectDlg).

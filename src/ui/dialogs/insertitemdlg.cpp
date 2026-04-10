@@ -92,7 +92,7 @@ namespace Wisteria::UI
         auto* pagePage = new wxPanel(m_sideBarBook);
         auto* pageSizer = new wxBoxSizer(wxVERTICAL);
         pagePage->SetSizer(pageSizer);
-        m_sideBarBook->AddPage(pagePage, _(L"Page Options"), ID_PAGE_SECTION, true);
+        m_sideBarBook->AddPage(pagePage, _(L"Page"), ID_PAGE_SECTION, true);
 
         // grid size controls (only for new items being added to the canvas)
         if (GetEditMode() == EditMode::Insert)

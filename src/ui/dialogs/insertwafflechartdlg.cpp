@@ -40,7 +40,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Waffle Chart Options"), ID_OPTIONS_SECTION,
+        GetSideBarBook()->AddPage(optionsPage, _(L"Waffle Chart"), ID_OPTIONS_SECTION,
                                   true);
 
         // shapes list

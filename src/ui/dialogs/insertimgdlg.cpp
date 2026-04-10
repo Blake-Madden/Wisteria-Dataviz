@@ -38,7 +38,7 @@ namespace Wisteria::UI
         auto* imagePage = new wxPanel(GetSideBarBook());
         auto* imageSizer = new wxBoxSizer(wxVERTICAL);
         imagePage->SetSizer(imageSizer);
-        GetSideBarBook()->AddPage(imagePage, _(L"Image Options"), ID_IMAGE_SECTION, true);
+        GetSideBarBook()->AddPage(imagePage, _(L"Image"), ID_IMAGE_SECTION, true);
 
         if ((m_options & ImageDlgIncludePageOptions) == 0)
             {

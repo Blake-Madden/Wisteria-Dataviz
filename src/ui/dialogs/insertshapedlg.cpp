@@ -142,7 +142,7 @@ namespace Wisteria::UI
         auto* shapePage = new wxPanel(GetSideBarBook());
         auto* shapeSizer = new wxBoxSizer(wxVERTICAL);
         shapePage->SetSizer(shapeSizer);
-        GetSideBarBook()->AddPage(shapePage, _(L"Shape Options"), ID_SHAPE_SECTION, true);
+        GetSideBarBook()->AddPage(shapePage, _(L"Shape"), ID_SHAPE_SECTION, true);
 
         // page options (background color, outline, etc.) are not relevant for shapes,
         // which are self-contained items with their own pen/brush controls.

@@ -38,7 +38,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Sankey Diagram Options"), ID_OPTIONS_SECTION,
+        GetSideBarBook()->AddPage(optionsPage, _(L"Sankey Diagram"), ID_OPTIONS_SECTION,
                                   true);
 
         // dataset selector

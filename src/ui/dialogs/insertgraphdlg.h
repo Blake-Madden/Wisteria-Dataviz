@@ -258,7 +258,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool ValidateColorScheme();
 
-        /** @brief Creates and adds the "Graph Options" sidebar page.
+        /** @brief Creates and adds the "General" sidebar page.
             @details This page contains controls common to all Graph2D types:
                 title, subtitle, caption, background color, and background image.
             @note Call this from derived CreateControls() after the base
@@ -266,7 +266,7 @@ namespace Wisteria::UI
                 chart-specific pages.*/
         void CreateGraphOptionsPage();
 
-        /** @brief Creates and adds the "Axis Options" sidebar page.
+        /** @brief Creates and adds the "Axis" sidebar page.
             @details This page contains axis-related options such as
                 mirroring the X and Y axes.
             @note Call this from derived CreateControls() for graph types

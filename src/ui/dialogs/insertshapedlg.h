@@ -37,7 +37,7 @@ namespace Wisteria::UI
         };
 
     /** @brief Dialog for inserting or editing a Shape or FillableShape on a canvas cell.
-        @details Extends InsertItemDlg with a "Shape Options" page containing:
+        @details Extends InsertItemDlg with a "Shape" page containing:
             - Shape type (via choice control with human-readable names).
             - Size (width and height in DIPs).
             - Pen (color, width, style).

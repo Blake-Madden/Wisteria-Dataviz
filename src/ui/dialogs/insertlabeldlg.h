@@ -34,7 +34,7 @@ namespace Wisteria::UI
         Can also be used standalone to edit an existing Label's styling
         (e.g., the donut hole label in a pie chart) by calling
         LoadFromLabel() before showing the dialog and ApplyToLabel()
-        after it returns wxID_OK.*/
+        after it returns @c wxID_OK.*/
     class InsertLabelDlg final : public InsertItemDlg
         {
       public:
@@ -48,7 +48,7 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.
-            @param includePageOptions Whether to show the "Page Options" section.
+            @param includePageOptions Whether to show the "Page" section.
                 Set to @c false when the label is not placed directly on the canvas
                 (e.g., a donut hole label inside a pie chart).*/
         InsertLabelDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,

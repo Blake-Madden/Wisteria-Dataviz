@@ -40,7 +40,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Stem-and-Leaf Options"), ID_OPTIONS_SECTION,
+        GetSideBarBook()->AddPage(optionsPage, _(L"Stem-and-Leaf"), ID_OPTIONS_SECTION,
                                   true);
 
         // dataset selector

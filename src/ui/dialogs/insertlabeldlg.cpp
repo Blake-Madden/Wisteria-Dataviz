@@ -46,7 +46,7 @@ namespace Wisteria::UI
         mainSizer->Add(col1Sizer, wxSizerFlags{ 1 }.Expand().Border());
         mainSizer->Add(col2Sizer, wxSizerFlags{ 1 }.Expand().Border());
         labelPage->SetSizer(mainSizer);
-        GetSideBarBook()->AddPage(labelPage, _(L"Label Options"), ID_LABEL_SECTION, true);
+        GetSideBarBook()->AddPage(labelPage, _(L"Label"), ID_LABEL_SECTION, true);
 
         if (!m_includePageOptions)
             {

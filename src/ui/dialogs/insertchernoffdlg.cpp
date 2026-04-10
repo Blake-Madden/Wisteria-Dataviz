@@ -38,7 +38,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Chernoff Faces Options"), ID_OPTIONS_SECTION,
+        GetSideBarBook()->AddPage(optionsPage, _(L"Chernoff Faces"), ID_OPTIONS_SECTION,
                                   true);
 
         // dataset selector

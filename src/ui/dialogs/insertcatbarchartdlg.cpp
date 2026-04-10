@@ -46,7 +46,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Bar Chart Options"), ID_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Bar Chart"), ID_OPTIONS_SECTION, true);
 
         // left column: original options
         auto* leftSizer = new wxBoxSizer(wxVERTICAL);

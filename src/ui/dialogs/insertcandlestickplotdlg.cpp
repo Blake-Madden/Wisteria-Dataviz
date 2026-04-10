@@ -41,7 +41,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Candlestick Plot Options"), ID_OPTIONS_SECTION,
+        GetSideBarBook()->AddPage(optionsPage, _(L"Candlestick Plot"), ID_OPTIONS_SECTION,
                                   true);
 
         // dataset selector

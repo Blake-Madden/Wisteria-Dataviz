@@ -40,7 +40,7 @@ namespace Wisteria::UI
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Multi-Series Line Plot Options"),
+        GetSideBarBook()->AddPage(optionsPage, _(L"Multi-Series Line Plot"),
                                   ID_OPTIONS_SECTION, true);
 
         // dataset selector

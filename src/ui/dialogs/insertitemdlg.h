@@ -28,7 +28,7 @@
 
 namespace Wisteria::UI
     {
-    /// @brief Flags controlling which parts of the "Page Options" page are visible.
+    /// @brief Flags controlling which parts of the "Page" page are visible.
     enum ItemDlgPageOptions : int
         {
         /// @brief Show the canvas placement grid.
@@ -70,7 +70,7 @@ namespace Wisteria::UI
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.
             @param pageOptions Bitmask of ItemDlgPageOptions controlling which
-                parts of the "Page Options" page are shown.*/
+                parts of the "Page" page are shown.*/
         InsertItemDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                       const wxString& caption, wxWindowID id = wxID_ANY,
                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,

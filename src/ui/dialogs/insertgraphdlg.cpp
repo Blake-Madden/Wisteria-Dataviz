@@ -267,7 +267,7 @@ namespace Wisteria::UI
         auto* graphPage = new wxPanel(GetSideBarBook());
         auto* graphSizer = new wxBoxSizer(wxVERTICAL);
         graphPage->SetSizer(graphSizer);
-        GetSideBarBook()->AddPage(graphPage, _(L"General Graph Options"), ID_GRAPH_OPTIONS_SECTION,
+        GetSideBarBook()->AddPage(graphPage, _(L"General"), ID_GRAPH_OPTIONS_SECTION,
                                   false);
 
         // title, subtitle, caption — each opens a full Label editor
@@ -491,7 +491,7 @@ namespace Wisteria::UI
         auto* axisPage = new wxPanel(GetSideBarBook());
         auto* axisSizer = new wxBoxSizer(wxVERTICAL);
         axisPage->SetSizer(axisSizer);
-        GetSideBarBook()->AddPage(axisPage, _(L"Axis Options"), ID_AXIS_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(axisPage, _(L"Axis"), ID_AXIS_OPTIONS_SECTION, true);
 
         axisSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,
                                       wxDefaultSize, 0, wxGenericValidator(&m_mirrorXAxis)),
