@@ -1819,13 +1819,27 @@ void WisteriaView::AddDatasetToProject(
 //-------------------------------------------
 void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
     {
-    Wisteria::UI::InsertPageDlg dlg(nullptr, m_frame);
+    wxArrayString pageNames;
+    for (size_t i = 2; i < m_sideBar->GetFolderCount(); ++i)
+        {
+        pageNames.Add(m_sideBar->GetFolderText(i));
+        }
+
+    Wisteria::UI::InsertPageDlg dlg(nullptr, pageNames, m_frame);
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
-    AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName());
+    std::optional<size_t> insertIndex;
+    if (dlg.GetRelativePageIndex() != wxNOT_FOUND)
+        {
+        insertIndex = (dlg.GetInsertPosition() == 0) ?
+                          static_cast<size_t>(dlg.GetRelativePageIndex()) :
+                          static_cast<size_t>(dlg.GetRelativePageIndex() + 1);
+        }
+
+    AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName(), insertIndex);
     }
 
 //-------------------------------------------
@@ -1837,7 +1851,10 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::InsertPageDlg dlg(canvas, m_frame, wxID_ANY, _(L"Edit Page"));
+    Wisteria::UI::InsertPageDlg dlg(canvas, wxArrayString{}, m_frame, wxID_ANY, _(L"Edit Page"),
+                                    wxDefaultPosition, wxDefaultSize,
+                                    wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                    Wisteria::UI::InsertPageDlg::EditMode::Edit);
     if (m_sideBar->GetSelectedFolder())
         {
         dlg.SetPageName(m_sideBar->GetFolderText(m_sideBar->GetSelectedFolder().value()));
@@ -1848,6 +1865,7 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
+    UpdateCanvas(canvas);
 
     // update the sidebar label for this page
     const auto selectedFolder = m_sideBar->GetSelectedFolder();
@@ -1912,7 +1930,8 @@ void WisteriaView::OnDeletePage([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, const wxString& name)
+void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, const wxString& name,
+                                    std::optional<size_t> position)
     {
     const wxWindowID pageId = wxNewId();
 
@@ -1922,13 +1941,28 @@ void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, con
     canvas->Hide();
     m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
     m_workWindows.AddWindow(canvas);
-    m_pages.push_back(canvas);
+
+    const size_t insertIndex = position.value_or(m_pages.size());
+    if (insertIndex >= m_pages.size())
+        {
+        m_pages.push_back(canvas);
+        }
+    else
+        {
+        m_pages.insert(m_pages.begin() + insertIndex, canvas);
+        }
 
     const wxString displayName =
         !name.empty() ? name : wxString::Format(_(L"Page %zu"), m_pages.size());
     canvas->SetLabel(displayName);
-    m_sideBar->InsertItem(m_sideBar->GetFolderCount(), displayName, pageId, PAGE_ICON_INDEX);
-    m_sideBar->SelectFolder(m_sideBar->GetFolderCount() - 1, true);
+
+    const size_t sidebarInsertIndex =
+        position.has_value() ?
+            position.value() + 2 : // offset by Data (0) and Constants (1) folders
+            m_sideBar->GetFolderCount();
+
+    m_sideBar->InsertItem(sidebarInsertIndex, displayName, pageId, PAGE_ICON_INDEX);
+    m_sideBar->SelectFolder(sidebarInsertIndex, true);
     m_sideBar->SaveState();
 
     m_workArea->Layout();

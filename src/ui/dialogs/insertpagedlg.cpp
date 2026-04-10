@@ -14,11 +14,16 @@
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertPageDlg::InsertPageDlg(Canvas* canvas, wxWindow* parent, const wxWindowID id,
-                                 const wxString& caption, const wxPoint& pos, const wxSize& size,
-                                 const long style)
-        : DialogWithHelp(parent, id, caption, pos, size, style), m_canvas(canvas)
+    InsertPageDlg::InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames, wxWindow* parent,
+                                 const wxWindowID id, const wxString& caption, const wxPoint& pos,
+                                 const wxSize& size, const long style, EditMode editMode)
+        : DialogWithHelp(parent, id, caption, pos, size, style), m_canvas(canvas),
+          m_editMode(editMode), m_pageNames(pageNames)
         {
+        if (!m_pageNames.empty())
+            {
+            m_relativePageIndex = pageNames.size() - 1;
+            }
         CreateControls();
         GetSizer()->SetSizeHints(this);
         Centre();
@@ -61,6 +66,38 @@ namespace Wisteria::UI
                                         wxDefaultSize, 0, wxGenericValidator{ &m_pageName });
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
+        if (m_editMode == EditMode::Insert)
+            {
+            auto* posSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Position"));
+            auto* rbBefore =
+                new wxRadioButton(posSizer->GetStaticBox(), wxID_ANY, _(L"Insert before"),
+                                  wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+            auto* rbAfter =
+                new wxRadioButton(posSizer->GetStaticBox(), wxID_ANY, _(L"Insert after"));
+            posSizer->Add(rbBefore, wxSizerFlags{}.Border());
+            posSizer->Add(rbAfter, wxSizerFlags{}.Border());
+
+            auto* comboPages =
+                new wxComboBox(posSizer->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                               wxDefaultSize, m_pageNames, wxCB_DROPDOWN | wxCB_READONLY);
+            comboPages->SetValidator(wxGenericValidator{ &m_relativePageIndex });
+            posSizer->Add(comboPages, wxSizerFlags{}.Expand().Border());
+
+            if (m_pageNames.empty())
+                {
+                rbBefore->Disable();
+                rbAfter->Disable();
+                comboPages->Disable();
+                }
+            else
+                {
+                rbAfter->SetValidator(wxGenericValidator{ &m_insertAfter });
+                }
+
+            gridSizer->AddSpacer(0);
+            gridSizer->Add(posSizer, wxSizerFlags{}.Expand());
+            }
+
         // rows
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Rows:")),
                        wxSizerFlags{}.CenterVertical());
@@ -80,8 +117,8 @@ namespace Wisteria::UI
         contentSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 
         // preview panel
-        const int previewHeight = FromDIP(400);
-        const int previewWidth = static_cast<int>(previewHeight * math_constants::golden_ratio);
+        const int previewWidth = FromDIP(400);
+        const int previewHeight = static_cast<int>(previewWidth * math_constants::golden_ratio);
         m_previewPanel =
             new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize{ previewWidth, previewHeight },
                         wxTAB_TRAVERSAL | wxWANTS_CHARS);
@@ -313,31 +350,5 @@ namespace Wisteria::UI
                               TransferDataFromWindow();
                               m_previewPanel->Refresh();
                           });
-
-        Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&)
-            {
-                TransferDataFromWindow();
-
-                if (m_canvas != nullptr)
-                    {
-                    const auto [canvasRows, canvasCols] = m_canvas->GetFixedObjectsGridSize();
-                    if (m_selectedRow < canvasRows && m_selectedColumn < canvasCols &&
-                        m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn) != nullptr)
-                        {
-                        if (wxMessageBox(_(L"The selected cell already contains an item. "
-                                           "Do you want to replace it?"),
-                                         _(L"Replace Item"), wxYES_NO | wxICON_QUESTION,
-                                         this) != wxYES)
-                            {
-                            return;
-                            }
-                        }
-                    }
-
-                EndModal(wxID_OK);
-            },
-            wxID_OK);
         }
     } // namespace Wisteria::UI
