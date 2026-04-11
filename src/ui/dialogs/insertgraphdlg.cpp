@@ -518,14 +518,18 @@ namespace Wisteria::UI
         auto* annotPage = new wxPanel(GetSideBarBook());
         auto* annotSizer = new wxBoxSizer(wxVERTICAL);
         annotPage->SetSizer(annotSizer);
-        GetSideBarBook()->AddPage(annotPage, _(L"Annotations"), ID_ANNOTATIONS_SECTION, true);
+        GetSideBarBook()->AddPage(annotPage, _(L"Annotations & References"), ID_ANNOTATIONS_SECTION,
+                                  true);
 
+        // Annotations
+        //------------
+        auto* annotBox = new wxStaticBoxSizer(wxVERTICAL, annotPage, _(L"Annotations"));
         m_annotationListBox = new wxEditableListBox(
-            annotPage, wxID_ANY, wxString{}, wxDefaultPosition,
-            wxSize{ FromDIP(300), FromDIP(150) },
+            annotBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(100) },
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         RefreshAnnotationList();
-        annotSizer->Add(m_annotationListBox, wxSizerFlags{ 1 }.Expand().Border());
+        annotBox->Add(m_annotationListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
         m_annotationListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                   [this](wxCommandEvent&) { OnAddAnnotation(); });
@@ -537,26 +541,11 @@ namespace Wisteria::UI
                                                   { OnRemoveAnnotation(); });
         m_annotationListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
                                   [this](wxListEvent&) { OnEditAnnotation(); });
-        }
+        annotSizer->Add(annotBox, wxSizerFlags{ 1 }.Expand().Border());
 
-    //-------------------------------------------
-    void InsertGraphDlg::CreateAxisOptionsPage()
-        {
-        auto* axisPage = new wxPanel(GetSideBarBook());
-        auto* axisSizer = new wxBoxSizer(wxVERTICAL);
-        axisPage->SetSizer(axisSizer);
-        GetSideBarBook()->AddPage(axisPage, _(L"Axis"), ID_AXIS_OPTIONS_SECTION, true);
-
-        axisSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,
-                                      wxDefaultSize, 0, wxGenericValidator(&m_mirrorXAxis)),
-                       wxSizerFlags{}.Border());
-
-        axisSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror Y axis"), wxDefaultPosition,
-                                      wxDefaultSize, 0, wxGenericValidator(&m_mirrorYAxis)),
-                       wxSizerFlags{}.Border());
-
-        // reference lines
-        auto* refLineBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Reference Lines"));
+        // Reference Lines
+        //----------------
+        auto* refLineBox = new wxStaticBoxSizer(wxVERTICAL, annotPage, _(L"Reference Lines"));
         m_refLineListBox = new wxEditableListBox(
             refLineBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
             wxSize{ FromDIP(300), FromDIP(100) },
@@ -574,10 +563,11 @@ namespace Wisteria::UI
                                                { OnRemoveReferenceLine(); });
         m_refLineListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
                                [this](wxListEvent&) { OnEditReferenceLine(); });
-        axisSizer->Add(refLineBox, wxSizerFlags{ 1 }.Expand().Border());
+        annotSizer->Add(refLineBox, wxSizerFlags{ 1 }.Expand().Border());
 
-        // reference areas
-        auto* refAreaBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Reference Areas"));
+        // Reference Areas
+        //----------------
+        auto* refAreaBox = new wxStaticBoxSizer(wxVERTICAL, annotPage, _(L"Reference Areas"));
         m_refAreaListBox = new wxEditableListBox(
             refAreaBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
             wxSize{ FromDIP(300), FromDIP(100) },
@@ -595,7 +585,275 @@ namespace Wisteria::UI
                                                { OnRemoveReferenceArea(); });
         m_refAreaListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
                                [this](wxListEvent&) { OnEditReferenceArea(); });
-        axisSizer->Add(refAreaBox, wxSizerFlags{ 1 }.Expand().Border());
+        annotSizer->Add(refAreaBox, wxSizerFlags{ 1 }.Expand().Border());
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::CreateAxisOptionsPage()
+        {
+        auto* axisPage = new wxPanel(GetSideBarBook());
+        auto* axisSizer = new wxBoxSizer(wxVERTICAL);
+        axisPage->SetSizer(axisSizer);
+        GetSideBarBook()->AddPage(axisPage, _(L"Axes"), ID_AXIS_OPTIONS_SECTION, true);
+
+        // axis selector
+        auto* selectorSizer = new wxBoxSizer(wxHORIZONTAL);
+        selectorSizer->Add(new wxStaticText(axisPage, wxID_ANY, _(L"Edit axis:")),
+                           wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_axisSelector = new wxChoice(axisPage, wxID_ANY);
+        m_axisSelector->Append(_(L"Bottom X"));
+        m_axisSelector->Append(_(L"Top X"));
+        m_axisSelector->Append(_(L"Left Y"));
+        m_axisSelector->Append(_(L"Right Y"));
+        m_axisSelector->SetSelection(0);
+        m_axisSelector->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { OnAxisSelectionChanged(); });
+        selectorSizer->Add(m_axisSelector, wxSizerFlags{ 1 }.Expand());
+        axisSizer->Add(selectorSizer, wxSizerFlags{}.Expand().Border());
+
+        auto* gridSizer = new wxGridBagSizer(FromDIP(4), FromDIP(4));
+
+        // Group 1: Title / Header / Footer
+        //------------------
+        auto* titleBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Title / Header / Footer"));
+        auto* titleGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        titleGrid->AddGrowableCol(0, 1);
+        titleBox->Add(titleGrid, wxSizerFlags{}.Expand().Border());
+
+        titleGrid->Add(new wxStaticText(titleBox->GetStaticBox(), wxID_ANY, _(L"Title:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* editTitleBtn = new wxButton(titleBox->GetStaticBox(), wxID_ANY, _(L"Edit..."));
+        editTitleBtn->Bind(wxEVT_BUTTON,
+                           [this](wxCommandEvent&)
+                           {
+                               auto& axis = m_savedAxes.at(m_currentAxisType);
+                               EditLabelHelper(axis.GetTitle(), nullptr, _(L"Edit Axis Title"));
+                           });
+        titleGrid->Add(editTitleBtn);
+
+        titleGrid->Add(new wxStaticText(titleBox->GetStaticBox(), wxID_ANY, _(L"Header:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* editHeaderBtn = new wxButton(titleBox->GetStaticBox(), wxID_ANY, _(L"Edit..."));
+        editHeaderBtn->Bind(wxEVT_BUTTON,
+                            [this](wxCommandEvent&)
+                            {
+                                auto& axis = m_savedAxes.at(m_currentAxisType);
+                                EditLabelHelper(axis.GetHeader(), nullptr, _(L"Edit Axis Header"));
+                            });
+        titleGrid->Add(editHeaderBtn);
+
+        titleGrid->Add(new wxStaticText(titleBox->GetStaticBox(), wxID_ANY, _(L"Footer:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* editFooterBtn = new wxButton(titleBox->GetStaticBox(), wxID_ANY, _(L"Edit..."));
+        editFooterBtn->Bind(wxEVT_BUTTON,
+                            [this](wxCommandEvent&)
+                            {
+                                auto& axis = m_savedAxes.at(m_currentAxisType);
+                                EditLabelHelper(axis.GetFooter(), nullptr, _(L"Edit Axis Footer"));
+                            });
+        titleGrid->Add(editFooterBtn);
+
+        gridSizer->Add(titleBox, wxGBPosition(0, 0), wxDefaultSpan, wxEXPAND | wxALL, FromDIP(4));
+
+        // Group 2: Axis Line
+        //------------------
+        auto* lineBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Axis Line"));
+        auto* lineGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        lineGrid->AddGrowableCol(1, 1);
+        lineBox->Add(lineGrid, wxSizerFlags{}.Expand().Border());
+
+        lineGrid->Add(new wxStaticText(lineBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_axisLineColorPicker = new wxColourPickerCtrl(lineBox->GetStaticBox(), wxID_ANY);
+        lineGrid->Add(m_axisLineColorPicker, wxSizerFlags{}.Expand());
+
+        lineGrid->Add(new wxStaticText(lineBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_axisLineWidthSpin =
+            new wxSpinCtrl(lineBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 1);
+        lineGrid->Add(m_axisLineWidthSpin, wxSizerFlags{}.Expand());
+
+        lineGrid->Add(new wxStaticText(lineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_axisLineStyleChoice = new wxChoice(lineBox->GetStaticBox(), wxID_ANY);
+        m_axisLineStyleChoice->Append(_(L"None"));
+        m_axisLineStyleChoice->Append(_(L"Solid"));
+        m_axisLineStyleChoice->Append(_(L"Dot"));
+        m_axisLineStyleChoice->Append(_(L"Long dash"));
+        m_axisLineStyleChoice->Append(_(L"Short dash"));
+        m_axisLineStyleChoice->Append(_(L"Dot dash"));
+        lineGrid->Add(m_axisLineStyleChoice, wxSizerFlags{}.Expand());
+
+        lineGrid->Add(new wxStaticText(lineBox->GetStaticBox(), wxID_ANY, _(L"Cap:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_axisCapStyleChoice = new wxChoice(lineBox->GetStaticBox(), wxID_ANY);
+        m_axisCapStyleChoice->Append(_(L"No cap"));
+        m_axisCapStyleChoice->Append(_(L"Arrow"));
+        lineGrid->Add(m_axisCapStyleChoice, wxSizerFlags{}.Expand());
+
+        m_axisReverseCheck = new wxCheckBox(lineBox->GetStaticBox(), wxID_ANY, _(L"Reverse"));
+        lineBox->Add(m_axisReverseCheck, wxSizerFlags{}.Border());
+
+        gridSizer->Add(lineBox, wxGBPosition(1, 0), wxDefaultSpan, wxEXPAND | wxALL, FromDIP(4));
+
+        // Group 3: Gridlines
+        //------------------
+        auto* gridlineBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Gridlines"));
+        auto* gridlineGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        gridlineGrid->AddGrowableCol(1, 1);
+        gridlineBox->Add(gridlineGrid, wxSizerFlags{}.Expand().Border());
+
+        gridlineGrid->Add(new wxStaticText(gridlineBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_gridlineColorPicker = new wxColourPickerCtrl(gridlineBox->GetStaticBox(), wxID_ANY);
+        gridlineGrid->Add(m_gridlineColorPicker, wxSizerFlags{}.Expand());
+
+        gridlineGrid->Add(new wxStaticText(gridlineBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_gridlineWidthSpin =
+            new wxSpinCtrl(gridlineBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 1);
+        gridlineGrid->Add(m_gridlineWidthSpin, wxSizerFlags{}.Expand());
+
+        gridlineGrid->Add(new wxStaticText(gridlineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_gridlineStyleChoice = new wxChoice(gridlineBox->GetStaticBox(), wxID_ANY);
+        m_gridlineStyleChoice->Append(_(L"None"));
+        m_gridlineStyleChoice->Append(_(L"Solid"));
+        m_gridlineStyleChoice->Append(_(L"Dot"));
+        m_gridlineStyleChoice->Append(_(L"Long dash"));
+        m_gridlineStyleChoice->Append(_(L"Short dash"));
+        m_gridlineStyleChoice->Append(_(L"Dot dash"));
+        gridlineGrid->Add(m_gridlineStyleChoice, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(gridlineBox, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND | wxALL,
+                       FromDIP(4));
+
+        // Group 4: Tickmarks
+        //------------------
+        auto* tickBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Tickmarks"));
+        auto* tickGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        tickGrid->AddGrowableCol(1, 1);
+        tickBox->Add(tickGrid, wxSizerFlags{}.Expand().Border());
+
+        tickGrid->Add(new wxStaticText(tickBox->GetStaticBox(), wxID_ANY, _(L"Display:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_tickmarkDisplayChoice = new wxChoice(tickBox->GetStaticBox(), wxID_ANY);
+        m_tickmarkDisplayChoice->Append(_(L"Inner"));
+        m_tickmarkDisplayChoice->Append(_(L"Outer"));
+        m_tickmarkDisplayChoice->Append(_(L"Crossed"));
+        m_tickmarkDisplayChoice->Append(_(L"No display"));
+        tickGrid->Add(m_tickmarkDisplayChoice, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(tickBox, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND | wxALL, FromDIP(4));
+
+        // Group 5: Labels
+        //------------------
+        auto* labelBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Labels"));
+        auto* labelGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        labelGrid->AddGrowableCol(1, 1);
+        labelBox->Add(labelGrid, wxSizerFlags{}.Expand().Border());
+
+        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Display:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_labelDisplayChoice = new wxChoice(labelBox->GetStaticBox(), wxID_ANY);
+        m_labelDisplayChoice->Append(_(L"Custom labels or values"));
+        m_labelDisplayChoice->Append(_(L"Only custom labels"));
+        m_labelDisplayChoice->Append(_(L"Custom labels and values"));
+        m_labelDisplayChoice->Append(_(L"No display"));
+        m_labelDisplayChoice->Append(_(L"Values"));
+        labelGrid->Add(m_labelDisplayChoice, wxSizerFlags{}.Expand());
+
+        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Number format:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_numberDisplayChoice = new wxChoice(labelBox->GetStaticBox(), wxID_ANY);
+        m_numberDisplayChoice->Append(_(L"Value"));
+        m_numberDisplayChoice->Append(_(L"Percentage"));
+        m_numberDisplayChoice->Append(_(L"Currency"));
+        m_numberDisplayChoice->Append(_(L"Value (simple)"));
+        labelGrid->Add(m_numberDisplayChoice, wxSizerFlags{}.Expand());
+
+        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Orientation:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_labelOrientationChoice = new wxChoice(labelBox->GetStaticBox(), wxID_ANY);
+        m_labelOrientationChoice->Append(_(L"Parallel"));
+        m_labelOrientationChoice->Append(_(L"Perpendicular"));
+        labelGrid->Add(m_labelOrientationChoice, wxSizerFlags{}.Expand());
+
+        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Perp. alignment:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_perpAlignmentChoice = new wxChoice(labelBox->GetStaticBox(), wxID_ANY);
+        m_perpAlignmentChoice->Append(_(L"Align with axis line"));
+        m_perpAlignmentChoice->Append(_(L"Align with boundary"));
+        m_perpAlignmentChoice->Append(_(L"Center on axis line"));
+        labelGrid->Add(m_perpAlignmentChoice, wxSizerFlags{}.Expand());
+
+        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Precision:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_precisionSpin =
+            new wxSpinCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0);
+        labelGrid->Add(m_precisionSpin, wxSizerFlags{}.Expand());
+
+        labelGrid->Add(
+            new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Label line length:")),
+            wxSizerFlags{}.CenterVertical());
+        m_labelLineLengthSpin =
+            new wxSpinCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, wxSP_ARROW_KEYS, 10, 500, 100);
+        labelGrid->Add(m_labelLineLengthSpin, wxSizerFlags{}.Expand());
+
+        m_doubleSidedCheck =
+            new wxCheckBox(labelBox->GetStaticBox(), wxID_ANY, _(L"Double-sided labels"));
+        labelBox->Add(m_doubleSidedCheck, wxSizerFlags{}.Border());
+        m_showOuterLabelsCheck =
+            new wxCheckBox(labelBox->GetStaticBox(), wxID_ANY, _(L"Show outer labels"));
+        labelBox->Add(m_showOuterLabelsCheck, wxSizerFlags{}.Border());
+        m_stackLabelsCheck = new wxCheckBox(labelBox->GetStaticBox(), wxID_ANY, _(L"Stack labels"));
+        labelBox->Add(m_stackLabelsCheck, wxSizerFlags{}.Border());
+
+        gridSizer->Add(labelBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALL, FromDIP(4));
+
+        // Group 6: Brackets
+        //------------------
+        auto* bracketBox = new wxStaticBoxSizer(wxVERTICAL, axisPage, _(L"Brackets"));
+        m_bracketListBox = new wxEditableListBox(
+            bracketBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(100) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        RefreshBracketList();
+        bracketBox->Add(m_bracketListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        m_bracketListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                               [this](wxCommandEvent&) { OnAddBracket(); });
+        m_bracketListBox->GetNewButton()->SetBitmapLabel(
+            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+        m_bracketListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                [this](wxCommandEvent&) { OnEditBracket(); });
+        m_bracketListBox->GetDelButton()->Bind(wxEVT_BUTTON,
+                                               [this](wxCommandEvent&) { OnRemoveBracket(); });
+        m_bracketListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                               [this](wxListEvent&) { OnEditBracket(); });
+
+        auto* addFromDatasetBtn =
+            new wxButton(bracketBox->GetStaticBox(), wxID_ANY, _(L"Add from dataset..."));
+        addFromDatasetBtn->Bind(wxEVT_BUTTON,
+                                [this](wxCommandEvent&) { OnAddBracketsFromDataset(); });
+        bracketBox->Add(addFromDatasetBtn, wxSizerFlags{}.Border());
+
+        gridSizer->Add(bracketBox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
+                       FromDIP(4));
+
+        // global mirror checkboxes
+        gridSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror X axis"), wxDefaultPosition,
+                                      wxDefaultSize, 0, wxGenericValidator{ &m_mirrorXAxis }),
+                       wxGBPosition(3, 0), wxDefaultSpan, wxALL, FromDIP(4));
+
+        gridSizer->Add(new wxCheckBox(axisPage, wxID_ANY, _(L"Mirror Y axis"), wxDefaultPosition,
+                                      wxDefaultSize, 0, wxGenericValidator{ &m_mirrorYAxis }),
+                       wxGBPosition(3, 1), wxDefaultSpan, wxALL, FromDIP(4));
+
+        axisSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand());
         }
 
     //-------------------------------------------
@@ -2008,6 +2266,17 @@ namespace Wisteria::UI
             m_savedAxes.emplace(axisType, graph.GetAxis(axisType));
             }
 
+        // load the first axis into the per-axis controls
+        m_currentAxisType = AxisType::BottomXAxis;
+        if (m_axisSelector != nullptr)
+            {
+            m_axisSelector->SetSelection(0);
+            }
+        if (m_savedAxes.count(m_currentAxisType) > 0)
+            {
+            ReadControlsFromAxis(m_savedAxes.at(m_currentAxisType));
+            }
+
         // legend placement
         const auto& legendInfo = graph.GetLegendInfo();
         if (legendInfo.has_value())
@@ -2302,12 +2571,750 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertGraphDlg::ApplyAxisOverrides(Graphs::Graph2D& graph) const
+    void InsertGraphDlg::ApplyAxisOverrides(Graphs::Graph2D& graph)
         {
+        // flush the currently displayed axis controls into m_savedAxes
+        if (m_savedAxes.count(m_currentAxisType) > 0)
+            {
+            WriteControlsToAxis(m_savedAxes.at(m_currentAxisType));
+            }
+
         for (const auto& [axisType, saved] : m_savedAxes)
             {
             graph.GetAxis(axisType) = saved;
             }
+        }
+
+    //-------------------------------------------
+    namespace
+        {
+        int PenStyleToIndex(const wxPenStyle style)
+            {
+            switch (style)
+                {
+            case wxPENSTYLE_SOLID:
+                return 1;
+            case wxPENSTYLE_DOT:
+                return 2;
+            case wxPENSTYLE_LONG_DASH:
+                return 3;
+            case wxPENSTYLE_SHORT_DASH:
+                return 4;
+            case wxPENSTYLE_DOT_DASH:
+                return 5;
+            case wxPENSTYLE_TRANSPARENT:
+                [[fallthrough]];
+            default:
+                return 0;
+                }
+            }
+
+        wxPenStyle IndexToPenStyle(const int index)
+            {
+            constexpr wxPenStyle styles[] = { wxPENSTYLE_TRANSPARENT, wxPENSTYLE_SOLID,
+                                              wxPENSTYLE_DOT,        wxPENSTYLE_LONG_DASH,
+                                              wxPENSTYLE_SHORT_DASH, wxPENSTYLE_DOT_DASH };
+            return (index >= 0 && index < 6) ? styles[index] : wxPENSTYLE_TRANSPARENT;
+            }
+        } // unnamed namespace
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAxisSelectionChanged()
+        {
+        // write current controls back to the axis we're leaving
+        if (m_savedAxes.count(m_currentAxisType) > 0)
+            {
+            WriteControlsToAxis(m_savedAxes.at(m_currentAxisType));
+            }
+
+        // switch to the new axis
+        constexpr AxisType axisTypes[] = { AxisType::BottomXAxis, AxisType::TopXAxis,
+                                           AxisType::LeftYAxis, AxisType::RightYAxis };
+        const int sel = m_axisSelector->GetSelection();
+        if (sel >= 0 && sel < 4)
+            {
+            m_currentAxisType = axisTypes[sel];
+            }
+
+        // load the new axis into controls
+        if (m_savedAxes.count(m_currentAxisType) > 0)
+            {
+            ReadControlsFromAxis(m_savedAxes.at(m_currentAxisType));
+            }
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::ReadControlsFromAxis(const GraphItems::Axis& axis)
+        {
+        // axis line
+        if (m_axisLineColorPicker != nullptr)
+            {
+            const auto& pen = axis.GetAxisLinePen();
+            if (pen.IsOk())
+                {
+                m_axisLineColorPicker->SetColour(pen.GetColour());
+                m_axisLineWidthSpin->SetValue(pen.GetWidth());
+                m_axisLineStyleChoice->SetSelection(PenStyleToIndex(pen.GetStyle()));
+                }
+            else
+                {
+                m_axisLineStyleChoice->SetSelection(0);
+                }
+            }
+        if (m_axisCapStyleChoice != nullptr)
+            {
+            m_axisCapStyleChoice->SetSelection(
+                axis.GetCapStyle() == AxisCapStyle::Arrow ? 1 : 0);
+            }
+        if (m_axisReverseCheck != nullptr)
+            {
+            m_axisReverseCheck->SetValue(axis.IsReversed());
+            }
+
+        // gridlines
+        if (m_gridlineColorPicker != nullptr)
+            {
+            const auto& pen = axis.GetGridlinePen();
+            if (pen.IsOk())
+                {
+                m_gridlineColorPicker->SetColour(pen.GetColour());
+                m_gridlineWidthSpin->SetValue(pen.GetWidth());
+                m_gridlineStyleChoice->SetSelection(PenStyleToIndex(pen.GetStyle()));
+                }
+            else
+                {
+                m_gridlineStyleChoice->SetSelection(0);
+                }
+            }
+
+        // tickmarks
+        if (m_tickmarkDisplayChoice != nullptr)
+            {
+            m_tickmarkDisplayChoice->SetSelection(
+                static_cast<int>(axis.GetTickMarkDisplay()));
+            }
+
+        // labels
+        if (m_labelDisplayChoice != nullptr)
+            {
+            m_labelDisplayChoice->SetSelection(
+                static_cast<int>(axis.GetLabelDisplay()));
+            }
+        if (m_numberDisplayChoice != nullptr)
+            {
+            m_numberDisplayChoice->SetSelection(
+                static_cast<int>(axis.GetNumberDisplay()));
+            }
+        if (m_labelOrientationChoice != nullptr)
+            {
+            m_labelOrientationChoice->SetSelection(
+                static_cast<int>(axis.GetAxisLabelOrientation()));
+            }
+        if (m_perpAlignmentChoice != nullptr)
+            {
+            m_perpAlignmentChoice->SetSelection(
+                static_cast<int>(axis.GetPerpendicularLabelAxisAlignment()));
+            }
+        if (m_precisionSpin != nullptr)
+            {
+            m_precisionSpin->SetValue(axis.GetPrecision());
+            }
+        if (m_doubleSidedCheck != nullptr)
+            {
+            m_doubleSidedCheck->SetValue(axis.HasDoubleSidedAxisLabels());
+            }
+        if (m_showOuterLabelsCheck != nullptr)
+            {
+            m_showOuterLabelsCheck->SetValue(axis.IsShowingOuterLabels());
+            }
+        if (m_stackLabelsCheck != nullptr)
+            {
+            m_stackLabelsCheck->SetValue(axis.IsStackingLabels());
+            }
+        if (m_labelLineLengthSpin != nullptr)
+            {
+            m_labelLineLengthSpin->SetValue(
+                static_cast<int>(axis.GetLabelLineLength()));
+            }
+
+        // brackets
+        RefreshBracketList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::WriteControlsToAxis(GraphItems::Axis& axis)
+        {
+        // axis line
+        if (m_axisLineColorPicker != nullptr)
+            {
+            axis.GetAxisLinePen().SetColour(m_axisLineColorPicker->GetColour());
+            axis.GetAxisLinePen().SetWidth(m_axisLineWidthSpin->GetValue());
+            axis.GetAxisLinePen().SetStyle(
+                IndexToPenStyle(m_axisLineStyleChoice->GetSelection()));
+            }
+        if (m_axisCapStyleChoice != nullptr)
+            {
+            axis.SetCapStyle(m_axisCapStyleChoice->GetSelection() == 1 ?
+                                 AxisCapStyle::Arrow :
+                                 AxisCapStyle::NoCap);
+            }
+        if (m_axisReverseCheck != nullptr)
+            {
+            axis.Reverse(m_axisReverseCheck->GetValue());
+            }
+
+        // gridlines
+        if (m_gridlineColorPicker != nullptr)
+            {
+            axis.GetGridlinePen().SetColour(m_gridlineColorPicker->GetColour());
+            axis.GetGridlinePen().SetWidth(m_gridlineWidthSpin->GetValue());
+            axis.GetGridlinePen().SetStyle(
+                IndexToPenStyle(m_gridlineStyleChoice->GetSelection()));
+            }
+
+        // tickmarks
+        if (m_tickmarkDisplayChoice != nullptr)
+            {
+            const int sel = m_tickmarkDisplayChoice->GetSelection();
+            if (sel != wxNOT_FOUND)
+                {
+                axis.SetTickMarkDisplay(
+                    static_cast<GraphItems::Axis::TickMark::DisplayType>(sel));
+                }
+            }
+
+        // labels
+        if (m_labelDisplayChoice != nullptr)
+            {
+            const int sel = m_labelDisplayChoice->GetSelection();
+            if (sel != wxNOT_FOUND)
+                {
+                axis.SetLabelDisplay(static_cast<AxisLabelDisplay>(sel));
+                }
+            }
+        if (m_numberDisplayChoice != nullptr)
+            {
+            const int sel = m_numberDisplayChoice->GetSelection();
+            if (sel != wxNOT_FOUND)
+                {
+                axis.SetNumberDisplay(static_cast<NumberDisplay>(sel));
+                }
+            }
+        if (m_labelOrientationChoice != nullptr)
+            {
+            const int sel = m_labelOrientationChoice->GetSelection();
+            if (sel != wxNOT_FOUND)
+                {
+                axis.SetAxisLabelOrientation(
+                    static_cast<AxisLabelOrientation>(sel));
+                }
+            }
+        if (m_perpAlignmentChoice != nullptr)
+            {
+            const int sel = m_perpAlignmentChoice->GetSelection();
+            if (sel != wxNOT_FOUND)
+                {
+                axis.SetPerpendicularLabelAxisAlignment(
+                    static_cast<AxisLabelAlignment>(sel));
+                }
+            }
+        if (m_precisionSpin != nullptr)
+            {
+            axis.SetPrecision(
+                static_cast<uint8_t>(m_precisionSpin->GetValue()));
+            }
+        if (m_doubleSidedCheck != nullptr)
+            {
+            axis.SetDoubleSidedAxisLabels(m_doubleSidedCheck->GetValue());
+            }
+        if (m_showOuterLabelsCheck != nullptr)
+            {
+            axis.ShowOuterLabels(m_showOuterLabelsCheck->GetValue());
+            }
+        if (m_stackLabelsCheck != nullptr)
+            {
+            axis.StackLabels(m_stackLabelsCheck->GetValue());
+            }
+        if (m_labelLineLengthSpin != nullptr)
+            {
+            axis.SetLabelLineLength(
+                static_cast<size_t>(m_labelLineLengthSpin->GetValue()));
+            }
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::RefreshBracketList()
+        {
+        if (m_bracketListBox == nullptr)
+            {
+            return;
+            }
+        wxArrayString items;
+        if (m_savedAxes.count(m_currentAxisType) > 0)
+            {
+            for (const auto& bracket : m_savedAxes.at(m_currentAxisType).GetBrackets())
+                {
+                items.Add(wxString::Format(L"%s @ %g\u2013%g",
+                                           bracket.GetLabel().GetText(),
+                                           bracket.GetStartPosition(),
+                                           bracket.GetEndPosition()));
+                }
+            }
+        m_bracketListBox->SetStrings(items);
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAddBracket()
+        {
+        if (m_savedAxes.count(m_currentAxisType) == 0)
+            {
+            return;
+            }
+        auto& axis = m_savedAxes.at(m_currentAxisType);
+
+        wxDialog dlg(this, wxID_ANY, _(L"Add Bracket"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        sizer->AddGrowableCol(1, 1);
+
+        // label combo filled with custom axis labels
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* labelCombo = new wxComboBox(&dlg, wxID_ANY);
+        const auto& customLabels = axis.GetCustomLabels();
+        for (const auto& [value, label] : customLabels)
+            {
+            if (!label.GetText().empty())
+                {
+                labelCombo->Append(label.GetText(),
+                                   new wxStringClientData(wxString::Format(L"%g", value)));
+                }
+            }
+        // also add generated axis point labels
+        for (const auto& point : std::as_const(axis).GetAxisPoints())
+            {
+            if (point.IsShown() && !point.GetDisplayValue().empty())
+                {
+                labelCombo->Append(point.GetDisplayValue(),
+                                   new wxStringClientData(
+                                       wxString::Format(L"%g", point.GetValue())));
+                }
+            }
+        sizer->Add(labelCombo, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* startSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                               wxDefaultSize, wxSP_ARROW_KEYS, -1e9, 1e9, 0, 0.1);
+        sizer->Add(startSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* endSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                             wxDefaultSize, wxSP_ARROW_KEYS, -1e9, 1e9, 0, 0.1);
+        sizer->Add(endSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* colorPicker = new wxColourPickerCtrl(&dlg, wxID_ANY, *wxBLACK);
+        sizer->Add(colorPicker, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Width:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* widthSpin = new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, wxSP_ARROW_KEYS, 1, 5, 2);
+        sizer->Add(widthSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Style:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* styleChoice = new wxChoice(&dlg, wxID_ANY);
+        styleChoice->Append(_(L"Lines"));
+        styleChoice->Append(_(L"Arrow"));
+        styleChoice->Append(_(L"Reverse arrow"));
+        styleChoice->Append(_(L"No connection lines"));
+        styleChoice->Append(_(L"Curly braces"));
+        styleChoice->SetSelection(4);
+        sizer->Add(styleChoice, wxSizerFlags{}.Expand());
+
+        // auto-fill start/end when a label is selected
+        labelCombo->Bind(wxEVT_COMBOBOX, [labelCombo, startSpin, endSpin](wxCommandEvent&)
+            {
+            const int sel = labelCombo->GetSelection();
+            if (sel != wxNOT_FOUND)
+                {
+                const auto* data =
+                    dynamic_cast<wxStringClientData*>(labelCombo->GetClientObject(sel));
+                if (data != nullptr)
+                    {
+                    double val = 0;
+                    if (data->GetData().ToDouble(&val))
+                        {
+                        startSpin->SetValue(val);
+                        endSpin->SetValue(val);
+                        }
+                    }
+                }
+            });
+
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        mainSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        mainSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(mainSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const wxString labelText = labelCombo->GetValue();
+        if (labelText.empty())
+            {
+            return;
+            }
+
+        constexpr BracketLineStyle bracketStyles[] = {
+            BracketLineStyle::Lines, BracketLineStyle::Arrow,
+            BracketLineStyle::ReverseArrow, BracketLineStyle::NoConnectionLines,
+            BracketLineStyle::CurlyBraces
+            };
+        const auto bracketStyle =
+            (styleChoice->GetSelection() >= 0 && styleChoice->GetSelection() < 5) ?
+                bracketStyles[styleChoice->GetSelection()] :
+                BracketLineStyle::CurlyBraces;
+
+        const double startPos = startSpin->GetValue();
+        const double endPos = endSpin->GetValue();
+        const double labelPos = (startPos + endPos) / 2.0;
+
+        GraphItems::Axis::AxisBracket bracket(
+            startPos, endPos, labelPos, labelText,
+            wxPen(colorPicker->GetColour(), widthSpin->GetValue()),
+            bracketStyle);
+        axis.AddBracket(std::move(bracket));
+        RefreshBracketList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnEditBracket()
+        {
+        if (m_savedAxes.count(m_currentAxisType) == 0 || m_bracketListBox == nullptr)
+            {
+            return;
+            }
+        auto& axis = m_savedAxes.at(m_currentAxisType);
+        auto& brackets = axis.GetBrackets();
+
+        const long sel = m_bracketListBox->GetListCtrl()->GetNextItem(
+            -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, brackets.size()))
+            {
+            return;
+            }
+        auto& bracket = brackets[sel];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Bracket"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        sizer->AddGrowableCol(1, 1);
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY, bracket.GetLabel().GetText());
+        sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* startSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                               wxDefaultSize, wxSP_ARROW_KEYS, -1e9, 1e9,
+                                               bracket.GetStartPosition(), 0.1);
+        sizer->Add(startSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* endSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                             wxDefaultSize, wxSP_ARROW_KEYS, -1e9, 1e9,
+                                             bracket.GetEndPosition(), 0.1);
+        sizer->Add(endSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* colorPicker =
+            new wxColourPickerCtrl(&dlg, wxID_ANY, bracket.GetLinePen().GetColour());
+        sizer->Add(colorPicker, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Width:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* widthSpin = new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, wxSP_ARROW_KEYS, 1, 5,
+                                         bracket.GetLinePen().GetWidth());
+        sizer->Add(widthSpin, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Style:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* styleChoice = new wxChoice(&dlg, wxID_ANY);
+        styleChoice->Append(_(L"Lines"));
+        styleChoice->Append(_(L"Arrow"));
+        styleChoice->Append(_(L"Reverse arrow"));
+        styleChoice->Append(_(L"No connection lines"));
+        styleChoice->Append(_(L"Curly braces"));
+        const int currentStyle = [&bracket]()
+            {
+            switch (bracket.GetBracketLineStyle())
+                {
+            case BracketLineStyle::Lines:
+                return 0;
+            case BracketLineStyle::Arrow:
+                return 1;
+            case BracketLineStyle::ReverseArrow:
+                return 2;
+            case BracketLineStyle::NoConnectionLines:
+                return 3;
+            case BracketLineStyle::CurlyBraces:
+                [[fallthrough]];
+            default:
+                return 4;
+                }
+            }();
+        styleChoice->SetSelection(currentStyle);
+        sizer->Add(styleChoice, wxSizerFlags{}.Expand());
+
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        mainSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        mainSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(mainSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        constexpr BracketLineStyle bracketStyles[] = {
+            BracketLineStyle::Lines, BracketLineStyle::Arrow,
+            BracketLineStyle::ReverseArrow, BracketLineStyle::NoConnectionLines,
+            BracketLineStyle::CurlyBraces
+            };
+        const auto bracketStyle =
+            (styleChoice->GetSelection() >= 0 && styleChoice->GetSelection() < 5) ?
+                bracketStyles[styleChoice->GetSelection()] :
+                BracketLineStyle::CurlyBraces;
+
+        const double startPos = startSpin->GetValue();
+        const double endPos = endSpin->GetValue();
+        const double labelPos = (startPos + endPos) / 2.0;
+
+        // replace the bracket
+        brackets[sel] = GraphItems::Axis::AxisBracket(
+            startPos, endPos, labelPos, labelCtrl->GetValue(),
+            wxPen(colorPicker->GetColour(), widthSpin->GetValue()),
+            bracketStyle);
+        RefreshBracketList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnRemoveBracket()
+        {
+        if (m_savedAxes.count(m_currentAxisType) == 0 || m_bracketListBox == nullptr)
+            {
+            return;
+            }
+        auto& brackets = m_savedAxes.at(m_currentAxisType).GetBrackets();
+
+        const long sel = m_bracketListBox->GetListCtrl()->GetNextItem(
+            -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, brackets.size()))
+            {
+            return;
+            }
+        brackets.erase(brackets.begin() + sel);
+        RefreshBracketList();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::OnAddBracketsFromDataset()
+        {
+        if (m_savedAxes.count(m_currentAxisType) == 0 || GetReportBuilder() == nullptr)
+            {
+            return;
+            }
+        auto& axis = m_savedAxes.at(m_currentAxisType);
+        const auto& datasets = GetReportBuilder()->GetDatasets();
+        if (datasets.empty())
+            {
+            wxMessageBox(_(L"No datasets are available."), _(L"No Datasets"),
+                         wxOK | wxICON_WARNING, this);
+            return;
+            }
+
+        wxDialog dlg(this, wxID_ANY, _(L"Add Brackets from Dataset"), wxDefaultPosition,
+                     wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        sizer->AddGrowableCol(1, 1);
+
+        // dataset choice
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Dataset:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* datasetChoice = new wxChoice(&dlg, wxID_ANY);
+        wxArrayString datasetNames;
+        for (const auto& [name, dataset] : datasets)
+            {
+            datasetNames.Add(name);
+            datasetChoice->Append(name);
+            }
+        datasetChoice->SetSelection(0);
+        sizer->Add(datasetChoice, wxSizerFlags{}.Expand());
+
+        // label column and value column choices
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label column:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* labelColChoice = new wxChoice(&dlg, wxID_ANY);
+        sizer->Add(labelColChoice, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Value column:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* valueColChoice = new wxChoice(&dlg, wxID_ANY);
+        sizer->Add(valueColChoice, wxSizerFlags{}.Expand());
+
+        // populate columns from the first dataset
+        const auto populateColumns =
+            [&datasets, &datasetNames, labelColChoice, valueColChoice, this](const int sel)
+            {
+            labelColChoice->Clear();
+            valueColChoice->Clear();
+            if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, datasetNames.size()))
+                {
+                return;
+                }
+            const auto it = datasets.find(datasetNames[sel]);
+            if (it == datasets.cend() || it->second == nullptr)
+                {
+                return;
+                }
+            const auto& ds = *(it->second);
+            for (const auto& col : ds.GetCategoricalColumnNames())
+                {
+                labelColChoice->Append(col);
+                valueColChoice->Append(col);
+                }
+            for (const auto& col : ds.GetContinuousColumnNames())
+                {
+                valueColChoice->Append(col);
+                }
+            for (const auto& col : ds.GetDateColumnNames())
+                {
+                valueColChoice->Append(col);
+                }
+
+            // apply hints
+            const auto labelHint = GetBracketLabelColumnHint();
+            if (!labelHint.empty())
+                {
+                const int idx = labelColChoice->FindString(labelHint);
+                if (idx != wxNOT_FOUND)
+                    {
+                    labelColChoice->SetSelection(idx);
+                    }
+                }
+            else if (labelColChoice->GetCount() > 0)
+                {
+                labelColChoice->SetSelection(0);
+                }
+
+            const auto valueHint = GetBracketValueColumnHint();
+            if (!valueHint.empty())
+                {
+                const int idx = valueColChoice->FindString(valueHint);
+                if (idx != wxNOT_FOUND)
+                    {
+                    valueColChoice->SetSelection(idx);
+                    }
+                }
+            else if (valueColChoice->GetCount() > 0)
+                {
+                valueColChoice->SetSelection(0);
+                }
+            };
+
+        populateColumns(0);
+        datasetChoice->Bind(wxEVT_CHOICE,
+            [&populateColumns, datasetChoice](wxCommandEvent&)
+            { populateColumns(datasetChoice->GetSelection()); });
+
+        // style options
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Style:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* styleChoice = new wxChoice(&dlg, wxID_ANY);
+        styleChoice->Append(_(L"Lines"));
+        styleChoice->Append(_(L"Arrow"));
+        styleChoice->Append(_(L"Reverse arrow"));
+        styleChoice->Append(_(L"No connection lines"));
+        styleChoice->Append(_(L"Curly braces"));
+        styleChoice->SetSelection(4);
+        sizer->Add(styleChoice, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* colorPicker = new wxColourPickerCtrl(&dlg, wxID_ANY, *wxBLACK);
+        sizer->Add(colorPicker, wxSizerFlags{}.Expand());
+
+        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Width:")),
+                   wxSizerFlags{}.CenterVertical());
+        auto* widthSpin = new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, wxSP_ARROW_KEYS, 1, 5, 2);
+        sizer->Add(widthSpin, wxSizerFlags{}.Expand());
+
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        mainSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        mainSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(mainSizer);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        // get the dataset
+        const int dsSel = datasetChoice->GetSelection();
+        if (dsSel == wxNOT_FOUND || std::cmp_greater_equal(dsSel, datasetNames.size()))
+            {
+            return;
+            }
+        const auto dsIt = datasets.find(datasetNames[dsSel]);
+        if (dsIt == datasets.cend() || dsIt->second == nullptr)
+            {
+            return;
+            }
+
+        const wxString labelCol = labelColChoice->GetStringSelection();
+        const wxString valueCol = valueColChoice->GetStringSelection();
+        if (labelCol.empty() || valueCol.empty())
+            {
+            return;
+            }
+
+        const size_t oldCount = axis.GetBrackets().size();
+        axis.AddBrackets(dsIt->second, labelCol, valueCol);
+
+        // apply style and pen to newly added brackets
+        constexpr BracketLineStyle bracketStyles[] = {
+            BracketLineStyle::Lines, BracketLineStyle::Arrow,
+            BracketLineStyle::ReverseArrow, BracketLineStyle::NoConnectionLines,
+            BracketLineStyle::CurlyBraces
+            };
+        const auto bracketStyle =
+            (styleChoice->GetSelection() >= 0 && styleChoice->GetSelection() < 5) ?
+                bracketStyles[styleChoice->GetSelection()] :
+                BracketLineStyle::CurlyBraces;
+        const wxPen pen(colorPicker->GetColour(), widthSpin->GetValue());
+        for (size_t i = oldCount; i < axis.GetBrackets().size(); ++i)
+            {
+            axis.GetBrackets()[i].SetBracketLineStyle(bracketStyle);
+            axis.GetBrackets()[i].GetLinePen() = pen;
+            }
+
+        RefreshBracketList();
         }
 
     //-------------------------------------------

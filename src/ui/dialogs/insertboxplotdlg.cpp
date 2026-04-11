@@ -36,8 +36,8 @@ namespace Wisteria::UI
         {
         InsertGraphDlg::CreateControls();
         CreateGraphOptionsPage();
-        CreateAnnotationsPage();
         CreateAxisOptionsPage();
+        CreateAnnotationsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);

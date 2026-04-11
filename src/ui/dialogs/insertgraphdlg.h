@@ -105,8 +105,9 @@ namespace Wisteria::UI
         /** @brief Restores axis state from the original graph.
             @details Call this after SetData() since SetData() rebuilds axes,
                 discarding titles, brackets, pens, custom labels, etc.
+                Flushes any pending per-axis control values before applying.
             @param graph The graph to apply the saved axis state to.*/
-        void ApplyAxisOverrides(Graphs::Graph2D& graph) const;
+        void ApplyAxisOverrides(Graphs::Graph2D& graph);
 
         /// @returns The selected legend placement.
         [[nodiscard]]
@@ -286,22 +287,42 @@ namespace Wisteria::UI
                 chart-specific pages.*/
         void CreateGraphOptionsPage();
 
-        /** @brief Creates and adds the "Annotations" sidebar page.
+        /** @brief Creates and adds the "Annotations & References" sidebar page.
             @details This page lets the user add, edit, and remove
-                text annotations that are embedded on the plot, each
-                with an anchor point and optional interest points.
+                text annotations that are embedded on the plot (each
+                with an anchor point and optional interest points),
+                as well as reference lines and reference areas.
             @note Call this from derived CreateControls() for graph types
                 that use data-coordinate annotations (typically those
                 with axes). Place the call before CreateAxisOptionsPage().*/
         void CreateAnnotationsPage();
 
-        /** @brief Creates and adds the "Axis" sidebar page.
+        /** @brief Creates and adds the "Axes" sidebar page.
             @details This page contains axis-related options such as
-                mirroring the X and Y axes.
+                mirroring the X and Y axes, per-axis line/gridline/tickmark/label
+                settings, and bracket management.
             @note Call this from derived CreateControls() for graph types
                 that display axes. Omit for graphs that hide all axes
                 (e.g., heat maps, waffle charts, word clouds).*/
         void CreateAxisOptionsPage();
+
+        /// @brief Returns the suggested label column name for dataset-driven brackets.
+        /// @details Subclasses can override to pre-select the group variable.
+        /// @returns The column name hint, or empty string for no hint.
+        [[nodiscard]]
+        virtual wxString GetBracketLabelColumnHint() const
+            {
+            return {};
+            }
+
+        /// @brief Returns the suggested value column name for dataset-driven brackets.
+        /// @details Subclasses can override to pre-select the categorical variable.
+        /// @returns The column name hint, or empty string for no hint.
+        [[nodiscard]]
+        virtual wxString GetBracketValueColumnHint() const
+            {
+            return {};
+            }
 
         /// @brief Creates a color scheme from a dropdown index.
         /// @param index The zero-based selection index (0 = default/none).
@@ -383,6 +404,16 @@ namespace Wisteria::UI
         void OnRemoveReferenceArea();
         void RefreshReferenceAreaList();
 
+        void OnAxisSelectionChanged();
+        void ReadControlsFromAxis(const GraphItems::Axis& axis);
+        void WriteControlsToAxis(GraphItems::Axis& axis);
+
+        void OnAddBracket();
+        void OnEditBracket();
+        void OnRemoveBracket();
+        void OnAddBracketsFromDataset();
+        void RefreshBracketList();
+
         GraphDlgOptions m_options{ GraphDlgIncludeMost };
 
         // DDX data members
@@ -435,6 +466,39 @@ namespace Wisteria::UI
         wxEditableListBox* m_annotationListBox{ nullptr };
         wxEditableListBox* m_refLineListBox{ nullptr };
         wxEditableListBox* m_refAreaListBox{ nullptr };
+
+        // per-axis editing state
+        AxisType m_currentAxisType{ AxisType::BottomXAxis };
+        wxChoice* m_axisSelector{ nullptr };
+
+        // per-axis control pointers (Group 2: Axis Line)
+        wxColourPickerCtrl* m_axisLineColorPicker{ nullptr };
+        wxSpinCtrl* m_axisLineWidthSpin{ nullptr };
+        wxChoice* m_axisLineStyleChoice{ nullptr };
+        wxChoice* m_axisCapStyleChoice{ nullptr };
+        wxCheckBox* m_axisReverseCheck{ nullptr };
+
+        // per-axis control pointers (Group 3: Gridlines)
+        wxColourPickerCtrl* m_gridlineColorPicker{ nullptr };
+        wxSpinCtrl* m_gridlineWidthSpin{ nullptr };
+        wxChoice* m_gridlineStyleChoice{ nullptr };
+
+        // per-axis control pointers (Group 4: Tickmarks)
+        wxChoice* m_tickmarkDisplayChoice{ nullptr };
+
+        // per-axis control pointers (Group 5: Labels)
+        wxChoice* m_labelDisplayChoice{ nullptr };
+        wxChoice* m_numberDisplayChoice{ nullptr };
+        wxChoice* m_labelOrientationChoice{ nullptr };
+        wxChoice* m_perpAlignmentChoice{ nullptr };
+        wxSpinCtrl* m_precisionSpin{ nullptr };
+        wxCheckBox* m_doubleSidedCheck{ nullptr };
+        wxCheckBox* m_showOuterLabelsCheck{ nullptr };
+        wxCheckBox* m_stackLabelsCheck{ nullptr };
+        wxSpinCtrl* m_labelLineLengthSpin{ nullptr };
+
+        // per-axis control pointers (Group 6: Brackets)
+        wxEditableListBox* m_bracketListBox{ nullptr };
         };
     } // namespace Wisteria::UI
 
