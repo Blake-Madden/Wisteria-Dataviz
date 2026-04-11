@@ -44,6 +44,17 @@ namespace Wisteria::UI
         wxColour m_color;
         };
 
+    /// @brief Info needed to restore a bar-block decal during chart editing.
+    struct BarBlockDecalInfo
+        {
+        /// @brief The axis label of the bar containing the block.
+        wxString m_barLabel;
+        /// @brief The zero-based index of the block within the bar.
+        size_t m_blockIndex{ 0 };
+        /// @brief The decal label to draw on the block.
+        GraphItems::Label m_decal;
+        };
+
     class InsertCatBarChartDlg final : public InsertGraphDlg
         {
       public:
@@ -205,6 +216,13 @@ namespace Wisteria::UI
             return m_barGroupPlacement;
             }
 
+        /// @returns The bar-block decals to restore after rebuilding the chart.
+        [[nodiscard]]
+        const std::vector<BarBlockDecalInfo>& GetBarBlockDecals() const noexcept
+            {
+            return m_barBlockDecals;
+            }
+
         /// @returns Whether a custom bar sort was explicitly set (not the default).
         [[nodiscard]]
         bool HasCustomBarSort() const noexcept;
@@ -305,6 +323,9 @@ namespace Wisteria::UI
         // bar group settings (label-based, preserved during editing)
         std::vector<BarGroupInfo> m_barGroups;
         LabelPlacement m_barGroupPlacement{ LabelPlacement::NextToParent };
+
+        // bar-block decals (preserved during editing)
+        std::vector<BarBlockDecalInfo> m_barBlockDecals;
         };
     } // namespace Wisteria::UI
 
