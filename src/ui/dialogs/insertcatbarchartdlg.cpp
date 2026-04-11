@@ -1083,6 +1083,21 @@ namespace Wisteria::UI
                                          Orientation::Horizontal;
             }
 
+        // bar-block decals
+        m_barBlockDecals.clear();
+        for (const auto& bar : barChart->GetBars())
+            {
+            for (size_t bk = 0; bk < bar.GetBlocks().size(); ++bk)
+                {
+                const auto& decal = bar.GetBlocks()[bk].GetDecal();
+                if (!decal.GetText().empty())
+                    {
+                    m_barBlockDecals.emplace_back(
+                        bar.GetAxisLabel().GetText(), bk, decal);
+                    }
+                }
+            }
+
         // bar groups — convert from index-based to label-based
         m_barGroups.clear();
         const auto& bars = barChart->GetBars();

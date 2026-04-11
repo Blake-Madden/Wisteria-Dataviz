@@ -66,6 +66,8 @@ namespace Wisteria::UI
         std::vector<wxPoint2DDouble> interestPts; /*!< Points to draw lines to.*/
         };
 
+    class AxisOptionsPanel;
+
     /** @brief Intermediate base dialog for inserting a graph into a canvas cell.
         @details Extends InsertItemDlg with common graph options such as
             legend placement. Derived dialogs for specific chart types
@@ -404,16 +406,6 @@ namespace Wisteria::UI
         void OnRemoveReferenceArea();
         void RefreshReferenceAreaList();
 
-        void OnAxisSelectionChanged();
-        void ReadControlsFromAxis(const GraphItems::Axis& axis);
-        void WriteControlsToAxis(GraphItems::Axis& axis);
-
-        void OnAddBracket();
-        void OnEditBracket();
-        void OnRemoveBracket();
-        void OnAddBracketsFromDataset();
-        void RefreshBracketList();
-
         GraphDlgOptions m_options{ GraphDlgIncludeMost };
 
         // DDX data members
@@ -467,38 +459,7 @@ namespace Wisteria::UI
         wxEditableListBox* m_refLineListBox{ nullptr };
         wxEditableListBox* m_refAreaListBox{ nullptr };
 
-        // per-axis editing state
-        AxisType m_currentAxisType{ AxisType::BottomXAxis };
-        wxChoice* m_axisSelector{ nullptr };
-
-        // per-axis control pointers (Group 2: Axis Line)
-        wxColourPickerCtrl* m_axisLineColorPicker{ nullptr };
-        wxSpinCtrl* m_axisLineWidthSpin{ nullptr };
-        wxChoice* m_axisLineStyleChoice{ nullptr };
-        wxChoice* m_axisCapStyleChoice{ nullptr };
-        wxCheckBox* m_axisReverseCheck{ nullptr };
-
-        // per-axis control pointers (Group 3: Gridlines)
-        wxColourPickerCtrl* m_gridlineColorPicker{ nullptr };
-        wxSpinCtrl* m_gridlineWidthSpin{ nullptr };
-        wxChoice* m_gridlineStyleChoice{ nullptr };
-
-        // per-axis control pointers (Group 4: Tickmarks)
-        wxChoice* m_tickmarkDisplayChoice{ nullptr };
-
-        // per-axis control pointers (Group 5: Labels)
-        wxChoice* m_labelDisplayChoice{ nullptr };
-        wxChoice* m_numberDisplayChoice{ nullptr };
-        wxChoice* m_labelOrientationChoice{ nullptr };
-        wxChoice* m_perpAlignmentChoice{ nullptr };
-        wxSpinCtrl* m_precisionSpin{ nullptr };
-        wxCheckBox* m_doubleSidedCheck{ nullptr };
-        wxCheckBox* m_showOuterLabelsCheck{ nullptr };
-        wxCheckBox* m_stackLabelsCheck{ nullptr };
-        wxSpinCtrl* m_labelLineLengthSpin{ nullptr };
-
-        // per-axis control pointers (Group 6: Brackets)
-        wxEditableListBox* m_bracketListBox{ nullptr };
+        AxisOptionsPanel* m_axisOptionsPanel{ nullptr };
         };
     } // namespace Wisteria::UI
 
