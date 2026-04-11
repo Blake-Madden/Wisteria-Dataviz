@@ -5004,6 +5004,22 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
                       dlg.GetBarLabelDisplay());
 
+        // restore bar-block decals
+        for (const auto& decalInfo : dlg.GetBarBlockDecals())
+            {
+            const auto barPos = plot->FindBar(decalInfo.m_barLabel);
+            if (barPos.has_value() &&
+                decalInfo.m_blockIndex <
+                    plot->GetBars().at(barPos.value()).GetBlocks().size())
+                {
+                plot->GetBars()
+                    .at(barPos.value())
+                    .GetBlocks()
+                    .at(decalInfo.m_blockIndex)
+                    .SetDecal(decalInfo.m_decal);
+                }
+            }
+
         // restore custom bar sort from the previous chart
         if (dlg.HasCustomBarSort())
             {
