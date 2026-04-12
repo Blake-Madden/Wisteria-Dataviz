@@ -52,6 +52,41 @@ namespace Wisteria::UI
             return { m_pageWidth, m_pageHeight };
             }
 
+        /// @returns Whether to include smooth transitions.
+        [[nodiscard]]
+        bool IncludeTransitions() const noexcept
+            {
+            return m_includeTransitions;
+            }
+
+        /// @returns Whether to include interactive highlighting.
+        [[nodiscard]]
+        bool IncludeHighlighting() const noexcept
+            {
+            return m_includeHighlighting;
+            }
+
+        /// @returns Whether to include a layout toggle.
+        [[nodiscard]]
+        bool IncludeLayoutToggle() const noexcept
+            {
+            return m_includeLayoutToggle;
+            }
+
+        /// @returns The selected button color.
+        [[nodiscard]]
+        wxColour GetButtonColor() const noexcept
+            {
+            return m_buttonColor;
+            }
+
+        /// @returns The selected horizontal gap (in pixels).
+        [[nodiscard]]
+        int GetHorizontalGap() const noexcept
+            {
+            return m_horizontalGap;
+            }
+
       private:
         void CreateControls();
         void OnSizeChanged(wxSpinEvent& event);
@@ -73,9 +108,16 @@ namespace Wisteria::UI
 
         constexpr static wxWindowID PAGE_WIDTH_ID{ wxID_HIGHEST };
         constexpr static wxWindowID PAGE_HEIGHT_ID{ wxID_HIGHEST + 1 };
+        constexpr static wxWindowID BUTTON_COLOR_ID{ wxID_HIGHEST + 2 };
+        constexpr static wxWindowID HORIZONTAL_GAP_ID{ wxID_HIGHEST + 3 };
 
         int m_pageWidth{ 0 };
         int m_pageHeight{ 0 };
+        bool m_includeTransitions{ true };
+        bool m_includeHighlighting{ true };
+        bool m_includeLayoutToggle{ true };
+        wxColour m_buttonColor{ 103, 58, 183 };
+        int m_horizontalGap{ 25 };
 
         wxPanel* m_previewPanel{ nullptr };
         };

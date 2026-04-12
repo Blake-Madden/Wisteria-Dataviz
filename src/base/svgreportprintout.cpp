@@ -7,14 +7,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "svgreportprintout.h"
+#include "../base/colorbrewer.h"
 #include <wx/dcsvg.h>
 #include <wx/file.h>
 #include <wx/paper.h>
 
 //------------------------------------------------------
 Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canvases,
-                                               const wxString& filePath,
-                                               const wxSize& pageSize /*= wxDefaultSize*/)
+                                               const SVGReportOptions& options)
     {
     // collect per-canvas paper sizes for rendering
     std::vector<wxSize> pageSizes;
@@ -30,15 +30,20 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
     // the layout size controls the viewBox and page spacing;
     // the rendering size (pageSizes) stays at each canvas's own paper size
-    const bool useOverrideSize = (pageSize != wxDefaultSize);
+    const bool useOverrideSize = (options.m_pageSize != wxDefaultSize);
     int maxWidth{ 0 };
     int totalHeight{ 0 };
-    for (const auto& ps : pageSizes)
+    for (size_t i = 0; i < pageSizes.size(); ++i)
         {
-        const int layoutWidth = useOverrideSize ? pageSize.GetWidth() : ps.GetWidth();
-        const int layoutHeight = useOverrideSize ? pageSize.GetHeight() : ps.GetHeight();
+        const auto& ps = pageSizes[i];
+        const int layoutWidth = useOverrideSize ? options.m_pageSize.GetWidth() : ps.GetWidth();
+        const int layoutHeight = useOverrideSize ? options.m_pageSize.GetHeight() : ps.GetHeight();
         maxWidth = std::max(maxWidth, layoutWidth);
         totalHeight += layoutHeight;
+        if (i < pageSizes.size() - 1)
+            {
+            totalHeight += options.m_horizontalGap;
+            }
         }
 
     wxString svgContent;
@@ -51,6 +56,98 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                                    "width=\"100%%\" height=\"%d\" "
                                    "preserveAspectRatio=\"xMidYMin meet\" viewBox=\"0 0 %d %d\">\n",
                                    totalHeight, maxWidth, totalHeight);
+
+    if (options.HasInteractiveFeatures())
+        {
+        svgContent += L"<style type=\"text/css\">\n"
+                      "  <![CDATA[\n";
+        if (options.m_includeTransitions)
+            {
+            svgContent +=
+                L"    .page { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }\n";
+            }
+        if (options.m_includeHighlighting)
+            {
+            svgContent += L"    .page:hover { filter: drop-shadow(0 0 10px rgba(0,0,0,0.1)); }\n"
+                          "    .page rect:hover, .page circle:hover, .page path:hover { \n"
+                          "      filter: brightness(1.2); cursor: pointer; \n"
+                          "    }\n";
+            }
+        if (options.m_includeLayoutToggle)
+            {
+            const wxString btnHex = options.m_buttonColor.GetAsString(wxC2S_HTML_SYNTAX);
+            const wxString textHex =
+                Wisteria::Colors::ColorContrast::IsLight(options.m_buttonColor) ? L"black" :
+                                                                                  L"white";
+
+            svgContent += wxString::Format(
+                L"    #ui-layer { \n"
+                "      opacity: 0; \n"
+                "      transition: opacity 0.4s ease-in-out; \n"
+                "      pointer-events: none;\n"
+                "    }\n"
+                "    svg:hover #ui-layer { \n"
+                "      opacity: 1; \n"
+                "      pointer-events: auto;\n"
+                "    }\n"
+                "    .btn { fill: %s; cursor: pointer; transition: transform 0.1s, fill 0.2s; "
+                "fill-opacity: 0.9; }\n"
+                "    .btn:hover { fill-opacity: 1.0; transform: translateY(-1px); }\n"
+                "    .btn-text { fill: %s; font-family: sans-serif; font-size: 12px; font-weight: "
+                "bold; pointer-events: none; text-anchor: middle; }\n",
+                btnHex, textHex);
+            }
+        svgContent += L"  ]]>\n"
+                      "</style>\n";
+        }
+
+    if (options.m_includeLayoutToggle)
+        {
+        svgContent += wxString::Format(
+            L"<script type=\"text/javascript\"><![CDATA[\n"
+            "  let isDuplex = false;\n"
+            "  let currentGap = %d;\n"
+            "  function toggleLayout() {\n"
+            "    isDuplex = !isDuplex;\n"
+            "    const btnText = document.getElementById('toggle-btn-text');\n"
+            "    if (btnText) btnText.textContent = isDuplex ? '\U0001F4C4 %s' : "
+            "'\U0001F4C4\U0001F4C4 %s';\n"
+            "    applyLayout();\n"
+            "  }\n"
+            "  function adjustGap(delta) {\n"
+            "    currentGap = Math.max(0, currentGap + delta);\n"
+            "    applyLayout();\n"
+            "  }\n"
+            "  function applyLayout() {\n"
+            "    const pages = document.querySelectorAll('.page');\n"
+            "    const svg = document.querySelector('svg');\n"
+            "    if (pages.length === 0) return;\n"
+            "    const w = parseInt(pages[0].getAttribute('data-width'));\n"
+            "    const h = parseInt(pages[0].getAttribute('data-height'));\n"
+            "    const gap = currentGap;\n"
+            "    const sideGap = 25;\n"
+            "    if (isDuplex) {\n"
+            "      pages.forEach((p, i) => {\n"
+            "        const x = (i %% 2) * (w + sideGap);\n"
+            "        const y = Math.floor(i / 2) * (h + gap);\n"
+            "        p.setAttribute('transform', `translate(${x}, ${y})`);\n"
+            "      });\n"
+            "      const duplexHeight = Math.ceil(pages.length / 2) * (h + gap);\n"
+            "      svg.setAttribute('viewBox', `0 0 ${2 * w + sideGap} ${duplexHeight}`);\n"
+            "      svg.setAttribute('height', duplexHeight);\n"
+            "    } else {\n"
+            "      pages.forEach((p, i) => {\n"
+            "        p.setAttribute('transform', `translate(0, ${i * (h + gap)})`);\n"
+            "      });\n"
+            "      const stackedHeight = pages.length * (h + gap);\n"
+            "      svg.setAttribute('viewBox', `0 0 ${w} ${stackedHeight}`);\n"
+            "      svg.setAttribute('height', stackedHeight);\n"
+            "    }\n"
+            "  }\n"
+            "]]></script>\n",
+            options.m_horizontalGap, _(L"STACKED"), _(L"DUPLEX"));
+        }
+
     svgContent += L"<g id=\"pageset\">\n";
 
     int yOffset{ 0 };
@@ -63,8 +160,10 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             }
 
         const wxSize renderSize = pageSizes[pageIndex];
-        const int layoutWidth = useOverrideSize ? pageSize.GetWidth() : renderSize.GetWidth();
-        const int layoutHeight = useOverrideSize ? pageSize.GetHeight() : renderSize.GetHeight();
+        const int layoutWidth =
+            useOverrideSize ? options.m_pageSize.GetWidth() : renderSize.GetWidth();
+        const int layoutHeight =
+            useOverrideSize ? options.m_pageSize.GetHeight() : renderSize.GetHeight();
         ++pageIndex;
 
         // render at the layout size so bitmaps are rasterized at the target resolution
@@ -120,21 +219,43 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         svgContent += L"\n</g>\n";
 
-        yOffset += layoutHeight;
+        yOffset += (layoutHeight + options.m_horizontalGap);
         }
 
     svgContent += L"</g>\n";
+
+    if (options.m_includeLayoutToggle)
+        {
+        svgContent += wxString::Format(
+            L"<g id=\"ui-layer\">\n"
+            "  <rect class=\"btn\" x=\"10\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
+            "onclick=\"toggleLayout()\" />\n"
+            "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"70\" y=\"29\">"
+            "\U0001F4C4\U0001F4C4 %s</text>\n"
+            "  <rect class=\"btn\" x=\"10\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
+            "onclick=\"adjustGap(-10)\" />\n"
+            "  <text class=\"btn-text\" x=\"25\" y=\"69\">-</text>\n"
+            "  <rect class=\"btn\" x=\"50\" y=\"50\" width=\"140\" height=\"30\" rx=\"15\" />\n"
+            "  <text class=\"btn-text\" x=\"120\" y=\"69\">%s</text>\n"
+            "  <rect class=\"btn\" x=\"200\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
+            "onclick=\"adjustGap(10)\" />\n"
+            "  <text class=\"btn-text\" x=\"215\" y=\"69\">+</text>\n"
+            "</g>\n",
+            _(L"DUPLEX"), _(L"PAGE GAP"));
+        }
+
     svgContent += L"</svg>\n";
 
-    wxFile outFile(filePath, wxFile::write);
+    wxFile outFile(options.m_filePath, wxFile::write);
     if (outFile.IsOpened())
         {
         outFile.Write(svgContent, wxConvUTF8);
         }
     else
         {
-        wxMessageBox(wxString::Format(_(L"Failed to save SVG report to \"%s\"."), filePath),
-                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        wxMessageBox(
+            wxString::Format(_(L"Failed to save SVG report to \"%s\"."), options.m_filePath),
+            _(L"Export Error"), wxOK | wxICON_ERROR);
         }
     }
 

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "svgexportdlg.h"
+#include <wx/clrpicker.h>
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
 #include <wx/valgen.h>
@@ -42,8 +43,12 @@ namespace Wisteria::UI
         auto* contentSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(contentSizer, wxSizerFlags{}.Expand().Border());
 
+        auto* leftColumnSizer = new wxBoxSizer(wxVERTICAL);
+        contentSizer->Add(leftColumnSizer, wxSizerFlags{});
+        contentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
+
         // page size controls
-        auto* sizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Page Size (pixels)"));
+        auto* sizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Page Size"));
         auto* sizeGridSizer = new wxFlexGridSizer(2, 2, wxSizerFlags::GetDefaultBorder(),
                                                   wxSizerFlags::GetDefaultBorder());
         sizeGridSizer->AddGrowableCol(1, 1);
@@ -65,8 +70,49 @@ namespace Wisteria::UI
         heightCtrl->SetValidator(wxGenericValidator{ &m_pageHeight });
         sizeGridSizer->Add(heightCtrl, wxSizerFlags{}.Expand());
 
-        contentSizer->Add(sizeSizer, wxSizerFlags{});
-        contentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
+        leftColumnSizer->Add(sizeSizer, wxSizerFlags{}.Expand());
+        leftColumnSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
+
+        // horizontal gap
+        auto* gapSizer = new wxBoxSizer(wxHORIZONTAL);
+        gapSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Horizontal page gap:")),
+                      wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        auto* gapCtrl = new wxSpinCtrl(this, HORIZONTAL_GAP_ID, std::to_wstring(m_horizontalGap),
+                                       wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 500);
+        gapCtrl->SetValidator(wxGenericValidator{ &m_horizontalGap });
+        gapSizer->Add(gapCtrl, wxSizerFlags{}.CenterVertical());
+        leftColumnSizer->Add(gapSizer, wxSizerFlags{}.Expand().Border());
+        leftColumnSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
+
+        // interactive features
+        auto* featuresSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Interactive Features"));
+
+        auto* layoutToggleCheck =
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Layout toggle"));
+        layoutToggleCheck->SetValidator(wxGenericValidator{ &m_includeLayoutToggle });
+        featuresSizer->Add(layoutToggleCheck, wxSizerFlags{}.Border());
+
+        auto* transitionsCheck =
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Transitions"));
+        transitionsCheck->SetValidator(wxGenericValidator{ &m_includeTransitions });
+        featuresSizer->Add(transitionsCheck, wxSizerFlags{}.Border());
+
+        auto* highlightingCheck =
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Hover highlighting"));
+        highlightingCheck->SetValidator(wxGenericValidator{ &m_includeHighlighting });
+        featuresSizer->Add(highlightingCheck, wxSizerFlags{}.Border());
+
+        auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
+        colorSizer->Add(
+            new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Button Color:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* colorPicker =
+            new wxColourPickerCtrl(featuresSizer->GetStaticBox(), BUTTON_COLOR_ID, m_buttonColor);
+        colorPicker->SetValidator(wxGenericValidator{ &m_buttonColor });
+        colorSizer->Add(colorPicker, wxSizerFlags{}.Border());
+        featuresSizer->Add(colorSizer, wxSizerFlags{}.Expand().Border());
+
+        leftColumnSizer->Add(featuresSizer, wxSizerFlags{}.Expand());
 
         // preview panel inside a fixed-size bounding box
         auto* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));

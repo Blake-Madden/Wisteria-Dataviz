@@ -17,6 +17,77 @@
 
 namespace Wisteria
     {
+    /// @brief Options for SVG report export.
+    struct SVGReportOptions
+        {
+        /// @brief Constructor.
+        /// @param filePath The file path to save the SVG to.
+        explicit SVGReportOptions(const wxString& filePath) : m_filePath(filePath) {}
+
+        /// @brief The file path to save the SVG to.
+        wxString m_filePath;
+        /// @brief Whether to include smooth transitions (sliding pages).
+        bool m_includeTransitions{ false };
+        /// @brief Whether to include interactive highlighting on hover.
+        bool m_includeHighlighting{ false };
+        /// @brief Whether to include a floating layout toggle (stacked vs duplex).
+        bool m_includeLayoutToggle{ false };
+        /// @brief The background color for the layout toggle button.
+        wxColour m_buttonColor{ 103, 58, 183 };
+        /// @brief The horizontal gap (in pixels) between rows of pages.
+        int m_horizontalGap{ 25 };
+        /// @brief Uniform page size (in DIPs). If default, uses per-canvas paper sizes.
+        wxSize m_pageSize{ wxDefaultSize };
+
+        [[nodiscard]]
+        bool HasInteractiveFeatures() const noexcept
+            {
+            return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle;
+            }
+
+        /// @brief Enables/disables smooth transitions.
+        SVGReportOptions& Transitions(bool include)
+            {
+            m_includeTransitions = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables interactive highlighting.
+        SVGReportOptions& Highlighting(bool include)
+            {
+            m_includeHighlighting = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables the layout toggle.
+        SVGReportOptions& LayoutToggle(bool include)
+            {
+            m_includeLayoutToggle = include;
+            return *this;
+            }
+
+        /// @brief Sets the button color.
+        SVGReportOptions& ButtonColor(const wxColour& color)
+            {
+            m_buttonColor = color;
+            return *this;
+            }
+
+        /// @brief Sets the horizontal gap between rows.
+        SVGReportOptions& HorizontalGap(int gap)
+            {
+            m_horizontalGap = gap;
+            return *this;
+            }
+
+        /// @brief Sets a uniform page size.
+        SVGReportOptions& PageSize(const wxSize& size)
+            {
+            m_pageSize = size;
+            return *this;
+            }
+        };
+
     /// @brief Exports a collection of canvases into a multipage SVG file.
     /// @details Each canvas is rendered into its own @c \<page\> element,
     ///     wrapped in a @c \<pageset\> inside a standard SVG document.
@@ -27,11 +98,8 @@ namespace Wisteria
       public:
         /// @brief Constructor.
         /// @param canvases The canvases (pages) to export.
-        /// @param filePath The file path to save the SVG to.
-        /// @param pageSize If valid, overrides the per-canvas paper sizes
-        ///     with this uniform size (in DIPs) for all pages.
-        SVGReportPrintout(const std::vector<Canvas*>& canvases, const wxString& filePath,
-                          const wxSize& pageSize = wxDefaultSize);
+        /// @param options Export options (interactivity, sizing, file path, etc.).
+        SVGReportPrintout(const std::vector<Canvas*>& canvases, const SVGReportOptions& options);
 
         /// @brief Retrieves the paper size (in DIPs) for the given canvas.
         /// @param canvas The canvas whose paper size to query.
