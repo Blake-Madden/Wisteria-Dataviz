@@ -250,7 +250,7 @@ namespace Wisteria::UI
         // sync the panel's axis selector to match, then load the axis data
         m_axisOptionsPanel->SelectAxis(axis.GetAxisType());
         // propagate bracket source templates as panel hints so "Add Brackets from
-        // Dataset" pre-selects the dataset/columns even if the axis copy loses them
+        // Dataset" preselects the dataset/columns even if the axis copy loses them
         m_axisOptionsPanel->SetBracketColumnHints(axis.GetPropertyTemplate(L"brackets.dataset"),
                                                   axis.GetPropertyTemplate(L"bracket.label"),
                                                   axis.GetPropertyTemplate(L"bracket.value"));

@@ -1092,8 +1092,7 @@ namespace Wisteria::UI
                 const auto& decal = bar.GetBlocks()[bk].GetDecal();
                 if (!decal.GetText().empty())
                     {
-                    m_barBlockDecals.emplace_back(
-                        bar.GetAxisLabel().GetText(), bk, decal);
+                    m_barBlockDecals.emplace_back(bar.GetAxisLabel().GetText(), bk, decal);
                     }
                 }
             }

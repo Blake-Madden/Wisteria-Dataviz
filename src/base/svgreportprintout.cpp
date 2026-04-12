@@ -73,7 +73,8 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                           "      filter: brightness(1.2); cursor: pointer; \n"
                           "    }\n";
             }
-        if (options.m_includeLayoutToggle)
+        const bool hasUILayer = options.m_includeLayoutToggle || options.m_includeDarkModeToggle;
+        if (hasUILayer)
             {
             const wxString btnHex = options.m_buttonColor.GetAsString(wxC2S_HTML_SYNTAX);
             const wxString textHex =
@@ -97,55 +98,125 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "bold; pointer-events: none; text-anchor: middle; }\n",
                 btnHex, textHex);
             }
+        if (options.m_includeDarkModeToggle)
+            {
+            // For any background fills that don't play well with white text
+            // (that is triggered via dark mode), map their dark-mode fill replacements here.
+            //
+            // Scope dark-mode rules to screen media only, so printing the SVG
+            // always uses the original light colors even if dark mode is active.
+            svgContent +=
+                L"    @media screen {\n"
+                "      svg.dark-mode { background-color: #1E1E1E; }\n"
+                "      svg.dark-mode [fill=\"#000000\"], svg.dark-mode [fill=\"black\"] "
+                "{ fill: #e8e8e8; }\n"
+                "      svg.dark-mode [stroke=\"#000000\"], svg.dark-mode [stroke=\"black\"] "
+                "{ stroke: #e8e8e8; }\n"
+                "      svg.dark-mode [fill=\"#ABD1C9\"] { fill: #1B2D28; }\n"
+                "      svg.dark-mode [fill=\"#CBD0C2\"] { fill: #24291E; }\n"
+                "      svg.dark-mode [fill=\"#E5E5E5\"] { fill: #2A2A2A; }\n"
+                "      svg.dark-mode [fill=\"#F1BFB1\"] { fill: #3A1E12; }\n"
+                "      svg.dark-mode [fill=\"#F6F9FD\"] { fill: #1A2030; }\n"
+                "      svg.dark-mode [fill=\"#FFFFFF\"] { fill: #1E1E1E; }\n"
+                "      svg.dark-mode [stroke=\"#FFFFFF\"] { stroke: #1E1E1E; }\n"
+                "      svg.dark-mode .page-outline "
+                "{ stroke: #e8e8e8; stroke-width: 2; fill: none; }\n"
+                "    }\n";
+            }
         svgContent += L"  ]]>\n"
                       "</style>\n";
         }
 
-    if (options.m_includeLayoutToggle)
+    const bool hasUILayer = options.m_includeLayoutToggle || options.m_includeDarkModeToggle;
+    if (hasUILayer)
         {
-        svgContent += wxString::Format(
-            L"<script type=\"text/javascript\"><![CDATA[\n"
-            "  let isDuplex = false;\n"
-            "  let currentGap = %d;\n"
-            "  function toggleLayout() {\n"
-            "    isDuplex = !isDuplex;\n"
-            "    const btnText = document.getElementById('toggle-btn-text');\n"
-            "    if (btnText) btnText.textContent = isDuplex ? '\U0001F4C4 %s' : "
-            "'\U0001F4C4\U0001F4C4 %s';\n"
-            "    applyLayout();\n"
-            "  }\n"
-            "  function adjustGap(delta) {\n"
-            "    currentGap = Math.max(0, currentGap + delta);\n"
-            "    applyLayout();\n"
-            "  }\n"
-            "  function applyLayout() {\n"
-            "    const pages = document.querySelectorAll('.page');\n"
-            "    const svg = document.querySelector('svg');\n"
-            "    if (pages.length === 0) return;\n"
-            "    const w = parseInt(pages[0].getAttribute('data-width'));\n"
-            "    const h = parseInt(pages[0].getAttribute('data-height'));\n"
-            "    const gap = currentGap;\n"
-            "    const sideGap = 25;\n"
-            "    if (isDuplex) {\n"
-            "      pages.forEach((p, i) => {\n"
-            "        const x = (i %% 2) * (w + sideGap);\n"
-            "        const y = Math.floor(i / 2) * (h + gap);\n"
-            "        p.setAttribute('transform', `translate(${x}, ${y})`);\n"
-            "      });\n"
-            "      const duplexHeight = Math.ceil(pages.length / 2) * (h + gap);\n"
-            "      svg.setAttribute('viewBox', `0 0 ${2 * w + sideGap} ${duplexHeight}`);\n"
-            "      svg.setAttribute('height', duplexHeight);\n"
-            "    } else {\n"
-            "      pages.forEach((p, i) => {\n"
-            "        p.setAttribute('transform', `translate(0, ${i * (h + gap)})`);\n"
-            "      });\n"
-            "      const stackedHeight = pages.length * (h + gap);\n"
-            "      svg.setAttribute('viewBox', `0 0 ${w} ${stackedHeight}`);\n"
-            "      svg.setAttribute('height', stackedHeight);\n"
-            "    }\n"
-            "  }\n"
-            "]]></script>\n",
-            options.m_horizontalGap, _(L"STACKED"), _(L"DUPLEX"));
+        svgContent += L"<script type=\"text/javascript\"><![CDATA[\n";
+
+        // keep the UI layer pinned to the top of the viewport while scrolling:
+        // translate #ui-layer down by however many viewBox units correspond to
+        // the portion of the SVG currently hidden above the viewport
+        svgContent += L"  function updateUILayerPosition() {\n"
+                      "    const svg = document.querySelector('svg');\n"
+                      "    const uiLayer = document.getElementById('ui-layer');\n"
+                      "    if (!svg || !uiLayer) return;\n"
+                      "    const rect = svg.getBoundingClientRect();\n"
+                      "    const viewBox = svg.viewBox.baseVal;\n"
+                      "    if (rect.height === 0 || viewBox.height === 0) return;\n"
+                      "    const scaleY = viewBox.height / rect.height;\n"
+                      "    const hiddenTop = Math.max(0, -rect.top);\n"
+                      "    const offsetInSvg = hiddenTop * scaleY;\n"
+                      "    uiLayer.setAttribute('transform', "
+                      "`translate(0, ${offsetInSvg})`);\n"
+                      "  }\n"
+                      "  window.addEventListener('scroll', updateUILayerPosition, "
+                      "{ passive: true });\n"
+                      "  window.addEventListener('resize', updateUILayerPosition);\n"
+                      "  window.addEventListener('load', updateUILayerPosition);\n";
+
+        if (options.m_includeLayoutToggle)
+            {
+            svgContent += wxString::Format(
+                L"  let isDuplex = false;\n"
+                "  let currentGap = %d;\n"
+                "  function toggleLayout() {\n"
+                "    isDuplex = !isDuplex;\n"
+                "    const btnText = document.getElementById('toggle-btn-text');\n"
+                "    if (btnText) btnText.textContent = isDuplex ? '\U0001F4C4 %s' : "
+                "'\U0001F4C4\U0001F4C4 %s';\n"
+                "    applyLayout();\n"
+                "  }\n"
+                "  function adjustGap(delta) {\n"
+                "    currentGap = Math.max(0, currentGap + delta);\n"
+                "    applyLayout();\n"
+                "  }\n"
+                "  function applyLayout() {\n"
+                "    const pages = document.querySelectorAll('.page');\n"
+                "    const svg = document.querySelector('svg');\n"
+                "    if (pages.length === 0) return;\n"
+                "    const w = parseInt(pages[0].getAttribute('data-width'));\n"
+                "    const h = parseInt(pages[0].getAttribute('data-height'));\n"
+                "    const gap = currentGap;\n"
+                "    const sideGap = 25;\n"
+                "    if (isDuplex) {\n"
+                "      pages.forEach((p, i) => {\n"
+                "        const x = (i %% 2) * (w + sideGap);\n"
+                "        const y = Math.floor(i / 2) * (h + gap);\n"
+                "        p.setAttribute('transform', `translate(${x}, ${y})`);\n"
+                "      });\n"
+                "      const duplexHeight = Math.ceil(pages.length / 2) * (h + gap);\n"
+                "      svg.setAttribute('viewBox', `0 0 ${2 * w + sideGap} ${duplexHeight}`);\n"
+                "      svg.setAttribute('height', duplexHeight);\n"
+                "    } else {\n"
+                "      pages.forEach((p, i) => {\n"
+                "        p.setAttribute('transform', `translate(0, ${i * (h + gap)})`);\n"
+                "      });\n"
+                "      const stackedHeight = pages.length * (h + gap);\n"
+                "      svg.setAttribute('viewBox', `0 0 ${w} ${stackedHeight}`);\n"
+                "      svg.setAttribute('height', stackedHeight);\n"
+                "    }\n"
+                "    updateUILayerPosition();\n"
+                "  }\n",
+                options.m_horizontalGap, _(L"STACKED"), _(L"DUPLEX"));
+            }
+
+        if (options.m_includeDarkModeToggle)
+            {
+            svgContent += L"  function toggleDarkMode() {\n"
+                          "    const svg = document.querySelector('svg');\n"
+                          "    svg.classList.toggle('dark-mode');\n"
+                          "    const btn = document.getElementById('darkmode-btn-text');\n"
+                          "    if (btn) btn.textContent = svg.classList.contains('dark-mode') ? "
+                          "'\u2600\uFE0F' : '\U0001F319';\n"
+                          "  }\n";
+            }
+
+        svgContent += L"]]></script>\n";
+        }
+
+    if (options.m_includeDarkModeToggle)
+        {
+        svgContent += L"<rect id=\"svg-bg\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" "
+                      "fill=\"#FFFFFF\"/>\n";
         }
 
     svgContent += L"<g id=\"pageset\">\n";
@@ -217,6 +288,14 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                                        layoutWidth, layoutHeight, yOffset);
         svgContent += StripSvgTags(svgDC.GetSVGDocument());
 
+        if (options.m_includeDarkModeToggle)
+            {
+            svgContent +=
+                wxString::Format(L"\n<rect class=\"page-outline\" x=\"0\" y=\"0\" width=\"%d\" "
+                                 "height=\"%d\" fill=\"none\" stroke=\"none\"/>",
+                                 layoutWidth, layoutHeight);
+            }
+
         svgContent += L"\n</g>\n";
 
         yOffset += (layoutHeight + options.m_horizontalGap);
@@ -224,24 +303,42 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
     svgContent += L"</g>\n";
 
-    if (options.m_includeLayoutToggle)
+    if (hasUILayer)
         {
-        svgContent += wxString::Format(
-            L"<g id=\"ui-layer\">\n"
-            "  <rect class=\"btn\" x=\"10\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
-            "onclick=\"toggleLayout()\" />\n"
-            "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"70\" y=\"29\">"
-            "\U0001F4C4\U0001F4C4 %s</text>\n"
-            "  <rect class=\"btn\" x=\"10\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
-            "onclick=\"adjustGap(-10)\" />\n"
-            "  <text class=\"btn-text\" x=\"25\" y=\"69\">-</text>\n"
-            "  <rect class=\"btn\" x=\"50\" y=\"50\" width=\"140\" height=\"30\" rx=\"15\" />\n"
-            "  <text class=\"btn-text\" x=\"120\" y=\"69\">%s</text>\n"
-            "  <rect class=\"btn\" x=\"200\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
-            "onclick=\"adjustGap(10)\" />\n"
-            "  <text class=\"btn-text\" x=\"215\" y=\"69\">+</text>\n"
-            "</g>\n",
-            _(L"DUPLEX"), _(L"PAGE GAP"));
+        svgContent += L"<g id=\"ui-layer\">\n";
+
+        if (options.m_includeLayoutToggle)
+            {
+            svgContent += wxString::Format(
+                L"  <rect class=\"btn\" x=\"10\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
+                "onclick=\"toggleLayout()\"><title>%s</title></rect>\n"
+                "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"70\" y=\"29\">"
+                "\U0001F4C4\U0001F4C4 %s</text>\n"
+                "  <rect class=\"btn\" x=\"10\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
+                "onclick=\"adjustGap(-1)\"><title>%s</title></rect>\n"
+                "  <text class=\"btn-text\" x=\"25\" y=\"69\">-</text>\n"
+                "  <rect class=\"btn\" x=\"50\" y=\"50\" width=\"140\" height=\"30\" rx=\"15\" />\n"
+                "  <text class=\"btn-text\" x=\"120\" y=\"69\">%s</text>\n"
+                "  <rect class=\"btn\" x=\"200\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
+                "onclick=\"adjustGap(1)\"><title>%s</title></rect>\n"
+                "  <text class=\"btn-text\" x=\"215\" y=\"69\">+</text>\n",
+                _(L"Toggle between stacked and duplex page layout"), _(L"DUPLEX"),
+                _(L"Decrease vertical space between pages"), _(L"PAGE GAP"),
+                _(L"Increase vertical space between pages"));
+            }
+
+        if (options.m_includeDarkModeToggle)
+            {
+            const int darkModeX = options.m_includeLayoutToggle ? 140 : 10;
+            svgContent += wxString::Format(
+                L"  <rect class=\"btn\" x=\"%d\" y=\"10\" width=\"30\" height=\"30\" rx=\"15\" "
+                "onclick=\"toggleDarkMode()\"><title>%s</title></rect>\n"
+                "  <text id=\"darkmode-btn-text\" class=\"btn-text\" x=\"%d\" y=\"29\">"
+                "\U0001F319</text>\n",
+                darkModeX, _(L"Toggle dark mode"), darkModeX + 15);
+            }
+
+        svgContent += L"</g>\n";
         }
 
     svgContent += L"</svg>\n";

@@ -73,6 +73,13 @@ namespace Wisteria::UI
             return m_includeLayoutToggle;
             }
 
+        /// @returns Whether to include a dark-mode toggle.
+        [[nodiscard]]
+        bool IncludeDarkModeToggle() const noexcept
+            {
+            return m_includeDarkModeToggle;
+            }
+
         /// @returns The selected button color.
         [[nodiscard]]
         wxColour GetButtonColor() const noexcept
@@ -116,6 +123,7 @@ namespace Wisteria::UI
         bool m_includeTransitions{ true };
         bool m_includeHighlighting{ true };
         bool m_includeLayoutToggle{ true };
+        bool m_includeDarkModeToggle{ true };
         wxColour m_buttonColor{ 103, 58, 183 };
         int m_horizontalGap{ 25 };
 

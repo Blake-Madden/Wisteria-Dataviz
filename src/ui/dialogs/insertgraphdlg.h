@@ -309,7 +309,7 @@ namespace Wisteria::UI
         void CreateAxisOptionsPage();
 
         /// @brief Returns the suggested dataset name for dataset-driven brackets.
-        /// @details Subclasses can override to pre-select the dataset.
+        /// @details Subclasses can override to preselect the dataset.
         /// @returns The dataset name hint, or empty string for no hint.
         [[nodiscard]]
         virtual wxString GetBracketDatasetHint() const
@@ -318,7 +318,7 @@ namespace Wisteria::UI
             }
 
         /// @brief Returns the suggested label column name for dataset-driven brackets.
-        /// @details Subclasses can override to pre-select the group variable.
+        /// @details Subclasses can override to preselect the group variable.
         /// @returns The column name hint, or empty string for no hint.
         [[nodiscard]]
         virtual wxString GetBracketLabelColumnHint() const
@@ -327,7 +327,7 @@ namespace Wisteria::UI
             }
 
         /// @brief Returns the suggested value column name for dataset-driven brackets.
-        /// @details Subclasses can override to pre-select the categorical variable.
+        /// @details Subclasses can override to preselect the categorical variable.
         /// @returns The column name hint, or empty string for no hint.
         [[nodiscard]]
         virtual wxString GetBracketValueColumnHint() const

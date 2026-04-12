@@ -70,6 +70,10 @@ Each dataset property will contain the following properties (loaded in the follo
   The `"parser"` and `"format"` options are ignored if importing an *Excel* or *ODS* file.
   *Excel* stores dates and times as serial dates, and *ODS* stores them as ISO 8601 strings;
   both will be converted accordingly.
+- `"columns-order"`: An array of column names specifying the order in which the columns should appear after import, preserving the original spreadsheet column ordering. \
+  This property is optional.
+  If omitted, the column order is read directly from the source file's header.
+  Any columns not listed here will be appended after the named columns in their original order.
 
 ::: {.notesection data-latex=""}
 If no columns are defined, then the importer will import all columns and deduce their types.

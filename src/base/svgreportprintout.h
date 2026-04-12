@@ -32,6 +32,8 @@ namespace Wisteria
         bool m_includeHighlighting{ false };
         /// @brief Whether to include a floating layout toggle (stacked vs duplex).
         bool m_includeLayoutToggle{ false };
+        /// @brief Whether to include a floating dark-mode toggle.
+        bool m_includeDarkModeToggle{ false };
         /// @brief The background color for the layout toggle button.
         wxColour m_buttonColor{ 103, 58, 183 };
         /// @brief The horizontal gap (in pixels) between rows of pages.
@@ -42,7 +44,8 @@ namespace Wisteria
         [[nodiscard]]
         bool HasInteractiveFeatures() const noexcept
             {
-            return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle;
+            return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle ||
+                   m_includeDarkModeToggle;
             }
 
         /// @brief Enables/disables smooth transitions.
@@ -63,6 +66,13 @@ namespace Wisteria
         SVGReportOptions& LayoutToggle(bool include)
             {
             m_includeLayoutToggle = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables the dark-mode toggle.
+        SVGReportOptions& DarkModeToggle(bool include)
+            {
+            m_includeDarkModeToggle = include;
             return *this;
             }
 

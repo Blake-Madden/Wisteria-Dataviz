@@ -521,7 +521,7 @@ namespace Wisteria::UI
             }
 
         // if the axis was loaded from a dataset-driven brackets definition, use its
-        // stored templates as hints so "Add Brackets from Dataset" pre-selects them
+        // stored templates as hints so "Add Brackets from Dataset" preselects them
         const auto bracketDs = axis.GetPropertyTemplate(L"brackets.dataset");
         if (!bracketDs.empty())
             {

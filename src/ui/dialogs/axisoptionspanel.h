@@ -63,7 +63,7 @@ namespace Wisteria::UI
         bool GetMirrorY() const;
 
         /** @brief Sets the suggested dataset and column names for dataset-driven brackets.
-            @param datasetName The dataset name hint (pre-selects in the dataset combo).
+            @param datasetName The dataset name hint (preselects in the dataset combo).
             @param labelColumn The label column hint (e.g., the group variable).
             @param valueColumn The value column hint (e.g., the categorical variable).*/
         void SetBracketColumnHints(const wxString& datasetName, const wxString& labelColumn,

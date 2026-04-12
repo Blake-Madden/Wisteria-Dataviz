@@ -643,13 +643,15 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::SVGReportPrintout svgReport(m_pages, Wisteria::SVGReportOptions(fileDlg.GetPath())
-                                                       .PageSize(m_lastSvgPageSize)
-                                                       .Transitions(sizeDlg.IncludeTransitions())
-                                                       .Highlighting(sizeDlg.IncludeHighlighting())
-                                                       .LayoutToggle(sizeDlg.IncludeLayoutToggle())
-                                                       .ButtonColor(sizeDlg.GetButtonColor())
-                                                       .HorizontalGap(sizeDlg.GetHorizontalGap()));
+    Wisteria::SVGReportPrintout svgReport(m_pages,
+                                          Wisteria::SVGReportOptions(fileDlg.GetPath())
+                                              .PageSize(m_lastSvgPageSize)
+                                              .Transitions(sizeDlg.IncludeTransitions())
+                                              .Highlighting(sizeDlg.IncludeHighlighting())
+                                              .LayoutToggle(sizeDlg.IncludeLayoutToggle())
+                                              .DarkModeToggle(sizeDlg.IncludeDarkModeToggle())
+                                              .ButtonColor(sizeDlg.GetButtonColor())
+                                              .HorizontalGap(sizeDlg.GetHorizontalGap()));
     }
 
 //-------------------------------------------
