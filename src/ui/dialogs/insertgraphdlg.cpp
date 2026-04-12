@@ -594,8 +594,8 @@ namespace Wisteria::UI
         {
         m_axisOptionsPanel =
             new AxisOptionsPanel(GetSideBarBook(), GetCanvas(), GetReportBuilder());
-        m_axisOptionsPanel->SetBracketColumnHints(GetBracketLabelColumnHint(),
-                                                  GetBracketValueColumnHint());
+        m_axisOptionsPanel->SetBracketColumnHints(
+            GetBracketDatasetHint(), GetBracketLabelColumnHint(), GetBracketValueColumnHint());
         GetSideBarBook()->AddPage(m_axisOptionsPanel, _(L"Axes"), ID_AXIS_OPTIONS_SECTION, true);
         }
 

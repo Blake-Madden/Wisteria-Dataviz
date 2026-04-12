@@ -132,22 +132,16 @@ namespace Wisteria::UI
         targetGrid->Add(new wxStaticText(targetBox->GetStaticBox(), wxID_ANY, _(L"Names to:")),
                         wxSizerFlags{}.CenterVertical());
         m_namesToCtrl = new wxTextCtrl(targetBox->GetStaticBox(), wxID_ANY, DefaultNamesTo());
-        m_namesToCtrl->SetToolTip(
-            _(L"Names for the new grouping columns, comma-separated if multiple."));
         targetGrid->Add(m_namesToCtrl, wxSizerFlags{}.Expand());
 
         targetGrid->Add(new wxStaticText(targetBox->GetStaticBox(), wxID_ANY, _(L"Values to:")),
                         wxSizerFlags{}.CenterVertical());
         m_valuesToCtrl = new wxTextCtrl(targetBox->GetStaticBox(), wxID_ANY, DefaultValuesTo());
-        m_valuesToCtrl->SetToolTip(_(L"Name for the new value column."));
         targetGrid->Add(m_valuesToCtrl, wxSizerFlags{}.Expand());
 
         targetGrid->Add(new wxStaticText(targetBox->GetStaticBox(), wxID_ANY, _(L"Names pattern:")),
                         wxSizerFlags{}.CenterVertical());
         m_namesPatternCtrl = new wxTextCtrl(targetBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_namesPatternCtrl->SetToolTip(
-            _(L"Optional regex with capture groups to split column names "
-              "into multiple target columns. Leave blank to use full names."));
         targetGrid->Add(m_namesPatternCtrl, wxSizerFlags{}.Expand());
 
         targetBox->Add(targetGrid, wxSizerFlags{}.Expand().Border());

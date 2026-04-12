@@ -34,6 +34,10 @@ namespace Wisteria::UI
             @param reportBuilder The report builder (optional, used for bracket data).*/
         AxisOptionsPanel(wxWindow* parent, Canvas* canvas, const ReportBuilder* reportBuilder);
 
+        /** @brief Selects which axis type is active in the axis selector.
+            @param axisType The axis type to select.*/
+        void SelectAxis(AxisType axisType);
+
         /** @brief Sets the axes to be edited.
             @param axes A map of axis types to axis objects.*/
         void SetAxes(const std::map<AxisType, GraphItems::Axis>& axes);
@@ -58,11 +62,14 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetMirrorY() const;
 
-        /** @brief Sets the suggested column names for dataset-driven brackets.
+        /** @brief Sets the suggested dataset and column names for dataset-driven brackets.
+            @param datasetName The dataset name hint (pre-selects in the dataset combo).
             @param labelColumn The label column hint (e.g., the group variable).
             @param valueColumn The value column hint (e.g., the categorical variable).*/
-        void SetBracketColumnHints(const wxString& labelColumn, const wxString& valueColumn)
+        void SetBracketColumnHints(const wxString& datasetName, const wxString& labelColumn,
+                                   const wxString& valueColumn)
             {
+            m_bracketDatasetHint = datasetName;
             m_bracketLabelColumnHint = labelColumn;
             m_bracketValueColumnHint = valueColumn;
             }
@@ -85,6 +92,7 @@ namespace Wisteria::UI
         Canvas* m_canvas{ nullptr };
         const ReportBuilder* m_reportBuilder{ nullptr };
 
+        wxString m_bracketDatasetHint;
         wxString m_bracketLabelColumnHint;
         wxString m_bracketValueColumnHint;
 

@@ -992,7 +992,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         std::vector<AxisPoint>& GetAxisPoints() noexcept
             {
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
+            m_widestLabel = m_tallestLabel = Label{ GraphItemInfo{}.Ok(false) };
             return m_axisLabels;
             }
 
@@ -1000,7 +1000,8 @@ namespace Wisteria::GraphItems
         void ClearCustomLabels() noexcept
             {
             m_customAxisLabels.clear();
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
+            m_customLabelsAreUserOverride = false;
+            m_widestLabel = m_tallestLabel = Label{ GraphItemInfo{}.Ok(false) };
             }
 
         /** @brief Sets the text of an axis tick label (overriding any default calculated label).
@@ -1021,6 +1022,25 @@ namespace Wisteria::GraphItems
         const std::map<double, Label, double_less>& GetCustomLabels() const noexcept
             {
             return m_customAxisLabels;
+            }
+
+        /** @brief Marks the current custom labels as a user-supplied override.
+            @details Set by the JSON loader when @c custom-labels is present, and
+                intended to be set by a future custom-label editor. Callers that
+                install dataset-derived labels (graph types, @c CopySettings from
+                a dataset-derived child) should not touch this flag.
+            @param override @c true if the labels are a user override.*/
+        void SetCustomLabelsAreUserOverride(const bool override) noexcept
+            {
+            m_customLabelsAreUserOverride = override;
+            }
+
+        /// @returns @c true if the custom labels came from a user override
+        ///     (JSON or the label editor) rather than from a dataset.
+        [[nodiscard]]
+        bool AreCustomLabelsUserOverride() const noexcept
+            {
+            return m_customLabelsAreUserOverride;
             }
 
         /** @brief Finds a custom label along the axis, returning its numeric position.
@@ -1652,7 +1672,13 @@ namespace Wisteria::GraphItems
                          const std::map<wxString, double>& labelPositions);
 
         /// @brief Removes all the brackets.
-        void ClearBrackets() noexcept { m_brackets.clear(); }
+        /// @details Also resets the "brackets simplified" flag, since an
+        ///     axis with no brackets cannot meaningfully be in a simplified state.
+        void ClearBrackets() noexcept
+            {
+            m_brackets.clear();
+            m_bracketsSimplified = false;
+            }
 
         /// @returns The axis's brackets.
         [[nodiscard]]
@@ -2289,6 +2315,10 @@ namespace Wisteria::GraphItems
 
         std::vector<AxisPoint> m_axisLabels;
         std::map<double, Label, double_less> m_customAxisLabels;
+        // true when the custom labels were supplied by the user (JSON or
+        // editor) rather than derived from a dataset; gates serialization of
+        // custom-labels for common axes so dataset-derived labels don't go stale
+        bool m_customLabelsAreUserOverride{ false };
         size_t m_suggestedMaxLengthPerLine{ 100 };
 
         std::vector<TickMark> m_tickMarks;

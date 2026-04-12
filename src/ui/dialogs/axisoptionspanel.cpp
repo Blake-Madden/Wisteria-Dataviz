@@ -328,6 +328,29 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void AxisOptionsPanel::SelectAxis(AxisType axisType)
+        {
+        int sel = 0;
+        switch (axisType)
+            {
+        case AxisType::TopXAxis:
+            sel = 1;
+            break;
+        case AxisType::LeftYAxis:
+            sel = 2;
+            break;
+        case AxisType::RightYAxis:
+            sel = 3;
+            break;
+        default:
+            sel = 0;
+            break;
+            }
+        m_axisSelector->SetSelection(sel);
+        OnAxisSelectionChanged();
+        }
+
+    //-------------------------------------------
     void AxisOptionsPanel::SetAxes(const std::map<AxisType, GraphItems::Axis>& axes)
         {
         m_savedAxes = axes;
@@ -497,6 +520,24 @@ namespace Wisteria::UI
             m_labelLineLengthSpin->SetValue(static_cast<int>(axis.GetLabelLineLength()));
             }
 
+        // if the axis was loaded from a dataset-driven brackets definition, use its
+        // stored templates as hints so "Add Brackets from Dataset" pre-selects them
+        const auto bracketDs = axis.GetPropertyTemplate(L"brackets.dataset");
+        if (!bracketDs.empty())
+            {
+            m_bracketDatasetHint = bracketDs;
+            }
+        const auto bracketLabel = axis.GetPropertyTemplate(L"bracket.label");
+        if (!bracketLabel.empty())
+            {
+            m_bracketLabelColumnHint = bracketLabel;
+            }
+        const auto bracketValue = axis.GetPropertyTemplate(L"bracket.value");
+        if (!bracketValue.empty())
+            {
+            m_bracketValueColumnHint = bracketValue;
+            }
+
         RefreshBracketList();
         }
 
@@ -505,9 +546,20 @@ namespace Wisteria::UI
         {
         if (m_axisLineColorPicker != nullptr)
             {
-            axis.GetAxisLinePen().SetColour(m_axisLineColorPicker->GetColour());
-            axis.GetAxisLinePen().SetWidth(m_axisLineWidthSpin->GetValue());
-            axis.GetAxisLinePen().SetStyle(IndexToPenStyle(m_axisLineStyleChoice->GetSelection()));
+            // style index 0 means "none"; assign wxNullPen so the axis is drawn
+            // without a line, rather than mutating the existing pen (which would
+            // promote a previously-null pen into a valid one)
+            if (m_axisLineStyleChoice->GetSelection() == 0)
+                {
+                axis.GetAxisLinePen() = wxNullPen;
+                }
+            else
+                {
+                axis.GetAxisLinePen().SetColour(m_axisLineColorPicker->GetColour());
+                axis.GetAxisLinePen().SetWidth(m_axisLineWidthSpin->GetValue());
+                axis.GetAxisLinePen().SetStyle(
+                    IndexToPenStyle(m_axisLineStyleChoice->GetSelection()));
+                }
             }
         if (m_axisCapStyleChoice != nullptr)
             {
@@ -521,9 +573,17 @@ namespace Wisteria::UI
 
         if (m_gridlineColorPicker != nullptr)
             {
-            axis.GetGridlinePen().SetColour(m_gridlineColorPicker->GetColour());
-            axis.GetGridlinePen().SetWidth(m_gridlineWidthSpin->GetValue());
-            axis.GetGridlinePen().SetStyle(IndexToPenStyle(m_gridlineStyleChoice->GetSelection()));
+            if (m_gridlineStyleChoice->GetSelection() == 0)
+                {
+                axis.GetGridlinePen() = wxNullPen;
+                }
+            else
+                {
+                axis.GetGridlinePen().SetColour(m_gridlineColorPicker->GetColour());
+                axis.GetGridlinePen().SetWidth(m_gridlineWidthSpin->GetValue());
+                axis.GetGridlinePen().SetStyle(
+                    IndexToPenStyle(m_gridlineStyleChoice->GetSelection()));
+                }
             }
 
         if (m_tickmarkDisplayChoice != nullptr)
@@ -872,6 +932,19 @@ namespace Wisteria::UI
             return;
             }
 
+        // determine the effective hints: prefer whatever is already stored on the axis
+        // (set either by JSON load or by a previous "Add from dataset" round) and fall
+        // back to the externally-supplied panel hints for fresh inserts
+        const wxString axisDatasetTmpl = axis.GetPropertyTemplate(L"brackets.dataset");
+        const wxString axisLabelTmpl = axis.GetPropertyTemplate(L"bracket.label");
+        const wxString axisValueTmpl = axis.GetPropertyTemplate(L"bracket.value");
+        const wxString effectiveDatasetHint =
+            !axisDatasetTmpl.empty() ? axisDatasetTmpl : m_bracketDatasetHint;
+        const wxString effectiveLabelHint =
+            !axisLabelTmpl.empty() ? axisLabelTmpl : m_bracketLabelColumnHint;
+        const wxString effectiveValueHint =
+            !axisValueTmpl.empty() ? axisValueTmpl : m_bracketValueColumnHint;
+
         wxDialog dlg(this, wxID_ANY, _(L"Add Brackets from Dataset"), wxDefaultPosition,
                      wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
@@ -886,7 +959,16 @@ namespace Wisteria::UI
             datasetNames.Add(name);
             datasetChoice->Append(name);
             }
-        datasetChoice->SetSelection(0);
+        int datasetHintIdx = 0;
+        if (!effectiveDatasetHint.empty())
+            {
+            const int found = datasetChoice->FindString(effectiveDatasetHint);
+            if (found != wxNOT_FOUND)
+                {
+                datasetHintIdx = found;
+                }
+            }
+        datasetChoice->SetSelection(datasetHintIdx);
         sizer->Add(datasetChoice, wxSizerFlags{}.Expand());
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label column:")),
@@ -899,8 +981,8 @@ namespace Wisteria::UI
         auto* valueColChoice = new wxChoice(&dlg, wxID_ANY);
         sizer->Add(valueColChoice, wxSizerFlags{}.Expand());
 
-        const auto populateColumns =
-            [&datasets, &datasetNames, labelColChoice, valueColChoice, this](const int sel)
+        const auto populateColumns = [&datasets, &datasetNames, labelColChoice, valueColChoice,
+                                      &effectiveLabelHint, &effectiveValueHint](const int sel)
         {
             labelColChoice->Clear();
             valueColChoice->Clear();
@@ -928,13 +1010,16 @@ namespace Wisteria::UI
                 valueColChoice->Append(col);
                 }
 
-            const auto& labelHint = m_bracketLabelColumnHint;
-            if (!labelHint.empty())
+            if (!effectiveLabelHint.empty())
                 {
-                const int idx = labelColChoice->FindString(labelHint);
+                const int idx = labelColChoice->FindString(effectiveLabelHint);
                 if (idx != wxNOT_FOUND)
                     {
                     labelColChoice->SetSelection(idx);
+                    }
+                else if (labelColChoice->GetCount() > 0)
+                    {
+                    labelColChoice->SetSelection(0);
                     }
                 }
             else if (labelColChoice->GetCount() > 0)
@@ -942,13 +1027,16 @@ namespace Wisteria::UI
                 labelColChoice->SetSelection(0);
                 }
 
-            const auto& valueHint = m_bracketValueColumnHint;
-            if (!valueHint.empty())
+            if (!effectiveValueHint.empty())
                 {
-                const int idx = valueColChoice->FindString(valueHint);
+                const int idx = valueColChoice->FindString(effectiveValueHint);
                 if (idx != wxNOT_FOUND)
                     {
                     valueColChoice->SetSelection(idx);
+                    }
+                else if (valueColChoice->GetCount() > 0)
+                    {
+                    valueColChoice->SetSelection(0);
                     }
                 }
             else if (valueColChoice->GetCount() > 0)
@@ -957,7 +1045,7 @@ namespace Wisteria::UI
                 }
         };
 
-        populateColumns(0);
+        populateColumns(datasetHintIdx);
         datasetChoice->Bind(wxEVT_CHOICE, [&populateColumns, datasetChoice](wxCommandEvent&)
                             { populateColumns(datasetChoice->GetSelection()); });
 
@@ -980,8 +1068,12 @@ namespace Wisteria::UI
                                          wxDefaultSize, wxSP_ARROW_KEYS, 1, 5, 2);
         sizer->Add(widthSpin, wxSizerFlags{}.Expand());
 
+        auto* simplifyCheck = new wxCheckBox(&dlg, wxID_ANY, _(L"Simplify brackets"));
+        simplifyCheck->SetValue(axis.AreBracketsSimplified());
+
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
         mainSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
+        mainSizer->Add(simplifyCheck, wxSizerFlags{}.Border());
         mainSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
         dlg.SetSizerAndFit(mainSizer);
@@ -1009,8 +1101,31 @@ namespace Wisteria::UI
             return;
             }
 
-        const size_t oldCount = axis.GetBrackets().size();
-        axis.AddBrackets(dsIt->second, labelCol, valueCol);
+        axis.ClearBrackets();
+        // map category labels to their sorted positions so brackets use the
+        // actual axis positions instead of raw category IDs. Needed for
+        // common axes, whose children may have sorted or dropped labels.
+        std::map<wxString, double> labelPosMap;
+            {
+            const auto& axisLabels = axis.GetCustomLabels();
+            for (const auto& [pos, label] : axisLabels)
+                {
+                labelPosMap[label.GetText()] = pos;
+                }
+            }
+        if (!labelPosMap.empty())
+            {
+            axis.AddBrackets(dsIt->second, labelCol, valueCol, labelPosMap);
+            }
+        else
+            {
+            axis.AddBrackets(dsIt->second, labelCol, valueCol);
+            }
+
+        // store property templates so the bracket source round-trips through save/load
+        axis.SetPropertyTemplate(L"brackets.dataset", datasetNames[dsSel]);
+        axis.SetPropertyTemplate(L"bracket.label", labelCol);
+        axis.SetPropertyTemplate(L"bracket.value", valueCol);
 
         constexpr BracketLineStyle bracketStyles[] = {
             BracketLineStyle::Lines, BracketLineStyle::Arrow, BracketLineStyle::ReverseArrow,
@@ -1021,10 +1136,15 @@ namespace Wisteria::UI
                 bracketStyles[styleChoice->GetSelection()] :
                 BracketLineStyle::CurlyBraces;
         const wxPen pen(colorPicker->GetColour(), widthSpin->GetValue());
-        for (size_t i = oldCount; i < axis.GetBrackets().size(); ++i)
+        for (auto& bracket : axis.GetBrackets())
             {
-            axis.GetBrackets()[i].SetBracketLineStyle(bracketStyle);
-            axis.GetBrackets()[i].GetLinePen() = pen;
+            bracket.SetBracketLineStyle(bracketStyle);
+            bracket.GetLinePen() = pen;
+            }
+
+        if (simplifyCheck->GetValue())
+            {
+            axis.SimplifyBrackets();
             }
 
         RefreshBracketList();

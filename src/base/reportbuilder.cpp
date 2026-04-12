@@ -726,6 +726,13 @@ namespace Wisteria
                         *LoadLabel(customLabel->GetProperty(L"label"), GraphItems::Label{}));
                     }
                 }
+            // mark as a user override so the serializer knows to round-trip
+            // them (for common axes, dataset-derived labels are otherwise
+            // suppressed to avoid going stale)
+            if (!customLabels.empty())
+                {
+                axis.SetCustomLabelsAreUserOverride(true);
+                }
             }
 
         // brackets

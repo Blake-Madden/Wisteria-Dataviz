@@ -23,13 +23,11 @@ namespace Wisteria::UI
         auto* copyButton = new wxBitmapButton(
             this, wxID_COPY,
             wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-        copyButton->SetToolTip(_(L"Copy selected text"));
         toolbarSizer->Add(copyButton, 0, wxALIGN_CENTER_VERTICAL);
 
         auto* saveButton = new wxBitmapButton(
             this, wxID_SAVE,
             wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-        saveButton->SetToolTip(_(L"Save"));
         toolbarSizer->Add(saveButton, 0, wxALIGN_CENTER_VERTICAL);
 
         mainSizer->Add(toolbarSizer);

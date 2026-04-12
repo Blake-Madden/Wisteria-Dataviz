@@ -1,3 +1,4 @@
+axis.svg
 barchart-image.svg
 barchart-stylized.svg
 barchart.svg

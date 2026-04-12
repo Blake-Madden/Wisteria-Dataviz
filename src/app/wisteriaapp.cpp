@@ -315,6 +315,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Insert an image"));
         objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
                                     _(L"Insert a shape"));
+        objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"axis.svg"),
+                                    _(L"Insert an axis"));
         objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
                                     _(L"Edit the selected item"));
         objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),
@@ -642,6 +644,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         return L"sparkline.svg";
         }
     // non-graph items
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Axis)))
+        {
+        return L"axis.svg";
+        }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
         {
         return L"label.svg";

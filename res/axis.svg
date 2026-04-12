@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="axisGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6b4fa0"/>
+      <stop offset="100%" stop-color="#3a7bd5"/>
+    </linearGradient>
+    <linearGradient id="tickGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3a7bd5"/>
+      <stop offset="100%" stop-color="#6b4fa0"/>
+    </linearGradient>
+    <linearGradient id="arrowGradV" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#6b4fa0"/>
+      <stop offset="100%" stop-color="#3a7bd5"/>
+    </linearGradient>
+    <linearGradient id="arrowGradH" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6b4fa0"/>
+      <stop offset="100%" stop-color="#3a7bd5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Y-axis line -->
+  <line x1="48" y1="28" x2="48" y2="216"
+    stroke="url(#axisGrad)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- X-axis line -->
+  <line x1="48" y1="216" x2="236" y2="216"
+    stroke="url(#axisGrad)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Y-axis arrow -->
+  <polyline points="30,52 48,24 66,52"
+    fill="none" stroke="url(#arrowGradV)" stroke-width="8"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- X-axis arrow -->
+  <polyline points="212,198 240,216 212,234"
+    fill="none" stroke="url(#arrowGradH)" stroke-width="8"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Y-axis tick marks -->
+  <line x1="36" y1="80" x2="60" y2="80"
+    stroke="url(#tickGrad)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="36" y1="120" x2="60" y2="120"
+    stroke="url(#tickGrad)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="36" y1="160" x2="60" y2="160"
+    stroke="url(#tickGrad)" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- X-axis tick marks -->
+  <line x1="100" y1="204" x2="100" y2="228"
+    stroke="url(#tickGrad)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="148" y1="204" x2="148" y2="228"
+    stroke="url(#tickGrad)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="196" y1="204" x2="196" y2="228"
+    stroke="url(#tickGrad)" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Decorative grid lines (subtle) -->
+  <line x1="60" y1="80" x2="196" y2="80"
+    stroke="url(#tickGrad)" stroke-width="1.5" stroke-linecap="round"
+    stroke-dasharray="4,6" opacity="0.3"/>
+  <line x1="60" y1="120" x2="196" y2="120"
+    stroke="url(#tickGrad)" stroke-width="1.5" stroke-linecap="round"
+    stroke-dasharray="4,6" opacity="0.3"/>
+  <line x1="60" y1="160" x2="196" y2="160"
+    stroke="url(#tickGrad)" stroke-width="1.5" stroke-linecap="round"
+    stroke-dasharray="4,6" opacity="0.3"/>
+
+  <line x1="100" y1="80" x2="100" y2="204"
+    stroke="url(#tickGrad)" stroke-width="1.5" stroke-linecap="round"
+    stroke-dasharray="4,6" opacity="0.3"/>
+  <line x1="148" y1="80" x2="148" y2="204"
+    stroke="url(#tickGrad)" stroke-width="1.5" stroke-linecap="round"
+    stroke-dasharray="4,6" opacity="0.3"/>
+  <line x1="196" y1="80" x2="196" y2="204"
+    stroke="url(#tickGrad)" stroke-width="1.5" stroke-linecap="round"
+    stroke-dasharray="4,6" opacity="0.3"/>
+</svg>

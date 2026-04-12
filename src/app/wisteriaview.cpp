@@ -16,6 +16,7 @@
 #include "../ui/dialogs/insertcandlestickplotdlg.h"
 #include "../ui/dialogs/insertcatbarchartdlg.h"
 #include "../ui/dialogs/insertchernoffdlg.h"
+#include "../ui/dialogs/insertcommonaxisdlg.h"
 #include "../ui/dialogs/insertganttchartdlg.h"
 #include "../ui/dialogs/insertheatmapdlg.h"
 #include "../ui/dialogs/inserthistogramdlg.h"
@@ -219,6 +220,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertImage, this, ID_NEW_IMAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertShape, this, ID_NEW_SHAPE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertCommonAxis, this,
+                  ID_NEW_COMMON_AXIS);
 
     // bind edit/delete item buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
@@ -2010,6 +2013,7 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(ID_NEW_LABEL, enabled);
         m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, enabled);
         m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, enabled);
+        m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, enabled);
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
         m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
@@ -2813,6 +2817,14 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
             {
             EditShape(*shape, canvas, itemRow, itemCol);
             }
+        return;
+        }
+
+    // standalone axes (common axes) are not Graph2D
+    auto* axis = dynamic_cast<Wisteria::GraphItems::Axis*>(selectedItem.get());
+    if (axis != nullptr)
+        {
+        EditCommonAxis(*axis, canvas, itemRow, itemCol);
         return;
         }
 
@@ -5009,8 +5021,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             {
             const auto barPos = plot->FindBar(decalInfo.m_barLabel);
             if (barPos.has_value() &&
-                decalInfo.m_blockIndex <
-                    plot->GetBars().at(barPos.value()).GetBlocks().size())
+                decalInfo.m_blockIndex < plot->GetBars().at(barPos.value()).GetBlocks().size())
                 {
                 plot->GetBars()
                     .at(barPos.value())
@@ -6984,6 +6995,275 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
             }
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
+
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertCommonAxis([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertCommonAxisDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"axis.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    dlg.ApplyGridSize();
+
+    // collect child graphs from canvas by ID
+    const auto childIds = dlg.GetChildGraphIds();
+    const auto [rows, cols] = canvas->GetFixedObjectsGridSize();
+    std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> childGraphs;
+    for (const auto childId : childIds)
+        {
+        for (size_t row = 0; row < rows; ++row)
+            {
+            for (size_t col = 0; col < cols; ++col)
+                {
+                auto item = canvas->GetFixedObject(row, col);
+                if (item != nullptr && item->GetId() == childId)
+                    {
+                    auto graph = std::dynamic_pointer_cast<Wisteria::Graphs::Graph2D>(item);
+                    if (graph != nullptr)
+                        {
+                        childGraphs.push_back(graph);
+                        }
+                    }
+                }
+            }
+        }
+
+    if (childGraphs.size() < 2)
+        {
+        return;
+        }
+
+    // build the common axis
+    const auto axisType = dlg.GetAxisType();
+    auto commonAxis =
+        (axisType == Wisteria::AxisType::BottomXAxis || axisType == Wisteria::AxisType::TopXAxis) ?
+            Wisteria::CommonAxisBuilder::BuildXAxis(canvas, childGraphs, axisType,
+                                                    dlg.GetCommonPerpendicularAxis()) :
+            Wisteria::CommonAxisBuilder::BuildYAxis(canvas, childGraphs, axisType);
+
+    if (commonAxis == nullptr)
+        {
+        return;
+        }
+
+    // apply axis display options from the panel
+    const auto axesMap = dlg.GetAxes();
+    const auto axisIt = axesMap.find(axisType);
+    if (axisIt != axesMap.end())
+        {
+        const auto& edited = axisIt->second;
+        commonAxis->GetAxisLinePen() = edited.GetAxisLinePen();
+        commonAxis->SetCapStyle(edited.GetCapStyle());
+        commonAxis->Reverse(edited.IsReversed());
+        commonAxis->GetGridlinePen() = edited.GetGridlinePen();
+        commonAxis->SetTickMarkDisplay(edited.GetTickMarkDisplay());
+        commonAxis->SetLabelDisplay(edited.GetLabelDisplay());
+        commonAxis->SetNumberDisplay(edited.GetNumberDisplay());
+        commonAxis->SetAxisLabelOrientation(edited.GetAxisLabelOrientation());
+        commonAxis->SetPerpendicularLabelAxisAlignment(edited.GetPerpendicularLabelAxisAlignment());
+        commonAxis->SetPrecision(edited.GetPrecision());
+        commonAxis->SetDoubleSidedAxisLabels(edited.HasDoubleSidedAxisLabels());
+        commonAxis->ShowOuterLabels(edited.IsShowingOuterLabels());
+        commonAxis->StackLabels(edited.IsStackingLabels());
+        commonAxis->SetLabelLineLength(edited.GetLabelLineLength());
+        commonAxis->GetTitle() = edited.GetTitle();
+        commonAxis->GetHeader() = edited.GetHeader();
+        commonAxis->GetFooter() = edited.GetFooter();
+        for (const auto& bracket : edited.GetBrackets())
+            {
+            commonAxis->AddBracket(bracket);
+            }
+        // preserve bracket property templates for round-tripping
+        const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
+        if (!bracketDs.empty())
+            {
+            commonAxis->SetPropertyTemplate(L"brackets.dataset", bracketDs);
+            }
+        const auto bracketLabel = edited.GetPropertyTemplate(L"bracket.label");
+        if (!bracketLabel.empty())
+            {
+            commonAxis->SetPropertyTemplate(L"bracket.label", bracketLabel);
+            }
+        const auto bracketValue = edited.GetPropertyTemplate(L"bracket.value");
+        if (!bracketValue.empty())
+            {
+            commonAxis->SetPropertyTemplate(L"bracket.value", bracketValue);
+            }
+        if (edited.AreBracketsSimplified())
+            {
+            commonAxis->SimplifyBrackets();
+            }
+        }
+
+    // apply page options
+    dlg.ApplyPageOptions(*commonAxis);
+
+    // store property templates for round-tripping
+    wxString childIdsStr;
+    for (size_t idx = 0; idx < childIds.size(); ++idx)
+        {
+        if (idx > 0)
+            {
+            childIdsStr += L",";
+            }
+        childIdsStr += std::to_wstring(childIds[idx]);
+        }
+    commonAxis->SetPropertyTemplate(L"child-ids", childIdsStr);
+    if (dlg.GetCommonPerpendicularAxis())
+        {
+        commonAxis->SetPropertyTemplate(L"common-perpendicular-axis", L"true");
+        }
+
+    commonAxis->FitCanvasRowHeightToContent(true);
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), std::move(commonAxis));
+
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Canvas* canvas,
+                                  const size_t axisRow, const size_t axisCol)
+    {
+    Wisteria::UI::InsertCommonAxisDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Common Axis"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"axis.svg");
+    dlg.LoadFromAxis(axis);
+    dlg.LoadPageOptions(axis);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    // collect child graphs from canvas by ID
+    const auto childIds = dlg.GetChildGraphIds();
+    const auto [rows, cols] = canvas->GetFixedObjectsGridSize();
+    std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> childGraphs;
+    for (const auto childId : childIds)
+        {
+        for (size_t row = 0; row < rows; ++row)
+            {
+            for (size_t col = 0; col < cols; ++col)
+                {
+                auto item = canvas->GetFixedObject(row, col);
+                if (item != nullptr && item->GetId() == childId)
+                    {
+                    auto graph = std::dynamic_pointer_cast<Wisteria::Graphs::Graph2D>(item);
+                    if (graph != nullptr)
+                        {
+                        childGraphs.push_back(graph);
+                        }
+                    }
+                }
+            }
+        }
+
+    if (childGraphs.size() < 2)
+        {
+        return;
+        }
+
+    // rebuild the common axis
+    const auto axisType = dlg.GetAxisType();
+    auto commonAxis =
+        (axisType == Wisteria::AxisType::BottomXAxis || axisType == Wisteria::AxisType::TopXAxis) ?
+            Wisteria::CommonAxisBuilder::BuildXAxis(canvas, childGraphs, axisType,
+                                                    dlg.GetCommonPerpendicularAxis()) :
+            Wisteria::CommonAxisBuilder::BuildYAxis(canvas, childGraphs, axisType);
+
+    if (commonAxis == nullptr)
+        {
+        return;
+        }
+
+    // apply axis display options from the panel
+    const auto axesMap = dlg.GetAxes();
+    const auto axisIt = axesMap.find(axisType);
+    if (axisIt != axesMap.end())
+        {
+        const auto& edited = axisIt->second;
+        commonAxis->GetAxisLinePen() = edited.GetAxisLinePen();
+        commonAxis->SetCapStyle(edited.GetCapStyle());
+        commonAxis->Reverse(edited.IsReversed());
+        commonAxis->GetGridlinePen() = edited.GetGridlinePen();
+        commonAxis->SetTickMarkDisplay(edited.GetTickMarkDisplay());
+        commonAxis->SetLabelDisplay(edited.GetLabelDisplay());
+        commonAxis->SetNumberDisplay(edited.GetNumberDisplay());
+        commonAxis->SetAxisLabelOrientation(edited.GetAxisLabelOrientation());
+        commonAxis->SetPerpendicularLabelAxisAlignment(edited.GetPerpendicularLabelAxisAlignment());
+        commonAxis->SetPrecision(edited.GetPrecision());
+        commonAxis->SetDoubleSidedAxisLabels(edited.HasDoubleSidedAxisLabels());
+        commonAxis->ShowOuterLabels(edited.IsShowingOuterLabels());
+        commonAxis->StackLabels(edited.IsStackingLabels());
+        commonAxis->SetLabelLineLength(edited.GetLabelLineLength());
+        commonAxis->GetTitle() = edited.GetTitle();
+        commonAxis->GetHeader() = edited.GetHeader();
+        commonAxis->GetFooter() = edited.GetFooter();
+        for (const auto& bracket : edited.GetBrackets())
+            {
+            commonAxis->AddBracket(bracket);
+            }
+        // preserve bracket property templates for round-tripping
+        const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
+        if (!bracketDs.empty())
+            {
+            commonAxis->SetPropertyTemplate(L"brackets.dataset", bracketDs);
+            }
+        const auto bracketLabel = edited.GetPropertyTemplate(L"bracket.label");
+        if (!bracketLabel.empty())
+            {
+            commonAxis->SetPropertyTemplate(L"bracket.label", bracketLabel);
+            }
+        const auto bracketValue = edited.GetPropertyTemplate(L"bracket.value");
+        if (!bracketValue.empty())
+            {
+            commonAxis->SetPropertyTemplate(L"bracket.value", bracketValue);
+            }
+        if (edited.AreBracketsSimplified())
+            {
+            commonAxis->SimplifyBrackets();
+            }
+        }
+
+    // apply page options
+    dlg.ApplyPageOptions(*commonAxis);
+
+    // store property templates for round-tripping
+    wxString childIdsStr;
+    for (size_t idx = 0; idx < childIds.size(); ++idx)
+        {
+        if (idx > 0)
+            {
+            childIdsStr += L",";
+            }
+        childIdsStr += std::to_wstring(childIds[idx]);
+        }
+    commonAxis->SetPropertyTemplate(L"child-ids", childIdsStr);
+    if (dlg.GetCommonPerpendicularAxis())
+        {
+        commonAxis->SetPropertyTemplate(L"common-perpendicular-axis", L"true");
+        }
+
+    commonAxis->FitCanvasRowHeightToContent(true);
+    canvas->SetFixedObject(axisRow, axisCol, std::move(commonAxis));
 
     UpdateCanvas(canvas);
 

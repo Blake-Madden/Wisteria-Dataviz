@@ -308,6 +308,15 @@ namespace Wisteria::UI
                 (e.g., heat maps, waffle charts, word clouds).*/
         void CreateAxisOptionsPage();
 
+        /// @brief Returns the suggested dataset name for dataset-driven brackets.
+        /// @details Subclasses can override to pre-select the dataset.
+        /// @returns The dataset name hint, or empty string for no hint.
+        [[nodiscard]]
+        virtual wxString GetBracketDatasetHint() const
+            {
+            return {};
+            }
+
         /// @brief Returns the suggested label column name for dataset-driven brackets.
         /// @details Subclasses can override to pre-select the group variable.
         /// @returns The column name hint, or empty string for no hint.

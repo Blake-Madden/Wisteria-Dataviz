@@ -212,11 +212,12 @@ constexpr wxWindowID ID_SAVE_PROJECT_AS{ wxID_HIGHEST + 41 };
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };
 constexpr wxWindowID ID_DELETE_ITEM{ wxID_HIGHEST + 40 };
 
-// Objects (labels, images, shapes)
+// Objects (labels, images, shapes, common axes)
 constexpr wxWindowID ID_NEW_LABEL{ wxID_HIGHEST + 42 };
 constexpr wxWindowID ID_OBJECTS_BUTTONBAR{ wxID_HIGHEST + 43 };
 constexpr wxWindowID ID_NEW_IMAGE{ wxID_HIGHEST + 44 };
 constexpr wxWindowID ID_NEW_SHAPE{ wxID_HIGHEST + 45 };
+constexpr wxWindowID ID_NEW_COMMON_AXIS{ wxID_HIGHEST + 55 };
 
 // Multi-series graphs
 constexpr wxWindowID ID_NEW_MULTI_SERIES_LINEPLOT{ wxID_HIGHEST + 46 };

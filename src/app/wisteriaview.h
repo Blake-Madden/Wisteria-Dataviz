@@ -140,6 +140,9 @@ class WisteriaView final : public wxView
                    size_t shapeRow, size_t shapeCol) const;
     void EditFillableShape(const Wisteria::GraphItems::FillableShape& shape,
                            Wisteria::Canvas* canvas, size_t shapeRow, size_t shapeCol) const;
+    void OnInsertCommonAxis(wxCommandEvent& event);
+    void EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Canvas* canvas, size_t axisRow,
+                        size_t axisCol);
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);

@@ -340,8 +340,6 @@ namespace Wisteria::UI
         row.m_operatorChoice->SetSelection(0);
         row.m_valuesCtrl = new wxComboBox(m_filterBox->GetStaticBox(), wxID_ANY, wxString{},
                                           wxDefaultPosition, wxDefaultSize, 0, nullptr);
-        row.m_valuesCtrl->SetToolTip(_(L"Values to filter on, comma-separated. "
-                                       "Multiple values are OR'd within this criterion."));
 
         // populate column choices from the current dataset
         const auto dataset = GetSelectedDataset();

@@ -81,6 +81,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/insertcandlestickplotdlg.cpp
     src/ui/dialogs/insertcatbarchartdlg.cpp
     src/ui/dialogs/insertchernoffdlg.cpp
+    src/ui/dialogs/insertcommonaxisdlg.cpp
     src/ui/dialogs/insertganttchartdlg.cpp
     src/ui/dialogs/insertgraphdlg.cpp
     src/ui/dialogs/insertheatmapdlg.cpp

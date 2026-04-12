@@ -810,6 +810,7 @@ namespace Wisteria::GraphItems
         // and client may not want that to be copied from axis to axis
         m_axisLabels = that.m_axisLabels;
         m_customAxisLabels = that.m_customAxisLabels;
+        m_customLabelsAreUserOverride = that.m_customLabelsAreUserOverride;
 
         m_tickMarks = that.m_tickMarks;
         m_customTickMarks = that.m_customTickMarks;

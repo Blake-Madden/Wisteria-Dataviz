@@ -1343,9 +1343,12 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
         tmpl += wxString::Format(L", \"label-length\": %zu", axis->GetLabelLineLength());
         }
 
-    // custom-labels
+    // custom-labels: only serialize when they are a user override (set in
+    // JSON or the label editor). Dataset-derived labels, which flow in via
+    // CommonAxisBuilder copying from a child, are rebuilt on load and would
+    // go stale if persisted.
     const auto& customLabels = axis->GetCustomLabels();
-    if (!customLabels.empty())
+    if (axis->AreCustomLabelsUserOverride() && !customLabels.empty())
         {
         tmpl += L", \"custom-labels\": [";
         bool first = true;
