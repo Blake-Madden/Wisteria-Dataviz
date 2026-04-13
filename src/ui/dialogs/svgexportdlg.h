@@ -87,6 +87,13 @@ namespace Wisteria::UI
             return m_includeSlideshow;
             }
 
+        /// @returns Whether to include a page shadow.
+        [[nodiscard]]
+        bool IncludePageShadow() const noexcept
+            {
+            return m_includePageShadow;
+            }
+
         /// @returns The selected theme color.
         [[nodiscard]]
         wxColour GetThemeColor() const noexcept
@@ -132,6 +139,7 @@ namespace Wisteria::UI
         bool m_includeLayoutToggle{ true };
         bool m_includeDarkModeToggle{ true };
         bool m_includeSlideshow{ true };
+        bool m_includePageShadow{ true };
         wxColour m_themeColor{ 103, 58, 183 };
         int m_horizontalGap{ 25 };
 

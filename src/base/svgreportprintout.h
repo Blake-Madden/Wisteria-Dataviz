@@ -36,6 +36,8 @@ namespace Wisteria
         bool m_includeDarkModeToggle{ true };
         /// @brief Whether to include slideshow navigation (arrow keys + prev/next buttons).
         bool m_includeSlideshow{ true };
+        /// @brief Whether to include a subtle page shadow.
+        bool m_includePageShadow{ true };
         /// @brief The background color for the overlay buttons and effects.
         wxColour m_themeColor{ 103, 58, 183 };
         /// @brief The horizontal gap (in pixels) between rows of pages.
@@ -47,7 +49,7 @@ namespace Wisteria
         bool HasInteractiveFeatures() const noexcept
             {
             return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle ||
-                   m_includeDarkModeToggle || m_includeSlideshow;
+                   m_includeDarkModeToggle || m_includeSlideshow || m_includePageShadow;
             }
 
         /// @returns @c true if any floating UI overlay (buttons, progress bar) is enabled.
@@ -89,6 +91,13 @@ namespace Wisteria
         SVGReportOptions& Slideshow(bool include)
             {
             m_includeSlideshow = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables the page shadow.
+        SVGReportOptions& PageShadow(bool include)
+            {
+            m_includePageShadow = include;
             return *this;
             }
 

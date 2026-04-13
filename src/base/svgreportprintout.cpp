@@ -205,6 +205,10 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         {
         header += L"<style type=\"text/css\">\n"
                   "  <![CDATA[\n";
+        if (options.m_includePageShadow)
+            {
+            header += L"    .page { filter: drop-shadow(6px 6px 8px rgba(0,0,0,0.5)); }\n";
+            }
         if (options.m_includeTransitions)
             {
             header += L"    .page { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }\n";

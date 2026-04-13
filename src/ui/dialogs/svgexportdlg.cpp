@@ -107,6 +107,11 @@ namespace Wisteria::UI
         transitionsCheck->SetValidator(wxGenericValidator{ &m_includeTransitions });
         featuresSizer->Add(transitionsCheck, wxSizerFlags{}.Border());
 
+        auto* shadowCheck =
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Page shadow"));
+        shadowCheck->SetValidator(wxGenericValidator{ &m_includePageShadow });
+        featuresSizer->Add(shadowCheck, wxSizerFlags{}.Border());
+
         auto* highlightingCheck =
             new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Hover highlighting"));
         highlightingCheck->SetValidator(wxGenericValidator{ &m_includeHighlighting });
