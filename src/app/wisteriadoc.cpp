@@ -166,6 +166,10 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
                   L"\"subsets\": [], \"pivots\": [], \"merges\": []}";
         auto dsNode = wxSimpleJSON::Create(dsTmpl);
 
+        // look up transform options once; used both for import options (to reverse-map
+        // post-rename column names to original file names) and for transform serialization
+        const auto txIt = transformOpts.find(dsName);
+
             {
             const auto& opts = optIt->second;
 
@@ -193,11 +197,14 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
                     }
                 }
 
-            SaveDatasetImportOptions(dsNode, opts.m_columnPreviewInfo, opts.m_importInfo);
+            SaveDatasetImportOptions(
+                dsNode, opts.m_columnPreviewInfo, opts.m_importInfo,
+                (txIt != transformOpts.cend()) ?
+                    txIt->second.m_columnRenames :
+                    std::vector<Wisteria::ReportBuilder::DatasetColumnRename>{});
             }
 
         // transform options and formulas
-        const auto txIt = transformOpts.find(dsName);
         if (txIt != transformOpts.cend())
             {
             SaveTransformOptions(dsNode, txIt->second);
@@ -1486,9 +1493,23 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
 //-------------------------------------------
 void WisteriaDoc::SaveDatasetImportOptions(
     const wxSimpleJSON::Ptr_t& dsNode, const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
-    const Wisteria::Data::ImportInfo& info)
+    const Wisteria::Data::ImportInfo& info,
+    const std::vector<Wisteria::ReportBuilder::DatasetColumnRename>& columnRenames)
     {
     using CIT = Wisteria::Data::Dataset::ColumnImportType;
+
+    // returns the original (pre-rename) name for a column that may have been renamed
+    const auto originalColName = [&columnRenames](const wxString& currentName) -> wxString
+    {
+        for (const auto& rename : columnRenames)
+            {
+            if (!rename.m_name.empty() && currentName.CmpNoCase(rename.m_newName) == 0)
+                {
+                return rename.m_name;
+                }
+            }
+        return currentName;
+    };
 
     // import settings
     if (info.GetSkipRows() > 0)
@@ -1533,7 +1554,7 @@ void WisteriaDoc::SaveDatasetImportOptions(
         {
         if (!col.m_excluded && col.m_type == CIT::Numeric)
             {
-            contCols.Add(col.m_name);
+            contCols.Add(originalColName(col.m_name));
             }
         }
     if (!contCols.empty())
@@ -1553,10 +1574,11 @@ void WisteriaDoc::SaveDatasetImportOptions(
             col.m_type == CIT::DichotomousString || col.m_type == CIT::DichotomousDiscrete)
             {
             auto catObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
-            catObj->Add(L"name", col.m_name);
+            const auto origCatName = originalColName(col.m_name);
+            catObj->Add(L"name", origCatName);
             const auto catIt = std::find_if(
                 info.GetCategoricalColumns().cbegin(), info.GetCategoricalColumns().cend(),
-                [&col](const auto& ci) { return ci.m_columnName == col.m_name; });
+                [&origCatName](const auto& ci) { return ci.m_columnName == origCatName; });
             if (catIt != info.GetCategoricalColumns().cend() &&
                 catIt->m_importMethod == Wisteria::Data::CategoricalImportMethod::ReadAsIntegers)
                 {
@@ -1573,10 +1595,11 @@ void WisteriaDoc::SaveDatasetImportOptions(
         if (!col.m_excluded && col.m_type == CIT::Date)
             {
             auto dateObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
-            dateObj->Add(L"name", col.m_name);
+            const auto origDateName = originalColName(col.m_name);
+            dateObj->Add(L"name", origDateName);
             for (const auto& di : info.GetDateColumns())
                 {
-                if (di.m_columnName == col.m_name)
+                if (di.m_columnName == origDateName)
                     {
                     switch (di.m_importMethod)
                         {
@@ -1617,7 +1640,7 @@ void WisteriaDoc::SaveDatasetImportOptions(
         {
         if (!col.m_excluded)
             {
-            colOrder.Add(col.m_name);
+            colOrder.Add(originalColName(col.m_name));
             }
         }
     if (!colOrder.empty())

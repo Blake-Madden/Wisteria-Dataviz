@@ -74,9 +74,11 @@ class WisteriaDoc final : public wxDocument
     wxSimpleJSON::Ptr_t SaveGraphByType(const Wisteria::Graphs::Graph2D* graph,
                                         const Wisteria::Canvas* canvas) const;
 
-    static void SaveDatasetImportOptions(const wxSimpleJSON::Ptr_t& dsNode,
-                                         const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
-                                         const Wisteria::Data::ImportInfo& info);
+    static void SaveDatasetImportOptions(
+        const wxSimpleJSON::Ptr_t& dsNode,
+        const Wisteria::Data::Dataset::ColumnPreviewInfo& colInfo,
+        const Wisteria::Data::ImportInfo& info,
+        const std::vector<Wisteria::ReportBuilder::DatasetColumnRename>& columnRenames = {});
     static void
     SaveTransformOptions(const wxSimpleJSON::Ptr_t& dsNode,
                          const Wisteria::ReportBuilder::DatasetTransformOptions& txOpts);
