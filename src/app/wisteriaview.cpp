@@ -650,6 +650,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
                                               .Highlighting(sizeDlg.IncludeHighlighting())
                                               .LayoutToggle(sizeDlg.IncludeLayoutToggle())
                                               .DarkModeToggle(sizeDlg.IncludeDarkModeToggle())
+                                              .Slideshow(sizeDlg.IncludeSlideshow())
                                               .ButtonColor(sizeDlg.GetButtonColor())
                                               .HorizontalGap(sizeDlg.GetHorizontalGap()));
     }

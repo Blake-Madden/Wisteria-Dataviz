@@ -27,13 +27,15 @@ namespace Wisteria
         /// @brief The file path to save the SVG to.
         wxString m_filePath;
         /// @brief Whether to include smooth transitions (sliding pages).
-        bool m_includeTransitions{ false };
+        bool m_includeTransitions{ true };
         /// @brief Whether to include interactive highlighting on hover.
-        bool m_includeHighlighting{ false };
+        bool m_includeHighlighting{ true };
         /// @brief Whether to include a floating layout toggle (stacked vs duplex).
-        bool m_includeLayoutToggle{ false };
+        bool m_includeLayoutToggle{ true };
         /// @brief Whether to include a floating dark-mode toggle.
-        bool m_includeDarkModeToggle{ false };
+        bool m_includeDarkModeToggle{ true };
+        /// @brief Whether to include slideshow navigation (arrow keys + prev/next buttons).
+        bool m_includeSlideshow{ true };
         /// @brief The background color for the layout toggle button.
         wxColour m_buttonColor{ 103, 58, 183 };
         /// @brief The horizontal gap (in pixels) between rows of pages.
@@ -45,7 +47,7 @@ namespace Wisteria
         bool HasInteractiveFeatures() const noexcept
             {
             return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle ||
-                   m_includeDarkModeToggle;
+                   m_includeDarkModeToggle || m_includeSlideshow;
             }
 
         /// @brief Enables/disables smooth transitions.
@@ -73,6 +75,13 @@ namespace Wisteria
         SVGReportOptions& DarkModeToggle(bool include)
             {
             m_includeDarkModeToggle = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables slideshow navigation.
+        SVGReportOptions& Slideshow(bool include)
+            {
+            m_includeSlideshow = include;
             return *this;
             }
 

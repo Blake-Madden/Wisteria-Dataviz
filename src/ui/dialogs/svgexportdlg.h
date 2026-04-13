@@ -80,6 +80,13 @@ namespace Wisteria::UI
             return m_includeDarkModeToggle;
             }
 
+        /// @returns Whether to include slideshow navigation.
+        [[nodiscard]]
+        bool IncludeSlideshow() const noexcept
+            {
+            return m_includeSlideshow;
+            }
+
         /// @returns The selected button color.
         [[nodiscard]]
         wxColour GetButtonColor() const noexcept
@@ -124,6 +131,7 @@ namespace Wisteria::UI
         bool m_includeHighlighting{ true };
         bool m_includeLayoutToggle{ true };
         bool m_includeDarkModeToggle{ true };
+        bool m_includeSlideshow{ true };
         wxColour m_buttonColor{ 103, 58, 183 };
         int m_horizontalGap{ 25 };
 

@@ -73,7 +73,25 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                           "      filter: brightness(1.2); cursor: pointer; \n"
                           "    }\n";
             }
-        const bool hasUILayer = options.m_includeLayoutToggle || options.m_includeDarkModeToggle;
+        if (options.m_includeSlideshow)
+            {
+            svgContent += wxString::Format(
+                L"    @keyframes page-arrive {\n"
+                "      0%%   { filter: drop-shadow(0 0 0px rgba(%d,%d,%d,0)); }\n"
+                "      35%%  { filter: drop-shadow(0 0 20px rgba(%d,%d,%d,0.6)); }\n"
+                "      100%% { filter: drop-shadow(0 0 0px rgba(%d,%d,%d,0)); }\n"
+                "    }\n"
+                "    .page.active-page { animation: page-arrive 0.8s ease-out forwards; }\n"
+                "    #page-indicator { transition: opacity 0.15s ease; }\n",
+                options.m_buttonColor.Red(), options.m_buttonColor.Green(),
+                options.m_buttonColor.Blue(), options.m_buttonColor.Red(),
+                options.m_buttonColor.Green(), options.m_buttonColor.Blue(),
+                options.m_buttonColor.Red(), options.m_buttonColor.Green(),
+                options.m_buttonColor.Blue());
+            }
+
+        const bool hasUILayer = options.m_includeLayoutToggle || options.m_includeDarkModeToggle ||
+                                options.m_includeSlideshow;
         if (hasUILayer)
             {
             const wxString btnHex = options.m_buttonColor.GetAsString(wxC2S_HTML_SYNTAX);
@@ -210,6 +228,68 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                           "  }\n";
             }
 
+        if (options.m_includeSlideshow)
+            {
+            svgContent +=
+                L"  let currentPage = 0;\n"
+                "  function goToPage(i) {\n"
+                "    const pages = document.querySelectorAll('.page');\n"
+                "    if (pages.length === 0) return;\n"
+                "    i = Math.max(0, Math.min(i, pages.length - 1));\n"
+                "    currentPage = i;\n"
+                "    const svg = document.querySelector('svg');\n"
+                "    const rect = svg.getBoundingClientRect();\n"
+                "    const viewBox = svg.viewBox.baseVal;\n"
+                "    if (rect.height === 0 || viewBox.height === 0) return;\n"
+                "    const scaleY = rect.height / viewBox.height;\n"
+                "    const page = pages[i];\n"
+                "    const xfrm = page.getAttribute('transform') || '';\n"
+                "    const match = "
+                "xfrm.match(/translate\\(\\s*[\\d.]+\\s*,\\s*([\\d.]+)\\s*\\)/);\n"
+                "    const pageY = match ? parseFloat(match[1]) : 0;\n"
+                "    const svgTop = rect.top + window.scrollY;\n"
+                "    window.scrollTo({ top: svgTop + pageY * scaleY, behavior: 'smooth' });\n"
+                "    // arrival glow: remove class then re-add after two animation frames\n"
+                "    pages.forEach(p => p.classList.remove('active-page'));\n"
+                "    requestAnimationFrame(() => requestAnimationFrame(() => {\n"
+                "      page.classList.add('active-page');\n"
+                "      page.addEventListener('animationend',\n"
+                "        () => page.classList.remove('active-page'), { once: true });\n"
+                "    }));\n"
+                "    // page indicator cross-fade\n"
+                "    const ind = document.getElementById('page-indicator');\n"
+                "    if (ind) {\n"
+                "      ind.style.opacity = '0';\n"
+                "      setTimeout(() => {\n"
+                "        ind.textContent = `Page ${i + 1} / ${pages.length}`;\n"
+                "        ind.style.opacity = '1';\n"
+                "      }, 150);\n"
+                "    }\n"
+                "    // dim boundary buttons\n"
+                "    const pb = document.getElementById('prev-page-btn');\n"
+                "    const nb = document.getElementById('next-page-btn');\n"
+                "    if (pb) pb.style.opacity = i === 0 ? '0.35' : '1';\n"
+                "    if (nb) nb.style.opacity = i === pages.length - 1 ? '0.35' : '1';\n"
+                "  }\n"
+                "  function prevPage() { goToPage(currentPage - 1); }\n"
+                "  function nextPage() { goToPage(currentPage + 1); }\n"
+                "  window.addEventListener('keydown', function(e) {\n"
+                "    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp')\n"
+                "      { e.preventDefault(); prevPage(); }\n"
+                "    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === "
+                "'PageDown')\n"
+                "      { e.preventDefault(); nextPage(); }\n"
+                "  });\n"
+                "  window.addEventListener('load', function() {\n"
+                "    const pages = document.querySelectorAll('.page');\n"
+                "    const ind = document.getElementById('page-indicator');\n"
+                "    if (ind && pages.length > 0)\n"
+                "      ind.textContent = `Page 1 / ${pages.length}`;\n"
+                "    const nb = document.getElementById('next-page-btn');\n"
+                "    if (nb) nb.style.opacity = pages.length <= 1 ? '0.35' : '1';\n"
+                "  });\n";
+            }
+
         svgContent += L"]]></script>\n";
         }
 
@@ -336,6 +416,29 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "  <text id=\"darkmode-btn-text\" class=\"btn-text\" x=\"%d\" y=\"29\">"
                 "\U0001F319</text>\n",
                 darkModeX, _(L"Toggle dark mode"), darkModeX + 15);
+            }
+
+        if (options.m_includeSlideshow)
+            {
+            // place below whichever rows are already present:
+            //   layout toggle adds rows at y=10 and y=50 -> slideshow at y=90
+            //   dark mode only adds row at y=10              -> slideshow at y=50
+            //   slideshow alone                              -> y=10
+            const int slideshowY =
+                options.m_includeLayoutToggle ? 90 : (options.m_includeDarkModeToggle ? 50 : 10);
+            svgContent += wxString::Format(
+                L"  <rect id=\"prev-page-btn\" class=\"btn\" x=\"10\" y=\"%d\" width=\"30\" "
+                "height=\"30\" rx=\"15\" onclick=\"prevPage()\" style=\"opacity:0.35\">"
+                "<title>%s</title></rect>\n"
+                "  <text class=\"btn-text\" x=\"25\" y=\"%d\">\u25C0</text>\n"
+                "  <rect class=\"btn\" x=\"50\" y=\"%d\" width=\"120\" height=\"30\" rx=\"15\" />\n"
+                "  <text id=\"page-indicator\" class=\"btn-text\" x=\"110\" y=\"%d\">"
+                "Page 1 / 1</text>\n"
+                "  <rect id=\"next-page-btn\" class=\"btn\" x=\"180\" y=\"%d\" width=\"30\" "
+                "height=\"30\" rx=\"15\" onclick=\"nextPage()\"><title>%s</title></rect>\n"
+                "  <text class=\"btn-text\" x=\"195\" y=\"%d\">\u25B6</text>\n",
+                slideshowY, _(L"Go to previous page"), slideshowY + 19, slideshowY, slideshowY + 19,
+                slideshowY, _(L"Go to next page"), slideshowY + 19);
             }
 
         svgContent += L"</g>\n";

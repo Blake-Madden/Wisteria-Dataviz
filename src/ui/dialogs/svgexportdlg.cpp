@@ -97,6 +97,11 @@ namespace Wisteria::UI
         darkModeToggleCheck->SetValidator(wxGenericValidator{ &m_includeDarkModeToggle });
         featuresSizer->Add(darkModeToggleCheck, wxSizerFlags{}.Border());
 
+        auto* slideshowCheck =
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Slideshow navigation"));
+        slideshowCheck->SetValidator(wxGenericValidator{ &m_includeSlideshow });
+        featuresSizer->Add(slideshowCheck, wxSizerFlags{}.Border());
+
         auto* transitionsCheck =
             new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Transitions"));
         transitionsCheck->SetValidator(wxGenericValidator{ &m_includeTransitions });
