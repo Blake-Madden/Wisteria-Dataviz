@@ -2660,7 +2660,11 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         }
     if (!captionStr.empty())
         {
-        graphNode->Add(L"caption", wxSimpleJSON::Create(captionStr));
+        if (!graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)) ||
+            graph->GetPropertyTemplate(L"footnotes").empty())
+            {
+            graphNode->Add(L"caption", wxSimpleJSON::Create(captionStr));
+            }
         }
     if (!axesStr.empty())
         {
@@ -4412,7 +4416,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             const auto cachedJson = graph->GetPropertyTemplate(prop);
             if (!cachedJson.empty())
                 {
-                node->Add(wxString(prop), wxSimpleJSON::Create(cachedJson));
+                node->Add(wxString{ prop }, wxSimpleJSON::Create(cachedJson));
                 }
             }
         // transpose (cached as "true" string)

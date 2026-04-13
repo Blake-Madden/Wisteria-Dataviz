@@ -8,7 +8,9 @@
 
 #include "inserttabledlg.h"
 #include "../../graphs/table.h"
+#include "../../wxSimpleJSON/src/wxSimpleJSON.h"
 #include "variableselectdlg.h"
+#include <wx/gbsizer.h>
 #include <wx/spinctrl.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>
@@ -67,6 +69,12 @@ namespace Wisteria::UI
 
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
+        // two-column layout for everything below the dataset row
+        auto* twoColSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
+
+        // left column: columns, header/layout, appearance, sizing
+        auto* leftColSizer = new wxBoxSizer(wxVERTICAL);
+
         // columns static box
         auto* columnBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Columns Selection"));
 
@@ -108,7 +116,7 @@ namespace Wisteria::UI
         varsLabelSizer->Add(m_varsLabel, wxSizerFlags{}.CenterVertical());
         columnBox->Add(varsLabelSizer, wxSizerFlags{}.Border());
 
-        optionsSizer->Add(columnBox, wxSizerFlags{}.Border());
+        leftColSizer->Add(columnBox, wxSizerFlags{}.Border(wxBOTTOM).Expand());
 
         // set initial enabled states
         m_varPatternCtrl->Disable();
@@ -136,7 +144,7 @@ namespace Wisteria::UI
                                       wxGenericValidator(&m_boldFirstColumn)),
                        wxSizerFlags{}.Border());
 
-        optionsSizer->Add(headerBox, wxSizerFlags{}.Border());
+        leftColSizer->Add(headerBox, wxSizerFlags{}.Border(wxBOTTOM).Expand());
 
         // appearance
         auto* appearBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Appearance"));
@@ -158,7 +166,7 @@ namespace Wisteria::UI
                                       wxGenericValidator(&m_clearTrailingRowFormatting)),
                        wxSizerFlags{}.Border());
 
-        optionsSizer->Add(appearBox, wxSizerFlags{}.Border());
+        leftColSizer->Add(appearBox, wxSizerFlags{}.Border(wxBOTTOM).Expand());
 
         // sizing
         auto* sizeBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Sizing"));
@@ -194,7 +202,40 @@ namespace Wisteria::UI
             }
         sizeBox->Add(minHeightSizer, wxSizerFlags{}.Border());
 
-        optionsSizer->Add(sizeBox, wxSizerFlags{}.Border());
+        leftColSizer->Add(sizeBox, wxSizerFlags{}.Expand());
+
+        twoColSizer->Add(leftColSizer, wxGBPosition(0, 0), wxGBSpan(1, 1),
+                         wxEXPAND | wxLEFT | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
+
+        // right column: footnotes
+        auto* rightColSizer = new wxBoxSizer(wxVERTICAL);
+        auto* footnotesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Footnotes"));
+        m_footnotesListBox = new wxEditableListBox(
+            footnotesBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(250), FromDIP(150) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        footnotesBox->Add(m_footnotesListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        m_footnotesListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                                 [this](wxCommandEvent&) { OnAddFootnote(); });
+        m_footnotesListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                  [this](wxCommandEvent&) { OnEditFootnote(); });
+        m_footnotesListBox->GetDelButton()->Bind(wxEVT_BUTTON,
+                                                 [this](wxCommandEvent&) { OnRemoveFootnote(); });
+        m_footnotesListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                 [this](wxListEvent&) { OnEditFootnote(); });
+
+        rightColSizer->Add(footnotesBox, wxSizerFlags{ 1 }.Expand());
+        rightColSizer->AddStretchSpacer(1);
+
+        twoColSizer->Add(rightColSizer, wxGBPosition(0, 1), wxGBSpan(1, 1),
+                         wxEXPAND | wxRIGHT | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
+
+        twoColSizer->AddGrowableCol(0);
+        twoColSizer->AddGrowableCol(1);
+        twoColSizer->AddGrowableRow(0);
+
+        optionsSizer->Add(twoColSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxRIGHT));
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -528,6 +569,19 @@ namespace Wisteria::UI
                 }
             }
 
+        // restore footnotes
+        const auto footnotesTemplate = table->GetPropertyTemplate(L"footnotes");
+        if (!footnotesTemplate.empty())
+            {
+            m_footnotes.clear();
+            const auto footnotesNode = wxSimpleJSON::Create(footnotesTemplate);
+            for (const auto& ftNode : footnotesNode->AsNodes())
+                {
+                m_footnotes.emplace_back(ftNode->GetProperty(L"value")->AsString(),
+                                         ftNode->GetProperty(L"footnote")->AsString());
+                }
+            }
+
         // restore min width/height proportions
         const auto& minWidth = table->GetMinWidthProportion();
         if (minWidth.has_value())
@@ -545,5 +599,119 @@ namespace Wisteria::UI
         TransferDataToWindow();
         OnVarModeChanged();
         UpdateVariableLabels();
+        RefreshFootnoteList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::RefreshFootnoteList()
+        {
+        wxArrayString strings;
+        strings.reserve(m_footnotes.size());
+        for (const auto& [value, footnote] : m_footnotes)
+            {
+            strings.Add(wxString::Format(L"%s \u2014 %s", value, footnote));
+            }
+        m_footnotesListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnAddFootnote()
+        {
+        wxDialog dlg(this, wxID_ANY, _(L"Add Footnote"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* gridSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        gridSizer->AddGrowableCol(1, 1);
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Value:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* valueCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        gridSizer->Add(valueCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Footnote:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* footnoteCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        gridSizer->Add(footnoteCtrl, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+        dlg.SetMinSize(FromDIP(wxSize{ 320, -1 }));
+        dlg.Fit();
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto value = valueCtrl->GetValue().Trim().Trim(false);
+        const auto footnote = footnoteCtrl->GetValue().Trim().Trim(false);
+        if (value.empty() && footnote.empty())
+            {
+            return;
+            }
+
+        m_footnotes.emplace_back(value, footnote);
+        RefreshFootnoteList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnEditFootnote()
+        {
+        const auto sel = m_footnotesListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                        wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_footnotes.size()))
+            {
+            return;
+            }
+
+        auto& [value, footnote] = m_footnotes[static_cast<size_t>(sel)];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Footnote"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* gridSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        gridSizer->AddGrowableCol(1, 1);
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Value:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* valueCtrl = new wxTextCtrl(&dlg, wxID_ANY, value);
+        gridSizer->Add(valueCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Footnote:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* footnoteCtrl = new wxTextCtrl(&dlg, wxID_ANY, footnote);
+        gridSizer->Add(footnoteCtrl, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+        dlg.SetMinSize(FromDIP(wxSize{ 320, -1 }));
+        dlg.Fit();
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        value = valueCtrl->GetValue().Trim().Trim(false);
+        footnote = footnoteCtrl->GetValue().Trim().Trim(false);
+        RefreshFootnoteList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnRemoveFootnote()
+        {
+        const auto sel = m_footnotesListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                        wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_footnotes.size()))
+            {
+            return;
+            }
+
+        m_footnotes.erase(m_footnotes.begin() + sel);
+        RefreshFootnoteList();
         }
     } // namespace Wisteria::UI

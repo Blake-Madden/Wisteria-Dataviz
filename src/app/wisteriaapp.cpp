@@ -25,7 +25,6 @@ WisteriaArtProvider::WisteriaArtProvider()
                     { L"ID_DATE", L"date.svg" },
                     { L"ID_DICHOTOMOUS_CATEGORICAL", L"dichotomous-categorical.svg" },
                     { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" },
-                    { wxART_NEW, L"wisteria.svg" },
                     { wxART_FILE_OPEN, L"file-open.svg" },
                     { wxART_FILE_SAVE, L"file-save.svg" },
                     { wxART_PRINT, L"print.svg" },
@@ -121,7 +120,7 @@ void WisteriaApp::LoadInterface()
         }
     m_startPage = new wxStartPage(GetMainFrame(), wxID_ANY, mruFiles,
                                   GetResourceManager().GetSVG(L"wisteria.svg"));
-    m_startPage->AddButton(wxArtProvider::GetBitmapBundle(wxART_NEW, wxART_BUTTON),
+    m_startPage->AddButton(GetResourceManager().GetSVG(L"wisteria.svg"),
                            _(L"Create a New Project"));
     m_startPage->AddButton(wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON),
                            _(L"Open a Project"));

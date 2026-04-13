@@ -38,12 +38,14 @@ namespace Wisteria::UI
         selectorSizer->Add(m_axisSelector, wxSizerFlags{ 1 }.Expand());
         axisSizer->Add(selectorSizer, wxSizerFlags{}.Expand().Border());
 
-        auto* gridSizer = new wxGridBagSizer(FromDIP(4), FromDIP(4));
+        auto* gridSizer =
+            new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
 
         // Group 1: Title / Header / Footer
         //------------------
         auto* titleBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Title / Header / Footer"));
-        auto* titleGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* titleGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                              wxSizerFlags::GetDefaultBorder());
         titleGrid->AddGrowableCol(0, 1);
         titleBox->Add(titleGrid, wxSizerFlags{}.Expand().Border());
 
@@ -125,12 +127,14 @@ namespace Wisteria::UI
                             });
         titleGrid->Add(editFooterBtn);
 
-        gridSizer->Add(titleBox, wxGBPosition(0, 0), wxDefaultSpan, wxEXPAND | wxALL, FromDIP(4));
+        gridSizer->Add(titleBox, wxGBPosition(0, 0), wxDefaultSpan, wxEXPAND | wxALL,
+                       wxSizerFlags::GetDefaultBorder());
 
         // Group 2: Axis Line
         //------------------
         auto* lineBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Axis Line"));
-        auto* lineGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* lineGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                             wxSizerFlags::GetDefaultBorder());
         lineGrid->AddGrowableCol(1, 1);
         lineBox->Add(lineGrid, wxSizerFlags{}.Expand().Border());
 
@@ -167,12 +171,14 @@ namespace Wisteria::UI
         m_axisReverseCheck = new wxCheckBox(lineBox->GetStaticBox(), wxID_ANY, _(L"Reverse"));
         lineBox->Add(m_axisReverseCheck, wxSizerFlags{}.Border());
 
-        gridSizer->Add(lineBox, wxGBPosition(1, 0), wxDefaultSpan, wxEXPAND | wxALL, FromDIP(4));
+        gridSizer->Add(lineBox, wxGBPosition(1, 0), wxDefaultSpan, wxEXPAND | wxALL,
+                       wxSizerFlags::GetDefaultBorder());
 
         // Group 3: Gridlines
         //------------------
         auto* gridlineBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Gridlines"));
-        auto* gridlineGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* gridlineGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                                 wxSizerFlags::GetDefaultBorder());
         gridlineGrid->AddGrowableCol(1, 1);
         gridlineBox->Add(gridlineGrid, wxSizerFlags{}.Expand().Border());
 
@@ -200,12 +206,13 @@ namespace Wisteria::UI
         gridlineGrid->Add(m_gridlineStyleChoice, wxSizerFlags{}.Expand());
 
         gridSizer->Add(gridlineBox, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND | wxALL,
-                       FromDIP(4));
+                       wxSizerFlags::GetDefaultBorder());
 
         // Group 4: Tickmarks
         //------------------
         auto* tickBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Tickmarks"));
-        auto* tickGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* tickGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                             wxSizerFlags::GetDefaultBorder());
         tickGrid->AddGrowableCol(1, 1);
         tickBox->Add(tickGrid, wxSizerFlags{}.Expand().Border());
 
@@ -218,12 +225,14 @@ namespace Wisteria::UI
         m_tickmarkDisplayChoice->Append(_(L"No display"));
         tickGrid->Add(m_tickmarkDisplayChoice, wxSizerFlags{}.Expand());
 
-        gridSizer->Add(tickBox, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND | wxALL, FromDIP(4));
+        gridSizer->Add(tickBox, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND | wxALL,
+                       wxSizerFlags::GetDefaultBorder());
 
         // Group 5: Labels
         //------------------
         auto* labelBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Labels"));
-        auto* labelGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* labelGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                              wxSizerFlags::GetDefaultBorder());
         labelGrid->AddGrowableCol(1, 1);
         labelBox->Add(labelGrid, wxSizerFlags{}.Expand().Border());
 
@@ -285,7 +294,8 @@ namespace Wisteria::UI
         m_stackLabelsCheck = new wxCheckBox(labelBox->GetStaticBox(), wxID_ANY, _(L"Stack labels"));
         labelBox->Add(m_stackLabelsCheck, wxSizerFlags{}.Border());
 
-        gridSizer->Add(labelBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALL, FromDIP(4));
+        gridSizer->Add(labelBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALL,
+                       wxSizerFlags::GetDefaultBorder());
 
         // Group 6: Brackets
         //------------------
@@ -315,14 +325,16 @@ namespace Wisteria::UI
         bracketBox->Add(addFromDatasetBtn, wxSizerFlags{}.Border());
 
         gridSizer->Add(bracketBox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
-                       FromDIP(4));
+                       wxSizerFlags::GetDefaultBorder());
 
         // global mirror checkboxes
         m_mirrorXAxisCheck = new wxCheckBox(this, wxID_ANY, _(L"Mirror X axis"));
-        gridSizer->Add(m_mirrorXAxisCheck, wxGBPosition(3, 0), wxDefaultSpan, wxALL, FromDIP(4));
+        gridSizer->Add(m_mirrorXAxisCheck, wxGBPosition(3, 0), wxDefaultSpan, wxALL,
+                       wxSizerFlags::GetDefaultBorder());
 
         m_mirrorYAxisCheck = new wxCheckBox(this, wxID_ANY, _(L"Mirror Y axis"));
-        gridSizer->Add(m_mirrorYAxisCheck, wxGBPosition(3, 1), wxDefaultSpan, wxALL, FromDIP(4));
+        gridSizer->Add(m_mirrorYAxisCheck, wxGBPosition(3, 1), wxDefaultSpan, wxALL,
+                       wxSizerFlags::GetDefaultBorder());
 
         axisSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand());
         }
@@ -679,7 +691,8 @@ namespace Wisteria::UI
 
         wxDialog dlg(this, wxID_ANY, _(L"Add Bracket"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* sizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                          wxSizerFlags::GetDefaultBorder());
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
@@ -809,7 +822,8 @@ namespace Wisteria::UI
 
         wxDialog dlg(this, wxID_ANY, _(L"Edit Bracket"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* sizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                          wxSizerFlags::GetDefaultBorder());
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
@@ -947,7 +961,8 @@ namespace Wisteria::UI
 
         wxDialog dlg(this, wxID_ANY, _(L"Add Brackets from Dataset"), wxDefaultPosition,
                      wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* sizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                          wxSizerFlags::GetDefaultBorder());
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Dataset:")),

@@ -15,6 +15,7 @@
 #include "insertgraphdlg.h"
 #include <vector>
 #include <wx/clrpicker.h>
+#include <wx/editlbox.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -162,6 +163,13 @@ namespace Wisteria::UI
             return m_useMinHeight ? std::optional<double>(m_minHeightPct / 100.0) : std::nullopt;
             }
 
+        /// @returns The footnotes as (value, footnote) pairs.
+        [[nodiscard]]
+        const std::vector<std::pair<wxString, wxString>>& GetFootnotes() const noexcept
+            {
+            return m_footnotes;
+            }
+
         /// @brief Populates all dialog controls from an existing table.
         /// @param graph The table graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -175,6 +183,10 @@ namespace Wisteria::UI
         void OnDatasetChanged();
         void OnVarModeChanged();
         void UpdateVariableLabels();
+        void OnAddFootnote();
+        void OnEditFootnote();
+        void OnRemoveFootnote();
+        void RefreshFootnoteList();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // starts at +2 to avoid collision with
@@ -191,6 +203,7 @@ namespace Wisteria::UI
         wxStaticText* m_varsLabelCaption{ nullptr };
         wxStaticText* m_varsLabel{ nullptr };
         wxColourPickerCtrl* m_altRowColorPicker{ nullptr };
+        wxEditableListBox* m_footnotesListBox{ nullptr };
 
         // DDX data members
         int m_varModeIndex{ 0 };
@@ -210,6 +223,7 @@ namespace Wisteria::UI
 
         std::vector<wxString> m_variableNames;
         std::vector<wxString> m_datasetNames;
+        std::vector<std::pair<wxString, wxString>> m_footnotes;
         };
     } // namespace Wisteria::UI
 

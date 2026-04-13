@@ -366,7 +366,8 @@ namespace Wisteria::UI
             };
 
             const auto iconSize = wxSize{ FromDIP(16), FromDIP(16) };
-            auto* legendSizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(8));
+            auto* legendSizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                                    wxSizerFlags::GetDefaultBorder() * 2);
             for (const auto& [colType, label, artId] : typeLegend)
                 {
                 if (usedTypes.find(colType) == usedTypes.end())

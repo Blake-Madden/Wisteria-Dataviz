@@ -2570,6 +2570,27 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
         table->SetPropertyTemplate(L"ui.bold-first-column",
                                    dlg.GetBoldFirstColumn() ? L"true" : L"false");
 
+        const auto& footnotes = dlg.GetFootnotes();
+        if (!footnotes.empty())
+            {
+            wxString footnotesJson{ L"[" };
+            for (size_t i = 0; i < footnotes.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    footnotesJson += L",";
+                    }
+                footnotesJson += wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
+                                                  footnotes[i].first, footnotes[i].second);
+                }
+            footnotesJson += L"]";
+            table->SetPropertyTemplate(L"footnotes", footnotesJson);
+            for (const auto& [value, footnote] : footnotes)
+                {
+                table->AddFootnote(value, footnote);
+                }
+            }
+
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
@@ -2707,7 +2728,6 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                                   L"row-totals",
                                   L"cell-update",
                                   L"cell-annotations",
-                                  L"footnotes",
                                   L"link-id" })
             {
             const auto cached = graph.GetPropertyTemplate(prop);
@@ -2735,6 +2755,27 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
         if (dlg.GetBoldFirstColumn())
             {
             table->BoldColumn(0);
+            }
+
+        const auto& editFootnotes = dlg.GetFootnotes();
+        if (!editFootnotes.empty())
+            {
+            wxString footnotesJson{ L"[" };
+            for (size_t i = 0; i < editFootnotes.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    footnotesJson += L",";
+                    }
+                footnotesJson += wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
+                                                  editFootnotes[i].first, editFootnotes[i].second);
+                }
+            footnotesJson += L"]";
+            table->SetPropertyTemplate(L"footnotes", footnotesJson);
+            for (const auto& [value, footnote] : editFootnotes)
+                {
+                table->AddFootnote(value, footnote);
+                }
             }
 
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
