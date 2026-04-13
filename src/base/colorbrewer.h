@@ -351,6 +351,17 @@ namespace Wisteria::Colors
                     color.GetLuminance() < math_constants::half);
             }
 
+        /// @brief Determines whether a color is very light
+        ///     (i.e., luminance is > 70% and not heavily translucent).
+        /// @param color The color to review.
+        /// @returns @c true if the color's luminance is > 70%.
+        [[nodiscard]]
+        static bool IsVeryLight(const wxColour& color)
+            {
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsVeryLight().");
+            return (color.IsOk() && color.Alpha() > 32 && color.GetLuminance() > 0.70);
+            }
+
         /// @brief Determines whether a color is light
         ///     (i.e., luminance is >= 50% and not heavily translucent).
         /// @param color The color to review.

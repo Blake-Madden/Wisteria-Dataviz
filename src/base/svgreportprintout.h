@@ -133,6 +133,12 @@ namespace Wisteria
         [[nodiscard]]
         static wxSize GetPaperSizeDIPs(const Canvas* canvas);
 
+        /// @brief Generates CSS dark-mode fill replacement rules for very light colors.
+        /// @param svgContent The SVG content to analyze.
+        /// @returns A string of CSS rules for dark-mode mapping.
+        [[nodiscard]]
+        static wxString GenerateDarkModeFillReplacements(std::wstring_view svgContent);
+
       private:
         /// @brief Strips the outer @c \<svg\> and @c \</svg\> tags from an SVG string,
         ///     returning just the body content.
