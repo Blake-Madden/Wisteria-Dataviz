@@ -12,8 +12,10 @@
 #ifndef INSERT_LRROADMAP_DIALOG_H
 #define INSERT_LRROADMAP_DIALOG_H
 
+#include "../../graphs/roadmap.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/clrpicker.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -28,7 +30,11 @@ namespace Wisteria::UI
             - A choice for which predictors to include (all, positive, negative).
             - A spin control for the p-value threshold.
             - A checkbox for adding the default explanatory caption.
-            - Legend placement.*/
+            - Legend placement.
+            - A color picker for the road color.
+            - A choice for the lane separator style.
+            - A choice for the road stop theme.
+            - A choice for the marker label display.*/
     class InsertLRRoadmapDlg final : public InsertGraphDlg
         {
       public:
@@ -111,6 +117,34 @@ namespace Wisteria::UI
             return m_addDefaultCaption;
             }
 
+        /// @returns The road pen color.
+        [[nodiscard]]
+        const wxColour& GetRoadColor() const noexcept
+            {
+            return m_roadColor;
+            }
+
+        /// @returns The lane separator style.
+        [[nodiscard]]
+        Graphs::Roadmap::LaneSeparatorStyle GetLaneSeparatorStyle() const noexcept
+            {
+            return static_cast<Graphs::Roadmap::LaneSeparatorStyle>(m_laneSeparatorStyle);
+            }
+
+        /// @returns The road stop theme.
+        [[nodiscard]]
+        Graphs::Roadmap::RoadStopTheme GetRoadStopTheme() const noexcept
+            {
+            return static_cast<Graphs::Roadmap::RoadStopTheme>(m_roadStopTheme);
+            }
+
+        /// @returns The marker label display mode.
+        [[nodiscard]]
+        Graphs::Roadmap::MarkerLabelDisplay GetMarkerLabelDisplay() const noexcept
+            {
+            return static_cast<Graphs::Roadmap::MarkerLabelDisplay>(m_markerLabelDisplay);
+            }
+
         /// @brief Populates all dialog controls from an existing LR Roadmap.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -139,6 +173,10 @@ namespace Wisteria::UI
         wxString m_dvName;
         int m_predictorsFilter{ 0 };
         bool m_addDefaultCaption{ true };
+        wxColour m_roadColor{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        int m_laneSeparatorStyle{ 0 };
+        int m_roadStopTheme{ 0 };
+        int m_markerLabelDisplay{ 1 };
 
         wxString m_predictorVariable;
         wxString m_coefficientVariable;
@@ -146,6 +184,7 @@ namespace Wisteria::UI
 
         // controls without DDX support
         wxSpinCtrlDouble* m_pLevelSpin{ nullptr };
+        wxColourPickerCtrl* m_roadColorPicker{ nullptr };
 
         std::vector<wxString> m_datasetNames;
         };

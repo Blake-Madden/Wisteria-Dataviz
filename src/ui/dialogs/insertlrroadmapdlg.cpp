@@ -102,7 +102,7 @@ namespace Wisteria::UI
 
         // dependent variable name
         auto* dvSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        dvSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dependent variable:")),
+        dvSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dependent variable description:")),
                      wxSizerFlags{}.CenterVertical());
         dvSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                     wxDefaultSize, 0, wxTextValidator(wxFILTER_NONE, &m_dvName)));
@@ -123,6 +123,21 @@ namespace Wisteria::UI
             }
         optionsSizer->Add(filterSizer, wxSizerFlags{}.Border());
 
+        // marker labels
+        auto* markerSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        markerSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Marker labels:")),
+                         wxSizerFlags{}.CenterVertical());
+            {
+            auto* labelChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_markerLabelDisplay));
+            labelChoice->Append(_(L"Name only"));
+            labelChoice->Append(_(L"Name and value"));
+            labelChoice->Append(_(L"Name and absolute value"));
+            markerSizer->Add(labelChoice);
+            }
+        optionsSizer->Add(markerSizer, wxSizerFlags{}.Border());
+
         // p-value threshold
         auto* pLevelSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         pLevelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"p-value threshold:")),
@@ -131,6 +146,42 @@ namespace Wisteria::UI
                                             wxDefaultSize, wxSP_ARROW_KEYS, 0.001, 1.0, 0.05, 0.01);
         pLevelSizer->Add(m_pLevelSpin);
         optionsSizer->Add(pLevelSizer, wxSizerFlags{}.Border());
+
+        // road appearance
+        auto* roadBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Road"));
+        auto* appearSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
+        appearSizer->Add(new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Road color:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_roadColorPicker = new wxColourPickerCtrl(roadBox->GetStaticBox(), wxID_ANY, m_roadColor);
+        appearSizer->Add(m_roadColorPicker);
+
+        appearSizer->Add(new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Lane separator:")),
+                         wxSizerFlags{}.CenterVertical());
+            {
+            auto* sepChoice =
+                new wxChoice(roadBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                             nullptr, 0, wxGenericValidator(&m_laneSeparatorStyle));
+            sepChoice->Append(_(L"Single line"));
+            sepChoice->Append(_(L"Double line"));
+            sepChoice->Append(_(L"None"));
+            appearSizer->Add(sepChoice);
+            }
+
+        appearSizer->Add(
+            new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Road stop theme:")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* themeChoice =
+                new wxChoice(roadBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                             nullptr, 0, wxGenericValidator(&m_roadStopTheme));
+            themeChoice->Append(_(L"Location markers"));
+            themeChoice->Append(_(L"Road signs"));
+            appearSizer->Add(themeChoice);
+            }
+
+        roadBox->Add(appearSizer, wxSizerFlags{}.Border());
+        optionsSizer->Add(roadBox, wxSizerFlags{}.Border());
 
         // default caption
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Add explanatory caption"),
@@ -151,6 +202,9 @@ namespace Wisteria::UI
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
+
+        m_roadColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, [this](wxColourPickerEvent& evt)
+                                { m_roadColor = evt.GetColour(); });
         }
 
     //-------------------------------------------
@@ -394,6 +448,13 @@ namespace Wisteria::UI
             }
 
         m_addDefaultCaption = roadmap->HasDefaultCaption();
+
+        // road appearance
+        m_roadColor = roadmap->GetRoadPen().GetColour();
+        m_roadColorPicker->SetColour(m_roadColor);
+        m_laneSeparatorStyle = static_cast<int>(roadmap->GetLaneSeparatorStyle());
+        m_roadStopTheme = static_cast<int>(roadmap->GetRoadStopTheme());
+        m_markerLabelDisplay = static_cast<int>(roadmap->GetMarkerLabelDisplay());
 
         TransferDataToWindow();
         }

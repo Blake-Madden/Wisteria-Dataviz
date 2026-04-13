@@ -12,8 +12,10 @@
 #ifndef INSERT_PROCONROADMAP_DIALOG_H
 #define INSERT_PROCONROADMAP_DIALOG_H
 
+#include "../../graphs/roadmap.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
@@ -28,7 +30,11 @@ namespace Wisteria::UI
             - A spin control for the minimum count threshold.
             - Text controls for positive and negative legend labels.
             - A checkbox for adding the default explanatory caption.
-            - Legend placement.*/
+            - Legend placement.
+            - A color picker for the road color.
+            - A choice for the lane separator style.
+            - A choice for the road stop theme.
+            - A choice for the marker label display.*/
     class InsertProConRoadmapDlg final : public InsertGraphDlg
         {
       public:
@@ -43,7 +49,7 @@ namespace Wisteria::UI
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.*/
         InsertProConRoadmapDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
-                               const wxString& caption = _(L"Insert Pro && Con Roadmap"),
+                               const wxString& caption = _(L"Insert Pro & Con Roadmap"),
                                wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
                                const wxSize& size = wxDefaultSize,
                                long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
@@ -122,6 +128,34 @@ namespace Wisteria::UI
             return m_addDefaultCaption;
             }
 
+        /// @returns The road pen color.
+        [[nodiscard]]
+        const wxColour& GetRoadColor() const noexcept
+            {
+            return m_roadColor;
+            }
+
+        /// @returns The lane separator style.
+        [[nodiscard]]
+        Graphs::Roadmap::LaneSeparatorStyle GetLaneSeparatorStyle() const noexcept
+            {
+            return static_cast<Graphs::Roadmap::LaneSeparatorStyle>(m_laneSeparatorStyle);
+            }
+
+        /// @returns The road stop theme.
+        [[nodiscard]]
+        Graphs::Roadmap::RoadStopTheme GetRoadStopTheme() const noexcept
+            {
+            return static_cast<Graphs::Roadmap::RoadStopTheme>(m_roadStopTheme);
+            }
+
+        /// @returns The marker label display mode.
+        [[nodiscard]]
+        Graphs::Roadmap::MarkerLabelDisplay GetMarkerLabelDisplay() const noexcept
+            {
+            return static_cast<Graphs::Roadmap::MarkerLabelDisplay>(m_markerLabelDisplay);
+            }
+
         /// @brief Populates all dialog controls from an existing Pro & Con Roadmap.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -151,6 +185,10 @@ namespace Wisteria::UI
         wxString m_positiveLabel{ _(L"Pro") };
         wxString m_negativeLabel{ _(L"Con") };
         bool m_addDefaultCaption{ true };
+        wxColour m_roadColor{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        int m_laneSeparatorStyle{ 0 };
+        int m_roadStopTheme{ 0 };
+        int m_markerLabelDisplay{ 1 };
 
         wxString m_positiveVariable;
         wxString m_positiveValueVariable;
@@ -159,6 +197,7 @@ namespace Wisteria::UI
 
         // controls without DDX support
         wxSpinCtrl* m_minCountSpin{ nullptr };
+        wxColourPickerCtrl* m_roadColorPicker{ nullptr };
 
         std::vector<wxString> m_datasetNames;
         };

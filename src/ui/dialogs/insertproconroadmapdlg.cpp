@@ -135,6 +135,57 @@ namespace Wisteria::UI
                                        wxTextValidator(wxFILTER_NONE, &m_negativeLabel)));
         optionsSizer->Add(labelSizer, wxSizerFlags{}.Border());
 
+        // marker labels
+        auto* markerSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        markerSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Marker labels:")),
+                         wxSizerFlags{}.CenterVertical());
+            {
+            auto* labelChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_markerLabelDisplay));
+            labelChoice->Append(_(L"Name only"));
+            labelChoice->Append(_(L"Name and value"));
+            labelChoice->Append(_(L"Name and absolute value"));
+            markerSizer->Add(labelChoice);
+            }
+        optionsSizer->Add(markerSizer, wxSizerFlags{}.Border());
+
+        // road appearance
+        auto* roadBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Road"));
+        auto* appearSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
+        appearSizer->Add(new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Road color:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_roadColorPicker = new wxColourPickerCtrl(roadBox->GetStaticBox(), wxID_ANY, m_roadColor);
+        appearSizer->Add(m_roadColorPicker);
+
+        appearSizer->Add(new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Lane separator:")),
+                         wxSizerFlags{}.CenterVertical());
+            {
+            auto* sepChoice =
+                new wxChoice(roadBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                             nullptr, 0, wxGenericValidator(&m_laneSeparatorStyle));
+            sepChoice->Append(_(L"Single line"));
+            sepChoice->Append(_(L"Double line"));
+            sepChoice->Append(_(L"None"));
+            appearSizer->Add(sepChoice);
+            }
+
+        appearSizer->Add(
+            new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Road stop theme:")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* themeChoice =
+                new wxChoice(roadBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                             nullptr, 0, wxGenericValidator(&m_roadStopTheme));
+            themeChoice->Append(_(L"Location markers"));
+            themeChoice->Append(_(L"Road signs"));
+            appearSizer->Add(themeChoice);
+            }
+
+        roadBox->Add(appearSizer, wxSizerFlags{}.Border());
+        optionsSizer->Add(roadBox, wxSizerFlags{}.Border());
+
         // default caption
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Add explanatory caption"),
                                          wxDefaultPosition, wxDefaultSize, 0,
@@ -154,6 +205,9 @@ namespace Wisteria::UI
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
+
+        m_roadColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, [this](wxColourPickerEvent& evt)
+                                { m_roadColor = evt.GetColour(); });
         }
 
     //-------------------------------------------
@@ -383,6 +437,13 @@ namespace Wisteria::UI
         m_negativeLabel = roadmap->GetNegativeLabel();
 
         m_addDefaultCaption = roadmap->HasDefaultCaption();
+
+        // road appearance
+        m_roadColor = roadmap->GetRoadPen().GetColour();
+        m_roadColorPicker->SetColour(m_roadColor);
+        m_laneSeparatorStyle = static_cast<int>(roadmap->GetLaneSeparatorStyle());
+        m_roadStopTheme = static_cast<int>(roadmap->GetRoadStopTheme());
+        m_markerLabelDisplay = static_cast<int>(roadmap->GetMarkerLabelDisplay());
 
         TransferDataToWindow();
         }
