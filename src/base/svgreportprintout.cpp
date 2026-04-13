@@ -83,21 +83,19 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    }\n"
                 "    .page.active-page { animation: page-arrive 0.8s ease-out forwards; }\n"
                 "    #page-indicator { transition: opacity 0.15s ease; }\n",
-                options.m_buttonColor.Red(), options.m_buttonColor.Green(),
-                options.m_buttonColor.Blue(), options.m_buttonColor.Red(),
-                options.m_buttonColor.Green(), options.m_buttonColor.Blue(),
-                options.m_buttonColor.Red(), options.m_buttonColor.Green(),
-                options.m_buttonColor.Blue());
+                options.m_themeColor.Red(), options.m_themeColor.Green(),
+                options.m_themeColor.Blue(), options.m_themeColor.Red(),
+                options.m_themeColor.Green(), options.m_themeColor.Blue(),
+                options.m_themeColor.Red(), options.m_themeColor.Green(),
+                options.m_themeColor.Blue());
             }
 
-        const bool hasUILayer = options.m_includeLayoutToggle || options.m_includeDarkModeToggle ||
-                                options.m_includeSlideshow;
-        if (hasUILayer)
+        if (options.HasUILayer())
             {
-            const wxString btnHex = options.m_buttonColor.GetAsString(wxC2S_HTML_SYNTAX);
+            const wxString btnHex = options.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX);
             const wxString textHex =
-                Wisteria::Colors::ColorContrast::IsLight(options.m_buttonColor) ? L"black" :
-                                                                                  L"white";
+                Wisteria::Colors::ColorContrast::IsLight(options.m_themeColor) ? L"black" :
+                                                                                 L"white";
 
             svgContent += wxString::Format(
                 L"    #ui-layer { \n"
@@ -145,8 +143,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                       "</style>\n";
         }
 
-    const bool hasUILayer = options.m_includeLayoutToggle || options.m_includeDarkModeToggle;
-    if (hasUILayer)
+    if (options.HasUILayer())
         {
         svgContent += L"<script type=\"text/javascript\"><![CDATA[\n";
 
@@ -214,7 +211,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    }\n"
                 "    updateUILayerPosition();\n"
                 "  }\n",
-                options.m_horizontalGap, _(L"STACKED"), _(L"DUPLEX"));
+                options.m_horizontalGap, _(L"Stacked"), _(L"Duplex"));
             }
 
         if (options.m_includeDarkModeToggle)
@@ -383,7 +380,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
     svgContent += L"</g>\n";
 
-    if (hasUILayer)
+    if (options.HasUILayer())
         {
         svgContent += L"<g id=\"ui-layer\">\n";
 
@@ -402,8 +399,8 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "  <rect class=\"btn\" x=\"200\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
                 "onclick=\"adjustGap(1)\"><title>%s</title></rect>\n"
                 "  <text class=\"btn-text\" x=\"215\" y=\"69\">+</text>\n",
-                _(L"Toggle between stacked and duplex page layout"), _(L"DUPLEX"),
-                _(L"Decrease vertical space between pages"), _(L"PAGE GAP"),
+                _(L"Toggle between stacked and duplex page layout"), _(L"Duplex"),
+                _(L"Decrease vertical space between pages"), _(L"Page gap"),
                 _(L"Increase vertical space between pages"));
             }
 

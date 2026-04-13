@@ -36,8 +36,8 @@ namespace Wisteria
         bool m_includeDarkModeToggle{ true };
         /// @brief Whether to include slideshow navigation (arrow keys + prev/next buttons).
         bool m_includeSlideshow{ true };
-        /// @brief The background color for the layout toggle button.
-        wxColour m_buttonColor{ 103, 58, 183 };
+        /// @brief The background color for the overlay buttons and effects.
+        wxColour m_themeColor{ 103, 58, 183 };
         /// @brief The horizontal gap (in pixels) between rows of pages.
         int m_horizontalGap{ 25 };
         /// @brief Uniform page size (in DIPs). If default, uses per-canvas paper sizes.
@@ -48,6 +48,13 @@ namespace Wisteria
             {
             return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle ||
                    m_includeDarkModeToggle || m_includeSlideshow;
+            }
+
+        /// @returns @c true if any floating UI overlay (buttons, progress bar) is enabled.
+        [[nodiscard]]
+        bool HasUILayer() const noexcept
+            {
+            return m_includeLayoutToggle || m_includeDarkModeToggle || m_includeSlideshow;
             }
 
         /// @brief Enables/disables smooth transitions.
@@ -85,10 +92,10 @@ namespace Wisteria
             return *this;
             }
 
-        /// @brief Sets the button color.
-        SVGReportOptions& ButtonColor(const wxColour& color)
+        /// @brief Sets the theme color.
+        SVGReportOptions& ThemeColor(const wxColour& color)
             {
-            m_buttonColor = color;
+            m_themeColor = color;
             return *this;
             }
 

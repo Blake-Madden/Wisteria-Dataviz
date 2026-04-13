@@ -87,11 +87,11 @@ namespace Wisteria::UI
             return m_includeSlideshow;
             }
 
-        /// @returns The selected button color.
+        /// @returns The selected theme color.
         [[nodiscard]]
-        wxColour GetButtonColor() const noexcept
+        wxColour GetThemeColor() const noexcept
             {
-            return m_buttonColor;
+            return m_themeColor;
             }
 
         /// @returns The selected horizontal gap (in pixels).
@@ -122,7 +122,7 @@ namespace Wisteria::UI
 
         constexpr static wxWindowID PAGE_WIDTH_ID{ wxID_HIGHEST };
         constexpr static wxWindowID PAGE_HEIGHT_ID{ wxID_HIGHEST + 1 };
-        constexpr static wxWindowID BUTTON_COLOR_ID{ wxID_HIGHEST + 2 };
+        constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 2 };
         constexpr static wxWindowID HORIZONTAL_GAP_ID{ wxID_HIGHEST + 3 };
 
         int m_pageWidth{ 0 };
@@ -132,7 +132,7 @@ namespace Wisteria::UI
         bool m_includeLayoutToggle{ true };
         bool m_includeDarkModeToggle{ true };
         bool m_includeSlideshow{ true };
-        wxColour m_buttonColor{ 103, 58, 183 };
+        wxColour m_themeColor{ 103, 58, 183 };
         int m_horizontalGap{ 25 };
 
         wxPanel* m_previewPanel{ nullptr };

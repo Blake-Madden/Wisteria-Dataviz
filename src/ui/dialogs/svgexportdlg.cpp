@@ -114,11 +114,11 @@ namespace Wisteria::UI
 
         auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
         colorSizer->Add(
-            new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Button Color:")),
+            new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Theme Color:")),
             wxSizerFlags{}.CenterVertical());
         auto* colorPicker =
-            new wxColourPickerCtrl(featuresSizer->GetStaticBox(), BUTTON_COLOR_ID, m_buttonColor);
-        colorPicker->SetValidator(wxGenericValidator{ &m_buttonColor });
+            new wxColourPickerCtrl(featuresSizer->GetStaticBox(), THEME_COLOR_ID, m_themeColor);
+        colorPicker->SetValidator(wxGenericValidator{ &m_themeColor });
         colorSizer->Add(colorPicker, wxSizerFlags{}.Border());
         featuresSizer->Add(colorSizer, wxSizerFlags{}.Expand().Border());
 
