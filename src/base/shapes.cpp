@@ -367,8 +367,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -414,8 +415,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawNumberRange(wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         rect.Deflate(ScaleToScreenAndCanvas(2));
 
@@ -719,8 +721,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawPumpkin(wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
-        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect bodyRect{ rect };
         if (bodyRect.GetHeight() > bodyRect.GetWidth() * 1.25)
@@ -1116,8 +1119,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawCurvingRoad(const wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger penGuard{ dc, wxNullPen };
-        const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcWrap{ &dc, rect };
         wxGraphicsContext* gc = gcWrap.GetGraphicsContext();
@@ -1283,8 +1287,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBaseFlower(const wxRect rect, wxDC& dc, const wxColour& foregroundColor,
                                        const wxColour& backgroundColor) const
         {
-        const wxDCPenChanger penGuard{ dc, wxNullPen };
-        const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         wxGraphicsContext* gc = gcf.GetGraphicsContext();
@@ -1652,8 +1657,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawApple(const wxRect rect, wxDC& dc, const wxColour& color) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1738,8 +1744,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawCrescentTop(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1785,8 +1792,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawCrescentBottom(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1830,8 +1838,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawCrescentRight(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1880,8 +1889,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawHouse(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -1943,8 +1953,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFactory(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -2029,8 +2040,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour& color) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
@@ -2125,8 +2137,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBarn(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
@@ -2287,8 +2300,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFarm(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
@@ -2373,8 +2387,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawHeart(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -2490,8 +2505,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFlame(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
@@ -2576,8 +2592,9 @@ namespace Wisteria::GraphItems
                                   const ClippingSection clippingSection) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCFontChanger fc{ dc };
 
         const auto centerPt = rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -2715,8 +2732,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawMonitor(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCFontChanger fc{ dc };
 
         wxRect2DDouble drawRect{ rect };
@@ -2798,8 +2816,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawHundredDollarBill(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCFontChanger fc{ dc };
 
         wxRect2DDouble drawRect{ rect };
@@ -3716,8 +3735,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBook(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pcReset(dc, Colors::ColorBrewer::GetColor(Colors::Color::Black));
-        const wxDCBrushChanger bcReset(dc, Colors::ColorBrewer::GetColor(Colors::Color::Black));
+        const wxDCPenChanger penGuard(dc, Colors::ColorBrewer::GetColor(Colors::Color::Black));
+        const wxDCBrushChanger brushGuard(dc, Colors::ColorBrewer::GetColor(Colors::Color::Black));
 
         const wxColour bookColor{ TintIfUsingOpacity(Colors::ColorContrast::ChangeOpacity(
             GetGraphItemInfo().GetBrush().GetColour(), wxALPHA_OPAQUE)) };
@@ -4023,7 +4042,7 @@ namespace Wisteria::GraphItems
             }
 
         wxPen scaledPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
-                        std::min(1.0, ScaleToScreenAndCanvas(math_constants::half)));
+                        ScaleToScreenAndCanvas(1.0));
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
         const std::array<wxPoint, 4> hatTop = {
@@ -4055,14 +4074,14 @@ namespace Wisteria::GraphItems
 
             {
             const wxBrush shadowedBrush(
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)));
             const DCBrushChangerIfDifferent bc(dc, shadowedBrush);
             dc.DrawPolygon(hatStem.size(), hatStem.data());
             }
 
             {
             const DCBrushChangerIfDifferent bc(
-                dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)));
+                dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::TricornBlack)));
             dc.DrawPolygon(hatTop.size(), hatTop.data());
             }
 
@@ -4203,8 +4222,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const wxRect dcRect{ rect };
 
@@ -4437,8 +4457,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRightArrow(const wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger penScope{ dc, wxNullPen };
-        const wxDCBrushChanger brScope{ dc, wxNullBrush };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         // Base color from brush (fallback HunterGreen)
         const wxColour baseColor = (GetGraphItemInfo().GetBrush().IsOk() &&
@@ -4590,8 +4611,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawCar(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect dcRect{ rect };
         dcRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -4775,8 +4797,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawTire(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -4978,8 +5001,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawAsterisk(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -5115,7 +5139,7 @@ namespace Wisteria::GraphItems
 
         dc.GradientFillLinear(
             dcRect, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::WarmGray)),
-            TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)), wxEAST);
+            TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)), wxEAST);
 
         const wxDCPenChanger pc(
             dc, wxPen(ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::YellowPepper)),
@@ -5295,8 +5319,8 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger penReset{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger brushReset{ dc,
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
@@ -5397,8 +5421,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawSnowflake(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -5498,8 +5523,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawWaterColorRectangle(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -5654,8 +5680,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawMarkerRectangle(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -5785,8 +5812,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawPencilRectangle(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, *wxBLACK_PEN };
-        const wxDCBrushChanger bc{ dc, *wxBLACK_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -5916,7 +5944,7 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
                      L"Pen should be set in Shape for curly braces!");
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect(rect);
 
@@ -6035,8 +6063,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawMan(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect dcRect{ rect };
         // adjust to center it horizontally inside square area
@@ -6215,8 +6244,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -6380,8 +6410,9 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBusinessWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -6553,8 +6584,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawCheesePizza(wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
-        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -6771,8 +6803,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawChocolateChipCookie(wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
-        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -6876,8 +6909,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawCoffeeShopCup(wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
-        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -7102,8 +7136,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawPill(wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
-        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
@@ -7399,8 +7434,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawTractor(const wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
-        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect dcRect{ rect };
         dcRect.Deflate(ScaleToScreenAndCanvas(3));
