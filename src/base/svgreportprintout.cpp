@@ -70,7 +70,7 @@ wxString Wisteria::SVGReportPrintout::GenerateDarkModeFillReplacements(std::wstr
 
 //------------------------------------------------------
 Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canvases,
-                                               const SVGReportOptions& options)
+                                               SVGReportOptions options)
     {
     // collect per-canvas paper sizes for rendering
     std::vector<wxSize> pageSizes;
@@ -82,6 +82,12 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             continue;
             }
         pageSizes.push_back(GetPaperSizeDIPs(canvas));
+        }
+
+    // if only one page, then don't need duplex and such options
+    if (canvases.size() < 2)
+        {
+        options.LayoutOptions(false).Slideshow(false);
         }
 
     // the layout size controls the viewBox and page spacing;
@@ -444,7 +450,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         {
         svgContent += L"<g id=\"ui-layer\">\n";
 
-        if (options.m_includeLayoutToggle)
+        if (options.m_includeLayoutOptions)
             {
             svgContent += wxString::Format(
                 L"  <rect class=\"btn\" x=\"10\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
@@ -466,7 +472,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         if (options.m_includeDarkModeToggle)
             {
-            const int darkModeX = options.m_includeLayoutToggle ? 140 : 10;
+            const int darkModeX = options.m_includeLayoutOptions ? 140 : 10;
             svgContent += wxString::Format(
                 L"  <rect class=\"btn\" x=\"%d\" y=\"10\" width=\"30\" height=\"30\" rx=\"15\" "
                 "onclick=\"toggleDarkMode()\"><title>%s</title></rect>\n"
@@ -482,7 +488,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             //   dark mode only adds row at y=10              -> slideshow at y=50
             //   slideshow alone                              -> y=10
             const int slideshowY =
-                options.m_includeLayoutToggle ? 90 : (options.m_includeDarkModeToggle ? 50 : 10);
+                options.m_includeLayoutOptions ? 90 : (options.m_includeDarkModeToggle ? 50 : 10);
             svgContent += wxString::Format(
                 L"  <rect id=\"prev-page-btn\" class=\"btn\" x=\"10\" y=\"%d\" width=\"30\" "
                 "height=\"30\" rx=\"15\" onclick=\"prevPage()\" style=\"opacity:0.35\">"

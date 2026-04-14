@@ -66,11 +66,11 @@ namespace Wisteria::UI
             return m_includeHighlighting;
             }
 
-        /// @returns Whether to include a layout toggle.
+        /// @returns Whether to include a layout options.
         [[nodiscard]]
-        bool IncludeLayoutToggle() const noexcept
+        bool IncludeLayoutOptions() const noexcept
             {
-            return m_includeLayoutToggle;
+            return m_includeLayoutOptions;
             }
 
         /// @returns Whether to include a dark-mode toggle.
@@ -136,7 +136,7 @@ namespace Wisteria::UI
         int m_pageHeight{ 0 };
         bool m_includeTransitions{ true };
         bool m_includeHighlighting{ true };
-        bool m_includeLayoutToggle{ true };
+        bool m_includeLayoutOptions{ true };
         bool m_includeDarkModeToggle{ true };
         bool m_includeSlideshow{ true };
         bool m_includePageShadow{ true };

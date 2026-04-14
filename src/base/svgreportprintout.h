@@ -30,8 +30,9 @@ namespace Wisteria
         bool m_includeTransitions{ true };
         /// @brief Whether to include interactive highlighting on hover.
         bool m_includeHighlighting{ true };
-        /// @brief Whether to include a floating layout toggle (stacked vs duplex).
-        bool m_includeLayoutToggle{ true };
+        /// @brief Whether to include a floating layout toggle (stacked vs duplex) and
+        ///     page-gap spinner.
+        bool m_includeLayoutOptions{ true };
         /// @brief Whether to include a floating dark-mode toggle.
         bool m_includeDarkModeToggle{ true };
         /// @brief Whether to include slideshow navigation (arrow keys + prev/next buttons).
@@ -48,7 +49,7 @@ namespace Wisteria
         [[nodiscard]]
         bool HasInteractiveFeatures() const noexcept
             {
-            return m_includeTransitions || m_includeHighlighting || m_includeLayoutToggle ||
+            return m_includeTransitions || m_includeHighlighting || m_includeLayoutOptions ||
                    m_includeDarkModeToggle || m_includeSlideshow || m_includePageShadow;
             }
 
@@ -56,7 +57,7 @@ namespace Wisteria
         [[nodiscard]]
         bool HasUILayer() const noexcept
             {
-            return m_includeLayoutToggle || m_includeDarkModeToggle || m_includeSlideshow;
+            return m_includeLayoutOptions || m_includeDarkModeToggle || m_includeSlideshow;
             }
 
         /// @brief Enables/disables smooth transitions.
@@ -73,10 +74,10 @@ namespace Wisteria
             return *this;
             }
 
-        /// @brief Enables/disables the layout toggle.
-        SVGReportOptions& LayoutToggle(bool include)
+        /// @brief Enables/disables the layout options.
+        SVGReportOptions& LayoutOptions(bool include)
             {
-            m_includeLayoutToggle = include;
+            m_includeLayoutOptions = include;
             return *this;
             }
 

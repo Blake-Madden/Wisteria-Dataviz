@@ -88,8 +88,8 @@ namespace Wisteria::UI
         auto* featuresSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Interactive Features"));
 
         auto* layoutToggleCheck =
-            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Layout toggle"));
-        layoutToggleCheck->SetValidator(wxGenericValidator{ &m_includeLayoutToggle });
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Layout options"));
+        layoutToggleCheck->SetValidator(wxGenericValidator{ &m_includeLayoutOptions });
         featuresSizer->Add(layoutToggleCheck, wxSizerFlags{}.Border());
 
         auto* darkModeToggleCheck =
