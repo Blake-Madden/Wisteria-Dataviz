@@ -252,13 +252,12 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
             header += wxString::Format(
                 L"    #ui-layer { \n"
-                "      opacity: 0; \n"
-                "      transition: opacity 0.4s ease-in-out; \n"
-                "      pointer-events: none;\n"
+                "      opacity: 0; \n" // hidden initially
+                "      transition: opacity 0.3s ease-in-out; \n"
+                "      pointer-events: auto;\n" // allow hovering over the group itself
                 "    }\n"
-                "    svg:hover #ui-layer { \n"
+                "    #ui-layer:hover { \n"
                 "      opacity: 1; \n"
-                "      pointer-events: auto;\n"
                 "    }\n"
                 "    .btn { fill: %s; cursor: pointer; transition: transform 0.1s, fill 0.2s; "
                 "fill-opacity: 0.9; }\n"
@@ -295,28 +294,26 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         {
         header += L"<script type=\"text/javascript\"><![CDATA[\n";
 
-        // keep the UI layer pinned to the top of the viewport while scrolling:
-        // translate #ui-layer down by however many viewBox units correspond to
-        // the portion of the SVG currently hidden above the viewport
+        // keep the UI layer pinned to the top-left of the viewport while scrolling:
+        // translate #ui-layer down and over by however many viewBox units correspond to
+        // the portion of the SVG currently hidden above or to the left of the viewport
         header += L"  function updateUILayerPosition() {\n"
                   "    const svg = document.querySelector('svg');\n"
                   "    const uiLayer = document.getElementById('ui-layer');\n"
-                  "    if (!svg || !uiLayer) return;\n"
-                  "    const rect = svg.getBoundingClientRect();\n"
-                  "    const viewBox = svg.viewBox.baseVal;\n"
-                  "    if (rect.height === 0 || viewBox.height === 0) return;\n"
-                  "    const scaleY = viewBox.height / rect.height;\n"
-                  "    const hiddenTop = Math.max(0, -rect.top);\n"
-                  "    const offsetInSvg = hiddenTop * scaleY;\n"
-                  "    uiLayer.setAttribute('transform', "
-                  "`translate(0, ${offsetInSvg})`);\n"
+                  "    if (!svg || !uiLayer) return;\n\n"
+                  "    const pt = svg.createSVGPoint();\n"
+                  "    pt.x = 0; pt.y = 0;\n\n"
+                  "    const ctm = svg.getScreenCTM();\n"
+                  "    if (ctm) {\n"
+                  "      const svgP = pt.matrixTransform(ctm.inverse());\n"
+                  "      uiLayer.setAttribute('transform', `translate(${svgP.x}, ${svgP.y})`);\n"
+                  "    }\n"
                   "  }\n"
-                  "  window.addEventListener('scroll', updateUILayerPosition, "
-                  "{ passive: true });\n"
+                  "  window.addEventListener('scroll', updateUILayerPosition, { passive: true });\n"
                   "  window.addEventListener('resize', updateUILayerPosition);\n"
                   "  window.addEventListener('load', updateUILayerPosition);\n";
 
-        if (options.m_includeLayoutToggle)
+        if (options.m_includeLayoutOptions)
             {
             header += wxString::Format(
                 L"  let isDuplex = false;\n"
@@ -449,6 +446,9 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
     if (options.HasUILayer())
         {
         svgContent += L"<g id=\"ui-layer\">\n";
+        // Add a transparent rectangle to catch hover events over the general UI area
+        svgContent += L"  <rect x=\"0\" y=\"0\" width=\"250\" height=\"150\" fill=\"transparent\" "
+                      L"style=\"pointer-events:all\"/>\n";
 
         if (options.m_includeLayoutOptions)
             {

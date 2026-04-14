@@ -135,7 +135,7 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param canvases The canvases (pages) to export.
         /// @param options Export options (interactivity, sizing, file path, etc.).
-        SVGReportPrintout(const std::vector<Canvas*>& canvases, const SVGReportOptions& options);
+        SVGReportPrintout(const std::vector<Canvas*>& canvases, SVGReportOptions options);
 
         /// @brief Retrieves the paper size (in DIPs) for the given canvas.
         /// @param canvas The canvas whose paper size to query.
