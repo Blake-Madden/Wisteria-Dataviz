@@ -574,7 +574,8 @@ namespace Wisteria::UI
         if (!footnotesTemplate.empty())
             {
             m_footnotes.clear();
-            const auto footnotesNode = wxSimpleJSON::Create(footnotesTemplate);
+            // make it a root-level node so that it deletes itself when we are done with it
+            const auto footnotesNode = wxSimpleJSON::Create(footnotesTemplate, true);
             for (const auto& ftNode : footnotesNode->AsNodes())
                 {
                 m_footnotes.emplace_back(ftNode->GetProperty(L"value")->AsString(),

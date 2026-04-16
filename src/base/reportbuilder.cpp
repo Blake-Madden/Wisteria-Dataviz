@@ -5259,10 +5259,12 @@ namespace Wisteria
             table->SetPropertyTemplate(L"row-suppression", rowSuppressionNode->Print(false));
             }
 
-        nodeLoader.ApplyTableRowFormatting(
-            table, tableNode->GetProperty(L"row-formatting"), tableNode->GetProperty(L"row-color"),
-            tableNode->GetProperty(L"row-bold"), tableNode->GetProperty(L"row-borders"),
-            tableNode->GetProperty(L"row-content-align"));
+        nodeLoader.ApplyTableRowFormatting(table, tableNode->GetProperty(L"row-formatting"));
+        nodeLoader.ApplyTableRowColor(table, tableNode->GetProperty(L"row-color"));
+        nodeLoader.ApplyTableRowBold(table, tableNode->GetProperty(L"row-bold"));
+        nodeLoader.ApplyTableRowBorders(table, tableNode->GetProperty(L"row-borders"));
+        nodeLoader.ApplyTableRowContentAlignment(table,
+                                                 tableNode->GetProperty(L"row-content-align"));
 
         // cache row formatting properties for round-trip serialization
         for (const auto& prop :
@@ -5283,10 +5285,10 @@ namespace Wisteria
             table->SetPropertyTemplate(L"column-suppression", columnSuppressionNode->Print(false));
             }
 
-        nodeLoader.ApplyTableColumnFormatting(table, tableNode->GetProperty(L"column-formatting"),
-                                              tableNode->GetProperty(L"column-color"),
-                                              tableNode->GetProperty(L"column-bold"),
-                                              tableNode->GetProperty(L"column-borders"));
+        nodeLoader.ApplyTableColumnFormatting(table, tableNode->GetProperty(L"column-formatting"));
+        nodeLoader.ApplyTableColumnColor(table, tableNode->GetProperty(L"column-color"));
+        nodeLoader.ApplyTableColumnBold(table, tableNode->GetProperty(L"column-bold"));
+        nodeLoader.ApplyTableColumnBorders(table, tableNode->GetProperty(L"column-borders"));
 
         // cache column formatting properties for round-trip serialization
         for (const auto& prop :

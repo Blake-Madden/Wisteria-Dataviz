@@ -109,29 +109,54 @@ namespace Wisteria
 
         /** @brief Applies column formatting to a table.
             @param table The table to format.
-            @param formattingNode The JSON node for number/date formatting.
-            @param colorNode The JSON node for column colors.
-            @param boldNode The JSON node for column bolding.
-            @param bordersNode The JSON node for column borders.*/
+            @param formattingNode The JSON node for number/date formatting.*/
         void ApplyTableColumnFormatting(std::shared_ptr<Graphs::Table>& table,
-                                        const wxSimpleJSON::Ptr_t& formattingNode,
-                                        const wxSimpleJSON::Ptr_t& colorNode,
-                                        const wxSimpleJSON::Ptr_t& boldNode,
-                                        const wxSimpleJSON::Ptr_t& bordersNode) const;
+                                        const wxSimpleJSON::Ptr_t& formattingNode) const;
+
+        /** @brief Applies column color to a table.
+            @param table The table to format.
+            @param colorNode The JSON node for column colors.*/
+        void ApplyTableColumnColor(std::shared_ptr<Graphs::Table>& table,
+                                   const wxSimpleJSON::Ptr_t& colorNode) const;
+
+        /** @brief Applies column boldness to a table.
+            @param table The table to format.
+            @param boldNode The JSON node for column bolding.*/
+        void ApplyTableColumnBold(std::shared_ptr<Graphs::Table>& table,
+                                  const wxSimpleJSON::Ptr_t& boldNode) const;
+
+        /** @brief Applies column borders to a table.
+            @param bordersNode The JSON node for column borders.*/
+        void ApplyTableColumnBorders(std::shared_ptr<Graphs::Table>& table,
+                                     const wxSimpleJSON::Ptr_t& bordersNode) const;
 
         /** @brief Applies row formatting to a table.
             @param table The table to format.
-            @param formattingNode The JSON node for number/date formatting.
-            @param colorNode The JSON node for row colors.
-            @param boldNode The JSON node for row bolding.
-            @param bordersNode The JSON node for row borders.
-            @param contentAlignNode The JSON node for row content alignment.*/
+            @param formattingNode The JSON node for number/date formatting.*/
         void ApplyTableRowFormatting(std::shared_ptr<Graphs::Table>& table,
-                                     const wxSimpleJSON::Ptr_t& formattingNode,
-                                     const wxSimpleJSON::Ptr_t& colorNode,
-                                     const wxSimpleJSON::Ptr_t& boldNode,
-                                     const wxSimpleJSON::Ptr_t& bordersNode,
-                                     const wxSimpleJSON::Ptr_t& contentAlignNode) const;
+                                     const wxSimpleJSON::Ptr_t& formattingNode) const;
+
+        /** @brief Applies row color to a table.
+            @param table The table to format.
+            @param colorNode The JSON node for row colors.*/
+        void ApplyTableRowColor(std::shared_ptr<Graphs::Table>& table,
+                                const wxSimpleJSON::Ptr_t& colorNode) const;
+
+        /** @brief Applies row boldness to a table.
+            @param boldNode The JSON node for row bolding.*/
+        void ApplyTableRowBold(std::shared_ptr<Graphs::Table>& table,
+                               const wxSimpleJSON::Ptr_t& boldNode) const;
+
+        /** @brief Applies row borders to a table.
+            @param bordersNode The JSON node for row borders.*/
+        void ApplyTableRowBorders(std::shared_ptr<Graphs::Table>& table,
+                                  const wxSimpleJSON::Ptr_t& bordersNode) const;
+
+        /** @brief Applies row formatting to a table.
+            @param table The table to format.
+            @param contentAlignNode The JSON node for content alignment.*/
+        void ApplyTableRowContentAlignment(std::shared_ptr<Graphs::Table>& table,
+                                           const wxSimpleJSON::Ptr_t& contentAlignNode) const;
 
         /** @brief Applies column highlighting to a table.
             @param table The table to highlight columns in.
