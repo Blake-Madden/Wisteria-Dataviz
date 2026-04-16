@@ -81,35 +81,35 @@ namespace Wisteria::UI
         dateLabel->SetFont(dateLabel->GetFont().Bold());
         varGrid->Add(dateLabel, wxSizerFlags{}.CenterVertical());
         m_dateVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_dateVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_dateVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_dateVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* openLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Open:"));
         openLabel->SetFont(openLabel->GetFont().Bold());
         varGrid->Add(openLabel, wxSizerFlags{}.CenterVertical());
         m_openVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_openVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_openVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_openVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* highLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"High:"));
         highLabel->SetFont(highLabel->GetFont().Bold());
         varGrid->Add(highLabel, wxSizerFlags{}.CenterVertical());
         m_highVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_highVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_highVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_highVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* lowLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Low:"));
         lowLabel->SetFont(lowLabel->GetFont().Bold());
         varGrid->Add(lowLabel, wxSizerFlags{}.CenterVertical());
         m_lowVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_lowVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_lowVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_lowVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* closeLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Close:"));
         closeLabel->SetFont(closeLabel->GetFont().Bold());
         varGrid->Add(closeLabel, wxSizerFlags{}.CenterVertical());
         m_closeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_closeVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_closeVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_closeVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

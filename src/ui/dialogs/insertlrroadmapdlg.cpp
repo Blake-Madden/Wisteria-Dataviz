@@ -80,21 +80,21 @@ namespace Wisteria::UI
         predLabel->SetFont(predLabel->GetFont().Bold());
         varGrid->Add(predLabel, wxSizerFlags{}.CenterVertical());
         m_predictorVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_predictorVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_predictorVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_predictorVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* coefLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Coefficient:"));
         coefLabel->SetFont(coefLabel->GetFont().Bold());
         varGrid->Add(coefLabel, wxSizerFlags{}.CenterVertical());
         m_coefficientVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_coefficientVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_coefficientVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_coefficientVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* pvalLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"p-value:"));
         pvalLabel->SetFont(pvalLabel->GetFont().Bold());
         varGrid->Add(pvalLabel, wxSizerFlags{}.CenterVertical());
         m_pValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_pValueVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_pValueVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_pValueVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

@@ -74,10 +74,6 @@ namespace Wisteria::UI
             m_bracketValueColumnHint = valueColumn;
             }
 
-      protected:
-        /// @brief Returns the color to apply to selected variable names.
-        static wxColour GetVariableLabelColor() { return wxColour{ 0, 102, 204 }; }
-
       private:
         void OnAxisSelectionChanged();
         void ReadControlsFromAxis(const GraphItems::Axis& axis);

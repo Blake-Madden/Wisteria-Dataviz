@@ -301,8 +301,6 @@ namespace Wisteria::UI
         // title, subtitle, caption — each opens a full Label editor
         auto* textSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
 
-        const auto previewColor = GetVariableLabelColor();
-
         textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Title:")), wxGBPosition(0, 0),
                        wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
             {
@@ -312,7 +310,7 @@ namespace Wisteria::UI
             }
         m_titlePreview = new wxStaticText(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                           wxDefaultSize, wxST_ELLIPSIZE_END);
-        m_titlePreview->SetForegroundColour(previewColor);
+        m_titlePreview->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         textSizer->Add(m_titlePreview, wxGBPosition(0, 2), wxDefaultSpan,
                        wxALIGN_CENTER_VERTICAL | wxEXPAND);
 
@@ -325,7 +323,7 @@ namespace Wisteria::UI
             }
         m_subtitlePreview = new wxStaticText(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                              wxDefaultSize, wxST_ELLIPSIZE_END);
-        m_subtitlePreview->SetForegroundColour(previewColor);
+        m_subtitlePreview->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         textSizer->Add(m_subtitlePreview, wxGBPosition(1, 2), wxDefaultSpan,
                        wxALIGN_CENTER_VERTICAL | wxEXPAND);
 
@@ -338,7 +336,7 @@ namespace Wisteria::UI
             }
         m_captionPreview = new wxStaticText(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                             wxDefaultSize, wxST_ELLIPSIZE_END);
-        m_captionPreview->SetForegroundColour(previewColor);
+        m_captionPreview->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         textSizer->Add(m_captionPreview, wxGBPosition(2, 2), wxDefaultSpan,
                        wxALIGN_CENTER_VERTICAL | wxEXPAND);
         textSizer->AddGrowableCol(2, 1);
@@ -368,7 +366,7 @@ namespace Wisteria::UI
             }
         m_bgImagePreview = new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, wxString{},
                                             wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
-        m_bgImagePreview->SetForegroundColour(previewColor);
+        m_bgImagePreview->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         bgImgSizer->Add(m_bgImagePreview, wxSizerFlags{}.CenterVertical());
         bgBox->Add(bgImgSizer, wxSizerFlags{}.Expand().Border());
 

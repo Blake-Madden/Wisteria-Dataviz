@@ -148,14 +148,14 @@ namespace Wisteria::UI
         scoreLabel->SetFont(scoreLabel->GetFont().Bold());
         varGrid->Add(scoreLabel, wxSizerFlags{}.CenterVertical());
         m_scoreVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_scoreVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_scoreVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_scoreVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

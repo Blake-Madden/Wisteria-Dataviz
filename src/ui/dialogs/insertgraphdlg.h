@@ -261,9 +261,6 @@ namespace Wisteria::UI
         static wxString ColorSchemeToName(int index);
 
       protected:
-        /// @returns The color to apply to selected variable names on the dialog.
-        static wxColour GetVariableLabelColor() { return wxColour{ 0, 102, 204 }; }
-
         /** @brief Creates a legend placement wxChoice and populates it.
             @param parent The parent window for the control.
             @param defaultSelection The initially selected item (0-based index).

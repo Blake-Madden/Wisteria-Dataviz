@@ -227,6 +227,10 @@ namespace Wisteria
             return Colors::Schemes::Dusk{};
             }
 
+        /// @returns The color to apply to static text labels on the
+        ///     dialogs that we want to draw attention to.
+        static wxColour GetHighlightedLabelColor() { return wxColour{ 0, 102, 204 }; }
+
         /// @brief The default opacity when ghosting items.
         constexpr static uint8_t GHOST_OPACITY = 32;
 

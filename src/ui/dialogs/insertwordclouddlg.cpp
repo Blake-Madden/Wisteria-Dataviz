@@ -76,14 +76,14 @@ namespace Wisteria::UI
         wordLabel->SetFont(wordLabel->GetFont().Bold());
         varGrid->Add(wordLabel, wxSizerFlags{}.CenterVertical());
         m_wordVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_wordVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_wordVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_wordVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* weightLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Weight:"));
         weightLabel->SetFont(weightLabel->GetFont().Bold());
         varGrid->Add(weightLabel, wxSizerFlags{}.CenterVertical());
         m_weightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_weightVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_weightVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_weightVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

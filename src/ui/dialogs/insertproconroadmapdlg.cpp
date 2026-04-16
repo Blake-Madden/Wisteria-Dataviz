@@ -82,7 +82,7 @@ namespace Wisteria::UI
         posLabel->SetFont(posLabel->GetFont().Bold());
         varGrid->Add(posLabel, wxSizerFlags{}.CenterVertical());
         m_positiveVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_positiveVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_positiveVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_positiveVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* posValLabel =
@@ -90,7 +90,8 @@ namespace Wisteria::UI
         posValLabel->SetFont(posValLabel->GetFont().Bold());
         varGrid->Add(posValLabel, wxSizerFlags{}.CenterVertical());
         m_positiveValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_positiveValueVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_positiveValueVarLabel->SetForegroundColour(
+            Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_positiveValueVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* negLabel =
@@ -98,7 +99,7 @@ namespace Wisteria::UI
         negLabel->SetFont(negLabel->GetFont().Bold());
         varGrid->Add(negLabel, wxSizerFlags{}.CenterVertical());
         m_negativeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_negativeVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_negativeVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_negativeVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* negValLabel =
@@ -106,7 +107,8 @@ namespace Wisteria::UI
         negValLabel->SetFont(negValLabel->GetFont().Bold());
         varGrid->Add(negValLabel, wxSizerFlags{}.CenterVertical());
         m_negativeValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_negativeValueVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_negativeValueVarLabel->SetForegroundColour(
+            Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_negativeValueVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

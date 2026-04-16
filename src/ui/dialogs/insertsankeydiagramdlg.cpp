@@ -77,14 +77,14 @@ namespace Wisteria::UI
         fromLabel->SetFont(fromLabel->GetFont().Bold());
         varGrid->Add(fromLabel, wxSizerFlags{}.CenterVertical());
         m_fromVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_fromVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_fromVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_fromVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* toLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"To:"));
         toLabel->SetFont(toLabel->GetFont().Bold());
         varGrid->Add(toLabel, wxSizerFlags{}.CenterVertical());
         m_toVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_toVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_toVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_toVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* fromWeightLabel =
@@ -92,14 +92,14 @@ namespace Wisteria::UI
         fromWeightLabel->SetFont(fromWeightLabel->GetFont().Bold());
         varGrid->Add(fromWeightLabel, wxSizerFlags{}.CenterVertical());
         m_fromWeightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_fromWeightVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_fromWeightVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_fromWeightVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* toWeightLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"To weight:"));
         toWeightLabel->SetFont(toWeightLabel->GetFont().Bold());
         varGrid->Add(toWeightLabel, wxSizerFlags{}.CenterVertical());
         m_toWeightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_toWeightVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_toWeightVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_toWeightVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* fromGroupLabel =
@@ -107,7 +107,7 @@ namespace Wisteria::UI
         fromGroupLabel->SetFont(fromGroupLabel->GetFont().Bold());
         varGrid->Add(fromGroupLabel, wxSizerFlags{}.CenterVertical());
         m_fromGroupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_fromGroupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_fromGroupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_fromGroupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

@@ -108,7 +108,7 @@ namespace Wisteria::UI
         m_varsLabelCaption = new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, _(L"Selected:"));
         m_varsLabelCaption->SetFont(m_varsLabelCaption->GetFont().Bold());
         m_varsLabel = new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_varsLabel->SetForegroundColour(GetVariableLabelColor());
+        m_varsLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
 
         auto* varsLabelSizer = new wxBoxSizer(wxHORIZONTAL);
         varsLabelSizer->Add(m_varsLabelCaption, wxSizerFlags{}.CenterVertical());

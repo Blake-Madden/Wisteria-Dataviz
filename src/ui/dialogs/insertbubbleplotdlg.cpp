@@ -80,28 +80,28 @@ namespace Wisteria::UI
         xLabel->SetFont(xLabel->GetFont().Bold());
         varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
         m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_xVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* yLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Y (dependent):"));
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
         m_yVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_yVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_yVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* sizeLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Size (area):"));
         sizeLabel->SetFont(sizeLabel->GetFont().Bold());
         varGrid->Add(sizeLabel, wxSizerFlags{}.CenterVertical());
         m_sizeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_sizeVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_sizeVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_sizeVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

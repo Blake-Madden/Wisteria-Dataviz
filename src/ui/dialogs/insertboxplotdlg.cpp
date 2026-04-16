@@ -81,7 +81,7 @@ namespace Wisteria::UI
         contLabel->SetFont(contLabel->GetFont().Bold());
         varGrid->Add(contLabel, wxSizerFlags{}.CenterVertical());
         m_continuousVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_continuousVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_continuousVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_continuousVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel =
@@ -89,7 +89,7 @@ namespace Wisteria::UI
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
@@ -123,7 +123,7 @@ namespace Wisteria::UI
         m_shapeButton->Enable(false);
         shapeBtnSizer->Add(m_shapeButton, wxSizerFlags{}.CenterVertical());
         m_shapeLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_shapeLabel->SetForegroundColour(GetVariableLabelColor());
+        m_shapeLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         m_shapeLabel->Enable(false);
         shapeBtnSizer->Add(m_shapeLabel, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(shapeBtnSizer, wxSizerFlags{}.Border(wxLEFT));
@@ -134,7 +134,7 @@ namespace Wisteria::UI
         m_imagesButton->Enable(false);
         imgBtnSizer->Add(m_imagesButton, wxSizerFlags{}.CenterVertical());
         m_imagesLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_imagesLabel->SetForegroundColour(GetVariableLabelColor());
+        m_imagesLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         m_imagesLabel->Enable(false);
         imgBtnSizer->Add(m_imagesLabel, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(imgBtnSizer, wxSizerFlags{}.Border(wxLEFT));

@@ -88,7 +88,8 @@ namespace Wisteria::UI
             featureGrid->Add(featureLabel, wxSizerFlags{}.CenterVertical());
 
             m_featureVarLabels[i] = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-            m_featureVarLabels[i]->SetForegroundColour(GetVariableLabelColor());
+            m_featureVarLabels[i]->SetForegroundColour(
+                Wisteria::Settings::GetHighlightedLabelColor());
             featureGrid->Add(m_featureVarLabels[i], wxSizerFlags{}.CenterVertical());
             }
 

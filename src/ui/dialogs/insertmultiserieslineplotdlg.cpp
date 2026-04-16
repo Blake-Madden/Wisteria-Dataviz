@@ -80,14 +80,14 @@ namespace Wisteria::UI
         yLabel->SetFont(yLabel->GetFont().Bold());
         varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
         m_yVarsLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_yVarsLabel->SetForegroundColour(GetVariableLabelColor());
+        m_yVarsLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_yVarsLabel, wxSizerFlags{}.CenterVertical());
 
         auto* xLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (axis):"));
         xLabel->SetFont(xLabel->GetFont().Bold());
         varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
         m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_xVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

@@ -89,7 +89,7 @@ namespace Wisteria::UI
         catLabel->SetFont(catLabel->GetFont().Bold());
         varGrid->Add(catLabel, wxSizerFlags{}.CenterVertical());
         m_categoricalVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_categoricalVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_categoricalVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_categoricalVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* weightLabel =
@@ -97,7 +97,7 @@ namespace Wisteria::UI
         weightLabel->SetFont(weightLabel->GetFont().Bold());
         varGrid->Add(weightLabel, wxSizerFlags{}.CenterVertical());
         m_weightVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_weightVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_weightVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_weightVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel =
@@ -105,7 +105,7 @@ namespace Wisteria::UI
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
@@ -169,7 +169,7 @@ namespace Wisteria::UI
         m_shapeButton->Enable(false);
         shapeBtnSizer->Add(m_shapeButton, wxSizerFlags{}.CenterVertical());
         m_shapeLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_shapeLabel->SetForegroundColour(GetVariableLabelColor());
+        m_shapeLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         m_shapeLabel->Enable(false);
         shapeBtnSizer->Add(m_shapeLabel, wxSizerFlags{}.CenterVertical());
         leftSizer->Add(shapeBtnSizer, wxSizerFlags{}.Border(wxLEFT));
@@ -180,7 +180,7 @@ namespace Wisteria::UI
         m_imagesButton->Enable(false);
         imgBtnSizer->Add(m_imagesButton, wxSizerFlags{}.CenterVertical());
         m_imagesLabel = new wxStaticText(optionsPage, wxID_ANY, wxString{});
-        m_imagesLabel->SetForegroundColour(GetVariableLabelColor());
+        m_imagesLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         m_imagesLabel->Enable(false);
         imgBtnSizer->Add(m_imagesLabel, wxSizerFlags{}.CenterVertical());
         leftSizer->Add(imgBtnSizer, wxSizerFlags{}.Border(wxLEFT));

@@ -79,7 +79,7 @@ namespace Wisteria::UI
         questionsLabel->SetFont(questionsLabel->GetFont().Bold());
         varGrid->Add(questionsLabel, wxSizerFlags{}.CenterVertical());
         m_questionsVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_questionsVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_questionsVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_questionsVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel =
@@ -87,7 +87,7 @@ namespace Wisteria::UI
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());

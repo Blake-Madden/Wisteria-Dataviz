@@ -79,35 +79,35 @@ namespace Wisteria::UI
         taskLabel->SetFont(taskLabel->GetFont().Bold());
         varGrid->Add(taskLabel, wxSizerFlags{}.CenterVertical());
         m_taskVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_taskVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_taskVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_taskVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* startLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Start date:"));
         startLabel->SetFont(startLabel->GetFont().Bold());
         varGrid->Add(startLabel, wxSizerFlags{}.CenterVertical());
         m_startDateVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_startDateVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_startDateVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_startDateVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* endLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"End date:"));
         endLabel->SetFont(endLabel->GetFont().Bold());
         varGrid->Add(endLabel, wxSizerFlags{}.CenterVertical());
         m_endDateVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_endDateVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_endDateVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_endDateVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* resourceLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Resource:"));
         resourceLabel->SetFont(resourceLabel->GetFont().Bold());
         varGrid->Add(resourceLabel, wxSizerFlags{}.CenterVertical());
         m_resourceVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_resourceVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_resourceVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_resourceVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* descLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Description:"));
         descLabel->SetFont(descLabel->GetFont().Bold());
         varGrid->Add(descLabel, wxSizerFlags{}.CenterVertical());
         m_descriptionVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_descriptionVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_descriptionVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_descriptionVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* completionLabel =
@@ -115,14 +115,14 @@ namespace Wisteria::UI
         completionLabel->SetFont(completionLabel->GetFont().Bold());
         varGrid->Add(completionLabel, wxSizerFlags{}.CenterVertical());
         m_completionVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_completionVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_completionVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_completionVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
         varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
         m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(GetVariableLabelColor());
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
