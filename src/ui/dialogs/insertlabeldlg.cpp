@@ -258,20 +258,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertLabelDlg::Validate()
-        {
-        if (m_textCtrl->GetValue().empty())
-            {
-            wxMessageBox(_(L"Please enter label text."), _(L"Text Required"), wxOK | wxICON_WARNING,
-                         this);
-            m_textCtrl->SetFocus();
-            return false;
-            }
-
-        return true;
-        }
-
-    //-------------------------------------------
     void InsertLabelDlg::LoadFromLabel(const Wisteria::GraphItems::Label& label)
         {
         if (m_includePageOptions)

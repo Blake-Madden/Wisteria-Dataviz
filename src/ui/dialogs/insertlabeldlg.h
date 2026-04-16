@@ -170,7 +170,6 @@ namespace Wisteria::UI
 
       private:
         void CreateControls() final;
-        bool Validate() final;
         void OnEnableHeader(bool enable);
 
         void OnAddTopShape();
