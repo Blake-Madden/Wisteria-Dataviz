@@ -619,7 +619,12 @@ namespace Wisteria::UI
         dlg.ApplyToLabel(label);
         if (preview != nullptr)
             {
-            preview->SetLabel(label.GetText());
+            auto labelText{ label.GetText() };
+            if (const auto newlinePos = labelText.find(L'\n'); newlinePos != wxString::npos)
+                {
+                labelText.erase(newlinePos).append(L'…');
+                }
+            preview->SetLabel(labelText);
             }
         }
 
@@ -1918,7 +1923,12 @@ namespace Wisteria::UI
                 }
             if (preview != nullptr)
                 {
-                preview->SetLabel(src.GetText());
+                auto labelText{ src.GetText() };
+                if (const auto newlinePos = labelText.find(L'\n'); newlinePos != wxString::npos)
+                    {
+                    labelText.erase(newlinePos).append(L'…');
+                    }
+                preview->SetLabel(labelText);
                 }
         };
         loadLabel(graph.GetTitle(), m_titleLabel, m_titlePreview);
