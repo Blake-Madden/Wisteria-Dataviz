@@ -1110,7 +1110,7 @@ namespace Wisteria::GraphItems
                                            midY + (halfHeightBase * math_constants::fifth)),
                                    wxPoint(centerXLine, creaseBottomY));
 
-            gc->SetBrush(wxNullBrush);
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
             gc->SetPen(wxPen{ TintIfUsingOpacity(wxColour{ 220, 110, 0, 200 }), outlinePenWidth });
             gc->StrokePath(crease);
             }
@@ -1396,7 +1396,7 @@ namespace Wisteria::GraphItems
                 if (drawVeins)
                     {
                     // stroke-only setup and opaque pen
-                    gc->SetBrush(wxNullBrush);
+                    gc->SetBrush(*wxTRANSPARENT_BRUSH);
 
                     const double h = petalLen;
                     const double w = petalWidth;
@@ -1451,7 +1451,7 @@ namespace Wisteria::GraphItems
                                      clampU8(receptacleColor.Green() + 35),
                                      clampU8(receptacleColor.Blue() + 35) };
 
-            gc->SetPen(wxNullPen);
+            gc->SetPen(*wxTRANSPARENT_PEN);
             const auto coreGrad = gc->CreateRadialGradientBrush(centerX, centerY, centerX, centerY,
                                                                 coreR, coreLite, receptacleColor);
             gc->SetBrush(coreGrad);
@@ -1469,7 +1469,7 @@ namespace Wisteria::GraphItems
             const wxBrush seedA{ wxColour{ 120, 90, 70 } };
             const wxBrush seedB{ wxColour{ 170, 135, 110 } };
 
-            gc->SetPen(wxNullPen);
+            gc->SetPen(*wxTRANSPARENT_PEN);
 
             for (int i = 0; i < nSeeds; ++i)
                 {
@@ -3082,7 +3082,7 @@ namespace Wisteria::GraphItems
                 // eyes
                 gc->SetPen(wxPenInfo{
                     faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(math_constants::fifth)) });
-                gc->SetBrush(wxNullBrush);
+                gc->SetBrush(*wxTRANSPARENT_BRUSH);
 
                 auto drawEye = [&](double ex)
                 {
@@ -3091,7 +3091,7 @@ namespace Wisteria::GraphItems
                     gc->DrawEllipse(ex - (eyeW * math_constants::half), eyeTopY, eyeW, eyeH);
 
                     gc->SetBrush(faintBlack);
-                    gc->SetPen(wxNullPen);
+                    gc->SetPen(*wxTRANSPARENT_PEN);
 
                     gc->DrawEllipse(ex - pupilR + pupilOffsetX,
                                     eyeTopY + (eyeH * math_constants::half) - pupilR, pupilR * 2.0,
@@ -3100,7 +3100,7 @@ namespace Wisteria::GraphItems
                     gc->SetPen(wxPenInfo{
                         faintBlack,
                         std::max<int>(1, ScaleToScreenAndCanvas(math_constants::fifth)) });
-                    gc->SetBrush(wxNullBrush);
+                    gc->SetBrush(*wxTRANSPARENT_BRUSH);
                 };
 
                 drawEye(leftEyeX);
@@ -4504,7 +4504,7 @@ namespace Wisteria::GraphItems
         arrowPath.CloseSubpath();
 
         // Fill
-        gc->SetPen(wxNullPen);
+        gc->SetPen(*wxTRANSPARENT_PEN);
         gc->SetBrush(wxBrush(fillColor));
         gc->FillPath(arrowPath);
 
@@ -4581,7 +4581,7 @@ namespace Wisteria::GraphItems
                 Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(70)));
 
             gc->SetBrush(sheenBrush);
-            gc->SetPen(wxNullPen);
+            gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
             }
 
@@ -4603,8 +4603,8 @@ namespace Wisteria::GraphItems
             gc->StrokePath(arrowPath);
             }
 
-        gc->SetPen(wxNullPen);
-        gc->SetBrush(wxNullBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
         }
 
     //---------------------------------------------------
@@ -5340,7 +5340,7 @@ namespace Wisteria::GraphItems
         gc->Translate(-centerPoint.x, -centerPoint.y);
 
         // leaf fill (red -> orange)
-        gc->SetPen(wxNullPen);
+        gc->SetPen(*wxTRANSPARENT_PEN);
         const auto leafBrush = gc->CreateLinearGradientBrush(
             GetXPosFromLeft(rect, 0.00), GetYPosFromTop(rect, math_constants::half),
             GetXPosFromLeft(rect, math_constants::three_fourths),
@@ -5395,7 +5395,7 @@ namespace Wisteria::GraphItems
             wxGraphicsPath insideStemPath = gc->CreatePath();
             insideStemPath.MoveToPoint(leafTipPoint.m_x, insideStartY);
             insideStemPath.AddLineToPoint(leafBottomPoint.m_x, leafBottomPoint.m_y);
-            gc->SetBrush(wxNullBrush);
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
             gc->SetPen(insideStemPen);
             gc->StrokePath(insideStemPath);
             }
@@ -5409,7 +5409,7 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(rect, math_constants::three_quarters +
                                          (math_constants::quarter * math_constants::half)),
                 stemCurlEndPoint.m_x, stemCurlEndPoint.m_y);
-            gc->SetBrush(wxNullBrush);
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
             gc->SetPen(outsideStemPen);
             gc->StrokePath(outsideStemPath);
             }

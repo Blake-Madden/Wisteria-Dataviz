@@ -42,7 +42,9 @@ namespace Wisteria
         /// @private
         ~DCPenChangerIfDifferent() noexcept
             {
-            if (m_swapPens)
+            // only restore if the previous pen was valid; otherwise we'd push an invalid
+            // pen back into the DC, which asserts on some backends
+            if (m_swapPens && m_penOld.IsOk())
                 {
                 m_dc.SetPen(m_penOld);
                 }
@@ -81,7 +83,9 @@ namespace Wisteria
         /// @private
         ~DCBrushChangerIfDifferent() noexcept
             {
-            if (m_swapBrushes)
+            // only restore if the previous brush was valid; otherwise we'd push an invalid
+            // brush back into the DC, which asserts on some backends
+            if (m_swapBrushes && m_brushOld.IsOk())
                 {
                 m_dc.SetBrush(m_brushOld);
                 }
@@ -119,7 +123,9 @@ namespace Wisteria
         /// @private
         ~DCFontChangerIfDifferent() noexcept
             {
-            if (m_swapFonts)
+            // only restore if the previous font was valid; otherwise we'd push an invalid
+            // font back into the DC, which asserts on some backends
+            if (m_swapFonts && m_fontOld.IsOk())
                 {
                 m_dc.SetFont(m_fontOld);
                 }
@@ -158,7 +164,9 @@ namespace Wisteria
         /// @private
         ~DCTextColourChangerIfDifferent() noexcept
             {
-            if (m_swapColors)
+            // only restore if the previous color was valid; otherwise we'd push an invalid
+            // color back into the DC, which asserts on some backends
+            if (m_swapColors && m_colFgOld.IsOk())
                 {
                 m_dc.SetTextForeground(m_colFgOld);
                 }
