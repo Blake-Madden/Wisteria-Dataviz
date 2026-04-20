@@ -105,6 +105,147 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_autoSpline)),
                           wxSizerFlags{}.Border());
 
+        // showcasing
+        auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
+
+        auto* ghostOpacitySizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        ghostOpacitySizer->Add(
+            new wxStaticText(ghostBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
+        opacitySpin->SetRange(0, 255);
+        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        ghostOpacitySizer->Add(opacitySpin);
+        ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
+
+        m_showcaseListBox = new wxEditableListBox(
+            ghostBox->GetStaticBox(), wxID_ANY, _(L"Showcase lines:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
+        optionsSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New button for showcase lines
+        m_showcaseListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const auto dataset = GetSelectedDataset();
+                if (dataset == nullptr || m_groupVariable.empty())
+                    {
+                    wxMessageBox(
+                        _(L"Select a grouping variable first to populate available lines."),
+                        _(L"No Groups"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+
+                wxArrayString groupChoices;
+                const auto groupCol = dataset->GetCategoricalColumn(m_groupVariable);
+                if (groupCol != dataset->GetCategoricalColumns().cend())
+                    {
+                    for (const auto& [id, label] : groupCol->GetStringTable())
+                        {
+                        if (!label.empty())
+                            {
+                            groupChoices.Add(label);
+                            }
+                        }
+                    }
+
+                if (groupChoices.empty())
+                    {
+                    return;
+                    }
+
+                wxSingleChoiceDialog dlg(this, _(L"Select line to showcase:"), _(L"Showcase Line"),
+                                         groupChoices);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    const auto val = dlg.GetStringSelection();
+                    if (std::find(m_showcaseLines.begin(), m_showcaseLines.end(), val) ==
+                        m_showcaseLines.end())
+                        {
+                        m_showcaseLines.push_back(val);
+                        wxArrayString strings;
+                        for (const auto& showLine : m_showcaseLines)
+                            {
+                            strings.Add(showLine);
+                            }
+                        m_showcaseListBox->SetStrings(strings);
+                        }
+                    }
+            });
+
+        // override Edit button
+        m_showcaseListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const auto dataset = GetSelectedDataset();
+                auto* listCtrl = m_showcaseListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseLines.size()) ||
+                    dataset == nullptr || m_groupVariable.empty())
+                    {
+                    return;
+                    }
+
+                wxArrayString groupChoices;
+                const auto groupCol = dataset->GetCategoricalColumn(m_groupVariable);
+                if (groupCol != dataset->GetCategoricalColumns().cend())
+                    {
+                    for (const auto& [id, label] : groupCol->GetStringTable())
+                        {
+                        if (!label.empty())
+                            {
+                            groupChoices.Add(label);
+                            }
+                        }
+                    }
+
+                if (groupChoices.empty())
+                    {
+                    return;
+                    }
+
+                wxSingleChoiceDialog dlg(this, _(L"Select line to showcase:"), _(L"Showcase Line"),
+                                         groupChoices);
+                dlg.SetSelection(sel);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    m_showcaseLines[sel] = dlg.GetStringSelection();
+                    wxArrayString strings;
+                    for (const auto& s : m_showcaseLines)
+                        {
+                        strings.Add(s);
+                        }
+                    m_showcaseListBox->SetStrings(strings);
+                    }
+            });
+
+        // override Delete button
+        m_showcaseListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseLines.size()))
+                    {
+                    return;
+                    }
+                m_showcaseLines.erase(m_showcaseLines.begin() + sel);
+                wxArrayString strings;
+                for (const auto& s : m_showcaseLines)
+                    {
+                    strings.Add(s);
+                    }
+                m_showcaseListBox->SetStrings(strings);
+            });
+
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
@@ -218,6 +359,13 @@ namespace Wisteria::UI
         m_xVarLabel->SetLabel(m_xVariable);
         m_groupVarLabel->SetLabel(m_groupVariable);
 
+        // clear showcase if group changes
+        m_showcaseLines.clear();
+        if (m_showcaseListBox != nullptr)
+            {
+            m_showcaseListBox->SetStrings(wxArrayString{});
+            }
+
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
 
@@ -322,6 +470,17 @@ namespace Wisteria::UI
 
         // line-specific options
         m_autoSpline = linePlot->IsAutoSplining();
+        m_ghostOpacity = linePlot->GetGhostOpacity();
+        m_showcaseLines = linePlot->GetShowcasedLines();
+        if (m_showcaseListBox != nullptr)
+            {
+            wxArrayString strings;
+            for (const auto& showLine : m_showcaseLines)
+                {
+                strings.Add(showLine);
+                }
+            m_showcaseListBox->SetStrings(strings);
+            }
 
         TransferDataToWindow();
         }

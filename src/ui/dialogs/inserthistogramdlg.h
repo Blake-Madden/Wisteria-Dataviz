@@ -123,6 +123,20 @@ namespace Wisteria::UI
             return m_neatIntervals;
             }
 
+        /// @returns The ghost opacity for non-showcased bins.
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /// @returns The bins to showcase.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedBars() const noexcept
+            {
+            return m_showcasedBars;
+            }
+
         /// @brief Populates all dialog controls from an existing histogram.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -145,6 +159,7 @@ namespace Wisteria::UI
         wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_continuousVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
 
         // DDX data members
         int m_binningMethod{ 2 };   // BinByIntegerRange
@@ -153,6 +168,8 @@ namespace Wisteria::UI
         int m_binLabelDisplay{ 0 }; // BinValue
         bool m_showFullRange{ true };
         bool m_neatIntervals{ false };
+        int m_ghostOpacity{ 32 };
+        std::vector<wxString> m_showcasedBars;
 
         wxString m_continuousVariable;
         wxString m_groupVariable;

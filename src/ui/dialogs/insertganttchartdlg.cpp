@@ -213,7 +213,37 @@ namespace Wisteria::UI
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
         optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
 
-        // helper to prompt for a bar label + shape selection
+        // showcasing
+        auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
+
+        auto* ghostOpacitySizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        ghostOpacitySizer->Add(
+            new wxStaticText(ghostBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
+        opacitySpin->SetRange(0, 255);
+        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        ghostOpacitySizer->Add(opacitySpin);
+        ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
+
+        m_showcaseListBox = new wxEditableListBox(
+            ghostBox->GetStaticBox(), wxID_ANY, _(L"Showcase bars:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
+        optionsSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // Helper to collect available bar labels
+        auto gatherBarLabels = [this]() -> wxArrayString
+        {
+            wxArrayString labels;
+            for (const auto& label : m_taskLabels)
+                {
+                labels.Add(label);
+                }
+            return labels;
+        };
+
         const auto promptForShape = [this](const wxArrayString& barChoices, const wxString& caption,
                                            wxString& inOutLabel,
                                            Graphs::BarChart::BarShape& inOutShape) -> bool
@@ -271,16 +301,93 @@ namespace Wisteria::UI
             return true;
         };
 
-        // helper to collect available bar labels from the task column
-        const auto gatherBarLabels = [this]() -> wxArrayString
-        {
-            wxArrayString labels;
-            for (const auto& label : m_taskLabels)
-                {
-                labels.Add(label);
-                }
-            return labels;
-        };
+        // override New button for showcase bars
+        m_showcaseListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this, gatherBarLabels]([[maybe_unused]]
+                                    wxCommandEvent& event)
+            {
+                const auto choices = gatherBarLabels();
+                if (choices.empty())
+                    {
+                    wxMessageBox(_(L"Select a task variable first to populate available bars."),
+                                 _(L"No Tasks"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+
+                wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"),
+                                         choices);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    const auto val = dlg.GetStringSelection();
+                    if (std::find(m_showcaseBars.begin(), m_showcaseBars.end(), val) ==
+                        m_showcaseBars.end())
+                        {
+                        m_showcaseBars.push_back(val);
+                        wxArrayString strings;
+                        for (const auto& showBar : m_showcaseBars)
+                            {
+                            strings.Add(showBar);
+                            }
+                        m_showcaseListBox->SetStrings(strings);
+                        }
+                    }
+            });
+
+        // override Edit button
+        m_showcaseListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this, gatherBarLabels]([[maybe_unused]]
+                                    wxCommandEvent& event)
+            {
+                auto* listCtrl = m_showcaseListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()))
+                    {
+                    return;
+                    }
+
+                const auto choices = gatherBarLabels();
+                if (choices.empty())
+                    {
+                    return;
+                    }
+
+                wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"),
+                                         choices);
+                dlg.SetSelection(sel);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    m_showcaseBars[sel] = dlg.GetStringSelection();
+                    wxArrayString strings;
+                    for (const auto& s : m_showcaseBars)
+                        {
+                        strings.Add(s);
+                        }
+                    m_showcaseListBox->SetStrings(strings);
+                    }
+            });
+
+        // override Delete button
+        m_showcaseListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()))
+                    {
+                    return;
+                    }
+                m_showcaseBars.erase(m_showcaseBars.begin() + sel);
+                wxArrayString strings;
+                for (const auto& showBar : m_showcaseBars)
+                    {
+                    strings.Add(showBar);
+                    }
+                m_showcaseListBox->SetStrings(strings);
+            });
 
         // override New button for per-bar shapes
         m_shapePerBarListBox->GetNewButton()->Bind(
@@ -900,6 +1007,19 @@ namespace Wisteria::UI
         default:
             m_taskLabelDisplay = 3;
             break;
+            }
+
+        // showcase bars
+        m_ghostOpacity = gantt->GetGhostOpacity();
+        m_showcaseBars = gantt->GetShowcasedLabels();
+        if (m_showcaseListBox != nullptr)
+            {
+            wxArrayString strings;
+            for (const auto& showBar : m_showcaseBars)
+                {
+                strings.Add(showBar);
+                }
+            m_showcaseListBox->SetStrings(strings);
             }
 
         // capture current bars for the per-bar shape list

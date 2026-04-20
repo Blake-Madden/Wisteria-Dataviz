@@ -93,6 +93,20 @@ namespace Wisteria::UI
             return m_autoSpline;
             }
 
+        /// @returns The ghost opacity for non-showcased lines.
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /// @returns The lines to showcase.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcaseLines() const noexcept
+            {
+            return m_showcaseLines;
+            }
+
         /// @brief Populates all dialog controls from an existing line plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -116,9 +130,12 @@ namespace Wisteria::UI
         wxStaticText* m_xVarLabel{ nullptr };
         wxStaticText* m_yVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
 
         // DDX data members
         bool m_autoSpline{ true };
+        int m_ghostOpacity{ 32 };
+        std::vector<wxString> m_showcaseLines;
 
         wxString m_xVariable;
         wxString m_yVariable;

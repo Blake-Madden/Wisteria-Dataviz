@@ -211,6 +211,20 @@ namespace Wisteria::UI
             return m_imageStitchDirection;
             }
 
+        /// @returns The ghost opacity for non-showcased bars.
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /// @returns The bars to showcase.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcaseBars() const noexcept
+            {
+            return m_showcaseBars;
+            }
+
         /// @returns The bar groups (label-based, for applying via AddBarGroup).
         [[nodiscard]]
         const std::vector<BarGroupInfo>& GetBarGroups() const noexcept
@@ -294,6 +308,7 @@ namespace Wisteria::UI
         wxStaticText* m_categoricalVarLabel{ nullptr };
         wxStaticText* m_weightVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
 
         wxButton* m_shapeButton{ nullptr };
         wxStaticText* m_shapeLabel{ nullptr };
@@ -323,6 +338,8 @@ namespace Wisteria::UI
         int m_barOrientationIndex{ 0 };
         int m_barLabelDisplayIndex{ 0 };
         int m_barShapeAllIndex{ 0 };
+        int m_ghostOpacity{ 32 };
+        std::vector<wxString> m_showcaseBars;
 
         wxString m_categoricalVariable;
         wxString m_weightVariable;

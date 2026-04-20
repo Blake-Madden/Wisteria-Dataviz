@@ -93,6 +93,20 @@ namespace Wisteria::UI
             return m_timeIntervalLabel;
             }
 
+        /// @returns The ghost opacity for showcasing lines.
+        [[nodiscard]]
+        int GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /// @returns The lines to showcase.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedLines() const noexcept
+            {
+            return m_showcaseLines;
+            }
+
         /// @brief Populates all dialog controls from an existing W-Curve plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -122,6 +136,10 @@ namespace Wisteria::UI
         wxString m_yVariable;
         wxString m_xVariable;
         wxString m_groupVariable;
+
+        std::vector<wxString> m_showcaseLines;
+        int m_ghostOpacity{ 128 };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
 
         std::vector<wxString> m_datasetNames;
         };

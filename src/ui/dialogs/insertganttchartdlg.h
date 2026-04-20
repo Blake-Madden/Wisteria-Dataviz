@@ -140,6 +140,20 @@ namespace Wisteria::UI
             return m_barShapes;
             }
 
+        /// @returns The ghost opacity for showcasing bars.
+        [[nodiscard]]
+        int GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /// @returns The labels of the showcased bars.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedLabels() const noexcept
+            {
+            return m_showcaseBars;
+            }
+
         /// @brief Populates all dialog controls from an existing Gantt chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -199,6 +213,11 @@ namespace Wisteria::UI
         std::vector<wxString> m_datasetNames;
         std::vector<wxString> m_taskLabels;
         std::vector<std::pair<wxString, Graphs::BarChart::BarShape>> m_barShapes;
+
+        // showcasing
+        std::vector<wxString> m_showcaseBars;
+        int m_ghostOpacity{ 128 };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
         };
     } // namespace Wisteria::UI
 

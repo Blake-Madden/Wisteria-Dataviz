@@ -264,7 +264,126 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         rightSizer->Add(m_barGroupListBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
 
+        // showcasing
+        auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
+
+        auto* ghostOpacitySizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        ghostOpacitySizer->Add(
+            new wxStaticText(ghostBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
+        opacitySpin->SetRange(0, 255);
+        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        ghostOpacitySizer->Add(opacitySpin);
+        ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
+
+        m_showcaseListBox = new wxEditableListBox(
+            ghostBox->GetStaticBox(), wxID_ANY, _(L"Showcase bars:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
+        rightSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
+
         optionsSizer->Add(rightSizer, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New button for showcase bars
+        m_showcaseListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const auto dataset = GetSelectedDataset();
+                if (dataset == nullptr || m_categoricalVariable.empty())
+                    {
+                    wxMessageBox(
+                        _(L"Select a categorical variable first to populate available bars."),
+                        _(L"No Categories"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+
+                wxArrayString choices;
+                m_sortLabelListBox->GetStrings(choices);
+                if (choices.empty())
+                    {
+                    return;
+                    }
+
+                wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"),
+                                         choices);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    const auto val = dlg.GetStringSelection();
+                    if (std::find(m_showcaseBars.begin(), m_showcaseBars.end(), val) ==
+                        m_showcaseBars.end())
+                        {
+                        m_showcaseBars.push_back(val);
+                        wxArrayString strings;
+                        for (const auto& showBar : m_showcaseBars)
+                            {
+                            strings.Add(showBar);
+                            }
+                        m_showcaseListBox->SetStrings(strings);
+                        }
+                    }
+            });
+
+        // override Edit button
+        m_showcaseListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const auto dataset = GetSelectedDataset();
+                auto* listCtrl = m_showcaseListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()) ||
+                    dataset == nullptr || m_categoricalVariable.empty())
+                    {
+                    return;
+                    }
+
+                wxArrayString choices;
+                m_sortLabelListBox->GetStrings(choices);
+                if (choices.empty())
+                    {
+                    return;
+                    }
+
+                wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"),
+                                         choices);
+                dlg.SetSelection(sel);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    m_showcaseBars[sel] = dlg.GetStringSelection();
+                    wxArrayString strings;
+                    for (const auto& s : m_showcaseBars)
+                        {
+                        strings.Add(s);
+                        }
+                    m_showcaseListBox->SetStrings(strings);
+                    }
+            });
+
+        // override Delete button
+        m_showcaseListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()))
+                    {
+                    return;
+                    }
+                m_showcaseBars.erase(m_showcaseBars.begin() + sel);
+                wxArrayString strings;
+                for (const auto& s : m_showcaseBars)
+                    {
+                    strings.Add(s);
+                    }
+                m_showcaseListBox->SetStrings(strings);
+            });
 
         // override New button to open a structured sub-dialog
         m_barGroupListBox->GetNewButton()->Bind(
@@ -1081,6 +1200,12 @@ namespace Wisteria::UI
         m_barGroups.clear();
         // per-bar shapes reference axis labels that become invalid too
         m_barShapes.clear();
+        // showcase bars also become invalid
+        m_showcaseBars.clear();
+        if (m_showcaseListBox != nullptr)
+            {
+            m_showcaseListBox->SetStrings(wxArrayString{});
+            }
 
         const bool hasGroup = !m_groupVariable.empty();
         if (m_legendLabel != nullptr)
@@ -1308,6 +1433,17 @@ namespace Wisteria::UI
         m_boxEffectIndex = BoxEffectToIndex(barChart->GetBarEffect());
         m_barOrientationIndex = (barChart->GetBarOrientation() == Orientation::Vertical) ? 1 : 0;
         m_barLabelDisplayIndex = BinLabelDisplayToIndex(barChart->GetBinLabelDisplay());
+        m_ghostOpacity = barChart->GetGhostOpacity();
+        m_showcaseBars = barChart->GetShowcasedLabels();
+        if (m_showcaseListBox != nullptr)
+            {
+            wxArrayString strings;
+            for (const auto& showBar : m_showcaseBars)
+                {
+                strings.Add(showBar);
+                }
+            m_showcaseListBox->SetStrings(strings);
+            }
 
         // stipple shape (restore from property templates so it persists
         // even when the current box effect is not StippleShape)
