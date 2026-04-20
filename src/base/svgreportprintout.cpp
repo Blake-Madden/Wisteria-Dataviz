@@ -104,7 +104,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         totalHeight += layoutHeight;
         if (i < pageSizes.size() - 1)
             {
-            totalHeight += options.m_horizontalGap;
+            totalHeight += PAGE_GAP;
             }
         }
 
@@ -190,7 +190,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         svgContent += L"\n</g>\n";
 
-        yOffset += (layoutHeight + options.m_horizontalGap);
+        yOffset += (layoutHeight + PAGE_GAP);
         }
 
     svgContent += L"</g>\n";
@@ -317,16 +317,11 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             {
             header += wxString::Format(
                 L"  let isDuplex = false;\n"
-                "  let currentGap = %d;\n"
                 "  function toggleLayout() {\n"
                 "    isDuplex = !isDuplex;\n"
                 "    const btnText = document.getElementById('toggle-btn-text');\n"
                 "    if (btnText) btnText.textContent = isDuplex ? '\U0001F4C4 %s' : "
                 "'\U0001F4C4\U0001F4C4 %s';\n"
-                "    applyLayout();\n"
-                "  }\n"
-                "  function adjustGap(delta) {\n"
-                "    currentGap = Math.max(0, currentGap + delta);\n"
                 "    applyLayout();\n"
                 "  }\n"
                 "  function applyLayout() {\n"
@@ -335,7 +330,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    if (pages.length === 0) return;\n"
                 "    const w = parseInt(pages[0].getAttribute('data-width'));\n"
                 "    const h = parseInt(pages[0].getAttribute('data-height'));\n"
-                "    const gap = currentGap;\n"
+                "    const gap = %d;\n"
                 "    const sideGap = 25;\n"
                 "    if (isDuplex) {\n"
                 "      pages.forEach((p, i) => {\n"
@@ -356,7 +351,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    }\n"
                 "    updateUILayerPosition();\n"
                 "  }\n",
-                options.m_horizontalGap, _(L"Stacked"), _(L"Duplex"));
+                _(L"Stacked"), _(L"Duplex"), PAGE_GAP);
             }
 
         if (options.m_includeDarkModeToggle)
@@ -447,7 +442,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         {
         svgContent += L"<g id=\"ui-layer\">\n";
         // Add a transparent rectangle to catch hover events over the general UI area
-        svgContent += L"  <rect x=\"0\" y=\"0\" width=\"250\" height=\"150\" fill=\"transparent\" "
+        svgContent += L"  <rect x=\"0\" y=\"0\" width=\"500\" height=\"300\" fill=\"transparent\" "
                       L"style=\"pointer-events:all\"/>\n";
 
         if (options.m_includeLayoutOptions)
@@ -456,18 +451,8 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 L"  <rect class=\"btn\" x=\"10\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
                 "onclick=\"toggleLayout()\"><title>%s</title></rect>\n"
                 "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"70\" y=\"29\">"
-                "\U0001F4C4\U0001F4C4 %s</text>\n"
-                "  <rect class=\"btn\" x=\"10\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
-                "onclick=\"adjustGap(-1)\"><title>%s</title></rect>\n"
-                "  <text class=\"btn-text\" x=\"25\" y=\"69\">-</text>\n"
-                "  <rect class=\"btn\" x=\"50\" y=\"50\" width=\"140\" height=\"30\" rx=\"15\" />\n"
-                "  <text class=\"btn-text\" x=\"120\" y=\"69\">%s</text>\n"
-                "  <rect class=\"btn\" x=\"200\" y=\"50\" width=\"30\" height=\"30\" rx=\"15\" "
-                "onclick=\"adjustGap(1)\"><title>%s</title></rect>\n"
-                "  <text class=\"btn-text\" x=\"215\" y=\"69\">+</text>\n",
-                _(L"Toggle between stacked and duplex page layout"), _(L"Duplex"),
-                _(L"Decrease vertical space between pages"), _(L"Page gap"),
-                _(L"Increase vertical space between pages"));
+                "\U0001F4C4\U0001F4C4 %s</text>\n",
+                _(L"Toggle between stacked and duplex page layout"), _(L"Duplex"));
             }
 
         if (options.m_includeDarkModeToggle)
@@ -484,11 +469,11 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         if (options.m_includeSlideshow)
             {
             // place below whichever rows are already present:
-            //   layout toggle adds rows at y=10 and y=50 -> slideshow at y=90
-            //   dark mode only adds row at y=10              -> slideshow at y=50
-            //   slideshow alone                              -> y=10
+            //   layout toggle adds row at y=10  -> slideshow at y=50
+            //   dark mode only adds row at y=10 -> slideshow at y=50
+            //   slideshow alone                 -> y=10
             const int slideshowY =
-                options.m_includeLayoutOptions ? 90 : (options.m_includeDarkModeToggle ? 50 : 10);
+                (options.m_includeLayoutOptions || options.m_includeDarkModeToggle) ? 50 : 10;
             svgContent += wxString::Format(
                 L"  <rect id=\"prev-page-btn\" class=\"btn\" x=\"10\" y=\"%d\" width=\"30\" "
                 "height=\"30\" rx=\"15\" onclick=\"prevPage()\" style=\"opacity:0.35\">"

@@ -73,17 +73,6 @@ namespace Wisteria::UI
         leftColumnSizer->Add(sizeSizer, wxSizerFlags{}.Expand());
         leftColumnSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 
-        // horizontal gap
-        auto* gapSizer = new wxBoxSizer(wxHORIZONTAL);
-        gapSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Horizontal page gap:")),
-                      wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-        auto* gapCtrl = new wxSpinCtrl(this, HORIZONTAL_GAP_ID, std::to_wstring(m_horizontalGap),
-                                       wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 500);
-        gapCtrl->SetValidator(wxGenericValidator{ &m_horizontalGap });
-        gapSizer->Add(gapCtrl, wxSizerFlags{}.CenterVertical());
-        leftColumnSizer->Add(gapSizer, wxSizerFlags{}.Expand().Border());
-        leftColumnSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
-
         // interactive features
         auto* featuresSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Interactive Features"));
 

@@ -101,13 +101,6 @@ namespace Wisteria::UI
             return m_themeColor;
             }
 
-        /// @returns The selected horizontal gap (in pixels).
-        [[nodiscard]]
-        int GetHorizontalGap() const noexcept
-            {
-            return m_horizontalGap;
-            }
-
       private:
         void CreateControls();
         void OnSizeChanged(wxSpinEvent& event);
@@ -130,7 +123,6 @@ namespace Wisteria::UI
         constexpr static wxWindowID PAGE_WIDTH_ID{ wxID_HIGHEST };
         constexpr static wxWindowID PAGE_HEIGHT_ID{ wxID_HIGHEST + 1 };
         constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID HORIZONTAL_GAP_ID{ wxID_HIGHEST + 3 };
 
         int m_pageWidth{ 0 };
         int m_pageHeight{ 0 };
@@ -141,7 +133,6 @@ namespace Wisteria::UI
         bool m_includeSlideshow{ true };
         bool m_includePageShadow{ true };
         wxColour m_themeColor{ 103, 58, 183 };
-        int m_horizontalGap{ 25 };
 
         wxPanel* m_previewPanel{ nullptr };
         };

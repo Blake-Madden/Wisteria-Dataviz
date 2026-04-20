@@ -647,7 +647,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    // RAII creates the report, maybe_unused is to silence clant-tidy false positive
+    // RAII creates the report, maybe_unused is to silence clang-tidy false positive
     [[maybe_unused]]
     Wisteria::SVGReportPrintout svgReport(m_pages,
                                           Wisteria::SVGReportOptions(fileDlg.GetPath())
@@ -658,8 +658,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
                                               .LayoutOptions(sizeDlg.IncludeLayoutOptions())
                                               .DarkModeToggle(sizeDlg.IncludeDarkModeToggle())
                                               .Slideshow(sizeDlg.IncludeSlideshow())
-                                              .ThemeColor(sizeDlg.GetThemeColor())
-                                              .HorizontalGap(sizeDlg.GetHorizontalGap()));
+                                              .ThemeColor(sizeDlg.GetThemeColor()));
     }
 
 //-------------------------------------------
