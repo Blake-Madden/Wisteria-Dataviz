@@ -4194,6 +4194,15 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
                       dlg.GetTaskVariable(), dlg.GetStartDateVariable(), dlg.GetEndDateVariable(),
                       resourceCol, descCol, compCol, groupCol);
 
+        for (const auto& [label, shape] : dlg.GetBarShapes())
+            {
+            const auto barPos = plot->FindBar(label);
+            if (barPos.has_value())
+                {
+                plot->GetBars().at(barPos.value()).SetShape(shape);
+                }
+            }
+
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
         plot->SetPropertyTemplate(L"variables.task", dlg.GetTaskVariable());
         plot->SetPropertyTemplate(L"variables.start-date", dlg.GetStartDateVariable());
@@ -4293,6 +4302,16 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                              graph.GetPropertyTemplate(L"variables.completion"));
         CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
                              graph.GetPropertyTemplate(L"variables.group"));
+
+        // restore per-bar shapes (bars not listed stay at the default Rectangle)
+        for (const auto& [label, shape] : dlg.GetBarShapes())
+            {
+            const auto barPos = plot->FindBar(label);
+            if (barPos.has_value())
+                {
+                plot->GetBars().at(barPos.value()).SetShape(shape);
+                }
+            }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
@@ -4917,6 +4936,16 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
                 }
             }
 
+        // apply per-bar shapes (bars not listed stay at the default Rectangle)
+        for (const auto& [label, shape] : dlg.GetBarShapes())
+            {
+            const auto barPos = plot->FindBar(label);
+            if (barPos.has_value())
+                {
+                plot->GetBars().at(barPos.value()).SetShape(shape);
+                }
+            }
+
         // apply bar groups
         for (const auto& group : dlg.GetBarGroups())
             {
@@ -5104,6 +5133,16 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                     .GetBlocks()
                     .at(decalInfo.m_blockIndex)
                     .SetDecal(decalInfo.m_decal);
+                }
+            }
+
+        // restore per-bar shapes (bars not listed stay at the default Rectangle)
+        for (const auto& [label, shape] : dlg.GetBarShapes())
+            {
+            const auto barPos = plot->FindBar(label);
+            if (barPos.has_value())
+                {
+                plot->GetBars().at(barPos.value()).SetShape(shape);
                 }
             }
 

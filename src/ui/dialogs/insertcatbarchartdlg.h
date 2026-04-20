@@ -137,6 +137,15 @@ namespace Wisteria::UI
             return BinLabelDisplayFromIndex(m_barLabelDisplayIndex);
             }
 
+        /// @returns Per-bar shape overrides keyed by axis label.
+        ///     Bars not present in this list should be left at BarShape::Rectangle.
+        [[nodiscard]]
+        const std::vector<std::pair<wxString, Graphs::BarChart::BarShape>>&
+        GetBarShapes() const noexcept
+            {
+            return m_barShapes;
+            }
+
         /// @returns The stipple shape (only meaningful when box effect is StippleShape).
         [[nodiscard]]
         Icons::IconShape GetStippleShape() const noexcept
@@ -255,8 +264,11 @@ namespace Wisteria::UI
         void OnSelectImages();
         void OnBoxEffectChanged();
         void OnBarSortChanged();
+        void OnBarShapeModeChanged();
+        void OnBarShapeAllChanged();
         void UpdateVariableLabels();
         void SyncBarGroupsToList();
+        void SyncBarShapesToList();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
@@ -267,6 +279,10 @@ namespace Wisteria::UI
         static BinLabelDisplay BinLabelDisplayFromIndex(int index) noexcept;
         [[nodiscard]]
         static int BinLabelDisplayToIndex(BinLabelDisplay display) noexcept;
+        [[nodiscard]]
+        static Graphs::BarChart::BarShape BarShapeFromIndex(int index) noexcept;
+        [[nodiscard]]
+        static int BarShapeToIndex(Graphs::BarChart::BarShape shape) noexcept;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -296,10 +312,17 @@ namespace Wisteria::UI
         // bar group controls
         wxEditableListBox* m_barGroupListBox{ nullptr };
 
+        // bar shape controls
+        wxRadioButton* m_shapeAllRadio{ nullptr };
+        wxRadioButton* m_shapePerBarRadio{ nullptr };
+        wxChoice* m_shapeAllChoice{ nullptr };
+        wxEditableListBox* m_shapePerBarListBox{ nullptr };
+
         // DDX data members
         int m_boxEffectIndex{ 0 };
         int m_barOrientationIndex{ 0 };
         int m_barLabelDisplayIndex{ 0 };
+        int m_barShapeAllIndex{ 0 };
 
         wxString m_categoricalVariable;
         wxString m_weightVariable;
@@ -326,6 +349,10 @@ namespace Wisteria::UI
 
         // bar-block decals (preserved during editing)
         std::vector<BarBlockDecalInfo> m_barBlockDecals;
+
+        // per-bar shape overrides, keyed by axis label (preserved during editing);
+        // bars not in this list default to BarShape::Rectangle
+        std::vector<std::pair<wxString, Graphs::BarChart::BarShape>> m_barShapes;
         };
     } // namespace Wisteria::UI
 

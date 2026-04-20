@@ -185,6 +185,37 @@ namespace Wisteria::UI
         imgBtnSizer->Add(m_imagesLabel, wxSizerFlags{}.CenterVertical());
         leftSizer->Add(imgBtnSizer, wxSizerFlags{}.Border(wxLEFT));
 
+        // bar shapes
+        auto* shapesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Bar Shapes"));
+
+        m_shapeAllRadio =
+            new wxRadioButton(shapesBox->GetStaticBox(), wxID_ANY, _(L"Same shape for all bars:"),
+                              wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+        m_shapeAllRadio->SetValue(true);
+        shapesBox->Add(m_shapeAllRadio, wxSizerFlags{}.Border());
+
+        wxArrayString barShapeChoices;
+        barShapeChoices.Add(_(L"Rectangle"));
+        barShapeChoices.Add(_(L"Arrow"));
+        barShapeChoices.Add(_(L"Reverse Arrow"));
+        m_shapeAllChoice =
+            new wxChoice(shapesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                         barShapeChoices, 0, wxGenericValidator(&m_barShapeAllIndex));
+        shapesBox->Add(m_shapeAllChoice, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+
+        m_shapePerBarRadio =
+            new wxRadioButton(shapesBox->GetStaticBox(), wxID_ANY, _(L"Custom per-bar shapes:"));
+        shapesBox->Add(m_shapePerBarRadio, wxSizerFlags{}.Border());
+
+        m_shapePerBarListBox = new wxEditableListBox(
+            shapesBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(150) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        m_shapePerBarListBox->Enable(false);
+        shapesBox->Add(m_shapePerBarListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        leftSizer->Add(shapesBox, wxSizerFlags{}.Expand().Border());
+
         // legend placement
         auto* legendGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         m_legendLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:"));
@@ -412,6 +443,174 @@ namespace Wisteria::UI
                 SyncBarGroupsToList();
             });
 
+        // helper to collect available bar labels (sort list labels take priority,
+        // same fallback used by the bar-groups editor above)
+        const auto gatherBarLabels = [this]() -> wxArrayString
+        {
+            const auto sortLabels = GetBarSortLabels();
+            wxArrayString labels;
+            if (!sortLabels.empty())
+                {
+                for (const auto& label : sortLabels)
+                    {
+                    labels.Add(label);
+                    }
+                }
+            else
+                {
+                m_sortLabelListBox->GetStrings(labels);
+                }
+            return labels;
+        };
+
+        // helper to prompt for a bar label + shape selection
+        const auto promptForShape = [this](const wxArrayString& barChoices, const wxString& caption,
+                                           wxString& inOutLabel,
+                                           Graphs::BarChart::BarShape& inOutShape) -> bool
+        {
+            wxArrayString shapeChoices;
+            shapeChoices.Add(_(L"Rectangle"));
+            shapeChoices.Add(_(L"Arrow"));
+            shapeChoices.Add(_(L"Reverse Arrow"));
+
+            wxDialog dlg(this, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
+                         wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+            auto* sizer = new wxBoxSizer(wxVERTICAL);
+            auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            grid->AddGrowableCol(1, 1);
+
+            grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Bar:")),
+                      wxSizerFlags{}.CenterVertical());
+            auto* barCtrl =
+                new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+            if (!inOutLabel.empty())
+                {
+                barCtrl->SetStringSelection(inOutLabel);
+                }
+            if (barCtrl->GetSelection() == wxNOT_FOUND)
+                {
+                barCtrl->SetSelection(0);
+                }
+            grid->Add(barCtrl, wxSizerFlags{}.Expand());
+
+            grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Shape:")),
+                      wxSizerFlags{}.CenterVertical());
+            auto* shapeCtrl =
+                new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, shapeChoices);
+            shapeCtrl->SetSelection(BarShapeToIndex(inOutShape));
+            grid->Add(shapeCtrl, wxSizerFlags{}.Expand());
+
+            sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+            sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
+            dlg.SetSizer(sizer);
+            dlg.Fit();
+            dlg.SetMinSize(dlg.GetSize());
+
+            if (dlg.ShowModal() != wxID_OK)
+                {
+                return false;
+                }
+            const auto barSel = barCtrl->GetSelection();
+            if (barSel == wxNOT_FOUND)
+                {
+                return false;
+                }
+            inOutLabel = barChoices[barSel];
+            inOutShape = BarShapeFromIndex(shapeCtrl->GetSelection());
+            return true;
+        };
+
+        // override New button for per-bar shapes
+        m_shapePerBarListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this, gatherBarLabels, promptForShape]([[maybe_unused]]
+                                                    wxCommandEvent& event)
+            {
+                const auto barChoices = gatherBarLabels();
+                if (barChoices.empty())
+                    {
+                    wxMessageBox(_(L"Select a categorical variable first to populate bar labels."),
+                                 _(L"No Bars"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+                wxString label;
+                auto shape = Graphs::BarChart::BarShape::Arrow;
+                if (!promptForShape(barChoices, _(L"Add Per-Bar Shape"), label, shape))
+                    {
+                    return;
+                    }
+                const auto it =
+                    std::find_if(m_barShapes.begin(), m_barShapes.end(),
+                                 [&label](const auto& entry) { return entry.first == label; });
+                if (it != m_barShapes.end())
+                    {
+                    it->second = shape;
+                    }
+                else
+                    {
+                    m_barShapes.emplace_back(label, shape);
+                    }
+                SyncBarShapesToList();
+            });
+
+        // override Edit button for per-bar shapes
+        m_shapePerBarListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this, gatherBarLabels, promptForShape]([[maybe_unused]]
+                                                    wxCommandEvent& event)
+            {
+                auto* listCtrl = m_shapePerBarListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_barShapes.size()))
+                    {
+                    return;
+                    }
+                const auto barChoices = gatherBarLabels();
+                if (barChoices.empty())
+                    {
+                    return;
+                    }
+                auto& entry = m_barShapes[sel];
+                wxString label = entry.first;
+                auto shape = entry.second;
+                if (!promptForShape(barChoices, _(L"Edit Per-Bar Shape"), label, shape))
+                    {
+                    return;
+                    }
+                entry.first = label;
+                entry.second = shape;
+                SyncBarShapesToList();
+            });
+
+        // override Delete button for per-bar shapes
+        m_shapePerBarListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_shapePerBarListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_barShapes.size()))
+                    {
+                    return;
+                    }
+                m_barShapes.erase(m_barShapes.begin() + sel);
+                SyncBarShapesToList();
+            });
+
+        // double-clicking a row triggers the Edit button
+        m_shapePerBarListBox->GetListCtrl()->Bind(
+            wxEVT_LIST_ITEM_ACTIVATED,
+            [this]([[maybe_unused]]
+                   wxListEvent& event)
+            {
+                auto* editBtn = m_shapePerBarListBox->GetEditButton();
+                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
+                clickEvent.SetEventObject(editBtn);
+                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
+            });
+
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -436,6 +635,13 @@ namespace Wisteria::UI
                               [this]([[maybe_unused]] wxCommandEvent&) { OnBarSortChanged(); });
         m_sortCustomRadio->Bind(wxEVT_RADIOBUTTON,
                                 [this]([[maybe_unused]] wxCommandEvent&) { OnBarSortChanged(); });
+
+        m_shapeAllRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                              { OnBarShapeModeChanged(); });
+        m_shapePerBarRadio->Bind(wxEVT_RADIOBUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                                 { OnBarShapeModeChanged(); });
+        m_shapeAllChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
+                               { OnBarShapeAllChanged(); });
         }
 
     //-------------------------------------------
@@ -555,6 +761,38 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    Graphs::BarChart::BarShape InsertCatBarChartDlg::BarShapeFromIndex(const int index) noexcept
+        {
+        switch (index)
+            {
+        case 1:
+            return Graphs::BarChart::BarShape::Arrow;
+        case 2:
+            return Graphs::BarChart::BarShape::ReverseArrow;
+        case 0:
+            [[fallthrough]];
+        default:
+            return Graphs::BarChart::BarShape::Rectangle;
+            }
+        }
+
+    //-------------------------------------------
+    int InsertCatBarChartDlg::BarShapeToIndex(const Graphs::BarChart::BarShape shape) noexcept
+        {
+        switch (shape)
+            {
+        case Graphs::BarChart::BarShape::Arrow:
+            return 1;
+        case Graphs::BarChart::BarShape::ReverseArrow:
+            return 2;
+        case Graphs::BarChart::BarShape::Rectangle:
+            [[fallthrough]];
+        default:
+            return 0;
+            }
+        }
+
+    //-------------------------------------------
     void InsertCatBarChartDlg::OnBoxEffectChanged()
         {
         const int sel = m_boxEffectChoice->GetSelection();
@@ -575,6 +813,53 @@ namespace Wisteria::UI
             }
         m_barGroups.clear();
         SyncBarGroupsToList();
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::OnBarShapeModeChanged()
+        {
+        const bool allMode = (m_shapeAllRadio != nullptr && m_shapeAllRadio->GetValue());
+        if (m_shapeAllChoice != nullptr)
+            {
+            m_shapeAllChoice->Enable(allMode);
+            }
+        if (m_shapePerBarListBox != nullptr)
+            {
+            m_shapePerBarListBox->Enable(!allMode);
+            }
+        if (allMode)
+            {
+            // switching to "all" mode replaces any per-bar overrides with the global shape
+            OnBarShapeAllChanged();
+            }
+        else
+            {
+            SyncBarShapesToList();
+            }
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::OnBarShapeAllChanged()
+        {
+        if (m_shapeAllChoice == nullptr)
+            {
+            return;
+            }
+        const auto shape = BarShapeFromIndex(m_shapeAllChoice->GetSelection());
+        m_barShapes.clear();
+        if (shape != Graphs::BarChart::BarShape::Rectangle)
+            {
+            wxArrayString labels;
+            if (m_sortLabelListBox != nullptr)
+                {
+                m_sortLabelListBox->GetStrings(labels);
+                }
+            for (const auto& label : labels)
+                {
+                m_barShapes.emplace_back(label, shape);
+                }
+            }
+        SyncBarShapesToList();
         }
 
     //-------------------------------------------
@@ -794,6 +1079,8 @@ namespace Wisteria::UI
         // bar groups reference bar indices that become invalid
         // when the categorical variable changes
         m_barGroups.clear();
+        // per-bar shapes reference axis labels that become invalid too
+        m_barShapes.clear();
 
         const bool hasGroup = !m_groupVariable.empty();
         if (m_legendLabel != nullptr)
@@ -857,6 +1144,7 @@ namespace Wisteria::UI
             }
 
         SyncBarGroupsToList();
+        SyncBarShapesToList();
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
@@ -871,6 +1159,35 @@ namespace Wisteria::UI
                       (group.m_decal.empty() ? wxString{} : L": " + group.m_decal));
             }
         m_barGroupListBox->SetStrings(items);
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::SyncBarShapesToList()
+        {
+        if (m_shapePerBarListBox == nullptr)
+            {
+            return;
+            }
+        const auto shapeLabel = [](const Graphs::BarChart::BarShape shape) -> wxString
+        {
+            switch (shape)
+                {
+            case Graphs::BarChart::BarShape::Arrow:
+                return _(L"Arrow");
+            case Graphs::BarChart::BarShape::ReverseArrow:
+                return _(L"Reverse Arrow");
+            case Graphs::BarChart::BarShape::Rectangle:
+                [[fallthrough]];
+            default:
+                return _(L"Rectangle");
+                }
+        };
+        wxArrayString items;
+        for (const auto& [label, shape] : m_barShapes)
+            {
+            items.Add(label + L": " + shapeLabel(shape));
+            }
+        m_shapePerBarListBox->SetStrings(items);
         }
 
     //-------------------------------------------
@@ -1097,6 +1414,46 @@ namespace Wisteria::UI
                 }
             }
 
+        // per-bar shapes (Rectangle is the default, so only record overrides)
+        m_barShapes.clear();
+        for (const auto& bar : barChart->GetBars())
+            {
+            if (bar.GetShape() != Graphs::BarChart::BarShape::Rectangle)
+                {
+                m_barShapes.emplace_back(bar.GetAxisLabel().GetText(), bar.GetShape());
+                }
+            }
+
+        // pick the bar-shape mode based on the loaded chart
+        bool allSameShape = !barChart->GetBars().empty();
+        const auto firstShape = barChart->GetBars().empty() ?
+                                    Graphs::BarChart::BarShape::Rectangle :
+                                    barChart->GetBars().front().GetShape();
+        for (const auto& bar : barChart->GetBars())
+            {
+            if (bar.GetShape() != firstShape)
+                {
+                allSameShape = false;
+                break;
+                }
+            }
+        if (allSameShape)
+            {
+            m_barShapeAllIndex = BarShapeToIndex(firstShape);
+            if (m_shapeAllRadio != nullptr)
+                {
+                m_shapeAllRadio->SetValue(true);
+                }
+            }
+        else
+            {
+            m_barShapeAllIndex = 0;
+            if (m_shapePerBarRadio != nullptr)
+                {
+                m_shapePerBarRadio->SetValue(true);
+                }
+            }
+
         // bar groups — convert from index-based to label-based
         m_barGroups.clear();
         const auto& bars = barChart->GetBars();
@@ -1148,5 +1505,16 @@ namespace Wisteria::UI
             {
             m_sortLabelListBox->Enable(m_sortCustomRadio->GetValue());
             }
+        // sync bar-shape controls (populates list and sets enable state)
+        if (m_shapeAllChoice != nullptr)
+            {
+            m_shapeAllChoice->Enable(m_shapeAllRadio != nullptr && m_shapeAllRadio->GetValue());
+            }
+        if (m_shapePerBarListBox != nullptr)
+            {
+            m_shapePerBarListBox->Enable(m_shapePerBarRadio != nullptr &&
+                                         m_shapePerBarRadio->GetValue());
+            }
+        SyncBarShapesToList();
         }
     } // namespace Wisteria::UI

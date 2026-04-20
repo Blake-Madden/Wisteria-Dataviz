@@ -12,8 +12,10 @@
 #ifndef INSERT_GANTTCHART_DIALOG_H
 #define INSERT_GANTTCHART_DIALOG_H
 
+#include "../../graphs/barchart.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/editlbox.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -128,6 +130,16 @@ namespace Wisteria::UI
         [[nodiscard]]
         Graphs::GanttChart::TaskLabelDisplay GetTaskLabelDisplay() const noexcept;
 
+        /// @returns Per-bar shape overrides keyed by axis label.
+        ///     Bars not present in this list keep their default shape
+        ///     (Arrow or ReverseArrow depending on axis orientation).
+        [[nodiscard]]
+        const std::vector<std::pair<wxString, Graphs::BarChart::BarShape>>&
+        GetBarShapes() const noexcept
+            {
+            return m_barShapes;
+            }
+
         /// @brief Populates all dialog controls from an existing Gantt chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -139,8 +151,17 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnBarShapeModeChanged();
+        void OnBarShapeAllChanged();
         void UpdateVariableLabels();
+        void SyncBarShapesToList();
+        void RefreshTaskLabels();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
+
+        [[nodiscard]]
+        static Graphs::BarChart::BarShape BarShapeFromIndex(int index) noexcept;
+        [[nodiscard]]
+        static int BarShapeToIndex(Graphs::BarChart::BarShape shape) noexcept;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -156,10 +177,16 @@ namespace Wisteria::UI
         wxStaticText* m_completionVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
 
+        wxRadioButton* m_shapeAllRadio{ nullptr };
+        wxRadioButton* m_shapePerBarRadio{ nullptr };
+        wxChoice* m_shapeAllChoice{ nullptr };
+        wxEditableListBox* m_shapePerBarListBox{ nullptr };
+
         // DDX data members
         int m_dateInterval{ 1 };     // default: FiscalQuarterly
         int m_fyType{ 1 };           // default: USBusiness
         int m_taskLabelDisplay{ 3 }; // default: Days
+        int m_barShapeAllIndex{ 1 }; // default: Arrow (Gantt default)
 
         wxString m_taskVariable;
         wxString m_startDateVariable;
@@ -170,6 +197,8 @@ namespace Wisteria::UI
         wxString m_groupVariable;
 
         std::vector<wxString> m_datasetNames;
+        std::vector<wxString> m_taskLabels;
+        std::vector<std::pair<wxString, Graphs::BarChart::BarShape>> m_barShapes;
         };
     } // namespace Wisteria::UI
 
