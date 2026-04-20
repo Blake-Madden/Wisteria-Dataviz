@@ -81,48 +81,29 @@ namespace Wisteria::UI
         // variable selection mode
         wxArrayString varModeChoices;
         varModeChoices.Add(_(L"All columns"));
-        varModeChoices.Add(_(L"Columns matching pattern"));
-        varModeChoices.Add(_(L"All columns except pattern"));
         varModeChoices.Add(_(L"Custom selection"));
         m_varModeRadio = new wxRadioBox(columnBox->GetStaticBox(), ID_VAR_MODE_RADIO, _(L"Method"),
                                         wxDefaultPosition, wxDefaultSize, varModeChoices, 1,
                                         wxRA_SPECIFY_COLS, wxGenericValidator(&m_varModeIndex));
         columnBox->Add(m_varModeRadio, wxSizerFlags{}.Border().Expand());
 
-        // pattern text control
-        auto* patternSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
-        patternSizer->Add(new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, _(L"Pattern:")),
-                          wxSizerFlags{}.CenterVertical());
-        m_varPatternCtrl =
-            new wxTextCtrl(columnBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_varPattern));
-        patternSizer->Add(m_varPatternCtrl, wxSizerFlags{}.CenterVertical().Expand());
-        patternSizer->AddGrowableCol(1);
-        columnBox->Add(patternSizer, wxSizerFlags{}.Border());
+        // editable list of column entries (plain names or regex formulas)
+        m_variablesListBox = new wxEditableListBox(
+            columnBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(250), FromDIP(150) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        columnBox->Add(m_variablesListBox, wxSizerFlags{ 1 }.Expand().Border());
 
-        // variables button and label
+        // variables button adds picks from the variable selector to the list
         m_varButton =
             new wxButton(columnBox->GetStaticBox(), ID_SELECT_VARS_BUTTON, _(L"Variables..."));
-        columnBox->Add(m_varButton, wxSizerFlags{}.Border(wxLEFT));
+        columnBox->Add(m_varButton, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
-        m_varsLabelCaption = new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, _(L"Selected:"));
-        m_varsLabelCaption->SetFont(m_varsLabelCaption->GetFont().Bold());
-        m_varsLabel = new wxStaticText(columnBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_varsLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        leftColSizer->Add(columnBox, wxSizerFlags{ 1 }.Border(wxBOTTOM).Expand());
 
-        auto* varsLabelSizer = new wxBoxSizer(wxHORIZONTAL);
-        varsLabelSizer->Add(m_varsLabelCaption, wxSizerFlags{}.CenterVertical());
-        varsLabelSizer->AddSpacer(FromDIP(8));
-        varsLabelSizer->Add(m_varsLabel, wxSizerFlags{}.CenterVertical());
-        columnBox->Add(varsLabelSizer, wxSizerFlags{}.Border());
-
-        leftColSizer->Add(columnBox, wxSizerFlags{}.Border(wxBOTTOM).Expand());
-
-        // set initial enabled states
-        m_varPatternCtrl->Disable();
+        // set initial enabled states (All columns selected by default)
+        m_variablesListBox->Disable();
         m_varButton->Disable();
-        m_varsLabelCaption->Disable();
-        m_varsLabel->Disable();
 
         // header & layout
         auto* headerBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Header && Layout"));
@@ -251,21 +232,18 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertTableDlg::OnVarModeChanged()
         {
-        const auto mode = static_cast<VarMode>(m_varModeRadio->GetSelection());
-        const bool isPattern = (mode == VarMode::Matches || mode == VarMode::EverythingExcept);
-        const bool isCustom = (mode == VarMode::Custom);
+        const bool isCustom =
+            (static_cast<VarMode>(m_varModeRadio->GetSelection()) == VarMode::Custom);
 
-        m_varPatternCtrl->Enable(isPattern);
+        m_variablesListBox->Enable(isCustom);
         m_varButton->Enable(isCustom);
-        m_varsLabelCaption->Enable(isCustom);
-        m_varsLabel->Enable(isCustom);
         }
 
     //-------------------------------------------
     void InsertTableDlg::OnDatasetChanged()
         {
         m_variableNames.clear();
-        UpdateVariableLabels();
+        RefreshVariablesList();
         }
 
     //-------------------------------------------
@@ -299,34 +277,38 @@ namespace Wisteria::UI
             }
 
         using VLI = VariableSelectDlg::VariableListInfo;
-        VariableSelectDlg dlg(
-            this, columnInfo,
-            { VLI{}.Label(_(L"Columns")).Required(true).DefaultVariables(m_variableNames) });
+        VariableSelectDlg dlg(this, columnInfo, { VLI{}.Label(_(L"Columns")).Required(true) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
             return;
             }
 
-        m_variableNames = dlg.GetSelectedVariables(0);
-        UpdateVariableLabels();
+        // pull any in-place edits from the list before appending
+        wxArrayString currentStrings;
+        m_variablesListBox->GetStrings(currentStrings);
+        m_variableNames.assign(currentStrings.cbegin(), currentStrings.cend());
+
+        for (const auto& name : dlg.GetSelectedVariables(0))
+            {
+            if (std::ranges::find(m_variableNames, name) == m_variableNames.cend())
+                {
+                m_variableNames.push_back(name);
+                }
+            }
+        RefreshVariablesList();
         }
 
     //-------------------------------------------
-    void InsertTableDlg::UpdateVariableLabels()
+    void InsertTableDlg::RefreshVariablesList()
         {
-        if (m_variableNames.empty())
+        wxArrayString strings;
+        strings.reserve(m_variableNames.size());
+        for (const auto& name : m_variableNames)
             {
-            m_varsLabel->SetLabel(wxString{});
+            strings.Add(name);
             }
-        else
-            {
-            m_varsLabel->SetLabel(
-                wxString::Format(wxPLURAL(L"%zu column", L"%zu columns", m_variableNames.size()),
-                                 m_variableNames.size()));
-            }
-
-        GetSideBarBook()->GetCurrentPage()->Layout();
+        m_variablesListBox->SetStrings(strings);
         }
 
     //-------------------------------------------
@@ -373,25 +355,30 @@ namespace Wisteria::UI
     //-------------------------------------------
     wxString InsertTableDlg::GetVariableFormula() const
         {
-        switch (GetVarMode())
-            {
-        case VarMode::Everything:
-            return L"{{Everything()}}";
-        case VarMode::Matches:
-            return wxString::Format(L"{{Matches(`%s`)}}", m_varPattern);
-        case VarMode::EverythingExcept:
-            return wxString::Format(L"{{EverythingExcept(`%s`)}}", m_varPattern);
-        case VarMode::Custom:
-            [[fallthrough]];
-        default:
-            return wxString{};
-            }
+        return (GetVarMode() == VarMode::Everything) ? wxString{ L"{{Everything()}}" } : wxString{};
         }
 
     //-------------------------------------------
     bool InsertTableDlg::Validate()
         {
         TransferDataFromWindow();
+
+        // sync any in-place edits from the editable list into m_variableNames
+        if (m_variablesListBox != nullptr)
+            {
+            wxArrayString currentStrings;
+            m_variablesListBox->GetStrings(currentStrings);
+            m_variableNames.clear();
+            m_variableNames.reserve(currentStrings.size());
+            for (const auto& entry : currentStrings)
+                {
+                const auto trimmed = wxString{ entry }.Trim().Trim(false);
+                if (!trimmed.empty())
+                    {
+                    m_variableNames.push_back(trimmed);
+                    }
+                }
+            }
 
         if (GetSelectedDataset() == nullptr)
             {
@@ -400,20 +387,10 @@ namespace Wisteria::UI
             return false;
             }
 
-        const auto mode = GetVarMode();
-        if (mode == VarMode::Custom && m_variableNames.empty())
+        if (GetVarMode() == VarMode::Custom && m_variableNames.empty())
             {
-            wxMessageBox(_(L"Please select at least one column."), _(L"No Variables Selected"),
-                         wxOK | wxICON_WARNING, this);
-            OnSelectVariables();
-            return false;
-            }
-
-        if ((mode == VarMode::Matches || mode == VarMode::EverythingExcept) && m_varPattern.empty())
-            {
-            wxMessageBox(_(L"Please enter a column name pattern."), _(L"Pattern Required"),
-                         wxOK | wxICON_WARNING, this);
-            m_varPatternCtrl->SetFocus();
+            wxMessageBox(_(L"Please add at least one column or pattern."),
+                         _(L"No Variables Selected"), wxOK | wxICON_WARNING, this);
             return false;
             }
 
@@ -445,10 +422,10 @@ namespace Wisteria::UI
                 }
             }
 
-        // restore variable selection mode from property template
-        // The template may be a raw JSON string ("{{Everything()}}") or
-        // a JSON array (["{{Everything()}}"]).  Unwrap both forms so that
-        // formula detection below sees a plain {{...}} string.
+        // restore variable selection mode from property template. the template
+        // may be a raw string formula ("{{Everything()}}"), a JSON array of
+        // entries (["col1", "{{Matches(`pat`)}}"]), or a single-element array
+        // wrapping a formula (["{{Everything()}}"]).
         auto varsTemplate = table->GetPropertyTemplate(L"variables");
         // strip surrounding quotes if present
         if (varsTemplate.starts_with(L"\"") && varsTemplate.ends_with(L"\"") &&
@@ -456,80 +433,55 @@ namespace Wisteria::UI
             {
             varsTemplate = varsTemplate.substr(1, varsTemplate.length() - 2);
             }
-        // unwrap a single-element JSON array (e.g., ["{{Everything()}}"])
+
+        m_variableNames.clear();
+        const auto isEverythingFormula = [](const wxString& val)
+        { return val.Lower().starts_with(L"{{everything()"); };
+
         if (varsTemplate.starts_with(L"[") && varsTemplate.ends_with(L"]"))
             {
-            auto inner = varsTemplate.substr(1, varsTemplate.length() - 2).Trim().Trim(false);
-            // if the single element is a formula, extract it;
-            // otherwise leave varsTemplate as-is for custom column parsing
-            if (inner.starts_with(L"\"") && inner.ends_with(L"\"") && inner.length() >= 2)
+            // parse the JSON array into individual entries
+            wxString stripped = varsTemplate.substr(1, varsTemplate.length() - 2);
+            wxStringTokenizer tkz(stripped, L",");
+            std::vector<wxString> entries;
+            while (tkz.HasMoreTokens())
                 {
-                inner = inner.substr(1, inner.length() - 2);
+                auto token = tkz.GetNextToken().Trim().Trim(false);
+                if (token.starts_with(L"\"") && token.ends_with(L"\"") && token.length() >= 2)
+                    {
+                    token = token.substr(1, token.length() - 2);
+                    }
+                if (!token.empty())
+                    {
+                    entries.push_back(token);
+                    }
                 }
-            if (inner.starts_with(L"{{") && inner.ends_with(L"}}") && !inner.Contains(L","))
+
+            // a single {{Everything()}} entry means "all columns" mode
+            if (entries.size() == 1 && isEverythingFormula(entries.front()))
                 {
-                varsTemplate = inner;
+                m_varModeIndex = static_cast<int>(VarMode::Everything);
+                }
+            else
+                {
+                m_varModeIndex = static_cast<int>(VarMode::Custom);
+                m_variableNames = std::move(entries);
                 }
             }
-        const auto varsTemplateLower = varsTemplate.Lower();
-        if (varsTemplateLower.starts_with(L"{{everything()"))
+        else if (isEverythingFormula(varsTemplate))
             {
             m_varModeIndex = static_cast<int>(VarMode::Everything);
             }
-        else if (varsTemplateLower.starts_with(L"{{matches("))
+        else if (!varsTemplate.empty())
             {
-            m_varModeIndex = static_cast<int>(VarMode::Matches);
-            // extract pattern from {{Matches(`pattern`)}}
-            const auto startPos = varsTemplate.find(L'`');
-            const auto endPos = varsTemplate.rfind(L'`');
-            if (startPos != wxString::npos && endPos != wxString::npos && endPos > startPos)
-                {
-                m_varPattern = varsTemplate.substr(startPos + 1, endPos - startPos - 1);
-                }
-            }
-        else if (varsTemplateLower.starts_with(L"{{everythingexcept("))
-            {
-            m_varModeIndex = static_cast<int>(VarMode::EverythingExcept);
-            const auto startPos = varsTemplate.find(L'`');
-            const auto endPos = varsTemplate.rfind(L'`');
-            if (startPos != wxString::npos && endPos != wxString::npos && endPos > startPos)
-                {
-                m_varPattern = varsTemplate.substr(startPos + 1, endPos - startPos - 1);
-                }
+            // a lone legacy formula like {{Matches(`pat`)}} becomes a single
+            // custom entry
+            m_varModeIndex = static_cast<int>(VarMode::Custom);
+            m_variableNames.push_back(varsTemplate);
             }
         else
             {
-            m_varModeIndex = static_cast<int>(VarMode::Custom);
-            // restore column names from the JSON array template
-            // (stored as ["col1", "col2", ...])
-            if (!varsTemplate.empty())
-                {
-                wxString stripped = varsTemplate;
-                // remove surrounding brackets
-                if (stripped.starts_with(L"["))
-                    {
-                    stripped = stripped.Mid(1);
-                    }
-                if (stripped.ends_with(L"]"))
-                    {
-                    stripped.RemoveLast();
-                    }
-                wxStringTokenizer tkz(stripped, L",");
-                m_variableNames.clear();
-                while (tkz.HasMoreTokens())
-                    {
-                    auto token = tkz.GetNextToken().Trim().Trim(false);
-                    // remove surrounding quotes
-                    if (token.starts_with(L"\"") && token.ends_with(L"\"") && token.length() >= 2)
-                        {
-                        token = token.Mid(1, token.length() - 2);
-                        }
-                    if (!token.empty())
-                        {
-                        m_variableNames.push_back(token);
-                        }
-                    }
-                }
+            m_varModeIndex = static_cast<int>(VarMode::Everything);
             }
 
         // restore transpose
@@ -598,8 +550,8 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        RefreshVariablesList();
         OnVarModeChanged();
-        UpdateVariableLabels();
         RefreshFootnoteList();
         }
 

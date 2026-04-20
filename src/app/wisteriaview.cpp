@@ -2515,7 +2515,8 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyGraphOptions(*table);
         dlg.ApplyPageOptions(*table);
 
-        // resolve variables
+        // resolve variables: each custom entry may be a plain column name or
+        // a formula such as {{Matches(`pat`)}}. Expand formulas per-entry.
         std::vector<wxString> columns;
         const auto varFormula = dlg.GetVariableFormula();
         if (!varFormula.empty())
@@ -2529,7 +2530,19 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             }
         else
             {
-            columns = dlg.GetSelectedVariables();
+            for (const auto& entry : dlg.GetSelectedVariables())
+                {
+                if (auto expanded =
+                        m_reportBuilder.ExpandColumnSelections(entry, dlg.GetSelectedDataset()))
+                    {
+                    columns.insert(columns.cend(), expanded.value().cbegin(),
+                                   expanded.value().cend());
+                    }
+                else
+                    {
+                    columns.push_back(entry);
+                    }
+                }
             }
 
         table->SetDefaultBorders(true, true, true, true);
@@ -2564,15 +2577,17 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             }
         else
             {
-            // store as JSON array string
+            // store the raw list entries (plain names and/or formulas) as a
+            // JSON array so that round-tripping preserves regex selections
+            const auto& entries = dlg.GetSelectedVariables();
             wxString varsJson = L"[";
-            for (size_t i = 0; i < columns.size(); ++i)
+            for (size_t i = 0; i < entries.size(); ++i)
                 {
                 if (i > 0)
                     {
                     varsJson += L", ";
                     }
-                varsJson += wxString::Format(L"\"%s\"", columns[i]);
+                varsJson += wxString::Format(L"\"%s\"", entries[i]);
                 }
             varsJson += L"]";
             table->SetPropertyTemplate(L"variables", varsJson);
@@ -2651,7 +2666,8 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
 
         const auto* origTable = dynamic_cast<const Wisteria::Graphs::Table*>(&graph);
 
-        // resolve variables
+        // resolve variables: each custom entry may be a plain column name or
+        // a formula such as {{Matches(`pat`)}}. Expand formulas per-entry.
         std::vector<wxString> columns;
         const auto varFormula = dlg.GetVariableFormula();
         if (!varFormula.empty())
@@ -2665,7 +2681,19 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             }
         else
             {
-            columns = dlg.GetSelectedVariables();
+            for (const auto& entry : dlg.GetSelectedVariables())
+                {
+                if (auto expanded =
+                        m_reportBuilder.ExpandColumnSelections(entry, dlg.GetSelectedDataset()))
+                    {
+                    columns.insert(columns.cend(), expanded.value().cbegin(),
+                                   expanded.value().cend());
+                    }
+                else
+                    {
+                    columns.push_back(entry);
+                    }
+                }
             }
 
         // set default borders before SetData so cells inherit them
@@ -2698,14 +2726,17 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             }
         else
             {
+            // store the raw list entries (plain names and/or formulas) as a
+            // JSON array so that round-tripping preserves regex selections
+            const auto& entries = dlg.GetSelectedVariables();
             wxString varsJson = L"[";
-            for (size_t i = 0; i < columns.size(); ++i)
+            for (size_t i = 0; i < entries.size(); ++i)
                 {
                 if (i > 0)
                     {
                     varsJson += L", ";
                     }
-                varsJson += wxString::Format(L"\"%s\"", columns[i]);
+                varsJson += wxString::Format(L"\"%s\"", entries[i]);
                 }
             varsJson += L"]";
             table->SetPropertyTemplate(L"variables", varsJson);

@@ -23,8 +23,8 @@ namespace Wisteria::UI
     /** @brief Dialog for inserting a table into a canvas cell.
         @details Extends InsertGraphDlg with a "Table" page containing:
             - A dataset selector (from the project's datasets).
-            - A variable selection mode (all columns, pattern match,
-              pattern exclusion, or custom selection via VariableSelectDlg).
+            - A variable selection mode (all columns, or a custom list
+              mixing plain column names with regex formulas).
             - Alternate row color options.
             - Alternate row color options.
             - Minimum width/height proportion controls.*/
@@ -34,10 +34,8 @@ namespace Wisteria::UI
         /// @brief Variable selection mode.
         enum class VarMode
             {
-            Everything,       ///< All columns.
-            Matches,          ///< Columns matching a regex pattern.
-            EverythingExcept, ///< All columns except those matching a pattern.
-            Custom            ///< Manual column selection.
+            Everything, ///< All columns.
+            Custom      ///< Custom list of plain names and/or regex formulas.
             };
 
         /** @brief Constructor.
@@ -83,15 +81,15 @@ namespace Wisteria::UI
             return static_cast<VarMode>(m_varModeIndex);
             }
 
-        /// @returns The variable formula string
-        ///     (e.g., `{{Everything()}}` or `{{Matches(\`pattern\`)}}`)
-        ///     if a formula mode is selected, or an empty string
-        ///     for custom mode.
+        /// @returns The variable formula string (`{{Everything()}}`)
+        ///     if "all columns" is selected, or an empty string for
+        ///     custom mode.
         [[nodiscard]]
         wxString GetVariableFormula() const;
 
-        /// @returns The manually selected variable names
-        ///     (only meaningful when GetVarMode() returns VarMode::Custom).
+        /// @returns The custom list of column entries (each entry may be
+        ///     a plain column name or a formula like `{{Matches(\`pat\`)}}`).
+        ///     Only meaningful when GetVarMode() returns VarMode::Custom.
         [[nodiscard]]
         const std::vector<wxString>& GetSelectedVariables() const noexcept
             {
@@ -182,7 +180,7 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void OnVarModeChanged();
-        void UpdateVariableLabels();
+        void RefreshVariablesList();
         void OnAddFootnote();
         void OnEditFootnote();
         void OnRemoveFootnote();
@@ -198,16 +196,13 @@ namespace Wisteria::UI
 
         wxChoice* m_datasetChoice{ nullptr };
         wxRadioBox* m_varModeRadio{ nullptr };
-        wxTextCtrl* m_varPatternCtrl{ nullptr };
+        wxEditableListBox* m_variablesListBox{ nullptr };
         wxButton* m_varButton{ nullptr };
-        wxStaticText* m_varsLabelCaption{ nullptr };
-        wxStaticText* m_varsLabel{ nullptr };
         wxColourPickerCtrl* m_altRowColorPicker{ nullptr };
         wxEditableListBox* m_footnotesListBox{ nullptr };
 
         // DDX data members
         int m_varModeIndex{ 0 };
-        wxString m_varPattern;
         bool m_transpose{ false };
         bool m_boldHeaderRow{ true };
         bool m_centerHeaderRow{ true };
