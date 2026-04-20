@@ -326,7 +326,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
         // Datasets panel
         auto* dataPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Datasets"));
-        auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, wxID_ANY);
+        auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, ID_DATASET_BUTTONBAR);
 
         dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
                                  _(L"Import a dataset into the project"));

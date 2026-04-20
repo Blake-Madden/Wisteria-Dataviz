@@ -144,6 +144,8 @@ class WisteriaArtProvider final : public wxArtProvider
 constexpr wxWindowID ID_INSERT_DATASET{ wxID_HIGHEST + 1 };
 constexpr wxWindowID ID_INSERT_PAGE{ wxID_HIGHEST + 2 };
 
+constexpr wxWindowID ID_DATASET_BUTTONBAR{ wxID_HIGHEST + 56 };
+
 // graph category dropdown buttons
 constexpr wxWindowID ID_INSERT_GRAPH_BASIC{ wxID_HIGHEST + 3 };
 constexpr wxWindowID ID_INSERT_GRAPH_BUSINESS{ wxID_HIGHEST + 4 };

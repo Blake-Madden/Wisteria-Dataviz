@@ -71,10 +71,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                                   wxDefaultPosition, windowSize, wxDEFAULT_FRAME_STYLE);
 
     // set the icon
-    wxIcon appIcon;
     const auto appSvg = wxGetApp().GetResourceManager().GetSVG(L"wisteria.svg");
     if (appSvg.IsOk())
         {
+        wxIcon appIcon;
         appIcon.CopyFromBitmap(appSvg.GetBitmap(m_frame->FromDIP(wxSize{ 32, 32 })));
         m_frame->SetIcon(appIcon);
         }
@@ -99,6 +99,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->SetSizer(sizer);
 
     // find button bars for enabling/disabling
+    m_datasetButtonBar =
+        dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_DATASET_BUTTONBAR));
     m_graphButtonBar =
         dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_GRAPH_BUTTONBAR));
     m_pagesButtonBar =
@@ -315,6 +317,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         AddPageToProject(1, 1, wxString{});
         }
 
+    UpdateDatasetButtonStates();
     UpdateGraphButtonStates();
 
     // hide the main frame when a document window is opened
@@ -579,6 +582,7 @@ void WisteriaView::OnSidebarClick(const wxCommandEvent& event)
 
     m_workArea->Layout();
     m_sideBar->Refresh();
+    UpdateDatasetButtonStates();
     UpdateGraphButtonStates();
     }
 
@@ -643,6 +647,8 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    // RAII creates the report, maybe_unused is to silence clant-tidy false positive
+    [[maybe_unused]]
     Wisteria::SVGReportPrintout svgReport(m_pages,
                                           Wisteria::SVGReportOptions(fileDlg.GetPath())
                                               .PageSize(m_lastSvgPageSize)
@@ -1363,8 +1369,7 @@ void WisteriaView::OnDeleteDataset([[maybe_unused]] wxCommandEvent& event)
         }
 
     const auto selectedDatasetName = m_sideBar->GetSelectedLabel();
-    if (m_reportBuilder.GetDatasets().find(selectedDatasetName) ==
-        m_reportBuilder.GetDatasets().cend())
+    if (!m_reportBuilder.GetDatasets().contains(selectedDatasetName))
         {
         wxFAIL_MSG(L"Didn't find dataset when deleting?!");
         return;
@@ -1944,7 +1949,7 @@ void WisteriaView::OnDeletePage([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, const wxString& name,
-                                    std::optional<size_t> position)
+                                    const std::optional<size_t> position)
     {
     const wxWindowID pageId = wxNewId();
 
@@ -1980,6 +1985,7 @@ void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, con
 
     m_workArea->Layout();
     m_sideBar->Refresh();
+    UpdateDatasetButtonStates();
     UpdateGraphButtonStates();
 
     GetDocument()->Modify(true);
@@ -1990,6 +1996,25 @@ bool WisteriaView::IsPageSelected() const noexcept
     {
     return std::ranges::any_of(m_pages, [](const auto* canvas)
                                { return canvas != nullptr && canvas->IsShown(); });
+    }
+
+//-------------------------------------------
+bool WisteriaView::IsDatasetSelected() const noexcept
+    {
+    return (m_sideBar->GetSelectedFolder() && m_sideBar->GetSelectedFolder().value() == 0 &&
+            !m_reportBuilder.GetDatasets().empty());
+    }
+
+//-------------------------------------------
+void WisteriaView::UpdateDatasetButtonStates() const
+    {
+    const bool enabled = IsDatasetSelected();
+
+    if (m_datasetButtonBar != nullptr)
+        {
+        m_datasetButtonBar->EnableButton(ID_EDIT_DATASET, enabled);
+        m_datasetButtonBar->EnableButton(ID_DELETE_DATASET, enabled);
+        }
     }
 
 //-------------------------------------------

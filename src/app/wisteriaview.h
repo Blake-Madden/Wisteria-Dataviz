@@ -192,6 +192,7 @@ class WisteriaView final : public wxView
                               size_t graphRow, size_t graphCol,
                               Wisteria::UI::LegendPlacement legendPlacement) const;
     void UpdateGraphButtonStates() const;
+    void UpdateDatasetButtonStates() const;
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name,
                              const Wisteria::Data::Dataset::ColumnPreviewInfo& columnInfo,
@@ -248,12 +249,16 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     bool IsPageSelected() const noexcept;
 
+    [[nodiscard]]
+    bool IsDatasetSelected() const noexcept;
+
     static void UpdateCanvas(Wisteria::Canvas* canvas);
 
     wxDocChildFrame* m_frame{ nullptr };
     wxSplitterWindow* m_splitter{ nullptr };
     Wisteria::UI::SideBar* m_sideBar{ nullptr };
     wxPanel* m_workArea{ nullptr };
+    wxRibbonButtonBar* m_datasetButtonBar{ nullptr };
     wxRibbonButtonBar* m_graphButtonBar{ nullptr };
     wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
     wxRibbonButtonBar* m_objectsButtonBar{ nullptr };

@@ -83,8 +83,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                                          wxDC &
                                                          dc) const
         {
-        const auto scaledSize =
-            wxSize(m_size.GetWidth() * GetScaling(), m_size.GetHeight() * GetScaling());
+        const auto scaledSize = wxSize(ScaleToScreenAndCanvas(m_size.GetWidth()),
+                                       ScaleToScreenAndCanvas(m_size.GetHeight()));
 
         switch (GetAnchoring())
             {
@@ -231,16 +231,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         leftFeatures.reserve(m_features.size());
         std::vector<FeatureInfo> rightFeatures;
         rightFeatures.reserve(m_features.size());
-        for (const auto& feature : m_features)
+        for (const auto& [columnName, featureId, leftSide] : m_features)
             {
-            if (!feature.columnName.empty())
+            if (!columnName.empty())
                 {
-                const wxString displayName = GetFeatureDisplayName(feature.featureId);
-                const FeatureInfo info{ displayName +
-                                            (feature.columnName.length() <= 8 ? L": " : L":\n") +
-                                            feature.columnName,
-                                        feature.featureId };
-                if (feature.leftSide)
+                const wxString displayName = GetFeatureDisplayName(featureId);
+                const FeatureInfo info{ displayName + (columnName.length() <= 8 ? L": " : L":\n") +
+                                            columnName,
+                                        featureId };
+                if (leftSide)
                     {
                     leftFeatures.push_back(info);
                     }
@@ -278,15 +277,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         int maxLeftWidth{ 0 };
         int maxRightWidth{ 0 };
-        for (const auto& feature : leftFeatures)
+        for (const auto& [labelText, featureId] : leftFeatures)
             {
-            maxLeftWidth =
-                std::max(maxLeftWidth, measureLabelWidth(feature.labelText, labelScaling));
+            maxLeftWidth = std::max(maxLeftWidth, measureLabelWidth(labelText, labelScaling));
             }
-        for (const auto& feature : rightFeatures)
+        for (const auto& [labelText, featureId] : rightFeatures)
             {
-            maxRightWidth =
-                std::max(maxRightWidth, measureLabelWidth(feature.labelText, labelScaling));
+            maxRightWidth = std::max(maxRightWidth, measureLabelWidth(labelText, labelScaling));
             }
 
         // position face based on measured label widths so that each side
@@ -332,10 +329,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             if (gc != nullptr)
                 {
                 const FaceFeatures defaultFeatures;
-                ChernoffFacesPlot::DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter,
-                                            m_faceColorDarker, m_outlineColor, m_lipstickColor,
-                                            m_eyeColor, m_hairColor, m_hairStyle, m_gender,
-                                            m_facialHair);
+                DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter, m_faceColorDarker,
+                         m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor, m_hairStyle,
+                         m_gender, m_facialHair);
                 }
             }
 
@@ -553,7 +549,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         }
 
     //----------------------------------------------------------------
-    double ChernoffFacesPlot::NormalizeValue(double value, double minVal, double maxVal) noexcept
+    double ChernoffFacesPlot::NormalizeValue(const double value, const double minVal,
+                                             const double maxVal) noexcept
         {
         if (!std::isfinite(value) || !std::isfinite(minVal) || !std::isfinite(maxVal))
             {

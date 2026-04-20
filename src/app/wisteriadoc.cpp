@@ -1576,9 +1576,9 @@ void WisteriaDoc::SaveDatasetImportOptions(
             auto catObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
             const auto origCatName = originalColName(col.m_name);
             catObj->Add(L"name", origCatName);
-            const auto catIt = std::find_if(
-                info.GetCategoricalColumns().cbegin(), info.GetCategoricalColumns().cend(),
-                [&origCatName](const auto& ci) { return ci.m_columnName == origCatName; });
+            const auto catIt =
+                std::ranges::find_if(info.GetCategoricalColumns(), [&origCatName](const auto& ci)
+                                     { return ci.m_columnName == origCatName; });
             if (catIt != info.GetCategoricalColumns().cend() &&
                 catIt->m_importMethod == Wisteria::Data::CategoricalImportMethod::ReadAsIntegers)
                 {
@@ -3398,9 +3398,8 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
 
         // decals
         wxString decalsArr;
-        for (size_t bi = 0; bi < barChart->GetBars().size(); ++bi)
+        for (const auto& bar : barChart->GetBars())
             {
-            const auto& bar = barChart->GetBars()[bi];
             for (size_t bk = 0; bk < bar.GetBlocks().size(); ++bk)
                 {
                 const auto& decal = bar.GetBlocks()[bk].GetDecal();
