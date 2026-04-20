@@ -602,14 +602,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::ShowcaseBars(const std::vector<wxString>& labels,
                                 const bool hideLabelsOnGhostedBars /*= true*/)
         {
+        m_showcasedLabels = labels;
         m_hideGhostedLabels = hideLabelsOnGhostedBars;
         for (auto& bar : GetBars())
             {
             const auto foundPos = std::ranges::find_if(
                 labels, [&bar](const auto& label)
                 { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
-            bar.SetOpacity((foundPos == labels.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
-            bar.m_barLabel.Show(hideLabelsOnGhostedBars ? foundPos != labels.cend() : true);
+            const bool isShowcased{ foundPos != labels.cend() };
+            bar.SetOpacity(!isShowcased ? GetGhostOpacity() : wxALPHA_OPAQUE);
+            bar.m_barLabel.Show(hideLabelsOnGhostedBars ? isShowcased : true);
+            for (auto& block : bar.GetBlocks())
+                {
+                block.Ghost(!isShowcased);
+                }
             }
         }
 
@@ -617,14 +623,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::ShowcaseBars(const std::vector<double>& positions,
                                 const bool hideLabelsOnGhostedBars /*= true*/)
         {
+        m_showcasedLabels.clear();
         m_hideGhostedLabels = hideLabelsOnGhostedBars;
         for (auto& bar : GetBars())
             {
             const auto foundPos =
                 std::ranges::find_if(positions, [&bar](const auto& position)
                                      { return compare_doubles(bar.GetAxisPosition(), position); });
-            bar.SetOpacity((foundPos == positions.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
-            bar.m_barLabel.Show(hideLabelsOnGhostedBars ? foundPos != positions.cend() : true);
+            const bool isShowcased{ foundPos != positions.cend() };
+            bar.SetOpacity(!isShowcased ? GetGhostOpacity() : wxALPHA_OPAQUE);
+            bar.m_barLabel.Show(hideLabelsOnGhostedBars ? isShowcased : true);
+            for (auto& block : bar.GetBlocks())
+                {
+                block.Ghost(!isShowcased);
+                }
             }
         }
 
@@ -1056,9 +1068,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
                 {
-                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
-                             L"Non-rectangular shapes not currently "
-                             "supported with stipple bar effect.");
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
                     Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(wxNullPen)
@@ -1079,9 +1088,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleShape)
                 {
-                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
-                             L"Non-rectangular shapes not currently "
-                             "supported with stipple bar effect.");
                 auto shapeWidth{ barRenderInfo.m_barWidth };
                 auto shapeHeight{ barRenderInfo.m_barWidth };
                 // These particular icons are drawn with a ratio where the width
@@ -1184,8 +1190,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 else if (bar.GetShape() == BarShape::Arrow ||
                          bar.GetShape() == BarShape::ReverseArrow)
                     {
-                    wxASSERT_MSG(GetShadowType() == ShadowType::NoDisplay,
-                                 L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize{ 0, safe_divide(barNeckRect.GetHeight(), 5) });
                     const auto originalWidth{ barNeckRect.GetWidth() };
                     barNeckRect.SetWidth(barNeckRect.GetWidth() * 0.90);
@@ -1277,9 +1281,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 // in case an explicit color is used for the background
                 // and the brush is perhaps a hatch to be drawn on top of it
-                else if (barBlock.GetColor().IsOk())
+                else if (barBlock.GetColor().IsOk() && !barBlock.GetColor().IsTransparent())
                     {
-                    box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
+                    box->SetBackgroundFill(Colors::GradientFill(
+                        Colors::ColorContrast::ChangeOpacity(barBlock.GetColor(), opacityToApply)));
                     box->GetPen().SetColour(
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
                             Colors::ColorBrewer::GetColor(Colors::Color::White) :
@@ -1289,7 +1294,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // if the bar is totally transparent, then draw a contrasting outline
                 // (unless the client also made the outline explicitly transparent)
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
-                    box->GetPen() != wxColour{ 0, 0, 0, 0 })
+                    !box->GetPen().GetColour().IsTransparent())
                     {
                     box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                         GetPlotOrCanvasColor()));
@@ -1680,9 +1685,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
                 {
-                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
-                             L"Non-rectangular shapes not currently "
-                             "supported with stipple bar effect.");
                 auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
                     Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
                         .Pen(wxNullPen)
@@ -1703,9 +1705,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else if (bar.GetEffect() == BoxEffect::StippleShape)
                 {
-                wxASSERT_MSG((bar.GetShape() == BarShape::Rectangle),
-                             L"Non-rectangular shapes not currently "
-                             "supported with stipple bar effect.");
                 auto shapeHeight{ barRenderInfo.m_barWidth };
                 auto currentYTop = lineYStart - shapeHeight;
                 while ((currentYTop + shapeHeight) > lineYEnd)
@@ -1778,8 +1777,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 else if (bar.GetShape() == BarShape::Arrow ||
                          bar.GetShape() == BarShape::ReverseArrow)
                     {
-                    wxASSERT_MSG(GetShadowType() == ShadowType::NoDisplay,
-                                 L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
 
                     const auto originalHeight{ barNeckRect.GetHeight() };
@@ -1873,9 +1870,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 // in case an explicit color is used for the background
                 // and the brush is perhaps a hatch to be drawn on top of it
-                else if (barBlock.GetColor().IsOk())
+                else if (barBlock.GetColor().IsOk() && !barBlock.GetColor().IsTransparent())
                     {
-                    box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
+                    box->SetBackgroundFill(Colors::GradientFill(
+                        Colors::ColorContrast::ChangeOpacity(barBlock.GetColor(), opacityToApply)));
                     box->GetPen().SetColour(
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
                             Colors::ColorBrewer::GetColor(Colors::Color::White) :
@@ -1885,7 +1883,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // if the bar is totally transparent, then draw a contrasting outline
                 // (unless the client also made the outline explicitly transparent)
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
-                    box->GetPen() != wxColour{ 0, 0, 0, 0 })
+                    !box->GetPen().GetColour().IsTransparent())
                     {
                     box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                         GetPlotOrCanvasColor()));

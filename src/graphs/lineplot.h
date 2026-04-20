@@ -450,6 +450,13 @@ namespace Wisteria::Graphs
             return m_linePenStyles;
             }
 
+        /// @returns The showcased lines' names.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedLines() const noexcept
+            {
+            return m_showcasedLines;
+            }
+
         /// @returns The name of the X column.
         [[nodiscard]]
         const wxString& GetXColumnName() const noexcept
@@ -651,13 +658,6 @@ namespace Wisteria::Graphs
             return isGhosted && color.IsOk() ?
                        Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
                        color;
-            }
-
-        /// @returns The showcased lines' names.
-        [[nodiscard]]
-        const std::vector<wxString>& GetShowcasedLines() const noexcept
-            {
-            return m_showcasedLines;
             }
 
         /// @returns The functor for determining how to color a point.

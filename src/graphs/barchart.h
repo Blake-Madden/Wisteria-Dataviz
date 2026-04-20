@@ -1286,6 +1286,16 @@ namespace Wisteria::Graphs
             return m_sortLabels;
             }
 
+        /// @returns The showcased labels (if string vector variation of
+        ///     ShowcaseBars() was called).
+        /// @warning if positional variation of ShowcaseBars() was called,
+        ///     then this will be empty.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedLabels() const noexcept
+            {
+            return m_showcasedLabels;
+            }
+
         /// @returns Whether labels on ghosted bars are hidden during showcasing.
         [[nodiscard]]
         bool IsHidingGhostedLabels() const noexcept
@@ -1550,6 +1560,7 @@ namespace Wisteria::Graphs
         SortDirection m_sortDirection{ SortDirection::NoSort };
         std::optional<BarSortComparison> m_sortComparison;
         std::vector<wxString> m_sortLabels;
+        std::vector<wxString> m_showcasedLabels;
         bool m_hideGhostedLabels{ true };
         bool m_constrainScalingAxisToBars{ false };
         bool m_applyBrushesToUngroupedBars{ false };
