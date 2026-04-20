@@ -2955,6 +2955,7 @@ namespace Wisteria
                 ganttChart->SetLabelDisplay(taskLabelDisplay.value());
                 }
 
+            LoadBarChart(graphNode, ganttChart);
             LoadGraph(graphNode, canvas, currentRow, currentColumn, ganttChart);
             return ganttChart;
             }
@@ -3863,7 +3864,30 @@ namespace Wisteria
                     }
                 }
             }
-        /// @todo Add support for assigning shapes to different bars, based on axis label
+        // or assigning shapes to individual bars by axis label
+        // (bars not listed keep the default BarShape::Rectangle)
+        else if (barShapes->IsOk() && barShapes->IsValueArray())
+            {
+            for (const auto& entry : barShapes->AsNodes())
+                {
+                if (!entry->IsOk())
+                    {
+                    continue;
+                    }
+                const auto barShape =
+                    ReportEnumConvert::ConvertBarShape(entry->GetProperty(L"shape")->AsString());
+                if (!barShape.has_value())
+                    {
+                    continue;
+                    }
+                const auto barPos =
+                    barChart->FindBar(entry->GetProperty(L"axis-label")->AsString());
+                if (barPos.has_value())
+                    {
+                    barChart->GetBars().at(barPos.value()).SetShape(barShape.value());
+                    }
+                }
+            }
 
         // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))

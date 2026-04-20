@@ -56,7 +56,7 @@ Properties common to all bar-chart-derived graphs:
   - `"image"`: The path to the image to add to the bar label.
 - `"bar-shapes"`: Properties specifying the shapes of the bars. \
   If a single value, this shape will be applied to all bars. \
-  If an array is provided, shapes map positionally to bars. \
+  If an array is provided, shapes map positionally to bars (by label). \
   Available options (if applying same shape to all bars) are:
   - `"rectangle"` (the default)
   - `"arrow"`

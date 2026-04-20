@@ -3345,29 +3345,54 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 node->Add(L"bar-group-placement", bgStr.value());
                 }
             }
-        // bar-shapes (if all bars have the same non-default shape)
+        // bar-shapes: single string if all bars share a non-default shape;
+        // otherwise a per-bar array keyed by axis label (Rectangle bars omitted)
         if (!barChart->GetBars().empty())
             {
             const auto firstShape = barChart->GetBars().front().GetShape();
-            if (firstShape != Wisteria::Graphs::BarChart::BarShape::Rectangle)
+            bool allSame = true;
+            for (const auto& bar : barChart->GetBars())
                 {
-                bool allSame = true;
+                if (bar.GetShape() != firstShape)
+                    {
+                    allSame = false;
+                    break;
+                    }
+                }
+            if (allSame && firstShape != Wisteria::Graphs::BarChart::BarShape::Rectangle)
+                {
+                const auto bsStr = Wisteria::ReportEnumConvert::ConvertBarShapeToString(firstShape);
+                if (bsStr.has_value())
+                    {
+                    node->Add(L"bar-shapes", bsStr.value());
+                    }
+                }
+            else if (!allSame)
+                {
+                wxString shapesArr;
                 for (const auto& bar : barChart->GetBars())
                     {
-                    if (bar.GetShape() != firstShape)
+                    if (bar.GetShape() == Wisteria::Graphs::BarChart::BarShape::Rectangle)
                         {
-                        allSame = false;
-                        break;
+                        continue;
                         }
-                    }
-                if (allSame)
-                    {
                     const auto bsStr =
-                        Wisteria::ReportEnumConvert::ConvertBarShapeToString(firstShape);
-                    if (bsStr.has_value())
+                        Wisteria::ReportEnumConvert::ConvertBarShapeToString(bar.GetShape());
+                    if (!bsStr.has_value())
                         {
-                        node->Add(L"bar-shapes", bsStr.value());
+                        continue;
                         }
+                    if (!shapesArr.empty())
+                        {
+                        shapesArr += L", ";
+                        }
+                    shapesArr += L"{\"axis-label\": \"" +
+                                 EscapeJsonStr(bar.GetAxisLabel().GetText()) +
+                                 L"\", \"shape\": \"" + bsStr.value() + L"\"}";
+                    }
+                if (!shapesArr.empty())
+                    {
+                    node->Add(L"bar-shapes", wxSimpleJSON::Create(L"[" + shapesArr + L"]"));
                     }
                 }
             }
