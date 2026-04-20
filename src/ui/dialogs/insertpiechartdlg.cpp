@@ -10,6 +10,7 @@
 #include "../../graphs/piechart.h"
 #include "insertlabeldlg.h"
 #include "variableselectdlg.h"
+#include <wx/clrpicker.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -215,10 +216,22 @@ namespace Wisteria::UI
             wxDefaultSize, 0, wxGenericValidator(&m_includeDonutHole));
         donutBox->Add(donutCheckBox, wxSizerFlags{}.Border());
 
+        auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_donutColorLabel =
+            new wxStaticText(donutBox->GetStaticBox(), wxID_ANY, _(L"Background color:"));
+        colorSizer->Add(m_donutColorLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+
+        auto* donutColorPicker = new wxColourPickerCtrl(
+            donutBox->GetStaticBox(), wxID_ANY, *wxWHITE, wxDefaultPosition, wxDefaultSize,
+            wxCLRP_DEFAULT_STYLE, wxGenericValidator(&m_donutHoleColor));
+        m_donutColorPicker = donutColorPicker;
+        colorSizer->Add(donutColorPicker, wxSizerFlags{}.CenterVertical());
+        donutBox->Add(colorSizer, wxSizerFlags{}.Border(wxLEFT));
+
         m_editDonutLabelButton =
             new wxButton(donutBox->GetStaticBox(), wxID_ANY, _(L"Edit Label..."));
         m_editDonutLabelButton->Enable(m_includeDonutHole);
-        donutBox->Add(m_editDonutLabelButton, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+        donutBox->Add(m_editDonutLabelButton, wxSizerFlags{}.Border(wxLEFT | wxTOP | wxBOTTOM));
 
         optionsSizer->Add(donutBox, wxSizerFlags{}.Border());
 
@@ -241,7 +254,24 @@ namespace Wisteria::UI
                             {
                                 TransferDataFromWindow();
                                 m_editDonutLabelButton->Enable(m_includeDonutHole);
+                                if (m_donutColorPicker != nullptr)
+                                    {
+                                    m_donutColorPicker->Enable(m_includeDonutHole);
+                                    }
+                                if (m_donutColorLabel != nullptr)
+                                    {
+                                    m_donutColorLabel->Enable(m_includeDonutHole);
+                                    }
                             });
+
+        if (m_donutColorPicker != nullptr)
+            {
+            m_donutColorPicker->Enable(m_includeDonutHole);
+            }
+        if (m_donutColorLabel != nullptr)
+            {
+            m_donutColorLabel->Enable(m_includeDonutHole);
+            }
 
         m_editDonutLabelButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                      { OnEditDonutHoleLabel(); });
@@ -472,8 +502,17 @@ namespace Wisteria::UI
         m_pieStyle = static_cast<int>(pieChart->GetPieStyle());
 
         m_donutHoleLabel = pieChart->GetDonutHoleLabel();
+        m_donutHoleColor = pieChart->GetDonutHoleColor();
 
         TransferDataToWindow();
         m_editDonutLabelButton->Enable(m_includeDonutHole);
+        if (m_donutColorLabel != nullptr)
+            {
+            m_donutColorLabel->Enable(m_includeDonutHole);
+            }
+        if (m_donutColorPicker != nullptr)
+            {
+            m_donutColorPicker->Enable(m_includeDonutHole);
+            }
         }
     } // namespace Wisteria::UI

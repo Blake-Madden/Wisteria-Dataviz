@@ -4461,13 +4461,12 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger brushGuard{ dc,
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        // Base color from brush (fallback HunterGreen)
+        // base color from brush (fallback HunterGreen)
         const wxColour baseColor = (GetGraphItemInfo().GetBrush().IsOk() &&
                                     GetGraphItemInfo().GetBrush().GetColour().IsOk()) ?
                                        GetGraphItemInfo().GetBrush().GetColour() :
                                        Colors::ColorBrewer::GetColor(Colors::Color::HunterGreen);
 
-        // Derived colors via Tint (your request)
         const wxColour innerOutlineColor = Colors::ColorContrast::Tint(baseColor, 0.55);
         const wxColour fillColor = Colors::ColorContrast::Tint(baseColor, 0.15);
 
@@ -4479,7 +4478,7 @@ namespace Wisteria::GraphItems
             return;
             }
 
-        // Geometry
+        // geometry
         constexpr double SHAFT_RATIO = math_constants::half;
         const int left = rect.GetLeft();
         const int top = rect.GetTop();
@@ -4492,7 +4491,7 @@ namespace Wisteria::GraphItems
         const int shaftTop = midY - (shaftHeight / 2);
         const int shaftBottom = midY + (shaftHeight / 2);
 
-        // Arrow path
+        // arrow path
         wxGraphicsPath arrowPath = gc->CreatePath();
         arrowPath.MoveToPoint(left, shaftTop);
         arrowPath.AddLineToPoint(shaftEndX, shaftTop);
@@ -4503,15 +4502,14 @@ namespace Wisteria::GraphItems
         arrowPath.AddLineToPoint(left, shaftBottom);
         arrowPath.CloseSubpath();
 
-        // Fill
         gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(wxBrush(fillColor));
+        gc->SetBrush(wxBrush{ fillColor });
         gc->FillPath(arrowPath);
 
-            // —— Sheen: spans full width and fills the entire upper head ——
+            // sheen: spans full width and fills the entire upper head
             {
-            const auto w = static_cast<double>(rect.GetWidth());
-            const auto h = static_cast<double>(rect.GetHeight());
+            const auto width = static_cast<double>(rect.GetWidth());
+            const auto height = static_cast<double>(rect.GetHeight());
 
             // arrow geometry we've already used
             constexpr double SHEEN_SHAFT_RATIO = math_constants::half;
@@ -4527,13 +4525,13 @@ namespace Wisteria::GraphItems
             auto yOnHeadTop = [&](double x) { return yTop + (headSlope * (x - xShaftEnd)); };
 
             // band thickness and caps
-            const double bandThickness = std::max(h * 0.22, 2.0);
+            const double bandThickness = std::max(height * 0.22, 2.0);
             const double capRadius = bandThickness * 0.45;
 
             // left: start just inside shaft, a touch above its mid
-            const double xL = xLeft + (w * 0.04);
+            const double xL = xLeft + (width * 0.04);
             const double yMidL = ((yTop + yMid) * math_constants::half) +
-                                 (h * 0.03); // comfortable height on the body
+                                 (height * 0.03); // comfortable height on the body
             const double y1L = yMidL - (bandThickness * math_constants::half);
             const double y2L = yMidL + (bandThickness * math_constants::half);
 
@@ -4543,29 +4541,31 @@ namespace Wisteria::GraphItems
             const double yJ = yTop + epsPx;      // exactly on head top at junction
 
             // right end: almost at tip; upper edge glued to head-top line
-            const double xR = xRight - (w * 0.005);
+            const double xR = xRight - (width * 0.005);
             const double y1R = yOnHeadTop(xR) + epsPx;
             const double y2R = y1R + bandThickness;
 
             wxGraphicsPath sheen = gc->CreatePath();
 
-            // Upper edge: left S-curve -> EXACTLY the junction -> along head-top to near tip
+            // upper edge: left S-curve -> exactly the junction -> along head-top to near tip
             sheen.MoveToPoint(xL, y1L);
-            sheen.AddCurveToPoint(xL + (w * 0.30), y1L - (h * 0.14), // lift early (pronounced)
-                                  xShaftEnd - (w * 0.02),
-                                  y1L + (h * 0.08), // approach from body side
-                                  xJ, yJ);          // land right on the head's top corner
-            sheen.AddLineToPoint(xR, y1R);          // ride the head-top edge to the right
+            sheen.AddCurveToPoint(xL + (width * 0.30),
+                                  y1L - (height * 0.14), // lift early (pronounced)
+                                  xShaftEnd - (width * 0.02),
+                                  y1L + (height * 0.08), // approach from body side
+                                  xJ, yJ);               // land right on the head's top corner
+            sheen.AddLineToPoint(xR, y1R);               // ride the head-top edge to the right
 
-            // Rounded right cap down to lower edge
+            // rounded right cap down to lower edge
             sheen.AddQuadCurveToPoint(xR + (capRadius * 0.70), (y1R + y2R) * math_constants::half,
                                       xR, y2R);
 
-            // Lower edge: counter-wave back to left (keeps thickness even)
-            sheen.AddCurveToPoint(xShaftEnd - (w * 0.06), y2L - (h * math_constants::tenth),
-                                  xL + (w * 0.28), y2L + (h * 0.05), xL, y2L);
+            // lower edge: counter-wave back to left (keeps thickness even)
+            sheen.AddCurveToPoint(xShaftEnd - (width * 0.06),
+                                  y2L - (height * math_constants::tenth), xL + (width * 0.28),
+                                  y2L + (height * 0.05), xL, y2L);
 
-            // Rounded left cap back to start
+            // rounded left cap back to start
             sheen.AddQuadCurveToPoint(xL - (capRadius * 0.70), (y1L + y2L) * math_constants::half,
                                       xL, y1L);
 
@@ -4576,16 +4576,15 @@ namespace Wisteria::GraphItems
             const double gradBottom = std::max(y2L, y2R);
 
             const auto sheenBrush = gc->CreateLinearGradientBrush(
-                0, gradTop, 0, gradBottom,
-                Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(175)),
-                Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(70)));
+                0, gradTop, 0, gradBottom, Colors::ColorContrast::ChangeOpacity(*wxWHITE, 175),
+                Colors::ColorContrast::ChangeOpacity(*wxWHITE, 70));
 
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
             }
 
-            // Double outline: outer (base), inner (lighter tint)
+            // double outline: outer (base), inner (lighter tint)
             {
             const int outerW = std::max<int>(2, ScaleToScreenAndCanvas(2));
             const int innerW = std::max<int>(1, ScaleToScreenAndCanvas(1));

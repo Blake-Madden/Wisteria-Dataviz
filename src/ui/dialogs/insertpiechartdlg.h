@@ -158,6 +158,13 @@ namespace Wisteria::UI
             return m_donutHoleLabel;
             }
 
+        /// @returns The donut hole color.
+        [[nodiscard]]
+        const wxColour& GetDonutHoleColor() const noexcept
+            {
+            return m_donutHoleColor;
+            }
+
         /// @brief Populates all dialog controls from an existing pie chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -181,6 +188,8 @@ namespace Wisteria::UI
         wxStaticText* m_weightVarLabel{ nullptr };
         wxStaticText* m_group2VarLabel{ nullptr };
         wxButton* m_editDonutLabelButton{ nullptr };
+        wxColourPickerCtrl* m_donutColorPicker{ nullptr };
+        wxStaticText* m_donutColorLabel{ nullptr };
 
         // DDX data members
         bool m_includeDonutHole{ false };
@@ -200,6 +209,7 @@ namespace Wisteria::UI
         std::vector<wxString> m_datasetNames;
 
         Wisteria::GraphItems::Label m_donutHoleLabel;
+        wxColour m_donutHoleColor{ *wxWHITE };
         };
     } // namespace Wisteria::UI
 

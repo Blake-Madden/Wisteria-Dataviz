@@ -3766,6 +3766,16 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             node->Add(L"ghost-opacity", static_cast<double>(pieChart->GetGhostOpacity()));
             }
+
+        // donut hole
+        auto donutHoleNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        donutHoleNode->Add(L"include", pieChart->IsIncludingDonutHole());
+        donutHoleNode->Add(L"proportion", pieChart->GetDonutHoleProportion());
+        donutHoleNode->Add(L"color", ColorToStr(pieChart->GetDonutHoleColor()));
+        donutHoleNode->Add(L"label", wxSimpleJSON::Create(
+                                         SaveLabelPropertiesToStr(pieChart->GetDonutHoleLabel())));
+        node->Add(L"donut-hole", donutHoleNode);
+
         // showcase-slices
         const auto showcaseMode = pieChart->GetShowcaseMode();
         if (showcaseMode == Wisteria::Graphs::PieChart::ShowcaseMode::ExplicitList)
@@ -3847,37 +3857,6 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 {
                 node->Add(L"right-margin-note", marginNode);
                 }
-            }
-        // donut hole
-        if (pieChart->IsIncludingDonutHole())
-            {
-            wxString donutStr = L"{";
-            if (!compare_doubles(pieChart->GetDonutHoleProportion(), math_constants::half))
-                {
-                donutStr +=
-                    wxString::Format(L"\"proportion\": %g", pieChart->GetDonutHoleProportion());
-                }
-            const wxColour defaultDonutColor{ Wisteria::Colors::ColorBrewer::GetColor(
-                Wisteria::Colors::Color::White) };
-            if (pieChart->GetDonutHoleColor() != defaultDonutColor)
-                {
-                if (donutStr.length() > 1)
-                    {
-                    donutStr += L", ";
-                    }
-                donutStr += L"\"color\": \"" + ColorToStr(pieChart->GetDonutHoleColor()) + L"\"";
-                }
-            donutStr += L"}";
-            auto donutNode = wxSimpleJSON::Create(donutStr);
-            if (!pieChart->GetDonutHoleLabel().GetText().empty())
-                {
-                const auto labelNode = SaveLabel(&pieChart->GetDonutHoleLabel(), canvas);
-                if (labelNode)
-                    {
-                    donutNode->Add(L"label", labelNode);
-                    }
-                }
-            node->Add(L"donut-hole", donutNode);
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
