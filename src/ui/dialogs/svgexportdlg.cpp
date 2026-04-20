@@ -81,6 +81,30 @@ namespace Wisteria::UI
         layoutToggleCheck->SetValidator(wxGenericValidator{ &m_includeLayoutOptions });
         featuresSizer->Add(layoutToggleCheck, wxSizerFlags{}.Border());
 
+        wxArrayString layoutChoices;
+        layoutChoices.Add(_(L"Stacked"));
+        layoutChoices.Add(_(L"Duplex"));
+        auto* layoutRadio =
+            new wxRadioBox(featuresSizer->GetStaticBox(), LAYOUT_RADIO_ID, _(L"Page Layout"),
+                           wxDefaultPosition, wxDefaultSize, layoutChoices, 1, wxRA_SPECIFY_COLS);
+        // map enum to int
+        layoutRadio->SetSelection(m_layout == Wisteria::SVGReportOptions::PageLayout::Stacked ? 0 :
+                                                                                                1);
+        featuresSizer->Add(layoutRadio, wxSizerFlags{}.Expand().Border());
+        layoutRadio->Bind(wxEVT_RADIOBOX,
+                          [this, layoutRadio](wxCommandEvent&)
+                          {
+                              m_layout = (layoutRadio->GetSelection() == 0) ?
+                                             Wisteria::SVGReportOptions::PageLayout::Stacked :
+                                             Wisteria::SVGReportOptions::PageLayout::Duplex;
+                          });
+
+        // enable/disable layout options
+        layoutToggleCheck->Bind(wxEVT_CHECKBOX, [layoutRadio](wxCommandEvent& event)
+                                { layoutRadio->Enable(event.IsChecked()); });
+        // initial state
+        layoutRadio->Enable(m_includeLayoutOptions);
+
         auto* darkModeToggleCheck =
             new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Dark mode toggle"));
         darkModeToggleCheck->SetValidator(wxGenericValidator{ &m_includeDarkModeToggle });

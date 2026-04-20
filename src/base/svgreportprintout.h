@@ -20,6 +20,15 @@ namespace Wisteria
     /// @brief Options for SVG report export.
     struct SVGReportOptions
         {
+        /// @brief How the pages in the SVG are layed out.
+        enum class PageLayout
+            {
+            /// @brief Pages are in a single column.
+            Stacked,
+            /// @brief Pages are side-by-side (2x2 grid).
+            Duplex
+            };
+
         /// @brief Constructor.
         /// @param filePath The file path to save the SVG to.
         explicit SVGReportOptions(const wxString& filePath) : m_filePath(filePath) {}
@@ -33,6 +42,8 @@ namespace Wisteria
         /// @brief Whether to include a floating layout toggle (stacked vs duplex) and
         ///     page-gap spinner.
         bool m_includeLayoutOptions{ true };
+        /// @brief How the pages in the SVG are layed out.
+        PageLayout m_layout{ PageLayout::Duplex };
         /// @brief Whether to include a floating dark-mode toggle.
         bool m_includeDarkModeToggle{ true };
         /// @brief Whether to include slideshow navigation (arrow keys + prev/next buttons).
@@ -46,74 +57,81 @@ namespace Wisteria
 
         [[nodiscard]]
         bool HasInteractiveFeatures() const noexcept
-        {
+            {
             return m_includeTransitions || m_includeHighlighting || m_includeLayoutOptions ||
-                m_includeDarkModeToggle || m_includeSlideshow || m_includePageShadow;
-        }
+                   m_includeDarkModeToggle || m_includeSlideshow || m_includePageShadow;
+            }
 
         /// @returns @c true if any floating UI overlay (buttons, progress bar) is enabled.
         [[nodiscard]]
         bool HasUILayer() const noexcept
-        {
+            {
             return m_includeLayoutOptions || m_includeDarkModeToggle || m_includeSlideshow;
-        }
+            }
 
         /// @brief Enables/disables smooth transitions.
         SVGReportOptions& Transitions(bool include)
-        {
+            {
             m_includeTransitions = include;
             return *this;
-        }
+            }
+
+        /// @brief How the pages are organized.
+        SVGReportOptions& Highlighting(PageLayout layout)
+            {
+            m_layout = layout;
+            return *this;
+            }
 
         /// @brief Enables/disables interactive highlighting.
         SVGReportOptions& Highlighting(bool include)
-        {
+            {
             m_includeHighlighting = include;
             return *this;
-        }
+            }
 
         /// @brief Enables/disables the layout options.
         SVGReportOptions& LayoutOptions(bool include)
-        {
+            {
             m_includeLayoutOptions = include;
             return *this;
-        }
+            }
 
         /// @brief Enables/disables the dark-mode toggle.
         SVGReportOptions& DarkModeToggle(bool include)
-        {
+            {
             m_includeDarkModeToggle = include;
             return *this;
-        }
+            }
 
         /// @brief Enables/disables slideshow navigation.
         SVGReportOptions& Slideshow(bool include)
-        {
+            {
             m_includeSlideshow = include;
             return *this;
-        }
+            }
 
         /// @brief Enables/disables the page shadow.
         SVGReportOptions& PageShadow(bool include)
-        {
+            {
             m_includePageShadow = include;
             return *this;
-        }
+            }
 
         /// @brief Sets the theme color.
         SVGReportOptions& ThemeColor(const wxColour& color)
-        {
+            {
             m_themeColor = color;
             return *this;
-        }
+            }
 
         /// @brief Sets a uniform page size.
         SVGReportOptions& PageSize(const wxSize& size)
-        {
+            {
             m_pageSize = size;
             return *this;
-        }
-    };
+            }
+        };
 
     /// @brief Exports a collection of canvases into a multipage SVG file.
     /// @details Each canvas is rendered into its own @c \<page\> element,
@@ -121,10 +139,10 @@ namespace Wisteria
     ///     The page dimensions are derived from the paper size stored in
     ///     each canvas's printer settings.
     class SVGReportPrintout
-    {
-    public:
+        {
+      public:
         /// @brief The horizontal gap (in pixels) between rows of pages.
-        static constexpr int PAGE_GAP{ 25 };
+        constexpr static int PAGE_GAP{ 25 };
 
         /// @brief Constructor.
         /// @param canvases The canvases (pages) to export.

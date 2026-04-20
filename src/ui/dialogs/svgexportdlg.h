@@ -12,6 +12,7 @@
 #ifndef SVG_EXPORT_DLG_H
 #define SVG_EXPORT_DLG_H
 
+#include "../../base/svgreportprintout.h"
 #include "../../math/mathematics.h"
 #include <wx/dialog.h>
 #include <wx/panel.h>
@@ -101,6 +102,13 @@ namespace Wisteria::UI
             return m_themeColor;
             }
 
+        /// @returns The selected layout.
+        [[nodiscard]]
+        Wisteria::SVGReportOptions::PageLayout GetLayout() const noexcept
+            {
+            return m_layout;
+            }
+
       private:
         void CreateControls();
         void OnSizeChanged(wxSpinEvent& event);
@@ -123,6 +131,7 @@ namespace Wisteria::UI
         constexpr static wxWindowID PAGE_WIDTH_ID{ wxID_HIGHEST };
         constexpr static wxWindowID PAGE_HEIGHT_ID{ wxID_HIGHEST + 1 };
         constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 2 };
+        constexpr static wxWindowID LAYOUT_RADIO_ID{ wxID_HIGHEST + 3 };
 
         int m_pageWidth{ 0 };
         int m_pageHeight{ 0 };
@@ -133,6 +142,9 @@ namespace Wisteria::UI
         bool m_includeSlideshow{ true };
         bool m_includePageShadow{ true };
         wxColour m_themeColor{ 103, 58, 183 };
+        Wisteria::SVGReportOptions::PageLayout m_layout{
+            Wisteria::SVGReportOptions::PageLayout::Duplex
+        };
 
         wxPanel* m_previewPanel{ nullptr };
         };

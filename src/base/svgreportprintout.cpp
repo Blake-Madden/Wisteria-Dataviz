@@ -316,7 +316,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         if (options.m_includeLayoutOptions)
             {
             header += wxString::Format(
-                L"  let isDuplex = false;\n"
+                L"  let isDuplex = %s;\n"
                 "  function toggleLayout() {\n"
                 "    isDuplex = !isDuplex;\n"
                 "    const btnText = document.getElementById('toggle-btn-text');\n"
@@ -350,7 +350,11 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "      svg.setAttribute('height', stackedHeight);\n"
                 "    }\n"
                 "    updateUILayerPosition();\n"
-                "  }\n",
+                "  }\n"
+                "  // apply initial layout on load\n"
+                "  window.addEventListener('load', applyLayout);\n",
+                (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? L"true" :
+                                                                                      L"false"),
                 _(L"Stacked"), _(L"Duplex"), PAGE_GAP);
             }
 
@@ -447,12 +451,16 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         if (options.m_includeLayoutOptions)
             {
+            const bool isDuplex =
+                (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex);
             svgContent += wxString::Format(
                 L"  <rect class=\"btn\" x=\"10\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
                 "onclick=\"toggleLayout()\"><title>%s</title></rect>\n"
                 "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"70\" y=\"29\">"
-                "\U0001F4C4\U0001F4C4 %s</text>\n",
-                _(L"Toggle between stacked and duplex page layout"), _(L"Duplex"));
+                "%s %s</text>\n",
+                _(L"Toggle between stacked and duplex page layout"),
+                (isDuplex ? L"\U0001F4C4" : L"\U0001F4C4\U0001F4C4"),
+                (isDuplex ? _(L"Stacked") : _(L"Duplex")));
             }
 
         if (options.m_includeDarkModeToggle)
