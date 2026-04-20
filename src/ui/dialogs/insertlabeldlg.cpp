@@ -81,8 +81,10 @@ namespace Wisteria::UI
         m_fontColorPicker = new wxColourPickerCtrl(fontBox->GetStaticBox(), wxID_ANY, *wxBLACK);
         fontGrid->Add(m_fontColorPicker, wxSizerFlags{}.Expand());
 
-        fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Background color:")),
-                      wxSizerFlags{}.CenterVertical());
+        auto* enableBackgroundColorCheck = new wxCheckBox(
+            fontBox->GetStaticBox(), wxID_ANY, _(L"Include background color:"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator{ &m_includeBackgroundColor });
+        fontGrid->Add(enableBackgroundColorCheck, wxSizerFlags{}.CenterVertical());
         m_bgColorPicker =
             new wxColourPickerCtrl(fontBox->GetStaticBox(), wxID_ANY, wxTransparentColour);
         fontGrid->Add(m_bgColorPicker, wxSizerFlags{}.Expand());
@@ -234,6 +236,14 @@ namespace Wisteria::UI
         // bind events
         enableHeaderCheck->Bind(wxEVT_CHECKBOX,
                                 [this](wxCommandEvent& evt) { OnEnableHeader(evt.IsChecked()); });
+        enableBackgroundColorCheck->Bind(wxEVT_CHECKBOX,
+                                         [this](wxCommandEvent& evt)
+                                         {
+                                             if (m_bgColorPicker != nullptr)
+                                                 {
+                                                 m_bgColorPicker->Enable(evt.IsChecked());
+                                                 }
+                                         });
         }
 
     //-------------------------------------------
@@ -258,7 +268,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertLabelDlg::LoadFromLabel(const Wisteria::GraphItems::Label& label)
+    void InsertLabelDlg::LoadFromLabel(const GraphItems::Label& label)
         {
         if (m_includePageOptions)
             {
@@ -278,9 +288,15 @@ namespace Wisteria::UI
             {
             m_fontColorPicker->SetColour(label.GetFontColor());
             }
-        if (m_bgColorPicker != nullptr && label.GetFontBackgroundColor().IsOk())
+        m_includeBackgroundColor = (label.GetFontBackgroundColor().IsOk() &&
+                                    !label.GetFontBackgroundColor().IsTransparent());
+        if (m_bgColorPicker != nullptr)
             {
-            m_bgColorPicker->SetColour(label.GetFontBackgroundColor());
+            if (label.GetFontBackgroundColor().IsOk())
+                {
+                m_bgColorPicker->SetColour(label.GetFontBackgroundColor());
+                }
+            m_bgColorPicker->Enable(m_includeBackgroundColor);
             }
         m_alignment = static_cast<int>(label.GetTextAlignment());
         if (m_lineSpacingSpin != nullptr)
@@ -334,7 +350,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertLabelDlg::ApplyToLabel(Wisteria::GraphItems::Label& label) const
+    void InsertLabelDlg::ApplyToLabel(Wisteria::GraphItems::Label& label)
         {
         label.SetText(GetLabelText());
         label.GetFont() = GetLabelFont();

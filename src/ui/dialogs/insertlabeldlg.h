@@ -86,9 +86,12 @@ namespace Wisteria::UI
 
         /// @returns The background color.
         [[nodiscard]]
-        wxColour GetBackgroundColor() const
+        wxColour GetBackgroundColor()
             {
-            return m_bgColorPicker != nullptr ? m_bgColorPicker->GetColour() : wxTransparentColour;
+            TransferDataFromWindow();
+            return (m_includeBackgroundColor && m_bgColorPicker != nullptr) ?
+                       m_bgColorPicker->GetColour() :
+                       wxTransparentColour;
             }
 
         /// @returns The text alignment.
@@ -166,7 +169,7 @@ namespace Wisteria::UI
 
         /// @brief Applies the dialog settings to a label.
         /// @param label The label to update.
-        void ApplyToLabel(Wisteria::GraphItems::Label& label) const;
+        void ApplyToLabel(Wisteria::GraphItems::Label& label);
 
       private:
         void CreateControls() final;
@@ -191,6 +194,7 @@ namespace Wisteria::UI
         wxFontPickerCtrl* m_fontPicker{ nullptr };
         wxColourPickerCtrl* m_fontColorPicker{ nullptr };
         wxColourPickerCtrl* m_bgColorPicker{ nullptr };
+        bool m_includeBackgroundColor{ false };
 
         // DDX data members
         int m_alignment{ 0 }; // FlushLeft
