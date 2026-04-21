@@ -4543,7 +4543,7 @@ namespace Wisteria::GraphItems
             // right end: almost at tip; upper edge glued to head-top line
             const double xR = xRight - (width * 0.005);
             const double y1R = yOnHeadTop(xR) + epsPx;
-            const double y2R = y1R + bandThickness;
+            const double y2R = std::min(y1R + bandThickness, yMid);
 
             wxGraphicsPath sheen = gc->CreatePath();
 
@@ -4579,9 +4579,18 @@ namespace Wisteria::GraphItems
                 0, gradTop, 0, gradBottom, Colors::ColorContrast::ChangeOpacity(*wxWHITE, 175),
                 Colors::ColorContrast::ChangeOpacity(*wxWHITE, 70));
 
+            std::array<wxPoint, 7> arrowPoints = {
+                wxPoint{ left, shaftTop },    wxPoint{ shaftEndX, shaftTop },
+                wxPoint{ shaftEndX, top },    wxPoint{ right, midY },
+                wxPoint{ shaftEndX, bottom }, wxPoint{ shaftEndX, shaftBottom },
+                wxPoint{ left, shaftBottom }
+            };
+
+            gc->Clip(wxRegion{ arrowPoints.size(), arrowPoints.data() });
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
+            gc->ResetClip();
             }
 
             // double outline: outer (base), inner (lighter tint)
