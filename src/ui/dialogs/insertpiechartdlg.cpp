@@ -11,6 +11,7 @@
 #include "insertlabeldlg.h"
 #include "variableselectdlg.h"
 #include <wx/clrpicker.h>
+#include <wx/spinctrl.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -235,6 +236,144 @@ namespace Wisteria::UI
 
         optionsSizer->Add(donutBox, wxSizerFlags{}.Border());
 
+        // showcasing
+        auto* showcaseBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
+
+        auto* showcaseGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        showcaseGrid->Add(
+            new wxStaticText(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* opacitySpin = new wxSpinCtrl(showcaseBox->GetStaticBox(), wxID_ANY);
+        opacitySpin->SetRange(0, 255);
+        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        showcaseGrid->Add(opacitySpin);
+
+        showcaseGrid->Add(new wxStaticText(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Mode:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_showcaseModeChoice =
+            new wxChoice(showcaseBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                         nullptr, 0, wxGenericValidator(&m_showcaseMode));
+        m_showcaseModeChoice->Append(_(L"None"));
+        m_showcaseModeChoice->Append(_(L"Explicit list of outer slices"));
+        m_showcaseModeChoice->Append(_(L"Largest outer slice(s)"));
+        m_showcaseModeChoice->Append(_(L"Smallest outer slice(s)"));
+        m_showcaseModeChoice->Append(_(L"Largest inner slice(s)"));
+        m_showcaseModeChoice->Append(_(L"Smallest inner slice(s)"));
+        showcaseGrid->Add(m_showcaseModeChoice);
+
+        showcaseGrid->Add(
+            new wxStaticText(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Ring labels shown:")),
+            wxSizerFlags{}.CenterVertical());
+        m_showcasedRingChoice =
+            new wxChoice(showcaseBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                         nullptr, 0, wxGenericValidator(&m_showcasedRingLabels));
+        m_showcasedRingChoice->Append(_(L"Inner"));
+        m_showcasedRingChoice->Append(_(L"Outer"));
+        showcaseGrid->Add(m_showcasedRingChoice);
+        showcaseBox->Add(showcaseGrid, wxSizerFlags{}.Border());
+
+        m_showcaseByGroupCheck = new wxCheckBox(
+            showcaseBox->GetStaticBox(), wxID_ANY, _(L"Group by outer slice"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator(&m_showcaseByGroup));
+        showcaseBox->Add(m_showcaseByGroupCheck, wxSizerFlags{}.Border());
+
+        m_showcaseShowOuterMidPtsCheck = new wxCheckBox(
+            showcaseBox->GetStaticBox(), wxID_ANY,
+            _(L"Show outer pie midpoint labels while showcasing"), wxDefaultPosition, wxDefaultSize,
+            0, wxGenericValidator(&m_showcaseShowOuterPieMidPointLabels));
+        showcaseBox->Add(m_showcaseShowOuterMidPtsCheck, wxSizerFlags{}.Border());
+
+        m_showcaseListBox = new wxEditableListBox(
+            showcaseBox->GetStaticBox(), wxID_ANY, _(L"Slices to showcase:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        showcaseBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New button for showcase slices
+        m_showcaseListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                if (GetSelectedDataset() == nullptr || m_groupVariable.empty())
+                    {
+                    wxMessageBox(
+                        _(L"Select an outer grouping variable first to populate available slices."),
+                        _(L"No Groups"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+                const auto sliceChoices = GetOuterSliceChoices();
+                if (sliceChoices.empty())
+                    {
+                    return;
+                    }
+                wxSingleChoiceDialog dlg(this, _(L"Select slice to showcase:"),
+                                         _(L"Showcase Slice"), sliceChoices);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    const auto val = dlg.GetStringSelection();
+                    if (std::find(m_showcaseSlices.cbegin(), m_showcaseSlices.cend(), val) ==
+                        m_showcaseSlices.cend())
+                        {
+                        m_showcaseSlices.push_back(val);
+                        RefreshShowcaseListBox();
+                        }
+                    }
+            });
+
+        // override Edit button
+        m_showcaseListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                auto* listCtrl = m_showcaseListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseSlices.size()) ||
+                    GetSelectedDataset() == nullptr || m_groupVariable.empty())
+                    {
+                    return;
+                    }
+                const auto sliceChoices = GetOuterSliceChoices();
+                if (sliceChoices.empty())
+                    {
+                    return;
+                    }
+                wxSingleChoiceDialog dlg(this, _(L"Select slice to showcase:"),
+                                         _(L"Showcase Slice"), sliceChoices);
+                const int found = sliceChoices.Index(m_showcaseSlices[sel]);
+                if (found != wxNOT_FOUND)
+                    {
+                    dlg.SetSelection(found);
+                    }
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    m_showcaseSlices[sel] = dlg.GetStringSelection();
+                    RefreshShowcaseListBox();
+                    }
+            });
+
+        // override Delete button
+        m_showcaseListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseSlices.size()))
+                    {
+                    return;
+                    }
+                m_showcaseSlices.erase(std::next(m_showcaseSlices.cbegin(), sel));
+                RefreshShowcaseListBox();
+            });
+
+        m_showcaseModeChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
+                                   { OnShowcaseModeChanged(); });
+
+        optionsSizer->Add(showcaseBox, wxSizerFlags{}.Expand().Border());
+
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
@@ -275,6 +414,75 @@ namespace Wisteria::UI
 
         m_editDonutLabelButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                      { OnEditDonutHoleLabel(); });
+
+        OnShowcaseModeChanged();
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::OnShowcaseModeChanged()
+        {
+        TransferDataFromWindow();
+        using SM = Wisteria::Graphs::PieChart::ShowcaseMode;
+        const auto mode = static_cast<SM>(m_showcaseMode);
+        const bool isInner = (mode == SM::LargestInner || mode == SM::SmallestInner);
+        const bool isExplicit = (mode == SM::ExplicitList);
+        const bool isOuterMode =
+            (mode == SM::LargestOuter || mode == SM::SmallestOuter || isExplicit);
+
+        if (m_showcasedRingChoice != nullptr)
+            {
+            m_showcasedRingChoice->Enable(isOuterMode);
+            }
+        if (m_showcaseByGroupCheck != nullptr)
+            {
+            m_showcaseByGroupCheck->Enable(isInner);
+            }
+        if (m_showcaseShowOuterMidPtsCheck != nullptr)
+            {
+            m_showcaseShowOuterMidPtsCheck->Enable(isInner);
+            }
+        if (m_showcaseListBox != nullptr)
+            {
+            m_showcaseListBox->Enable(isExplicit);
+            }
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::RefreshShowcaseListBox()
+        {
+        if (m_showcaseListBox == nullptr)
+            {
+            return;
+            }
+        wxArrayString strings;
+        for (const auto& slice : m_showcaseSlices)
+            {
+            strings.Add(slice);
+            }
+        m_showcaseListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    wxArrayString InsertPieChartDlg::GetOuterSliceChoices() const
+        {
+        wxArrayString choices;
+        const auto dataset = GetSelectedDataset();
+        if (dataset == nullptr || m_groupVariable.empty())
+            {
+            return choices;
+            }
+        const auto col = dataset->GetCategoricalColumn(m_groupVariable);
+        if (col != dataset->GetCategoricalColumns().cend())
+            {
+            for (const auto& [id, label] : col->GetStringTable())
+                {
+                if (!label.empty())
+                    {
+                    choices.Add(label);
+                    }
+                }
+            }
+        return choices;
         }
 
     //-------------------------------------------
@@ -283,6 +491,8 @@ namespace Wisteria::UI
         m_groupVariable.clear();
         m_weightVariable.clear();
         m_group2Variable.clear();
+        m_showcaseSlices.clear();
+        RefreshShowcaseListBox();
         UpdateVariableLabels();
         }
 
@@ -356,7 +566,13 @@ namespace Wisteria::UI
             }
 
         const auto groupVars = dlg.GetSelectedVariables(0);
-        m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
+        const auto newGroup = groupVars.empty() ? wxString{} : groupVars.front();
+        if (newGroup != m_groupVariable)
+            {
+            m_showcaseSlices.clear();
+            RefreshShowcaseListBox();
+            }
+        m_groupVariable = newGroup;
 
         const auto weightVars = dlg.GetSelectedVariables(1);
         m_weightVariable = weightVars.empty() ? wxString{} : weightVars.front();
@@ -365,6 +581,7 @@ namespace Wisteria::UI
         m_group2Variable = group2Vars.empty() ? wxString{} : group2Vars.front();
 
         UpdateVariableLabels();
+        OnShowcaseModeChanged();
         }
 
     //-------------------------------------------
@@ -436,6 +653,22 @@ namespace Wisteria::UI
             return false;
             }
 
+        using SM = Wisteria::Graphs::PieChart::ShowcaseMode;
+        const auto mode = static_cast<SM>(m_showcaseMode);
+        if ((mode == SM::LargestInner || mode == SM::SmallestInner) && m_group2Variable.empty())
+            {
+            wxMessageBox(_(L"Inner showcase modes require an inner subgroup variable."),
+                         _(L"Subgroup Required"), wxOK | wxICON_WARNING, this);
+            return false;
+            }
+
+        if (mode == SM::ExplicitList && m_showcaseSlices.empty())
+            {
+            wxMessageBox(_(L"Add at least one slice to showcase, or change the showcase mode."),
+                         _(L"No Slices Specified"), wxOK | wxICON_WARNING, this);
+            return false;
+            }
+
         if (!ValidateColorScheme())
             {
             return false;
@@ -504,6 +737,28 @@ namespace Wisteria::UI
         m_donutHoleLabel = pieChart->GetDonutHoleLabel();
         m_donutHoleColor = pieChart->GetDonutHoleColor();
 
+        m_showcaseMode = static_cast<int>(pieChart->GetShowcaseMode());
+        m_showcasedRingLabels = static_cast<int>(pieChart->GetShowcasedRingLabels());
+        m_showcaseByGroup = pieChart->IsShowcaseByGroup();
+        m_showcaseShowOuterPieMidPointLabels = pieChart->IsShowcaseShowingOuterPieMidPointLabels();
+        m_ghostOpacity = static_cast<int>(pieChart->GetGhostOpacity());
+
+        m_showcaseSlices.clear();
+        if (pieChart->GetShowcaseMode() == Wisteria::Graphs::PieChart::ShowcaseMode::ExplicitList)
+            {
+            for (size_t i = 0;; ++i)
+                {
+                const auto val =
+                    pieChart->GetPropertyTemplate(L"showcase-slices[" + std::to_wstring(i) + L"]");
+                if (val.empty())
+                    {
+                    break;
+                    }
+                m_showcaseSlices.push_back(val);
+                }
+            }
+        RefreshShowcaseListBox();
+
         TransferDataToWindow();
         m_editDonutLabelButton->Enable(m_includeDonutHole);
         if (m_donutColorLabel != nullptr)
@@ -514,5 +769,6 @@ namespace Wisteria::UI
             {
             m_donutColorPicker->Enable(m_includeDonutHole);
             }
+        OnShowcaseModeChanged();
         }
     } // namespace Wisteria::UI

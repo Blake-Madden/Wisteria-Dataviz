@@ -6448,6 +6448,40 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         plot->SetPieStyle(static_cast<Wisteria::PieStyle>(dlg.GetPieStyle()));
         plot->ShowOuterPieLabels(dlg.GetShowOuterPieLabels());
         plot->ShowInnerPieLabels(dlg.GetShowInnerPieLabels());
+        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
+
+            // showcase slices
+            {
+            using SM = Wisteria::Graphs::PieChart::ShowcaseMode;
+            const auto peri = static_cast<Wisteria::Perimeter>(dlg.GetShowcasedRingLabels());
+            switch (static_cast<SM>(dlg.GetShowcaseMode()))
+                {
+            case SM::ExplicitList:
+                plot->ShowcaseOuterPieSlices(dlg.GetShowcaseSlices(), peri);
+                for (size_t i = 0; i < dlg.GetShowcaseSlices().size(); ++i)
+                    {
+                    plot->SetPropertyTemplate(L"showcase-slices[" + std::to_wstring(i) + L"]",
+                                              dlg.GetShowcaseSlices()[i]);
+                    }
+                break;
+            case SM::LargestOuter:
+                plot->ShowcaseLargestOuterPieSlices(peri);
+                break;
+            case SM::SmallestOuter:
+                plot->ShowcaseSmallestOuterPieSlices(peri);
+                break;
+            case SM::LargestInner:
+                plot->ShowcaseLargestInnerPieSlices(dlg.IsShowcaseByGroup(),
+                                                    dlg.IsShowcaseShowingOuterPieMidPointLabels());
+                break;
+            case SM::SmallestInner:
+                plot->ShowcaseSmallestInnerPieSlices(dlg.IsShowcaseByGroup(),
+                                                     dlg.IsShowcaseShowingOuterPieMidPointLabels());
+                break;
+            case SM::None:
+                break;
+                }
+            }
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
@@ -6527,6 +6561,41 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
         plot->SetPieStyle(static_cast<Wisteria::PieStyle>(dlg.GetPieStyle()));
         plot->ShowOuterPieLabels(dlg.GetShowOuterPieLabels());
         plot->ShowInnerPieLabels(dlg.GetShowInnerPieLabels());
+        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
+
+            // showcase slices
+            {
+            using SM = Wisteria::Graphs::PieChart::ShowcaseMode;
+            const auto peri = static_cast<Wisteria::Perimeter>(dlg.GetShowcasedRingLabels());
+            const auto& newSlices = dlg.GetShowcaseSlices();
+            switch (static_cast<SM>(dlg.GetShowcaseMode()))
+                {
+            case SM::ExplicitList:
+                plot->ShowcaseOuterPieSlices(newSlices, peri);
+                for (size_t i = 0; i < newSlices.size(); ++i)
+                    {
+                    const auto prop = L"showcase-slices[" + std::to_wstring(i) + L"]";
+                    CarryForwardProperty(graph, *plot, prop, newSlices[i], newSlices[i]);
+                    }
+                break;
+            case SM::LargestOuter:
+                plot->ShowcaseLargestOuterPieSlices(peri);
+                break;
+            case SM::SmallestOuter:
+                plot->ShowcaseSmallestOuterPieSlices(peri);
+                break;
+            case SM::LargestInner:
+                plot->ShowcaseLargestInnerPieSlices(dlg.IsShowcaseByGroup(),
+                                                    dlg.IsShowcaseShowingOuterPieMidPointLabels());
+                break;
+            case SM::SmallestInner:
+                plot->ShowcaseSmallestInnerPieSlices(dlg.IsShowcaseByGroup(),
+                                                     dlg.IsShowcaseShowingOuterPieMidPointLabels());
+                break;
+            case SM::None:
+                break;
+                }
+            }
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldPie = dynamic_cast<const Wisteria::Graphs::PieChart*>(&graph);

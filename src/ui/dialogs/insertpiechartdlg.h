@@ -12,8 +12,10 @@
 #ifndef INSERT_PIECHART_DIALOG_H
 #define INSERT_PIECHART_DIALOG_H
 
+#include "../../base/settings.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/editlbox.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -165,6 +167,48 @@ namespace Wisteria::UI
             return m_donutHoleColor;
             }
 
+        /// @returns The showcase mode selection index (maps to @c PieChart::ShowcaseMode).
+        [[nodiscard]]
+        int GetShowcaseMode() const noexcept
+            {
+            return m_showcaseMode;
+            }
+
+        /// @returns The showcased ring labels selection index (maps to @c Perimeter).
+        [[nodiscard]]
+        int GetShowcasedRingLabels() const noexcept
+            {
+            return m_showcasedRingLabels;
+            }
+
+        /// @returns Whether showcased inner slices are grouped by their outer slice.
+        [[nodiscard]]
+        bool IsShowcaseByGroup() const noexcept
+            {
+            return m_showcaseByGroup;
+            }
+
+        /// @returns Whether outer pie midpoint labels are shown during inner showcasing.
+        [[nodiscard]]
+        bool IsShowcaseShowingOuterPieMidPointLabels() const noexcept
+            {
+            return m_showcaseShowOuterPieMidPointLabels;
+            }
+
+        /// @returns The explicit list of outer slice labels to showcase.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcaseSlices() const noexcept
+            {
+            return m_showcaseSlices;
+            }
+
+        /// @returns The ghost opacity applied to non-showcased slices (0-255).
+        [[nodiscard]]
+        int GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
         /// @brief Populates all dialog controls from an existing pie chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -175,7 +219,10 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void OnEditDonutHoleLabel();
+        void OnShowcaseModeChanged();
         void UpdateVariableLabels();
+        void RefreshShowcaseListBox();
+        wxArrayString GetOuterSliceChoices() const;
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
@@ -190,6 +237,11 @@ namespace Wisteria::UI
         wxButton* m_editDonutLabelButton{ nullptr };
         wxColourPickerCtrl* m_donutColorPicker{ nullptr };
         wxStaticText* m_donutColorLabel{ nullptr };
+        wxChoice* m_showcaseModeChoice{ nullptr };
+        wxChoice* m_showcasedRingChoice{ nullptr };
+        wxCheckBox* m_showcaseByGroupCheck{ nullptr };
+        wxCheckBox* m_showcaseShowOuterMidPtsCheck{ nullptr };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
 
         // DDX data members
         bool m_includeDonutHole{ false };
@@ -201,12 +253,18 @@ namespace Wisteria::UI
         int m_innerMidPointDisplay{ 1 }; // BinPercentage
         int m_labelPlacement{ 1 };       // Flush
         int m_pieStyle{ 0 };             // None
+        int m_showcaseMode{ 0 };         // ShowcaseMode::None
+        int m_showcasedRingLabels{ 1 };  // Perimeter::Outer
+        bool m_showcaseByGroup{ false };
+        bool m_showcaseShowOuterPieMidPointLabels{ false };
+        int m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
 
         wxString m_groupVariable;
         wxString m_weightVariable;
         wxString m_group2Variable;
 
         std::vector<wxString> m_datasetNames;
+        std::vector<wxString> m_showcaseSlices;
 
         Wisteria::GraphItems::Label m_donutHoleLabel;
         wxColour m_donutHoleColor{ *wxWHITE };
