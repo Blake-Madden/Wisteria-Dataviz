@@ -71,18 +71,26 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The selected question variable names.
+        /// @returns The selected question variable names (with any constant
+        ///     placeholders expanded).
         [[nodiscard]]
-        const std::vector<wxString>& GetQuestionVariables() const noexcept
+        std::vector<wxString> GetQuestionVariables() const
             {
-            return m_questionVariables;
+            std::vector<wxString> expanded;
+            expanded.reserve(m_questionVariables.size());
+            for (const auto& var : m_questionVariables)
+                {
+                expanded.push_back(ExpandVariable(var));
+                }
+            return expanded;
             }
 
-        /// @returns The grouping variable name, or empty if none.
+        /// @returns The grouping variable name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetGroupVariable() const noexcept
+        wxString GetGroupVariable() const
             {
-            return m_groupVariable;
+            return ExpandVariable(m_groupVariable);
             }
 
         /// @returns Whether to show response counts.

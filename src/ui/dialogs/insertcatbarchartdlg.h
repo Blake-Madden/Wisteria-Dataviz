@@ -95,25 +95,27 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The categorical variable name.
+        /// @returns The categorical variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetCategoricalVariable() const noexcept
+        wxString GetCategoricalVariable() const
             {
-            return m_categoricalVariable;
+            return ExpandVariable(m_categoricalVariable);
             }
 
-        /// @returns The weight (aggregate) variable name, or empty if using frequency.
+        /// @returns The weight (aggregate) variable name (with any constant
+        ///     placeholders expanded), or empty if using frequency.
         [[nodiscard]]
-        const wxString& GetWeightVariable() const noexcept
+        wxString GetWeightVariable() const
             {
-            return m_weightVariable;
+            return ExpandVariable(m_weightVariable);
             }
 
-        /// @returns The grouping variable name, or empty if none.
+        /// @returns The grouping variable name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetGroupVariable() const noexcept
+        wxString GetGroupVariable() const
             {
-            return m_groupVariable;
+            return ExpandVariable(m_groupVariable);
             }
 
         /// @returns The selected box effect.

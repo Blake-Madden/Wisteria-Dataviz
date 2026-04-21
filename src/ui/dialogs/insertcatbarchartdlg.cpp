@@ -1137,6 +1137,12 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand any constant placeholders so the variable selection list
+        // can match the real dataset columns
+        const auto categoricalDefault = ExpandVariable(m_categoricalVariable);
+        const auto weightDefault = ExpandVariable(m_weightVariable);
+        const auto groupDefault = ExpandVariable(m_groupVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
@@ -1144,9 +1150,9 @@ namespace Wisteria::UI
                   .Label(_(L"Category"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_categoricalVariable.empty() ?
+                  .DefaultVariables(categoricalDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_categoricalVariable })
+                                        std::vector<wxString>{ categoricalDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -1155,17 +1161,15 @@ namespace Wisteria::UI
                   .Label(_(L"Weight"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_weightVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_weightVariable })
+                  .DefaultVariables(weightDefault.empty() ? std::vector<wxString>{} :
+                                                            std::vector<wxString>{ weightDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Group"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ groupDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,

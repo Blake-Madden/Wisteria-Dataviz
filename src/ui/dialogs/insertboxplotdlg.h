@@ -65,18 +65,20 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The continuous (aggregate) variable name.
+        /// @returns The continuous (aggregate) variable name
+        ///     (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetContinuousVariable() const noexcept
+        wxString GetContinuousVariable() const
             {
-            return m_continuousVariable;
+            return ExpandVariable(m_continuousVariable);
             }
 
-        /// @returns The grouping variable name, or empty if none.
+        /// @returns The grouping variable name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetGroupVariable() const noexcept
+        wxString GetGroupVariable() const
             {
-            return m_groupVariable;
+            return ExpandVariable(m_groupVariable);
             }
 
         /// @returns The selected box effect.

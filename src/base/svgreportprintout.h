@@ -20,7 +20,7 @@ namespace Wisteria
     /// @brief Options for SVG report export.
     struct SVGReportOptions
         {
-        /// @brief How the pages in the SVG are layed out.
+        /// @brief How the pages in the SVG are laid out.
         enum class PageLayout
             {
             /// @brief Pages are in a single column.
@@ -42,7 +42,7 @@ namespace Wisteria
         /// @brief Whether to include a floating layout toggle (stacked vs duplex) and
         ///     page-gap spinner.
         bool m_includeLayoutOptions{ true };
-        /// @brief How the pages in the SVG are layed out.
+        /// @brief How the pages in the SVG are laid out.
         PageLayout m_layout{ PageLayout::Duplex };
         /// @brief Whether to include a floating dark-mode toggle.
         bool m_includeDarkModeToggle{ true };

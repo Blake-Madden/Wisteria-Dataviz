@@ -5613,17 +5613,19 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
             plot->AddQuestionsBracket(bracket);
             }
 
-        // carry forward property templates
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        // carry forward property templates, preserving {{placeholders}}
+        const auto oldExpanded = [this, &graph](const wxString& prop)
+        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
+
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             oldExpanded(L"dataset"));
         for (size_t i = 0; i < questions.size(); ++i)
             {
-            plot->SetPropertyTemplate(L"variables.questions[" + std::to_wstring(i) + L"]",
-                                      questions[i]);
+            const auto key = wxString::Format(L"variables.questions[%zu]", i);
+            CarryForwardProperty(graph, *plot, key, questions[i], oldExpanded(key));
             }
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
+        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+                             oldExpanded(L"variables.group"));
 
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto [side, hint] = GetLegendSideAndHint(legendPlacement);

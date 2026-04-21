@@ -354,6 +354,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand constants in the defaults so the selection dialog can match them
+        std::vector<wxString> questionsDefault;
+        questionsDefault.reserve(m_questionVariables.size());
+        for (const auto& var : m_questionVariables)
+            {
+            questionsDefault.push_back(ExpandVariable(var));
+            }
+        const auto groupDefault = ExpandVariable(m_groupVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
@@ -361,7 +370,7 @@ namespace Wisteria::UI
                   .Label(_(L"Questions"))
                   .SingleSelection(false)
                   .Required(true)
-                  .DefaultVariables(m_questionVariables)
+                  .DefaultVariables(questionsDefault)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
                                    Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete }),
@@ -369,9 +378,8 @@ namespace Wisteria::UI
                   .Label(_(L"Group"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ groupDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,

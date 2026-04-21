@@ -178,6 +178,11 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand any constant placeholders so the variable selection list
+        // can match the real dataset columns
+        const auto continuousDefault = ExpandVariable(m_continuousVariable);
+        const auto groupDefault = ExpandVariable(m_groupVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
@@ -185,17 +190,16 @@ namespace Wisteria::UI
                   .Label(_(L"Continuous"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_continuousVariable.empty() ?
+                  .DefaultVariables(continuousDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_continuousVariable })
+                                        std::vector<wxString>{ continuousDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Group"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ groupDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
