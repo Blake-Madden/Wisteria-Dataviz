@@ -11,6 +11,7 @@
 #include "insertlabeldlg.h"
 #include "variableselectdlg.h"
 #include <wx/clrpicker.h>
+#include <wx/gbsizer.h>
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
 
@@ -38,9 +39,17 @@ namespace Wisteria::UI
         CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
-        auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
+        auto* optionsSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
         optionsPage->SetSizer(optionsSizer);
         GetSideBarBook()->AddPage(optionsPage, _(L"Pie Chart"), ID_OPTIONS_SECTION, true);
+
+        auto* leftColumnSizer = new wxBoxSizer(wxVERTICAL);
+        auto* rightColumnSizer = new wxBoxSizer(wxVERTICAL);
+        optionsSizer->Add(leftColumnSizer, wxGBPosition(0, 0), wxGBSpan(1, 1), wxEXPAND);
+        optionsSizer->Add(rightColumnSizer, wxGBPosition(0, 1), wxGBSpan(1, 1), wxEXPAND);
+        optionsSizer->AddGrowableCol(0, 1);
+        optionsSizer->AddGrowableCol(1, 1);
+        optionsSizer->AddGrowableRow(0, 1);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -64,7 +73,7 @@ namespace Wisteria::UI
             m_datasetChoice->SetSelection(0);
             }
 
-        optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
+        leftColumnSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // variables button
         auto* varsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Variables"));
@@ -99,7 +108,7 @@ namespace Wisteria::UI
         varGrid->Add(m_group2VarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
-        optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
+        leftColumnSizer->Add(varsBox, wxSizerFlags{}.Border().Expand());
 
         // pie style
         auto* styleSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
@@ -120,7 +129,7 @@ namespace Wisteria::UI
             styleChoice->Append(_(L"Chocolate chip cookie"));
             styleSizer->Add(styleChoice);
             }
-        optionsSizer->Add(styleSizer, wxSizerFlags{}.Border());
+        leftColumnSizer->Add(styleSizer, wxSizerFlags{}.Border());
 
         // labels area
         auto* labelsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Labels"));
@@ -207,7 +216,7 @@ namespace Wisteria::UI
                                       0, wxGenericValidator(&m_useColorLabels)),
                        wxSizerFlags{}.Border());
 
-        optionsSizer->Add(labelsBox, wxSizerFlags{}.Border());
+        leftColumnSizer->Add(labelsBox, wxSizerFlags{}.Border().Expand());
 
         // donut hole area
         auto* donutBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Donut Hole"));
@@ -217,24 +226,39 @@ namespace Wisteria::UI
             wxDefaultSize, 0, wxGenericValidator(&m_includeDonutHole));
         donutBox->Add(donutCheckBox, wxSizerFlags{}.Border());
 
-        auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* donutGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+
         m_donutColorLabel =
             new wxStaticText(donutBox->GetStaticBox(), wxID_ANY, _(L"Background color:"));
-        colorSizer->Add(m_donutColorLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        donutGrid->Add(m_donutColorLabel, wxSizerFlags{}.CenterVertical());
 
         auto* donutColorPicker = new wxColourPickerCtrl(
             donutBox->GetStaticBox(), wxID_ANY, *wxWHITE, wxDefaultPosition, wxDefaultSize,
             wxCLRP_DEFAULT_STYLE, wxGenericValidator(&m_donutHoleColor));
         m_donutColorPicker = donutColorPicker;
-        colorSizer->Add(donutColorPicker, wxSizerFlags{}.CenterVertical());
-        donutBox->Add(colorSizer, wxSizerFlags{}.Border(wxLEFT));
+        donutGrid->Add(donutColorPicker, wxSizerFlags{}.CenterVertical());
+
+        m_donutProportionLabel =
+            new wxStaticText(donutBox->GetStaticBox(), wxID_ANY, _(L"Hole proportion:"));
+        donutGrid->Add(m_donutProportionLabel, wxSizerFlags{}.CenterVertical());
+
+        auto* proportionSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* donutProportionSpin = new wxSpinCtrl(donutBox->GetStaticBox(), wxID_ANY);
+        donutProportionSpin->SetRange(0, 100);
+        donutProportionSpin->SetValidator(wxGenericValidator(&m_donutHoleProportion));
+        m_donutProportionSpin = donutProportionSpin;
+        proportionSizer->Add(donutProportionSpin, wxSizerFlags{}.CenterVertical());
+        m_donutProportionPercentLabel = new wxStaticText(donutBox->GetStaticBox(), wxID_ANY, L"%");
+        proportionSizer->Add(m_donutProportionPercentLabel,
+                             wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+        donutGrid->Add(proportionSizer, wxSizerFlags{}.CenterVertical());
+
+        donutBox->Add(donutGrid, wxSizerFlags{}.Border(wxLEFT));
 
         m_editDonutLabelButton =
             new wxButton(donutBox->GetStaticBox(), wxID_ANY, _(L"Edit Label..."));
         m_editDonutLabelButton->Enable(m_includeDonutHole);
         donutBox->Add(m_editDonutLabelButton, wxSizerFlags{}.Border(wxLEFT | wxTOP | wxBOTTOM));
-
-        optionsSizer->Add(donutBox, wxSizerFlags{}.Border());
 
         // showcasing
         auto* showcaseBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
@@ -372,14 +396,16 @@ namespace Wisteria::UI
         m_showcaseModeChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
                                    { OnShowcaseModeChanged(); });
 
-        optionsSizer->Add(showcaseBox, wxSizerFlags{}.Expand().Border());
+        rightColumnSizer->Add(showcaseBox, wxSizerFlags{ 1 }.Expand().Border());
+        rightColumnSizer->Add(donutBox, wxSizerFlags{}.Border().Expand());
 
-        // legend placement
+        // legend placement (at the bottom of the left column)
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
+        leftColumnSizer->AddStretchSpacer(1);
+        leftColumnSizer->Add(legendSizer, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -401,6 +427,18 @@ namespace Wisteria::UI
                                     {
                                     m_donutColorLabel->Enable(m_includeDonutHole);
                                     }
+                                if (m_donutProportionSpin != nullptr)
+                                    {
+                                    m_donutProportionSpin->Enable(m_includeDonutHole);
+                                    }
+                                if (m_donutProportionLabel != nullptr)
+                                    {
+                                    m_donutProportionLabel->Enable(m_includeDonutHole);
+                                    }
+                                if (m_donutProportionPercentLabel != nullptr)
+                                    {
+                                    m_donutProportionPercentLabel->Enable(m_includeDonutHole);
+                                    }
                             });
 
         if (m_donutColorPicker != nullptr)
@@ -410,6 +448,18 @@ namespace Wisteria::UI
         if (m_donutColorLabel != nullptr)
             {
             m_donutColorLabel->Enable(m_includeDonutHole);
+            }
+        if (m_donutProportionSpin != nullptr)
+            {
+            m_donutProportionSpin->Enable(m_includeDonutHole);
+            }
+        if (m_donutProportionLabel != nullptr)
+            {
+            m_donutProportionLabel->Enable(m_includeDonutHole);
+            }
+        if (m_donutProportionPercentLabel != nullptr)
+            {
+            m_donutProportionPercentLabel->Enable(m_includeDonutHole);
             }
 
         m_editDonutLabelButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
@@ -736,6 +786,8 @@ namespace Wisteria::UI
 
         m_donutHoleLabel = pieChart->GetDonutHoleLabel();
         m_donutHoleColor = pieChart->GetDonutHoleColor();
+        m_donutHoleProportion =
+            static_cast<int>(std::lround(pieChart->GetDonutHoleProportion() * 100));
 
         m_showcaseMode = static_cast<int>(pieChart->GetShowcaseMode());
         m_showcasedRingLabels = static_cast<int>(pieChart->GetShowcasedRingLabels());
@@ -768,6 +820,18 @@ namespace Wisteria::UI
         if (m_donutColorPicker != nullptr)
             {
             m_donutColorPicker->Enable(m_includeDonutHole);
+            }
+        if (m_donutProportionSpin != nullptr)
+            {
+            m_donutProportionSpin->Enable(m_includeDonutHole);
+            }
+        if (m_donutProportionLabel != nullptr)
+            {
+            m_donutProportionLabel->Enable(m_includeDonutHole);
+            }
+        if (m_donutProportionPercentLabel != nullptr)
+            {
+            m_donutProportionPercentLabel->Enable(m_includeDonutHole);
             }
         OnShowcaseModeChanged();
         }

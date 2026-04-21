@@ -6437,6 +6437,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         plot->IncludeDonutHole(dlg.GetIncludeDonutHole());
         plot->GetDonutHoleLabel() = dlg.GetDonutHoleLabel();
         plot->SetDonutHoleColor(dlg.GetDonutHoleColor());
+        plot->SetDonutHoleProportion(dlg.GetDonutHoleProportion());
         plot->UseColorLabels(dlg.GetUseColorLabels());
         plot->SetOuterPieMidPointLabelDisplay(
             static_cast<Wisteria::BinLabelDisplay>(dlg.GetOuterMidPointLabelDisplay()));
@@ -6550,6 +6551,7 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
         plot->IncludeDonutHole(dlg.GetIncludeDonutHole());
         plot->GetDonutHoleLabel() = dlg.GetDonutHoleLabel();
         plot->SetDonutHoleColor(dlg.GetDonutHoleColor());
+        plot->SetDonutHoleProportion(dlg.GetDonutHoleProportion());
         plot->UseColorLabels(dlg.GetUseColorLabels());
         plot->SetOuterPieMidPointLabelDisplay(
             static_cast<Wisteria::BinLabelDisplay>(dlg.GetOuterMidPointLabelDisplay()));

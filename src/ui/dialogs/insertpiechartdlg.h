@@ -167,6 +167,13 @@ namespace Wisteria::UI
             return m_donutHoleColor;
             }
 
+        /// @returns The donut hole proportion (0.0 - 1.0).
+        [[nodiscard]]
+        double GetDonutHoleProportion() const noexcept
+            {
+            return safe_divide<double>(m_donutHoleProportion, 100);
+            }
+
         /// @returns The showcase mode selection index (maps to @c PieChart::ShowcaseMode).
         [[nodiscard]]
         int GetShowcaseMode() const noexcept
@@ -237,6 +244,9 @@ namespace Wisteria::UI
         wxButton* m_editDonutLabelButton{ nullptr };
         wxColourPickerCtrl* m_donutColorPicker{ nullptr };
         wxStaticText* m_donutColorLabel{ nullptr };
+        wxSpinCtrl* m_donutProportionSpin{ nullptr };
+        wxStaticText* m_donutProportionLabel{ nullptr };
+        wxStaticText* m_donutProportionPercentLabel{ nullptr };
         wxChoice* m_showcaseModeChoice{ nullptr };
         wxChoice* m_showcasedRingChoice{ nullptr };
         wxCheckBox* m_showcaseByGroupCheck{ nullptr };
@@ -258,6 +268,7 @@ namespace Wisteria::UI
         bool m_showcaseByGroup{ false };
         bool m_showcaseShowOuterPieMidPointLabels{ false };
         int m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
+        int m_donutHoleProportion{ 50 }; // stored as 0-100, divided by 100 for API
 
         wxString m_groupVariable;
         wxString m_weightVariable;
