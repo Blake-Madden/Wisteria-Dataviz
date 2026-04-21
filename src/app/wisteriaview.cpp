@@ -4452,6 +4452,8 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
 
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
 
+        UpdateCanvas(canvas);
+
         GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
@@ -4509,6 +4511,8 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
                              oldExpanded(L"variables.close"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        UpdateCanvas(canvas);
 
         GetDocument()->Modify(true);
         }
@@ -4575,6 +4579,8 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
             }
 
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+
+        UpdateCanvas(canvas);
 
         GetDocument()->Modify(true);
         }
@@ -4647,6 +4653,8 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
                              oldExpanded(L"variables.from-group"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        UpdateCanvas(canvas);
 
         GetDocument()->Modify(true);
         }
