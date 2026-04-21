@@ -2661,6 +2661,7 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
     try
         {
         auto table = std::make_shared<Wisteria::Graphs::Table>(canvas);
+        table->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*table);
         dlg.ApplyPageOptions(*table);
 
@@ -3169,6 +3170,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::ScatterPlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
@@ -3330,6 +3332,7 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::BubblePlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
@@ -3405,6 +3408,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         {
         auto plot =
             std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(canvas, dlg.GetSkinColorDarker());
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
@@ -3570,7 +3574,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         // showcase bars/lines/bins
         for (size_t i = 0; i < dlg.GetShowcaseLines().size(); ++i)
             {
-            plot->SetPropertyTemplate(wxString::Format(L"showcase-lines[%zu]", i),
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-lines[%zu]"), i),
                                       dlg.GetShowcaseLines()[i]);
             }
 
@@ -3613,6 +3617,7 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::LinePlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
@@ -3645,7 +3650,7 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
         // showcase bars/lines/bins
         for (size_t i = 0; i < dlg.GetShowcaseLines().size(); ++i)
             {
-            plot->SetPropertyTemplate(wxString::Format(L"showcase-lines[%zu]", i),
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-lines[%zu]"), i),
                                       dlg.GetShowcaseLines()[i]);
             }
 
@@ -3745,6 +3750,7 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::MultiSeriesLinePlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->AutoSpline(dlg.GetAutoSpline());
@@ -3871,6 +3877,7 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetShapeScheme(dlg.GetShapeScheme());
@@ -4008,6 +4015,7 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::LRRoadmap>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -4156,6 +4164,7 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::ProConRoadmap>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -4333,6 +4342,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::GanttChart>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetLabelDisplay(dlg.GetTaskLabelDisplay());
@@ -4483,6 +4493,7 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::CandlestickPlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetPlotType(dlg.GetPlotType());
@@ -4611,6 +4622,7 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::SankeyDiagram>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetFlowShape(dlg.GetFlowShape());
@@ -4847,6 +4859,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5223,6 +5236,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5603,6 +5617,7 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
             canvas, surveyFormat, dlg.GetNegativeColor(), dlg.GetPositiveColor(),
             dlg.GetNeutralColor(), dlg.GetNoResponseColor());
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5735,6 +5750,7 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -5876,6 +5892,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::Histogram>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -6042,6 +6059,7 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::ScaleChart>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -6181,6 +6199,7 @@ void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteri
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::WordCloud>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -6294,6 +6313,7 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::WinLossSparkline>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->HighlightBestRecords(dlg.GetHighlightBestRecords());
@@ -6418,6 +6438,7 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::StemAndLeafPlot>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -6593,6 +6614,7 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
     try
         {
         auto plot = std::make_shared<Wisteria::Graphs::PieChart>(canvas);
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
 
@@ -6753,6 +6775,7 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         {
         auto plot = std::make_shared<Wisteria::Graphs::WaffleChart>(
             canvas, dlg.GetShapes(), dlg.GetGridRounding(), dlg.GetRowCount());
+        plot->SetId(graph.GetId());
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         dlg.ApplyAxisOverrides(*plot);
