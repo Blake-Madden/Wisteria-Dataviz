@@ -415,10 +415,19 @@ namespace Wisteria::Graphs
             @param labels The lines to showcase.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") lines/points are.
+            @note If @c labels is empty, this call is a no-op and the current
+                showcasing state is preserved.
             @warning This will only take effect if called after SetData().\
                 Also, for LinePlot, this will only take effect if grouping is enabled.
             @sa SetGhostOpacity().*/
-        void ShowcaseLines(const std::vector<wxString>& labels) { m_showcasedLines = labels; }
+        void ShowcaseLines(const std::vector<wxString>& labels)
+            {
+            if (labels.empty())
+                {
+                return;
+                }
+            m_showcasedLines = labels;
+            }
 
         /// @returns The opacity level applied if being "ghosted".
         [[nodiscard]]

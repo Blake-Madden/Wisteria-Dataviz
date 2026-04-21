@@ -3554,7 +3554,10 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseLines(dlg.GetShowcaseLines());
+        if (!dlg.GetShowcaseLines().empty())
+            {
+            plot->ShowcaseLines(dlg.GetShowcaseLines());
+            }
 
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
         plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
@@ -3620,7 +3623,10 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseLines(dlg.GetShowcaseLines());
+        if (!dlg.GetShowcaseLines().empty())
+            {
+            plot->ShowcaseLines(dlg.GetShowcaseLines());
+            }
         dlg.ApplyAxisOverrides(*plot);
 
         const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
@@ -3813,7 +3819,10 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
 
         plot->SetTimeIntervalLabel(dlg.GetTimeIntervalLabel());
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseLines(dlg.GetShowcasedLines());
+        if (!dlg.GetShowcasedLines().empty())
+            {
+            plot->ShowcaseLines(dlg.GetShowcasedLines());
+            }
 
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
         plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
@@ -3874,7 +3883,10 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
 
         plot->SetTimeIntervalLabel(dlg.GetTimeIntervalLabel());
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseLines(dlg.GetShowcasedLines());
+        if (!dlg.GetShowcasedLines().empty())
+            {
+            plot->ShowcaseLines(dlg.GetShowcasedLines());
+            }
 
         const auto* oldWCurve = dynamic_cast<const Wisteria::Graphs::WCurvePlot*>(&graph);
 
@@ -4247,7 +4259,10 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
                       resourceCol, descCol, compCol, groupCol);
 
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseBars(dlg.GetShowcasedLabels());
+        if (!dlg.GetShowcasedLabels().empty())
+            {
+            plot->ShowcaseBars(dlg.GetShowcasedLabels());
+            }
 
         for (const auto& [label, shape] : dlg.GetBarShapes())
             {
@@ -4341,7 +4356,10 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
                       resourceCol, descCol, compCol, groupCol);
 
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseBars(dlg.GetShowcasedLabels());
+        if (!dlg.GetShowcasedLabels().empty())
+            {
+            plot->ShowcaseBars(dlg.GetShowcasedLabels());
+            }
 
         dlg.ApplyAxisOverrides(*plot);
 
@@ -5061,7 +5079,10 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseBars(dlg.GetShowcaseBars());
+        if (!dlg.GetShowcaseBars().empty())
+            {
+            plot->ShowcaseBars(dlg.GetShowcaseBars());
+            }
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
@@ -5286,7 +5307,10 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             }
 
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseBars(dlg.GetShowcaseBars());
+        if (!dlg.GetShowcaseBars().empty())
+            {
+            plot->ShowcaseBars(dlg.GetShowcaseBars());
+            }
         dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
@@ -5765,7 +5789,10 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
             dlg.GetShowFullRange(), std::nullopt, std::make_pair(std::nullopt, std::nullopt),
             dlg.GetNeatIntervals());
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseBars(dlg.GetShowcasedBars());
+        if (!dlg.GetShowcasedBars().empty())
+            {
+            plot->ShowcaseBars(dlg.GetShowcasedBars());
+            }
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
@@ -5836,7 +5863,10 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
             dlg.GetShowFullRange(), std::nullopt, std::make_pair(std::nullopt, std::nullopt),
             dlg.GetNeatIntervals());
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        plot->ShowcaseBars(dlg.GetShowcasedBars());
+        if (!dlg.GetShowcasedBars().empty())
+            {
+            plot->ShowcaseBars(dlg.GetShowcasedBars());
+            }
         dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}

@@ -602,6 +602,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::ShowcaseBars(const std::vector<wxString>& labels,
                                 const bool hideLabelsOnGhostedBars /*= true*/)
         {
+        if (labels.empty())
+            {
+            return;
+            }
         m_showcasedLabels = labels;
         m_hideGhostedLabels = hideLabelsOnGhostedBars;
         for (auto& bar : GetBars())
@@ -623,6 +627,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::ShowcaseBars(const std::vector<double>& positions,
                                 const bool hideLabelsOnGhostedBars /*= true*/)
         {
+        if (positions.empty())
+            {
+            return;
+            }
         m_showcasedLabels.clear();
         m_hideGhostedLabels = hideLabelsOnGhostedBars;
         for (auto& bar : GetBars())
