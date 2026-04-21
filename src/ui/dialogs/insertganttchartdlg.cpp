@@ -539,6 +539,16 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand any constant placeholders so the variable selection list
+        // can match the real dataset columns
+        const auto taskDefault = ExpandVariable(m_taskVariable);
+        const auto startDefault = ExpandVariable(m_startDateVariable);
+        const auto endDefault = ExpandVariable(m_endDateVariable);
+        const auto resourceDefault = ExpandVariable(m_resourceVariable);
+        const auto descriptionDefault = ExpandVariable(m_descriptionVariable);
+        const auto completionDefault = ExpandVariable(m_completionVariable);
+        const auto groupDefault = ExpandVariable(m_groupVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
@@ -546,9 +556,8 @@ namespace Wisteria::UI
                   .Label(_(L"Task"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_taskVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_taskVariable })
+                  .DefaultVariables(taskDefault.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ taskDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -557,25 +566,23 @@ namespace Wisteria::UI
                   .Label(_(L"Start date"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_startDateVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_startDateVariable })
+                  .DefaultVariables(startDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ startDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Date }),
               VLI{}
                   .Label(_(L"End date"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_endDateVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_endDateVariable })
+                  .DefaultVariables(endDefault.empty() ? std::vector<wxString>{} :
+                                                         std::vector<wxString>{ endDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Date }),
               VLI{}
                   .Label(_(L"Resource"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_resourceVariable.empty() ?
+                  .DefaultVariables(resourceDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_resourceVariable })
+                                        std::vector<wxString>{ resourceDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -584,9 +591,9 @@ namespace Wisteria::UI
                   .Label(_(L"Description"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_descriptionVariable.empty() ?
+                  .DefaultVariables(descriptionDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_descriptionVariable })
+                                        std::vector<wxString>{ descriptionDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -595,17 +602,16 @@ namespace Wisteria::UI
                   .Label(_(L"Completion"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_completionVariable.empty() ?
+                  .DefaultVariables(completionDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_completionVariable })
+                                        std::vector<wxString>{ completionDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Grouping"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ groupDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,

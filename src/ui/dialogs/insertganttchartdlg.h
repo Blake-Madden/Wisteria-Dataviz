@@ -69,53 +69,57 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The task column name.
+        /// @returns The task column name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetTaskVariable() const noexcept
+        wxString GetTaskVariable() const
             {
-            return m_taskVariable;
+            return ExpandVariable(m_taskVariable);
             }
 
-        /// @returns The start date column name.
+        /// @returns The start date column name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetStartDateVariable() const noexcept
+        wxString GetStartDateVariable() const
             {
-            return m_startDateVariable;
+            return ExpandVariable(m_startDateVariable);
             }
 
-        /// @returns The end date column name.
+        /// @returns The end date column name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetEndDateVariable() const noexcept
+        wxString GetEndDateVariable() const
             {
-            return m_endDateVariable;
+            return ExpandVariable(m_endDateVariable);
             }
 
-        /// @returns The resource column name, or empty if none.
+        /// @returns The resource column name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetResourceVariable() const noexcept
+        wxString GetResourceVariable() const
             {
-            return m_resourceVariable;
+            return ExpandVariable(m_resourceVariable);
             }
 
-        /// @returns The description column name, or empty if none.
+        /// @returns The description column name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetDescriptionVariable() const noexcept
+        wxString GetDescriptionVariable() const
             {
-            return m_descriptionVariable;
+            return ExpandVariable(m_descriptionVariable);
             }
 
-        /// @returns The completion column name, or empty if none.
+        /// @returns The completion column name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetCompletionVariable() const noexcept
+        wxString GetCompletionVariable() const
             {
-            return m_completionVariable;
+            return ExpandVariable(m_completionVariable);
             }
 
-        /// @returns The grouping variable name, or empty if none.
+        /// @returns The grouping variable name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetGroupVariable() const noexcept
+        wxString GetGroupVariable() const
             {
-            return m_groupVariable;
+            return ExpandVariable(m_groupVariable);
             }
 
         /// @returns The selected date interval.

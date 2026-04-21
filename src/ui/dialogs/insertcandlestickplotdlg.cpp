@@ -177,6 +177,14 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand any constant placeholders so the variable selection list
+        // can match the real dataset columns
+        const auto dateDefault = ExpandVariable(m_dateVariable);
+        const auto openDefault = ExpandVariable(m_openVariable);
+        const auto highDefault = ExpandVariable(m_highVariable);
+        const auto lowDefault = ExpandVariable(m_lowVariable);
+        const auto closeDefault = ExpandVariable(m_closeVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
@@ -184,40 +192,36 @@ namespace Wisteria::UI
                   .Label(_(L"Date"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_dateVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_dateVariable })
+                  .DefaultVariables(dateDefault.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ dateDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Date }),
               VLI{}
                   .Label(_(L"Open"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_openVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_openVariable })
+                  .DefaultVariables(openDefault.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ openDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"High"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_highVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_highVariable })
+                  .DefaultVariables(highDefault.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ highDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Low"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_lowVariable.empty() ? std::vector<wxString>{} :
-                                                            std::vector<wxString>{ m_lowVariable })
+                  .DefaultVariables(lowDefault.empty() ? std::vector<wxString>{} :
+                                                         std::vector<wxString>{ lowDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Close"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_closeVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_closeVariable })
+                  .DefaultVariables(closeDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ closeDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)

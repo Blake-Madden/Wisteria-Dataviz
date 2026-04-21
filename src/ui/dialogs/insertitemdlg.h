@@ -217,6 +217,21 @@ namespace Wisteria::UI
             return m_reportBuilder;
             }
 
+        /// @brief Expands any double-brace constant placeholders in @p value
+        ///     using the attached report builder.
+        /// @details Used by graph edit dialogs to translate a cached raw
+        ///     property template (e.g., @c "Revenue {{MaxFY}}") into a real
+        ///     column name (e.g., @c "Revenue 2025") before passing it
+        ///     to a graph's @c SetData() or to a variable selection dialog.
+        /// @param value The string (possibly containing placeholders) to expand.
+        /// @returns The expanded string, or @p value unchanged if no report
+        ///     builder is available.
+        [[nodiscard]]
+        wxString ExpandVariable(const wxString& value) const
+            {
+            return (m_reportBuilder != nullptr) ? m_reportBuilder->ExpandConstants(value) : value;
+            }
+
         /// @returns The canvas.
         [[nodiscard]]
         Canvas* GetCanvas() noexcept

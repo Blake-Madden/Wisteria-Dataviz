@@ -67,39 +67,39 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The date variable name.
+        /// @returns The date variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetDateVariable() const noexcept
+        wxString GetDateVariable() const
             {
-            return m_dateVariable;
+            return ExpandVariable(m_dateVariable);
             }
 
-        /// @returns The open variable name.
+        /// @returns The open variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetOpenVariable() const noexcept
+        wxString GetOpenVariable() const
             {
-            return m_openVariable;
+            return ExpandVariable(m_openVariable);
             }
 
-        /// @returns The high variable name.
+        /// @returns The high variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetHighVariable() const noexcept
+        wxString GetHighVariable() const
             {
-            return m_highVariable;
+            return ExpandVariable(m_highVariable);
             }
 
-        /// @returns The low variable name.
+        /// @returns The low variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetLowVariable() const noexcept
+        wxString GetLowVariable() const
             {
-            return m_lowVariable;
+            return ExpandVariable(m_lowVariable);
             }
 
-        /// @returns The close variable name.
+        /// @returns The close variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetCloseVariable() const noexcept
+        wxString GetCloseVariable() const
             {
-            return m_closeVariable;
+            return ExpandVariable(m_closeVariable);
             }
 
         /// @returns The selected plot type (Candlestick or OHLC).

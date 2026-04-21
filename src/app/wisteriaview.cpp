@@ -4363,22 +4363,28 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
 
         dlg.ApplyAxisOverrides(*plot);
 
+        // the dialog's variable/dataset getters return expanded values, so the
+        // old value passed to CarryForwardProperty must also be expanded for
+        // the "did the user change this" comparison to be meaningful
+        const auto oldExpanded = [this, &graph](const wxString& prop)
+        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
+
         CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
+                             oldExpanded(L"dataset"));
         CarryForwardProperty(graph, *plot, L"variables.task", dlg.GetTaskVariable(),
-                             graph.GetPropertyTemplate(L"variables.task"));
+                             oldExpanded(L"variables.task"));
         CarryForwardProperty(graph, *plot, L"variables.start-date", dlg.GetStartDateVariable(),
-                             graph.GetPropertyTemplate(L"variables.start-date"));
+                             oldExpanded(L"variables.start-date"));
         CarryForwardProperty(graph, *plot, L"variables.end-date", dlg.GetEndDateVariable(),
-                             graph.GetPropertyTemplate(L"variables.end-date"));
+                             oldExpanded(L"variables.end-date"));
         CarryForwardProperty(graph, *plot, L"variables.resource", dlg.GetResourceVariable(),
-                             graph.GetPropertyTemplate(L"variables.resource"));
+                             oldExpanded(L"variables.resource"));
         CarryForwardProperty(graph, *plot, L"variables.description", dlg.GetDescriptionVariable(),
-                             graph.GetPropertyTemplate(L"variables.description"));
+                             oldExpanded(L"variables.description"));
         CarryForwardProperty(graph, *plot, L"variables.completion", dlg.GetCompletionVariable(),
-                             graph.GetPropertyTemplate(L"variables.completion"));
+                             oldExpanded(L"variables.completion"));
         CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             graph.GetPropertyTemplate(L"variables.group"));
+                             oldExpanded(L"variables.group"));
 
         // restore per-bar shapes (bars not listed stay at the default Rectangle)
         for (const auto& [label, shape] : dlg.GetBarShapes())
@@ -4483,18 +4489,24 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
                       dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
         dlg.ApplyAxisOverrides(*plot);
 
+        // the dialog's variable/dataset getters return expanded values, so the
+        // old value passed to CarryForwardProperty must also be expanded for
+        // the "did the user change this" comparison to be meaningful
+        const auto oldExpanded = [this, &graph](const wxString& prop)
+        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
+
         CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
+                             oldExpanded(L"dataset"));
         CarryForwardProperty(graph, *plot, L"variables.date", dlg.GetDateVariable(),
-                             graph.GetPropertyTemplate(L"variables.date"));
+                             oldExpanded(L"variables.date"));
         CarryForwardProperty(graph, *plot, L"variables.open", dlg.GetOpenVariable(),
-                             graph.GetPropertyTemplate(L"variables.open"));
+                             oldExpanded(L"variables.open"));
         CarryForwardProperty(graph, *plot, L"variables.high", dlg.GetHighVariable(),
-                             graph.GetPropertyTemplate(L"variables.high"));
+                             oldExpanded(L"variables.high"));
         CarryForwardProperty(graph, *plot, L"variables.low", dlg.GetLowVariable(),
-                             graph.GetPropertyTemplate(L"variables.low"));
+                             oldExpanded(L"variables.low"));
         CarryForwardProperty(graph, *plot, L"variables.close", dlg.GetCloseVariable(),
-                             graph.GetPropertyTemplate(L"variables.close"));
+                             oldExpanded(L"variables.close"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
@@ -4615,18 +4627,24 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
                       fromWeightCol, toWeightCol, fromGroupCol);
         dlg.ApplyAxisOverrides(*plot);
 
+        // the dialog's variable/dataset getters return expanded values, so the
+        // old value passed to CarryForwardProperty must also be expanded for
+        // the "did the user change this" comparison to be meaningful
+        const auto oldExpanded = [this, &graph](const wxString& prop)
+        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
+
         CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
+                             oldExpanded(L"dataset"));
         CarryForwardProperty(graph, *plot, L"variables.from", dlg.GetFromVariable(),
-                             graph.GetPropertyTemplate(L"variables.from"));
+                             oldExpanded(L"variables.from"));
         CarryForwardProperty(graph, *plot, L"variables.to", dlg.GetToVariable(),
-                             graph.GetPropertyTemplate(L"variables.to"));
+                             oldExpanded(L"variables.to"));
         CarryForwardProperty(graph, *plot, L"variables.from-weight", dlg.GetFromWeightVariable(),
-                             graph.GetPropertyTemplate(L"variables.from-weight"));
+                             oldExpanded(L"variables.from-weight"));
         CarryForwardProperty(graph, *plot, L"variables.to-weight", dlg.GetToWeightVariable(),
-                             graph.GetPropertyTemplate(L"variables.to-weight"));
+                             oldExpanded(L"variables.to-weight"));
         CarryForwardProperty(graph, *plot, L"variables.from-group", dlg.GetFromGroupVariable(),
-                             graph.GetPropertyTemplate(L"variables.from-group"));
+                             oldExpanded(L"variables.from-group"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 

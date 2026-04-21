@@ -207,6 +207,14 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand any constant placeholders so the variable selection list
+        // can match the real dataset columns
+        const auto fromDefault = ExpandVariable(m_fromVariable);
+        const auto toDefault = ExpandVariable(m_toVariable);
+        const auto fromWeightDefault = ExpandVariable(m_fromWeightVariable);
+        const auto toWeightDefault = ExpandVariable(m_toWeightVariable);
+        const auto fromGroupDefault = ExpandVariable(m_fromGroupVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
@@ -214,9 +222,8 @@ namespace Wisteria::UI
                   .Label(_(L"From"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_fromVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_fromVariable })
+                  .DefaultVariables(fromDefault.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ fromDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -225,8 +232,8 @@ namespace Wisteria::UI
                   .Label(_(L"To"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_toVariable.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ m_toVariable })
+                  .DefaultVariables(toDefault.empty() ? std::vector<wxString>{} :
+                                                        std::vector<wxString>{ toDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -235,25 +242,25 @@ namespace Wisteria::UI
                   .Label(_(L"From Weight"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_fromWeightVariable.empty() ?
+                  .DefaultVariables(fromWeightDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_fromWeightVariable })
+                                        std::vector<wxString>{ fromWeightDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"To Weight"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_toWeightVariable.empty() ?
+                  .DefaultVariables(toWeightDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_toWeightVariable })
+                                        std::vector<wxString>{ toWeightDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"From Group"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_fromGroupVariable.empty() ?
+                  .DefaultVariables(fromGroupDefault.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_fromGroupVariable })
+                                        std::vector<wxString>{ fromGroupDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,

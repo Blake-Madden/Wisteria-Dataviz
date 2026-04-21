@@ -68,39 +68,42 @@ namespace Wisteria::UI
                        wxString{};
             }
 
-        /// @returns The "from" variable name.
+        /// @returns The "from" variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetFromVariable() const noexcept
+        wxString GetFromVariable() const
             {
-            return m_fromVariable;
+            return ExpandVariable(m_fromVariable);
             }
 
-        /// @returns The "to" variable name.
+        /// @returns The "to" variable name (with any constant placeholders expanded).
         [[nodiscard]]
-        const wxString& GetToVariable() const noexcept
+        wxString GetToVariable() const
             {
-            return m_toVariable;
+            return ExpandVariable(m_toVariable);
             }
 
-        /// @returns The "from weight" variable name, or empty if none.
+        /// @returns The "from weight" variable name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetFromWeightVariable() const noexcept
+        wxString GetFromWeightVariable() const
             {
-            return m_fromWeightVariable;
+            return ExpandVariable(m_fromWeightVariable);
             }
 
-        /// @returns The "to weight" variable name, or empty if none.
+        /// @returns The "to weight" variable name (with any constant placeholders
+        ///     expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetToWeightVariable() const noexcept
+        wxString GetToWeightVariable() const
             {
-            return m_toWeightVariable;
+            return ExpandVariable(m_toWeightVariable);
             }
 
-        /// @returns The "from sort/group" variable name, or empty if none.
+        /// @returns The "from sort/group" variable name (with any constant
+        ///     placeholders expanded), or empty if none.
         [[nodiscard]]
-        const wxString& GetFromGroupVariable() const noexcept
+        wxString GetFromGroupVariable() const
             {
-            return m_fromGroupVariable;
+            return ExpandVariable(m_fromGroupVariable);
             }
 
         /// @returns The selected flow shape.
