@@ -409,10 +409,8 @@ wxString WisteriaDoc::SaveBrushToStr(const wxBrush& brush) const
     const auto colorStr = ColorToStr(brush.GetColour());
     const auto styleStr = Wisteria::ReportEnumConvert::ConvertBrushStyleToString(brush.GetStyle());
 
-    const bool isDefaultStyle = (!styleStr.has_value() || styleStr.value() == L"solid");
-
     // if solid style, just return the color string
-    if (isDefaultStyle)
+    if (!styleStr.has_value() || styleStr.value() == L"solid")
         {
         return wxString::Format(L"\"%s\"", colorStr);
         }

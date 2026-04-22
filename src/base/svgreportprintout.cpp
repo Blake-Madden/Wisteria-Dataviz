@@ -150,6 +150,11 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 {
                 canvas->SetCanvasMinWidthDIPs(layoutWidth);
                 canvas->SetCanvasMinHeightDIPs(scaledHeight);
+                // Normally, calling SetSize for CalcRowDimensions() is not necessary,
+                // but for SVG we need to because some internals look at the window size.
+                // Note that doing this in report printout breaks things doing this,
+                // this is an SVG only quirk.
+                canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
                 canvas->CalcRowDimensions();
                 canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
                 }
@@ -168,6 +173,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             {
             canvas->SetCanvasMinWidthDIPs(origMinWidth);
             canvas->SetCanvasMinHeightDIPs(origMinHeight);
+            canvas->SetSize(origSize);
             canvas->CalcRowDimensions();
             canvas->SetSize(origSize);
             }
