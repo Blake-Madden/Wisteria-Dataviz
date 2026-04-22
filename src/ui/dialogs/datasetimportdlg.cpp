@@ -123,16 +123,20 @@ namespace Wisteria::UI
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        // options section
-        auto* optionsSizer = new wxFlexGridSizer{ 2, FromDIP(5), FromDIP(10) };
-        optionsSizer->AddGrowableCol(1, 1);
-
         // show filepath
-        optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Filepath: ")),
-                          wxSizerFlags{}.CenterVertical());
+        auto* filePathSizer = new wxBoxSizer(wxHORIZONTAL);
+        filePathSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Filepath: ")),
+                           wxSizerFlags{}.CenterVertical());
         auto* fileLabel = new wxStaticText(this, wxID_ANY, m_filePath);
-        fileLabel->SetForegroundColour(wxColour{ 0, 102, 204 });
-        optionsSizer->Add(fileLabel, wxSizerFlags{}.CenterVertical());
+        fileLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        filePathSizer->Add(fileLabel, wxSizerFlags{}.CenterVertical());
+        mainSizer->Add(filePathSizer,
+                       wxSizerFlags{}.Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder() * 2));
+
+        // options section
+        auto* optionsSizer = new wxFlexGridSizer{ 2, wxSizerFlags::GetDefaultBorder(),
+                                                  wxSizerFlags::GetDefaultBorder() * 2 };
+        optionsSizer->AddGrowableCol(1, 1);
 
         // worksheet selector (spreadsheets only)
         const bool isSpreadsheet =
@@ -172,8 +176,43 @@ namespace Wisteria::UI
                           wxSizerFlags{}.CenterVertical());
         auto* maxDiscreteSpin = new wxSpinCtrl(this, wxID_ANY, L"7", wxDefaultPosition, spinSize,
                                                wxSP_ARROW_KEYS, 1, 100, m_maxDiscrete);
-        maxDiscreteSpin->SetValidator(wxGenericValidator(&m_maxDiscrete));
+        maxDiscreteSpin->SetValidator(wxGenericValidator{ &m_maxDiscrete });
         optionsSizer->Add(maxDiscreteSpin, wxSizerFlags{});
+
+        // checkboxes
+        auto* leadingZerosCheck =
+            new wxCheckBox(this, wxID_ANY, _(L"Leading zeros as text"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_leadingZeros });
+        optionsSizer->Add(leadingZerosCheck, wxSizerFlags{}.CenterVertical());
+        optionsSizer->AddStretchSpacer();
+
+        auto* yearsAsTextCheck =
+            new wxCheckBox(this, wxID_ANY, _(L"Years as text"), wxDefaultPosition, wxDefaultSize, 0,
+                           wxGenericValidator{ &m_yearsAsText });
+        optionsSizer->Add(yearsAsTextCheck, wxSizerFlags{}.CenterVertical());
+        optionsSizer->AddStretchSpacer();
+
+        // MD codes
+        optionsSizer->Add(
+            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):")),
+            wxSizerFlags{}.CenterVertical());
+        // populate with common MD codes only if not already set
+        // (the editing constructor pre-populates m_mdValues)
+        if (m_mdValues.empty())
+            {
+            for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
+                {
+                if (!m_mdValues.empty())
+                    {
+                    m_mdValues += L", ";
+                    }
+                m_mdValues += code;
+                }
+            }
+        auto* mdValuesText =
+            new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
+                           wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator{ &m_mdValues });
+        optionsSizer->Add(mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
 
         // ID column
         optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"ID column:")),
@@ -192,53 +231,12 @@ namespace Wisteria::UI
             }
         optionsSizer->Add(m_idColumnChoice, wxSizerFlags{});
 
-        mainSizer->Add(optionsSizer, wxSizerFlags{}.Expand().Border(wxALL, FromDIP(10)));
-
-        // checkboxes
-        auto* checkSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        auto* leadingZerosCheck =
-            new wxCheckBox(this, wxID_ANY, _(L"Leading zeros as text"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_leadingZeros));
-        checkSizer->Add(leadingZerosCheck, wxSizerFlags{}.Border(wxRIGHT, FromDIP(15)));
-
-        auto* yearsAsTextCheck =
-            new wxCheckBox(this, wxID_ANY, _(L"Years as text"), wxDefaultPosition, wxDefaultSize, 0,
-                           wxGenericValidator(&m_yearsAsText));
-        checkSizer->Add(yearsAsTextCheck);
-
-        mainSizer->Add(checkSizer, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
-
-        // MD codes
-        auto* mdCodesSizer = new wxBoxSizer(wxHORIZONTAL);
-        mdCodesSizer->Add(
-            new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):")),
-            wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
-        // populate with common MD codes only if not already set
-        // (the editing constructor pre-populates m_mdValues)
-        if (m_mdValues.empty())
-            {
-            for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
-                {
-                if (!m_mdValues.empty())
-                    {
-                    m_mdValues += L", ";
-                    }
-                m_mdValues += code;
-                }
-            }
-        auto* mdValuesText =
-            new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
-                           wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator{ &m_mdValues });
-        mdCodesSizer->Add(mdValuesText, wxSizerFlags{ 1 }.CenterVertical());
-        mainSizer->Add(mdCodesSizer,
-                       wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
+        mainSizer->Add(optionsSizer,
+                       wxSizerFlags{}.Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder() * 2));
 
         // column type controls
-        auto* columnTypeSizer = new wxBoxSizer(wxHORIZONTAL);
         auto* selectedColumnLabel = new wxStaticText(this, wxID_ANY, _(L"Column data type:"));
-        columnTypeSizer->Add(selectedColumnLabel,
-                             wxSizerFlags{}.CenterVertical().Border(wxRIGHT, FromDIP(5)));
+        optionsSizer->Add(selectedColumnLabel, wxSizerFlags{}.CenterVertical());
         m_columnTypeChoice = new wxChoice(this, wxID_ANY);
         m_columnTypeChoice->Append(_(L"Text"));
         m_columnTypeChoice->Append(_(L"Categorical"));
@@ -246,9 +244,7 @@ namespace Wisteria::UI
         m_columnTypeChoice->Append(_(L"Date"));
         m_columnTypeChoice->Append(_(L"Do not import"));
         m_columnTypeChoice->Disable();
-        columnTypeSizer->Add(m_columnTypeChoice, wxSizerFlags{}.CenterVertical());
-        mainSizer->Add(columnTypeSizer,
-                       wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10)));
+        optionsSizer->Add(m_columnTypeChoice, wxSizerFlags{}.CenterVertical());
 
         // preview grid
         auto* previewBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
@@ -270,7 +266,7 @@ namespace Wisteria::UI
 
         // OK/Cancel
         mainSizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL),
-                       wxSizerFlags{}.Expand().Border(wxALL, FromDIP(10)));
+                       wxSizerFlags{}.Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder() * 2));
 
         SetSizer(mainSizer);
 
@@ -504,7 +500,7 @@ namespace Wisteria::UI
     //----------------------------------------------
     void DatasetImportDlg::AdjustGridColumnsForIcons()
         {
-        const int iconOffset = m_previewGrid->FromDIP(16) + 8;
+        const int iconOffset = m_previewGrid->FromDIP(24);
         int maxColWidth = m_previewGrid->GetClientSize().GetWidth() / 4;
         if (maxColWidth <= 0)
             {
