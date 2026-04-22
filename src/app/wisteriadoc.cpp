@@ -241,7 +241,15 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
             {
             auto cObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
             cObj->Add(L"name", c.m_name);
-            cObj->Add(L"value", c.m_value);
+            double dVal{};
+            if (c.m_value.ToDouble(&dVal))
+                {
+                cObj->Add(L"value", dVal);
+                }
+            else
+                {
+                cObj->Add(L"value", c.m_value);
+                }
             constArray->ArrayAdd(cObj);
             }
         }
