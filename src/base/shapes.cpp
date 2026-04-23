@@ -5199,13 +5199,13 @@ namespace Wisteria::GraphItems
             while (textLeft.y < textRect.GetBottom())
                 {
                 const wxDCPenChanger pc3{
-                    dc,
-                    wxPen{
-                        ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
-                        static_cast<int>(ScaleToScreenAndCanvas(
-                            rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? math_constants::whole :
-                                                                            math_constants::half)),
-                        static_cast<wxPenStyle>(randPenStyle(GetRNG())) }
+                    dc, wxPen{ ApplyColorOpacity(
+                                   Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
+                               std::max<int>(1, ScaleToScreenAndCanvas(
+                                                    rect.GetWidth() <= ScaleToScreenAndCanvas(16) ?
+                                                        math_constants::whole :
+                                                        math_constants::half)),
+                               static_cast<wxPenStyle>(randPenStyle(GetRNG())) }
                 };
                 if ((currentLine % 10) > 0)
                     {
@@ -5219,15 +5219,15 @@ namespace Wisteria::GraphItems
                                          textLeft.y },
                                 textRight);
                     }
-                textLeft.y += ScaleToScreenAndCanvas(2);
-                textRight.y += ScaleToScreenAndCanvas(2);
+                textLeft.y += std::max<int>(1, ScaleToScreenAndCanvas(2));
+                textRight.y += std::max<int>(1, ScaleToScreenAndCanvas(2));
                 ++currentLine;
                 }
         };
 
         const wxDCPenChanger pc{
             dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
-                       static_cast<int>(ScaleToScreenAndCanvas(1)) }
+                       std::max<int>(1, ScaleToScreenAndCanvas(1)) }
         };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::White) };
 
@@ -5256,7 +5256,7 @@ namespace Wisteria::GraphItems
             const wxDCClipper clip{ dc, topRect };
             dc.DrawRectangle(backPage);
             }
-            // draw the font page
+            // draw the front page
             {
             auto topRect{ frontPageRect };
             topRect.SetHeight(topRect.GetHeight() * 0.9);
@@ -5267,7 +5267,7 @@ namespace Wisteria::GraphItems
         // headline
         const wxDCPenChanger pc2{
             dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::WarmGray)),
-                       static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
+                       std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half)) }
         };
         auto headlineBox{ frontPageRect };
         headlineBox.SetHeight(headlineBox.GetHeight() * math_constants::third);
