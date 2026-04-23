@@ -114,6 +114,45 @@ namespace Wisteria::UI
         fontBox->Add(fontGrid, wxSizerFlags{}.Expand().Border());
         col1Sizer->Add(fontBox, wxSizerFlags{}.Expand().Border());
 
+        // appearance options
+        auto* appearanceBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Appearance"));
+        auto* appearanceGrid = new wxFlexGridSizer(2, FromDIP(8), FromDIP(4));
+        appearanceGrid->AddGrowableCol(1, 1);
+
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_ANY, _(L"Orientation:")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* orientationChoice =
+                new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_orientation));
+            orientationChoice->Append(_(L"Horizontal"));
+            orientationChoice->Append(_(L"Vertical"));
+            appearanceGrid->Add(orientationChoice, wxSizerFlags{}.Expand());
+            }
+
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_ANY, _(L"Visual style:")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* styleChoice =
+                new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_labelStyle));
+            // order must match Wisteria::LabelStyle enum
+            styleChoice->Append(_(L"None"));
+            styleChoice->Append(_(L"Index card"));
+            styleChoice->Append(_(L"Lined paper"));
+            styleChoice->Append(_(L"Lined paper (with margins)"));
+            styleChoice->Append(_(L"Dotted lined paper"));
+            styleChoice->Append(_(L"Dotted lined paper (with margins)"));
+            styleChoice->Append(_(L"Right-arrow lined paper"));
+            styleChoice->Append(_(L"Right-arrow lined paper (with margins)"));
+            appearanceGrid->Add(styleChoice, wxSizerFlags{}.Expand());
+            }
+
+        appearanceBox->Add(appearanceGrid, wxSizerFlags{}.Expand().Border());
+        col1Sizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border());
+
         // header options
         auto* headerBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Header"));
 
@@ -185,6 +224,29 @@ namespace Wisteria::UI
             });
         col2Sizer->Add(leftImgBox, wxSizerFlags{}.Expand().Border());
 
+        // top image
+        auto* topImgBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Image"));
+        m_topImageThumbnail = new Thumbnail(
+            topImgBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
+            wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
+        topImgBox->Add(m_topImageThumbnail, wxSizerFlags{}.Border());
+        // intercept click to capture the file path for round-tripping
+        m_topImageThumbnail->Bind(
+            wxEVT_LEFT_DOWN,
+            [this](wxMouseEvent&)
+            {
+                wxFileDialog fileDlg(
+                    this, _(L"Select an Image"), wxString{}, wxString{},
+                    wxString::Format(L"%s %s", _(L"Image Files"), wxImage::GetImageExtWildcard()),
+                    wxFD_OPEN | wxFD_PREVIEW);
+                if (fileDlg.ShowModal() == wxID_OK)
+                    {
+                    m_topImagePath = fileDlg.GetPath();
+                    m_topImageThumbnail->LoadImage(m_topImagePath);
+                    }
+            });
+        col2Sizer->Add(topImgBox, wxSizerFlags{}.Expand().Border());
+
         // top shapes
         auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shapes"));
 
@@ -220,7 +282,8 @@ namespace Wisteria::UI
 
         auto* offsetGrid = new wxFlexGridSizer(2, FromDIP(8), FromDIP(4));
         offsetGrid->AddGrowableCol(1, 1);
-        offsetGrid->Add(new wxStaticText(topShapeBox->GetStaticBox(), wxID_ANY, _(L"Offset:")),
+        offsetGrid->Add(new wxStaticText(topShapeBox->GetStaticBox(), wxID_ANY,
+                                         _(L"Top offset (image/shapes):")),
                         wxSizerFlags{}.CenterVertical());
         m_topShapeOffsetSpin = new wxSpinCtrl(topShapeBox->GetStaticBox(), wxID_ANY);
         m_topShapeOffsetSpin->SetRange(0, 1'000);
@@ -304,6 +367,10 @@ namespace Wisteria::UI
             m_lineSpacingSpin->SetValue(label.GetLineSpacing());
             }
 
+        // appearance
+        m_orientation = (label.GetTextOrientation() == Wisteria::Orientation::Vertical) ? 1 : 0;
+        m_labelStyle = static_cast<int>(label.GetLabelStyle());
+
         // header
         const auto& headerInfo = label.GetHeaderInfo();
         m_headerEnabled = headerInfo.IsEnabled();
@@ -328,6 +395,13 @@ namespace Wisteria::UI
         if (!m_leftImagePath.empty() && m_leftImageThumbnail != nullptr)
             {
             m_leftImageThumbnail->LoadImage(m_leftImagePath);
+            }
+
+        // top image
+        m_topImagePath = label.GetPropertyTemplate(L"top-image.path");
+        if (!m_topImagePath.empty() && m_topImageThumbnail != nullptr)
+            {
+            m_topImageThumbnail->LoadImage(m_topImagePath);
             }
 
         // top shapes
@@ -358,6 +432,8 @@ namespace Wisteria::UI
         label.SetFontBackgroundColor(GetBackgroundColor());
         label.SetTextAlignment(GetLabelAlignment());
         label.SetLineSpacing(GetLineSpacing());
+        label.SetTextOrientation(GetTextOrientation());
+        label.SetLabelStyle(GetLabelStyle());
 
         auto& headerInfo = label.GetHeaderInfo();
         headerInfo.Enable(IsHeaderEnabled());
@@ -386,10 +462,28 @@ namespace Wisteria::UI
             label.SetPropertyTemplate(L"left-image.path", wxString{});
             }
 
-        // top shapes
+        // top image
+        const auto topImgPath = GetTopImagePath();
+        if (!topImgPath.empty())
+            {
+            const auto img = Wisteria::GraphItems::Image::LoadFile(topImgPath);
+            if (img.IsOk())
+                {
+                label.SetTopImage(wxBitmapBundle::FromImage(img),
+                                  static_cast<size_t>(GetTopShapeOffset()));
+                label.SetPropertyTemplate(L"top-image.path", topImgPath);
+                }
+            }
+        else
+            {
+            label.SetTopImage(wxBitmapBundle{});
+            label.SetPropertyTemplate(L"top-image.path", wxString{});
+            }
+
+        // top shapes (shares offset with top image)
         if (!m_topShapes.empty())
             {
-            label.SetTopShape(m_topShapes, GetTopShapeOffset());
+            label.SetTopShape(m_topShapes, static_cast<size_t>(GetTopShapeOffset()));
             }
         else
             {

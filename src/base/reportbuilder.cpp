@@ -992,6 +992,13 @@ namespace Wisteria
                 label->SetTextOrientation(Orientation::Vertical);
                 }
 
+            const auto labelStyle =
+                ReportEnumConvert::ConvertLabelStyle(labelNode->GetProperty(L"style")->AsString());
+            if (labelStyle.has_value())
+                {
+                label->SetLabelStyle(labelStyle.value());
+                }
+
             label->SetLineSpacing(labelNode->GetProperty(L"line-spacing")->AsDouble(1));
 
             // font attributes

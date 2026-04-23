@@ -376,6 +376,28 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<LabelStyle> ConvertLabelStyle(const wxString& value)
+            {
+            static const std::map<std::wstring, LabelStyle> labelStyleValues = {
+                { L"no-label-style", LabelStyle::NoLabelStyle },
+                { L"index-card", LabelStyle::IndexCard },
+                { L"lined-paper", LabelStyle::LinedPaper },
+                { L"lined-paper-with-margins", LabelStyle::LinedPaperWithMargins },
+                { L"dotted-lined-paper", LabelStyle::DottedLinedPaper },
+                { L"dotted-lined-paper-with-margins", LabelStyle::DottedLinedPaperWithMargins },
+                { L"right-arrow-lined-paper", LabelStyle::RightArrowLinedPaper },
+                { L"right-arrow-lined-paper-with-margins",
+                  LabelStyle::RightArrowLinedPaperWithMargins }
+            };
+
+            const auto foundValue = labelStyleValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != labelStyleValues.cend()) ?
+                        std::optional<LabelStyle>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<GraphColumnHeader> ConvertGraphColumnHeader(const wxString& value)
             {
             static const std::map<std::wstring, GraphColumnHeader> graphColumnHeader = {
@@ -1210,6 +1232,27 @@ namespace Wisteria
                 { TextAlignment::Justified, L"justified" },
                 { TextAlignment::JustifiedAtCharacter, L"justified-at-character" },
                 { TextAlignment::JustifiedAtWord, L"justified-at-word" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertLabelStyleToString(LabelStyle value)
+            {
+            static const std::map<LabelStyle, wxString> values = {
+                { LabelStyle::NoLabelStyle, L"no-label-style" },
+                { LabelStyle::IndexCard, L"index-card" },
+                { LabelStyle::LinedPaper, L"lined-paper" },
+                { LabelStyle::LinedPaperWithMargins, L"lined-paper-with-margins" },
+                { LabelStyle::DottedLinedPaper, L"dotted-lined-paper" },
+                { LabelStyle::DottedLinedPaperWithMargins, L"dotted-lined-paper-with-margins" },
+                { LabelStyle::RightArrowLinedPaper, L"right-arrow-lined-paper" },
+                { LabelStyle::RightArrowLinedPaperWithMargins,
+                  L"right-arrow-lined-paper-with-margins" }
             };
 
             const auto foundValue = values.find(value);

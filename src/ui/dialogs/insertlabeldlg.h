@@ -152,6 +152,13 @@ namespace Wisteria::UI
             return m_leftImagePath;
             }
 
+        /// @returns The top image file path (empty if none).
+        [[nodiscard]]
+        const wxString& GetTopImagePath() const noexcept
+            {
+            return m_topImagePath;
+            }
+
         /// @returns The top shapes (may be empty if none are configured).
         [[nodiscard]]
         const std::vector<Wisteria::GraphItems::ShapeInfo>& GetTopShapes() const noexcept
@@ -159,9 +166,24 @@ namespace Wisteria::UI
             return m_topShapes;
             }
 
-        /// @returns The top shape offset (in DIPs).
+        /// @returns The top shape offset (in DIPs). Shared between top image and top shapes.
         [[nodiscard]]
         int GetTopShapeOffset() const;
+
+        /// @returns The text orientation.
+        [[nodiscard]]
+        Wisteria::Orientation GetTextOrientation() const noexcept
+            {
+            return (m_orientation == 1) ? Wisteria::Orientation::Vertical :
+                                          Wisteria::Orientation::Horizontal;
+            }
+
+        /// @returns The label's visual style.
+        [[nodiscard]]
+        Wisteria::LabelStyle GetLabelStyle() const noexcept
+            {
+            return static_cast<Wisteria::LabelStyle>(m_labelStyle);
+            }
 
         /// @brief Populates controls from an existing label.
         /// @param label The label to read settings from.
@@ -208,11 +230,19 @@ namespace Wisteria::UI
         wxChoice* m_headerAlignmentChoice{ nullptr };
         wxSpinCtrlDouble* m_headerScalingSpin{ nullptr };
 
+        // appearance
+        int m_orientation{ 0 }; // Horizontal
+        int m_labelStyle{ 0 };  // NoLabelStyle
+
         // left image
         Thumbnail* m_leftImageThumbnail{ nullptr };
         wxString m_leftImagePath;
 
-        // top shapes
+        // top image
+        Thumbnail* m_topImageThumbnail{ nullptr };
+        wxString m_topImagePath;
+
+        // top shapes (shares offset with top image)
         std::vector<Wisteria::GraphItems::ShapeInfo> m_topShapes;
         wxEditableListBox* m_topShapeListBox{ nullptr };
         wxSpinCtrl* m_topShapeOffsetSpin{ nullptr };

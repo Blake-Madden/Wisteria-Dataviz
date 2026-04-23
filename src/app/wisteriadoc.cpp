@@ -911,6 +911,17 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
         node->Add(L"orientation", wxString{ L"vertical" });
         }
 
+    // visual style (default is no-label-style)
+    if (label->GetLabelStyle() != Wisteria::LabelStyle::NoLabelStyle)
+        {
+        const auto styleStr =
+            Wisteria::ReportEnumConvert::ConvertLabelStyleToString(label->GetLabelStyle());
+        if (styleStr.has_value())
+            {
+            node->Add(L"style", styleStr.value());
+            }
+        }
+
     // line-spacing (default is 1)
     if (!compare_doubles(label->GetLineSpacing(), 1.0))
         {
