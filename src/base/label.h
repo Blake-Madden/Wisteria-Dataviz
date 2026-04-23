@@ -615,9 +615,8 @@ namespace Wisteria::GraphItems
         ///     provided width is given.
         /// @note For the top image, this will maintain its aspect ratio and the
         ///     calculated width may be smaller than @c textWidth.
-        /// @param textWidth The current width of the label.
         [[nodiscard]]
-        wxSize CalcTopGraphicSize(wxCoord textWidth) const;
+        wxSize CalcTopGraphicSize() const;
 
         /** @returns @c true if the given point is inside the label.
             @param pt The point to check.

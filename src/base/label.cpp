@@ -33,7 +33,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxSize Label::CalcTopGraphicSize(const wxCoord textWidth) const
+    wxSize Label::CalcTopGraphicSize() const
         {
         if (!m_topImage.IsOk() && !m_topShape.has_value())
             {
@@ -42,10 +42,20 @@ namespace Wisteria::GraphItems
         wxSize imageSize, shapeSize;
         if (m_topImage.IsOk())
             {
-            const auto imgWidth = std::min(m_topImage.GetDefaultSize().GetWidth(), textWidth);
-            const auto imgHeight = geometry::rescaled_height(
+            // Top-image sizing policy:
+            //   - Small images render at their natural size (a 16x16 icon stays 16x16).
+            //   - Larger images are capped at 256 DIPs of height (aspect ratio
+            //     preserved) so a huge source image does not force the whole label
+            //     to balloon out.
+            // The cap is on height only: capping by text width caused short labels
+            // with large images to render the image at near-zero size.
+            constexpr wxCoord MAX_TOP_IMAGE_HEIGHT_DIPS = 256;
+            const auto maxHeight = ScaleToScreenAndCanvas(MAX_TOP_IMAGE_HEIGHT_DIPS);
+            const auto imgHeight =
+                std::min<wxCoord>(m_topImage.GetDefaultSize().GetHeight(), maxHeight);
+            const auto imgWidth = geometry::rescaled_width(
                 { m_topImage.GetDefaultSize().GetWidth(), m_topImage.GetDefaultSize().GetHeight() },
-                imgWidth);
+                imgHeight);
             imageSize = wxSize{ static_cast<int>(imgWidth), static_cast<int>(imgHeight) };
             }
         if (m_topShape.has_value() && !m_topShape.value().empty())
@@ -212,13 +222,11 @@ namespace Wisteria::GraphItems
         // top image
         measuredHeightNoSideImages -=
             ((GetTextOrientation() == Orientation::Horizontal) ?
-                 std::max<wxCoord>(CalcTopGraphicSize(measuredWidth).GetHeight() - m_topImageOffset,
-                                   0) :
+                 std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0) :
                  0);
         measureWidthNoSideImages -=
             ((GetTextOrientation() == Orientation::Vertical) ?
-                 std::max<wxCoord>(CalcTopGraphicSize(measureHeight).GetHeight() - m_topImageOffset,
-                                   0) :
+                 std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0) :
                  0);
 
         auto textAreaWidthNoSideImages =
@@ -232,13 +240,11 @@ namespace Wisteria::GraphItems
         // top image
         textAreaHeightNoSideImages -=
             ((GetTextOrientation() == Orientation::Horizontal) ?
-                 std::max<wxCoord>(
-                     CalcTopGraphicSize(rect.GetWidth()).GetHeight() - m_topImageOffset, 0) :
+                 std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0) :
                  0);
         textAreaWidthNoSideImages -=
             ((GetTextOrientation() == Orientation::Vertical) ?
-                 std::max<wxCoord>(
-                     CalcTopGraphicSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
+                 std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0) :
                  0);
 
         measureWidthNoSideImages = std::max<wxCoord>(0, measureWidthNoSideImages);
@@ -487,8 +493,7 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, topBottomOutlineWidth);
                 }
             width += CalcLeftImageSize(height).GetWidth();
-            height +=
-                std::max<wxCoord>(CalcTopGraphicSize(width).GetHeight() - m_topImageOffset, 0);
+            height += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
             }
         else
             {
@@ -547,8 +552,7 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, leftRightOutlineWidth);
                 }
             height += CalcLeftImageSize(width).GetWidth();
-            width +=
-                std::max<wxCoord>(CalcTopGraphicSize(height).GetHeight() - m_topImageOffset, 0);
+            width += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
             }
         }
 
@@ -1161,8 +1165,7 @@ namespace Wisteria::GraphItems
             {
             if (GetTextOrientation() == Orientation::Horizontal)
                 {
-                const auto bmp = m_topImage.GetBitmap(
-                    CalcTopGraphicSize(GetCachedContentBoundingBox().GetWidth()));
+                const auto bmp = m_topImage.GetBitmap(CalcTopGraphicSize());
                 // center horizontally
                 auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
                 leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
@@ -1175,10 +1178,7 @@ namespace Wisteria::GraphItems
             else
                 {
                 const auto img =
-                    m_topImage
-                        .GetBitmap(CalcTopGraphicSize(GetCachedContentBoundingBox().GetHeight()))
-                        .ConvertToImage()
-                        .Rotate90(false);
+                    m_topImage.GetBitmap(CalcTopGraphicSize()).ConvertToImage().Rotate90(false);
                 // center vertically
                 auto leftCorner{ GetCachedContentBoundingBox().GetBottomLeft() };
                 leftCorner.y -= safe_divide(GetCachedContentBoundingBox().GetHeight(), 2) -
@@ -1755,10 +1755,8 @@ namespace Wisteria::GraphItems
                     0 :
                     ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
                         CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth();
-            const auto xOffset = std::max<wxCoord>(
-                CalcTopGraphicSize(GetCachedContentBoundingBox().GetHeight()).GetHeight() -
-                    m_topImageOffset,
-                0);
+            const auto xOffset =
+                std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
             const bool isHeader{ (currentLineNumber == 0 && GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&
                                   GetHeaderInfo().GetFont().IsOk()) };
@@ -2008,10 +2006,8 @@ namespace Wisteria::GraphItems
             const bool isHeader{ (currentLineNumber == 0 && GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&
                                   GetHeaderInfo().GetFont().IsOk()) };
-            const auto yOffset = std::max<wxCoord>(
-                CalcTopGraphicSize(GetCachedContentBoundingBox().GetWidth()).GetHeight() -
-                    m_topImageOffset,
-                0);
+            const auto yOffset =
+                std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
             const wxFont baseFont = isHeader ?
                                         GetHeaderInfo().GetFont().Scaled(
                                             GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
