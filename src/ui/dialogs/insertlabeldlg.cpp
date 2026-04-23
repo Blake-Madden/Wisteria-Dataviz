@@ -203,10 +203,15 @@ namespace Wisteria::UI
 
         // left image
         auto* leftImgBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Left Image"));
+        auto* leftImgHBox = new wxBoxSizer(wxHORIZONTAL);
         m_leftImageThumbnail = new Thumbnail(
             leftImgBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
             wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
-        leftImgBox->Add(m_leftImageThumbnail, wxSizerFlags{}.Border());
+        leftImgHBox->Add(m_leftImageThumbnail, wxSizerFlags{}.Border());
+        auto* leftClearBtn = new wxButton(leftImgBox->GetStaticBox(), wxID_ANY, _(L"Clear"));
+        leftImgHBox->Add(leftClearBtn, wxSizerFlags{}.Border());
+        leftImgBox->Add(leftImgHBox, wxSizerFlags{}.Expand());
+
         // intercept click to capture the file path for round-tripping
         m_leftImageThumbnail->Bind(
             wxEVT_LEFT_DOWN,
@@ -222,14 +227,25 @@ namespace Wisteria::UI
                     m_leftImageThumbnail->LoadImage(m_leftImagePath);
                     }
             });
+        leftClearBtn->Bind(wxEVT_BUTTON,
+                           [this](wxCommandEvent&)
+                           {
+                               m_leftImagePath.clear();
+                               m_leftImageThumbnail->SetBitmap(wxNullBitmap);
+                           });
         col2Sizer->Add(leftImgBox, wxSizerFlags{}.Expand().Border());
 
         // top image
         auto* topImgBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Image"));
+        auto* topImgHBox = new wxBoxSizer(wxHORIZONTAL);
         m_topImageThumbnail = new Thumbnail(
             topImgBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
             wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
-        topImgBox->Add(m_topImageThumbnail, wxSizerFlags{}.Border());
+        topImgHBox->Add(m_topImageThumbnail, wxSizerFlags{}.Border());
+        auto* topClearBtn = new wxButton(topImgBox->GetStaticBox(), wxID_ANY, _(L"Clear"));
+        topImgHBox->Add(topClearBtn, wxSizerFlags{}.Border());
+        topImgBox->Add(topImgHBox, wxSizerFlags{}.Expand());
+
         // intercept click to capture the file path for round-tripping
         m_topImageThumbnail->Bind(
             wxEVT_LEFT_DOWN,
@@ -245,6 +261,12 @@ namespace Wisteria::UI
                     m_topImageThumbnail->LoadImage(m_topImagePath);
                     }
             });
+        topClearBtn->Bind(wxEVT_BUTTON,
+                          [this](wxCommandEvent&)
+                          {
+                              m_topImagePath.clear();
+                              m_topImageThumbnail->SetBitmap(wxNullBitmap);
+                          });
         col2Sizer->Add(topImgBox, wxSizerFlags{}.Expand().Border());
 
         // top shapes
