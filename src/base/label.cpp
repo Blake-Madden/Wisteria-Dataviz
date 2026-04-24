@@ -556,7 +556,6 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Label::DrawLegendIcons(wxDC& dc) const
         {
-        const wxCoord averageLineHeight = dc.GetCharHeight();
         const wxRect contentBoundingBox = GetCachedContentBoundingBox();
 
         wxPen scaledPen(GetPen());
@@ -581,6 +580,28 @@ namespace Wisteria::GraphItems
                 topLineHeight = dc.GetTextExtent(topLine).GetHeight();
                 }
 
+            // measure each body line individually so icon Y-positions match
+            // DrawMultiLineText's per-line advances
+            std::vector<wxCoord> bodyLineHeights;
+            if (!GetHeaderInfo().IsEnabled())
+                {
+                // no header — the first token is already a body line
+                bodyLineHeights.push_back(dc.GetTextExtent(topLine).GetHeight());
+                }
+            while (lineTokenizer.HasMoreTokens())
+                {
+                bodyLineHeights.push_back(
+                    dc.GetTextExtent(lineTokenizer.GetNextToken()).GetHeight());
+                }
+            wxCoord totalBodyHeight{ 0 };
+            for (const auto lineHeight : bodyLineHeights)
+                {
+                totalBodyHeight += lineHeight;
+                }
+            const wxCoord fallbackLineHeight = dc.GetTextExtent(L"Aq").GetHeight();
+            const auto lineHeightAt = [&](size_t idx)
+            { return idx < bodyLineHeights.size() ? bodyLineHeights[idx] : fallbackLineHeight; };
+
             for (auto iconPos = GetLegendIcons().cbegin(); iconPos != GetLegendIcons().cend();
                  ++iconPos)
                 {
@@ -598,14 +619,18 @@ namespace Wisteria::GraphItems
                                                                                   GetBrush());
 
                 const size_t currentIndex = (iconPos - GetLegendIcons().begin());
-                wxCoord middleOfCurrentRow =
-                    static_cast<wxCoord>((averageLineHeight * currentIndex) +
-                                         safe_divide<size_t>(averageLineHeight, 2)) +
-                    (static_cast<wxCoord>(currentIndex) *
-                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                    // spaces between proceeding lines
-                    ScaleToScreenAndCanvas(GetTopPadding());
-                const auto iconAreaWidth{ averageLineHeight };
+                // accumulate heights of preceding body lines (+ line spacing),
+                // then add half of this line's height to land on its vertical center
+                wxCoord lineTop{ 0 };
+                for (size_t i = 0; i < currentIndex; ++i)
+                    {
+                    lineTop +=
+                        lineHeightAt(i) + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                    }
+                const wxCoord thisLineHeight = lineHeightAt(currentIndex);
+                wxCoord middleOfCurrentRow = lineTop + safe_divide<wxCoord>(thisLineHeight, 2) +
+                                             ScaleToScreenAndCanvas(GetTopPadding());
+                const auto iconAreaWidth{ thisLineHeight };
                 const auto iconRadius{ iconAreaWidth * .3 };
                 const auto iconMiddleX{ iconAreaWidth * .5 };
                 // if there is a minimum height that is taller than the text, then center
@@ -656,7 +681,7 @@ namespace Wisteria::GraphItems
                             // gradients between each pair, until the full spectrum is shown.
                             wxRect legendArea = contentBoundingBox;
                             legendArea.y += yOffset + ScaleToScreenAndCanvas(GetTopPadding());
-                            legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
+                            legendArea.SetHeight(totalBodyHeight);
                             legendArea.SetWidth(
                                 ScaleToScreenAndCanvas(Icons::LegendIcon::GetIconWidthDIPs()));
 
