@@ -130,6 +130,30 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
+        /// @returns The suggested bin count, or @c std::nullopt if left at auto.
+        [[nodiscard]]
+        std::optional<size_t> GetSuggestedBinCount() const noexcept
+            {
+            return (m_suggestedBinCount > 0) ?
+                       std::optional<size_t>(static_cast<size_t>(m_suggestedBinCount)) :
+                       std::nullopt;
+            }
+
+        /// @returns The maximum bin count, or @c std::nullopt if left at default.
+        [[nodiscard]]
+        std::optional<size_t> GetMaxBinCount() const noexcept
+            {
+            return (m_maxBinCount > 0) ? std::optional<size_t>(static_cast<size_t>(m_maxBinCount)) :
+                                         std::nullopt;
+            }
+
+        /// @returns The bin start value, or @c std::nullopt if not overridden.
+        [[nodiscard]]
+        std::optional<double> GetBinsStart() const noexcept
+            {
+            return m_overrideBinsStart ? std::optional<double>(m_binsStart) : std::nullopt;
+            }
+
         /// @returns The bins to showcase.
         [[nodiscard]]
         const std::vector<wxString>& GetShowcasedBars() const noexcept
@@ -160,6 +184,7 @@ namespace Wisteria::UI
         wxStaticText* m_continuousVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
         wxEditableListBox* m_showcaseListBox{ nullptr };
+        wxSpinCtrlDouble* m_startBinSpin{ nullptr };
 
         // DDX data members
         int m_binningMethod{ 2 };   // BinByIntegerRange
@@ -169,6 +194,10 @@ namespace Wisteria::UI
         bool m_showFullRange{ true };
         bool m_neatIntervals{ false };
         int m_ghostOpacity{ 32 };
+        int m_suggestedBinCount{ 0 }; // 0 = auto
+        int m_maxBinCount{ 0 };       // 0 = default (255)
+        bool m_overrideBinsStart{ false };
+        double m_binsStart{ 0.0 };
         std::vector<wxString> m_showcasedBars;
 
         wxString m_continuousVariable;

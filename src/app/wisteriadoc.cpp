@@ -3704,6 +3704,15 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 {
                 node->Add(L"bins-start", histo->GetBinsStart().value());
                 }
+            if (histo->GetSuggestedBinCount().has_value())
+                {
+                node->Add(L"suggested-bin-count",
+                          static_cast<double>(histo->GetSuggestedBinCount().value()));
+                }
+            if (histo->GetMaxNumberOfBins() != 255)
+                {
+                node->Add(L"max-bin-count", static_cast<double>(histo->GetMaxNumberOfBins()));
+                }
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))

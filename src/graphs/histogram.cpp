@@ -49,8 +49,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         SetBinLabelDisplay(blDisplay);
         m_displayFullRangeOfValues = showFullRangeOfValues;
         m_startBinsValue = startBinsValue;
+        m_suggestedBinCount = (binCountRanges.first && binCountRanges.first.value() > 0) ?
+                                  binCountRanges.first :
+                                  std::nullopt;
 
-        if (binCountRanges.second)
+        if (binCountRanges.second && binCountRanges.second.value() > 0)
             {
             m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount);
             }
@@ -84,11 +87,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
 
         if (GetBinningMethod() == BinningMethod::BinUniqueValues)
             {
-            SortIntoUniqueValues(binCountRanges.first);
+            SortIntoUniqueValues(m_suggestedBinCount);
             }
         else
             {
-            SortIntoRanges(binCountRanges.first);
+            SortIntoRanges(m_suggestedBinCount);
             }
 
         // re-build the bar labels now that the bars are ready

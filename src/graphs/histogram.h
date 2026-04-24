@@ -339,6 +339,22 @@ namespace Wisteria::Graphs
             return m_startBinsValue;
             }
 
+        /// @returns The suggested bin count passed to SetData(), or @c std::nullopt if
+        ///     none was specified (in which case the count is computed from the data).
+        [[nodiscard]]
+        std::optional<size_t> GetSuggestedBinCount() const noexcept
+            {
+            return m_suggestedBinCount;
+            }
+
+        /// @returns The maximum number of bins that the histogram will create when
+        ///     binning the data.
+        [[nodiscard]]
+        size_t GetMaxNumberOfBins() const noexcept
+            {
+            return m_maxBinCount;
+            }
+
         /// @returns The name of the continuous column being binned.
         [[nodiscard]]
         const wxString& GetContinuousColumnName() const noexcept
@@ -367,14 +383,6 @@ namespace Wisteria::Graphs
             }
 
       private:
-        /// @returns The maximum number of bins that the histogram will create when
-        ///     binning the data.
-        [[nodiscard]]
-        size_t GetMaxNumberOfBins() const noexcept
-            {
-            return m_maxBinCount;
-            }
-
         /** Specifies whether the axis should display each step
                 (even if no bin is associated with a step) or if it should display steps that
                 have categories on them.\n
@@ -434,6 +442,7 @@ namespace Wisteria::Graphs
         RoundingMethod m_roundingMethod{ RoundingMethod::NoRounding };
         IntervalDisplay m_intervalDisplay{ IntervalDisplay::Cutpoints };
         size_t m_maxBinCount{ 255 };
+        std::optional<size_t> m_suggestedBinCount{ std::nullopt };
         size_t m_binCount{ 0 };
         bool m_displayFullRangeOfValues{ true };
         bool m_neatRanges{ false };

@@ -5833,7 +5833,8 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
             static_cast<Wisteria::RoundingMethod>(dlg.GetRoundingMethod()),
             static_cast<Wisteria::Graphs::Histogram::IntervalDisplay>(dlg.GetIntervalDisplay()),
             static_cast<Wisteria::BinLabelDisplay>(dlg.GetBinLabelDisplay()),
-            dlg.GetShowFullRange(), std::nullopt, std::make_pair(std::nullopt, std::nullopt),
+            dlg.GetShowFullRange(), dlg.GetBinsStart(),
+            std::make_pair(dlg.GetSuggestedBinCount(), dlg.GetMaxBinCount()),
             dlg.GetNeatIntervals());
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcasedBars().empty())
@@ -5908,7 +5909,8 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
             static_cast<Wisteria::RoundingMethod>(dlg.GetRoundingMethod()),
             static_cast<Wisteria::Graphs::Histogram::IntervalDisplay>(dlg.GetIntervalDisplay()),
             static_cast<Wisteria::BinLabelDisplay>(dlg.GetBinLabelDisplay()),
-            dlg.GetShowFullRange(), std::nullopt, std::make_pair(std::nullopt, std::nullopt),
+            dlg.GetShowFullRange(), dlg.GetBinsStart(),
+            std::make_pair(dlg.GetSuggestedBinCount(), dlg.GetMaxBinCount()),
             dlg.GetNeatIntervals());
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcasedBars().empty())

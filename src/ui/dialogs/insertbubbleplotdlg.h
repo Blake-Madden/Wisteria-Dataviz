@@ -153,6 +153,7 @@ namespace Wisteria::UI
         wxStaticText* m_yVarLabel{ nullptr };
         wxStaticText* m_sizeVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
+        wxSpinCtrlDouble* m_confidenceLevelSpin{ nullptr };
 
         // DDX data members
         bool m_showRegressionLines{ true };

@@ -208,14 +208,6 @@ namespace Wisteria::UI
 
         optionsSizer->Add(shapesBox, wxSizerFlags{}.Expand().Border());
 
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
-
         // showcasing
         auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
 
@@ -236,6 +228,14 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
         optionsSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // legend placement
+        auto* legendSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
+                         wxSizerFlags{}.CenterVertical());
+        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
+        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
 
         // Helper to collect available bar labels
         auto gatherBarLabels = [this]() -> wxArrayString

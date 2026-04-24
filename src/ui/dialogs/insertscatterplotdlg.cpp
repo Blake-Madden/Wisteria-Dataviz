@@ -117,13 +117,13 @@ namespace Wisteria::UI
         confidenceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Confidence level:")),
                              wxSizerFlags{}.CenterVertical());
             {
-            auto* spin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
-            spin->SetRange(0.5, 0.99);
-            spin->SetDigits(2);
-            spin->SetIncrement(0.01);
-            spin->SetValue(m_confidenceLevel);
-            spin->SetValidator(wxGenericValidator(&m_confidenceLevel));
-            confidenceSizer->Add(spin);
+            m_confidenceLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
+            m_confidenceLevelSpin->SetRange(0.5, 0.99);
+            m_confidenceLevelSpin->SetDigits(2);
+            m_confidenceLevelSpin->SetIncrement(0.01);
+            // validators do not work with wxSpinCtrlDouble
+            m_confidenceLevelSpin->SetValue(m_confidenceLevel);
+            confidenceSizer->Add(m_confidenceLevelSpin);
             }
         optionsSizer->Add(confidenceSizer, wxSizerFlags{}.Border());
 
@@ -301,6 +301,8 @@ namespace Wisteria::UI
             {
             return false;
             }
+
+        m_confidenceLevel = m_confidenceLevelSpin->GetValue();
 
         return true;
         }

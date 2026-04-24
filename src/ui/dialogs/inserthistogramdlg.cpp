@@ -165,6 +165,49 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_neatIntervals)),
                           wxSizerFlags{}.Border());
 
+        // bin count overrides
+        auto* binCountSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        binCountSizer->Add(
+            new wxStaticText(optionsPage, wxID_ANY, _(L"Suggested bin count (0 = auto):")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
+            spin->SetRange(0, 255);
+            spin->SetValidator(wxGenericValidator(&m_suggestedBinCount));
+            binCountSizer->Add(spin);
+            }
+
+        binCountSizer->Add(
+            new wxStaticText(optionsPage, wxID_ANY, _(L"Maximum bin count (0 = default):")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
+            spin->SetRange(0, 255);
+            spin->SetValidator(wxGenericValidator(&m_maxBinCount));
+            binCountSizer->Add(spin);
+            }
+
+        optionsSizer->Add(binCountSizer, wxSizerFlags{}.Border());
+
+        // bin start override
+        auto* binStartSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* binStartCheck =
+            new wxCheckBox(optionsPage, wxID_ANY, _(L"Start first bin at:"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_overrideBinsStart));
+        binStartSizer->Add(binStartCheck, wxSizerFlags{}.CenterVertical());
+            {
+            m_startBinSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
+            m_startBinSpin->SetRange(-1e9, 1e9);
+            m_startBinSpin->SetDigits(2);
+            m_startBinSpin->SetIncrement(1.0);
+            m_startBinSpin->SetValue(m_binsStart);
+            m_startBinSpin->Enable(m_overrideBinsStart);
+            binStartSizer->Add(m_startBinSpin, wxSizerFlags{}.Border(wxLEFT));
+            }
+        optionsSizer->Add(binStartSizer, wxSizerFlags{}.Border());
+
         // showcasing
         auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
 
@@ -320,6 +363,9 @@ namespace Wisteria::UI
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
+
+        binStartCheck->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent& evt)
+                            { m_startBinSpin->Enable(evt.IsChecked()); });
         }
 
     //-------------------------------------------
@@ -477,6 +523,9 @@ namespace Wisteria::UI
             return false;
             }
 
+        // validators do not work with wxSpinCtrlDouble
+        m_binsStart = m_startBinSpin->GetValue();
+
         return true;
         }
 
@@ -519,6 +568,14 @@ namespace Wisteria::UI
         m_showFullRange = histogram->IsShowingFullRangeOfValues();
         m_neatIntervals = histogram->IsUsingNeatIntervals();
         m_ghostOpacity = histogram->GetGhostOpacity();
+        m_suggestedBinCount = histogram->GetSuggestedBinCount().has_value() ?
+                                  static_cast<int>(histogram->GetSuggestedBinCount().value()) :
+                                  0;
+        m_maxBinCount = (histogram->GetMaxNumberOfBins() != 255) ?
+                            static_cast<int>(histogram->GetMaxNumberOfBins()) :
+                            0;
+        m_overrideBinsStart = histogram->GetBinsStart().has_value();
+        m_binsStart = histogram->GetBinsStart().value_or(0.0);
         m_showcasedBars = histogram->GetShowcasedLabels();
         if (m_showcaseListBox != nullptr)
             {
