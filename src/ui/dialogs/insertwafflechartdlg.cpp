@@ -88,7 +88,8 @@ namespace Wisteria::UI
             wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_useGridRounding));
         gridRoundBox->Add(gridRoundCheck, wxSizerFlags{}.Border());
 
-        auto* gridRoundGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* gridRoundGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         gridRoundGrid->Add(
             new wxStaticText(gridRoundBox->GetStaticBox(), wxID_ANY, _(L"Cell count:")),
@@ -127,7 +128,8 @@ namespace Wisteria::UI
                            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_useRowCount));
         rowCountBox->Add(rowCountCheck, wxSizerFlags{}.Border());
 
-        auto* rowCountGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* rowCountGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         rowCountGrid->Add(new wxStaticText(rowCountBox->GetStaticBox(), wxID_ANY, _(L"Rows:")),
                           wxSizerFlags{}.CenterVertical());
         m_rowCountSpin = new wxSpinCtrl(rowCountBox->GetStaticBox(), wxID_ANY);
@@ -144,7 +146,8 @@ namespace Wisteria::UI
                             { m_rowCountSpin->Enable(evt.IsChecked()); });
 
         // legend placement
-        auto* legendGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                         wxSizerFlags{}.CenterVertical());
         legendGrid->Add(CreateLegendPlacementChoice(optionsPage, 1));

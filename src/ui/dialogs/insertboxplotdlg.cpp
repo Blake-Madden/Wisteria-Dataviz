@@ -45,7 +45,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Box Plot"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -96,7 +97,8 @@ namespace Wisteria::UI
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // box effect
-        auto* effectSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* effectSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         effectSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Box effect:")),
                          wxSizerFlags{}.CenterVertical());
         wxArrayString boxEffects;
@@ -118,7 +120,8 @@ namespace Wisteria::UI
         optionsSizer->Add(effectSizer, wxSizerFlags{}.Border());
 
         // stipple shape button and label (enabled only for StippleShape effect)
-        auto* shapeBtnSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* shapeBtnSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         m_shapeButton = new wxButton(optionsPage, wxID_ANY, _(L"Shape..."));
         m_shapeButton->Enable(false);
         shapeBtnSizer->Add(m_shapeButton, wxSizerFlags{}.CenterVertical());
@@ -129,7 +132,8 @@ namespace Wisteria::UI
         optionsSizer->Add(shapeBtnSizer, wxSizerFlags{}.Border(wxLEFT));
 
         // images button and label (enabled only for image-based effects)
-        auto* imgBtnSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* imgBtnSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         m_imagesButton = new wxButton(optionsPage, wxID_ANY, _(L"Images..."));
         m_imagesButton->Enable(false);
         imgBtnSizer->Add(m_imagesButton, wxSizerFlags{}.CenterVertical());
@@ -156,7 +160,8 @@ namespace Wisteria::UI
         optionsSizer->Add(m_midpointCheck, wxSizerFlags{}.Border());
 
         // legend placement
-        auto* legendGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                         wxSizerFlags{}.CenterVertical());
         legendGrid->Add(CreateLegendPlacementChoice(optionsPage, 1));

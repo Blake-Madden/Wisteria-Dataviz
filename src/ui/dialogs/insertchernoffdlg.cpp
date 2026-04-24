@@ -41,7 +41,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Chernoff Faces"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -97,7 +98,8 @@ namespace Wisteria::UI
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // appearance options
-        auto* appearanceSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* appearanceSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         // gender
         appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Gender:")),
@@ -155,7 +157,8 @@ namespace Wisteria::UI
             new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 255, 239, 219 });
         skinColorSizer->Add(m_skinColorLighterPicker, wxSizerFlags{}.CenterVertical());
         skinColorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, L"–"),
-                            wxSizerFlags{}.CenterVertical().Border(wxLEFT | wxRIGHT, FromDIP(4)));
+                            wxSizerFlags{}.CenterVertical().Border(
+                                wxLEFT | wxRIGHT, wxSizerFlags::GetDefaultBorder()));
         m_skinColorDarkerPicker =
             new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 255, 224, 189 });
         skinColorSizer->Add(m_skinColorDarkerPicker, wxSizerFlags{}.CenterVertical());
@@ -187,7 +190,8 @@ namespace Wisteria::UI
                           wxSizerFlags{}.Border());
 
         // legend placement
-        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));

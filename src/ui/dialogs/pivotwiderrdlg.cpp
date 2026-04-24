@@ -68,7 +68,8 @@ namespace Wisteria::UI
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         auto* datasetLabel{ new wxStaticText(this, wxID_ANY, _(L"Dataset:")) };
         datasetSizer->Add(datasetLabel, wxSizerFlags{}.CenterVertical());
         m_datasetChoice = new wxChoice(this, wxID_ANY);
@@ -122,7 +123,8 @@ namespace Wisteria::UI
 
         // options
         auto* optionsBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Options"));
-        auto* optGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* optGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         optGrid->AddGrowableCol(1, 1);
 
         optGrid->Add(new wxStaticText(optionsBox->GetStaticBox(), wxID_ANY, _(L"Names separator:")),
@@ -145,7 +147,8 @@ namespace Wisteria::UI
 
         // output name (only if inserting new,
         // can't edit name once created because that is the lookup key)
-        auto* nameSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* nameSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         nameSizer->AddGrowableCol(1, 1);
         auto* nameLabel = new wxStaticText(this, wxID_ANY, _(L"Output name:"));
         nameSizer->Add(nameLabel, wxSizerFlags{}.CenterVertical());

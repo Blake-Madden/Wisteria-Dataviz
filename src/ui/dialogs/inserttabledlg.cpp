@@ -47,7 +47,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Table"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -70,7 +71,8 @@ namespace Wisteria::UI
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
         // two-column layout for everything below the dataset row
-        auto* twoColSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
+        auto* twoColSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
+                                               wxSizerFlags::GetDefaultBorder() * 2);
 
         // left column: columns, header/layout, appearance, sizing
         auto* leftColSizer = new wxBoxSizer(wxVERTICAL);
@@ -136,7 +138,7 @@ namespace Wisteria::UI
                                           wxDefaultPosition, wxDefaultSize, 0,
                                           wxGenericValidator(&m_alternateRowColors)),
                            wxSizerFlags{}.CenterVertical());
-        altColorSizer->AddSpacer(FromDIP(8));
+        altColorSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
         m_altRowColorPicker = new wxColourPickerCtrl(
             appearParent, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::AzureMist));
         altColorSizer->Add(m_altRowColorPicker, wxSizerFlags{}.CenterVertical());
@@ -158,7 +160,7 @@ namespace Wisteria::UI
                                           wxDefaultPosition, wxDefaultSize, 0,
                                           wxGenericValidator(&m_useMinWidth)),
                            wxSizerFlags{}.CenterVertical());
-        minWidthSizer->AddSpacer(FromDIP(8));
+        minWidthSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
             {
             auto* spin = new wxSpinCtrl(sizeParent, wxID_ANY);
             spin->SetRange(1, 100);
@@ -173,7 +175,7 @@ namespace Wisteria::UI
                                            wxDefaultPosition, wxDefaultSize, 0,
                                            wxGenericValidator(&m_useMinHeight)),
                             wxSizerFlags{}.CenterVertical());
-        minHeightSizer->AddSpacer(FromDIP(8));
+        minHeightSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
             {
             auto* spin = new wxSpinCtrl(sizeParent, wxID_ANY);
             spin->SetRange(1, 100);
@@ -572,7 +574,8 @@ namespace Wisteria::UI
         {
         wxDialog dlg(this, wxID_ANY, _(L"Add Footnote"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* gridSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* gridSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         gridSizer->AddGrowableCol(1, 1);
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Value:")),
@@ -623,7 +626,8 @@ namespace Wisteria::UI
 
         wxDialog dlg(this, wxID_ANY, _(L"Edit Footnote"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* gridSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* gridSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         gridSizer->AddGrowableCol(1, 1);
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Value:")),

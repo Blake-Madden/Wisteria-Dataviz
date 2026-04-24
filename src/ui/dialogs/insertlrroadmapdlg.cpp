@@ -44,7 +44,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"LR Roadmap"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -101,7 +102,8 @@ namespace Wisteria::UI
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // dependent variable name
-        auto* dvSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* dvSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         dvSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dependent variable description:")),
                      wxSizerFlags{}.CenterVertical());
         dvSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
@@ -109,7 +111,8 @@ namespace Wisteria::UI
         optionsSizer->Add(dvSizer, wxSizerFlags{}.Border());
 
         // predictors filter
-        auto* filterSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* filterSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         filterSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Show predictors:")),
                          wxSizerFlags{}.CenterVertical());
             {
@@ -124,7 +127,8 @@ namespace Wisteria::UI
         optionsSizer->Add(filterSizer, wxSizerFlags{}.Border());
 
         // marker labels
-        auto* markerSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* markerSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         markerSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Marker labels:")),
                          wxSizerFlags{}.CenterVertical());
             {
@@ -139,7 +143,8 @@ namespace Wisteria::UI
         optionsSizer->Add(markerSizer, wxSizerFlags{}.Border());
 
         // p-value threshold
-        auto* pLevelSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* pLevelSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         pLevelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"p-value threshold:")),
                          wxSizerFlags{}.CenterVertical());
         m_pLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
@@ -149,7 +154,8 @@ namespace Wisteria::UI
 
         // road appearance
         auto* roadBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Road"));
-        auto* appearSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* appearSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         appearSizer->Add(new wxStaticText(roadBox->GetStaticBox(), wxID_ANY, _(L"Road color:")),
                          wxSizerFlags{}.CenterVertical());
@@ -190,7 +196,8 @@ namespace Wisteria::UI
                           wxSizerFlags{}.Border());
 
         // legend placement
-        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 4));

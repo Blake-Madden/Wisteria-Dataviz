@@ -138,7 +138,8 @@ namespace Wisteria::UI
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         datasetSizer->AddGrowableCol(1, 1);
         auto* datasetLabel = new wxStaticText(this, wxID_ANY, _(L"Dataset:"));
         datasetSizer->Add(datasetLabel, wxSizerFlags{}.CenterVertical());
@@ -192,7 +193,8 @@ namespace Wisteria::UI
 
         // section controls — all controls on dialog, no child panel
         m_sectionBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Section Filter"));
-        auto* sectionGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* sectionGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         sectionGrid->AddGrowableCol(1, 1);
 
         m_sectionColumnLabel =
@@ -223,7 +225,8 @@ namespace Wisteria::UI
         mainSizer->Add(m_sectionBox, wxSizerFlags{}.Expand().Border());
 
         // output name
-        auto* nameSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* nameSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         nameSizer->AddGrowableCol(1, 1);
         auto* nameLabel = new wxStaticText(this, wxID_ANY, _(L"Output name:"));
         nameSizer->Add(nameLabel, wxSizerFlags{}.CenterVertical());

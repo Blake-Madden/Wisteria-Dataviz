@@ -110,7 +110,8 @@ namespace Wisteria::UI
         // stitch direction
         if ((m_options & ImageDlgIncludeStitch) != 0)
             {
-            auto* stitchGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* stitchGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                              wxSizerFlags::GetDefaultBorder() });
             stitchGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Stitch direction:")),
                             wxSizerFlags{}.CenterVertical());
             m_stitchChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
@@ -131,7 +132,8 @@ namespace Wisteria::UI
                 wxDefaultSize, 0, wxGenericValidator(&m_customSize));
             sizeBox->Add(customSizeCheck, wxSizerFlags{}.Border());
 
-            auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                            wxSizerFlags::GetDefaultBorder() });
 
             sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
                           wxSizerFlags{}.CenterVertical());
@@ -162,7 +164,8 @@ namespace Wisteria::UI
             }
 
         // resize method and effect
-        auto* optionsGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* optionsGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         if ((m_options & ImageDlgIncludeResizeMethod) != 0)
             {

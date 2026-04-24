@@ -42,7 +42,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Likert"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -113,7 +114,8 @@ namespace Wisteria::UI
                           wxSizerFlags{}.Border());
 
         // colors
-        auto* colorSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* colorSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Negative color:")),
                         wxSizerFlags{}.CenterVertical());
         m_negativeColorPicker = new wxColourPickerCtrl(
@@ -141,7 +143,8 @@ namespace Wisteria::UI
         optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
 
         // header labels
-        auto* labelSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* labelSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         labelSizer->AddGrowableCol(1, 1);
 
         labelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Positive label:")),
@@ -208,7 +211,8 @@ namespace Wisteria::UI
                 wxDialog dlg(this, wxID_ANY, _(L"Add Question Bracket"), wxDefaultPosition,
                              wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
                 auto* sizer = new wxBoxSizer{ wxVERTICAL };
-                auto* grid = new wxFlexGridSizer{ 2, wxSize{ FromDIP(8), FromDIP(4) } };
+                auto* grid = new wxFlexGridSizer{ 2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() } };
                 grid->AddGrowableCol(1, 1);
 
                 wxArrayString questionChoices;
@@ -546,7 +550,8 @@ namespace Wisteria::UI
         wxDialog dlg(this, wxID_ANY, _(L"Edit Question Bracket"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         auto* sizer = new wxBoxSizer(wxVERTICAL);
-        auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* grid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         grid->AddGrowableCol(1, 1);
 
         wxArrayString questionChoices;

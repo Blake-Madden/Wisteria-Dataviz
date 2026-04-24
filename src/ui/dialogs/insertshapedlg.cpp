@@ -151,7 +151,8 @@ namespace Wisteria::UI
             GetSideBarBook()->DeletePage(0);
             }
 
-        auto* columnGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(4), FromDIP(4) });
+        auto* columnGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
         auto* leftColSizer = new wxBoxSizer(wxVERTICAL);
         auto* rightColSizer = new wxBoxSizer(wxVERTICAL);
         columnGrid->Add(leftColSizer, wxSizerFlags{}.Expand());
@@ -159,7 +160,8 @@ namespace Wisteria::UI
         shapeSizer->Add(columnGrid, wxSizerFlags{}.Expand().Border());
 
         // shape type
-        auto* shapeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* shapeGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         shapeGrid->Add(new wxStaticText(shapePage, wxID_ANY, _(L"Shape:")),
                        wxSizerFlags{}.CenterVertical());
@@ -174,7 +176,8 @@ namespace Wisteria::UI
         if ((m_options & ShapeDlgIncludeSize) != 0)
             {
             auto* sizeBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Size"));
-            auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                            wxSizerFlags::GetDefaultBorder() });
 
             sizeGrid->Add(new wxStaticText(sizeBox->GetStaticBox(), wxID_ANY, _(L"Width:")),
                           wxSizerFlags{}.CenterVertical());
@@ -198,7 +201,8 @@ namespace Wisteria::UI
         if ((m_options & ShapeDlgIncludePen) != 0)
             {
             auto* penBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Pen (outline)"));
-            auto* penGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* penGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                           wxSizerFlags::GetDefaultBorder() });
 
             penGrid->Add(new wxStaticText(penBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
                          wxSizerFlags{}.CenterVertical());
@@ -232,7 +236,8 @@ namespace Wisteria::UI
         if ((m_options & ShapeDlgIncludeBrush) != 0)
             {
             auto* brushBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Brush (fill)"));
-            auto* brushGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* brushGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
 
             brushGrid->Add(new wxStaticText(brushBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
                            wxSizerFlags{}.CenterVertical());
@@ -263,7 +268,8 @@ namespace Wisteria::UI
         if ((m_options & ShapeDlgIncludeLabel) != 0)
             {
             auto* labelBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Label"));
-            auto* labelGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* labelGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
 
             labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Text:")),
                            wxSizerFlags{}.CenterVertical());
@@ -291,7 +297,8 @@ namespace Wisteria::UI
                                                  wxDefaultSize, 0, wxGenericValidator(&m_fillable));
             fillBox->Add(fillableCheck, wxSizerFlags{}.Border());
 
-            auto* fillGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* fillGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                            wxSizerFlags::GetDefaultBorder() });
             fillGrid->Add(new wxStaticText(fillBox->GetStaticBox(), wxID_ANY, _(L"Fill percent:")),
                           wxSizerFlags{}.CenterVertical());
             m_fillPercentSpin = new wxSpinCtrlDouble(fillBox->GetStaticBox(), wxID_ANY, wxString{},
@@ -313,7 +320,8 @@ namespace Wisteria::UI
         if ((m_options & ShapeDlgIncludeRepeat) != 0)
             {
             auto* repeatBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Repeat"));
-            auto* repeatGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* repeatGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                              wxSizerFlags::GetDefaultBorder() });
 
             repeatGrid->Add(new wxStaticText(repeatBox->GetStaticBox(), wxID_ANY, _(L"Count:")),
                             wxSizerFlags{}.CenterVertical());
@@ -329,7 +337,8 @@ namespace Wisteria::UI
         if ((m_options & ShapeDlgIncludeAlignment) != 0)
             {
             auto* alignBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Alignment"));
-            auto* alignGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* alignGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
 
             alignGrid->Add(new wxStaticText(alignBox->GetStaticBox(), wxID_ANY, _(L"Horizontal:")),
                            wxSizerFlags{}.CenterVertical());

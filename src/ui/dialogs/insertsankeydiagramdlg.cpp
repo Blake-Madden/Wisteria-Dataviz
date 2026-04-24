@@ -41,7 +41,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Sankey Diagram"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -114,7 +115,8 @@ namespace Wisteria::UI
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // flow shape
-        auto* flowSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* flowSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         flowSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Flow shape:")),
                        wxSizerFlags{}.CenterVertical());
         wxArrayString flowShapes;
@@ -126,7 +128,8 @@ namespace Wisteria::UI
         optionsSizer->Add(flowSizer, wxSizerFlags{}.Border());
 
         // group label display
-        auto* glSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* glSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         glSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Group labels:")),
                      wxSizerFlags{}.CenterVertical());
         wxArrayString groupLabelDisplays;
@@ -144,7 +147,8 @@ namespace Wisteria::UI
         optionsSizer->Add(glSizer, wxSizerFlags{}.Border());
 
         // column header display
-        auto* chSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* chSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         chSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Column headers:")),
                      wxSizerFlags{}.CenterVertical());
         wxArrayString columnHeaderDisplays;

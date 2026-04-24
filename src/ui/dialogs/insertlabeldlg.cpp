@@ -67,7 +67,8 @@ namespace Wisteria::UI
 
         // font options
         auto* fontBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Font"));
-        auto* fontGrid = new wxFlexGridSizer(2, FromDIP(8), FromDIP(4));
+        auto* fontGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder() * 2,
+                                             wxSizerFlags::GetDefaultBorder());
         fontGrid->AddGrowableCol(1, 1);
 
         fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Font:")),
@@ -116,7 +117,8 @@ namespace Wisteria::UI
 
         // appearance options
         auto* appearanceBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Appearance"));
-        auto* appearanceGrid = new wxFlexGridSizer(2, FromDIP(8), FromDIP(4));
+        auto* appearanceGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder() * 2,
+                                                   wxSizerFlags::GetDefaultBorder());
         appearanceGrid->AddGrowableCol(1, 1);
 
         appearanceGrid->Add(
@@ -161,7 +163,8 @@ namespace Wisteria::UI
             wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_headerEnabled));
         headerBox->Add(enableHeaderCheck, wxSizerFlags{}.Border());
 
-        auto* headerGrid = new wxFlexGridSizer(2, FromDIP(8), FromDIP(4));
+        auto* headerGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder() * 2,
+                                               wxSizerFlags::GetDefaultBorder());
         headerGrid->AddGrowableCol(1, 1);
 
         headerGrid->Add(new wxStaticText(headerBox->GetStaticBox(), wxID_ANY, _(L"Font:")),
@@ -302,7 +305,8 @@ namespace Wisteria::UI
                     }
             });
 
-        auto* offsetGrid = new wxFlexGridSizer(2, FromDIP(8), FromDIP(4));
+        auto* offsetGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder() * 2,
+                                               wxSizerFlags::GetDefaultBorder());
         offsetGrid->AddGrowableCol(1, 1);
         offsetGrid->Add(new wxStaticText(topShapeBox->GetStaticBox(), wxID_ANY,
                                          _(L"Top offset (image/shapes):")),

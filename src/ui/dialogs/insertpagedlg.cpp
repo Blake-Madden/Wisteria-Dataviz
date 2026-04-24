@@ -56,7 +56,8 @@ namespace Wisteria::UI
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
         auto* contentSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        auto* gridSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* gridSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         gridSizer->AddGrowableCol(1, 1);
 
         // name

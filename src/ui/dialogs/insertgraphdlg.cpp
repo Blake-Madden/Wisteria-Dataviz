@@ -299,7 +299,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(graphPage, _(L"General"), ID_GRAPH_OPTIONS_SECTION, false);
 
         // title, subtitle, caption — each opens a full Label editor
-        auto* textSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
+        auto* textSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
+                                             wxSizerFlags::GetDefaultBorder() * 2);
 
         textSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Title:")), wxGBPosition(0, 0),
                        wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
@@ -344,7 +345,8 @@ namespace Wisteria::UI
         graphSizer->Add(textSizer, wxSizerFlags{}.Expand().Border());
 
         // background color
-        auto* bgSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* bgSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         bgSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"Background color:")),
                      wxSizerFlags{}.CenterVertical());
@@ -356,7 +358,8 @@ namespace Wisteria::UI
         // background image
         auto* bgBox = new wxStaticBoxSizer(wxVERTICAL, graphPage, _(L"Background Image"));
 
-        auto* bgImgSizer = new wxFlexGridSizer(3, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* bgImgSizer = new wxFlexGridSizer(
+            3, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         bgImgSizer->Add(new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, _(L"Image:")),
                         wxSizerFlags{}.CenterVertical());
             {
@@ -370,7 +373,8 @@ namespace Wisteria::UI
         bgImgSizer->Add(m_bgImagePreview, wxSizerFlags{}.CenterVertical());
         bgBox->Add(bgImgSizer, wxSizerFlags{}.Expand().Border());
 
-        auto* imgOptionsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* imgOptionsSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         imgOptionsSizer->Add(new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, _(L"Opacity:")),
                              wxSizerFlags{}.CenterVertical());
             {
@@ -974,7 +978,8 @@ namespace Wisteria::UI
         {
         wxDialog dlg(this, wxID_ANY, _(L"Add Reference Line"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* sizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
@@ -1048,7 +1053,8 @@ namespace Wisteria::UI
 
         wxDialog dlg(this, wxID_ANY, _(L"Edit Reference Line"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* sizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
@@ -1150,7 +1156,8 @@ namespace Wisteria::UI
         {
         wxDialog dlg(this, wxID_ANY, _(L"Add Reference Area"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* sizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
@@ -1231,7 +1238,8 @@ namespace Wisteria::UI
 
         wxDialog dlg(this, wxID_ANY, _(L"Edit Reference Area"), wxDefaultPosition, wxDefaultSize,
                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-        auto* sizer = new wxFlexGridSizer{ 2, wxSize{ FromDIP(8), FromDIP(4) } };
+        auto* sizer = new wxFlexGridSizer{ 2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                      wxSizerFlags::GetDefaultBorder() } };
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Axis:")), wxSizerFlags{}.CenterVertical());
@@ -1386,7 +1394,8 @@ namespace Wisteria::UI
 
         // anchor point
         auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
-        auto* anchorGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* anchorGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         anchorGrid->AddGrowableCol(1, 1);
 
         anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"x-axis:")),
@@ -1433,7 +1442,8 @@ namespace Wisteria::UI
             {
                 wxDialog ipDlg(this, wxID_ANY, _(L"Add Interest Point"), wxDefaultPosition,
                                wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
-                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
                 sizer->AddGrowableCol(1, 1);
 
                 sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
@@ -1478,7 +1488,8 @@ namespace Wisteria::UI
 
                 wxDialog ipDlg(this, wxID_ANY, _(L"Edit Interest Point"), wxDefaultPosition,
                                wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
-                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
                 sizer->AddGrowableCol(1, 1);
 
                 sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
@@ -1644,7 +1655,8 @@ namespace Wisteria::UI
 
         // anchor point
         auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
-        auto* anchorGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* anchorGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         anchorGrid->AddGrowableCol(1, 1);
 
         anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"x-axis:")),
@@ -1694,7 +1706,8 @@ namespace Wisteria::UI
             {
                 wxDialog ipDlg(this, wxID_ANY, _(L"Add Interest Point"), wxDefaultPosition,
                                wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
-                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
                 sizer->AddGrowableCol(1, 1);
 
                 sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),
@@ -1739,7 +1752,8 @@ namespace Wisteria::UI
 
                 wxDialog ipDlg(this, wxID_ANY, _(L"Edit Interest Point"), wxDefaultPosition,
                                wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
-                auto* sizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* sizer = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                             wxSizerFlags::GetDefaultBorder() });
                 sizer->AddGrowableCol(1, 1);
 
                 sizer->Add(new wxStaticText(&ipDlg, wxID_ANY, _(L"x-axis:")),

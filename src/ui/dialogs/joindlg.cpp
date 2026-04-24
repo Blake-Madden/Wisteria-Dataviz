@@ -112,7 +112,8 @@ namespace Wisteria::UI
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         // dataset selectors
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         datasetSizer->AddGrowableCol(1, 1);
 
         auto* leftLabel = new wxStaticText(this, wxID_ANY, _(L"Left dataset:"));
@@ -158,7 +159,8 @@ namespace Wisteria::UI
         mainSizer->Add(datasetSizer, wxSizerFlags{}.Expand().Border());
 
         // join type
-        auto* joinTypeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* joinTypeSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         joinTypeSizer->AddGrowableCol(1, 1);
         joinTypeSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Join type:")),
                            wxSizerFlags{}.CenterVertical());
@@ -201,7 +203,8 @@ namespace Wisteria::UI
 
         // options
         auto* optionsBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Options"));
-        auto* optGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* optGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         optGrid->AddGrowableCol(1, 1);
 
         optGrid->Add(
@@ -214,7 +217,8 @@ namespace Wisteria::UI
         mainSizer->Add(optionsBox, wxSizerFlags{}.Expand().Border());
 
         // output name
-        auto* nameSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* nameSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         nameSizer->AddGrowableCol(1, 1);
         auto* nameLabel = new wxStaticText(this, wxID_ANY, _(L"Output name:"));
         nameSizer->Add(nameLabel, wxSizerFlags{}.CenterVertical());

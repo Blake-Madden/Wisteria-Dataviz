@@ -45,7 +45,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Candlestick Plot"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -116,7 +117,8 @@ namespace Wisteria::UI
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // plot type
-        auto* plotTypeSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* plotTypeSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         plotTypeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Plot type:")),
                            wxSizerFlags{}.CenterVertical());
         wxArrayString plotTypes;

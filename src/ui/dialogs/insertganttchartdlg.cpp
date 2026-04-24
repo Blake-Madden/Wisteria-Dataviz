@@ -45,7 +45,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Gantt Chart"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -131,7 +132,8 @@ namespace Wisteria::UI
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // date interval
-        auto* optGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* optGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         optGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Date interval:")),
                      wxSizerFlags{}.CenterVertical());
@@ -207,7 +209,8 @@ namespace Wisteria::UI
         optionsSizer->Add(shapesBox, wxSizerFlags{}.Expand().Border());
 
         // legend placement
-        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
@@ -216,7 +219,8 @@ namespace Wisteria::UI
         // showcasing
         auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
 
-        auto* ghostOpacitySizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* ghostOpacitySizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         ghostOpacitySizer->Add(
             new wxStaticText(ghostBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
             wxSizerFlags{}.CenterVertical());
@@ -256,7 +260,8 @@ namespace Wisteria::UI
             wxDialog dlg(this, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
                          wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
             auto* sizer = new wxBoxSizer(wxVERTICAL);
-            auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* grid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                        wxSizerFlags::GetDefaultBorder() });
             grid->AddGrowableCol(1, 1);
 
             grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Bar:")),

@@ -97,7 +97,9 @@ namespace Wisteria::UI
         // grid size controls (only for new items being added to the canvas)
         if (GetEditMode() == EditMode::Insert)
             {
-            auto* gridSizeSizer = new wxFlexGridSizer(4, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* gridSizeSizer =
+                new wxFlexGridSizer(4, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                               wxSizerFlags::GetDefaultBorder() });
             gridSizeSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Rows:")),
                                wxSizerFlags{}.CenterVertical());
             m_rowsSpin = new wxSpinCtrl(pagePage, wxID_ANY);
@@ -351,7 +353,8 @@ namespace Wisteria::UI
             columnsSizer->Add(rightColumnSizer, wxSizerFlags{}.Expand().Border(wxLEFT));
 
             // item placement properties
-            auto* propsSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* propsSizer = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                              wxSizerFlags::GetDefaultBorder() });
 
             // horizontal page alignment
             propsSizer->Add(new wxStaticText(pagePage, wxID_ANY, _(L"Horizontal alignment:")),
@@ -393,7 +396,8 @@ namespace Wisteria::UI
 
             // canvas margins (top, right, bottom, left)
             auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas margins"));
-            auto* marginGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
+            auto* marginGrid = new wxFlexGridSizer(
+                4, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
 
             const auto addMarginSpin = [&](const wxString& label, int* value)
             {
@@ -414,7 +418,8 @@ namespace Wisteria::UI
 
             // padding (top, right, bottom, left)
             auto* paddingBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Padding"));
-            auto* paddingGrid = new wxFlexGridSizer(4, wxSize{ FromDIP(4), FromDIP(4) });
+            auto* paddingGrid = new wxFlexGridSizer(
+                4, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
 
             const auto addPaddingSpin = [&](const wxString& label, int* value)
             {
@@ -447,7 +452,8 @@ namespace Wisteria::UI
 
             // outline pen
             auto* outlineBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Outline"));
-            auto* outlineGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* outlineGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                               wxSizerFlags::GetDefaultBorder() });
             outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
                              wxSizerFlags{}.CenterVertical());
             m_outlineColorPicker =

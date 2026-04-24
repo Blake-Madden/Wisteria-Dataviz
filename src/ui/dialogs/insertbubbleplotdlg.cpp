@@ -44,7 +44,8 @@ namespace Wisteria::UI
         GetSideBarBook()->AddPage(optionsPage, _(L"Bubble Plot"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -118,7 +119,8 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_showConfidenceBands)),
                           wxSizerFlags{}.Border());
 
-        auto* confidenceSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* confidenceSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         confidenceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Confidence level:")),
                              wxSizerFlags{}.CenterVertical());
             {
@@ -133,7 +135,8 @@ namespace Wisteria::UI
         optionsSizer->Add(confidenceSizer, wxSizerFlags{}.Border());
 
         // bubble sizing
-        auto* bubbleSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* bubbleSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         bubbleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Min bubble radius:")),
                          wxSizerFlags{}.CenterVertical());
@@ -158,7 +161,8 @@ namespace Wisteria::UI
         optionsSizer->Add(bubbleSizer, wxSizerFlags{}.Border());
 
         // legend placement
-        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));

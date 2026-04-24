@@ -44,7 +44,8 @@ namespace Wisteria::UI
         commonAxisPage->SetSizer(mainSizer);
 
         // axis type
-        auto* typeSizer = new wxFlexGridSizer(2, FromDIP(4), FromDIP(4));
+        auto* typeSizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                              wxSizerFlags::GetDefaultBorder());
         typeSizer->AddGrowableCol(1, 1);
 
         typeSizer->Add(new wxStaticText(commonAxisPage, wxID_ANY, _(L"Axis type:")),

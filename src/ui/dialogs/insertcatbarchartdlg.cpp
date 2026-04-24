@@ -53,7 +53,8 @@ namespace Wisteria::UI
         auto* leftSizer = new wxBoxSizer(wxVERTICAL);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -112,7 +113,8 @@ namespace Wisteria::UI
         leftSizer->Add(varsBox, wxSizerFlags{}.Border());
 
         // bar orientation
-        auto* orientSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* orientSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         orientSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Orientation:")),
                          wxSizerFlags{}.CenterVertical());
         wxArrayString orientations;
@@ -124,7 +126,8 @@ namespace Wisteria::UI
         leftSizer->Add(orientSizer, wxSizerFlags{}.Border());
 
         // bar label display
-        auto* labelDispSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* labelDispSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         labelDispSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar labels:")),
                             wxSizerFlags{}.CenterVertical());
         wxArrayString labelDisplays;
@@ -142,7 +145,8 @@ namespace Wisteria::UI
         leftSizer->Add(labelDispSizer, wxSizerFlags{}.Border());
 
         // box effect
-        auto* effectSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* effectSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         effectSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar effect:")),
                          wxSizerFlags{}.CenterVertical());
         wxArrayString boxEffects;
@@ -164,7 +168,8 @@ namespace Wisteria::UI
         leftSizer->Add(effectSizer, wxSizerFlags{}.Border());
 
         // stipple shape button and label (enabled only for StippleShape effect)
-        auto* shapeBtnSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* shapeBtnSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         m_shapeButton = new wxButton(optionsPage, wxID_ANY, _(L"Shape..."));
         m_shapeButton->Enable(false);
         shapeBtnSizer->Add(m_shapeButton, wxSizerFlags{}.CenterVertical());
@@ -175,7 +180,8 @@ namespace Wisteria::UI
         leftSizer->Add(shapeBtnSizer, wxSizerFlags{}.Border(wxLEFT));
 
         // images button and label (enabled only for image-based effects)
-        auto* imgBtnSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* imgBtnSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         m_imagesButton = new wxButton(optionsPage, wxID_ANY, _(L"Images..."));
         m_imagesButton->Enable(false);
         imgBtnSizer->Add(m_imagesButton, wxSizerFlags{}.CenterVertical());
@@ -217,7 +223,8 @@ namespace Wisteria::UI
         leftSizer->Add(shapesBox, wxSizerFlags{}.Expand().Border());
 
         // legend placement
-        auto* legendGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         m_legendLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:"));
         m_legendLabel->Enable(false);
         legendGrid->Add(m_legendLabel, wxSizerFlags{}.CenterVertical());
@@ -267,7 +274,8 @@ namespace Wisteria::UI
         // showcasing
         auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
 
-        auto* ghostOpacitySizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* ghostOpacitySizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         ghostOpacitySizer->Add(
             new wxStaticText(ghostBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
             wxSizerFlags{}.CenterVertical());
@@ -415,7 +423,8 @@ namespace Wisteria::UI
                 wxDialog dlg(this, wxID_ANY, _(L"Add Bar Group"), wxDefaultPosition, wxDefaultSize,
                              wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
                 auto* sizer = new wxBoxSizer(wxVERTICAL);
-                auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* grid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                            wxSizerFlags::GetDefaultBorder() });
                 grid->AddGrowableCol(1, 1);
 
                 grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start bar:")),
@@ -499,7 +508,8 @@ namespace Wisteria::UI
                 wxDialog dlg(this, wxID_ANY, _(L"Edit Bar Group"), wxDefaultPosition, wxDefaultSize,
                              wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
                 auto* sizer = new wxBoxSizer(wxVERTICAL);
-                auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+                auto* grid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                            wxSizerFlags::GetDefaultBorder() });
                 grid->AddGrowableCol(1, 1);
 
                 grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start bar:")),
@@ -595,7 +605,8 @@ namespace Wisteria::UI
             wxDialog dlg(this, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
                          wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
             auto* sizer = new wxBoxSizer(wxVERTICAL);
-            auto* grid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+            auto* grid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                        wxSizerFlags::GetDefaultBorder() });
             grid->AddGrowableCol(1, 1);
 
             grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Bar:")),

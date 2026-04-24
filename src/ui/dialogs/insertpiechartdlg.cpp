@@ -39,7 +39,8 @@ namespace Wisteria::UI
         CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
-        auto* optionsSizer = new wxGridBagSizer(FromDIP(4), FromDIP(8));
+        auto* optionsSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
+                                                wxSizerFlags::GetDefaultBorder() * 2);
         optionsPage->SetSizer(optionsSizer);
         GetSideBarBook()->AddPage(optionsPage, _(L"Pie Chart"), ID_OPTIONS_SECTION, true);
 
@@ -52,7 +53,8 @@ namespace Wisteria::UI
         optionsSizer->AddGrowableRow(0, 1);
 
         // dataset selector
-        auto* datasetSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* datasetSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
@@ -111,7 +113,8 @@ namespace Wisteria::UI
         leftColumnSizer->Add(varsBox, wxSizerFlags{}.Border().Expand());
 
         // pie style
-        auto* styleSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* styleSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         styleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Style:")),
                         wxSizerFlags{}.CenterVertical());
             {
@@ -134,7 +137,8 @@ namespace Wisteria::UI
         // labels area
         auto* labelsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Labels"));
 
-        auto* labelGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* labelGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         // outer midpoint labels
         labelGrid->Add(new wxStaticText(labelsBox->GetStaticBox(), wxID_ANY, _(L"Outer midpoint:")),
@@ -226,7 +230,8 @@ namespace Wisteria::UI
             wxDefaultSize, 0, wxGenericValidator(&m_includeDonutHole));
         donutBox->Add(donutCheckBox, wxSizerFlags{}.Border());
 
-        auto* donutGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* donutGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
         m_donutColorLabel =
             new wxStaticText(donutBox->GetStaticBox(), wxID_ANY, _(L"Background color:"));
@@ -263,7 +268,8 @@ namespace Wisteria::UI
         // showcasing
         auto* showcaseBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
 
-        auto* showcaseGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* showcaseGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         showcaseGrid->Add(
             new wxStaticText(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
             wxSizerFlags{}.CenterVertical());
@@ -400,7 +406,8 @@ namespace Wisteria::UI
         rightColumnSizer->Add(donutBox, wxSizerFlags{}.Border().Expand());
 
         // legend placement (at the bottom of the left column)
-        auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        auto* legendSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
                          wxSizerFlags{}.CenterVertical());
         legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
