@@ -4246,10 +4246,6 @@ namespace Wisteria
                                 shapeLabel->GetFontColor() :
                                 Colors::ColorBrewer::GetColor(Colors::Color::Black))),
             loadedShape.value(), sz, fillPercent);
-        // center by default, but allow LoadItems (below) to override that
-        // if client asked for something else
-        sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-        sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
         LoadItem(shapeNode, *sh);
 
@@ -4413,10 +4409,6 @@ namespace Wisteria
                                 shapeLabel->GetFontColor() :
                                 Colors::ColorBrewer::GetColor(Colors::Color::Black))),
             loadedShape.value(), sz);
-        // center by default, but allow LoadItems (below) to override that
-        // if client asked for something else
-        sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-        sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
         LoadItem(shapeNode, *sh);
 
@@ -5832,11 +5824,6 @@ namespace Wisteria
                     image->SetPropertyTemplate(L"size.height", std::to_wstring(sz.y));
                     }
                 }
-
-            // center by default, but allow LoadItems (below) to override that
-            // if client asked for something else
-            image->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-            image->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
             const auto foundResize = ReportEnumConvert::ConvertResizeMethod(
                 imageNode->GetProperty(L"resize-method")->AsString());
