@@ -524,7 +524,8 @@ namespace Wisteria::GraphItems
         void DrawTractorTire(wxRect rect, wxGraphicsContext* gc, bool isRear) const;
 
         static void FillCarvedFeature(wxGraphicsContext* gc, const wxGraphicsPath& path,
-                                      const wxRect2DDouble& bounds);
+                                      const wxRect2DDouble& bounds,
+                                      wxPolygonFillMode fillMode = wxWINDING_RULE);
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
         ///     sets the brush, then runs the rendering lambda again.
         void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const;

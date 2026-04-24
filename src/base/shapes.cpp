@@ -393,7 +393,8 @@ namespace Wisteria::GraphItems
 
     //---------------------------------------------------
     void ShapeRenderer::FillCarvedFeature(wxGraphicsContext* gc, const wxGraphicsPath& path,
-                                          const wxRect2DDouble& bounds)
+                                          const wxRect2DDouble& bounds,
+                                          const wxPolygonFillMode fillMode /*= wxWINDING_RULE*/)
         {
         // Dimmer, narrower glow
         const wxColour centerCol{ 235, 200, 100, 255 }; // muted candlelight
@@ -408,7 +409,7 @@ namespace Wisteria::GraphItems
 
         gc->SetBrush(brush);
         gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->FillPath(path);
+        gc->FillPath(path, fillMode);
         }
 
     //---------------------------------------------------
@@ -662,7 +663,8 @@ namespace Wisteria::GraphItems
         nose.AddLineToPoint(cx - (noseW / 2.0), noseY + (noseH / 2.0));
         nose.AddLineToPoint(cx + (noseW / 2.0), noseY + (noseH / 2.0));
         nose.CloseSubpath();
-        gc->FillPath(nose);
+        FillCarvedFeature(
+            gc, nose, wxRect2DDouble(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight()));
 
         //--------------------------------------------------
         // Mouth
@@ -677,45 +679,29 @@ namespace Wisteria::GraphItems
         mouth.AddQuadCurveToPoint(cx, mouthTop + (mouthH * 0.6), cx - (mouthW / 2.0), mouthTop);
         mouth.CloseSubpath();
 
+        FillCarvedFeature(
+            gc, mouth, wxRect2DDouble(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight()));
+
         //--------------------------------------------------
-        // Teeth (clip out)
+        // Teeth (erase from mouth by redrawing pumpkin)
         //--------------------------------------------------
         const double toothW = mouthW * 0.08;
         const double toothH = mouthH * math_constants::quarter;
-
-        // upper teeth
         const double upperOffset = mouthW * math_constants::fifth;
 
-        const wxRect topLeftTooth{ static_cast<int>(cx - upperOffset - (toothW / 2.0)),
-                                   static_cast<int>(mouthTop + (mouthH * math_constants::tenth)),
-                                   static_cast<int>(toothW), static_cast<int>(toothH) };
+        auto drawTooth = [&](const double x, const double y, const double w, const double h)
+        {
+            gc->PushState();
+            gc->Clip(x, y, w, h);
+            DrawPumpkin(rect, dc);
+            gc->PopState();
+        };
 
-        const wxRect topRightTooth{ static_cast<int>(cx + upperOffset - (toothW / 2.0)),
-                                    static_cast<int>(mouthTop + (mouthH * math_constants::tenth)),
-                                    static_cast<int>(toothW), static_cast<int>(toothH) };
-
-        // bottom tooth
-        const wxRect bottomTooth{ static_cast<int>(cx - (toothW / 2.0)),
-                                  static_cast<int>(mouthTop + (mouthH * 0.40)),
-                                  static_cast<int>(toothW), static_cast<int>(toothH * 1.6) };
-
-        double clipX{ 0.0 }, clipY{ 0.0 }, clipW{ 0.0 }, clipH{ 0.0 };
-        gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
-        const wxRect originalClipRect{ static_cast<int>(clipX), static_cast<int>(clipY),
-                                       static_cast<int>(clipW), static_cast<int>(clipH) };
-
-        wxRegion mouthClip{ rect };
-        mouthClip.Subtract(wxRegion(topLeftTooth));
-        mouthClip.Subtract(wxRegion(topRightTooth));
-        mouthClip.Subtract(wxRegion(bottomTooth));
-
-        gc->Clip(mouthClip);
-        gc->FillPath(mouth);
-        gc->ResetClip();
-        if (!originalClipRect.IsEmpty())
-            {
-            gc->Clip(originalClipRect);
-            }
+        drawTooth(cx - upperOffset - (toothW / 2.0), mouthTop + (mouthH * math_constants::tenth),
+                  toothW, toothH);
+        drawTooth(cx + upperOffset - (toothW / 2.0), mouthTop + (mouthH * math_constants::tenth),
+                  toothW, toothH);
+        drawTooth(cx - (toothW / 2.0), mouthTop + (mouthH * 0.40), toothW, toothH * 1.6);
         }
 
     //---------------------------------------------------
