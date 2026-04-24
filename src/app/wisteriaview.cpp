@@ -2458,6 +2458,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -3174,6 +3175,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
         plot->SetShapeScheme(dlg.GetShapeScheme());
 
         const std::optional<wxString> groupCol =
@@ -3273,6 +3275,7 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
         plot->SetShapeScheme(dlg.GetShapeScheme());
         plot->SetMinBubbleRadius(dlg.GetMinBubbleRadius());
         plot->SetMaxBubbleRadius(dlg.GetMaxBubbleRadius());
@@ -3336,6 +3339,7 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
         dlg.ApplyPageOptions(*plot);
         plot->ShowRegressionLines(dlg.GetShowRegressionLines());
         plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
+        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
         plot->SetShapeScheme(dlg.GetShapeScheme());
         plot->SetMinBubbleRadius(dlg.GetMinBubbleRadius());
         plot->SetMaxBubbleRadius(dlg.GetMaxBubbleRadius());

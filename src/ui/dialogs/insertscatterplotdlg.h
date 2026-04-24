@@ -101,6 +101,13 @@ namespace Wisteria::UI
             return m_showConfidenceBands;
             }
 
+        /// @returns The confidence level.
+        [[nodiscard]]
+        double GetConfidenceLevel() const noexcept
+            {
+            return m_confidenceLevel;
+            }
+
         /// @brief Populates all dialog controls from an existing scatter plot.
         /// @param plot The scatter plot to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& plot);
@@ -128,6 +135,7 @@ namespace Wisteria::UI
         // DDX data members
         bool m_showRegressionLines{ true };
         bool m_showConfidenceBands{ true };
+        double m_confidenceLevel{ 0.95 };
 
         wxString m_xVariable;
         wxString m_yVariable;

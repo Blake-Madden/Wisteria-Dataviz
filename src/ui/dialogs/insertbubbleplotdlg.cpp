@@ -118,6 +118,20 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_showConfidenceBands)),
                           wxSizerFlags{}.Border());
 
+        auto* confidenceSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        confidenceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Confidence level:")),
+                             wxSizerFlags{}.CenterVertical());
+            {
+            auto* spin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
+            spin->SetRange(0.5, 0.99);
+            spin->SetDigits(2);
+            spin->SetIncrement(0.01);
+            spin->SetValue(m_confidenceLevel);
+            spin->SetValidator(wxGenericValidator(&m_confidenceLevel));
+            confidenceSizer->Add(spin);
+            }
+        optionsSizer->Add(confidenceSizer, wxSizerFlags{}.Border());
+
         // bubble sizing
         auto* bubbleSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
 
@@ -374,6 +388,7 @@ namespace Wisteria::UI
         // bubble-specific options
         m_showRegressionLines = bubble->IsShowingRegressionLines();
         m_showConfidenceBands = bubble->IsShowingConfidenceBands();
+        m_confidenceLevel = bubble->GetConfidenceLevel();
         m_minBubbleRadius = static_cast<int>(bubble->GetMinBubbleRadius());
         m_maxBubbleRadius = static_cast<int>(bubble->GetMaxBubbleRadius());
 

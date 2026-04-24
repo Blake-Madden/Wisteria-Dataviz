@@ -111,6 +111,20 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_showConfidenceBands)),
                           wxSizerFlags{}.Border());
 
+        auto* confidenceSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
+        confidenceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Confidence level:")),
+                             wxSizerFlags{}.CenterVertical());
+            {
+            auto* spin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
+            spin->SetRange(0.5, 0.99);
+            spin->SetDigits(2);
+            spin->SetIncrement(0.01);
+            spin->SetValue(m_confidenceLevel);
+            spin->SetValidator(wxGenericValidator(&m_confidenceLevel));
+            confidenceSizer->Add(spin);
+            }
+        optionsSizer->Add(confidenceSizer, wxSizerFlags{}.Border());
+
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(2, wxSize{ FromDIP(8), FromDIP(4) });
         legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
@@ -328,6 +342,7 @@ namespace Wisteria::UI
         // scatter-specific options
         m_showRegressionLines = scatter->IsShowingRegressionLines();
         m_showConfidenceBands = scatter->IsShowingConfidenceBands();
+        m_confidenceLevel = scatter->GetConfidenceLevel();
 
         TransferDataToWindow();
         }

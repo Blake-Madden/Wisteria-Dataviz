@@ -108,6 +108,13 @@ namespace Wisteria::UI
             return m_showConfidenceBands;
             }
 
+        /// @returns The confidence level.
+        [[nodiscard]]
+        double GetConfidenceLevel() const noexcept
+            {
+            return m_confidenceLevel;
+            }
+
         /// @returns The minimum bubble radius (in DIPs).
         [[nodiscard]]
         int GetMinBubbleRadius() const noexcept
@@ -150,6 +157,7 @@ namespace Wisteria::UI
         // DDX data members
         bool m_showRegressionLines{ true };
         bool m_showConfidenceBands{ true };
+        double m_confidenceLevel{ 0.95 };
         int m_minBubbleRadius{ 4 };
         int m_maxBubbleRadius{ 30 };
 
