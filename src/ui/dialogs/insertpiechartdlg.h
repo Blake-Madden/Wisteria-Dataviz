@@ -216,6 +216,21 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
+        /// @returns The pie slice effect selection index (0 = solid, 1 = image).
+        [[nodiscard]]
+        int GetPieSliceEffect() const noexcept
+            {
+            return m_pieSliceEffect;
+            }
+
+        /// @returns The list of image paths used for the image scheme.
+        ///     Empty entries represent null images (the slice falls back to its brush).
+        [[nodiscard]]
+        const wxArrayString& GetImagePaths() const noexcept
+            {
+            return m_imagePaths;
+            }
+
         /// @brief Populates all dialog controls from an existing pie chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -227,8 +242,11 @@ namespace Wisteria::UI
         void OnDatasetChanged();
         void OnEditDonutHoleLabel();
         void OnShowcaseModeChanged();
+        void OnPieSliceEffectChanged();
         void UpdateVariableLabels();
         void RefreshShowcaseListBox();
+        void RefreshImageListBox();
+        void SyncImagePathsFromListBox();
         wxArrayString GetOuterSliceChoices() const;
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
@@ -252,6 +270,7 @@ namespace Wisteria::UI
         wxCheckBox* m_showcaseByGroupCheck{ nullptr };
         wxCheckBox* m_showcaseShowOuterMidPtsCheck{ nullptr };
         wxEditableListBox* m_showcaseListBox{ nullptr };
+        wxEditableListBox* m_imageListBox{ nullptr };
 
         // DDX data members
         bool m_includeDonutHole{ false };
@@ -269,6 +288,7 @@ namespace Wisteria::UI
         bool m_showcaseShowOuterPieMidPointLabels{ false };
         int m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         int m_donutHoleProportion{ 50 }; // stored as 0-100, divided by 100 for API
+        int m_pieSliceEffect{ 0 };       // 0 = solid, 1 = image
 
         wxString m_groupVariable;
         wxString m_weightVariable;
@@ -276,6 +296,7 @@ namespace Wisteria::UI
 
         std::vector<wxString> m_datasetNames;
         std::vector<wxString> m_showcaseSlices;
+        wxArrayString m_imagePaths;
 
         Wisteria::GraphItems::Label m_donutHoleLabel;
         wxColour m_donutHoleColor{ *wxWHITE };

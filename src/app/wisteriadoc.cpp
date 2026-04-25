@@ -3727,6 +3727,44 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 node->Add(L"pie-slice-effect", seStr.value());
                 }
             }
+
+        // serialize image paths when the slice effect uses images;
+        // blank entries are preserved so the slice falls back to the brush on reload
+        if (pieChart->GetPieSliceEffect() == Wisteria::PieSliceEffect::Image)
+            {
+            const auto imgPaths = pieChart->GetPropertyTemplate(L"image-paths");
+            if (!imgPaths.empty())
+                {
+                wxArrayString paths;
+                wxStringTokenizer tokenizer(imgPaths, L"\t", wxTOKEN_RET_EMPTY_ALL);
+                while (tokenizer.HasMoreTokens())
+                    {
+                    paths.Add(tokenizer.GetNextToken());
+                    }
+
+                wxString arr = L"[";
+                for (size_t i = 0; i < paths.GetCount(); ++i)
+                    {
+                    if (i > 0)
+                        {
+                        arr += L", ";
+                        }
+                    if (paths[i].empty())
+                        {
+                        // null image — encoded as an empty path so ReportBuilder
+                        // produces an unusable bundle and the brush is used
+                        arr += L"{\"path\": \"\"}";
+                        }
+                    else
+                        {
+                        arr +=
+                            L"{\"path\": \"" + EscapeJsonStr(MakeRelativePath(paths[i])) + L"\"}";
+                        }
+                    }
+                arr += L"]";
+                node->Add(L"image-scheme", wxSimpleJSON::Create(arr));
+                }
+            }
         if (pieChart->GetPieStyle() != Wisteria::PieStyle::None)
             {
             const auto psStr =

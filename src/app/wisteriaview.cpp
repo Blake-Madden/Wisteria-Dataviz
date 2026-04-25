@@ -6494,6 +6494,12 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
+    auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
+    if (doc == nullptr)
+        {
+        wxASSERT_MSG(doc, L"Invalid document connected to view?!");
+        return;
+        }
 
     Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame);
     SetDialogIcon(dlg, L"piechart.svg");
@@ -6534,6 +6540,47 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         plot->ShowOuterPieLabels(dlg.GetShowOuterPieLabels());
         plot->ShowInnerPieLabels(dlg.GetShowInnerPieLabels());
         plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
+
+        // pie slice effect and image scheme
+        plot->SetPieSliceEffect((dlg.GetPieSliceEffect() == 1) ? Wisteria::PieSliceEffect::Image :
+                                                                 Wisteria::PieSliceEffect::Solid);
+        if (dlg.GetPieSliceEffect() == 1 && !dlg.GetImagePaths().empty())
+            {
+            std::vector<wxBitmapBundle> images;
+            images.reserve(dlg.GetImagePaths().GetCount());
+            for (const auto& path : dlg.GetImagePaths())
+                {
+                if (path.empty())
+                    {
+                    // blank entry — null image, slice falls back to its brush
+                    images.emplace_back();
+                    continue;
+                    }
+                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                else
+                    {
+                    images.emplace_back();
+                    }
+                }
+            plot->SetImageScheme(
+                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
+
+            // cache the paths (tab-separated) for round-tripping; preserve blanks
+            wxString paths;
+            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
+                {
+                if (idx > 0)
+                    {
+                    paths += L"\t";
+                    }
+                paths += dlg.GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
 
             // showcase slices
             {
@@ -6603,6 +6650,13 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
 void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                                 const size_t graphRow, const size_t graphCol) const
     {
+    auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
+    if (doc == nullptr)
+        {
+        wxASSERT_MSG(doc, L"Invalid document connected to view?!");
+        return;
+        }
+
     Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Pie Chart"),
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
@@ -6649,6 +6703,45 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
         plot->ShowOuterPieLabels(dlg.GetShowOuterPieLabels());
         plot->ShowInnerPieLabels(dlg.GetShowInnerPieLabels());
         plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
+
+        // pie slice effect and image scheme
+        plot->SetPieSliceEffect((dlg.GetPieSliceEffect() == 1) ? Wisteria::PieSliceEffect::Image :
+                                                                 Wisteria::PieSliceEffect::Solid);
+        if (dlg.GetPieSliceEffect() == 1 && !dlg.GetImagePaths().empty())
+            {
+            std::vector<wxBitmapBundle> images;
+            images.reserve(dlg.GetImagePaths().GetCount());
+            for (const auto& path : dlg.GetImagePaths())
+                {
+                if (path.empty())
+                    {
+                    images.emplace_back();
+                    continue;
+                    }
+                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                else
+                    {
+                    images.emplace_back();
+                    }
+                }
+            plot->SetImageScheme(
+                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
+
+            wxString paths;
+            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
+                {
+                if (idx > 0)
+                    {
+                    paths += L"\t";
+                    }
+                paths += dlg.GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
 
             // showcase slices
             {

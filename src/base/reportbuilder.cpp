@@ -6221,11 +6221,14 @@ namespace Wisteria
             images.reserve(imgNodes.size());
             wxString pathsJoined;
             wxString effectStr;
-            for (const auto& imgNode : imgNodes)
+            for (size_t imgIdx = 0; imgIdx < imgNodes.size(); ++imgIdx)
                 {
+                const auto& imgNode = imgNodes[imgIdx];
                 images.emplace_back(LoadImageFile(imgNode));
-                // cache file paths for round-tripping
-                if (!pathsJoined.empty())
+                // cache file paths for round-tripping; the separator is keyed off
+                // the index so leading/all-blank entries survive (an empty entry
+                // means "use the brush" for graphs that support null images)
+                if (imgIdx > 0)
                     {
                     pathsJoined += L"\t";
                     }
@@ -6235,11 +6238,7 @@ namespace Wisteria
                     }
                 else
                     {
-                    const auto nodePath = imgNode->GetProperty(L"path")->AsString();
-                    if (!nodePath.empty())
-                        {
-                        pathsJoined += nodePath;
-                        }
+                    pathsJoined += imgNode->GetProperty(L"path")->AsString();
                     if (effectStr.empty())
                         {
                         effectStr = imgNode->GetProperty(L"effect")->AsString();

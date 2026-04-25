@@ -7,12 +7,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertpiechartdlg.h"
+#include "../../base/image.h"
 #include "../../graphs/piechart.h"
 #include "insertlabeldlg.h"
 #include "variableselectdlg.h"
 #include <wx/clrpicker.h>
+#include <wx/filename.h>
 #include <wx/gbsizer.h>
 #include <wx/spinctrl.h>
+#include <wx/tokenzr.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -402,7 +405,81 @@ namespace Wisteria::UI
         m_showcaseModeChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
                                    { OnShowcaseModeChanged(); });
 
+        // slice images / pie slice effect
+        auto* sliceImagesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Slice Images"));
+
+        auto* effectGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        effectGrid->Add(new wxStaticText(sliceImagesBox->GetStaticBox(), wxID_ANY, _(L"Effect:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* effectChoice =
+            new wxChoice(sliceImagesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                         0, nullptr, 0, wxGenericValidator(&m_pieSliceEffect));
+        effectChoice->Append(_(L"Solid"));
+        effectChoice->Append(_(L"Image"));
+        effectGrid->Add(effectChoice);
+        sliceImagesBox->Add(effectGrid, wxSizerFlags{}.Border());
+
+        m_imageListBox = new wxEditableListBox(
+            sliceImagesBox->GetStaticBox(), wxID_ANY, _(L"Images (blank rows use the brush):"),
+            wxDefaultPosition, wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT);
+        sliceImagesBox->Add(m_imageListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New to open a multi-select file dialog
+        m_imageListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]] wxCommandEvent&)
+            {
+                wxFileDialog fileDlg(this, _(L"Select images"), wxString{}, wxString{},
+                                     Wisteria::GraphItems::Image::GetImageFileFilter(),
+                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+                if (fileDlg.ShowModal() != wxID_OK)
+                    {
+                    // user cancelled — add a blank row representing a null image
+                    SyncImagePathsFromListBox();
+                    m_imagePaths.Add(wxString{});
+                    RefreshImageListBox();
+                    return;
+                    }
+                wxArrayString newPaths;
+                fileDlg.GetPaths(newPaths);
+                SyncImagePathsFromListBox();
+                for (const auto& path : newPaths)
+                    {
+                    m_imagePaths.Add(path);
+                    }
+                RefreshImageListBox();
+            });
+
+        // override Edit to browse for a replacement file
+        m_imageListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]] wxCommandEvent&)
+            {
+                auto* listCtrl = m_imageListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0)
+                    {
+                    return;
+                    }
+                const auto currentPath = listCtrl->GetItemText(sel);
+                wxFileDialog fileDlg(this, _(L"Select an image"), wxString{}, currentPath,
+                                     Wisteria::GraphItems::Image::GetImageFileFilter(),
+                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+                if (fileDlg.ShowModal() != wxID_OK)
+                    {
+                    return;
+                    }
+                listCtrl->SetItemText(sel, fileDlg.GetPath());
+                SyncImagePathsFromListBox();
+            });
+
+        effectChoice->Bind(wxEVT_CHOICE,
+                           [this]([[maybe_unused]] wxCommandEvent&) { OnPieSliceEffectChanged(); });
+
         rightColumnSizer->Add(showcaseBox, wxSizerFlags{ 1 }.Expand().Border());
+        rightColumnSizer->Add(sliceImagesBox, wxSizerFlags{}.Expand().Border());
         rightColumnSizer->Add(donutBox, wxSizerFlags{}.Border().Expand());
 
         // legend placement (at the bottom of the left column)
@@ -473,6 +550,40 @@ namespace Wisteria::UI
                                      { OnEditDonutHoleLabel(); });
 
         OnShowcaseModeChanged();
+        OnPieSliceEffectChanged();
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::OnPieSliceEffectChanged()
+        {
+        TransferDataFromWindow();
+        if (m_imageListBox != nullptr)
+            {
+            m_imageListBox->Enable(m_pieSliceEffect == 1);
+            }
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::RefreshImageListBox()
+        {
+        if (m_imageListBox == nullptr)
+            {
+            return;
+            }
+        m_imageListBox->SetStrings(m_imagePaths);
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::SyncImagePathsFromListBox()
+        {
+        if (m_imageListBox == nullptr)
+            {
+            return;
+            }
+        // wxEditableListBox::GetStrings already excludes its trailing
+        // placeholder row, so blank entries returned here are user-intended
+        // null images (the pie chart falls back to its brush for them).
+        m_imageListBox->GetStrings(m_imagePaths);
         }
 
     //-------------------------------------------
@@ -695,6 +806,9 @@ namespace Wisteria::UI
     //-------------------------------------------
     bool InsertPieChartDlg::Validate()
         {
+        // capture any inline edits in the image list before reading m_imagePaths
+        SyncImagePathsFromListBox();
+
         if (GetSelectedDataset() == nullptr)
             {
             wxMessageBox(_(L"Please select a dataset."), _(L"No Dataset"), wxOK | wxICON_WARNING,
@@ -802,6 +916,23 @@ namespace Wisteria::UI
         m_showcaseShowOuterPieMidPointLabels = pieChart->IsShowcaseShowingOuterPieMidPointLabels();
         m_ghostOpacity = static_cast<int>(pieChart->GetGhostOpacity());
 
+        m_pieSliceEffect =
+            (pieChart->GetPieSliceEffect() == Wisteria::PieSliceEffect::Image) ? 1 : 0;
+
+        // restore image paths from the property template (tab-separated);
+        // explicit blank entries are preserved as null images
+        m_imagePaths.Clear();
+        const auto savedPaths = pieChart->GetPropertyTemplate(L"image-paths");
+        if (!savedPaths.empty())
+            {
+            wxStringTokenizer tokenizer(savedPaths, L"\t", wxTOKEN_RET_EMPTY_ALL);
+            while (tokenizer.HasMoreTokens())
+                {
+                m_imagePaths.Add(tokenizer.GetNextToken());
+                }
+            }
+        RefreshImageListBox();
+
         m_showcaseSlices.clear();
         if (pieChart->GetShowcaseMode() == Wisteria::Graphs::PieChart::ShowcaseMode::ExplicitList)
             {
@@ -841,5 +972,6 @@ namespace Wisteria::UI
             m_donutProportionPercentLabel->Enable(m_includeDonutHole);
             }
         OnShowcaseModeChanged();
+        OnPieSliceEffectChanged();
         }
     } // namespace Wisteria::UI
