@@ -2073,17 +2073,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         if (item.IsKindOf(wxCLASSINFO(GraphItems::Image)) &&
             item.IsFittingCanvasRowHeightToContent())
             {
-            // Measure against the original image dimensions, not the current bounding
-            // box. A previous layout pass (e.g., when the canvas was displayed at a
-            // narrower width in the UI) may have shrunk the image's internal frame
-            // size to fit that earlier canvas.
-            const auto& imgItem = static_cast<const GraphItems::Image&>(item);
-            const auto naturalSize = imgItem.GetOriginalImage().GetSize();
-            bBoxHeight = naturalSize.GetHeight();
             const auto canvasWidth = GetCanvasRect(gdc).GetWidth();
-            if (naturalSize.GetWidth() > canvasWidth)
+            if (bBox.GetWidth() > canvasWidth)
                 {
-                bBoxHeight *= (safe_divide<double>(canvasWidth, naturalSize.GetWidth()));
+                bBoxHeight *= (safe_divide<double>(canvasWidth, bBox.GetWidth()));
                 }
             }
         return std::min(1.0,
