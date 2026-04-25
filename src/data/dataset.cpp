@@ -1920,6 +1920,11 @@ namespace Wisteria::Data
 
         // set the names for the columns
         SetColumnNames(info);
+
+        if (info.m_columnNamesSort)
+            {
+            SortColumnNames();
+            }
         }
 
     //----------------------------------------------

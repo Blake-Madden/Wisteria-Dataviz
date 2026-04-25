@@ -133,6 +133,7 @@ namespace Wisteria::UI
         int m_maxDiscrete{ 7 };
         bool m_leadingZeros{ false };
         bool m_yearsAsText{ false };
+        bool m_columnNamesSort{ false };
 
         // preview data
         std::shared_ptr<Data::Dataset> m_previewDataset;

@@ -314,6 +314,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         AddDatasetToProject(initialDataset, initialDatasetName, initialColumnInfo,
                             { initialFilePath, wxString{}, initialWorksheet, initialFullColumnInfo,
                               initialImportInfo });
+        m_reportBuilder.GetDatasetTransformOptions()[initialDatasetName].m_columnNamesSort =
+            initialImportInfo.GetColumnNamesSort();
         AddPageToProject(1, 1, wxString{});
         }
 
@@ -1061,6 +1063,8 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
                 filePath, foundDsImportOptions->second.m_importer, worksheet, fullColumnPreview,
                 importInfo
             };
+            m_reportBuilder.GetDatasetTransformOptions()[selectedDatasetName].m_columnNamesSort =
+                importInfo.GetColumnNamesSort();
 
             // replace the existing grid contents
             if (auto* window = m_workWindows.FindWindowById(subItem.value());
@@ -1537,6 +1541,8 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
 
         AddDatasetToProject(dataset, dsName, columnPreview,
                             { filePath, wxString{}, worksheet, fullColumnPreview, importInfo });
+        m_reportBuilder.GetDatasetTransformOptions()[dsName].m_columnNamesSort =
+            importInfo.GetColumnNamesSort();
         }
     catch (const std::exception& exc)
         {

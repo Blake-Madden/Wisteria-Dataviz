@@ -52,7 +52,8 @@ namespace Wisteria::UI
           m_skipRows(static_cast<int>(importInfo.GetSkipRows())),
           m_maxDiscrete(static_cast<int>(importInfo.GetMaxDiscreteValue())),
           m_leadingZeros(importInfo.GetTreatLeadingZerosAsText()),
-          m_yearsAsText(importInfo.GetTreatYearsAsText()), m_columnInfo(columnInfo)
+          m_yearsAsText(importInfo.GetTreatYearsAsText()),
+          m_columnNamesSort(importInfo.GetColumnNamesSort()), m_columnInfo(columnInfo)
         {
         // build the MD values string from the codes
         if (importInfo.GetMDCodes().has_value())
@@ -192,6 +193,12 @@ namespace Wisteria::UI
         optionsSizer->Add(yearsAsTextCheck, wxSizerFlags{}.CenterVertical());
         optionsSizer->AddStretchSpacer();
 
+        auto* sortColumnsCheck =
+            new wxCheckBox(this, wxID_ANY, _(L"Sort column names (grouped by type)"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_columnNamesSort });
+        optionsSizer->Add(sortColumnsCheck, wxSizerFlags{}.CenterVertical());
+        optionsSizer->AddStretchSpacer();
+
         // MD codes
         optionsSizer->Add(
             new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):")),
@@ -276,6 +283,7 @@ namespace Wisteria::UI
         maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
         leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
+        sortColumnsCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_idColumnChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
         mdValuesText->Bind(wxEVT_TEXT, &DatasetImportDlg::OnOptionChanged, this);
         m_previewGrid->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, &DatasetImportDlg::OnColumnHeaderClick,
@@ -305,6 +313,7 @@ namespace Wisteria::UI
             previewInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
             previewInfo.TreatLeadingZerosAsText(m_leadingZeros);
             previewInfo.TreatYearsAsText(m_yearsAsText);
+            previewInfo.ColumnNamesSort(m_columnNamesSort);
             if (m_mdValues.empty())
                 {
                 previewInfo.MDCodes(std::nullopt);
@@ -346,6 +355,57 @@ namespace Wisteria::UI
                     // for non-user-overridden types, let the fresh
                     // deduction win (e.g., when LeadingZeros changes)
                     }
+                }
+
+            if (m_columnNamesSort)
+                {
+                const auto typeRank = [](const Data::Dataset::ColumnImportType type)
+                {
+                    switch (type)
+                        {
+                    case Data::Dataset::ColumnImportType::String:
+                        [[fallthrough]];
+                    case Data::Dataset::ColumnImportType::DichotomousString:
+                        [[fallthrough]];
+                    case Data::Dataset::ColumnImportType::Discrete:
+                        [[fallthrough]];
+                    case Data::Dataset::ColumnImportType::DichotomousDiscrete:
+                        return 0;
+                    case Data::Dataset::ColumnImportType::Date:
+                        return 1;
+                    case Data::Dataset::ColumnImportType::Numeric:
+                        return 2;
+                    default:
+                        return 3;
+                        }
+                };
+                std::ranges::sort(m_columnInfo,
+                                  [&](const auto& lhv, const auto& rhv)
+                                  {
+                                      // ID column always comes first
+                                      const bool lhvIsId =
+                                          (m_idColumnChoice->GetSelection() > 0 &&
+                                           m_idColumnChoice->GetStringSelection() == lhv.m_name);
+                                      const bool rhvIsId =
+                                          (m_idColumnChoice->GetSelection() > 0 &&
+                                           m_idColumnChoice->GetStringSelection() == rhv.m_name);
+                                      if (lhvIsId && !rhvIsId)
+                                          {
+                                          return true;
+                                          }
+                                      if (!lhvIsId && rhvIsId)
+                                          {
+                                          return false;
+                                          }
+
+                                      const auto lhvRank = typeRank(lhv.m_type);
+                                      const auto rhvRank = typeRank(rhv.m_type);
+                                      if (lhvRank != rhvRank)
+                                          {
+                                          return lhvRank < rhvRank;
+                                          }
+                                      return lhv.m_name.CmpNoCase(rhv.m_name) < 0;
+                                  });
                 }
 
             // update the ID column choice with discovered column names
@@ -411,6 +471,7 @@ namespace Wisteria::UI
         importInfo.SkipRows(static_cast<size_t>(m_skipRows));
         importInfo.TreatLeadingZerosAsText(m_leadingZeros);
         importInfo.TreatYearsAsText(m_yearsAsText);
+        importInfo.ColumnNamesSort(m_columnNamesSort);
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
         if (m_mdValues.empty())
             {
@@ -713,6 +774,7 @@ namespace Wisteria::UI
         importInfo.SkipRows(static_cast<size_t>(m_skipRows));
         importInfo.TreatLeadingZerosAsText(m_leadingZeros);
         importInfo.TreatYearsAsText(m_yearsAsText);
+        importInfo.ColumnNamesSort(m_columnNamesSort);
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
         if (m_mdValues.empty())
             {

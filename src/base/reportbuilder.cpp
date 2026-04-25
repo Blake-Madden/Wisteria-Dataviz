@@ -2638,6 +2638,11 @@ namespace Wisteria
                             importDefines.TreatYearsAsText(
                                 datasetNode->GetProperty(L"treat-years-as-text")->AsBool());
                             }
+                        if (datasetNode->HasProperty(L"column-names-sort"))
+                            {
+                            importDefines.ColumnNamesSort(
+                                datasetNode->GetProperty(L"column-names-sort")->AsBool());
+                            }
                         if (datasetNode->HasProperty(L"max-discrete-value"))
                             {
                             importDefines.MaxDiscreteValue(

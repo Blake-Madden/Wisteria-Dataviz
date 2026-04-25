@@ -934,6 +934,15 @@ namespace Wisteria::Data
             return *this;
             }
 
+        /** @brief Sets whether column names should be sorted alphabetically after importing.
+            @param sort @c true to sort column names.
+            @returns A self reference.*/
+        ImportInfo& ColumnNamesSort(const bool sort)
+            {
+            m_columnNamesSort = sort;
+            return *this;
+            }
+
         /** @brief Set the maximum value that can be seen as discrete when deducing between
                 continuous and categorical data. If an integer is larger than this value
                 in a column, then it will classify the column as continuous.
@@ -1078,6 +1087,13 @@ namespace Wisteria::Data
             return m_treatYearsAsText;
             }
 
+        /// @returns Whether column names should be sorted alphabetically after importing.
+        [[nodiscard]]
+        bool GetColumnNamesSort() const noexcept
+            {
+            return m_columnNamesSort;
+            }
+
         /// @returns The maximum discrete value threshold.
         [[nodiscard]]
         uint16_t GetMaxDiscreteValue() const noexcept
@@ -1098,6 +1114,7 @@ namespace Wisteria::Data
         size_t m_skipRows{ 0 };
         bool m_treatLeadingZerosAsText{ false };
         bool m_treatYearsAsText{ false };
+        bool m_columnNamesSort{ false };
         uint16_t m_maxDiscreteValue{ 7 };
         };
 
