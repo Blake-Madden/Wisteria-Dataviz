@@ -193,9 +193,9 @@ namespace Wisteria::UI
         optionsSizer->Add(yearsAsTextCheck, wxSizerFlags{}.CenterVertical());
         optionsSizer->AddStretchSpacer();
 
-        auto* sortColumnsCheck =
-            new wxCheckBox(this, wxID_ANY, _(L"Sort column names (grouped by type)"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator{ &m_columnNamesSort });
+        auto* sortColumnsCheck = new wxCheckBox(
+            this, wxID_ANY, _(L"Sort column names (grouped by type)"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator{ &m_columnNamesSort });
         optionsSizer->Add(sortColumnsCheck, wxSizerFlags{}.CenterVertical());
         optionsSizer->AddStretchSpacer();
 

@@ -288,10 +288,12 @@ namespace Wisteria::UI
                          nullptr, 0, wxGenericValidator(&m_showcaseMode));
         m_showcaseModeChoice->Append(_(L"None"));
         m_showcaseModeChoice->Append(_(L"Explicit list of outer slices"));
+        // quneiform-suppress-begin
         m_showcaseModeChoice->Append(_(L"Largest outer slice(s)"));
         m_showcaseModeChoice->Append(_(L"Smallest outer slice(s)"));
         m_showcaseModeChoice->Append(_(L"Largest inner slice(s)"));
         m_showcaseModeChoice->Append(_(L"Smallest inner slice(s)"));
+        // quneiform-suppress-end
         showcaseGrid->Add(m_showcaseModeChoice);
 
         showcaseGrid->Add(

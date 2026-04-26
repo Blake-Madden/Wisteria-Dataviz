@@ -5147,7 +5147,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         // showcase bars/lines/bins
         for (size_t i = 0; i < dlg.GetShowcaseBars().size(); ++i)
             {
-            plot->SetPropertyTemplate(wxString::Format(L"showcase-bars[%zu]", i),
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
                                       dlg.GetShowcaseBars()[i]);
             }
 
@@ -5385,7 +5385,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         // showcase bars/lines/bins
         for (size_t i = 0; i < dlg.GetShowcaseBars().size(); ++i)
             {
-            plot->SetPropertyTemplate(wxString::Format(L"showcase-bars[%zu]", i),
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
                                       dlg.GetShowcaseBars()[i]);
             }
 
@@ -5859,7 +5859,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         // showcase bars/lines/bins
         for (size_t i = 0; i < dlg.GetShowcasedBars().size(); ++i)
             {
-            plot->SetPropertyTemplate(wxString::Format(L"showcase-bars[%zu]", i),
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
                                       dlg.GetShowcasedBars()[i]);
             }
 
@@ -5942,7 +5942,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
         // showcase bars/lines/bins
         for (size_t i = 0; i < dlg.GetShowcasedBars().size(); ++i)
             {
-            plot->SetPropertyTemplate(wxString::Format(L"showcase-bars[%zu]", i),
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
                                       dlg.GetShowcasedBars()[i]);
             }
 
