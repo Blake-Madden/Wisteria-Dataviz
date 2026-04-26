@@ -267,7 +267,6 @@ class WisteriaView final : public wxView
 
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;
-    wxSize m_lastSvgPageSize{ wxDefaultSize };
     WindowContainer m_workWindows;
 
     wxMenu m_saveMenu;

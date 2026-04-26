@@ -52,6 +52,56 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_appWindowHeight = (val > 0) ? static_cast<int>(val) : 700;
                 }
             }
+        else if (child->GetName() == L"SvgExport")
+            {
+            const auto boolAttr = [&child](const wxString& name, const bool fallback)
+            { return child->GetAttribute(name, fallback ? L"1" : L"0") == L"1"; };
+            long val{ 0 };
+            if (child
+                    ->GetAttribute(L"pageWidth",
+                                   std::to_wstring(m_svgExportOptions.m_pageSize.GetWidth()))
+                    .ToLong(&val) &&
+                val > 0)
+                {
+                m_svgExportOptions.m_pageSize.SetWidth(static_cast<int>(val));
+                }
+            if (child
+                    ->GetAttribute(L"pageHeight",
+                                   std::to_wstring(m_svgExportOptions.m_pageSize.GetHeight()))
+                    .ToLong(&val) &&
+                val > 0)
+                {
+                m_svgExportOptions.m_pageSize.SetHeight(static_cast<int>(val));
+                }
+            m_svgExportOptions.m_includeTransitions =
+                boolAttr(L"transitions", m_svgExportOptions.m_includeTransitions);
+            m_svgExportOptions.m_includeHighlighting =
+                boolAttr(L"highlighting", m_svgExportOptions.m_includeHighlighting);
+            m_svgExportOptions.m_includeLayoutOptions =
+                boolAttr(L"layoutOptions", m_svgExportOptions.m_includeLayoutOptions);
+            m_svgExportOptions.m_includeDarkModeToggle =
+                boolAttr(L"darkModeToggle", m_svgExportOptions.m_includeDarkModeToggle);
+            m_svgExportOptions.m_includeSlideshow =
+                boolAttr(L"slideshow", m_svgExportOptions.m_includeSlideshow);
+            m_svgExportOptions.m_includePageShadow =
+                boolAttr(L"pageShadow", m_svgExportOptions.m_includePageShadow);
+            const wxString colorStr = child->GetAttribute(
+                L"themeColor", m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
+            if (const wxColour color{ colorStr }; color.IsOk())
+                {
+                m_svgExportOptions.m_themeColor = color;
+                }
+            const wxString layoutDefault =
+                (m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Stacked) ?
+                    L"0" :
+                    L"1";
+            if (child->GetAttribute(L"layout", layoutDefault).ToLong(&val))
+                {
+                m_svgExportOptions.m_layout = (val == 0) ?
+                                                  Wisteria::SVGReportOptions::PageLayout::Stacked :
+                                                  Wisteria::SVGReportOptions::PageLayout::Duplex;
+                }
+            }
         }
 
     wxLogVerbose(L"Settings loaded from: %s", filePath);
@@ -81,6 +131,27 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     windowNode->AddAttribute(L"width", std::to_wstring(m_appWindowWidth));
     windowNode->AddAttribute(L"height", std::to_wstring(m_appWindowHeight));
     root->AddChild(windowNode);
+
+    auto* svgNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"SvgExport");
+    svgNode->AddAttribute(L"pageWidth",
+                          std::to_wstring(std::max(0, m_svgExportOptions.m_pageSize.GetWidth())));
+    svgNode->AddAttribute(L"pageHeight",
+                          std::to_wstring(std::max(0, m_svgExportOptions.m_pageSize.GetHeight())));
+    svgNode->AddAttribute(L"transitions", m_svgExportOptions.m_includeTransitions ? L"1" : L"0");
+    svgNode->AddAttribute(L"highlighting", m_svgExportOptions.m_includeHighlighting ? L"1" : L"0");
+    svgNode->AddAttribute(L"layoutOptions",
+                          m_svgExportOptions.m_includeLayoutOptions ? L"1" : L"0");
+    svgNode->AddAttribute(L"darkModeToggle",
+                          m_svgExportOptions.m_includeDarkModeToggle ? L"1" : L"0");
+    svgNode->AddAttribute(L"slideshow", m_svgExportOptions.m_includeSlideshow ? L"1" : L"0");
+    svgNode->AddAttribute(L"pageShadow", m_svgExportOptions.m_includePageShadow ? L"1" : L"0");
+    svgNode->AddAttribute(L"themeColor",
+                          m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
+    svgNode->AddAttribute(L"layout", m_svgExportOptions.m_layout ==
+                                             Wisteria::SVGReportOptions::PageLayout::Stacked ?
+                                         L"0" :
+                                         L"1");
+    root->AddChild(svgNode);
 
     if (!doc.Save(filePath))
         {

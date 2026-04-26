@@ -16,6 +16,7 @@ namespace Wisteria::UI
     {
     //------------------------------------------------------
     SvgExportDlg::SvgExportDlg(wxWindow* parent, const wxSize& defaultSize,
+                               const Wisteria::SVGReportOptions* savedOptions /*= nullptr*/,
                                wxWindowID id /*= wxID_ANY*/,
                                const wxString& caption /*= _(L"SVG Export Options")*/,
                                const wxPoint& pos /*= wxDefaultPosition*/,
@@ -23,6 +24,18 @@ namespace Wisteria::UI
                                long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
         : m_pageWidth(defaultSize.GetWidth()), m_pageHeight(defaultSize.GetHeight())
         {
+        if (savedOptions != nullptr)
+            {
+            m_includeTransitions = savedOptions->m_includeTransitions;
+            m_includeHighlighting = savedOptions->m_includeHighlighting;
+            m_includeLayoutOptions = savedOptions->m_includeLayoutOptions;
+            m_includeDarkModeToggle = savedOptions->m_includeDarkModeToggle;
+            m_includeSlideshow = savedOptions->m_includeSlideshow;
+            m_includePageShadow = savedOptions->m_includePageShadow;
+            m_themeColor = savedOptions->m_themeColor;
+            m_layout = savedOptions->m_layout;
+            }
+
         SetExtraStyle(GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
 

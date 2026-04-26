@@ -9,6 +9,7 @@
 #ifndef WISTERIA_APPSETTINGS_H
 #define WISTERIA_APPSETTINGS_H
 
+#include "../base/svgreportprintout.h"
 #include <wx/filename.h>
 #include <wx/gdicmn.h>
 #include <wx/stdpaths.h>
@@ -84,11 +85,30 @@ class AppSettings
         return { m_appWindowWidth, m_appWindowHeight };
         }
 
+    // SVG export options
+    //-------------------
+
+    /// @returns The SVG export options.
+    [[nodiscard]]
+    Wisteria::SVGReportOptions& GetSvgExportOptions() noexcept
+        {
+        return m_svgExportOptions;
+        }
+
+    /// @private
+    [[nodiscard]]
+    const Wisteria::SVGReportOptions& GetSvgExportOptions() const noexcept
+        {
+        return m_svgExportOptions;
+        }
+
   private:
     wxString m_settingsFilePath;
     bool m_appWindowMaximized{ true };
     int m_appWindowWidth{ 800 };
     int m_appWindowHeight{ 700 };
+
+    Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
     };
 
 #endif // WISTERIA_APPSETTINGS_H

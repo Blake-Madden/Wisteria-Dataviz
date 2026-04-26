@@ -31,13 +31,16 @@ namespace Wisteria::UI
             @param parent The parent window.
             @param defaultSize The default page size (in DIPs/pixels) to
                 pre-populate the spin controls with.
+            @param savedOptions Previously saved export options to restore into the dialog,
+                or @c nullptr to use defaults. The @c m_filePath field is ignored.
             @param id The window ID.
             @param caption The title of the export dialog.
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        SvgExportDlg(wxWindow* parent, const wxSize& defaultSize, wxWindowID id = wxID_ANY,
-                     const wxString& caption = _(L"SVG Export Options"),
+        SvgExportDlg(wxWindow* parent, const wxSize& defaultSize,
+                     const Wisteria::SVGReportOptions* savedOptions = nullptr,
+                     wxWindowID id = wxID_ANY, const wxString& caption = _(L"SVG Export Options"),
                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                      long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
 

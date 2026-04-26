@@ -315,7 +315,6 @@ namespace Wisteria::UI
         m_numericRangePanel = new wxPanel(rangeBox->GetStaticBox());
         auto* numericGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
                                                 wxSizerFlags::GetDefaultBorder());
-                                                wxSizerFlags::GetDefaultBorder());
         numericGrid->AddGrowableCol(1, 1);
         numericGrid->Add(new wxStaticText(m_numericRangePanel, wxID_ANY, _(L"Start:")),
                          wxSizerFlags{}.CenterVertical());

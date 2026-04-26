@@ -628,18 +628,31 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    auto& appSettings = wxGetApp().GetAppSettings();
+    Wisteria::SVGReportOptions& savedOptions = appSettings->GetSvgExportOptions();
+
+    // use the saved page size if valid, fall back to per-canvas paper size
     const wxSize defaultPageSize =
-        (m_lastSvgPageSize != wxDefaultSize) ?
-            m_lastSvgPageSize :
+        (savedOptions.m_pageSize != wxDefaultSize) ?
+            savedOptions.m_pageSize :
             Wisteria::SVGReportPrintout::GetPaperSizeDIPs(m_pages.front());
 
-    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize);
+    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize, &savedOptions);
     if (sizeDlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
-    m_lastSvgPageSize = sizeDlg.GetPageSize();
+    // persist all choices back to app settings
+    savedOptions.m_pageSize = sizeDlg.GetPageSize();
+    savedOptions.m_includeTransitions = sizeDlg.IncludeTransitions();
+    savedOptions.m_includeHighlighting = sizeDlg.IncludeHighlighting();
+    savedOptions.m_includeLayoutOptions = sizeDlg.IncludeLayoutOptions();
+    savedOptions.m_includeDarkModeToggle = sizeDlg.IncludeDarkModeToggle();
+    savedOptions.m_includeSlideshow = sizeDlg.IncludeSlideshow();
+    savedOptions.m_includePageShadow = sizeDlg.IncludePageShadow();
+    savedOptions.m_themeColor = sizeDlg.GetThemeColor();
+    savedOptions.m_layout = sizeDlg.GetLayout();
 
     wxFileDialog fileDlg(m_frame, _(L"Export to SVG"), wxString{},
                          GetDocument()->GetUserReadableName(), _(L"SVG files (*.svg)|*.svg"),
@@ -653,14 +666,14 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     [[maybe_unused]]
     Wisteria::SVGReportPrintout svgReport(m_pages,
                                           Wisteria::SVGReportOptions(fileDlg.GetPath())
-                                              .PageSize(m_lastSvgPageSize)
-                                              .Transitions(sizeDlg.IncludeTransitions())
-                                              .PageShadow(sizeDlg.IncludePageShadow())
-                                              .Highlighting(sizeDlg.IncludeHighlighting())
-                                              .LayoutOptions(sizeDlg.IncludeLayoutOptions())
-                                              .DarkModeToggle(sizeDlg.IncludeDarkModeToggle())
-                                              .Slideshow(sizeDlg.IncludeSlideshow())
-                                              .ThemeColor(sizeDlg.GetThemeColor()));
+                                              .PageSize(savedOptions.m_pageSize)
+                                              .Transitions(savedOptions.m_includeTransitions)
+                                              .PageShadow(savedOptions.m_includePageShadow)
+                                              .Highlighting(savedOptions.m_includeHighlighting)
+                                              .LayoutOptions(savedOptions.m_includeLayoutOptions)
+                                              .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
+                                              .Slideshow(savedOptions.m_includeSlideshow)
+                                              .ThemeColor(savedOptions.m_themeColor));
     }
 
 //-------------------------------------------
