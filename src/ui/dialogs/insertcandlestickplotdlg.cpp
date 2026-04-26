@@ -8,6 +8,7 @@
 
 #include "insertcandlestickplotdlg.h"
 #include "variableselectdlg.h"
+#include <wx/clrpicker.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -128,6 +129,23 @@ namespace Wisteria::UI
                                         plotTypes, 0, wxGenericValidator(&m_plotTypeIndex)),
                            wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(plotTypeSizer, wxSizerFlags{}.Border());
+
+        // gain/loss colors
+        auto* colorSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Gain color:")),
+                        wxSizerFlags{}.CenterVertical());
+        m_gainColorPicker = new wxColourPickerCtrl(
+            optionsPage, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::Green));
+        colorSizer->Add(m_gainColorPicker, wxSizerFlags{}.CenterVertical());
+
+        colorSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Loss color:")),
+                        wxSizerFlags{}.CenterVertical());
+        m_lossColorPicker = new wxColourPickerCtrl(
+            optionsPage, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::Red));
+        colorSizer->Add(m_lossColorPicker, wxSizerFlags{}.CenterVertical());
+
+        optionsSizer->Add(colorSizer, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -361,6 +379,16 @@ namespace Wisteria::UI
         // plot type
         m_plotTypeIndex =
             (candle->GetPlotType() == Graphs::CandlestickPlot::PlotType::Ohlc) ? 1 : 0;
+
+        // gain/loss colors
+        if (m_gainColorPicker != nullptr)
+            {
+            m_gainColorPicker->SetColour(candle->GetGainBrush().GetColour());
+            }
+        if (m_lossColorPicker != nullptr)
+            {
+            m_lossColorPicker->SetColour(candle->GetLossBrush().GetColour());
+            }
 
         TransferDataToWindow();
         }

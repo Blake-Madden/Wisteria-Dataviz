@@ -15,6 +15,7 @@
 #include "../../graphs/candlestickplot.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/clrpicker.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -110,6 +111,24 @@ namespace Wisteria::UI
                                             Graphs::CandlestickPlot::PlotType::Candlestick;
             }
 
+        /// @returns The gain (rising day) color selected in the dialog.
+        [[nodiscard]]
+        wxColour GetGainColor() const
+            {
+            return (m_gainColorPicker != nullptr) ?
+                       m_gainColorPicker->GetColour() :
+                       Colors::ColorBrewer::GetColor(Colors::Color::Green);
+            }
+
+        /// @returns The loss (falling day) color selected in the dialog.
+        [[nodiscard]]
+        wxColour GetLossColor() const
+            {
+            return (m_lossColorPicker != nullptr) ?
+                       m_lossColorPicker->GetColour() :
+                       Colors::ColorBrewer::GetColor(Colors::Color::Red);
+            }
+
         /// @brief Populates all dialog controls from an existing candlestick plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -135,6 +154,8 @@ namespace Wisteria::UI
         wxStaticText* m_highVarLabel{ nullptr };
         wxStaticText* m_lowVarLabel{ nullptr };
         wxStaticText* m_closeVarLabel{ nullptr };
+        wxColourPickerCtrl* m_gainColorPicker{ nullptr };
+        wxColourPickerCtrl* m_lossColorPicker{ nullptr };
 
         // DDX data members
         int m_plotTypeIndex{ 0 };

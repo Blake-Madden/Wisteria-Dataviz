@@ -4471,6 +4471,8 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetPlotType(dlg.GetPlotType());
+        plot->GetGainBrush().SetColour(dlg.GetGainColor());
+        plot->GetLossBrush().SetColour(dlg.GetLossColor());
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateVariable(), dlg.GetOpenVariable(),
                       dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
@@ -4519,6 +4521,8 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
         dlg.ApplyGraphOptions(*plot);
         dlg.ApplyPageOptions(*plot);
         plot->SetPlotType(dlg.GetPlotType());
+        plot->GetGainBrush().SetColour(dlg.GetGainColor());
+        plot->GetLossBrush().SetColour(dlg.GetLossColor());
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateVariable(), dlg.GetOpenVariable(),
                       dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
