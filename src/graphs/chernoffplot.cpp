@@ -1016,17 +1016,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             cheekRadius * 2);
             }
 
-        // draw hair over forehead for female (after face, before eyebrows)
-        if (gender == Gender::Female && hairStyle != HairStyle::Bald &&
-            hairStyle != HairStyle::HighTopFade)
+        // draw hair that goes over forehead (after face, before eyebrows)
+        if (hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
             // for dark hair, artists use a blue tint for strands instead of black
             const wxColour hairStrandColor =
                 Colors::ColorContrast::IsDark(hairColor) ?
-                    wxColour(70, 90, 160, 90) : // blue tint for dark hair
-                    wxColour(0, 0, 0, 40);      // dark strands for light hair
+                    wxColour{ 70, 90, 160, 90 } : // blue tint for dark hair
+                    wxColour{ 0, 0, 0, 40 };      // dark strands for light hair
 
             // calculate where eyebrows will be drawn (to stop hair above them)
             const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.eyePosition);
@@ -1151,8 +1150,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                               cx - faceWidth * 0.82, cy - faceHeight * 0.3);
                 pixieHair.CloseSubpath();
 
-                gc->SetBrush(wxBrush(hairColor));
-                gc->SetPen(wxPen(hairShadow, 1));
+                gc->SetBrush(wxBrush{ hairColor });
+                gc->SetPen(wxPen{ hairShadow, 1 });
                 gc->FillPath(pixieHair);
                 gc->StrokePath(pixieHair);
 
@@ -1169,7 +1168,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 auto pixieSheenBrush = gc->CreateLinearGradientBrush(
                     cx - faceWidth * 0.45, cy - faceHeight * 0.95, cx - faceWidth * 0.45,
                     cy - faceHeight * 0.6, hairHighlight,
-                    wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
                 gc->SetBrush(pixieSheenBrush);
                 gc->SetPen(*wxTRANSPARENT_PEN);
                 gc->FillPath(pixieHairSheen);
@@ -1235,8 +1234,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                              cx - faceWidth * 0.82, cy + faceHeight * 0.75);
                 longHair.CloseSubpath();
 
-                gc->SetBrush(wxBrush(hairColor));
-                gc->SetPen(wxPen(hairShadow, 1));
+                gc->SetBrush(wxBrush{ hairColor });
+                gc->SetPen(wxPen{ hairShadow, 1 });
                 gc->FillPath(longHair);
                 gc->StrokePath(longHair);
 
@@ -1253,7 +1252,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 auto longSheenBrush = gc->CreateLinearGradientBrush(
                     cx - faceWidth * 0.5, cy - faceHeight * 0.95, cx - faceWidth * 0.5,
                     cy - faceHeight * 0.6, hairHighlight,
-                    wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
                 gc->SetBrush(longSheenBrush);
                 gc->SetPen(*wxTRANSPARENT_PEN);
                 gc->FillPath(longHairSheen);
@@ -1315,8 +1314,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                             cx - faceWidth * 0.85, cy - faceHeight * 0.15);
                 bunHair.CloseSubpath();
 
-                gc->SetBrush(wxBrush(hairColor));
-                gc->SetPen(wxPen(hairShadow, 1));
+                gc->SetBrush(wxBrush{ hairColor });
+                gc->SetPen(wxPen{ hairShadow, 1 });
                 gc->FillPath(bunHair);
                 gc->StrokePath(bunHair);
 
@@ -1333,7 +1332,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 auto bunHairSheenBrush = gc->CreateLinearGradientBrush(
                     cx - faceWidth * 0.5, cy - faceHeight * 0.9, cx - faceWidth * 0.5,
                     cy - faceHeight * 0.6, hairHighlight,
-                    wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
                 gc->SetBrush(bunHairSheenBrush);
                 gc->SetPen(*wxTRANSPARENT_PEN);
                 gc->FillPath(bunHairSheen);
@@ -1371,8 +1370,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double bunRadius = faceHeight * 0.18;
                 const double bunX = cx;
                 const double bunY = cy - faceHeight * 1.05;
-                gc->SetBrush(wxBrush(hairColor));
-                gc->SetPen(wxPen(hairShadow, 1));
+                gc->SetBrush(wxBrush{ hairColor });
+                gc->SetPen(wxPen{ hairShadow, 1 });
                 gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
 
                 // sheen on bun
@@ -1384,7 +1383,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
 
                 // outline the bun
-                gc->SetPen(wxPen(hairShadow, 1));
+                gc->SetPen(wxPen{ hairShadow, 1 });
                 gc->SetBrush(*wxTRANSPARENT_BRUSH);
                 gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
 
@@ -1428,8 +1427,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                  cy - faceHeight * 0.3);
             hair.CloseSubpath();
 
-            gc->SetBrush(wxBrush(hairColor));
-            gc->SetPen(wxPen(hairShadow, 1));
+            gc->SetBrush(wxBrush{ hairColor });
+            gc->SetPen(wxPen{ hairShadow, 1 });
             gc->FillPath(hair);
             gc->StrokePath(hair);
 
@@ -1445,7 +1444,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             auto sheenBrush = gc->CreateLinearGradientBrush(
                 cx - faceWidth * 0.4, cy - faceHeight * 0.98, cx - faceWidth * 0.4,
                 cy - faceHeight * 0.75, hairHighlight,
-                wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+                wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
@@ -1603,10 +1602,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             if (facialHair == FacialHair::FiveOClockShadow)
                 {
                 // stubble using hair color with transparency
-                const wxColour stubbleColor(hairColor.Red(), hairColor.Green(), hairColor.Blue(),
-                                            80);
+                const wxColour stubbleColor{ hairColor.Red(), hairColor.Green(), hairColor.Blue(),
+                                             80 };
                 gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->SetBrush(wxBrush(stubbleColor));
+                gc->SetBrush(wxBrush{ stubbleColor });
 
                 const double dotSize = faceHeight * 0.012;
                 const double spacing = dotSize * 1.4;
