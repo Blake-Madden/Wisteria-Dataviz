@@ -5064,6 +5064,15 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
                       dlg.GetBarLabelDisplay());
 
+        if (dlg.IsApplyingBrushesToUngroupedBars())
+            {
+            plot->SetApplyBrushesToUngroupedBars(true);
+            }
+        if (dlg.IsConstrainingScalingAxisToBars())
+            {
+            plot->ConstrainScalingAxisToBars();
+            }
+
         // apply custom bar sort
         if (dlg.HasCustomBarSort())
             {
@@ -5276,6 +5285,15 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                              std::optional<wxString>(dlg.GetGroupVariable());
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
                       dlg.GetBarLabelDisplay());
+
+        if (dlg.IsApplyingBrushesToUngroupedBars())
+            {
+            plot->SetApplyBrushesToUngroupedBars(true);
+            }
+        if (dlg.IsConstrainingScalingAxisToBars())
+            {
+            plot->ConstrainScalingAxisToBars();
+            }
 
         // restore bar-block decals
         for (const auto& decalInfo : dlg.GetBarBlockDecals())

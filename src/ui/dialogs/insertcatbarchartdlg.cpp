@@ -144,6 +144,17 @@ namespace Wisteria::UI
                             wxSizerFlags{}.CenterVertical());
         leftSizer->Add(labelDispSizer, wxSizerFlags{}.Border());
 
+        leftSizer->Add(new wxCheckBox(optionsPage, wxID_ANY,
+                                      _(L"Apply color scheme to ungrouped bars"), wxDefaultPosition,
+                                      wxDefaultSize, 0,
+                                      wxGenericValidator(&m_applyBrushesToUngroupedBars)),
+                       wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+
+        leftSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Constrain axis to bar lengths"),
+                                      wxDefaultPosition, wxDefaultSize, 0,
+                                      wxGenericValidator(&m_constrainScalingAxisToBars)),
+                       wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+
         // box effect
         auto* effectSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
@@ -1448,6 +1459,8 @@ namespace Wisteria::UI
         m_boxEffectIndex = BoxEffectToIndex(barChart->GetBarEffect());
         m_barOrientationIndex = (barChart->GetBarOrientation() == Orientation::Vertical) ? 1 : 0;
         m_barLabelDisplayIndex = BinLabelDisplayToIndex(barChart->GetBinLabelDisplay());
+        m_applyBrushesToUngroupedBars = barChart->IsApplyingBrushesToUngroupedBars();
+        m_constrainScalingAxisToBars = barChart->IsConstrainingScalingAxisToBars();
         m_ghostOpacity = barChart->GetGhostOpacity();
         m_showcaseBars = barChart->GetShowcasedLabels();
         if (m_showcaseListBox != nullptr)

@@ -220,6 +220,20 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
+        /// @returns @c true if the color scheme brushes should be applied to ungrouped bars.
+        [[nodiscard]]
+        bool IsApplyingBrushesToUngroupedBars() const noexcept
+            {
+            return m_applyBrushesToUngroupedBars;
+            }
+
+        /// @returns @c true if the scaling axis should be constrained to the bar range.
+        [[nodiscard]]
+        bool IsConstrainingScalingAxisToBars() const noexcept
+            {
+            return m_constrainScalingAxisToBars;
+            }
+
         /// @returns The bars to showcase.
         [[nodiscard]]
         const std::vector<wxString>& GetShowcaseBars() const noexcept
@@ -341,6 +355,8 @@ namespace Wisteria::UI
         int m_barLabelDisplayIndex{ 0 };
         int m_barShapeAllIndex{ 0 };
         int m_ghostOpacity{ 32 };
+        bool m_applyBrushesToUngroupedBars{ false };
+        bool m_constrainScalingAxisToBars{ false };
         std::vector<wxString> m_showcaseBars;
 
         wxString m_categoricalVariable;
