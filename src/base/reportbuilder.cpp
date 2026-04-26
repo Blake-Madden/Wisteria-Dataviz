@@ -2008,6 +2008,7 @@ namespace Wisteria
                                 continue;
                                 }
                             m_datasets.insert_or_assign(mergeName, mergedData);
+                            m_datasetInsertionOrder.push_back(mergeName);
 
                             DatasetMergeOptions mergeOpts;
                             mergeOpts.m_sourceDatasetName = parentDsName;
@@ -2074,6 +2075,7 @@ namespace Wisteria
                                 continue;
                                 }
                             m_datasets.insert_or_assign(pivotName, pivotedData);
+                            m_datasetInsertionOrder.push_back(pivotName);
 
                             DatasetPivotOptions pivotOpts;
                             pivotOpts.m_type = PivotType::Wider;
@@ -2113,6 +2115,7 @@ namespace Wisteria
                                 continue;
                                 }
                             m_datasets.insert_or_assign(pivotName, pivotedData);
+                            m_datasetInsertionOrder.push_back(pivotName);
 
                             DatasetPivotOptions pivotOpts;
                             pivotOpts.m_type = PivotType::Longer;
@@ -2329,6 +2332,7 @@ namespace Wisteria
                             continue;
                             }
                         m_datasets.insert_or_assign(subsetName, subsettedDataset);
+                        m_datasetInsertionOrder.push_back(subsetName);
                         SetDatasetSubsetOptions(subsetName, subsetOpts);
                         LoadDatasetTransformations(subset, subsettedDataset);
                         }

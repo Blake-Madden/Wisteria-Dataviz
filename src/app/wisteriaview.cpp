@@ -484,14 +484,21 @@ void WisteriaView::LoadProject()
 
     if (!filename.empty())
         {
-        // add datasets as subitems under "Data"
+        // add datasets as subitems under "Data" in the order they were loaded
         const auto& importOpts = m_reportBuilder.GetDatasetImportOptions();
-        for (const auto& [dsName, dataset] : m_reportBuilder.GetDatasets())
+        const auto& allDatasets = m_reportBuilder.GetDatasets();
+        for (const auto& dsName : m_reportBuilder.GetDatasetInsertionOrder())
             {
             if (dsName.empty())
                 {
                 continue;
                 }
+            const auto dsIt = allDatasets.find(dsName);
+            if (dsIt == allDatasets.cend())
+                {
+                continue;
+                }
+            const auto& dataset = dsIt->second;
             const wxWindowID dsId = nextId;
             nextId = wxNewId();
 
@@ -1762,6 +1769,7 @@ void WisteriaView::AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dat
                                        const wxString& name)
     {
     m_reportBuilder.GetDatasets().insert_or_assign(name, dataset);
+    m_reportBuilder.GetDatasetInsertionOrder().push_back(name);
 
     const wxWindowID dsId = wxNewId();
 
