@@ -297,6 +297,91 @@ namespace Wisteria::UI
         gridSizer->Add(labelBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
+        // Range group
+        //------------------
+        auto* rangeBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Range"));
+
+        auto* radioRow = new wxBoxSizer(wxHORIZONTAL);
+        m_autoRangeRadio = new wxRadioButton(rangeBox->GetStaticBox(), wxID_ANY, _(L"Auto"),
+                                             wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+        m_userRangeRadio =
+            new wxRadioButton(rangeBox->GetStaticBox(), wxID_ANY, _(L"User-defined"));
+        m_autoRangeRadio->SetValue(true);
+        radioRow->Add(m_autoRangeRadio, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        radioRow->Add(m_userRangeRadio, wxSizerFlags{}.CenterVertical());
+        rangeBox->Add(radioRow, wxSizerFlags{}.Border());
+
+        // numeric sub-panel
+        m_numericRangePanel = new wxPanel(rangeBox->GetStaticBox());
+        auto* numericGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                                wxSizerFlags::GetDefaultBorder());
+                                                wxSizerFlags::GetDefaultBorder());
+        numericGrid->AddGrowableCol(1, 1);
+        numericGrid->Add(new wxStaticText(m_numericRangePanel, wxID_ANY, _(L"Start:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_rangeStartSpin =
+            new wxSpinCtrlDouble(m_numericRangePanel, wxID_ANY, wxString{}, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, -1e12, 1e12, 0, 1.0);
+        numericGrid->Add(m_rangeStartSpin, wxSizerFlags{}.Expand());
+        numericGrid->Add(new wxStaticText(m_numericRangePanel, wxID_ANY, _(L"End:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_rangeEndSpin =
+            new wxSpinCtrlDouble(m_numericRangePanel, wxID_ANY, wxString{}, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, -1e12, 1e12, 100, 1.0);
+        numericGrid->Add(m_rangeEndSpin, wxSizerFlags{}.Expand());
+        numericGrid->Add(new wxStaticText(m_numericRangePanel, wxID_ANY, _(L"Interval:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_rangeIntervalSpin =
+            new wxSpinCtrlDouble(m_numericRangePanel, wxID_ANY, wxString{}, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, 0.001, 1e9, 1.0, 0.1);
+        numericGrid->Add(m_rangeIntervalSpin, wxSizerFlags{}.Expand());
+        numericGrid->Add(new wxStaticText(m_numericRangePanel, wxID_ANY, _(L"Display interval:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_rangeDisplayIntervalSpin =
+            new wxSpinCtrl(m_numericRangePanel, wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, wxSP_ARROW_KEYS, 1, 100, 1);
+        numericGrid->Add(m_rangeDisplayIntervalSpin, wxSizerFlags{}.Expand());
+        m_numericRangePanel->SetSizer(numericGrid);
+        rangeBox->Add(m_numericRangePanel,
+                      wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        // date sub-panel
+        m_dateRangePanel = new wxPanel(rangeBox->GetStaticBox());
+        auto* dateGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),
+                                             wxSizerFlags::GetDefaultBorder());
+        dateGrid->AddGrowableCol(1, 1);
+        dateGrid->Add(new wxStaticText(m_dateRangePanel, wxID_ANY, _(L"Start:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_rangeStartDate = new wxDatePickerCtrl(m_dateRangePanel, wxID_ANY);
+        dateGrid->Add(m_rangeStartDate, wxSizerFlags{}.Expand());
+        dateGrid->Add(new wxStaticText(m_dateRangePanel, wxID_ANY, _(L"End:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_rangeEndDate = new wxDatePickerCtrl(m_dateRangePanel, wxID_ANY);
+        dateGrid->Add(m_rangeEndDate, wxSizerFlags{}.Expand());
+        dateGrid->Add(new wxStaticText(m_dateRangePanel, wxID_ANY, _(L"Interval:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_dateIntervalChoice = new wxChoice(m_dateRangePanel, wxID_ANY);
+        m_dateIntervalChoice->Append(_(L"Fiscal quarterly"));
+        m_dateIntervalChoice->Append(_(L"Monthly"));
+        m_dateIntervalChoice->Append(_(L"Weekly"));
+        m_dateIntervalChoice->Append(_(L"Daily"));
+        m_dateIntervalChoice->SetSelection(0);
+        dateGrid->Add(m_dateIntervalChoice, wxSizerFlags{}.Expand());
+        m_dateRangePanel->SetSizer(dateGrid);
+        rangeBox->Add(m_dateRangePanel,
+                      wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        m_dateRangePanel->Hide();
+        m_numericRangePanel->Enable(false);
+        m_dateRangePanel->Enable(false);
+
+        const auto onRangeTypeChanged = [this](wxCommandEvent&) { OnRangeTypeChanged(); };
+        m_autoRangeRadio->Bind(wxEVT_RADIOBUTTON, onRangeTypeChanged);
+        m_userRangeRadio->Bind(wxEVT_RADIOBUTTON, onRangeTypeChanged);
+
+        gridSizer->Add(rangeBox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
+                       wxSizerFlags::GetDefaultBorder());
+
         // Group 6: Brackets
         //------------------
         auto* bracketBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Brackets"));
@@ -324,16 +409,16 @@ namespace Wisteria::UI
                                 [this](wxCommandEvent&) { OnAddBracketsFromDataset(); });
         bracketBox->Add(addFromDatasetBtn, wxSizerFlags{}.Border());
 
-        gridSizer->Add(bracketBox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
+        gridSizer->Add(bracketBox, wxGBPosition(3, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // global mirror checkboxes
         m_mirrorXAxisCheck = new wxCheckBox(this, wxID_ANY, _(L"Mirror X axis"));
-        gridSizer->Add(m_mirrorXAxisCheck, wxGBPosition(3, 0), wxDefaultSpan, wxALL,
+        gridSizer->Add(m_mirrorXAxisCheck, wxGBPosition(4, 0), wxDefaultSpan, wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         m_mirrorYAxisCheck = new wxCheckBox(this, wxID_ANY, _(L"Mirror Y axis"));
-        gridSizer->Add(m_mirrorYAxisCheck, wxGBPosition(3, 1), wxDefaultSpan, wxALL,
+        gridSizer->Add(m_mirrorYAxisCheck, wxGBPosition(4, 1), wxDefaultSpan, wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         axisSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand());
@@ -391,6 +476,42 @@ namespace Wisteria::UI
     void AxisOptionsPanel::SetMirrorY(bool mirror) { m_mirrorYAxisCheck->SetValue(mirror); }
 
     bool AxisOptionsPanel::GetMirrorY() const { return m_mirrorYAxisCheck->GetValue(); }
+
+    //-------------------------------------------
+    void AxisOptionsPanel::SetAxisIsDate(AxisType axisType, bool isDate)
+        {
+        m_axisIsDate[axisType] = isDate;
+        if (axisType == m_currentAxisType)
+            {
+            UpdateRangeControlVisibility();
+            }
+        }
+
+    //-------------------------------------------
+    void AxisOptionsPanel::OnRangeTypeChanged()
+        {
+        if (m_numericRangePanel == nullptr)
+            {
+            return;
+            }
+        const bool userDefined = m_userRangeRadio->GetValue();
+        m_numericRangePanel->Enable(userDefined);
+        m_dateRangePanel->Enable(userDefined);
+        }
+
+    //-------------------------------------------
+    void AxisOptionsPanel::UpdateRangeControlVisibility()
+        {
+        if (m_numericRangePanel == nullptr)
+            {
+            return;
+            }
+        const bool isDate =
+            m_axisIsDate.count(m_currentAxisType) > 0 && m_axisIsDate.at(m_currentAxisType);
+        m_numericRangePanel->Show(!isDate);
+        m_dateRangePanel->Show(isDate);
+        Layout();
+        }
 
     //-------------------------------------------
     namespace
@@ -532,6 +653,45 @@ namespace Wisteria::UI
             m_labelLineLengthSpin->SetValue(static_cast<int>(axis.GetLabelLineLength()));
             }
 
+        if (m_autoRangeRadio != nullptr)
+            {
+            // if no external hint was set, detect from stored dates on the axis
+            if (m_axisIsDate.count(m_currentAxisType) == 0)
+                {
+                m_axisIsDate[m_currentAxisType] = axis.GetRangeDates().first.IsValid();
+                }
+            const bool isDate = m_axisIsDate.at(m_currentAxisType);
+            UpdateRangeControlVisibility();
+
+            const bool userDefined = axis.GetPropertyTemplate(L"range.user-defined") == L"1";
+            m_autoRangeRadio->SetValue(!userDefined);
+            m_userRangeRadio->SetValue(userDefined);
+
+            if (!isDate)
+                {
+                const auto [rStart, rEnd] = axis.GetRange();
+                m_rangeStartSpin->SetValue(rStart);
+                m_rangeEndSpin->SetValue(rEnd);
+                m_rangeIntervalSpin->SetValue(axis.GetInterval());
+                m_rangeDisplayIntervalSpin->SetValue(static_cast<int>(axis.GetDisplayInterval()));
+                }
+            else
+                {
+                const auto [startDate, endDate] = axis.GetRangeDates();
+                if (startDate.IsValid())
+                    {
+                    m_rangeStartDate->SetValue(startDate);
+                    }
+                if (endDate.IsValid())
+                    {
+                    m_rangeEndDate->SetValue(endDate);
+                    }
+                m_dateIntervalChoice->SetSelection(static_cast<int>(axis.GetDateDisplayInterval()));
+                }
+
+            OnRangeTypeChanged();
+            }
+
         // if the axis was loaded from a dataset-driven brackets definition, use its
         // stored templates as hints so "Add Brackets from Dataset" preselects them
         const auto bracketDs = axis.GetPropertyTemplate(L"brackets.dataset");
@@ -658,6 +818,45 @@ namespace Wisteria::UI
         if (m_labelLineLengthSpin != nullptr)
             {
             axis.SetLabelLineLength(static_cast<size_t>(m_labelLineLengthSpin->GetValue()));
+            }
+
+        if (m_autoRangeRadio != nullptr)
+            {
+            if (m_userRangeRadio->GetValue())
+                {
+                axis.SetPropertyTemplate(L"range.user-defined", L"1");
+                const bool isDate =
+                    m_axisIsDate.count(m_currentAxisType) > 0 && m_axisIsDate.at(m_currentAxisType);
+                if (!isDate)
+                    {
+                    const double rStart = m_rangeStartSpin->GetValue();
+                    const double rEnd = m_rangeEndSpin->GetValue();
+                    const double rInterval = m_rangeIntervalSpin->GetValue();
+                    const auto dispInterval =
+                        static_cast<size_t>(m_rangeDisplayIntervalSpin->GetValue());
+                    const auto precision = static_cast<uint8_t>(
+                        m_precisionSpin != nullptr ? m_precisionSpin->GetValue() : 0);
+                    axis.SetRange(rStart, rEnd, precision, rInterval, dispInterval);
+                    }
+                else
+                    {
+                    constexpr DateInterval dateIntervals[] = { DateInterval::FiscalQuarterly,
+                                                               DateInterval::Monthly,
+                                                               DateInterval::Weekly,
+                                                               DateInterval::Daily };
+                    const int sel = m_dateIntervalChoice->GetSelection();
+                    const auto dateInterval =
+                        (sel >= 0 && std::cmp_less(sel, std::size(dateIntervals))) ?
+                            dateIntervals[sel] :
+                            DateInterval::Monthly;
+                    axis.SetDateRange(m_rangeStartDate->GetValue(), m_rangeEndDate->GetValue(),
+                                      dateInterval, FiscalYear::Education);
+                    }
+                }
+            else
+                {
+                axis.SetPropertyTemplate(L"range.user-defined", wxString{});
+                }
             }
         }
 

@@ -15,6 +15,7 @@
 #include <map>
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
+#include <wx/datectrl.h>
 #include <wx/editlbox.h>
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
@@ -74,10 +75,21 @@ namespace Wisteria::UI
             m_bracketValueColumnHint = valueColumn;
             }
 
+        /** @brief Hints that a given axis carries date values (for range control display).
+            @details Call this before SetAxes() when inserting a new graph so the Range
+                group shows date pickers instead of numeric spinners. In edit mode the
+                panel auto-detects date axes from the stored axis state.
+            @param axisType The axis type.
+            @param isDate @c true if the axis represents date values.*/
+        void SetAxisIsDate(AxisType axisType, bool isDate);
+
       private:
         void OnAxisSelectionChanged();
         void ReadControlsFromAxis(const GraphItems::Axis& axis);
         void WriteControlsToAxis(GraphItems::Axis& axis);
+
+        void OnRangeTypeChanged();
+        void UpdateRangeControlVisibility();
 
         void OnAddBracket();
         void OnEditBracket();
@@ -95,9 +107,23 @@ namespace Wisteria::UI
         // current editing state
         AxisType m_currentAxisType{ AxisType::BottomXAxis };
         std::map<AxisType, GraphItems::Axis> m_savedAxes;
+        std::map<AxisType, bool> m_axisIsDate;
 
         // controls
         wxChoice* m_axisSelector{ nullptr };
+
+        // per-axis control pointers (Range group)
+        wxRadioButton* m_autoRangeRadio{ nullptr };
+        wxRadioButton* m_userRangeRadio{ nullptr };
+        wxPanel* m_numericRangePanel{ nullptr };
+        wxPanel* m_dateRangePanel{ nullptr };
+        wxSpinCtrlDouble* m_rangeStartSpin{ nullptr };
+        wxSpinCtrlDouble* m_rangeEndSpin{ nullptr };
+        wxSpinCtrlDouble* m_rangeIntervalSpin{ nullptr };
+        wxSpinCtrl* m_rangeDisplayIntervalSpin{ nullptr };
+        wxDatePickerCtrl* m_rangeStartDate{ nullptr };
+        wxDatePickerCtrl* m_rangeEndDate{ nullptr };
+        wxChoice* m_dateIntervalChoice{ nullptr };
 
         // per-axis control pointers (Group 2: Axis Line)
         wxColourPickerCtrl* m_axisLineColorPicker{ nullptr };

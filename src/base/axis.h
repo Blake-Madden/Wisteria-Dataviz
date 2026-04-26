@@ -950,6 +950,13 @@ namespace Wisteria::GraphItems
                 ShowDefaultLabels() if it had been set to @c false.*/
         void SetDisplayInterval(size_t interval, size_t offset = 0);
 
+        /// @returns The date intervals shown along the axis.
+        [[nodiscard]]
+        DateInterval GetDateDisplayInterval() const noexcept
+            {
+            return m_dateDisplayInterval;
+            }
+
         /// @}
 
         /** @name Label & Value Functions
@@ -2002,13 +2009,6 @@ namespace Wisteria::GraphItems
                 SetFiscalYearStart(wxDateTime::Jul, 1);
                 break;
                 }
-            }
-
-        /// @returns The date intervals shown along the axis.
-        [[nodiscard]]
-        DateInterval GetDateDisplayInterval() const noexcept
-            {
-            return m_dateDisplayInterval;
             }
 
         /// @brief If embedded into canvas (i.e., not part of a plot) then this is
