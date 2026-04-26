@@ -85,7 +85,8 @@
      rx="2"
      fill="#F0A68C"
      opacity="0.9"
-     id="rect3" />
+     id="rect3"
+     style="fill:#ff6cb4;fill-opacity:1" />
   <rect
      x="28"
      y="112"
@@ -103,7 +104,8 @@
      rx="2"
      fill="#F0A68C"
      opacity="0.9"
-     id="rect5" />
+     id="rect5"
+     style="fill:#ff69b4;fill-opacity:1" />
   <rect
      x="28"
      y="168"
@@ -121,7 +123,8 @@
      rx="2"
      fill="#F0A68C"
      opacity="0.9"
-     id="rect7" />
+     id="rect7"
+     style="fill:#ff69b4;fill-opacity:1" />
   <!-- Column dividers (white) -->
   <line
      x1="78"
