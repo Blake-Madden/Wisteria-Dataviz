@@ -32,9 +32,6 @@ namespace Wisteria::UI
     void InsertHistogramDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
-        CreateAxisOptionsPage();
-        CreateAnnotationsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -366,6 +363,11 @@ namespace Wisteria::UI
 
         binStartCheck->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent& evt)
                             { m_startBinSpin->Enable(evt.IsChecked()); });
+
+        CreateAnnotationsPage();
+        CreateAxisOptionsPage();
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

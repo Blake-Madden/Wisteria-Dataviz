@@ -144,12 +144,6 @@ namespace Wisteria::UI
         shapePage->SetSizer(shapeSizer);
         GetSideBarBook()->AddPage(shapePage, _(L"Shape"), ID_SHAPE_SECTION, true);
 
-        // page options (background color, outline, etc.) are not relevant for shapes,
-        // which are self-contained items with their own pen/brush controls.
-        if (GetEditMode() == EditMode::Edit)
-            {
-            GetSideBarBook()->DeletePage(0);
-            }
 
         auto* columnGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
@@ -362,6 +356,11 @@ namespace Wisteria::UI
 
             alignBox->Add(alignGrid, wxSizerFlags{}.Border());
             rightColSizer->Add(alignBox, wxSizerFlags{}.Expand().Border());
+            }
+
+        if (GetEditMode() != EditMode::Edit)
+            {
+            CreatePageOptionsPage();
             }
         }
 

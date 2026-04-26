@@ -34,9 +34,6 @@ namespace Wisteria::UI
     void InsertScatterPlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
-        CreateAxisOptionsPage();
-        CreateAnnotationsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -141,6 +138,11 @@ namespace Wisteria::UI
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
+
+        CreateAnnotationsPage();
+        CreateAxisOptionsPage();
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

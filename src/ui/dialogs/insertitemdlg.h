@@ -191,6 +191,11 @@ namespace Wisteria::UI
         ///     the OK/Cancel buttons and finalize the layout.
         virtual void CreateControls();
 
+        /// @brief Adds the "Page" sidebar page.
+        /// @details Call this explicitly from CreateControls() at the position
+        ///     where the "Page" page should appear in the sidebar.
+        void CreatePageOptionsPage();
+
         /// @brief Adds OK/Cancel buttons and finalizes layout.
         /// @details Must be called after all sidebar pages have been added.
         void FinalizeControls();

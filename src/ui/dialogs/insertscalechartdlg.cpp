@@ -105,7 +105,6 @@ namespace Wisteria::UI
     void InsertScaleChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -255,6 +254,9 @@ namespace Wisteria::UI
         m_mainScaleValues = L"10, 20, 30, 40, 50, 60, 70, 80, 90";
         m_dataColumnHeader = _(L"Test Scores");
         RefreshScalesList();
+
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

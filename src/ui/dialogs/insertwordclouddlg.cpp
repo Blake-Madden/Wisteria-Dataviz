@@ -32,7 +32,6 @@ namespace Wisteria::UI
     void InsertWordCloudDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -128,6 +127,9 @@ namespace Wisteria::UI
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
+
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

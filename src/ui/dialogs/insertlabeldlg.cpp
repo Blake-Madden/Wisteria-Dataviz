@@ -333,6 +333,8 @@ namespace Wisteria::UI
                                                  m_bgColorPicker->Enable(evt.IsChecked());
                                                  }
                                          });
+
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

@@ -522,7 +522,7 @@ namespace Wisteria::UI
         auto* annotSizer = new wxBoxSizer(wxVERTICAL);
         annotPage->SetSizer(annotSizer);
         GetSideBarBook()->AddPage(annotPage, _(L"Annotations & References"), ID_ANNOTATIONS_SECTION,
-                                  true);
+                                  false);
 
         // Annotations
         //------------
@@ -598,7 +598,7 @@ namespace Wisteria::UI
             new AxisOptionsPanel(GetSideBarBook(), GetCanvas(), GetReportBuilder());
         m_axisOptionsPanel->SetBracketColumnHints(
             GetBracketDatasetHint(), GetBracketLabelColumnHint(), GetBracketValueColumnHint());
-        GetSideBarBook()->AddPage(m_axisOptionsPanel, _(L"Axes"), ID_AXIS_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(m_axisOptionsPanel, _(L"Axes"), ID_AXIS_OPTIONS_SECTION, false);
         }
 
     //-------------------------------------------

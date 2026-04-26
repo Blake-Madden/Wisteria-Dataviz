@@ -37,7 +37,6 @@ namespace Wisteria::UI
     void InsertProConRoadmapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -216,6 +215,9 @@ namespace Wisteria::UI
 
         m_roadColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, [this](wxColourPickerEvent& evt)
                                 { m_roadColor = evt.GetColour(); });
+
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

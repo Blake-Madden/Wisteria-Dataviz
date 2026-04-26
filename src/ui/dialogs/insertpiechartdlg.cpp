@@ -39,7 +39,6 @@ namespace Wisteria::UI
     void InsertPieChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
@@ -553,6 +552,9 @@ namespace Wisteria::UI
 
         OnShowcaseModeChanged();
         OnPieSliceEffectChanged();
+
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

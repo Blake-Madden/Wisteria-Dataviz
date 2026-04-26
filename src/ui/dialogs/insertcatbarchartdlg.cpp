@@ -40,9 +40,6 @@ namespace Wisteria::UI
     void InsertCatBarChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
-        CreateAxisOptionsPage();
-        CreateAnnotationsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -304,6 +301,11 @@ namespace Wisteria::UI
         rightSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
 
         optionsSizer->Add(rightSizer, wxSizerFlags{ 1 }.Expand().Border());
+
+        CreateAnnotationsPage();
+        CreateAxisOptionsPage();
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
 
         // override New button for showcase bars
         m_showcaseListBox->GetNewButton()->Bind(

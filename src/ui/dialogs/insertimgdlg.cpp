@@ -197,6 +197,8 @@ namespace Wisteria::UI
             }
 
         imageSizer->Add(optionsGrid, wxSizerFlags{}.Border());
+
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

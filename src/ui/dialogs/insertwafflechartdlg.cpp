@@ -35,7 +35,6 @@ namespace Wisteria::UI
     void InsertWaffleChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -152,6 +151,9 @@ namespace Wisteria::UI
                         wxSizerFlags{}.CenterVertical());
         legendGrid->Add(CreateLegendPlacementChoice(optionsPage, 1));
         optionsSizer->Add(legendGrid, wxSizerFlags{}.Border());
+
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

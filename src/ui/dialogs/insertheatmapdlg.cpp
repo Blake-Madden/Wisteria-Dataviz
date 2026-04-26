@@ -31,7 +31,6 @@ namespace Wisteria::UI
     void InsertHeatMapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -141,6 +140,9 @@ namespace Wisteria::UI
                                       { UpdateGroupControlStates(); });
 
         UpdateGroupControlStates();
+
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

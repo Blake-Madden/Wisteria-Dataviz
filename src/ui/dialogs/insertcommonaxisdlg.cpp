@@ -85,6 +85,8 @@ namespace Wisteria::UI
 
         // initialize the axis panel with a default axis for the selected type
         OnAxisTypeChanged();
+
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------

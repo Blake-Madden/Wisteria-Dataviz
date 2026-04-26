@@ -35,9 +35,6 @@ namespace Wisteria::UI
     void InsertGanttChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
-        CreateGraphOptionsPage();
-        CreateAxisOptionsPage();
-        CreateAnnotationsPage();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
@@ -497,6 +494,11 @@ namespace Wisteria::UI
                                  { OnBarShapeModeChanged(); });
         m_shapeAllChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
                                { OnBarShapeAllChanged(); });
+
+        CreateAnnotationsPage();
+        CreateAxisOptionsPage();
+        CreateGraphOptionsPage();
+        CreatePageOptionsPage();
         }
 
     //-------------------------------------------
