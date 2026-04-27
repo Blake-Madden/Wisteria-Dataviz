@@ -158,6 +158,13 @@ namespace Wisteria::UI
             return m_showcaseBars;
             }
 
+        /// @returns The bar-block decals to restore after rebuilding the chart.
+        [[nodiscard]]
+        const std::vector<BarBlockDecalInfo>& GetBarBlockDecals() const noexcept
+            {
+            return m_barBlockDecals;
+            }
+
         /// @brief Populates all dialog controls from an existing Gantt chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -173,6 +180,7 @@ namespace Wisteria::UI
         void OnBarShapeAllChanged();
         void UpdateVariableLabels();
         void SyncBarShapesToList();
+        void SyncBarBlockDecalsToList();
         void RefreshTaskLabels();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
@@ -222,6 +230,10 @@ namespace Wisteria::UI
         std::vector<wxString> m_showcaseBars;
         int m_ghostOpacity{ 128 };
         wxEditableListBox* m_showcaseListBox{ nullptr };
+
+        // bar-block decals (preserved during editing)
+        std::vector<BarBlockDecalInfo> m_barBlockDecals;
+        wxEditableListBox* m_barBlockDecalListBox{ nullptr };
         };
     } // namespace Wisteria::UI
 

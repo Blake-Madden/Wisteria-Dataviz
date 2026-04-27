@@ -821,11 +821,9 @@ namespace Wisteria::GraphItems
         Shape(const GraphItemInfo& itemInfo, Icons::IconShape shape, wxSize sz,
               const std::shared_ptr<wxBitmapBundle>& img = nullptr);
         /// @private
-        /// @internal Is not copyable because the renderer stores a pointer to one of its
-        ///     own functions to draw shapes.
-        Shape(const Shape&) = delete;
+        Shape(const Shape& that);
         /// @private
-        Shape& operator=(const Shape&) = delete;
+        Shape& operator=(const Shape& that);
         /** @brief Bounds the shape to the given rectangle.
             @param rect The rectangle to bound the shape to.
             @param dc This parameter is ignored.

@@ -44,17 +44,6 @@ namespace Wisteria::UI
         wxColour m_color;
         };
 
-    /// @brief Info needed to restore a bar-block decal during chart editing.
-    struct BarBlockDecalInfo
-        {
-        /// @brief The axis label of the bar containing the block.
-        wxString m_barLabel;
-        /// @brief The zero-based index of the block within the bar.
-        size_t m_blockIndex{ 0 };
-        /// @brief The decal label to draw on the block.
-        GraphItems::Label m_decal;
-        };
-
     class InsertCatBarChartDlg final : public InsertGraphDlg
         {
       public:
@@ -299,6 +288,7 @@ namespace Wisteria::UI
         void UpdateVariableLabels();
         void SyncBarGroupsToList();
         void SyncBarShapesToList();
+        void SyncBarBlockDecalsToList();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
@@ -342,6 +332,9 @@ namespace Wisteria::UI
 
         // bar group controls
         wxEditableListBox* m_barGroupListBox{ nullptr };
+
+        // bar block decal controls
+        wxEditableListBox* m_barBlockDecalListBox{ nullptr };
 
         // bar shape controls
         wxRadioButton* m_shapeAllRadio{ nullptr };

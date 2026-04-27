@@ -226,6 +226,13 @@ namespace Wisteria::UI
         ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
         optionsSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border());
 
+        // bar block decals
+        m_barBlockDecalListBox = new wxEditableListBox(
+            optionsPage, wxID_ANY, _(L"Bar block decals:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        optionsSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border());
+
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
@@ -481,6 +488,154 @@ namespace Wisteria::UI
                 editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
+        // helper to prompt for a task label, block index, and decal text
+        const auto promptForDecal = [this](const wxString& caption, wxString& inOutLabel,
+                                           size_t& inOutBlock, wxString& inOutText) -> bool
+        {
+            wxArrayString barChoices;
+            for (const auto& label : m_taskLabels)
+                {
+                barChoices.Add(label);
+                }
+            if (barChoices.empty())
+                {
+                wxMessageBox(_(L"Select a task variable first to populate available bars."),
+                             _(L"No Bars"), wxOK | wxICON_INFORMATION, this);
+                return false;
+                }
+
+            wxDialog dlg(this, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
+                         wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+            auto* sizer = new wxBoxSizer(wxVERTICAL);
+            auto* grid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                        wxSizerFlags::GetDefaultBorder() });
+            grid->AddGrowableCol(1, 1);
+
+            grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Bar:")),
+                      wxSizerFlags{}.CenterVertical());
+            auto* barCtrl =
+                new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+            if (!inOutLabel.empty())
+                {
+                barCtrl->SetStringSelection(inOutLabel);
+                }
+            if (barCtrl->GetSelection() == wxNOT_FOUND)
+                {
+                barCtrl->SetSelection(0);
+                }
+            grid->Add(barCtrl, wxSizerFlags{}.Expand());
+
+            grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Block:")),
+                      wxSizerFlags{}.CenterVertical());
+            auto* blockSpin = new wxSpinCtrl(&dlg, wxID_ANY);
+            blockSpin->SetRange(0, 99);
+            blockSpin->SetValue(static_cast<int>(inOutBlock));
+            grid->Add(blockSpin, wxSizerFlags{}.Expand());
+
+            grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Text:")),
+                      wxSizerFlags{}.CenterVertical());
+            auto* textCtrl = new wxTextCtrl(&dlg, wxID_ANY, inOutText);
+            grid->Add(textCtrl, wxSizerFlags{}.Expand());
+
+            sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+            sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
+            dlg.SetSizer(sizer);
+            dlg.Fit();
+            dlg.SetMinSize(dlg.GetSize());
+
+            if (dlg.ShowModal() != wxID_OK)
+                {
+                return false;
+                }
+            const auto barSel = barCtrl->GetSelection();
+            if (barSel == wxNOT_FOUND)
+                {
+                return false;
+                }
+            inOutLabel = barChoices[barSel];
+            inOutBlock = static_cast<size_t>(blockSpin->GetValue());
+            inOutText = textCtrl->GetValue();
+            return true;
+        };
+
+        // override New button for bar block decals
+        m_barBlockDecalListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this, promptForDecal]([[maybe_unused]]
+                                   wxCommandEvent& event)
+            {
+                wxString label;
+                size_t block{ 0 };
+                wxString text;
+                if (!promptForDecal(_(L"Add Bar Block Decal"), label, block, text))
+                    {
+                    return;
+                    }
+                BarBlockDecalInfo info;
+                info.m_barLabel = label;
+                info.m_blockIndex = block;
+                info.m_decal.SetText(text);
+                info.m_decal.SetPropertyTemplate(L"text", text);
+                m_barBlockDecals.push_back(std::move(info));
+                SyncBarBlockDecalsToList();
+            });
+
+        // override Edit button for bar block decals
+        m_barBlockDecalListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this, promptForDecal]([[maybe_unused]]
+                                   wxCommandEvent& event)
+            {
+                auto* listCtrl = m_barBlockDecalListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_barBlockDecals.size()))
+                    {
+                    return;
+                    }
+                auto& info = m_barBlockDecals[sel];
+                wxString label = info.m_barLabel;
+                size_t block = info.m_blockIndex;
+                wxString text = info.m_decal.GetText();
+                if (!promptForDecal(_(L"Edit Bar Block Decal"), label, block, text))
+                    {
+                    return;
+                    }
+                info.m_barLabel = label;
+                info.m_blockIndex = block;
+                info.m_decal.SetText(text);
+                info.m_decal.SetPropertyTemplate(L"text", text);
+                SyncBarBlockDecalsToList();
+            });
+
+        // override Delete button for bar block decals
+        m_barBlockDecalListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_barBlockDecalListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_barBlockDecals.size()))
+                    {
+                    return;
+                    }
+                m_barBlockDecals.erase(m_barBlockDecals.begin() + sel);
+                SyncBarBlockDecalsToList();
+            });
+
+        // double-clicking a row triggers the Edit button
+        m_barBlockDecalListBox->GetListCtrl()->Bind(
+            wxEVT_LIST_ITEM_ACTIVATED,
+            [this]([[maybe_unused]]
+                   wxListEvent& event)
+            {
+                auto* editBtn = m_barBlockDecalListBox->GetEditButton();
+                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
+                clickEvent.SetEventObject(editBtn);
+                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
+            });
+
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -512,6 +667,7 @@ namespace Wisteria::UI
         m_completionVariable.clear();
         m_groupVariable.clear();
         m_barShapes.clear();
+        m_barBlockDecals.clear();
         UpdateVariableLabels();
         }
 
@@ -666,6 +822,7 @@ namespace Wisteria::UI
 
         RefreshTaskLabels();
         SyncBarShapesToList();
+        SyncBarBlockDecalsToList();
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
@@ -722,6 +879,22 @@ namespace Wisteria::UI
             items.Add(label + L": " + shapeLabel(shape));
             }
         m_shapePerBarListBox->SetStrings(items);
+        }
+
+    //-------------------------------------------
+    void InsertGanttChartDlg::SyncBarBlockDecalsToList()
+        {
+        if (m_barBlockDecalListBox == nullptr)
+            {
+            return;
+            }
+        wxArrayString items;
+        for (const auto& info : m_barBlockDecals)
+            {
+            items.Add(wxString::Format(L"%s (%s %zu): %s", info.m_barLabel, _(L"block"),
+                                       info.m_blockIndex, info.m_decal.GetText()));
+            }
+        m_barBlockDecalListBox->SetStrings(items);
         }
 
     //-------------------------------------------
@@ -1035,14 +1208,25 @@ namespace Wisteria::UI
             m_showcaseListBox->SetStrings(strings);
             }
 
-        // capture current bars for the per-bar shape list
+        // capture current bars for the per-bar shape and decal lists
         m_taskLabels.clear();
         m_barShapes.clear();
+        m_barBlockDecals.clear();
         for (const auto& bar : gantt->GetBars())
             {
             m_taskLabels.push_back(bar.GetAxisLabel().GetText());
             m_barShapes.emplace_back(bar.GetAxisLabel().GetText(), bar.GetShape());
+            for (size_t bk = 0; bk < bar.GetBlocks().size(); ++bk)
+                {
+                const auto& decal = bar.GetBlocks()[bk].GetDecal();
+                if (!decal.GetText().empty())
+                    {
+                    m_barBlockDecals.emplace_back(
+                        BarBlockDecalInfo{ bar.GetAxisLabel().GetText(), bk, decal });
+                    }
+                }
             }
+        SyncBarBlockDecalsToList();
 
         // determine bar-shape mode from the loaded chart
         bool allSameShape = !gantt->GetBars().empty();

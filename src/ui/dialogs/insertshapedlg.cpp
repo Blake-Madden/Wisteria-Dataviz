@@ -144,7 +144,6 @@ namespace Wisteria::UI
         shapePage->SetSizer(shapeSizer);
         GetSideBarBook()->AddPage(shapePage, _(L"Shape"), ID_SHAPE_SECTION, true);
 
-
         auto* columnGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
         auto* leftColSizer = new wxBoxSizer(wxVERTICAL);

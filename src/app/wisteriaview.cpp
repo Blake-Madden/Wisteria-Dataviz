@@ -4426,6 +4426,21 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
                              oldExpanded(L"variables.group"));
 
+        // restore bar-block decals
+        for (const auto& decalInfo : dlg.GetBarBlockDecals())
+            {
+            const auto barPos = plot->FindBar(decalInfo.m_barLabel);
+            if (barPos.has_value() &&
+                decalInfo.m_blockIndex < plot->GetBars().at(barPos.value()).GetBlocks().size())
+                {
+                plot->GetBars()
+                    .at(barPos.value())
+                    .GetBlocks()
+                    .at(decalInfo.m_blockIndex)
+                    .SetDecal(decalInfo.m_decal);
+                }
+            }
+
         // restore per-bar shapes (bars not listed stay at the default Rectangle)
         for (const auto& [label, shape] : dlg.GetBarShapes())
             {

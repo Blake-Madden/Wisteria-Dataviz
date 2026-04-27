@@ -268,6 +268,31 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    Shape::Shape(const Shape& that)
+        : GraphItemBase(that), m_shapeSizeDIPs(that.m_shapeSizeDIPs), m_sizeDIPs(that.m_sizeDIPs),
+          m_shape(that.m_shape), m_renderer(that.m_renderer), m_rendererNeedsUpdating(true),
+          m_drawFunction(that.m_drawFunction)
+        {
+        }
+
+    //---------------------------------------------------
+    Shape& Shape::operator=(const Shape& that)
+        {
+        if (this != &that)
+            {
+            GraphItemBase::operator=(that);
+            m_shapeSizeDIPs = that.m_shapeSizeDIPs;
+            m_sizeDIPs = that.m_sizeDIPs;
+            m_shape = that.m_shape;
+            m_renderer = that.m_renderer;
+            // force re-sync of renderer's render function on first Draw()
+            m_rendererNeedsUpdating = true;
+            m_drawFunction = that.m_drawFunction;
+            }
+        return *this;
+        }
+
+    //---------------------------------------------------
     void Shape::Draw(const wxRect& drawRect, wxDC& dc) const // cppcheck-suppress constParameter
         {
         // apply any brush, pen, etc. changes if necessary

@@ -66,6 +66,17 @@ namespace Wisteria::UI
         std::vector<wxPoint2DDouble> interestPts; /*!< Points to draw lines to.*/
         };
 
+    /// @brief Info needed to restore a bar-block decal during chart editing.
+    struct BarBlockDecalInfo
+        {
+        /// @brief The axis label of the bar containing the block.
+        wxString m_barLabel;
+        /// @brief The zero-based index of the block within the bar.
+        size_t m_blockIndex{ 0 };
+        /// @brief The decal label to draw on the block.
+        GraphItems::Label m_decal;
+        };
+
     class AxisOptionsPanel;
 
     /** @brief Intermediate base dialog for inserting a graph into a canvas cell.
