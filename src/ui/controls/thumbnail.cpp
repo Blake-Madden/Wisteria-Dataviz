@@ -77,11 +77,7 @@ namespace Wisteria::UI
         {
         if (!filenames.empty() && wxFileName::FileExists(filenames[0]))
             {
-            if (const wxImage img(filenames[0]); (m_pOwner != nullptr) && img.IsOk())
-                {
-                m_pOwner->SetBitmap(img);
-                }
-            else
+            if (m_pOwner == nullptr || !m_pOwner->LoadImage(filenames[0]))
                 {
                 return false;
                 }
@@ -175,6 +171,7 @@ namespace Wisteria::UI
     //----------------------------------
     bool Thumbnail::LoadImage(const wxString& filePath)
         {
+        m_filePath = filePath;
         m_img = GraphItems::Image(GraphItems::Image::LoadFile(filePath));
         if (m_img.IsOk())
             {
@@ -303,7 +300,7 @@ namespace Wisteria::UI
                 wxFD_OPEN | wxFD_PREVIEW);
             if (fileDlg.ShowModal() == wxID_OK)
                 {
-                SetBitmap(wxBitmap(GraphItems::Image::LoadFile(fileDlg.GetPath())));
+                LoadImage(fileDlg.GetPath());
                 }
             }
         }

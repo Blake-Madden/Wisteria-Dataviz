@@ -132,6 +132,13 @@ namespace Wisteria::UI
             return m_img;
             }
 
+        /// @returns The file path of the currently loaded image (may be empty).
+        [[nodiscard]]
+        wxString GetFilePath() const
+            {
+            return m_filePath;
+            }
+
       private:
         void OnResize(wxSizeEvent& event);
         void OnClick([[maybe_unused]] wxMouseEvent& event);
@@ -141,6 +148,7 @@ namespace Wisteria::UI
         ClickMode m_clickMode{ ClickMode::FullSizeViewable };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         wxSize m_baseSize{ 128, 128 };
+        wxString m_filePath;
         };
 
     /// @brief Drop file handler for thumbnail control.
