@@ -24,6 +24,22 @@ namespace Wisteria::UI
             {
             m_relativePageIndex = pageNames.size() - 1;
             }
+        if (m_canvas != nullptr && m_editMode == EditMode::Edit)
+            {
+            const auto& watermark = m_canvas->GetWatermark();
+            m_watermarkLabel = watermark.m_label;
+            if (watermark.m_color.IsOk())
+                {
+                m_watermarkColor = watermark.m_color;
+                }
+            const auto& bgColor = m_canvas->GetBackgroundColor();
+            if (bgColor.IsOk())
+                {
+                m_backgroundColor = bgColor;
+                }
+            m_backgroundImageOpacity = m_canvas->GetBackgroundImageOpacity();
+            m_resetPageNumbering = m_canvas->IsResettingPageNumbering();
+            }
         CreateControls();
         GetSizer()->SetSizeHints(this);
         Centre();
@@ -115,7 +131,98 @@ namespace Wisteria::UI
         columnsSpin->SetValidator(wxGenericValidator{ &m_columnCount });
         gridSizer->Add(columnsSpin, wxSizerFlags{}.Expand());
 
-        contentSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
+        // left-side sizer holds the grid controls and the appearance section
+        auto* leftSizer = new wxBoxSizer(wxVERTICAL);
+        leftSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
+
+        // appearance section
+        auto* appearanceBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Appearance"));
+        auto* appearanceGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        appearanceGrid->AddGrowableCol(1, 1);
+
+        // watermark label
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_STATIC, _(L"Watermark:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* wmTextCtrl =
+            new wxTextCtrl(appearanceBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_watermarkLabel });
+        appearanceGrid->Add(wmTextCtrl, wxSizerFlags{}.Expand());
+
+        // watermark color
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_STATIC, _(L"Watermark color:")),
+            wxSizerFlags{}.CenterVertical());
+        m_watermarkColorPicker =
+            new wxColourPickerCtrl(appearanceBox->GetStaticBox(), wxID_ANY, m_watermarkColor);
+        appearanceGrid->Add(m_watermarkColorPicker, wxSizerFlags{}.Expand());
+
+        // background color
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_STATIC, _(L"Background color:")),
+            wxSizerFlags{}.CenterVertical());
+        m_bgColorPicker =
+            new wxColourPickerCtrl(appearanceBox->GetStaticBox(), wxID_ANY, m_backgroundColor);
+        appearanceGrid->Add(m_bgColorPicker, wxSizerFlags{}.Expand());
+
+        // background image thumbnail (click or drag-and-drop to select)
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_STATIC, _(L"Background image:")),
+            wxSizerFlags{}.CenterVertical());
+        m_bgThumbnail = new Thumbnail(
+            appearanceBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true,
+            wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
+        appearanceGrid->Add(m_bgThumbnail, wxSizerFlags{}.Border(wxTOP | wxBOTTOM));
+
+        // background image opacity
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_STATIC, _(L"Image opacity:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* bgOpacitySizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* bgOpacitySlider =
+            new wxSlider(appearanceBox->GetStaticBox(), wxID_ANY, m_backgroundImageOpacity, 0, 255,
+                         wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+        bgOpacitySlider->SetValidator(wxGenericValidator{ &m_backgroundImageOpacity });
+        m_bgOpacityLabel = new wxStaticText(
+            appearanceBox->GetStaticBox(), wxID_STATIC, std::to_wstring(m_backgroundImageOpacity),
+            wxDefaultPosition, FromDIP(wxSize{ 30, wxDefaultCoord }));
+        bgOpacitySizer->Add(bgOpacitySlider, wxSizerFlags{ 1 }.CenterVertical());
+        bgOpacitySizer->Add(m_bgOpacityLabel, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+        appearanceGrid->Add(bgOpacitySizer, wxSizerFlags{}.Expand());
+
+        appearanceBox->Add(appearanceGrid, wxSizerFlags{}.Expand().Border());
+
+        // reset page numbering
+        auto* resetPageNumCheck =
+            new wxCheckBox(appearanceBox->GetStaticBox(), wxID_ANY, _(L"Reset page numbering"));
+        resetPageNumCheck->SetValidator(wxGenericValidator{ &m_resetPageNumbering });
+        appearanceBox->Add(resetPageNumCheck, wxSizerFlags{}.Border());
+
+        leftSizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border(wxTOP));
+        contentSizer->Add(leftSizer, wxSizerFlags{}.Expand());
+
+        // pre-load existing background image when editing
+        if (m_canvas != nullptr && m_editMode == EditMode::Edit)
+            {
+            const auto bgImagePath = m_canvas->GetBackgroundImagePath();
+            if (!bgImagePath.empty())
+                {
+                m_bgThumbnail->LoadImage(bgImagePath);
+                }
+            }
+
+        // opacity slider: keep the label in sync
+        bgOpacitySlider->Bind(wxEVT_SLIDER,
+                              [this]([[maybe_unused]] wxCommandEvent&)
+                              {
+                                  TransferDataFromWindow();
+                                  if (m_bgOpacityLabel != nullptr)
+                                      {
+                                      m_bgOpacityLabel->SetLabel(
+                                          std::to_wstring(m_backgroundImageOpacity));
+                                      }
+                              });
 
         // preview panel
         const int previewWidth = FromDIP(400);

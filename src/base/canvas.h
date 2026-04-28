@@ -242,6 +242,28 @@ namespace Wisteria
         void SetBackgroundImage(const wxBitmapBundle& backgroundImage,
                                 uint8_t opacity = wxALPHA_OPAQUE) noexcept;
 
+        /// @brief Sets the file path of the background image (preserved for serialization).
+        /// @param path The image file path.
+        /// @note This is only used for serialization, use SetBackgroundImage() which takes
+        ///     a @c wxBitmapBundle to actually set an image.
+        void SetBackgroundImagePath(const wxString& path) { m_bgImagePath = path; }
+
+        /// @returns The file path of the background image, or empty if none was set.
+        [[nodiscard]]
+        const wxString& GetBackgroundImagePath() const noexcept { return m_bgImagePath; }
+
+        /// @returns The opacity of the background image (0–255).
+        [[nodiscard]]
+        uint8_t GetBackgroundImageOpacity() const noexcept { return m_bgOpacity; }
+
+        /// @brief Sets whether this page resets page numbering to 1 when printed.
+        /// @param reset @c true to reset page numbering on this page.
+        void ResetsPageNumbering(const bool reset) noexcept { m_resetPageNumbering = reset; }
+
+        /// @returns @c true if this page resets page numbering.
+        [[nodiscard]]
+        bool IsResettingPageNumbering() const noexcept { return m_resetPageNumbering; }
+
         /// @}
 
         /// @brief Sets the raw name template (e.g., `{{ReportName()}}`).
@@ -981,6 +1003,8 @@ namespace Wisteria
         uint8_t m_bgOpacity{ wxALPHA_OPAQUE };
         bool m_bgColorUseLinearGradient{ false };
         wxBitmapBundle m_bgImage;
+        wxString m_bgImagePath;
+        bool m_resetPageNumbering{ false };
 
         // resize state variables
         bool m_delayResize{ true }; // whether a timer should delay resizing during mouse dragging

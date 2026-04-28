@@ -230,6 +230,13 @@ namespace Wisteria::UI
 
         leftSizer->Add(shapesBox, wxSizerFlags{}.Expand().Border());
 
+        // bar block decals
+        m_barBlockDecalListBox = new wxEditableListBox(
+            optionsPage, wxID_ANY, _(L"Bar block decals:"), wxDefaultPosition,
+            wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        leftSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
+
         // legend placement
         auto* legendGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
@@ -299,13 +306,6 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
         rightSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
-
-        // bar block decals
-        m_barBlockDecalListBox = new wxEditableListBox(
-            optionsPage, wxID_ANY, _(L"Bar block decals:"), wxDefaultPosition,
-            wxSize{ FromDIP(300), FromDIP(120) },
-            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
-        rightSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
 
         optionsSizer->Add(rightSizer, wxSizerFlags{ 1 }.Expand().Border());
 

@@ -136,6 +136,7 @@ namespace Wisteria
                     if (page->HasProperty(L"page-numbering"))
                         {
                         m_pageNumber = 1;
+                        canvas->ResetsPageNumbering(true);
                         }
 
                     // watermark (overrides report-level watermark)
@@ -171,10 +172,22 @@ namespace Wisteria
                     // background image
                     if (page->HasProperty(L"background-image"))
                         {
-                        const auto bmp = LoadImageFile(page->GetProperty(L"background-image"));
+                        const auto imgPathNode = page->GetProperty(L"background-image");
+                        const auto bmp = LoadImageFile(imgPathNode);
                         if (bmp.IsOk())
                             {
-                            canvas->SetBackgroundImage(wxBitmapBundle(bmp));
+                            const wxString rawPath =
+                                imgPathNode->IsValueString() ?
+                                    imgPathNode->AsString() :
+                                    imgPathNode->GetProperty(L"path")->AsString();
+                            canvas->SetBackgroundImagePath(NormalizeFilePath(rawPath));
+                            const auto opacityNode = imgPathNode->GetProperty(L"opacity");
+                            const auto opacity = static_cast<uint8_t>(
+                                opacityNode->IsOk() ?
+                                    std::clamp(static_cast<uint8_t>(opacityNode->AsDouble()),
+                                               wxALPHA_TRANSPARENT, wxALPHA_OPAQUE) :
+                                    wxALPHA_OPAQUE);
+                            canvas->SetBackgroundImage(wxBitmapBundle{ bmp }, opacity);
                             }
                         }
 

@@ -1883,7 +1883,27 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
                           static_cast<size_t>(dlg.GetRelativePageIndex() + 1);
         }
 
-    AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName(), insertIndex);
+    auto* newCanvas =
+        AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName(), insertIndex);
+    if (newCanvas != nullptr)
+        {
+        newCanvas->SetWatermark(
+            Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
+        newCanvas->SetBackgroundColor(dlg.GetPageBackgroundColor());
+        newCanvas->ResetsPageNumbering(dlg.GetResetPageNumbering());
+        const auto bgImgPath = dlg.GetBackgroundImagePath();
+        if (!bgImgPath.empty())
+            {
+            const auto bmp = Wisteria::GraphItems::Image::LoadFile(bgImgPath);
+            if (bmp.IsOk())
+                {
+                newCanvas->SetBackgroundImagePath(bgImgPath);
+                newCanvas->SetBackgroundImage(
+                    wxBitmapBundle{ wxBitmap{ bmp } },
+                    static_cast<uint8_t>(dlg.GetBackgroundImageOpacity()));
+                }
+            }
+        }
     }
 
 //-------------------------------------------
@@ -1909,6 +1929,21 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
+    canvas->SetWatermark(
+        Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
+    canvas->SetBackgroundColor(dlg.GetPageBackgroundColor());
+    canvas->ResetsPageNumbering(dlg.GetResetPageNumbering());
+    const auto bgImgPath = dlg.GetBackgroundImagePath();
+    if (!bgImgPath.empty())
+        {
+        const auto bmp = Wisteria::GraphItems::Image::LoadFile(bgImgPath);
+        if (bmp.IsOk())
+            {
+            canvas->SetBackgroundImagePath(bgImgPath);
+            canvas->SetBackgroundImage(wxBitmapBundle{ wxBitmap{ bmp } },
+                                       static_cast<uint8_t>(dlg.GetBackgroundImageOpacity()));
+            }
+        }
     UpdateCanvas(canvas);
 
     // update the sidebar label for this page
@@ -1974,8 +2009,9 @@ void WisteriaView::OnDeletePage([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, const wxString& name,
-                                    const std::optional<size_t> position)
+Wisteria::Canvas* WisteriaView::AddPageToProject(const size_t rows, const size_t columns,
+                                                 const wxString& name,
+                                                 const std::optional<size_t> position)
     {
     const wxWindowID pageId = wxNewId();
 
@@ -2015,6 +2051,7 @@ void WisteriaView::AddPageToProject(const size_t rows, const size_t columns, con
     UpdateGraphButtonStates();
 
     GetDocument()->Modify(true);
+    return canvas;
     }
 
 //-------------------------------------------

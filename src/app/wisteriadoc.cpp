@@ -275,6 +275,50 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
                            wxSimpleJSON::Create(L"{\"name\": \"" + EscapeJsonStr(pageName) +
                                                 L"\", \"rows\": []}");
 
+        // per-page watermark
+        const auto& pageWatermark = canvas->GetWatermark();
+        if (!pageWatermark.m_label.empty())
+            {
+            auto wmNode = wxSimpleJSON::Create(L"{}");
+            wmNode->Add(L"label", pageWatermark.m_label);
+            if (pageWatermark.m_color.IsOk())
+                {
+                wmNode->Add(L"color", ColorToStr(pageWatermark.m_color));
+                }
+            pageObj->Add(L"watermark", wmNode);
+            }
+
+        // per-page background color
+        const auto& pageBgColor = canvas->GetBackgroundColor();
+        if (pageBgColor.IsOk() && pageBgColor != *wxWHITE)
+            {
+            pageObj->Add(L"background-color", ColorToStr(pageBgColor));
+            }
+
+        // per-page background image
+        const auto& bgImgPath = canvas->GetBackgroundImagePath();
+        if (!bgImgPath.empty())
+            {
+            const auto bgOpacity = canvas->GetBackgroundImageOpacity();
+            if (bgOpacity == wxALPHA_OPAQUE)
+                {
+                pageObj->Add(L"background-image", MakeRelativePath(bgImgPath));
+                }
+            else
+                {
+                auto bgImgNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                bgImgNode->Add(L"path", MakeRelativePath(bgImgPath));
+                bgImgNode->Add(L"opacity", static_cast<double>(bgOpacity));
+                pageObj->Add(L"background-image", bgImgNode);
+                }
+            }
+
+        // page-numbering reset
+        if (canvas->IsResettingPageNumbering())
+            {
+            pageObj->Add(L"page-numbering", true);
+            }
+
         auto rowsArray = pageObj->GetProperty(L"rows");
         const auto [rowCount, colCount] = canvas->GetFixedObjectsGridSize();
         for (size_t row = 0; row < rowCount; ++row)

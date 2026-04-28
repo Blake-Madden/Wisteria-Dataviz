@@ -13,7 +13,9 @@
 #define INSERT_PAGE_DIALOG_H
 
 #include "../../base/canvas.h"
+#include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
+#include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
@@ -113,12 +115,62 @@ namespace Wisteria::UI
             return m_editMode;
             }
 
+        /// @returns The watermark label text (may be empty).
+        [[nodiscard]]
+        wxString GetWatermarkLabel()
+            {
+            TransferDataFromWindow();
+            return m_watermarkLabel;
+            }
+
+        /// @returns The watermark color.
+        [[nodiscard]]
+        wxColour GetWatermarkColor() const
+            {
+            return (m_watermarkColorPicker != nullptr) ? m_watermarkColorPicker->GetColour() :
+                                                         m_watermarkColor;
+            }
+
+        /// @returns The page background color.
+        [[nodiscard]]
+        wxColour GetPageBackgroundColor() const
+            {
+            return (m_bgColorPicker != nullptr) ? m_bgColorPicker->GetColour() : m_backgroundColor;
+            }
+
+        /// @returns The background image file path (may be empty).
+        [[nodiscard]]
+        wxString GetBackgroundImagePath() const
+            {
+            return (m_bgThumbnail != nullptr) ? m_bgThumbnail->GetFilePath() : wxString{};
+            }
+
+        /// @returns The background image opacity (needs to be clamped to 0–255).
+        [[nodiscard]]
+        int GetBackgroundImageOpacity()
+            {
+            TransferDataFromWindow();
+            return m_backgroundImageOpacity;
+            }
+
+        /// @returns @c true if page numbering should reset to 1 on this page.
+        [[nodiscard]]
+        bool GetResetPageNumbering()
+            {
+            TransferDataFromWindow();
+            return m_resetPageNumbering;
+            }
+
       private:
         void CreateControls();
         void SelectCell(size_t row, size_t column);
 
         Canvas* m_canvas{ nullptr };
         wxPanel* m_previewPanel{ nullptr };
+        wxColourPickerCtrl* m_watermarkColorPicker{ nullptr };
+        wxColourPickerCtrl* m_bgColorPicker{ nullptr };
+        wxStaticText* m_bgOpacityLabel{ nullptr };
+        Thumbnail* m_bgThumbnail{ nullptr };
 
         EditMode m_editMode{ EditMode::Insert };
 
@@ -130,6 +182,12 @@ namespace Wisteria::UI
         int m_relativePageIndex{ wxNOT_FOUND };
         wxArrayString m_pageNames;
         wxString m_pageName;
+
+        wxString m_watermarkLabel;
+        wxColour m_watermarkColor{ wxColour(255, 0, 0) };
+        wxColour m_backgroundColor{ *wxWHITE };
+        int m_backgroundImageOpacity{ wxALPHA_OPAQUE };
+        bool m_resetPageNumbering{ false };
         };
     } // namespace Wisteria::UI
 
