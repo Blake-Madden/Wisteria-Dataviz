@@ -9,6 +9,9 @@
 #include "wisteriaview.h"
 #include "../base/reportprintout.h"
 #include "../base/svgreportprintout.h"
+#ifdef INCLUDE_PDF
+    #include "../base/reportpdfexport.h"
+#endif
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/insertboxplotdlg.h"
@@ -119,6 +122,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind SVG export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
+
+    // bind PDF export button
+#ifdef INCLUDE_PDF
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
+#endif
 
     // bind save button
     m_frame->Bind(
@@ -681,6 +689,28 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
                                               .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
                                               .Slideshow(savedOptions.m_includeSlideshow)
                                               .ThemeColor(savedOptions.m_themeColor));
+    }
+
+//-------------------------------------------
+void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
+    {
+#ifdef INCLUDE_PDF
+    if (m_pages.empty())
+        {
+        return;
+        }
+
+    wxFileDialog fileDlg(m_frame, _(L"Export to PDF"), wxString{},
+                         GetDocument()->GetUserReadableName(), _(L"PDF files (*.pdf)|*.pdf"),
+                         wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(),
+                                        GetDocument()->GetUserReadableName());
+#endif
     }
 
 //-------------------------------------------

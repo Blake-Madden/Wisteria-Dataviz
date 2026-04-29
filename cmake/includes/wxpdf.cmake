@@ -1,0 +1,76 @@
+SET(WXPDF_SRC
+    src/wxpdfdoc/src/pdfannotation.cpp
+    src/wxpdfdoc/src/pdfbarcode.cpp
+    src/wxpdfdoc/src/pdfbarcodezint.cpp
+    src/wxpdfdoc/src/pdfcffdecoder.cpp
+    src/wxpdfdoc/src/pdfcffindex.cpp
+    src/wxpdfdoc/src/pdfcolour.cpp
+    src/wxpdfdoc/src/pdfdc.cpp
+    src/wxpdfdoc/src/pdfdecode.cpp
+    src/wxpdfdoc/src/pdfdocument.cpp
+    src/wxpdfdoc/src/pdfencoding.cpp
+    src/wxpdfdoc/src/pdfencrypt.cpp
+    src/wxpdfdoc/src/pdffont.cpp
+    src/wxpdfdoc/src/pdffontdata.cpp
+    src/wxpdfdoc/src/pdffontdatacore.cpp
+    src/wxpdfdoc/src/pdffontdataopentype.cpp
+    src/wxpdfdoc/src/pdffontdatatruetype.cpp
+    src/wxpdfdoc/src/pdffontdatatype0.cpp
+    src/wxpdfdoc/src/pdffontdatatype1.cpp
+    src/wxpdfdoc/src/pdffontdescription.cpp
+    src/wxpdfdoc/src/pdffontdetails.cpp
+    src/wxpdfdoc/src/pdffontextended.cpp
+    src/wxpdfdoc/src/pdffontmanager.cpp
+    src/wxpdfdoc/src/pdffontparser.cpp
+    src/wxpdfdoc/src/pdffontparsertruetype.cpp
+    src/wxpdfdoc/src/pdffontparsertype1.cpp
+    src/wxpdfdoc/src/pdffontsubsetcff.cpp
+    src/wxpdfdoc/src/pdffontsubsettruetype.cpp
+    src/wxpdfdoc/src/pdffontvolt.cpp
+    src/wxpdfdoc/src/pdfform.cpp
+    src/wxpdfdoc/src/pdfgradient.cpp
+    src/wxpdfdoc/src/pdfgraphics.cpp
+    src/wxpdfdoc/src/pdfimage.cpp
+    src/wxpdfdoc/src/pdfkernel.cpp
+    src/wxpdfdoc/src/pdflayer.cpp
+    src/wxpdfdoc/src/pdfobjects.cpp
+    src/wxpdfdoc/src/pdfocg.cpp
+    src/wxpdfdoc/src/pdfparser.cpp
+    src/wxpdfdoc/src/pdfpattern.cpp
+    src/wxpdfdoc/src/pdfprint.cpp
+    src/wxpdfdoc/src/pdfrijndael.cpp
+    src/wxpdfdoc/src/pdftemplate.cpp
+    src/wxpdfdoc/src/pdfutility.cpp
+    src/wxpdfdoc/src/pdfxml.cpp
+    src/wxpdfdoc/src/crypto/random.cpp
+    src/wxpdfdoc/src/crypto/saslprep.cpp
+    src/wxpdfdoc/src/crypto/sha256.cpp
+    src/wxpdfdoc/src/crypto/sha384.cpp
+    src/wxpdfdoc/src/crypto/sha512.cpp
+    src/wxpdfdoc/src/crypto/unicode_norm.cpp
+    src/wxpdfdoc/src/woff/woff2converter.cpp
+    src/wxpdfdoc/src/woff/woffconverter.cpp)
+
+set(WXPDF_THIRDPARTY_SRC
+    src/wxpdfdoc/thirdparty/woff2/src/woff2_dec.cc
+    src/wxpdfdoc/thirdparty/woff2/src/woff2_common.cc
+    src/wxpdfdoc/thirdparty/woff2/src/woff2_out.cc
+    src/wxpdfdoc/thirdparty/woff2/src/table_tags.cc
+    src/wxpdfdoc/thirdparty/woff2/src/variable_length.cc
+    src/wxpdfdoc/thirdparty/woff2/brotli/common/constants.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/common/context.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/common/dictionary.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/common/platform.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/common/shared_dictionary.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/common/transform.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/dec/bit_reader.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/dec/decode.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/dec/huffman.c
+    src/wxpdfdoc/thirdparty/woff2/brotli/dec/state.c)
+
+if(MSVC)
+    set_source_files_properties(${WXPDF_THIRDPARTY_SRC} PROPERTIES
+        COMPILE_OPTIONS "/wd4267")
+endif()
+
+list(APPEND WXPDF_SRC ${WXPDF_THIRDPARTY_SRC})

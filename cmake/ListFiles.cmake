@@ -10,12 +10,12 @@ htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdl
 listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\
 sidebarbook[.]cpp|downloadfile[.]cpp|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
-demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern)")
+demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
 
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|reportpdfexport[.]cpp|wxpdfdoc/)")
 
 # Exclusion filter for main application (in addition to other filters)
 set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
@@ -23,7 +23,7 @@ codeeditor[.]cpp|functionbrowserdlg[.]cpp|demo[.]cpp|main[.]cpp|\
 htmltablewinprintout[.]cpp|htmltablewin[.]cpp|archivedlg[.]cpp|htmltablepanel[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
 (cpp|doc|docx|html|markdown|ods|odt|postscript|rtf|odt_odp)_extract_text[.]cpp|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
 
 # Use the directory containing this file to find the project root
 # (works correctly whether included from main CMakeLists.txt or test CMakeLists.txt)

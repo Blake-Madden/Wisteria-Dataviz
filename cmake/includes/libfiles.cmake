@@ -19,6 +19,7 @@ SET(WISTERIA_SRC
     src/base/reportbuilder.cpp
     src/base/reportbuildercolors.cpp
     src/base/reportnodeloader.cpp
+    src/base/reportpdfexport.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
     src/base/svgreportprintout.cpp

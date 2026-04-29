@@ -233,6 +233,7 @@ constexpr wxWindowID ID_DELETE_DATASET{ wxID_HIGHEST + 53 };
 
 // Export
 constexpr wxWindowID ID_SVG_EXPORT{ wxID_HIGHEST + 52 };
+constexpr wxWindowID ID_PDF_EXPORT{ wxID_HIGHEST + 57 };
 
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };

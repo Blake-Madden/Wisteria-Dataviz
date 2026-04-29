@@ -171,9 +171,23 @@ include(cmake/ListFiles.cmake)
 
 # Build Wisteria library
 ########################
+option(INCLUDE_PDF "Include PDF export support (wxPDFDocument)" OFF)
+
 include(${CMAKE_SOURCE_DIR}/cmake/includes/libfiles.cmake)
+if(INCLUDE_PDF)
+    include(${CMAKE_SOURCE_DIR}/cmake/includes/wxpdf.cmake)
+    list(APPEND WISTERIA_SRC ${WXPDF_SRC})
+endif()
 set(WISTIER_LIB wisteria)
 add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
+if(INCLUDE_PDF)
+    target_include_directories(${WISTIER_LIB} PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/include
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/include
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/brotli/include
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/zint/backend
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/zint/backend/fonts)
+endif()
 if(WIN32 OR APPLE)
     target_link_libraries(${WISTIER_LIB} PUBLIC ${wxWidgets_LIBRARIES})
 elseif(UNIX)
@@ -184,8 +198,9 @@ elseif(UNIX)
 endif()
 
 # Define wxDEBUG_LEVEL consistently for all platforms
-target_compile_definitions(${WISTIER_LIB} PUBLIC 
-    wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL})
+target_compile_definitions(${WISTIER_LIB} PUBLIC
+    wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL}
+    $<$<BOOL:${INCLUDE_PDF}>:INCLUDE_PDF>)
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 if(MSVC)
