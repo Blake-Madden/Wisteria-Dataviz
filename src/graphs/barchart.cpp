@@ -1263,10 +1263,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 else
                     {
-                    box->GetPen().SetColour(
+                    box->GetPen() =
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                            *wxTRANSPARENT_PEN :
+                            wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
                     }
                 if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                     {
@@ -1293,10 +1293,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     {
                     box->SetBackgroundFill(Colors::GradientFill(
                         Colors::ColorContrast::ChangeOpacity(barBlock.GetColor(), opacityToApply)));
-                    box->GetPen().SetColour(
+                    box->GetPen() =
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                            *wxTRANSPARENT_PEN :
+                            wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
                     }
 
                 // if the bar is totally transparent, then draw a contrasting outline
@@ -1304,8 +1304,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
                     !box->GetPen().GetColour().IsTransparent())
                     {
-                    box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                        GetPlotOrCanvasColor()));
+                    box->GetPen() = wxPen{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                        GetPlotOrCanvasColor()) };
                     }
 
                 // if the box is really thin, then don't use the outline pen on its sides
@@ -1852,10 +1852,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 else
                     {
-                    box->GetPen().SetColour(
+                    box->GetPen() =
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                            *wxTRANSPARENT_PEN :
+                            wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
                     }
 
                 if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
@@ -1882,10 +1882,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     {
                     box->SetBackgroundFill(Colors::GradientFill(
                         Colors::ColorContrast::ChangeOpacity(barBlock.GetColor(), opacityToApply)));
-                    box->GetPen().SetColour(
+                    box->GetPen() =
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                            *wxTRANSPARENT_PEN :
+                            wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
                     }
 
                 // if the bar is totally transparent, then draw a contrasting outline
@@ -1893,8 +1893,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
                     !box->GetPen().GetColour().IsTransparent())
                     {
-                    box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                        GetPlotOrCanvasColor()));
+                    box->GetPen() = wxPen{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                        GetPlotOrCanvasColor()) };
                     }
 
                 // if the box is really thin, then don't use the outline pen on the
