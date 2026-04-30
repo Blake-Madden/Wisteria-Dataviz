@@ -346,7 +346,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
         // no options for SVG and PDF (since size doesn't matter),
         // so don't bother showing the dialog for that
-        if (ext.CmpNoCase(L"svg") != 0 || ext.CmpNoCase(L"pdf") != 0)
+        if (ext.CmpNoCase(L"svg") != 0 && ext.CmpNoCase(L"pdf") != 0)
             {
             if (optionsDlg.ShowModal() != wxID_OK)
                 {
