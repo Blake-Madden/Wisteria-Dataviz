@@ -90,9 +90,8 @@ namespace Wisteria::Brushes::Schemes
         [[nodiscard]]
         wxBrush GetBrush(const size_t index) const
             {
-            return (m_brushes.empty()) ?
-                       *wxTRANSPARENT_BRUSH :
-                       m_brushes.at(index % m_brushes.size());
+            return (m_brushes.empty()) ? *wxTRANSPARENT_BRUSH :
+                                         m_brushes.at(index % m_brushes.size());
             }
 
         /** @brief Adds a brush to the scheme.

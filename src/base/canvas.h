@@ -250,11 +250,17 @@ namespace Wisteria
 
         /// @returns The file path of the background image, or empty if none was set.
         [[nodiscard]]
-        const wxString& GetBackgroundImagePath() const noexcept { return m_bgImagePath; }
+        const wxString& GetBackgroundImagePath() const noexcept
+            {
+            return m_bgImagePath;
+            }
 
         /// @returns The opacity of the background image (0–255).
         [[nodiscard]]
-        uint8_t GetBackgroundImageOpacity() const noexcept { return m_bgOpacity; }
+        uint8_t GetBackgroundImageOpacity() const noexcept
+            {
+            return m_bgOpacity;
+            }
 
         /// @brief Sets whether this page resets page numbering to 1 when printed.
         /// @param reset @c true to reset page numbering on this page.
@@ -262,7 +268,10 @@ namespace Wisteria
 
         /// @returns @c true if this page resets page numbering.
         [[nodiscard]]
-        bool IsResettingPageNumbering() const noexcept { return m_resetPageNumbering; }
+        bool IsResettingPageNumbering() const noexcept
+            {
+            return m_resetPageNumbering;
+            }
 
         /// @}
 

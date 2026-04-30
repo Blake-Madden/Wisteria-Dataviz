@@ -78,24 +78,30 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         const wxSize origSize = canvas->GetSize();
 
         // resize canvas to match page dimensions so CalcAllSizes lays out for the page
-        canvas->SetCanvasMinWidthDIPs(dipW);
-        canvas->SetCanvasMinHeightDIPs(dipH);
-        canvas->SetSize(canvas->FromDIP(wxSize(dipW, dipH)));
-        canvas->CalcRowDimensions();
-        canvas->SetSize(canvas->FromDIP(wxSize(dipW, dipH)));
+        if (canvas->IsFittingToPageWhenPrinting())
+            {
+            canvas->SetCanvasMinWidthDIPs(dipW);
+            canvas->SetCanvasMinHeightDIPs(dipH);
+            canvas->SetSize(canvas->FromDIP(wxSize(dipW, dipH)));
+            }
 
         pdfDC.StartPage();
-        const wxEventBlocker blocker{ canvas };
-        canvas->CalcAllSizes(pdfDC);
-        canvas->OnDraw(pdfDC);
-        canvas->DrawWatermarkLabel(pdfDC);
+            {
+            const wxEventBlocker blocker{ canvas };
+            canvas->CalcAllSizes(pdfDC);
+            canvas->OnDraw(pdfDC);
+            canvas->DrawWatermarkLabel(pdfDC);
+            }
         pdfDC.EndPage();
 
-        // restore canvas state
-        canvas->SetCanvasMinWidthDIPs(origMinWidth);
-        canvas->SetCanvasMinHeightDIPs(origMinHeight);
-        canvas->CalcRowDimensions();
-        canvas->SetSize(origSize);
+        // restore original canvas dimensions
+        if (canvas->IsFittingToPageWhenPrinting())
+            {
+            canvas->SetCanvasMinWidthDIPs(origMinWidth);
+            canvas->SetCanvasMinHeightDIPs(origMinHeight);
+            canvas->CalcRowDimensions();
+            canvas->SetSize(origSize);
+            }
         canvas->ResetResizeDelay();
         canvas->SendSizeEvent();
         canvas->Refresh();
