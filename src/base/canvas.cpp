@@ -344,9 +344,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         UI::ImageExportDlg optionsDlg(this, GraphItems::Image::GetImageFileTypeFromExtension(ext),
                                       previewImg, imgOptions);
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
-        // no options for SVG (since size doesn't matter),
+        // no options for SVG and PDF (since size doesn't matter),
         // so don't bother showing the dialog for that
-        if (ext.CmpNoCase(L"svg") != 0)
+        if (ext.CmpNoCase(L"svg") != 0 || ext.CmpNoCase(L"pdf") != 0)
             {
             if (optionsDlg.ShowModal() != wxID_OK)
                 {
