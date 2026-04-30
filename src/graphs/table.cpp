@@ -1536,8 +1536,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             ++currentRow;
             }
 
-        auto highlightedBorderLines =
-            std::make_unique<GraphItems::Lines>(GetHighlightPen(), GetScaling());
+        auto highlightedBorderLines = std::make_unique<GraphItems::Lines>(
+            GetHighlightPen().IsOk() ? GetHighlightPen() : GetPen(), GetScaling());
         auto borderLines = std::make_unique<GraphItems::Lines>(GetPen(), GetScaling());
         borderLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
         currentRow = 0;
@@ -1737,7 +1737,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                               { return lv.m_row < rv.m_row; });
             auto noteConnectionLines = std::make_unique<GraphItems::Lines>(
                 note.m_connectionLinePen.has_value() ? note.m_connectionLinePen.value() :
-                                                       GetHighlightPen(),
+                GetHighlightPen().IsOk()             ? GetHighlightPen() :
+                                                       GetPen(),
                 GetScaling());
             noteConnectionLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
