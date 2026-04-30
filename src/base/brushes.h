@@ -81,7 +81,7 @@ namespace Wisteria::Brushes::Schemes
             }
 
         /** @returns The brush from a given index.\n
-                If no brushes are available, returns a solid black brush.
+                If no brushes are available, returns a transparent brush.
             @param index The index into the brush list to return. If index is outside
                 number of brushes, then it will recycle (i.e., wrap around).
                 For example, if there are 2 brushes, index 1 will return 1;
@@ -91,7 +91,7 @@ namespace Wisteria::Brushes::Schemes
         wxBrush GetBrush(const size_t index) const
             {
             return (m_brushes.empty()) ?
-                       wxBrush{ Colors::ColorBrewer::GetColor(Colors::Color::Black) } :
+                       *wxTRANSPARENT_BRUSH :
                        m_brushes.at(index % m_brushes.size());
             }
 
