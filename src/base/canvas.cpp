@@ -443,6 +443,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 OnDraw(pdfDC);
                 DrawWatermarkLabel(pdfDC);
                 pdfDC.EndPage();
+                pdfDC.EndDoc();
                 }
             // restore canvas state before recalculating for the screen DC
             m_rectDIPs = savedRectDIPs;

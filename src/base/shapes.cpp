@@ -5844,7 +5844,7 @@ namespace Wisteria::GraphItems
 
         // get the pencil pen for color reference
         wxPen pencilPen = GetGraphItemInfo().GetPen();
-        if (!pencilPen.IsOk())
+        if (!pencilPen.IsOk() || pencilPen.GetColour().IsTransparent())
             {
             pencilPen = *wxBLACK_PEN;
             }
@@ -5941,20 +5941,16 @@ namespace Wisteria::GraphItems
 
         // draw outline with pencil style
         pencilPen.SetWidth(penWidth);
-        Lines lines(pencilPen, GetScaling());
-        lines.SetLineStyle(LineStyle::Pencil);
-        lines.SetDPIScaleFactor(GetDPIScaleFactor());
+        gc->SetBrush(wxNullBrush);
 
-        // top edge (horizontal)
-        lines.AddLine(rect.GetTopLeft(), rect.GetTopRight());
-        // right edge (vertical)
-        lines.AddLine(rect.GetTopRight(), rect.GetBottomRight());
-        // bottom edge (horizontal)
-        lines.AddLine(rect.GetBottomRight(), rect.GetBottomLeft());
-        // left edge (vertical)
-        lines.AddLine(rect.GetBottomLeft(), rect.GetTopLeft());
-
-        lines.Draw(dc);
+        auto outlinePath = gc->CreatePath();
+        outlinePath.MoveToPoint(rect.GetTopLeft());
+        outlinePath.AddLineToPoint(rect.GetTopRight());
+        outlinePath.AddLineToPoint(rect.GetBottomRight());
+        outlinePath.AddLineToPoint(rect.GetBottomLeft());
+        outlinePath.AddLineToPoint(rect.GetTopLeft());
+        outlinePath.CloseSubpath();
+        gc->StrokePath(outlinePath);
         }
 
     //---------------------------------------------------
