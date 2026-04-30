@@ -5410,6 +5410,11 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                 }
             }
 
+        // ApplyAxisOverrides must come before any SortBars call so that the sort's
+        // custom axis labels are not overwritten by the stale labels saved from the
+        // original chart.
+        dlg.ApplyAxisOverrides(*plot);
+
         // restore custom bar sort from the previous chart
         if (dlg.HasCustomBarSort())
             {
@@ -5421,6 +5426,18 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             else if (!dlg.GetBarSortLabels().empty())
                 {
                 plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
+                }
+            }
+        else
+            {
+            // ApplyAxisOverrides() restored the saved bar axis which may carry stale
+            // custom labels from a previous sort. Re-sync them from the current bar
+            // positions so the axis reflects the default SetData() sort order.
+            auto& barAxis = plot->GetBarAxis();
+            barAxis.ClearCustomLabels();
+            for (const auto& bar : plot->GetBars())
+                {
+                barAxis.SetCustomLabel(bar.GetAxisPosition(), bar.GetAxisLabel());
                 }
             }
 
@@ -5485,7 +5502,6 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             {
             plot->ShowcaseBars(dlg.GetShowcaseBars());
             }
-        dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldBarChart =
