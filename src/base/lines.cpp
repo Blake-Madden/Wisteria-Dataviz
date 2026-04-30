@@ -40,7 +40,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc(dc, IsSelected() ?
                                         wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                2 * penW, wxPENSTYLE_DOT } :
-                                        scaledPen);
+                                        (scaledPen.IsOk() ? scaledPen : *wxTRANSPARENT_PEN));
         for (const auto& line : m_lines)
             {
             if (GetLineStyle() == LineStyle::Arrows)
