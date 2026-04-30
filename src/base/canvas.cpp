@@ -418,7 +418,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 pdfDC.StartPage();
                 // use the same formula as wxPdfDocument::BeginPage to get exact page pts,
                 // avoiding the integer truncation in pdfDC.GetSize()
-                auto blah = pdfDC.GetSize();
                 auto* paper = wxThePrintPaperDatabase->FindPaperType(printData.GetPaperId());
                 if (paper == nullptr)
                     {
@@ -444,7 +443,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 OnDraw(pdfDC);
                 DrawWatermarkLabel(pdfDC);
                 pdfDC.EndPage();
-                pdfDC.EndDoc();
                 }
             // restore canvas state before recalculating for the screen DC
             m_rectDIPs = savedRectDIPs;
