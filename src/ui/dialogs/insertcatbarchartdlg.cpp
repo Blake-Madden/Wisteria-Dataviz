@@ -1118,6 +1118,7 @@ namespace Wisteria::UI
             {
             m_sortLabelListBox->Enable(m_sortCustomRadio->GetValue());
             }
+        m_barSortChanged = true;
         m_barGroups.clear();
         SyncBarGroupsToList();
         }

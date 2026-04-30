@@ -5441,6 +5441,12 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                 }
             }
 
+        // brackets are tied to bar positions; clear stale ones if the sort changed
+        if (dlg.HasBarSortChanged())
+            {
+            plot->GetBarAxis().ClearBrackets();
+            }
+
         // restore bar groups and placement
         plot->SetBarGroupPlacement(dlg.GetBarGroupPlacement());
         for (const auto& group : dlg.GetBarGroups())

@@ -255,6 +255,13 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool HasCustomBarSort() const noexcept;
 
+        /// @returns Whether the user changed the bar sort during editing.
+        [[nodiscard]]
+        bool HasBarSortChanged() const noexcept
+            {
+            return m_barSortChanged;
+            }
+
         /// @returns The bar sort direction.
         [[nodiscard]]
         SortDirection GetBarSortDirection() const noexcept;
@@ -370,6 +377,8 @@ namespace Wisteria::UI
         Orientation m_imageStitchDirection{ Orientation::Horizontal };
 
         std::vector<wxString> m_datasetNames;
+
+        bool m_barSortChanged{ false };
 
         // bar group settings (label-based, preserved during editing)
         std::vector<BarGroupInfo> m_barGroups;
