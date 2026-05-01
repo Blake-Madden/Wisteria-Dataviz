@@ -584,20 +584,6 @@ namespace Wisteria
             return m_watermarkColor;
             }
 
-        /// @returns The print orientation.
-        [[nodiscard]]
-        wxPrintOrientation GetPrintOrientation() const noexcept
-            {
-            return m_printOrientation;
-            }
-
-        /// @returns The print paper size.
-        [[nodiscard]]
-        wxPaperSize GetPaperSize() const noexcept
-            {
-            return m_paperSize;
-            }
-
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.
             @returns The original string, with any placeholders in it replaced
@@ -1262,8 +1248,6 @@ namespace Wisteria
         wxString m_name;
         wxString m_watermarkLabel;
         wxColour m_watermarkColor;
-        wxPrintOrientation m_printOrientation{ wxPrintOrientation::wxPORTRAIT };
-        wxPaperSize m_paperSize{ wxPaperSize::wxPAPER_NONE };
 
         size_t m_pageNumber{ 1 };
 

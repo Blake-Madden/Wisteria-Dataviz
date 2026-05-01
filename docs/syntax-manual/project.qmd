@@ -8,93 +8,12 @@ The following properties are available:
   Available options:
   - `"label"`: The text to display across pages.
   - `"color"`: The watermark color (name or hex value).
-- `"print"`: Settings controlling print layout and paper size. \
-  Available options:
-  - `"orientation"`: The page orientation (`"landscape"` or `"portrait"`).
-  - `"paper-size"`: The target paper size.  
-    See the grouped lists below for all supported constants.
-
----
-
-## Paper Sizes
-
-### **North American Sizes** {-}
-| Identifier | Dimensions |
-|-------------|-------------|
-| `"paper-letter"` | Letter — 8.5 × 11 in |
-| `"paper-legal"` | Legal — 8.5 × 14 in |
-| `"paper-tabloid"` | Tabloid — 11 × 17 in |
-| `"paper-ledger"` | Ledger — 17 × 11 in |
-| `"paper-executive"` | Executive — 7.25 × 10.5 in |
-| `"paper-statement"` | Statement — 5.5 × 8.5 in |
-| `"paper-folio"` | Folio — 8.5 × 13 in |
-| `"paper-note"` | Note — 8.5 × 11 in |
-| `"paper-letter-extra"` | Letter Extra — 9.27 × 12 in |
-| `"paper-legal-extra"` | Legal Extra — 9.27 × 15 in |
-
-###  **ISO (A/B) Series** {-}
-| Identifier | Dimensions |
-|-------------|-------------|
-| `"paper-a6"` | 105 × 148 mm |
-| `"paper-a5"` | 148 × 210 mm |
-| `"paper-a4"` | 210 × 297 mm |
-| `"paper-a3"` | 297 × 420 mm |
-| `"paper-a2"` | 420 × 594 mm |
-| `"paper-a1"` | 594 × 841 mm |
-| `"paper-a0"` | 841 × 1189 mm |
-| `"paper-b5"` | 182 × 257 mm |
-| `"paper-b4"` | 250 × 354 mm |
-| `"paper-b6-jis"` | 128 × 182 mm |
-
-### **Envelopes (U.S.)** {-}
-| Identifier | Dimensions |
-|-------------|-------------|
-| `"paper-env-9"` | #9 Envelope — 3.875 × 8.875 in |
-| `"paper-env-10"` | #10 Envelope — 4.125 × 9.5 in |
-| `"paper-env-11"` | #11 Envelope — 4.5 × 10.375 in |
-| `"paper-env-12"` | #12 Envelope — 4.75 × 11 in |
-| `"paper-env-14"` | #14 Envelope — 5 × 11.5 in |
-| `"paper-env-dl"` | DL Envelope — 110 × 220 mm |
-| `"paper-env-c5"` | C5 Envelope — 162 × 229 mm |
-| `"paper-env-c4"` | C4 Envelope — 229 × 324 mm |
-| `"paper-env-c6"` | C6 Envelope — 114 × 162 mm |
-| `"paper-env-c65"` | C65 Envelope — 114 × 229 mm |
-| `"paper-env-monarch"` | Monarch — 3.875 × 7.5 in |
-| `"paper-env-personal"` | #6¾ — 3.625 × 6.5 in |
-
-###  **Japanese & PRC Formats** {-}
-| Identifier | Description / Dimensions |
-|-------------|--------------------------|
-| `"paper-japanese-postcard"` | 100 × 148 mm |
-| `"paper-dbl-japanese-postcard"` | 200 × 148 mm |
-| `"paper-jenv-kaku2"` | Japanese Envelope Kaku #2 |
-| `"paper-jenv-kaku3"` | Japanese Envelope Kaku #3 |
-| `"paper-jenv-chou3"` | Japanese Envelope Chou #3 |
-| `"paper-jenv-chou4"` | Japanese Envelope Chou #4 |
-| `"paper-p16k"` | PRC 16K — 146 × 215 mm |
-| `"paper-p32k"` | PRC 32K — 97 × 151 mm |
-| `"paper-p32kbig"` | PRC 32K (Big) — 97 × 151 mm |
-| `"paper-penv-1"` | PRC Envelope #1 — 102 × 165 mm |
-| `"paper-penv-10"` | PRC Envelope #10 — 324 × 458 mm |
-
-###  **Large Format Sheets** {-}
-| Identifier | Dimensions |
-|-------------|-------------|
-| `"paper-csheet"` | C Sheet — 17 × 22 in |
-| `"paper-dsheet"` | D Sheet — 22 × 34 in |
-| `"paper-esheet"` | E Sheet — 34 × 44 in |
-
----
 
 ### Examples {-}
 
 ```json
 {
-  "name": "RETENTION",
-  "print": {
-    "orientation": "landscape",
-    "paper-size": "paper-a4"
-  }
+  "name": "RETENTION"
 }
 ```
 

@@ -48,34 +48,6 @@ namespace Wisteria
             m_name = reportNameNode->AsString();
             }
 
-        // print settings
-        wxPrintData reportPrintSettings;
-        const auto printNode = json->GetProperty(L"print");
-        if (printNode->IsOk())
-            {
-            const auto orientation = printNode->GetProperty(L"orientation")->AsString();
-            if (orientation.CmpNoCase(L"horizontal") == 0 ||
-                orientation.CmpNoCase(L"landscape") == 0)
-                {
-                m_printOrientation = wxPrintOrientation::wxLANDSCAPE;
-                reportPrintSettings.SetOrientation(wxPrintOrientation::wxLANDSCAPE);
-                }
-            else if (orientation.CmpNoCase(L"vertical") == 0 ||
-                     orientation.CmpNoCase(L"portrait") == 0)
-                {
-                m_printOrientation = wxPrintOrientation::wxPORTRAIT;
-                reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT);
-                }
-
-            const auto paperSize = ReportEnumConvert::ConvertPaperSize(
-                printNode->GetProperty(L"paper-size")->AsString(L"paper-letter"));
-            if (paperSize.has_value())
-                {
-                m_paperSize = paperSize.value();
-                reportPrintSettings.SetPaperId(paperSize.value());
-                }
-            }
-
         const auto datasetsNode = json->GetProperty(L"datasets");
         try
             {
@@ -190,10 +162,6 @@ namespace Wisteria
                             canvas->SetBackgroundImage(wxBitmapBundle{ bmp }, opacity);
                             }
                         }
-
-                    // copy print settings from report
-                    canvas->GetPrinterSettings().SetOrientation(
-                        reportPrintSettings.GetOrientation());
 
                     size_t rowCount{ 0 };
                     const auto rowsProperty = page->GetProperty(L"rows");
