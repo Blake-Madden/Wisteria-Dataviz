@@ -99,33 +99,6 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
         root->DeleteProperty(L"watermark");
         }
 
-    // print settings
-    //---------------
-    const auto printOrientation = view->GetReportBuilder().GetPrintOrientation();
-    const auto paperSize = view->GetReportBuilder().GetPaperSize();
-    if (printOrientation != wxPrintOrientation::wxPORTRAIT ||
-        paperSize != wxPaperSize::wxPAPER_NONE)
-        {
-        auto printObj = root->GetProperty(L"print");
-        if (printOrientation == wxPrintOrientation::wxLANDSCAPE)
-            {
-            printObj->Add(L"orientation", wxString{ L"landscape" });
-            }
-        else
-            {
-            printObj->Add(L"orientation", wxString{ L"portrait" });
-            }
-        const auto paperStr = Wisteria::ReportEnumConvert::ConvertPaperSizeToString(paperSize);
-        if (paperStr.has_value())
-            {
-            printObj->Add(L"paper-size", paperStr.value());
-            }
-        }
-    else
-        {
-        root->DeleteProperty(L"print");
-        }
-
     // datasets
     //---------
     const auto& datasets = view->GetReportBuilder().GetDatasets();
