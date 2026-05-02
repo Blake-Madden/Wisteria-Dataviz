@@ -168,6 +168,34 @@ namespace Wisteria::UI
             return m_footnotes;
             }
 
+        /// @brief Information about an aggregate column or row.
+        struct AggregateEntry
+            {
+            /// @brief The name of the aggregate.
+            wxString m_name;
+            /// @brief The type of aggregate ("column" or "row").
+            wxString m_type{ L"column" };
+            /// @brief How to aggregate.
+            AggregateType m_aggregateType{ AggregateType::Total };
+            /// @brief The start column/row.
+            wxString m_start;
+            /// @brief The end column/row.
+            wxString m_end;
+            /// @brief The insertion position.
+            std::optional<size_t> m_position;
+            /// @brief Whether to use adjacent cell color.
+            bool m_useAdjacentColor{ false };
+            /// @brief The background color.
+            wxColour m_bkColor;
+            };
+
+        /// @returns The aggregates to add to the table.
+        [[nodiscard]]
+        const std::vector<AggregateEntry>& GetAggregates() const noexcept
+            {
+            return m_aggregates;
+            }
+
         /// @brief Populates all dialog controls from an existing table.
         /// @param graph The table graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -185,6 +213,10 @@ namespace Wisteria::UI
         void OnEditFootnote();
         void OnRemoveFootnote();
         void RefreshFootnoteList();
+        void OnAddAggregate();
+        void OnEditAggregate();
+        void OnRemoveAggregate();
+        void RefreshAggregateList();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // starts at +2 to avoid collision with
@@ -200,6 +232,7 @@ namespace Wisteria::UI
         wxButton* m_varButton{ nullptr };
         wxColourPickerCtrl* m_altRowColorPicker{ nullptr };
         wxEditableListBox* m_footnotesListBox{ nullptr };
+        wxEditableListBox* m_aggregatesListBox{ nullptr };
 
         // DDX data members
         int m_varModeIndex{ 0 };
@@ -219,6 +252,7 @@ namespace Wisteria::UI
         std::vector<wxString> m_variableNames;
         std::vector<wxString> m_datasetNames;
         std::vector<std::pair<wxString, wxString>> m_footnotes;
+        std::vector<AggregateEntry> m_aggregates;
         };
     } // namespace Wisteria::UI
 

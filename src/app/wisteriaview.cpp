@@ -2762,6 +2762,141 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
                 }
             }
 
+        const auto& aggregates = dlg.GetAggregates();
+        if (!aggregates.empty())
+            {
+            wxString aggregatesJson{ L"[" };
+            for (size_t i = 0; i < aggregates.size(); ++i)
+                {
+                const auto& agg = aggregates[i];
+                if (i > 0)
+                    {
+                    aggregatesJson += L", ";
+                    }
+
+                wxString aggTypeStr;
+                switch (agg.m_aggregateType)
+                    {
+                case Wisteria::AggregateType::Total:
+                    aggTypeStr = L"total";
+                    break;
+                case Wisteria::AggregateType::ChangePercent:
+                    aggTypeStr = L"percent-change";
+                    break;
+                case Wisteria::AggregateType::Ratio:
+                    aggTypeStr = L"ratio";
+                    break;
+                case Wisteria::AggregateType::Change:
+                    aggTypeStr = L"change";
+                    break;
+                    }
+
+                const auto buildPosJson = [](const wxString& pos, const wxString& type)
+                {
+                    if (pos.empty())
+                        {
+                        return wxString(L"null");
+                        }
+                    double dVal = 0;
+                    if (pos.ToDouble(&dVal))
+                        {
+                        return pos;
+                        }
+                    return wxString::Format(L"\"%s:%s\"", type, pos);
+                };
+
+                aggregatesJson += wxString::Format(
+                    L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
+                    L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
+                    L"\"background\":\"%s\"",
+                    agg.m_name, agg.m_type, aggTypeStr, buildPosJson(agg.m_start, agg.m_type),
+                    buildPosJson(agg.m_end, agg.m_type),
+                    agg.m_useAdjacentColor ? L"true" : L"false",
+                    agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
+                if (agg.m_position.has_value())
+                    {
+                    aggregatesJson +=
+                        wxString::Format(L", \"position\":%zu", agg.m_position.value());
+                    }
+                aggregatesJson += L"}";
+
+                // apply to live graph
+                Wisteria::Graphs::Table::AggregateInfo aggInfo(agg.m_aggregateType);
+                if (agg.m_type.CmpNoCase(L"column") == 0)
+                    {
+                    auto startIdx = table->FindColumnIndex(agg.m_start);
+                    auto endIdx = table->FindColumnIndex(agg.m_end);
+                    if (!startIdx.has_value())
+                        {
+                        long val = 0;
+                        if (agg.m_start.ToLong(&val))
+                            {
+                            startIdx = val;
+                            }
+                        }
+                    if (!endIdx.has_value())
+                        {
+                        long val = 0;
+                        if (agg.m_end.ToLong(&val))
+                            {
+                            endIdx = val;
+                            }
+                        }
+
+                    if (startIdx.has_value())
+                        {
+                        aggInfo.FirstCell(startIdx.value());
+                        }
+                    if (endIdx.has_value())
+                        {
+                        aggInfo.LastCell(endIdx.value());
+                        }
+
+                    table->InsertAggregateColumn(
+                        aggInfo, agg.m_name, std::nullopt, agg.m_useAdjacentColor,
+                        (agg.m_bkColor.IsOk() ? std::optional<wxColour>(agg.m_bkColor) :
+                                                std::nullopt));
+                    }
+                else
+                    {
+                    auto startIdx = table->FindRowIndex(agg.m_start);
+                    auto endIdx = table->FindRowIndex(agg.m_end);
+                    if (!startIdx.has_value())
+                        {
+                        long val = 0;
+                        if (agg.m_start.ToLong(&val))
+                            {
+                            startIdx = val;
+                            }
+                        }
+                    if (!endIdx.has_value())
+                        {
+                        long val = 0;
+                        if (agg.m_end.ToLong(&val))
+                            {
+                            endIdx = val;
+                            }
+                        }
+
+                    if (startIdx.has_value())
+                        {
+                        aggInfo.FirstCell(startIdx.value());
+                        }
+                    if (endIdx.has_value())
+                        {
+                        aggInfo.LastCell(endIdx.value());
+                        }
+
+                    table->InsertAggregateRow(aggInfo, agg.m_name, std::nullopt,
+                                              (agg.m_bkColor.IsOk() ?
+                                                   std::optional<wxColour>(agg.m_bkColor) :
+                                                   std::nullopt));
+                    }
+                }
+            aggregatesJson += L"]";
+            table->SetPropertyTemplate(L"aggregates", aggregatesJson);
+            }
+
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
@@ -2912,7 +3047,6 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                                   L"column-borders",
                                   L"column-content-align",
                                   L"column-highlight",
-                                  L"aggregates",
                                   L"row-totals",
                                   L"cell-update",
                                   L"cell-annotations",
@@ -2923,6 +3057,69 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                 {
                 table->SetPropertyTemplate(wxString(prop), cached);
                 }
+            }
+
+        // set aggregates template
+        const auto& editAggregates = dlg.GetAggregates();
+        if (!editAggregates.empty())
+            {
+            wxString aggregatesJson{ L"[" };
+            for (size_t i = 0; i < editAggregates.size(); ++i)
+                {
+                const auto& agg = editAggregates[i];
+                if (i > 0)
+                    {
+                    aggregatesJson += L", ";
+                    }
+
+                wxString aggTypeStr;
+                switch (agg.m_aggregateType)
+                    {
+                case Wisteria::AggregateType::Total:
+                    aggTypeStr = L"total";
+                    break;
+                case Wisteria::AggregateType::ChangePercent:
+                    aggTypeStr = L"percent-change";
+                    break;
+                case Wisteria::AggregateType::Ratio:
+                    aggTypeStr = L"ratio";
+                    break;
+                case Wisteria::AggregateType::Change:
+                    aggTypeStr = L"change";
+                    break;
+                    }
+
+                const auto buildPosJson = [](const wxString& pos, const wxString& type)
+                {
+                    if (pos.empty())
+                        {
+                        return wxString(L"null");
+                        }
+                    double dVal = 0;
+                    if (pos.ToDouble(&dVal))
+                        {
+                        return pos;
+                        }
+                    return wxString::Format(L"\"%s:%s\"", type, pos);
+                };
+
+                aggregatesJson += wxString::Format(
+                    L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
+                    L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
+                    L"\"background\":\"%s\"",
+                    agg.m_name, agg.m_type, aggTypeStr, buildPosJson(agg.m_start, agg.m_type),
+                    buildPosJson(agg.m_end, agg.m_type),
+                    agg.m_useAdjacentColor ? L"true" : L"false",
+                    agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
+                if (agg.m_position.has_value())
+                    {
+                    aggregatesJson +=
+                        wxString::Format(L", \"position\":%zu", agg.m_position.value());
+                    }
+                aggregatesJson += L"}";
+                }
+            aggregatesJson += L"]";
+            table->SetPropertyTemplate(L"aggregates", aggregatesJson);
             }
 
         // set footnotes template before ApplyTableFeatures so that

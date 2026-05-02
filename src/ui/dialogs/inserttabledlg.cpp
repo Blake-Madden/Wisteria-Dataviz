@@ -189,7 +189,7 @@ namespace Wisteria::UI
         twoColSizer->Add(leftColSizer, wxGBPosition(0, 0), wxGBSpan(1, 1),
                          wxEXPAND | wxLEFT | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-        // right column: footnotes
+        // right column: footnotes & aggregates
         auto* rightColSizer = new wxBoxSizer(wxVERTICAL);
         auto* footnotesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Footnotes"));
         m_footnotesListBox = new wxEditableListBox(
@@ -207,8 +207,26 @@ namespace Wisteria::UI
         m_footnotesListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
                                  [this](wxListEvent&) { OnEditFootnote(); });
 
-        rightColSizer->Add(footnotesBox, wxSizerFlags{ 1 }.Expand());
-        rightColSizer->AddStretchSpacer(1);
+        rightColSizer->Add(footnotesBox, wxSizerFlags{ 1 }.Expand().Border(wxBOTTOM));
+
+        auto* aggregatesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Aggregates"));
+        m_aggregatesListBox = new wxEditableListBox(
+            aggregatesBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxSize{ FromDIP(250), FromDIP(150) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        aggregatesBox->Add(m_aggregatesListBox,
+                           wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+
+        m_aggregatesListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                                  [this](wxCommandEvent&) { OnAddAggregate(); });
+        m_aggregatesListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                   [this](wxCommandEvent&) { OnEditAggregate(); });
+        m_aggregatesListBox->GetDelButton()->Bind(wxEVT_BUTTON,
+                                                  [this](wxCommandEvent&) { OnRemoveAggregate(); });
+        m_aggregatesListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                  [this](wxListEvent&) { OnEditAggregate(); });
+
+        rightColSizer->Add(aggregatesBox, wxSizerFlags{ 1 }.Expand());
 
         twoColSizer->Add(rightColSizer, wxGBPosition(0, 1), wxGBSpan(1, 1),
                          wxEXPAND | wxRIGHT | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
@@ -539,6 +557,98 @@ namespace Wisteria::UI
                 }
             }
 
+        // restore aggregates
+        const auto aggregatesTemplate = table->GetPropertyTemplate(L"aggregates");
+        if (!aggregatesTemplate.empty())
+            {
+            m_aggregates.clear();
+            const auto aggregatesNode = wxSimpleJSON::Create(aggregatesTemplate, true);
+            for (const auto& aggNode : aggregatesNode->AsNodes())
+                {
+                AggregateEntry entry;
+                entry.m_name = aggNode->GetProperty(L"name")->AsString();
+                entry.m_type = aggNode->GetProperty(L"type")->AsString();
+
+                const auto aggTypeStr = aggNode->GetProperty(L"aggregate-type")->AsString();
+                if (aggTypeStr.CmpNoCase(L"percent-change") == 0)
+                    {
+                    entry.m_aggregateType = AggregateType::ChangePercent;
+                    }
+                else if (aggTypeStr.CmpNoCase(L"change") == 0)
+                    {
+                    entry.m_aggregateType = AggregateType::Change;
+                    }
+                else if (aggTypeStr.CmpNoCase(L"total") == 0)
+                    {
+                    entry.m_aggregateType = AggregateType::Total;
+                    }
+                else if (aggTypeStr.CmpNoCase(L"ratio") == 0)
+                    {
+                    entry.m_aggregateType = AggregateType::Ratio;
+                    }
+
+                const auto startNode = aggNode->GetProperty(L"start");
+                entry.m_start = startNode->IsValueNumber() ?
+                                    wxString{ std::to_wstring(startNode->AsDouble()) } :
+                                    startNode->AsString();
+                if (entry.m_start.Lower().StartsWith(L"column:"))
+                    {
+                    entry.m_start = entry.m_start.substr(7);
+                    }
+                else if (entry.m_start.Lower().StartsWith(L"row:"))
+                    {
+                    entry.m_start = entry.m_start.substr(4);
+                    }
+
+                const auto endNode = aggNode->GetProperty(L"end");
+                entry.m_end = endNode->IsValueNumber() ?
+                                  wxString{ std::to_wstring(endNode->AsDouble()) } :
+                                  endNode->AsString();
+                if (entry.m_end.Lower().StartsWith(L"column:"))
+                    {
+                    entry.m_end = entry.m_end.substr(7);
+                    }
+                else if (entry.m_end.Lower().StartsWith(L"row:"))
+                    {
+                    entry.m_end = entry.m_end.substr(4);
+                    }
+
+                if (aggNode->HasProperty(L"position"))
+                    {
+                    const auto posNode = aggNode->GetProperty(L"position");
+                    if (posNode->IsValueNumber())
+                        {
+                        entry.m_position = static_cast<size_t>(posNode->AsDouble());
+                        }
+                    else
+                        {
+                        wxString posStr = posNode->AsString();
+                        if (posStr.Lower().StartsWith(L"column:"))
+                            {
+                            posStr = posStr.substr(7);
+                            }
+                        else if (posStr.Lower().StartsWith(L"row:"))
+                            {
+                            posStr = posStr.substr(4);
+                            }
+                        long val = 0;
+                        if (posStr.ToLong(&val))
+                            {
+                            entry.m_position = static_cast<size_t>(val);
+                            }
+                        }
+                    }
+                entry.m_useAdjacentColor = aggNode->GetProperty(L"use-adjacent-color")->AsBool();
+                if (GetReportBuilder() != nullptr)
+                    {
+                    entry.m_bkColor =
+                        GetReportBuilder()->ConvertColor(aggNode->GetProperty(L"background"));
+                    }
+
+                m_aggregates.push_back(entry);
+                }
+            }
+
         // restore min width/height proportions
         const auto& minWidth = table->GetMinWidthProportion();
         if (minWidth.has_value())
@@ -557,6 +667,7 @@ namespace Wisteria::UI
         RefreshVariablesList();
         OnVarModeChanged();
         RefreshFootnoteList();
+        RefreshAggregateList();
         }
 
     //-------------------------------------------
@@ -569,6 +680,34 @@ namespace Wisteria::UI
             strings.Add(wxString::Format(L"%s \u2014 %s", value, footnote));
             }
         m_footnotesListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::RefreshAggregateList()
+        {
+        wxArrayString strings;
+        strings.reserve(m_aggregates.size());
+        for (const auto& agg : m_aggregates)
+            {
+            wxString typeLabel;
+            switch (agg.m_aggregateType)
+                {
+            case AggregateType::Total:
+                typeLabel = _(L"Total");
+                break;
+            case AggregateType::ChangePercent:
+                typeLabel = _(L"Change %");
+                break;
+            case AggregateType::Ratio:
+                typeLabel = _(L"Ratio");
+                break;
+            case AggregateType::Change:
+                typeLabel = _(L"Change");
+                break;
+                }
+            strings.Add(wxString::Format(L"%s (%s %s)", agg.m_name, typeLabel, agg.m_type));
+            }
+        m_aggregatesListBox->SetStrings(strings);
         }
 
     //-------------------------------------------
@@ -672,5 +811,231 @@ namespace Wisteria::UI
 
         m_footnotes.erase(m_footnotes.begin() + sel);
         RefreshFootnoteList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnAddAggregate()
+        {
+        wxDialog dlg(this, wxID_ANY, _(L"Add Aggregate"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* gridSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        gridSizer->AddGrowableCol(1, 1);
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Name:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* nameCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Type:")),
+                       wxSizerFlags{}.CenterVertical());
+        wxArrayString types;
+        types.Add(_(L"Column"));
+        types.Add(_(L"Row"));
+        auto* typeCtrl = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, types);
+        typeCtrl->SetSelection(0);
+        gridSizer->Add(typeCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Aggregate Type:")),
+                       wxSizerFlags{}.CenterVertical());
+        wxArrayString aggTypes;
+        aggTypes.Add(_(L"Total"));
+        aggTypes.Add(_(L"Change %"));
+        aggTypes.Add(_(L"Ratio"));
+        aggTypes.Add(_(L"Change"));
+        auto* aggTypeCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, aggTypes);
+        aggTypeCtrl->SetSelection(0);
+        gridSizer->Add(aggTypeCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* startCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        gridSizer->Add(startCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* endCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+        gridSizer->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        auto* useAdjCtrl = new wxCheckBox(&dlg, wxID_ANY, _(L"Use adjacent cell color"));
+        gridSizer->Add(useAdjCtrl, wxSizerFlags{}.CenterVertical());
+        gridSizer->AddStretchSpacer();
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Background Color:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* colorCtrl = new wxColourPickerCtrl(&dlg, wxID_ANY, *wxLIGHT_GREY);
+        gridSizer->Add(colorCtrl, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+        dlg.SetMinSize(FromDIP(wxSize{ 320, -1 }));
+        dlg.Fit();
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        AggregateEntry entry;
+        entry.m_name = nameCtrl->GetValue().Trim().Trim(false);
+        entry.m_type = (typeCtrl->GetSelection() == 0) ? L"column" : L"row";
+        switch (aggTypeCtrl->GetSelection())
+            {
+        case 0:
+            entry.m_aggregateType = AggregateType::Total;
+            break;
+        case 1:
+            entry.m_aggregateType = AggregateType::ChangePercent;
+            break;
+        case 2:
+            entry.m_aggregateType = AggregateType::Ratio;
+            break;
+        case 3:
+            entry.m_aggregateType = AggregateType::Change;
+            break;
+            }
+        entry.m_start = startCtrl->GetValue().Trim().Trim(false);
+        entry.m_end = endCtrl->GetValue().Trim().Trim(false);
+        entry.m_useAdjacentColor = useAdjCtrl->GetValue();
+        entry.m_bkColor = colorCtrl->GetColour();
+
+        m_aggregates.push_back(entry);
+        RefreshAggregateList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnEditAggregate()
+        {
+        const auto sel = m_aggregatesListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                         wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_aggregates.size()))
+            {
+            return;
+            }
+
+        auto& entry = m_aggregates[static_cast<size_t>(sel)];
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Aggregate"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* gridSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        gridSizer->AddGrowableCol(1, 1);
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Name:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* nameCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_name);
+        gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Type:")),
+                       wxSizerFlags{}.CenterVertical());
+        wxArrayString types;
+        types.Add(_(L"Column"));
+        types.Add(_(L"Row"));
+        auto* typeCtrl = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, types);
+        typeCtrl->SetSelection(entry.m_type.CmpNoCase(L"row") == 0 ? 1 : 0);
+        gridSizer->Add(typeCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Aggregate Type:")),
+                       wxSizerFlags{}.CenterVertical());
+        wxArrayString aggTypes;
+        aggTypes.Add(_(L"Total"));
+        aggTypes.Add(_(L"Change %"));
+        aggTypes.Add(_(L"Ratio"));
+        aggTypes.Add(_(L"Change"));
+        auto* aggTypeCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, aggTypes);
+        int aggSel = 0;
+        switch (entry.m_aggregateType)
+            {
+        case AggregateType::Total:
+            aggSel = 0;
+            break;
+        case AggregateType::ChangePercent:
+            aggSel = 1;
+            break;
+        case AggregateType::Ratio:
+            aggSel = 2;
+            break;
+        case AggregateType::Change:
+            aggSel = 3;
+            break;
+            }
+        aggTypeCtrl->SetSelection(aggSel);
+        gridSizer->Add(aggTypeCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* startCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_start);
+        gridSizer->Add(startCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* endCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_end);
+        gridSizer->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        auto* useAdjCtrl = new wxCheckBox(&dlg, wxID_ANY, _(L"Use adjacent cell color"));
+        useAdjCtrl->SetValue(entry.m_useAdjacentColor);
+        gridSizer->Add(useAdjCtrl, wxSizerFlags{}.CenterVertical());
+        gridSizer->AddStretchSpacer();
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Background Color:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* colorCtrl = new wxColourPickerCtrl(&dlg, wxID_ANY, entry.m_bkColor);
+        gridSizer->Add(colorCtrl, wxSizerFlags{}.Expand());
+
+        auto* topSizer = new wxBoxSizer(wxVERTICAL);
+        topSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand().Border());
+        topSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                      wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(topSizer);
+        dlg.SetMinSize(FromDIP(wxSize{ 320, -1 }));
+        dlg.Fit();
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        entry.m_name = nameCtrl->GetValue().Trim().Trim(false);
+        entry.m_type = (typeCtrl->GetSelection() == 0) ? L"column" : L"row";
+        switch (aggTypeCtrl->GetSelection())
+            {
+        case 0:
+            entry.m_aggregateType = AggregateType::Total;
+            break;
+        case 1:
+            entry.m_aggregateType = AggregateType::ChangePercent;
+            break;
+        case 2:
+            entry.m_aggregateType = AggregateType::Ratio;
+            break;
+        case 3:
+            entry.m_aggregateType = AggregateType::Change;
+            break;
+            }
+        entry.m_start = startCtrl->GetValue().Trim().Trim(false);
+        entry.m_end = endCtrl->GetValue().Trim().Trim(false);
+        entry.m_useAdjacentColor = useAdjCtrl->GetValue();
+        entry.m_bkColor = colorCtrl->GetColour();
+
+        RefreshAggregateList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnRemoveAggregate()
+        {
+        const auto sel = m_aggregatesListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                         wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_aggregates.size()))
+            {
+            return;
+            }
+
+        m_aggregates.erase(m_aggregates.begin() + sel);
+        RefreshAggregateList();
         }
     } // namespace Wisteria::UI
