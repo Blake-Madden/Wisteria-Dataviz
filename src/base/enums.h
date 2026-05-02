@@ -86,18 +86,20 @@ namespace Wisteria
     /// @brief Hair style options for Chernoff faces.
     enum class HairStyle
         {
-        /// @brief No hair (male or female).
+        /// @brief No hair.
         Bald,
-        /// @brief Short bob cut at jaw level (female).
+        /// @brief Short bob cut at jaw level.
         Bob,
-        /// @brief Very short cropped style (female).
+        /// @brief Very short cropped style.
         Pixie,
-        /// @brief Hair pulled into a bun (female).
+        /// @brief Hair pulled into a bun.
         Bun,
-        /// @brief Long straight hair past shoulders (female).
+        /// @brief Long straight hair past shoulders.
         LongStraight,
-        /// @brief High top fade style (male or female).
-        HighTopFade
+        /// @brief High top fade style.
+        HighTopFade,
+        /// @brief Flat top style.
+        FlatTop
         };
 
     /// @brief Facial hair style options for Chernoff faces.

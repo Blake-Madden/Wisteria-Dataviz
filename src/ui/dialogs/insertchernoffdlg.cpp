@@ -134,6 +134,7 @@ namespace Wisteria::UI
             hairStyleChoice->Append(_(L"Bun"));
             hairStyleChoice->Append(_(L"Long straight"));
             hairStyleChoice->Append(_(L"High top fade"));
+            hairStyleChoice->Append(_(L"Flat top"));
             appearanceSizer->Add(hairStyleChoice);
             }
 
@@ -422,7 +423,8 @@ namespace Wisteria::UI
         {
         constexpr HairStyle styles[] = { HairStyle::Bald,         HairStyle::Bob,
                                          HairStyle::Pixie,        HairStyle::Bun,
-                                         HairStyle::LongStraight, HairStyle::HighTopFade };
+                                         HairStyle::LongStraight, HairStyle::HighTopFade,
+                                         HairStyle::FlatTop };
 
         if (m_hairStyle >= 0 && std::cmp_less(m_hairStyle, std::size(styles)))
             {
@@ -535,6 +537,9 @@ namespace Wisteria::UI
             break;
         case HairStyle::HighTopFade:
             m_hairStyle = 5;
+            break;
+        case HairStyle::FlatTop:
+            m_hairStyle = 6;
             break;
         default:
             m_hairStyle = 1;

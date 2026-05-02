@@ -1017,7 +1017,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
 
         // draw hair that goes over forehead (after face, before eyebrows)
-        if (hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade)
+        if (hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade &&
+            hairStyle != HairStyle::FlatTop)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -1445,6 +1446,51 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 cx - faceWidth * 0.4, cy - faceHeight * 0.98, cx - faceWidth * 0.4,
                 cy - faceHeight * 0.75, hairHighlight,
                 wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
+            gc->SetBrush(sheenBrush);
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->FillPath(sheen);
+            }
+        else if (hairStyle == HairStyle::FlatTop)
+            {
+            const wxColour hairHighlight = hairColor.ChangeLightness(130);
+            const wxColour hairShadow = hairColor.ChangeLightness(80);
+
+            // flat top: boxy top, flat surface
+            wxGraphicsPath hair = gc->CreatePath();
+            // left side vertical-ish
+            hair.MoveToPoint(cx - faceWidth * 0.95, cy - faceHeight * 0.3);
+            hair.AddCurveToPoint(cx - faceWidth * 0.98, cy - faceHeight * 0.7,
+                                 cx - faceWidth * 0.92, cy - faceHeight * 0.95,
+                                 cx - faceWidth * 0.85, cy - faceHeight * 1.0);
+            // flat top
+            hair.AddLineToPoint(cx + faceWidth * 0.85, cy - faceHeight * 1.0);
+            // right side vertical-ish
+            hair.AddCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.95,
+                                 cx + faceWidth * 0.98, cy - faceHeight * 0.7,
+                                 cx + faceWidth * 0.95, cy - faceHeight * 0.3);
+            // inner edge
+            hair.AddCurveToPoint(cx + faceWidth * 0.8, cy - faceHeight * 0.5, cx + faceWidth * 0.4,
+                                 cy - faceHeight * 0.65, cx, cy - faceHeight * 0.68);
+            hair.AddCurveToPoint(cx - faceWidth * 0.4, cy - faceHeight * 0.65, cx - faceWidth * 0.8,
+                                 cy - faceHeight * 0.5, cx - faceWidth * 0.95,
+                                 cy - faceHeight * 0.3);
+            hair.CloseSubpath();
+
+            gc->SetBrush(wxBrush{ hairColor });
+            gc->SetPen(wxPen{ hairShadow, 1 });
+            gc->FillPath(hair);
+            gc->StrokePath(hair);
+
+            // top flat surface sheen
+            wxGraphicsPath sheen = gc->CreatePath();
+            sheen.MoveToPoint(cx - faceWidth * 0.85, cy - faceHeight * 1.0);
+            sheen.AddLineToPoint(cx + faceWidth * 0.85, cy - faceHeight * 1.0);
+            sheen.AddLineToPoint(cx + faceWidth * 0.8, cy - faceHeight * 0.95);
+            sheen.AddLineToPoint(cx - faceWidth * 0.8, cy - faceHeight * 0.95);
+            sheen.CloseSubpath();
+
+            auto sheenBrush = gc->CreateLinearGradientBrush(
+                cx, cy - faceHeight * 1.0, cx, cy - faceHeight * 0.95, hairHighlight, hairColor);
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
