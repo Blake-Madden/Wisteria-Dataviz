@@ -182,6 +182,33 @@ void WisteriaApp::LoadInterface()
         },
         wxID_ABOUT);
 
+    GetMainFrame()->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
+        {
+            wxPageSetupDialogData pageSetupData;
+            wxPrintData printData;
+
+            // apply global settings
+            auto& settings = wxGetApp().GetAppSettings();
+            printData.SetOrientation(
+                static_cast<wxPrintOrientation>(settings->GetPrintOrientation()));
+            printData.SetPaperId(settings->GetPaperId());
+
+            pageSetupData.SetPrintData(printData);
+
+            wxPageSetupDialog dialog(GetMainFrame(), &pageSetupData);
+            if (dialog.ShowModal() == wxID_OK)
+                {
+                wxPrintData updatedData = dialog.GetPageSetupData().GetPrintData();
+                settings->SetPrintOrientation(updatedData.GetOrientation());
+                settings->SetPaperId(updatedData.GetPaperId());
+                settings->SaveSettingsFile();
+                }
+        },
+        ID_PRINT_SETUP);
+
     // capture window state before the frame is destroyed
     GetMainFrame()->Bind(
         wxEVT_CLOSE_WINDOW,
@@ -296,6 +323,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
         printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
                                   _(L"Print all pages"));
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Print Setup"),
+                                  ReadSvgIcon(L"print-setup.svg"), _(L"Configure print settings"));
 
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
@@ -399,7 +428,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         }
     else
         {
-        // TODO: main frame ribbon content
+        // Print panel
+        auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
+        auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Print Setup"),
+                                  ReadSvgIcon(L"print-setup.svg"), _(L"Configure print settings"));
         }
 
     // Tools panel

@@ -52,6 +52,18 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_appWindowHeight = (val > 0) ? static_cast<int>(val) : 700;
                 }
             }
+        else if (child->GetName() == L"Printer")
+            {
+            long val{ 0 };
+            if (child->GetAttribute(L"orientation", L"1").ToLong(&val))
+                {
+                m_printOrientation = static_cast<int>(val);
+                }
+            if (child->GetAttribute(L"paperId", L"1").ToLong(&val))
+                {
+                m_paperId = static_cast<wxPaperSize>(val);
+                }
+            }
         else if (child->GetName() == L"SvgExport")
             {
             const auto boolAttr = [&child](const wxString& name, const bool fallback)
@@ -131,6 +143,11 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     windowNode->AddAttribute(L"width", std::to_wstring(m_appWindowWidth));
     windowNode->AddAttribute(L"height", std::to_wstring(m_appWindowHeight));
     root->AddChild(windowNode);
+
+    auto* printerNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"Printer");
+    printerNode->AddAttribute(L"orientation", std::to_wstring(m_printOrientation));
+    printerNode->AddAttribute(L"paperId", std::to_wstring(static_cast<int>(m_paperId)));
+    root->AddChild(printerNode);
 
     auto* svgNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"SvgExport");
     svgNode->AddAttribute(L"pageWidth",

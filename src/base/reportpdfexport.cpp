@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "reportpdfexport.h"
+#include "../app/wisteriaapp.h"
 
 #ifdef INCLUDE_PDF
 
@@ -22,7 +23,10 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         return;
         }
 
-    wxPrintData printData = canvases.front()->GetPrinterSettings();
+    wxPrintData printData;
+    printData.SetOrientation(
+        static_cast<wxPrintOrientation>(wxGetApp().GetAppSettings()->GetPrintOrientation()));
+    printData.SetPaperId(wxGetApp().GetAppSettings()->GetPaperId());
     printData.SetFilename(filePath);
     wxPdfDC pdfDC(printData);
 
@@ -42,9 +46,8 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
 
         const wxWindowUpdateLocker updateLocker{ canvas };
 
-        // compute page dimensions from the canvas's paper settings
-        const wxPrintData& canvasPrintData = canvas->GetPrinterSettings();
-        auto* paper = wxThePrintPaperDatabase->FindPaperType(canvasPrintData.GetPaperId());
+        // compute page dimensions from the paper settings
+        auto* paper = wxThePrintPaperDatabase->FindPaperType(printData.GetPaperId());
         if (paper == nullptr)
             {
             paper = wxThePrintPaperDatabase->FindPaperType(wxPAPER_A4);
@@ -53,7 +56,7 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         int dipW{ 0 }, dipH{ 0 };
         if (paper != nullptr)
             {
-            const bool landscape = (canvasPrintData.GetOrientation() == wxLANDSCAPE);
+            const bool landscape = (printData.GetOrientation() == wxLANDSCAPE);
             const auto paperSzTenthsMM = paper->GetSize();
             const double ptsW =
                 (landscape ? paperSzTenthsMM.GetHeight() : paperSzTenthsMM.GetWidth()) / 254.0 *

@@ -12,6 +12,7 @@
 #include "../base/svgreportprintout.h"
 #include <wx/filename.h>
 #include <wx/gdicmn.h>
+#include <wx/print.h>
 #include <wx/stdpaths.h>
 #include <wx/string.h>
 
@@ -85,6 +86,24 @@ class AppSettings
         return { m_appWindowWidth, m_appWindowHeight };
         }
 
+    /// @brief Accesses print orientation (wxPORTRAIT or wxLANDSCAPE).
+    [[nodiscard]]
+    int GetPrintOrientation() const noexcept
+        {
+        return m_printOrientation;
+        }
+
+    void SetPrintOrientation(const int orientation) noexcept { m_printOrientation = orientation; }
+
+    /// @brief Accesses paper ID (wxPaperSize).
+    [[nodiscard]]
+    wxPaperSize GetPaperId() const noexcept
+        {
+        return m_paperId;
+        }
+
+    void SetPaperId(const wxPaperSize paperId) noexcept { m_paperId = paperId; }
+
     // SVG export options
     //-------------------
 
@@ -107,6 +126,8 @@ class AppSettings
     bool m_appWindowMaximized{ true };
     int m_appWindowWidth{ 800 };
     int m_appWindowHeight{ 700 };
+    int m_printOrientation{ wxPORTRAIT };
+    wxPaperSize m_paperId{ wxPAPER_LETTER };
 
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
     };

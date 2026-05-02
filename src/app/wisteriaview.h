@@ -84,6 +84,7 @@ class WisteriaView final : public wxView
     bool OnClose(bool deleteWindow) final;
     void OnSidebarClick(const wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
+    void OnPrintSetup(wxCommandEvent& event);
     void OnSvgExport(wxCommandEvent& event);
     void OnPdfExport(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);

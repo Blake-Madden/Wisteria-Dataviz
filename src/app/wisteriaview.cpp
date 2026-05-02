@@ -119,6 +119,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
 
     // bind SVG export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
@@ -604,6 +605,29 @@ void WisteriaView::OnSidebarClick(const wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnPrintSetup([[maybe_unused]] wxCommandEvent& event)
+    {
+    wxPageSetupDialogData pageSetupData;
+    wxPrintData printData = m_pages.front()->GetPrinterSettings();
+
+    // apply global settings
+    auto& settings = wxGetApp().GetAppSettings();
+    printData.SetOrientation(static_cast<wxPrintOrientation>(settings->GetPrintOrientation()));
+    printData.SetPaperId(settings->GetPaperId());
+
+    pageSetupData.SetPrintData(printData);
+
+    wxPageSetupDialog dialog(m_frame, &pageSetupData);
+    if (dialog.ShowModal() == wxID_OK)
+        {
+        wxPrintData updatedData = dialog.GetPageSetupData().GetPrintData();
+        settings->SetPrintOrientation(updatedData.GetOrientation());
+        settings->SetPaperId(updatedData.GetPaperId());
+        settings->SaveSettingsFile();
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
@@ -611,19 +635,31 @@ void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    auto printOut = std::make_unique<Wisteria::ReportPrintout>(m_pages, m_pages[0]->GetLabel());
+    auto printOut =
+        std::make_unique<Wisteria::ReportPrintout>(m_pages, m_pages.front()->GetLabel());
+
+    auto& settings = wxGetApp().GetAppSettings();
+    wxPrintData printData = m_pages.front()->GetPrinterSettings();
+    printData.SetOrientation(static_cast<wxPrintOrientation>(settings->GetPrintOrientation()));
+    printData.SetPaperId(settings->GetPaperId());
+
 #if defined(__WXMSW__) || defined(__WXOSX__)
-    wxPrinterDC dc = wxPrinterDC(m_pages[0]->GetPrinterSettings());
+    wxPrinterDC dc(printData);
 #else
-    wxPostScriptDC dc = wxPostScriptDC(m_pages[0]->GetPrinterSettings());
+    wxPostScriptDC dc(printData);
 #endif
     printOut->SetUp(dc);
 
     wxPrinter printer;
-    printer.GetPrintDialogData().SetPrintData(m_pages[0]->GetPrinterSettings());
-    printer.GetPrintDialogData().SetAllPages(true);
-    printer.GetPrintDialogData().SetFromPage(1);
-    printer.GetPrintDialogData().SetToPage(static_cast<int>(m_pages.size()));
+    wxPrintDialogData dialogData;
+    dialogData.SetPrintData(printData);
+    dialogData.SetAllPages(true);
+    dialogData.SetFromPage(1);
+    dialogData.SetToPage(static_cast<int>(m_pages.size()));
+
+    // Explicitly set print dialog data
+    printer.GetPrintDialogData() = dialogData;
+
     if (!printer.Print(m_frame, printOut.get(), true))
         {
         if (wxPrinter::GetLastError() == wxPRINTER_ERROR)

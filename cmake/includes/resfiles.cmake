@@ -62,6 +62,7 @@ piechart-subgrouped.svg
 piechart.svg
 pivot-longer.svg
 pivot-wider.svg
+print-setup.svg
 print.svg
 question-mark.svg
 realtime.svg
