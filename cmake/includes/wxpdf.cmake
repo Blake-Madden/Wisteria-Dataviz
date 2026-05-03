@@ -28,6 +28,7 @@ SET(WXPDF_SRC
     src/wxpdfdoc/src/pdffontsubsettruetype.cpp
     src/wxpdfdoc/src/pdffontvolt.cpp
     src/wxpdfdoc/src/pdfform.cpp
+    src/wxpdfdoc/src/pdfgc.cpp
     src/wxpdfdoc/src/pdfgradient.cpp
     src/wxpdfdoc/src/pdfgraphics.cpp
     src/wxpdfdoc/src/pdfimage.cpp
