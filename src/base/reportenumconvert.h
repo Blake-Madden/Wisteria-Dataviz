@@ -945,7 +945,9 @@ namespace Wisteria
                 { L"bun", HairStyle::Bun },
                 { L"long-straight", HairStyle::LongStraight },
                 { L"high-top-fade", HairStyle::HighTopFade },
-                { L"flat-top", HairStyle::FlatTop }
+                { L"flat-top", HairStyle::FlatTop },
+                { L"curly", HairStyle::Curly },
+                { L"long-curly", HairStyle::LongCurly }
             };
 
             const auto foundValue = hairStyleValues.find(value.Lower().ToStdWstring());
@@ -1887,7 +1889,9 @@ namespace Wisteria
                 { HairStyle::Bun, L"bun" },
                 { HairStyle::LongStraight, L"long-straight" },
                 { HairStyle::HighTopFade, L"high-top-fade" },
-                { HairStyle::FlatTop, L"flat-top" }
+                { HairStyle::FlatTop, L"flat-top" },
+                { HairStyle::Curly, L"curly" },
+                { HairStyle::LongCurly, L"long-curly" }
             };
 
             const auto foundValue = values.find(value);

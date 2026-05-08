@@ -1404,6 +1404,74 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 }
+            else if (hairStyle == HairStyle::Curly || hairStyle == HairStyle::LongCurly)
+                {
+                const wxColour curlHighlightColor =
+                    Colors::ColorContrast::BlackOrWhiteContrast(hairColor);
+                const wxColour curlyStrandColor{ curlHighlightColor.Red(),
+                                                 curlHighlightColor.Green(),
+                                                 curlHighlightColor.Blue(), 130 };
+
+                // helper to draw an individual filled "puff" of hair
+                auto drawCurlyPuff = [&](double x, double y, double r)
+                {
+                    gc->SetBrush(wxBrush(hairColor));
+                    gc->SetPen(wxPen(hairShadow, 1));
+                    gc->DrawEllipse(x - r, y - r, r * 2, r * 2);
+
+                    gc->SetPen(wxPen(curlyStrandColor, 1));
+                    wxGraphicsPath strand = gc->CreatePath();
+                    strand.AddArc(x, y, r * 0.6, 0.5, 3.5, true);
+                    gc->StrokePath(strand);
+                };
+
+                // build the hair mass using a high-density "cloud" distribution
+                // to create a natural, rounded volume
+                const int puffCount = (hairStyle == HairStyle::LongCurly) ? 500 : 350;
+                for (int i = 0; i < puffCount; ++i)
+                    {
+                    const double t = i / static_cast<double>(puffCount - 1);
+                    // spread around the head from left shoulder to right shoulder
+                    const double angle = -std::numbers::pi * 1.15 + t * std::numbers::pi * 2.3;
+
+                    // vary distance to fill the volume, ensuring a minimum depth
+                    const double dist = 0.4 + 0.6 * (std::abs(std::cos(i * 23.456)));
+
+                    // wider at the sides, rounded at the top
+                    const double px = cx + faceWidth * 1.35 * dist * std::cos(angle);
+                    // use a shifted vertical center for long hair so it goes down more
+                    // without becoming taller at the top
+                    const double py =
+                        (hairStyle == HairStyle::LongCurly) ?
+                            cy - faceHeight * 0.15 + faceHeight * 1.15 * dist * std::sin(angle) :
+                            cy - faceHeight * 0.35 + faceHeight * 0.9 * dist * std::sin(angle);
+
+                    // positioning constraints:
+                    // vertical length
+                    const double verticalLimit =
+                        (hairStyle == HairStyle::LongCurly) ?
+                            cy + faceHeight * 1.05 : // shoulder/chest level
+                            cy + faceHeight * 0.45;  // neck level
+                    // keep bangs well above the eyes, high on forehead
+                    const double bangsLevel = browYLimit - faceHeight * 0.25;
+
+                    bool showPuff = (py < verticalLimit);
+                    // if over the face center, move the limit even higher for bangs
+                    // and push it to the sides more to expose the face
+                    if (showPuff && std::abs(px - cx) < faceWidth * 0.95)
+                        {
+                        showPuff = (py < bangsLevel);
+                        }
+
+                    if (showPuff)
+                        {
+                        // vary puff size slightly for more organic texture
+                        const double puffSize =
+                            faceWidth * (0.2 + 0.1 * std::abs(std::sin(i * 7.89)));
+                        drawCurlyPuff(px, py, puffSize);
+                        }
+                    }
+                }
             }
         // high top fade - works for both genders
         else if (hairStyle == HairStyle::HighTopFade)

@@ -94,12 +94,16 @@ namespace Wisteria
         Pixie,
         /// @brief Hair pulled into a bun.
         Bun,
-        /// @brief Long straight hair past shoulders.
+        /// @brief Long, straight hair past shoulders.
         LongStraight,
         /// @brief High top fade style.
         HighTopFade,
         /// @brief Flat top style.
-        FlatTop
+        FlatTop,
+        /// @brief Short, curly hair.
+        Curly,
+        /// @brief Long, curly hair.
+        LongCurly
         };
 
     /// @brief Facial hair style options for Chernoff faces.
