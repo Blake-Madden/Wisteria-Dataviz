@@ -71,7 +71,7 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         if (dipW <= 0 || dipH <= 0)
             {
             // fallback to US Letter
-            const wxSize dipSize = pdfDC.ToDIP(wxSize(wxRound(8.5 * 72.0), wxRound(11.0 * 72.0)));
+            const wxSize dipSize = pdfDC.ToDIP(wxSize{ wxRound(8.5 * 72.0), wxRound(11.0 * 72.0) });
             dipW = dipSize.GetWidth();
             dipH = dipSize.GetHeight();
             }
@@ -86,7 +86,11 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             {
             canvas->SetCanvasMinWidthDIPs(dipW);
             canvas->SetCanvasMinHeightDIPs(dipH);
-            canvas->SetSize(canvas->FromDIP(wxSize(dipW, dipH)));
+            canvas->SetSize(canvas->FromDIP(wxSize{ dipW, dipH }));
+            // force the internal rect down to the page size; otherwise CalcAllSizes's
+            // std::max(minDIPs, currentRectDIPs) leaves a wider landscape rect intact
+            // and the canvas overflows the portrait page
+            canvas->CalcRowDimensions();
             }
 
         pdfDC.StartPage();
