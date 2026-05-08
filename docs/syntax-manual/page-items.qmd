@@ -199,6 +199,11 @@ Properties for `"label"` nodes:
 - `"color"`: The font color. \
   This can be either a color name or hex-encoded value.
 - `"bold"`: `true` to make the text bold.
+- `"italic"`: `true` to make the text italic.
+- `"font-name"`: The font face name (e.g., `"Arial"`, `"Times New Roman"`). \
+  If omitted, the system default GUI font face is used.
+- `"font-size"`: The font point size (a number; fractional values are supported). \
+  If omitted, the system default GUI font size is used.
 - `"line-spacing"`: A number representing the spaces between lines (if text is multi-line). \
   For line-spacing, note that negative values tighten the spacing between lines (for example, `-5` makes lines closer together). 
 - `"text-alignment"`: How to align the label's text. \
@@ -237,6 +242,11 @@ Properties for `"label"` nodes:
 - `"header"`: Attributes to apply to the first row of the label. \
   The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.
+  - `"italic"`: `true` to make the header italic.
+  - `"font-name"`: The header's font face name (e.g., `"Arial"`). \
+    If omitted, the system default GUI font face is used.
+  - `"font-size"`: The header's font point size (a number; fractional values are supported). \
+    If omitted, the system default GUI font size is used.
   - `"color"`: The font color for the header. \
     This can be either a color name or hex-encoded value.
   - `"text-alignment"`: How to align the label's text. \

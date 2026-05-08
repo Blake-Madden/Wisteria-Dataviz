@@ -593,6 +593,38 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
         json += L"\"bold\": true";
         }
 
+    // italic
+    if (label.GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += L"\"italic\": true";
+        }
+
+    // font-name (only if non-default)
+    const auto defaultGuiFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+    if (label.GetFont().IsOk() && label.GetFont().GetFaceName() != defaultGuiFont.GetFaceName())
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += L"\"font-name\": \"" + EscapeJsonStr(label.GetFont().GetFaceName()) + L"\"";
+        }
+
+    // font-size (only if non-default)
+    if (label.GetFont().IsOk() && !compare_doubles(label.GetFont().GetFractionalPointSize(),
+                                                   defaultGuiFont.GetFractionalPointSize()))
+        {
+        if (json.Last() != L'{')
+            {
+            json += L", ";
+            }
+        json += wxString::Format(L"\"font-size\": %g", label.GetFont().GetFractionalPointSize());
+        }
+
     // color (font color, if not default black)
     const auto& fontColor = label.GetFontColor();
     if (fontColor.IsOk() && fontColor != *wxBLACK)
@@ -685,6 +717,33 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
             {
             hdrStr += L"\"bold\": true";
             }
+        if (header.GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
+            {
+            if (hdrStr.Last() != L'{')
+                {
+                hdrStr += L", ";
+                }
+            hdrStr += L"\"italic\": true";
+            }
+        if (header.GetFont().IsOk() &&
+            header.GetFont().GetFaceName() != defaultGuiFont.GetFaceName())
+            {
+            if (hdrStr.Last() != L'{')
+                {
+                hdrStr += L", ";
+                }
+            hdrStr += L"\"font-name\": \"" + EscapeJsonStr(header.GetFont().GetFaceName()) + L"\"";
+            }
+        if (header.GetFont().IsOk() && !compare_doubles(header.GetFont().GetFractionalPointSize(),
+                                                        defaultGuiFont.GetFractionalPointSize()))
+            {
+            if (hdrStr.Last() != L'{')
+                {
+                hdrStr += L", ";
+                }
+            hdrStr +=
+                wxString::Format(L"\"font-size\": %g", header.GetFont().GetFractionalPointSize());
+            }
         if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
             {
             if (hdrStr.Last() != L'{')
@@ -754,12 +813,40 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
     // build header JSON string first (needed for template)
     wxString headerStr;
     const auto& header = label->GetHeaderInfo();
+    const auto defaultGuiFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
     if (header.IsEnabled())
         {
         wxString hdrObj = L"{";
         if (header.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
             {
             hdrObj += L"\"bold\": true";
+            }
+        if (header.GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
+            {
+            if (hdrObj.Last() != L'{')
+                {
+                hdrObj += L", ";
+                }
+            hdrObj += L"\"italic\": true";
+            }
+        if (header.GetFont().IsOk() &&
+            header.GetFont().GetFaceName() != defaultGuiFont.GetFaceName())
+            {
+            if (hdrObj.Last() != L'{')
+                {
+                hdrObj += L", ";
+                }
+            hdrObj += L"\"font-name\": \"" + EscapeJsonStr(header.GetFont().GetFaceName()) + L"\"";
+            }
+        if (header.GetFont().IsOk() && !compare_doubles(header.GetFont().GetFractionalPointSize(),
+                                                        defaultGuiFont.GetFractionalPointSize()))
+            {
+            if (hdrObj.Last() != L'{')
+                {
+                hdrObj += L", ";
+                }
+            hdrObj +=
+                wxString::Format(L"\"font-size\": %g", header.GetFont().GetFractionalPointSize());
             }
         if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
             {
@@ -920,6 +1007,26 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
     if (label->GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
         {
         node->Add(L"bold", true);
+        }
+
+    // italic
+    if (label->GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
+        {
+        node->Add(L"italic", true);
+        }
+
+    // font-name (only if non-default)
+    const auto defaultFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+    if (label->GetFont().IsOk() && label->GetFont().GetFaceName() != defaultFont.GetFaceName())
+        {
+        node->Add(L"font-name", label->GetFont().GetFaceName());
+        }
+
+    // font-size (only if non-default)
+    if (label->GetFont().IsOk() && !compare_doubles(label->GetFont().GetFractionalPointSize(),
+                                                    defaultFont.GetFractionalPointSize()))
+        {
+        node->Add(L"font-size", label->GetFont().GetFractionalPointSize());
         }
 
     // orientation (default is horizontal)

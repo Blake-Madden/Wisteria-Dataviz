@@ -994,6 +994,33 @@ namespace Wisteria
                     label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
                     }
                 }
+            if (labelNode->HasProperty(L"italic"))
+                {
+                if (labelNode->GetProperty(L"italic")->AsBool())
+                    {
+                    label->GetFont().MakeItalic();
+                    }
+                else
+                    {
+                    label->GetFont().SetStyle(wxFONTSTYLE_NORMAL);
+                    }
+                }
+            if (labelNode->HasProperty(L"font-name"))
+                {
+                const auto faceName = labelNode->GetProperty(L"font-name")->AsString();
+                if (!faceName.empty())
+                    {
+                    label->GetFont().SetFaceName(faceName);
+                    }
+                }
+            if (labelNode->HasProperty(L"font-size"))
+                {
+                const auto fontSize = labelNode->GetProperty(L"font-size")->AsDouble();
+                if (fontSize > 0)
+                    {
+                    label->GetFont().SetFractionalPointSize(fontSize);
+                    }
+                }
 
             const auto textAlignment = ReportEnumConvert::ConvertTextAlignment(
                 labelNode->GetProperty(L"text-alignment")->AsString());
@@ -1016,6 +1043,33 @@ namespace Wisteria
                     else
                         {
                         label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                        }
+                    }
+                if (headerNode->HasProperty(L"italic"))
+                    {
+                    if (headerNode->GetProperty(L"italic")->AsBool())
+                        {
+                        label->GetHeaderInfo().GetFont().MakeItalic();
+                        }
+                    else
+                        {
+                        label->GetHeaderInfo().GetFont().SetStyle(wxFONTSTYLE_NORMAL);
+                        }
+                    }
+                if (headerNode->HasProperty(L"font-name"))
+                    {
+                    const auto faceName = headerNode->GetProperty(L"font-name")->AsString();
+                    if (!faceName.empty())
+                        {
+                        label->GetHeaderInfo().GetFont().SetFaceName(faceName);
+                        }
+                    }
+                if (headerNode->HasProperty(L"font-size"))
+                    {
+                    const auto fontSize = headerNode->GetProperty(L"font-size")->AsDouble();
+                    if (fontSize > 0)
+                        {
+                        label->GetHeaderInfo().GetFont().SetFractionalPointSize(fontSize);
                         }
                     }
                 const wxColour headerColor(ConvertColor(headerNode->GetProperty(L"color")));
