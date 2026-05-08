@@ -58,21 +58,22 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             {
             const bool landscape = (printData.GetOrientation() == wxLANDSCAPE);
             const auto paperSzTenthsMM = paper->GetSize();
-            const double ptsW =
-                (landscape ? paperSzTenthsMM.GetHeight() : paperSzTenthsMM.GetWidth()) / 254.0 *
-                72.0;
-            const double ptsH =
-                (landscape ? paperSzTenthsMM.GetWidth() : paperSzTenthsMM.GetHeight()) / 254.0 *
-                72.0;
-            dipW = wxRound(ptsW * 96.0 / 72.0);
-            dipH = wxRound(ptsH * 96.0 / 72.0);
+            const wxSize ptsSize(
+                wxRound((landscape ? paperSzTenthsMM.GetHeight() : paperSzTenthsMM.GetWidth()) /
+                        254.0 * 72.0),
+                wxRound((landscape ? paperSzTenthsMM.GetWidth() : paperSzTenthsMM.GetHeight()) /
+                        254.0 * 72.0));
+            const wxSize dipSize = pdfDC.ToDIP(ptsSize);
+            dipW = dipSize.GetWidth();
+            dipH = dipSize.GetHeight();
             }
 
         if (dipW <= 0 || dipH <= 0)
             {
-            // fallback to US Letter at 96 DPI
-            dipW = static_cast<int>(8.5 * 96.0);
-            dipH = static_cast<int>(11.0 * 96.0);
+            // fallback to US Letter
+            const wxSize dipSize = pdfDC.ToDIP(wxSize(wxRound(8.5 * 72.0), wxRound(11.0 * 72.0)));
+            dipW = dipSize.GetWidth();
+            dipH = dipSize.GetHeight();
             }
 
         // save original canvas state

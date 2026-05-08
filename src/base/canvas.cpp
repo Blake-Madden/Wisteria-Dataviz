@@ -427,14 +427,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     {
                     const bool landscape = printData.GetOrientation() == wxLANDSCAPE;
                     const auto paperSzTenthsMM = paper->GetSize();
-                    const double ptsW =
-                        (landscape ? paperSzTenthsMM.GetHeight() : paperSzTenthsMM.GetWidth()) /
-                        254.0 * 72.0;
-                    const double ptsH =
-                        (landscape ? paperSzTenthsMM.GetWidth() : paperSzTenthsMM.GetHeight()) /
-                        254.0 * 72.0;
-                    const int dipW = wxRound(ptsW * 96.0 / 72.0);
-                    const int dipH = wxRound(ptsH * 96.0 / 72.0);
+                    const wxSize ptsSize(wxRound((landscape ? paperSzTenthsMM.GetHeight() :
+                                                              paperSzTenthsMM.GetWidth()) /
+                                                 254.0 * 72.0),
+                                         wxRound((landscape ? paperSzTenthsMM.GetWidth() :
+                                                              paperSzTenthsMM.GetHeight()) /
+                                                 254.0 * 72.0));
+                    const wxSize dipSize = pdfDC.ToDIP(ptsSize);
+                    const int dipW = dipSize.GetWidth();
+                    const int dipH = dipSize.GetHeight();
                     m_rectDIPs.SetSize(wxSize{ dipW, dipH });
                     m_canvasMinSizeDIPs = wxSize{ dipW, dipH };
                     }
