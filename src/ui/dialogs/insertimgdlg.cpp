@@ -40,11 +40,6 @@ namespace Wisteria::UI
         imagePage->SetSizer(imageSizer);
         GetSideBarBook()->AddPage(imagePage, _(L"Image"), ID_IMAGE_SECTION, true);
 
-        if ((m_options & ImageDlgIncludePageOptions) == 0)
-            {
-            GetSideBarBook()->DeletePage(0);
-            }
-
         // image file paths
         m_pathListBox = new wxEditableListBox(
             imagePage, wxID_ANY, _(L"Image files:"), wxDefaultPosition,
@@ -198,7 +193,10 @@ namespace Wisteria::UI
 
         imageSizer->Add(optionsGrid, wxSizerFlags{}.Border());
 
-        CreatePageOptionsPage();
+        if ((m_options & ImageDlgIncludePageOptions) != 0)
+            {
+            CreatePageOptionsPage();
+            }
         }
 
     //-------------------------------------------

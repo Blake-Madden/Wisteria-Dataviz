@@ -48,11 +48,6 @@ namespace Wisteria::UI
         labelPage->SetSizer(mainSizer);
         GetSideBarBook()->AddPage(labelPage, _(L"Label"), ID_LABEL_SECTION, true);
 
-        if (!m_includePageOptions)
-            {
-            GetSideBarBook()->DeletePage(0);
-            }
-
         // first column
         //-------------
 
@@ -334,7 +329,10 @@ namespace Wisteria::UI
                                                  }
                                          });
 
-        CreatePageOptionsPage();
+        if (m_includePageOptions)
+            {
+            CreatePageOptionsPage();
+            }
         }
 
     //-------------------------------------------
