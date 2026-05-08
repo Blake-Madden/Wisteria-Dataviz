@@ -11,7 +11,11 @@
 #include "polygon.h"
 #include <algorithm>
 #include <array>
+#include <wx/dcprint.h>
 #include <wx/rawbmp.h>
+#ifdef INCLUDE_PDF
+    #include <wx/pdfdc.h>
+#endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Image, Wisteria::GraphItems::GraphItemBase);
 
@@ -1021,8 +1025,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         // the original image to maintain fidelity
         const wxSize scaledSize(GetImageSize().GetWidth() * GetScaling(),
                                 GetImageSize().GetHeight() * GetScaling());
+
+        // for print/PDF output, keep the source bitmap at full resolution and
+        // fit it to the layout via the DC's user scale — this embeds a high-DPI
+        // copy in the document so it stays crisp when zoomed or printed
+        const bool isPrintDC =
+#ifdef INCLUDE_PDF
+            dc.IsKindOf(wxCLASSINFO(wxPdfDC)) ||
+#endif
+            dc.IsKindOf(wxCLASSINFO(wxPrinterDC));
+
         wxImage img = m_originalImg;
-        if (img.GetSize() != scaledSize)
+        if (!isPrintDC && img.GetSize() != scaledSize)
             {
             img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
@@ -1105,7 +1119,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
                 boundRect.GetHeight() - (GetImageSize().GetHeight() * GetScaling());
             }
 
-        dc.DrawBitmap(wxBitmap{ img, 32 }, imgTopLeftCorner);
+        const wxBitmap bmp{ img, 32 };
+        if (isPrintDC && bmp.GetSize() != scaledSize)
+            {
+            // shrink the DC's user scale so the full-resolution bitmap fits the
+            // layout-sized destination; using DrawBitmap (rather than StretchBlit)
+            // preserves the alpha channel
+            double oldXScale{ 1.0 };
+            double oldYScale{ 1.0 };
+            dc.GetUserScale(&oldXScale, &oldYScale);
+            const double xRatio = safe_divide<double>(scaledSize.GetWidth(), bmp.GetWidth());
+            const double yRatio = safe_divide<double>(scaledSize.GetHeight(), bmp.GetHeight());
+            dc.SetUserScale(oldXScale * xRatio, oldYScale * yRatio);
+            const wxPoint scaledTopLeft{
+                static_cast<int>(std::lround(safe_divide<double>(imgTopLeftCorner.x, xRatio))),
+                static_cast<int>(std::lround(safe_divide<double>(imgTopLeftCorner.y, yRatio)))
+            };
+            dc.DrawBitmap(bmp, scaledTopLeft);
+            dc.SetUserScale(oldXScale, oldYScale);
+            }
+        else
+            {
+            dc.DrawBitmap(bmp, imgTopLeftCorner);
+            }
 
         // draw the outline
         std::array<wxPoint, 5> pts;
