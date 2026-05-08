@@ -15,7 +15,7 @@ demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdf
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern|reportpdfexport[.]cpp|wxpdfdoc/)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|wxpdfdoc/)")
 
 # Exclusion filter for main application (in addition to other filters)
 set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\

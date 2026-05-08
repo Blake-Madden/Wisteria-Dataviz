@@ -10,7 +10,7 @@
 #include "../base/reportprintout.h"
 #include "../base/svgreportprintout.h"
 #ifdef INCLUDE_PDF
-    #include "../base/reportpdfexport.h"
+    #include "../base/pdfreportprintout.h"
 #endif
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"

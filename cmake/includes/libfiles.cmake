@@ -14,12 +14,12 @@ SET(WISTERIA_SRC
     src/base/image.cpp
     src/base/label.cpp
     src/base/lines.cpp
+    src/base/pdfreportprintout.cpp
     src/base/points.cpp
     src/base/polygon.cpp
     src/base/reportbuilder.cpp
     src/base/reportbuildercolors.cpp
     src/base/reportnodeloader.cpp
-    src/base/reportpdfexport.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
     src/base/svgreportprintout.cpp
