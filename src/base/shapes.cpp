@@ -2207,9 +2207,7 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPen{ Colors::ColorContrast::ChangeOpacity(
                                   Colors::ColorBrewer::GetColor(Colors::Color::DarkGray), 75),
                               static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
-            double clipX{ 0 }, clipY{ 0 }, clipW{ 0 }, clipH{ 0 };
-            gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
-            const wxRect originalClipRect(clipX, clipY, clipW, clipH);
+            gc->PushState();
             const wxRegion barnRegion{ barnPoints.size(), barnPoints.data() };
             gc->Clip(barnRegion);
             wxCoord currentY{ barnRect.GetTop() };
@@ -2226,11 +2224,7 @@ namespace Wisteria::GraphItems
             // clang-format off
             wxCLANG_WARNING_RESTORE(unused-but-set-variable);
             // clang-format on
-            gc->ResetClip();
-            if (!originalClipRect.IsEmpty())
-                {
-                gc->Clip(originalClipRect);
-                }
+            gc->PopState();
 
             // roof
             gc->SetPen(
@@ -2615,10 +2609,9 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for sword icon!");
         if (gc != nullptr)
             {
-            const auto originalClipRect(gc->GetClipBox());
-
             if (clippingSection != ClippingSection::None)
                 {
+                gc->PushState();
                 if (clippingSection == ClippingSection::Upper)
                     {
                     const std::array<wxPoint, 3> corners{
@@ -2730,11 +2723,7 @@ namespace Wisteria::GraphItems
 
             if (clippingSection != ClippingSection::None)
                 {
-                gc->ResetClip();
-                if (!originalClipRect.IsEmpty())
-                    {
-                    gc->Clip(originalClipRect);
-                    }
+                gc->PopState();
                 }
             }
         }
@@ -2896,8 +2885,8 @@ namespace Wisteria::GraphItems
             wxRect2DDouble portraitRect{ innerBillRect };
             portraitRect.SetWidth(portraitRect.GetWidth() * math_constants::third);
             portraitRect.Offset(billRect.GetWidth() * math_constants::fifth, 0);
-            const auto clipBox = gc->GetClipBox();
-            const auto originalClipRect(clipBox);
+
+            gc->PushState();
             gc->Clip(portraitRect.GetX(), portraitRect.GetY(), portraitRect.GetWidth(),
                      portraitRect.GetHeight());
 
@@ -3231,8 +3220,7 @@ namespace Wisteria::GraphItems
                 fillHairShaded(hairPath, ribbon);
                 }
 
-            gc->ResetClip();
-            gc->Clip(originalClipRect);
+            gc->PopState();
 
             // inner frame
             //------------
@@ -4597,11 +4585,12 @@ namespace Wisteria::GraphItems
                 wxPoint{ left, shaftBottom }
             };
 
+            gc->PushState();
             gc->Clip(wxRegion{ arrowPoints.size(), arrowPoints.data() });
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
-            gc->ResetClip();
+            gc->PopState();
             }
 
             // double outline: outer (base), inner (lighter tint)
