@@ -171,13 +171,28 @@ include(cmake/ListFiles.cmake)
 
 # Build Wisteria library
 ########################
+
+# Add wxPDFDocument submodule
 option(INCLUDE_PDF "Include PDF export support (wxPDFDocument)" OFF)
 
 include(${CMAKE_SOURCE_DIR}/cmake/includes/libfiles.cmake)
 if(INCLUDE_PDF)
     include(${CMAKE_SOURCE_DIR}/cmake/includes/wxpdf.cmake)
     list(APPEND WISTERIA_SRC ${WXPDF_SRC})
+    # Suppress warnings from wxPDFDocument
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
+        set_source_files_properties(${WXPDF_SRC} PROPERTIES
+            COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter")
+    elseif(MSVC)
+        # /wd4189 — local variable initialized but not referenced
+        # /wd4100 — unreferenced formal parameter
+        # /wd4101 — unreferenced local variable
+        # /wd4267 — conversion from 'size_t' to 'uint32_t', possible loss of data
+        set_source_files_properties(${WXPDF_SRC} PROPERTIES
+            COMPILE_OPTIONS "/wd4189;/wd4100;/wd4101;/wd4267")
+    endif()
 endif()
+
 set(WISTIER_LIB wisteria)
 add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
 if(INCLUDE_PDF)
