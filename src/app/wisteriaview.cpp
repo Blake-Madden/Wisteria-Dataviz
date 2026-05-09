@@ -682,13 +682,17 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     auto& appSettings = wxGetApp().GetAppSettings();
     Wisteria::SVGReportOptions& savedOptions = appSettings->GetSvgExportOptions();
 
+    wxPrintData printData;
+    printData.SetOrientation(static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation()));
+    printData.SetPaperId(appSettings->GetPaperId());
+
     // use the saved page size if valid, fall back to per-canvas paper size
     const wxSize defaultPageSize =
         (savedOptions.m_pageSize != wxDefaultSize) ?
             savedOptions.m_pageSize :
             Wisteria::SVGReportPrintout::GetPaperSizeDIPs(m_pages.front());
 
-    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize, &savedOptions);
+    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize, printData, &savedOptions);
     if (sizeDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -696,6 +700,16 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
 
     // persist all choices back to app settings
     savedOptions.m_pageSize = sizeDlg.GetPageSize();
+    savedOptions.m_useGlobalPrintSettings = sizeDlg.UseGlobalPrintSettings();
+    if (savedOptions.m_useGlobalPrintSettings)
+        {
+        for (auto* page : m_pages)
+            {
+            page->GetPrinterSettings().SetOrientation(
+                static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation()));
+            page->GetPrinterSettings().SetPaperId(appSettings->GetPaperId());
+            }
+        }
     savedOptions.m_includeTransitions = sizeDlg.IncludeTransitions();
     savedOptions.m_includeHighlighting = sizeDlg.IncludeHighlighting();
     savedOptions.m_includeLayoutOptions = sizeDlg.IncludeLayoutOptions();
@@ -715,16 +729,17 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
 
     // RAII creates the report, maybe_unused is to silence clang-tidy false positive
     [[maybe_unused]]
-    Wisteria::SVGReportPrintout svgReport(m_pages,
-                                          Wisteria::SVGReportOptions(fileDlg.GetPath())
-                                              .PageSize(savedOptions.m_pageSize)
-                                              .Transitions(savedOptions.m_includeTransitions)
-                                              .PageShadow(savedOptions.m_includePageShadow)
-                                              .Highlighting(savedOptions.m_includeHighlighting)
-                                              .LayoutOptions(savedOptions.m_includeLayoutOptions)
-                                              .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
-                                              .Slideshow(savedOptions.m_includeSlideshow)
-                                              .ThemeColor(savedOptions.m_themeColor));
+    Wisteria::SVGReportPrintout svgReport(
+        m_pages, Wisteria::SVGReportOptions(fileDlg.GetPath())
+                     .PageSize(savedOptions.m_pageSize)
+                     .UseGlobalPrintSettings(savedOptions.m_useGlobalPrintSettings)
+                     .Transitions(savedOptions.m_includeTransitions)
+                     .PageShadow(savedOptions.m_includePageShadow)
+                     .Highlighting(savedOptions.m_includeHighlighting)
+                     .LayoutOptions(savedOptions.m_includeLayoutOptions)
+                     .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
+                     .Slideshow(savedOptions.m_includeSlideshow)
+                     .ThemeColor(savedOptions.m_themeColor));
     }
 
 //-------------------------------------------

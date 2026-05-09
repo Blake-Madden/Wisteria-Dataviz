@@ -97,6 +97,8 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"slideshow", m_svgExportOptions.m_includeSlideshow);
             m_svgExportOptions.m_includePageShadow =
                 boolAttr(L"pageShadow", m_svgExportOptions.m_includePageShadow);
+            m_svgExportOptions.m_useGlobalPrintSettings =
+                boolAttr(L"svgUseGlobalPrintSettings", m_svgExportOptions.m_useGlobalPrintSettings);
             const wxString colorStr = child->GetAttribute(
                 L"themeColor", m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
             if (const wxColour color{ colorStr }; color.IsOk())
@@ -162,6 +164,8 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
                           m_svgExportOptions.m_includeDarkModeToggle ? L"1" : L"0");
     svgNode->AddAttribute(L"slideshow", m_svgExportOptions.m_includeSlideshow ? L"1" : L"0");
     svgNode->AddAttribute(L"pageShadow", m_svgExportOptions.m_includePageShadow ? L"1" : L"0");
+    svgNode->AddAttribute(L"svgUseGlobalPrintSettings",
+                          m_svgExportOptions.m_useGlobalPrintSettings ? L"1" : L"0");
     svgNode->AddAttribute(L"themeColor",
                           m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
     svgNode->AddAttribute(L"layout", m_svgExportOptions.m_layout ==

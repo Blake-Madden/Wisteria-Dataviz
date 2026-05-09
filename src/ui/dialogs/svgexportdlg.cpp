@@ -7,15 +7,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "svgexportdlg.h"
+#include "../../base/settings.h"
 #include <wx/clrpicker.h>
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
+#include <wx/paper.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //------------------------------------------------------
     SvgExportDlg::SvgExportDlg(wxWindow* parent, const wxSize& defaultSize,
+                               const wxPrintData& printData,
                                const Wisteria::SVGReportOptions* savedOptions /*= nullptr*/,
                                wxWindowID id /*= wxID_ANY*/,
                                const wxString& caption /*= _(L"SVG Export Options")*/,
@@ -24,8 +27,15 @@ namespace Wisteria::UI
                                long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
         : m_pageWidth(defaultSize.GetWidth()), m_pageHeight(defaultSize.GetHeight())
         {
+        const wxPrintPaperType* paperType =
+            wxThePrintPaperDatabase->FindPaperType(printData.GetPaperId());
+        m_paperType = (paperType != nullptr) ? paperType->GetName() : _(L"Custom");
+        m_orientation =
+            (printData.GetOrientation() == wxLANDSCAPE) ? _(L"Landscape") : _(L"Portrait");
+
         if (savedOptions != nullptr)
             {
+            m_useGlobalPrintSettings = savedOptions->m_useGlobalPrintSettings;
             m_includeTransitions = savedOptions->m_includeTransitions;
             m_includeHighlighting = savedOptions->m_includeHighlighting;
             m_includeLayoutOptions = savedOptions->m_includeLayoutOptions;
@@ -62,29 +72,74 @@ namespace Wisteria::UI
 
         // page size controls
         auto* sizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Page Size"));
+
+        m_useGlobalPrintSettingsCheckbox =
+            new wxCheckBox(sizeSizer->GetStaticBox(), USE_GLOBAL_PRINT_SETTINGS_ID,
+                           _(L"Use global print settings"));
+        m_useGlobalPrintSettingsCheckbox->SetValidator(
+            wxGenericValidator{ &m_useGlobalPrintSettings });
+        sizeSizer->Add(m_useGlobalPrintSettingsCheckbox, wxSizerFlags{}.Border());
+
+        auto* globalPrintSettingsSizer = new wxBoxSizer(wxVERTICAL);
+        auto* globalPrintSettingsIndentSizer = new wxBoxSizer(wxHORIZONTAL);
+        globalPrintSettingsIndentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
+
+        auto* globalPrintLabelsSizer = new wxBoxSizer(wxVERTICAL);
+        m_paperTypeLabel = new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, m_paperType);
+        m_paperTypeLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        globalPrintLabelsSizer->Add(m_paperTypeLabel);
+
+        m_orientationLabel =
+            new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, m_orientation);
+        m_orientationLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        globalPrintLabelsSizer->Add(m_orientationLabel);
+
+        globalPrintSettingsIndentSizer->Add(globalPrintLabelsSizer);
+        globalPrintSettingsSizer->Add(globalPrintSettingsIndentSizer);
+        sizeSizer->Add(globalPrintSettingsSizer, wxSizerFlags{}.Expand().Border(wxBOTTOM));
+
         auto* sizeGridSizer = new wxFlexGridSizer(2, 2, wxSizerFlags::GetDefaultBorder(),
                                                   wxSizerFlags::GetDefaultBorder());
         sizeGridSizer->AddGrowableCol(1, 1);
-        sizeSizer->Add(sizeGridSizer, wxSizerFlags{}.Expand());
+        sizeSizer->Add(sizeGridSizer, wxSizerFlags{}.Expand().Border());
 
-        sizeGridSizer->Add(new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, _(L"Width:")),
-                           wxSizerFlags{}.CenterVertical());
-        auto* widthCtrl =
+        m_widthLabel = new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, _(L"Width:"));
+        sizeGridSizer->Add(m_widthLabel, wxSizerFlags{}.CenterVertical());
+        m_widthCtrl =
             new wxSpinCtrl(sizeSizer->GetStaticBox(), PAGE_WIDTH_ID, std::to_wstring(m_pageWidth),
                            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
-        widthCtrl->SetValidator(wxGenericValidator{ &m_pageWidth });
-        sizeGridSizer->Add(widthCtrl, wxSizerFlags{}.Expand());
+        m_widthCtrl->SetValidator(wxGenericValidator{ &m_pageWidth });
+        sizeGridSizer->Add(m_widthCtrl, wxSizerFlags{}.Expand());
 
-        sizeGridSizer->Add(new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, _(L"Height:")),
-                           wxSizerFlags{}.CenterVertical());
-        auto* heightCtrl =
+        m_heightLabel = new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, _(L"Height:"));
+        sizeGridSizer->Add(m_heightLabel, wxSizerFlags{}.CenterVertical());
+        m_heightCtrl =
             new wxSpinCtrl(sizeSizer->GetStaticBox(), PAGE_HEIGHT_ID, std::to_wstring(m_pageHeight),
                            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
-        heightCtrl->SetValidator(wxGenericValidator{ &m_pageHeight });
-        sizeGridSizer->Add(heightCtrl, wxSizerFlags{}.Expand());
+        m_heightCtrl->SetValidator(wxGenericValidator{ &m_pageHeight });
+        sizeGridSizer->Add(m_heightCtrl, wxSizerFlags{}.Expand());
 
         leftColumnSizer->Add(sizeSizer, wxSizerFlags{}.Expand());
         leftColumnSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
+
+        // toggle custom size controls based on global print settings checkbox
+        const auto toggleSizeControls = [this](const bool useGlobal)
+        {
+            m_widthLabel->Enable(!useGlobal);
+            m_widthLabel->Refresh();
+            m_widthCtrl->Enable(!useGlobal);
+            m_heightLabel->Enable(!useGlobal);
+            m_heightLabel->Refresh();
+            m_heightCtrl->Enable(!useGlobal);
+            m_paperTypeLabel->Enable(useGlobal);
+            m_paperTypeLabel->Refresh();
+            m_orientationLabel->Enable(useGlobal);
+            m_orientationLabel->Refresh();
+        };
+        m_useGlobalPrintSettingsCheckbox->Bind(wxEVT_CHECKBOX,
+                                               [toggleSizeControls](wxCommandEvent& event)
+                                               { toggleSizeControls(event.IsChecked()); });
+        toggleSizeControls(m_useGlobalPrintSettings);
 
         // interactive features
         auto* featuresSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Interactive Features"));

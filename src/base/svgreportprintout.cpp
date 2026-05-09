@@ -92,7 +92,8 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
     // the layout size controls the viewBox and page spacing;
     // the rendering size (pageSizes) stays at each canvas's own paper size
-    const bool useOverrideSize = (options.m_pageSize != wxDefaultSize);
+    const bool useOverrideSize =
+        !options.m_useGlobalPrintSettings && (options.m_pageSize != wxDefaultSize);
     int maxWidth{ 0 };
     int totalHeight{ 0 };
     for (size_t i = 0; i < pageSizes.size(); ++i)
@@ -533,6 +534,7 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
     const auto& printData = canvas->GetPrinterSettings();
     const wxPrintPaperType* paperType =
         wxThePrintPaperDatabase->FindPaperType(printData.GetPaperId());
+
     // paper size is in tenths of a millimeter;
     // divide by 254 (25.4mm per inch * 10) to get inches,
     // then multiply by 96 (DIPs per inch) to get DIPs
@@ -554,7 +556,10 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
         }
 
     // fallback: US Letter (8.5" x 11") at 96 DPI
-    return { static_cast<int>(8.5 * dipsPerInch), static_cast<int>(11 * dipsPerInch) };
+    const int widthDIPs = static_cast<int>(8.5 * dipsPerInch);
+    const int heightDIPs = static_cast<int>(11 * dipsPerInch);
+    return (printData.GetOrientation() == wxLANDSCAPE) ? wxSize{ heightDIPs, widthDIPs } :
+                                                         wxSize{ widthDIPs, heightDIPs };
     }
 
 //------------------------------------------------------

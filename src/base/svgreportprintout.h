@@ -54,6 +54,9 @@ namespace Wisteria
         wxColour m_themeColor{ 103, 58, 183 };
         /// @brief Uniform page size (in DIPs). If default, uses per-canvas paper sizes.
         wxSize m_pageSize{ wxDefaultSize };
+        /// @brief Whether to use the global print settings (paper size and orientation)
+        ///     for the SVG dimensions.
+        bool m_useGlobalPrintSettings{ true };
 
         [[nodiscard]]
         bool HasInteractiveFeatures() const noexcept
@@ -129,6 +132,13 @@ namespace Wisteria
         SVGReportOptions& PageSize(const wxSize& size)
             {
             m_pageSize = size;
+            return *this;
+            }
+
+        /// @brief Sets whether to use global print settings for the SVG dimensions.
+        SVGReportOptions& UseGlobalPrintSettings(bool use)
+            {
+            m_useGlobalPrintSettings = use;
             return *this;
             }
         };

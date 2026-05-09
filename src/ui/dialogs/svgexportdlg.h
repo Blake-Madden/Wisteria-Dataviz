@@ -38,7 +38,7 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        SvgExportDlg(wxWindow* parent, const wxSize& defaultSize,
+        SvgExportDlg(wxWindow* parent, const wxSize& defaultSize, const wxPrintData& printData,
                      const Wisteria::SVGReportOptions* savedOptions = nullptr,
                      wxWindowID id = wxID_ANY, const wxString& caption = _(L"SVG Export Options"),
                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -54,6 +54,14 @@ namespace Wisteria::UI
         wxSize GetPageSize() const noexcept
             {
             return { m_pageWidth, m_pageHeight };
+            }
+
+        /// @returns Whether to use the global print settings (paper size and orientation)
+        ///     for the SVG dimensions.
+        [[nodiscard]]
+        bool UseGlobalPrintSettings() const noexcept
+            {
+            return m_useGlobalPrintSettings;
             }
 
         /// @returns Whether to include smooth transitions.
@@ -133,11 +141,13 @@ namespace Wisteria::UI
 
         constexpr static wxWindowID PAGE_WIDTH_ID{ wxID_HIGHEST };
         constexpr static wxWindowID PAGE_HEIGHT_ID{ wxID_HIGHEST + 1 };
-        constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID LAYOUT_RADIO_ID{ wxID_HIGHEST + 3 };
+        constexpr static wxWindowID USE_GLOBAL_PRINT_SETTINGS_ID{ wxID_HIGHEST + 2 };
+        constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 3 };
+        constexpr static wxWindowID LAYOUT_RADIO_ID{ wxID_HIGHEST + 4 };
 
         int m_pageWidth{ 0 };
         int m_pageHeight{ 0 };
+        bool m_useGlobalPrintSettings{ true };
         bool m_includeTransitions{ true };
         bool m_includeHighlighting{ true };
         bool m_includeLayoutOptions{ true };
@@ -148,6 +158,16 @@ namespace Wisteria::UI
         Wisteria::SVGReportOptions::PageLayout m_layout{
             Wisteria::SVGReportOptions::PageLayout::Duplex
         };
+
+        wxString m_paperType;
+        wxString m_orientation;
+        wxCheckBox* m_useGlobalPrintSettingsCheckbox{ nullptr };
+        wxStaticText* m_widthLabel{ nullptr };
+        wxSpinCtrl* m_widthCtrl{ nullptr };
+        wxStaticText* m_heightLabel{ nullptr };
+        wxSpinCtrl* m_heightCtrl{ nullptr };
+        wxStaticText* m_paperTypeLabel{ nullptr };
+        wxStaticText* m_orientationLabel{ nullptr };
 
         wxPanel* m_previewPanel{ nullptr };
         };
