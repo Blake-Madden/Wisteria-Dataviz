@@ -193,7 +193,7 @@ namespace Wisteria::UI
         // pen options
         if ((m_options & ShapeDlgIncludePen) != 0)
             {
-            auto* penBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Pen (outline)"));
+            auto* penBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Outline"));
             auto* penGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
                                                            wxSizerFlags::GetDefaultBorder() });
 
@@ -228,7 +228,7 @@ namespace Wisteria::UI
         // brush options
         if ((m_options & ShapeDlgIncludeBrush) != 0)
             {
-            auto* brushBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Brush (fill)"));
+            auto* brushBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Fill"));
             auto* brushGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
                                                              wxSizerFlags::GetDefaultBorder() });
 
@@ -292,11 +292,12 @@ namespace Wisteria::UI
 
             auto* fillGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
                                                             wxSizerFlags::GetDefaultBorder() });
-            fillGrid->Add(new wxStaticText(fillBox->GetStaticBox(), wxID_ANY, _(L"Fill percent:")),
-                          wxSizerFlags{}.CenterVertical());
+            m_fillPercentLabel =
+                new wxStaticText(fillBox->GetStaticBox(), wxID_ANY, _(L"Fill percent:"));
+            fillGrid->Add(m_fillPercentLabel, wxSizerFlags{}.CenterVertical());
             m_fillPercentSpin = new wxSpinCtrlDouble(fillBox->GetStaticBox(), wxID_ANY, wxString{},
                                                      wxDefaultPosition, wxDefaultSize,
-                                                     wxSP_ARROW_KEYS, 0.0, 1.0, 0.0, 0.05);
+                                                     wxSP_ARROW_KEYS, 0.0, 1.0, 0.5, 0.05);
             fillGrid->Add(m_fillPercentSpin);
 
             fillBox->Add(fillGrid, wxSizerFlags{}.Border());
@@ -366,9 +367,11 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertShapeDlg::OnEnableFillable(const bool enable)
         {
-        if (m_fillPercentSpin != nullptr)
+        if (m_fillPercentSpin != nullptr && m_fillPercentLabel != nullptr)
             {
             m_fillPercentSpin->Enable(enable);
+            m_fillPercentLabel->Enable(enable);
+            m_fillPercentLabel->Refresh();
             }
         }
 

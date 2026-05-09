@@ -54,10 +54,10 @@ namespace Wisteria::UI
         // text
         auto* textSizer = new wxBoxSizer(wxVERTICAL);
         textSizer->Add(new wxStaticText(labelPage, wxID_ANY, _(L"Text:")),
-                       wxSizerFlags{}.Border(wxLEFT | wxTOP));
+                       wxSizerFlags{}.Border(wxTOP));
         m_textCtrl = new wxTextCtrl(labelPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                     wxSize{ FromDIP(300), FromDIP(100) }, wxTE_MULTILINE);
-        textSizer->Add(m_textCtrl, wxSizerFlags{ 1 }.Expand().Border());
+        textSizer->Add(m_textCtrl, wxSizerFlags{ 1 }.Expand());
         col1Sizer->Add(textSizer, wxSizerFlags{}.Expand().Border());
 
         // font options

@@ -688,6 +688,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         {
         return L"label.svg";
         }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
+        {
+        return L"label.svg";
+        }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Image)))
         {
         return L"image.svg";

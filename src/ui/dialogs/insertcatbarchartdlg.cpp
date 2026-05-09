@@ -235,7 +235,7 @@ namespace Wisteria::UI
             optionsPage, wxID_ANY, _(L"Bar block decals:"), wxDefaultPosition,
             wxSize{ FromDIP(300), FromDIP(120) },
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
-        leftSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border(wxTOP));
+        leftSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // legend placement
         auto* legendGrid = new wxFlexGridSizer(

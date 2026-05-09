@@ -173,7 +173,13 @@ namespace Wisteria::UI
         m_bgThumbnail = new Thumbnail(
             appearanceBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true,
             wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE);
-        appearanceGrid->Add(m_bgThumbnail, wxSizerFlags{}.Border(wxTOP | wxBOTTOM));
+        auto* bgClearBtn = new wxButton(appearanceBox->GetStaticBox(), wxID_ANY, _(L"Clear"));
+        bgClearBtn->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+                         { m_bgThumbnail->SetBitmap(wxNullBitmap); });
+        auto* bgImgHBox = new wxBoxSizer(wxHORIZONTAL);
+        bgImgHBox->Add(m_bgThumbnail, wxSizerFlags{}.Border(wxTOP | wxBOTTOM));
+        bgImgHBox->Add(bgClearBtn, wxSizerFlags{}.CenterVertical().Border());
+        appearanceGrid->Add(bgImgHBox, wxSizerFlags{}.Expand());
 
         // background image opacity
         appearanceGrid->Add(

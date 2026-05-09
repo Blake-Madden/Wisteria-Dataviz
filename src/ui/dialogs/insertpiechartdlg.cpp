@@ -29,6 +29,10 @@ namespace Wisteria::UI
         {
         CreateControls();
         FinalizeControls();
+        TransferDataToWindow();
+
+        OnShowcaseModeChanged();
+        OnPieSliceEffectChanged();
 
         SetMinSize(GetSize());
 
@@ -549,9 +553,6 @@ namespace Wisteria::UI
 
         m_editDonutLabelButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                      { OnEditDonutHoleLabel(); });
-
-        OnShowcaseModeChanged();
-        OnPieSliceEffectChanged();
 
         CreateGraphOptionsPage();
         CreatePageOptionsPage();

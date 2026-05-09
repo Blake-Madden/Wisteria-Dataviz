@@ -2010,6 +2010,11 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
                                        static_cast<uint8_t>(dlg.GetBackgroundImageOpacity()));
             }
         }
+    else
+        {
+        canvas->SetBackgroundImagePath(wxString{});
+        canvas->SetBackgroundImage(wxBitmapBundle{});
+        }
     UpdateCanvas(canvas);
 
     // update the sidebar label for this page

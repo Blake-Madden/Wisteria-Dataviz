@@ -191,6 +191,7 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_labelColorPicker{ nullptr };
 
         // fillable
+        wxStaticText* m_fillPercentLabel{ nullptr };
         wxSpinCtrlDouble* m_fillPercentSpin{ nullptr };
 
         // repeat

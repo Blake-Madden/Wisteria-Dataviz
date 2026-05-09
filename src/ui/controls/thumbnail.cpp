@@ -151,6 +151,10 @@ namespace Wisteria::UI
     //----------------------------------
     void Thumbnail::SetBitmap(const wxBitmap& bmp)
         {
+        if (!bmp.IsOk())
+            {
+            m_filePath.clear();
+            }
         m_img = GraphItems::Image((bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage));
         if (m_img.IsOk())
             {

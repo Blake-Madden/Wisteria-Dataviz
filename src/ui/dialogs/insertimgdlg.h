@@ -24,7 +24,7 @@ namespace Wisteria::UI
     enum ImageDlgOptions : int
         {
         ImageDlgIncludeNone = 0,              ///< No options enabled.
-        ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Page" section.
+        ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Page Placement" section.
         ImageDlgIncludeStitch = 1 << 1,       ///< Show the stitch direction control.
         ImageDlgIncludeSize = 1 << 2,         ///< Show the size override controls.
         ImageDlgIncludeResizeMethod = 1 << 3, ///< Show the resize method control.
@@ -48,7 +48,7 @@ namespace Wisteria::UI
 
         Can also be used standalone to edit an existing Image's settings
         by calling LoadFromImage() before showing the dialog and
-        ApplyToImage() after it returns wxID_OK.*/
+        ApplyToImage() after it returns @c wxID_OK.*/
     class InsertImageDlg final : public InsertItemDlg
         {
       public:

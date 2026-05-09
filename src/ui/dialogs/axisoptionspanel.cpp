@@ -159,6 +159,7 @@ namespace Wisteria::UI
         m_axisLineStyleChoice->Append(_(L"Long dash"));
         m_axisLineStyleChoice->Append(_(L"Short dash"));
         m_axisLineStyleChoice->Append(_(L"Dot dash"));
+        m_axisLineStyleChoice->SetSelection(0);
         lineGrid->Add(m_axisLineStyleChoice, wxSizerFlags{}.Expand());
 
         lineGrid->Add(new wxStaticText(lineBox->GetStaticBox(), wxID_ANY, _(L"Cap:")),
@@ -166,12 +167,13 @@ namespace Wisteria::UI
         m_axisCapStyleChoice = new wxChoice(lineBox->GetStaticBox(), wxID_ANY);
         m_axisCapStyleChoice->Append(_(L"No cap"));
         m_axisCapStyleChoice->Append(_(L"Arrow"));
+        m_axisCapStyleChoice->SetSelection(0);
         lineGrid->Add(m_axisCapStyleChoice, wxSizerFlags{}.Expand());
 
         m_axisReverseCheck = new wxCheckBox(lineBox->GetStaticBox(), wxID_ANY, _(L"Reverse"));
         lineBox->Add(m_axisReverseCheck, wxSizerFlags{}.Border());
 
-        gridSizer->Add(lineBox, wxGBPosition(1, 0), wxDefaultSpan, wxEXPAND | wxALL,
+        gridSizer->Add(lineBox, wxGBPosition(2, 0), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 3: Gridlines
@@ -203,9 +205,10 @@ namespace Wisteria::UI
         m_gridlineStyleChoice->Append(_(L"Long dash"));
         m_gridlineStyleChoice->Append(_(L"Short dash"));
         m_gridlineStyleChoice->Append(_(L"Dot dash"));
+        m_gridlineStyleChoice->SetSelection(0);
         gridlineGrid->Add(m_gridlineStyleChoice, wxSizerFlags{}.Expand());
 
-        gridSizer->Add(gridlineBox, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND | wxALL,
+        gridSizer->Add(gridlineBox, wxGBPosition(3, 0), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 4: Tickmarks
@@ -223,9 +226,10 @@ namespace Wisteria::UI
         m_tickmarkDisplayChoice->Append(_(L"Outer"));
         m_tickmarkDisplayChoice->Append(_(L"Crossed"));
         m_tickmarkDisplayChoice->Append(_(L"No display"));
+        m_tickmarkDisplayChoice->SetSelection(0);
         tickGrid->Add(m_tickmarkDisplayChoice, wxSizerFlags{}.Expand());
 
-        gridSizer->Add(tickBox, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND | wxALL,
+        gridSizer->Add(tickBox, wxGBPosition(4, 0), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 5: Labels
@@ -244,6 +248,7 @@ namespace Wisteria::UI
         m_labelDisplayChoice->Append(_(L"Custom labels and values"));
         m_labelDisplayChoice->Append(_(L"No display"));
         m_labelDisplayChoice->Append(_(L"Values"));
+        m_labelDisplayChoice->SetSelection(0);
         labelGrid->Add(m_labelDisplayChoice, wxSizerFlags{}.Expand());
 
         labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Number format:")),
@@ -253,6 +258,7 @@ namespace Wisteria::UI
         m_numberDisplayChoice->Append(_(L"Percentage"));
         m_numberDisplayChoice->Append(_(L"Currency"));
         m_numberDisplayChoice->Append(_(L"Value (simple)"));
+        m_numberDisplayChoice->SetSelection(0);
         labelGrid->Add(m_numberDisplayChoice, wxSizerFlags{}.Expand());
 
         labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Orientation:")),
@@ -260,14 +266,17 @@ namespace Wisteria::UI
         m_labelOrientationChoice = new wxChoice(labelBox->GetStaticBox(), wxID_ANY);
         m_labelOrientationChoice->Append(_(L"Parallel"));
         m_labelOrientationChoice->Append(_(L"Perpendicular"));
+        m_labelOrientationChoice->SetSelection(0);
         labelGrid->Add(m_labelOrientationChoice, wxSizerFlags{}.Expand());
 
-        labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Perp. alignment:")),
-                       wxSizerFlags{}.CenterVertical());
+        labelGrid->Add(
+            new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Perpendicular alignment:")),
+            wxSizerFlags{}.CenterVertical());
         m_perpAlignmentChoice = new wxChoice(labelBox->GetStaticBox(), wxID_ANY);
         m_perpAlignmentChoice->Append(_(L"Align with axis line"));
         m_perpAlignmentChoice->Append(_(L"Align with boundary"));
         m_perpAlignmentChoice->Append(_(L"Center on axis line"));
+        m_perpAlignmentChoice->SetSelection(0);
         labelGrid->Add(m_perpAlignmentChoice, wxSizerFlags{}.Expand());
 
         labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Precision:")),
@@ -294,7 +303,7 @@ namespace Wisteria::UI
         m_stackLabelsCheck = new wxCheckBox(labelBox->GetStaticBox(), wxID_ANY, _(L"Stack labels"));
         labelBox->Add(m_stackLabelsCheck, wxSizerFlags{}.Border());
 
-        gridSizer->Add(labelBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALL,
+        gridSizer->Add(labelBox, wxGBPosition(1, 0), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Range group
@@ -378,7 +387,7 @@ namespace Wisteria::UI
         m_autoRangeRadio->Bind(wxEVT_RADIOBUTTON, onRangeTypeChanged);
         m_userRangeRadio->Bind(wxEVT_RADIOBUTTON, onRangeTypeChanged);
 
-        gridSizer->Add(rangeBox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
+        gridSizer->Add(rangeBox, wxGBPosition{ 0, 1 }, wxGBSpan{ 1, 1 }, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 6: Brackets
@@ -408,16 +417,16 @@ namespace Wisteria::UI
                                 [this](wxCommandEvent&) { OnAddBracketsFromDataset(); });
         bracketBox->Add(addFromDatasetBtn, wxSizerFlags{}.Border());
 
-        gridSizer->Add(bracketBox, wxGBPosition(3, 0), wxGBSpan(1, 3), wxEXPAND | wxALL,
+        gridSizer->Add(bracketBox, wxGBPosition{ 1, 1 }, wxGBSpan{ 1, 1 }, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // global mirror checkboxes
         m_mirrorXAxisCheck = new wxCheckBox(this, wxID_ANY, _(L"Mirror X axis"));
-        gridSizer->Add(m_mirrorXAxisCheck, wxGBPosition(4, 0), wxDefaultSpan, wxALL,
-                       wxSizerFlags::GetDefaultBorder());
-
         m_mirrorYAxisCheck = new wxCheckBox(this, wxID_ANY, _(L"Mirror Y axis"));
-        gridSizer->Add(m_mirrorYAxisCheck, wxGBPosition(4, 1), wxDefaultSpan, wxALL,
+        auto* mirrorSizer = new wxBoxSizer(wxVERTICAL);
+        mirrorSizer->Add(m_mirrorXAxisCheck, wxSizerFlags{}.Border(wxBOTTOM));
+        mirrorSizer->Add(m_mirrorYAxisCheck);
+        gridSizer->Add(mirrorSizer, wxGBPosition(5, 0), wxDefaultSpan, wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         axisSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand());
