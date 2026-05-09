@@ -28,7 +28,7 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
         }
 
     const auto* root = doc.GetRoot();
-    if (root == nullptr || root->GetName() != L"WisteriaSettings")
+    if (root == nullptr || root->GetName() != L"wisteria-settings")
         {
         wxLogWarning(L"Invalid settings file format: %s", filePath);
         return false;
@@ -36,7 +36,7 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
 
     for (auto* child = root->GetChildren(); child != nullptr; child = child->GetNext())
         {
-        if (child->GetName() == L"Window")
+        if (child->GetName() == L"window")
             {
             long val{ 0 };
             if (child->GetAttribute(L"maximized", L"1").ToLong(&val))
@@ -52,7 +52,7 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_appWindowHeight = (val > 0) ? static_cast<int>(val) : 700;
                 }
             }
-        else if (child->GetName() == L"Printer")
+        else if (child->GetName() == L"printer")
             {
             long val{ 0 };
             if (child->GetAttribute(L"orientation", L"1").ToLong(&val))
@@ -64,13 +64,13 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_paperId = static_cast<wxPaperSize>(val);
                 }
             }
-        else if (child->GetName() == L"SvgExport")
+        else if (child->GetName() == L"svg-export")
             {
             const auto boolAttr = [&child](const wxString& name, const bool fallback)
             { return child->GetAttribute(name, fallback ? L"1" : L"0") == L"1"; };
             long val{ 0 };
             if (child
-                    ->GetAttribute(L"pageWidth",
+                    ->GetAttribute(L"page-width",
                                    std::to_wstring(m_svgExportOptions.m_pageSize.GetWidth()))
                     .ToLong(&val) &&
                 val > 0)
@@ -78,7 +78,7 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_svgExportOptions.m_pageSize.SetWidth(static_cast<int>(val));
                 }
             if (child
-                    ->GetAttribute(L"pageHeight",
+                    ->GetAttribute(L"page-height",
                                    std::to_wstring(m_svgExportOptions.m_pageSize.GetHeight()))
                     .ToLong(&val) &&
                 val > 0)
@@ -90,15 +90,15 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
             m_svgExportOptions.m_includeHighlighting =
                 boolAttr(L"highlighting", m_svgExportOptions.m_includeHighlighting);
             m_svgExportOptions.m_includeLayoutOptions =
-                boolAttr(L"layoutOptions", m_svgExportOptions.m_includeLayoutOptions);
+                boolAttr(L"layout-options", m_svgExportOptions.m_includeLayoutOptions);
             m_svgExportOptions.m_includeDarkModeToggle =
-                boolAttr(L"darkModeToggle", m_svgExportOptions.m_includeDarkModeToggle);
+                boolAttr(L"dark-mode-toggle", m_svgExportOptions.m_includeDarkModeToggle);
             m_svgExportOptions.m_includeSlideshow =
                 boolAttr(L"slideshow", m_svgExportOptions.m_includeSlideshow);
             m_svgExportOptions.m_includePageShadow =
-                boolAttr(L"pageShadow", m_svgExportOptions.m_includePageShadow);
+                boolAttr(L"page-shadow", m_svgExportOptions.m_includePageShadow);
             m_svgExportOptions.m_useGlobalPrintSettings =
-                boolAttr(L"svgUseGlobalPrintSettings", m_svgExportOptions.m_useGlobalPrintSettings);
+                boolAttr(L"svg-use-global-print-settings", m_svgExportOptions.m_useGlobalPrintSettings);
             const wxString colorStr = child->GetAttribute(
                 L"themeColor", m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
             if (const wxColour color{ colorStr }; color.IsOk())
@@ -137,34 +137,34 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     m_settingsFilePath = filePath;
 
     wxXmlDocument doc;
-    auto* root = new wxXmlNode(wxXML_ELEMENT_NODE, L"WisteriaSettings");
+    auto* root = new wxXmlNode(wxXML_ELEMENT_NODE, L"wisteria-settings");
     doc.SetRoot(root);
 
-    auto* windowNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"Window");
+    auto* windowNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"window");
     windowNode->AddAttribute(L"maximized", m_appWindowMaximized ? L"1" : L"0");
     windowNode->AddAttribute(L"width", std::to_wstring(m_appWindowWidth));
     windowNode->AddAttribute(L"height", std::to_wstring(m_appWindowHeight));
     root->AddChild(windowNode);
 
-    auto* printerNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"Printer");
+    auto* printerNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"printer");
     printerNode->AddAttribute(L"orientation", std::to_wstring(m_printOrientation));
     printerNode->AddAttribute(L"paperId", std::to_wstring(static_cast<int>(m_paperId)));
     root->AddChild(printerNode);
 
-    auto* svgNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"SvgExport");
-    svgNode->AddAttribute(L"pageWidth",
+    auto* svgNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"svg-export");
+    svgNode->AddAttribute(L"page-width",
                           std::to_wstring(std::max(0, m_svgExportOptions.m_pageSize.GetWidth())));
-    svgNode->AddAttribute(L"pageHeight",
+    svgNode->AddAttribute(L"page-height",
                           std::to_wstring(std::max(0, m_svgExportOptions.m_pageSize.GetHeight())));
     svgNode->AddAttribute(L"transitions", m_svgExportOptions.m_includeTransitions ? L"1" : L"0");
     svgNode->AddAttribute(L"highlighting", m_svgExportOptions.m_includeHighlighting ? L"1" : L"0");
-    svgNode->AddAttribute(L"layoutOptions",
+    svgNode->AddAttribute(L"layout-options",
                           m_svgExportOptions.m_includeLayoutOptions ? L"1" : L"0");
-    svgNode->AddAttribute(L"darkModeToggle",
+    svgNode->AddAttribute(L"dark-mode-toggle",
                           m_svgExportOptions.m_includeDarkModeToggle ? L"1" : L"0");
     svgNode->AddAttribute(L"slideshow", m_svgExportOptions.m_includeSlideshow ? L"1" : L"0");
-    svgNode->AddAttribute(L"pageShadow", m_svgExportOptions.m_includePageShadow ? L"1" : L"0");
-    svgNode->AddAttribute(L"svgUseGlobalPrintSettings",
+    svgNode->AddAttribute(L"page-shadow", m_svgExportOptions.m_includePageShadow ? L"1" : L"0");
+    svgNode->AddAttribute(L"svg-use-global-print-settings",
                           m_svgExportOptions.m_useGlobalPrintSettings ? L"1" : L"0");
     svgNode->AddAttribute(L"themeColor",
                           m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
