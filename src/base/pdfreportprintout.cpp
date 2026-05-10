@@ -83,6 +83,33 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         const int origMinHeight = canvas->GetCanvasMinHeightDIPs();
         const wxSize origSize = canvas->GetSize();
 
+        // Snapshot row and item proportions before the page-sized layout pass
+        // so they can be directly restored afterward. CalcRowDimensions() would
+        // re-measure via GetBoundingBox(), but at that point m_frameSize is in
+        // PDF-DC coordinates rather than screen coordinates.
+        const auto [numRows, numCols] = canvas->GetFixedObjectsGridSize();
+        // {heightProportion, rowCount}
+        std::vector<std::pair<double, size_t>> savedRowLayout;
+        // canvas width proportion per item
+        std::vector<std::vector<double>> savedWidths;
+        if (canvas->IsFittingToPageWhenPrinting())
+            {
+            savedRowLayout.reserve(numRows);
+            savedWidths.resize(numRows);
+            for (size_t row = 0; row < numRows; ++row)
+                {
+                savedRowLayout.emplace_back(canvas->GetRowInfo(row).GetHeightProportion(),
+                                            canvas->GetRowInfo(row).GetRowCount());
+                savedWidths[row].resize(numCols);
+                for (size_t col = 0; col < numCols; ++col)
+                    {
+                    const auto obj = canvas->GetFixedObject(row, col);
+                    savedWidths[row][col] =
+                        (obj != nullptr ? obj->GetCanvasWidthProportion() : 0.0);
+                    }
+                }
+            }
+
         // resize canvas to match page dimensions so CalcAllSizes lays out for the page
         if (canvas->IsFittingToPageWhenPrinting())
             {
@@ -109,7 +136,25 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             {
             canvas->SetCanvasMinWidthDIPs(origMinWidth);
             canvas->SetCanvasMinHeightDIPs(origMinHeight);
-            canvas->CalcRowDimensions();
+            // restore saved proportions directly instead of calling CalcRowDimensions(),
+            // which would use the now-PDF-coordinate m_frameSize values in items
+            for (size_t row = 0; row < savedRowLayout.size(); ++row)
+                {
+                canvas->GetRowInfo(row)
+                    .HeightProportion(savedRowLayout[row].first)
+                    .RowCount(savedRowLayout[row].second);
+                }
+            for (size_t row = 0; row < savedWidths.size(); ++row)
+                {
+                for (size_t col = 0; col < savedWidths[row].size(); ++col)
+                    {
+                    const auto obj = canvas->GetFixedObject(row, col);
+                    if (obj != nullptr)
+                        {
+                        obj->SetCanvasWidthProportion(savedWidths[row][col]);
+                        }
+                    }
+                }
             canvas->SetSize(origSize);
             }
         canvas->ResetResizeDelay();
