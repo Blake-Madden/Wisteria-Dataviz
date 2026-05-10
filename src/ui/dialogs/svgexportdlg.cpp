@@ -8,6 +8,7 @@
 
 #include "svgexportdlg.h"
 #include "../../base/settings.h"
+#include <utility>
 #include <wx/clrpicker.h>
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
@@ -32,6 +33,28 @@ namespace Wisteria::UI
         m_paperType = (paperType != nullptr) ? paperType->GetName() : _(L"Custom");
         m_orientation =
             (printData.GetOrientation() == wxLANDSCAPE) ? _(L"Landscape") : _(L"Portrait");
+
+        // paper size is in tenths of a millimeter; convert to DIPs (96 DPI)
+        constexpr double tenthsMmPerInch = 254.0;
+        constexpr double dipsPerInch = 96.0;
+        if (paperType != nullptr)
+            {
+            const wxSize sizeMM = paperType->GetSize();
+            m_globalPageWidth =
+                wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
+            m_globalPageHeight =
+                wxRound(safe_divide<double>(sizeMM.GetHeight(), tenthsMmPerInch) * dipsPerInch);
+            }
+        else
+            {
+            // fallback: US Letter at 96 DPI
+            m_globalPageWidth = static_cast<int>(8.5 * dipsPerInch);
+            m_globalPageHeight = static_cast<int>(11.0 * dipsPerInch);
+            }
+        if (printData.GetOrientation() == wxLANDSCAPE)
+            {
+            std::swap(m_globalPageWidth, m_globalPageHeight);
+            }
 
         if (savedOptions != nullptr)
             {
@@ -137,8 +160,12 @@ namespace Wisteria::UI
             m_orientationLabel->Refresh();
         };
         m_useGlobalPrintSettingsCheckbox->Bind(wxEVT_CHECKBOX,
-                                               [toggleSizeControls](wxCommandEvent& event)
-                                               { toggleSizeControls(event.IsChecked()); });
+                                               [this, toggleSizeControls](wxCommandEvent& event)
+                                               {
+                                                   m_useGlobalPrintSettings = event.IsChecked();
+                                                   toggleSizeControls(m_useGlobalPrintSettings);
+                                                   UpdatePreview();
+                                               });
         toggleSizeControls(m_useGlobalPrintSettings);
 
         // interactive features
@@ -247,41 +274,84 @@ namespace Wisteria::UI
 
         const wxSize panelSize = m_previewPanel->GetClientSize();
         constexpr int margin = 15;
-        const int diameter = std::min(panelSize.GetWidth(), panelSize.GetHeight()) - (margin * 2);
+        const int availWidth = panelSize.GetWidth() - (margin * 2);
+        const int availHeight = panelSize.GetHeight() - (margin * 2);
 
-        if (diameter <= 0)
+        if (availWidth <= 0 || availHeight <= 0)
             {
             return;
             }
 
-        const int x = (panelSize.GetWidth() - diameter) / 2;
-        const int y = (panelSize.GetHeight() - diameter) / 2;
-        const wxPoint center(x + diameter / 2, y + diameter / 2);
-        const int radius = diameter / 2;
+        // pie occupies roughly half the available height
+        const int pieDiameter = std::min(availWidth, availHeight / 2);
+        if (pieDiameter <= 0)
+            {
+            return;
+            }
 
-        // draw the main black circle
+        // distribute remaining vertical space: 4 text lines above, 2 below
+        const int remaining = availHeight - pieDiameter;
+        const int aboveHeight = remaining * 4 / 6;
+        const int belowHeight = remaining - aboveHeight;
+        const int slotAbove = std::max(1, aboveHeight / 4);
+        const int slotBelow = std::max(1, belowHeight / 2);
+        const int lineH = std::max(2, slotAbove / 3);
+
+        const int pieY = margin + 4 * slotAbove;
+        const int pieX = margin + (availWidth - pieDiameter) / 2;
+
+        // text line widths (varying to look like natural text)
+        const std::array<int, 6> widthFracs = { 10, 9, 10, 7, 9, 6 };
+
+        const wxColour textLineColor{ 100, 100, 100 };
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.SetBrush(wxBrush{ textLineColor });
+
+        // 4 lines above the pie
+        for (int i = 0; i < 4; ++i)
+            {
+            const int lineWidth = availWidth * widthFracs[i] / 10;
+            const int lineY = margin + i * slotAbove + (slotAbove - lineH) / 2;
+            dc.DrawRoundedRectangle(margin, lineY, lineWidth, lineH, 1);
+            }
+
+        // pie chart
+        const wxPoint center(pieX + pieDiameter / 2, pieY + pieDiameter / 2);
+        const int radius = pieDiameter / 2;
+
         dc.SetPen(*wxBLACK_PEN);
         dc.SetBrush(*wxBLACK_BRUSH);
-        dc.DrawEllipse(x, y, diameter, diameter);
+        dc.DrawEllipse(pieX, pieY, pieDiameter, pieDiameter);
 
-        // draw the "Pie Slice" lines
         wxPen slicePen(bgColour, 2);
         dc.SetPen(slicePen);
-
-        // line 1: straight up (12 o'clock)
         dc.DrawLine(center, wxPoint(center.x, center.y - radius));
-
-        // line 2: to the right-middle (roughly 4 o'clock)
         dc.DrawLine(center, wxPoint(center.x + (radius * 0.86), center.y + (radius * 0.5)));
-
-        // line 3: to the left-bottom (roughly 8 o'clock)
         dc.DrawLine(center, wxPoint(center.x - (radius * 0.5), center.y + (radius * 0.86)));
+
+        // 2 lines below the pie
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.SetBrush(wxBrush{ textLineColor });
+        for (int i = 0; i < 2; ++i)
+            {
+            const int lineWidth = availWidth * widthFracs[i + 4] / 10;
+            const int lineY = pieY + pieDiameter + i * slotBelow + (slotBelow - lineH) / 2;
+            dc.DrawRoundedRectangle(margin, lineY, lineWidth, lineH, 1);
+            }
         }
 
     //------------------------------------------------------
     void SvgExportDlg::UpdatePreview()
         {
-        if (m_previewPanel == nullptr || m_pageWidth <= 0 || m_pageHeight <= 0)
+        if (m_previewPanel == nullptr)
+            {
+            return;
+            }
+
+        const int useWidth = m_useGlobalPrintSettings ? m_globalPageWidth : m_pageWidth;
+        const int useHeight = m_useGlobalPrintSettings ? m_globalPageHeight : m_pageHeight;
+
+        if (useWidth <= 0 || useHeight <= 0)
             {
             return;
             }
@@ -289,12 +359,12 @@ namespace Wisteria::UI
         // fit the page aspect ratio into the fixed preview bounding box
         const wxSize bounds = FromDIP(wxSize{ 150, 150 });
 
-        const double scaleX = safe_divide<double>(bounds.GetWidth(), m_pageWidth);
-        const double scaleY = safe_divide<double>(bounds.GetHeight(), m_pageHeight);
+        const double scaleX = safe_divide<double>(bounds.GetWidth(), useWidth);
+        const double scaleY = safe_divide<double>(bounds.GetHeight(), useHeight);
         const double scale = std::min(scaleX, scaleY);
 
-        const int previewWidth = std::max(1, static_cast<int>(m_pageWidth * scale));
-        const int previewHeight = std::max(1, static_cast<int>(m_pageHeight * scale));
+        const int previewWidth = std::max(1, static_cast<int>(useWidth * scale));
+        const int previewHeight = std::max(1, static_cast<int>(useHeight * scale));
 
         m_previewPanel->SetMinSize(wxSize{ previewWidth, previewHeight });
         m_previewPanel->SetSize(wxSize{ previewWidth, previewHeight });

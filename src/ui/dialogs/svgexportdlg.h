@@ -147,6 +147,8 @@ namespace Wisteria::UI
 
         int m_pageWidth{ 0 };
         int m_pageHeight{ 0 };
+        int m_globalPageWidth{ 816 };
+        int m_globalPageHeight{ 1056 };
         bool m_useGlobalPrintSettings{ true };
         bool m_includeTransitions{ true };
         bool m_includeHighlighting{ true };
