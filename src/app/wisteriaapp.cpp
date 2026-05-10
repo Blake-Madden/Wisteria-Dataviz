@@ -317,6 +317,9 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"pdf.svg"),
                                     _(L"Export all pages to PDF"));
 #endif
+        projectButtonBar->AddButton(ID_PROJECT_SETTINGS, _(L"Project Settings"),
+                                    ReadSvgIcon(L"project-settings.svg"),
+                                    _(L"Edit the project settings"));
 
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));

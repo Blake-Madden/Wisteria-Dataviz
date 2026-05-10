@@ -64,6 +64,7 @@ pivot-longer.svg
 pivot-wider.svg
 print-setup.svg
 print.svg
+project-settings.svg
 question-mark.svg
 realtime.svg
 reload.svg

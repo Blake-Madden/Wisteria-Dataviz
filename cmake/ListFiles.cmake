@@ -7,7 +7,7 @@ odt_odp_extract|doc_extract|docx_extract|ui/app[.]cpp|codeeditor[.]cpp|htmltable
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
 htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdlg[.]cpp|\
-listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
+listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|projectsettingsdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\
 sidebarbook[.]cpp|downloadfile[.]cpp|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
@@ -15,7 +15,7 @@ demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdf
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|wxpdfdoc/)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|wxpdfdoc/)")
 
 # Exclusion filter for main application (in addition to other filters)
 set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\

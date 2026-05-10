@@ -45,6 +45,7 @@
 #include "../ui/dialogs/joindlg.h"
 #include "../ui/dialogs/pivotlongerdlg.h"
 #include "../ui/dialogs/pivotwiderrdlg.h"
+#include "../ui/dialogs/projectsettingsdlg.h"
 #include "../ui/dialogs/subsetdlg.h"
 #include "../ui/dialogs/svgexportdlg.h"
 #include "wisteriaapp.h"
@@ -128,6 +129,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 #ifdef INCLUDE_PDF
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
 #endif
+
+    // bind project settings button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnProjectSettings, this,
+                  ID_PROJECT_SETTINGS);
 
     // bind save button
     m_frame->Bind(
@@ -764,6 +769,35 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
                                             GetDocument()->GetUserReadableName() :
                                             GetReportBuilder().GetName());
 #endif
+    }
+
+//-------------------------------------------
+void WisteriaView::OnProjectSettings([[maybe_unused]] wxCommandEvent& event)
+    {
+    Wisteria::UI::ProjectSettingsDlg dlg(m_frame);
+    dlg.LoadFromProject(m_reportBuilder);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    m_reportBuilder.SetName(dlg.GetProjectName());
+    m_reportBuilder.SetWatermarkLabel(dlg.GetWatermarkLabel());
+    m_reportBuilder.SetWatermarkColor(dlg.GetWatermarkColor());
+
+    // apply the new watermark to all pages
+    const Wisteria::Canvas::Watermark newWatermark{ dlg.GetWatermarkLabel(),
+                                                    dlg.GetWatermarkColor() };
+    for (auto* page : m_pages)
+        {
+        if (page != nullptr)
+            {
+            page->SetWatermark(newWatermark);
+            page->Refresh();
+            }
+        }
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------

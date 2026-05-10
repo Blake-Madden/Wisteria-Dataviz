@@ -570,6 +570,10 @@ namespace Wisteria
             return m_name;
             }
 
+        /// @brief Sets the name of the report.
+        /// @param name The new report name.
+        void SetName(const wxString& name) { m_name = name; }
+
         /// @returns The watermark label.
         [[nodiscard]]
         const wxString& GetWatermarkLabel() const noexcept
@@ -577,12 +581,20 @@ namespace Wisteria
             return m_watermarkLabel;
             }
 
+        /// @brief Sets the watermark label.
+        /// @param label The new watermark text.
+        void SetWatermarkLabel(const wxString& label) { m_watermarkLabel = label; }
+
         /// @returns The watermark color.
         [[nodiscard]]
         const wxColour& GetWatermarkColor() const noexcept
             {
             return m_watermarkColor;
             }
+
+        /// @brief Sets the watermark color.
+        /// @param color The new watermark color.
+        void SetWatermarkColor(const wxColour& color) { m_watermarkColor = color; }
 
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.
