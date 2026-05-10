@@ -203,6 +203,7 @@ class WisteriaView final : public wxView
     // non-imported datasets (e.g., subsets or pivots from imported data)
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name);
+    void ApplyGlobalPrintSettings(Wisteria::Canvas* canvas);
     Wisteria::Canvas* AddPageToProject(size_t rows, size_t columns, const wxString& name,
                                        std::optional<size_t> position = std::nullopt);
     static void ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::DatasetGridTable* table);

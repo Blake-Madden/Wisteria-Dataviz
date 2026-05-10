@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "canvas.h"
+#include "../ui/dialogs/pdfexportdlg.h"
 #include "axis.h"
 #include "colorbrewer.h"
 #include "reportprintout.h"
@@ -344,9 +345,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         UI::ImageExportDlg optionsDlg(this, GraphItems::Image::GetImageFileTypeFromExtension(ext),
                                       previewImg, imgOptions);
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
-        // no options for SVG and PDF (since size doesn't matter),
+
+        PdfExportOptions pdfOptions;
+        pdfOptions.m_title = GetLabel();
+
+        if (ext.CmpNoCase(L"pdf") == 0)
+            {
+#ifdef INCLUDE_PDF
+            UI::PdfExportDlg pdfOptionsDlg(this, GetPrinterSettings(), pdfOptions);
+            pdfOptionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
+            if (pdfOptionsDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+            SetPrinterSettings(pdfOptionsDlg.GetPrintData());
+            pdfOptions = pdfOptionsDlg.GetOptions();
+#endif
+            }
+        // no options for SVG (since size doesn't matter),
         // so don't bother showing the dialog for that
-        if (ext.CmpNoCase(L"svg") != 0 && ext.CmpNoCase(L"pdf") != 0)
+        else if (ext.CmpNoCase(L"svg") != 0)
             {
             if (optionsDlg.ShowModal() != wxID_OK)
                 {
@@ -354,11 +372,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             }
 
-        Save(filePath, optionsDlg.GetOptions());
+        Save(filePath, optionsDlg.GetOptions(), pdfOptions);
         }
 
     //--------------------------------------------------
-    bool Canvas::Save(const wxFileName& filePath, const UI::ImageExportOptions& options)
+    bool Canvas::Save(const wxFileName& filePath, const UI::ImageExportOptions& options,
+                      const PdfExportOptions& pdfOptions)
         {
         // immediately recalc everything when we change the canvas size
         const CanvasResizeDelayChanger resizeDelay{ *this };
@@ -410,11 +429,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             // save canvas state before resizing layout for PDF
             const wxRect savedRectDIPs{ m_rectDIPs };
             const wxSize savedMinSizeDIPs{ m_canvasMinSizeDIPs };
-            wxPrintData printData;
+            wxPrintData printData = GetPrinterSettings();
             printData.SetFilename(filePath.GetFullPath());
             wxPdfDC pdfDC(printData);
-            if (pdfDC.StartDoc(GetLabel()))
+            if (pdfDC.StartDoc(pdfOptions.m_title.empty() ? GetLabel() : pdfOptions.m_title))
                 {
+                pdfDC.GetPdfDocument()->SetTitle(pdfOptions.m_title);
+                pdfDC.GetPdfDocument()->SetAuthor(pdfOptions.m_author);
+                pdfDC.GetPdfDocument()->SetSubject(pdfOptions.m_subject);
+                pdfDC.GetPdfDocument()->SetKeywords(pdfOptions.m_keywords);
+                pdfDC.GetPdfDocument()->SetCompression(pdfOptions.m_compress);
+
                 pdfDC.StartPage();
                 // use the same formula as wxPdfDocument::BeginPage to get exact page pts,
                 // avoiding the integer truncation in pdfDC.GetSize()

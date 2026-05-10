@@ -12,13 +12,13 @@
 #ifndef WISTERIA_REPORT_PDF_EXPORT_H
 #define WISTERIA_REPORT_PDF_EXPORT_H
 
-#ifdef INCLUDE_PDF
-
-    #include "canvas.h"
-    #include <vector>
+#include "canvas.h"
+#include <vector>
 
 namespace Wisteria
     {
+#ifdef INCLUDE_PDF
+
     /// @brief Exports a collection of canvases as pages into a single multi-page PDF file.
     /// @details Each canvas is rendered into its own page using @c wxPdfDC.
     ///     Page dimensions are derived from the paper size stored in each canvas's
@@ -26,12 +26,12 @@ namespace Wisteria
     class ReportPDFExport
         {
       public:
-        /// @brief Constructor. Exports all canvases as pages to a PDF file immediately.
-        /// @param canvases The canvases (pages) to export.
-        /// @param filePath The output PDF file path.
-        /// @param title The document title embedded in the PDF.
+        /** @brief Constructor. Exports all canvases as pages to a PDF file immediately.
+            @param canvases The canvases (pages) to export.
+            @param filePath The output PDF file path.
+            @param options The PDF export options (metadata, compression, etc.).*/
         ReportPDFExport(const std::vector<Canvas*>& canvases, const wxString& filePath,
-                        const wxString& title = wxString{});
+                        const PdfExportOptions& options = PdfExportOptions{});
         };
     } // namespace Wisteria
 

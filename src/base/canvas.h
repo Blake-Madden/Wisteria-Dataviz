@@ -73,6 +73,22 @@ namespace Wisteria
         double m_originalScaling{ 1.0 };
         };
 
+    /** @brief Options for PDF export.
+        @details Includes document metadata such as title and author.*/
+    struct PdfExportOptions
+        {
+        /** @brief The document title.*/
+        wxString m_title;
+        /** @brief The document author.*/
+        wxString m_author{ wxGetUserName() };
+        /** @brief The document subject.*/
+        wxString m_subject;
+        /** @brief The document keywords.*/
+        wxString m_keywords;
+        /** @brief Whether to compress the PDF content.*/
+        bool m_compress{ true };
+        };
+
     /// @brief %Canvas for drawing fixed and movable objects.
     class Canvas final : public wxScrolledWindow
         {
@@ -736,8 +752,10 @@ namespace Wisteria
         /// @brief Saves the canvas as an image.
         /// @param filePath The file path of the image to save to.
         /// @param options The export options for the image.
+        /// @param pdfOptions PDF-specific options.
         /// @returns @c true upon successful saving.
-        bool Save(const wxFileName& filePath, const UI::ImageExportOptions& options);
+        bool Save(const wxFileName& filePath, const UI::ImageExportOptions& options,
+                  const PdfExportOptions& pdfOptions = PdfExportOptions{});
 
         /** @brief Sets the resources to use for the export dialog.
             @details These are set by the parent application to connect icons and

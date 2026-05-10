@@ -43,6 +43,7 @@
 #include "../ui/dialogs/insertwlsparklinedlg.h"
 #include "../ui/dialogs/insertwordclouddlg.h"
 #include "../ui/dialogs/joindlg.h"
+#include "../ui/dialogs/pdfexportdlg.h"
 #include "../ui/dialogs/pivotlongerdlg.h"
 #include "../ui/dialogs/pivotwiderrdlg.h"
 #include "../ui/dialogs/projectsettingsdlg.h"
@@ -419,6 +420,10 @@ void WisteriaView::LoadProject()
         {
         // load the JSON configuration file
         m_pages = m_reportBuilder.LoadConfigurationFile(filename, m_workArea);
+        for (auto* page : m_pages)
+            {
+            ApplyGlobalPrintSettings(page);
+            }
         }
 
     // add the "Data" folder
@@ -756,6 +761,18 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    Wisteria::PdfExportOptions options;
+    options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
+                                                             GetReportBuilder().GetName();
+
+    Wisteria::UI::PdfExportDlg pdfOptionsDlg(m_frame, m_pages.front()->GetPrinterSettings(),
+                                             options);
+    if (pdfOptionsDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+    options = pdfOptionsDlg.GetOptions();
+
     wxFileDialog fileDlg(m_frame, _(L"Export to PDF"), wxString{},
                          GetDocument()->GetUserReadableName(), _(L"PDF files (*.pdf)|*.pdf"),
                          wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -764,10 +781,7 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(),
-                                        GetReportBuilder().GetName().empty() ?
-                                            GetDocument()->GetUserReadableName() :
-                                            GetReportBuilder().GetName());
+    Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(), options);
 #endif
     }
 
@@ -2138,6 +2152,7 @@ Wisteria::Canvas* WisteriaView::AddPageToProject(const size_t rows, const size_t
     const wxWindowID pageId = wxNewId();
 
     auto* canvas = new Wisteria::Canvas(m_workArea, pageId);
+    ApplyGlobalPrintSettings(canvas);
     canvas->SetFixedObjectsGridSize(rows, columns);
 
     canvas->Hide();
@@ -8177,6 +8192,19 @@ void WisteriaView::UpdateCanvas(Wisteria::Canvas* canvas)
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
     canvas->Refresh();
+    }
+
+//-------------------------------------------
+void WisteriaView::ApplyGlobalPrintSettings(Wisteria::Canvas* canvas)
+    {
+    if (canvas != nullptr)
+        {
+        auto& appSettings = wxGetApp().GetAppSettings();
+        auto& printData = canvas->GetPrinterSettings();
+        printData.SetOrientation(
+            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation()));
+        printData.SetPaperId(appSettings->GetPaperId());
+        }
     }
 
 //-------------------------------------------

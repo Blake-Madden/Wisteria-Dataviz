@@ -16,7 +16,8 @@
 
 //------------------------------------------------------
 Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
-                                           const wxString& filePath, const wxString& title)
+                                           const wxString& filePath,
+                                           const PdfExportOptions& options)
     {
     if (canvases.empty() || filePath.empty())
         {
@@ -30,14 +31,18 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
     printData.SetFilename(filePath);
     wxPdfDC pdfDC(printData);
 
-    if (!pdfDC.StartDoc(title))
+    if (!pdfDC.StartDoc(options.m_title))
         {
         wxMessageBox(wxString::Format(_(L"Failed to create PDF document \"%s\"."), filePath),
                      _(L"Export Error"), wxOK | wxICON_ERROR);
         return;
         }
 
-    pdfDC.GetPdfDocument()->SetTitle(title);
+    pdfDC.GetPdfDocument()->SetTitle(options.m_title);
+    pdfDC.GetPdfDocument()->SetAuthor(options.m_author);
+    pdfDC.GetPdfDocument()->SetSubject(options.m_subject);
+    pdfDC.GetPdfDocument()->SetKeywords(options.m_keywords);
+    pdfDC.GetPdfDocument()->SetCompression(options.m_compress);
 
     for (auto* canvas : canvases)
         {
