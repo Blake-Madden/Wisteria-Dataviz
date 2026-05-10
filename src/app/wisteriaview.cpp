@@ -760,7 +760,9 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(),
-                                        GetDocument()->GetUserReadableName());
+                                        GetReportBuilder().GetName().empty() ?
+                                            GetDocument()->GetUserReadableName() :
+                                            GetReportBuilder().GetName());
 #endif
     }
 

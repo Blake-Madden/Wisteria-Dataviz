@@ -37,6 +37,8 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         return;
         }
 
+    pdfDC.GetPdfDocument()->SetTitle(title);
+
     for (auto* canvas : canvases)
         {
         if (canvas == nullptr)
