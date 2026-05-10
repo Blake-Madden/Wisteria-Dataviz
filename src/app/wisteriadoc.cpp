@@ -568,6 +568,37 @@ void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
         {
         itemNode->Add(L"fit-row-to-content", true);
         }
+
+    // accessibility
+    const auto ariaLabelTmpl = item->GetPropertyTemplate(L"accessibility.aria-label");
+    const auto roleTmpl = item->GetPropertyTemplate(L"accessibility.role");
+    const bool ariaHidden = item->GetPropertyTemplate(L"accessibility.aria-hidden") == L"true";
+    if (!ariaLabelTmpl.empty() || !roleTmpl.empty() || ariaHidden)
+        {
+        wxString accessStr{ L"{" };
+        if (!ariaLabelTmpl.empty())
+            {
+            accessStr += L"\"aria-label\": \"" + EscapeJsonStr(ariaLabelTmpl) + L"\"";
+            }
+        if (!roleTmpl.empty())
+            {
+            if (accessStr.Last() != L'{')
+                {
+                accessStr += L", ";
+                }
+            accessStr += L"\"role\": \"" + EscapeJsonStr(roleTmpl) + L"\"";
+            }
+        if (ariaHidden)
+            {
+            if (accessStr.Last() != L'{')
+                {
+                accessStr += L", ";
+                }
+            accessStr += L"\"aria-hidden\": true";
+            }
+        accessStr += L"}";
+        itemNode->Add(L"accessibility", wxSimpleJSON::Create(accessStr));
+        }
     }
 
 //-------------------------------------------

@@ -97,8 +97,8 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"slideshow", m_svgExportOptions.m_includeSlideshow);
             m_svgExportOptions.m_includePageShadow =
                 boolAttr(L"page-shadow", m_svgExportOptions.m_includePageShadow);
-            m_svgExportOptions.m_useGlobalPrintSettings =
-                boolAttr(L"svg-use-global-print-settings", m_svgExportOptions.m_useGlobalPrintSettings);
+            m_svgExportOptions.m_useGlobalPrintSettings = boolAttr(
+                L"svg-use-global-print-settings", m_svgExportOptions.m_useGlobalPrintSettings);
             const wxString colorStr = child->GetAttribute(
                 L"themeColor", m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
             if (const wxColour color{ colorStr }; color.IsOk())

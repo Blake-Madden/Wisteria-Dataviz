@@ -1528,6 +1528,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
+    void Canvas::DrawWithAccessibility(wxDC & dc, const GraphItems::GraphItemBase* item)
+        {
+        if (item == nullptr)
+            {
+            return;
+            }
+        if (dc.IsKindOf(wxCLASSINFO(wxSVGFileDC)))
+            {
+            auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc);
+            if (svgDc != nullptr && !item->GetAccessibility().IsEmpty())
+                {
+                const wxSVGAccessibleGroup accessGroup(*svgDc, item->GetAccessibility());
+                item->Draw(dc);
+                return;
+                }
+            }
+        item->Draw(dc);
+        }
+
+    //-------------------------------------------
     void Canvas::OnDraw(wxDC & dc)
         {
         dc.Clear();
@@ -1570,20 +1590,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             for (const auto& objectPtr : fixedObjectsRow)
                 {
-                if (objectPtr != nullptr)
-                    {
-                    objectPtr->Draw(dc);
-                    }
+                DrawWithAccessibility(dc, objectPtr.get());
                 }
             }
 
         // draw the titles
         for (const auto& title : GetTitles())
             {
-            if (title != nullptr)
-                {
-                title->Draw(dc);
-                }
+            DrawWithAccessibility(dc, title.get());
             }
 
         // draw the movable objects (these sit on top of everything else)
@@ -1592,7 +1606,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             if (objectPtr != nullptr)
                 {
                 objectPtr->SetScaling(GetScaling());
-                objectPtr->Draw(dc);
+                DrawWithAccessibility(dc, objectPtr.get());
                 }
             }
 

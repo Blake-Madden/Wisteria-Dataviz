@@ -189,6 +189,9 @@ namespace Wisteria
 
         /// @private
         void OnDraw(wxDC& dc) final;
+        /// @brief Draws @c item on @c dc, wrapping in a @c wxSVGAccessibleGroup when
+        ///     the DC is a @c wxSVGFileDC and the item has accessibility attributes set.
+        static void DrawWithAccessibility(wxDC& dc, const GraphItems::GraphItemBase* item);
 
         // standard events
         /// @private

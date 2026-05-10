@@ -671,7 +671,7 @@ namespace Wisteria::UI
             const bool isDate = m_axisIsDate.at(m_currentAxisType);
             UpdateRangeControlVisibility();
 
-            const bool userDefined = axis.GetPropertyTemplate(L"range.user-defined") == L"1";
+            const bool userDefined = axis.GetPropertyTemplate(L"range.user-defined") == L"true";
             m_autoRangeRadio->SetValue(!userDefined);
             m_userRangeRadio->SetValue(userDefined);
 
@@ -832,7 +832,7 @@ namespace Wisteria::UI
             {
             if (m_userRangeRadio->GetValue())
                 {
-                axis.SetPropertyTemplate(L"range.user-defined", L"1");
+                axis.SetPropertyTemplate(L"range.user-defined", L"true");
                 const bool isDate =
                     m_axisIsDate.count(m_currentAxisType) > 0 && m_axisIsDate.at(m_currentAxisType);
                 if (!isDate)

@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 #include <wx/dcgraph.h>
+#include <wx/dcsvg.h>
 #include <wx/gdicmn.h>
 #include <wx/regex.h>
 #include <wx/settings.h>
@@ -839,6 +840,17 @@ namespace Wisteria
                 return m_outline[3];
                 }
 
+            /** @brief Sets the ARIA accessibility attributes for this item.
+                @details These are written as attributes on a @c \<g\> element wrapping
+                    the item in SVG output. Has no effect for non-SVG export targets.
+                @param attrs The ARIA attributes (e.g., @c aria-label, @c role).
+                @returns A self reference.*/
+            GraphItemInfo& Accessibility(wxSVGAttributes attrs)
+                {
+                m_accessibility = std::move(attrs);
+                return *this;
+                }
+
           private:
             bool m_show{ true };
             bool m_isSelectable{ true };
@@ -896,6 +908,8 @@ namespace Wisteria
             double m_scaling{ 1 };
             double m_originalCanvasScaling{ 1 };
             std::optional<double> m_dpiScaleFactor{ std::nullopt };
+            // accessibility
+            wxSVGAttributes m_accessibility;
             };
 
         /// @brief Abstract class for elements that can be drawn on a canvas.
@@ -1777,6 +1791,16 @@ namespace Wisteria
 
             /// @}
 
+            /** @returns The ARIA accessibility attributes for this item.
+                @details These are written as attributes on a @c \<g\> element wrapping
+                    the item in SVG output. Has no effect for non-SVG export targets.
+                @param attrs The ARIA attributes (e.g., @c aria-label, @c role).*/
+            [[nodiscard]]
+            wxSVGAttributes& GetAccessibility() noexcept
+                {
+                return m_itemInfo.m_accessibility;
+                }
+
             /// @returns @c true if the object is valid.
             [[nodiscard]]
             virtual bool IsOk() const noexcept
@@ -1882,6 +1906,13 @@ namespace Wisteria
             const std::optional<wxRect>& GetClippingRect() const noexcept
                 {
                 return m_itemInfo.m_clippingRect;
+                }
+
+            /// @private
+            [[nodiscard]]
+            const wxSVGAttributes& GetAccessibility() const noexcept
+                {
+                return m_itemInfo.m_accessibility;
                 }
 
             /// @brief Stores an original template string for a property.

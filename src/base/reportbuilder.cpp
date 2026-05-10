@@ -6090,6 +6090,38 @@ namespace Wisteria
 
         item.SetFixedWidthOnCanvas(itemNode->GetProperty(L"fixed-width")->AsBool());
         item.FitCanvasRowHeightToContent(itemNode->GetProperty(L"fit-row-to-content")->AsBool());
+
+        // accessibility
+        if (const auto accessNode = itemNode->GetProperty(L"accessibility"); accessNode->IsOk())
+            {
+            wxSVGAttributes attrs;
+
+            const auto ariaLabel =
+                ExpandAndCache(&item, L"accessibility.aria-label",
+                               accessNode->GetProperty(L"aria-label")->AsString());
+            if (!ariaLabel.empty())
+                {
+                attrs.AriaLabel(ariaLabel);
+                }
+
+            const auto role = ExpandAndCache(&item, L"accessibility.role",
+                                             accessNode->GetProperty(L"role")->AsString());
+            if (!role.empty())
+                {
+                attrs.Role(role);
+                }
+
+            if (accessNode->GetProperty(L"aria-hidden")->AsBool())
+                {
+                attrs.AriaHidden();
+                item.SetPropertyTemplate(L"accessibility.aria-hidden", L"true");
+                }
+
+            if (!attrs.IsEmpty())
+                {
+                item.GetAccessibility() = (std::move(attrs));
+                }
+            }
         }
 
     //---------------------------------------------------
