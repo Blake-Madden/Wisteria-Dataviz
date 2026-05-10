@@ -1716,6 +1716,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         drawingRect.Deflate(drawingRect.GetWidth() * math_constants::tenth);
 
+        // always apply at least half opacity regardless of the selected color
+        watermark.m_color.Set(
+            watermark.m_color.Red(), watermark.m_color.Green(), watermark.m_color.Blue(),
+            std::min(watermark.m_color.Alpha(),
+                     static_cast<uint8_t>(wxALPHA_OPAQUE * math_constants::half)));
+
         if (!watermark.m_label.empty())
             {
             watermark.m_label = ExpandWatermark(watermark.m_label);
