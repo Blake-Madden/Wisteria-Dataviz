@@ -1249,7 +1249,7 @@ namespace Wisteria::UI
         auto* nLabel = new wxStaticText(&dlg, wxID_ANY, _(L"N (top count):"));
         grid->Add(nLabel, wxSizerFlags{}.CenterVertical());
         auto* nCtrl =
-            new wxSpinCtrl(&dlg, wxID_ANY, wxString::Format(L"%d", entry.m_topN), wxDefaultPosition,
+            new wxSpinCtrl(&dlg, wxID_ANY, std::to_wstring(entry.m_topN), wxDefaultPosition,
                            wxDefaultSize, wxSP_ARROW_KEYS, 1, 9999, entry.m_topN);
         grid->Add(nCtrl, wxSizerFlags{}.Expand());
 

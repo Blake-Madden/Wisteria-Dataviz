@@ -33,9 +33,8 @@ namespace Wisteria
         ReportPDFExport(const std::vector<Canvas*>& canvases, const wxString& filePath,
                         const PdfExportOptions& options = PdfExportOptions{});
         };
-    } // namespace Wisteria
-
 #endif // INCLUDE_PDF
+    } // namespace Wisteria
 
 /** @}*/
 

@@ -19,7 +19,7 @@ namespace Wisteria::UI
     {
     //------------------------------------------------------
     PdfExportDlg::PdfExportDlg(wxWindow* parent, const wxPrintData& printData,
-                               const Wisteria::PdfExportOptions& options, const wxString& caption)
+                               const PdfExportOptions& options, const wxString& caption)
         : DialogWithHelp(parent, wxID_ANY, caption), m_printData(printData), m_options(options)
         {
         CreateControls();

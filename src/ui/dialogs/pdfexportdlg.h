@@ -29,7 +29,7 @@ namespace Wisteria::UI
             @param options The PDF-specific options (metadata, etc.).
             @param caption The title of the export dialog.*/
         PdfExportDlg(wxWindow* parent, const wxPrintData& printData,
-                     const Wisteria::PdfExportOptions& options,
+                     const PdfExportOptions& options,
                      const wxString& caption = _(L"PDF Export Options"));
 
         /// @private
@@ -46,7 +46,7 @@ namespace Wisteria::UI
 
         /// @returns The PDF options selected by the user.
         [[nodiscard]]
-        const Wisteria::PdfExportOptions& GetOptions() const noexcept
+        const PdfExportOptions& GetOptions() const noexcept
             {
             return m_options;
             }
@@ -58,7 +58,7 @@ namespace Wisteria::UI
         void UpdatePreview();
 
         wxPrintData m_printData;
-        Wisteria::PdfExportOptions m_options;
+        PdfExportOptions m_options;
 
         wxStaticText* m_paperTypeLabel{ nullptr };
         wxStaticText* m_orientationLabel{ nullptr };
