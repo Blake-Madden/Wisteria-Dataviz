@@ -880,7 +880,7 @@ namespace Wisteria::UI
             {
             for (const auto& bracket : m_savedAxes.at(m_currentAxisType).GetBrackets())
                 {
-                items.Add(wxString::Format(L"%s @ %g\u2013%g", bracket.GetLabel().GetText(),
+                items.Add(wxString::Format(L"%s @ %g–%g", bracket.GetLabel().GetText(),
                                            bracket.GetStartPosition(), bracket.GetEndPosition()));
                 }
             }

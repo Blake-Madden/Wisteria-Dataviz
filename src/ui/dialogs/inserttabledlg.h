@@ -196,6 +196,41 @@ namespace Wisteria::UI
             return m_aggregates;
             }
 
+        /// @brief A cell annotation entry.
+        struct AnnotationEntry
+            {
+            /// @brief How cells are selected for annotation.
+            enum class CellMode
+                {
+                Outliers, ///< Outliers in a column.
+                TopN,     ///< Top-N values in a column.
+                Range     ///< A named range of cells.
+                };
+            /// @brief The annotation text.
+            wxString m_value;
+            /// @brief Whether the annotation appears on the right side (false = left).
+            bool m_sideRight{ true };
+            /// @brief The background color (invalid = none).
+            wxColour m_bgColor;
+            /// @brief How cells are selected.
+            CellMode m_cellMode{ CellMode::Outliers };
+            /// @brief Column name for Outliers and TopN modes.
+            wxString m_columnName;
+            /// @brief Number of top values for TopN mode.
+            int m_topN{ 1 };
+            /// @brief Range start cell name for Range mode.
+            wxString m_rangeStart;
+            /// @brief Range end cell name for Range mode.
+            wxString m_rangeEnd;
+            };
+
+        /// @returns The cell annotation entries.
+        [[nodiscard]]
+        const std::vector<AnnotationEntry>& GetAnnotationEntries() const noexcept
+            {
+            return m_annotationEntries;
+            }
+
         /// @brief Populates all dialog controls from an existing table.
         /// @param graph The table graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -217,7 +252,17 @@ namespace Wisteria::UI
         void OnEditAggregate();
         void OnRemoveAggregate();
         void RefreshAggregateList();
+        void OnAddAnnotation();
+        void OnEditAnnotation();
+        void OnRemoveAnnotation();
+        void RefreshAnnotationList();
+        [[nodiscard]]
+        wxArrayString GetColumnNames() const;
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
+
+        // static helpers shared across the formatting page
+        static bool ShowAnnotationDlg(wxWindow* parent, const wxString& title,
+                                      AnnotationEntry& entry, const wxArrayString& columnNames);
 
         // starts at +2 to avoid collision with
         // InsertItemDlg::ID_PAGE_SECTION (+1)
@@ -225,6 +270,7 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
         constexpr static wxWindowID ID_VAR_MODE_RADIO{ wxID_HIGHEST + 5 };
+        constexpr static wxWindowID ID_ANNOTATIONS_SECTION{ wxID_HIGHEST + 6 };
 
         wxChoice* m_datasetChoice{ nullptr };
         wxRadioBox* m_varModeRadio{ nullptr };
@@ -233,6 +279,7 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_altRowColorPicker{ nullptr };
         wxEditableListBox* m_footnotesListBox{ nullptr };
         wxEditableListBox* m_aggregatesListBox{ nullptr };
+        wxEditableListBox* m_annotationsListBox{ nullptr };
 
         // DDX data members
         int m_varModeIndex{ 0 };
@@ -253,6 +300,7 @@ namespace Wisteria::UI
         std::vector<wxString> m_datasetNames;
         std::vector<std::pair<wxString, wxString>> m_footnotes;
         std::vector<AggregateEntry> m_aggregates;
+        std::vector<AnnotationEntry> m_annotationEntries;
         };
     } // namespace Wisteria::UI
 

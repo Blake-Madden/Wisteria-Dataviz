@@ -10,6 +10,7 @@
 #include "../../graphs/table.h"
 #include "../../wxSimpleJSON/src/wxSimpleJSON.h"
 #include "variableselectdlg.h"
+#include <wx/combobox.h>
 #include <wx/gbsizer.h>
 #include <wx/spinctrl.h>
 #include <wx/tokenzr.h>
@@ -236,6 +237,26 @@ namespace Wisteria::UI
         twoColSizer->AddGrowableRow(0);
 
         optionsSizer->Add(twoColSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxRIGHT));
+
+        // cell annotations page
+        auto* annotationsPage = new wxPanel(GetSideBarBook());
+        auto* annotationsPageSizer = new wxBoxSizer(wxVERTICAL);
+        annotationsPage->SetSizer(annotationsPageSizer);
+        GetSideBarBook()->AddPage(annotationsPage, _(L"Cell Annotations"), ID_ANNOTATIONS_SECTION);
+
+        m_annotationsListBox = new wxEditableListBox(
+            annotationsPage, wxID_ANY, _(L"Cell Annotations"), wxDefaultPosition, wxDefaultSize,
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        annotationsPageSizer->Add(m_annotationsListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        m_annotationsListBox->GetNewButton()->Bind(wxEVT_BUTTON,
+                                                   [this](wxCommandEvent&) { OnAddAnnotation(); });
+        m_annotationsListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                    { OnEditAnnotation(); });
+        m_annotationsListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                   { OnRemoveAnnotation(); });
+        m_annotationsListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                   [this](wxListEvent&) { OnEditAnnotation(); });
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -649,6 +670,52 @@ namespace Wisteria::UI
                 }
             }
 
+        // restore annotations
+        const auto annotationsTemplate = table->GetPropertyTemplate(L"cell-annotations");
+        if (!annotationsTemplate.empty())
+            {
+            m_annotationEntries.clear();
+            const auto annotationsNode = wxSimpleJSON::Create(annotationsTemplate, true);
+            for (const auto& annNode : annotationsNode->AsNodes())
+                {
+                AnnotationEntry entry;
+                entry.m_value = annNode->GetProperty(L"value")->AsString();
+                entry.m_sideRight =
+                    (annNode->GetProperty(L"side")->AsString().CmpNoCase(L"left") != 0);
+                if (GetReportBuilder() != nullptr)
+                    {
+                    entry.m_bgColor =
+                        GetReportBuilder()->ConvertColor(annNode->GetProperty(L"background"));
+                    }
+
+                const auto cellsNode = annNode->GetProperty(L"cells");
+                if (cellsNode->IsOk() && cellsNode->IsValueObject())
+                    {
+                    const auto outliersNode = cellsNode->GetProperty(L"column-outliers");
+                    const auto topNNode = cellsNode->GetProperty(L"column-top-n");
+                    const auto rangeNode = cellsNode->GetProperty(L"range");
+                    if (outliersNode->IsOk())
+                        {
+                        entry.m_cellMode = AnnotationEntry::CellMode::Outliers;
+                        entry.m_columnName = outliersNode->AsString();
+                        }
+                    else if (topNNode->IsOk())
+                        {
+                        entry.m_cellMode = AnnotationEntry::CellMode::TopN;
+                        entry.m_columnName = topNNode->AsString();
+                        entry.m_topN = static_cast<int>(cellsNode->GetProperty(L"n")->AsDouble());
+                        }
+                    else if (rangeNode->IsOk() && rangeNode->IsValueObject())
+                        {
+                        entry.m_cellMode = AnnotationEntry::CellMode::Range;
+                        entry.m_rangeStart = rangeNode->GetProperty(L"start")->AsString();
+                        entry.m_rangeEnd = rangeNode->GetProperty(L"end")->AsString();
+                        }
+                    }
+                m_annotationEntries.push_back(std::move(entry));
+                }
+            }
+
         // restore min width/height proportions
         const auto& minWidth = table->GetMinWidthProportion();
         if (minWidth.has_value())
@@ -668,6 +735,7 @@ namespace Wisteria::UI
         OnVarModeChanged();
         RefreshFootnoteList();
         RefreshAggregateList();
+        RefreshAnnotationList();
         }
 
     //-------------------------------------------
@@ -677,7 +745,7 @@ namespace Wisteria::UI
         strings.reserve(m_footnotes.size());
         for (const auto& [value, footnote] : m_footnotes)
             {
-            strings.Add(wxString::Format(L"%s \u2014 %s", value, footnote));
+            strings.Add(wxString::Format(L"%s — %s", value, footnote));
             }
         m_footnotesListBox->SetStrings(strings);
         }
@@ -1037,5 +1105,202 @@ namespace Wisteria::UI
 
         m_aggregates.erase(m_aggregates.begin() + sel);
         RefreshAggregateList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::RefreshAnnotationList()
+        {
+        wxArrayString strs;
+        strs.reserve(m_annotationEntries.size());
+        for (const auto& ann : m_annotationEntries)
+            {
+            const wxString sideStr = ann.m_sideRight ? _(L"right") : _(L"left");
+            wxString cellStr;
+            switch (ann.m_cellMode)
+                {
+            case AnnotationEntry::CellMode::Outliers:
+                cellStr = wxString::Format(_(L"outliers: %s"), ann.m_columnName);
+                break;
+            case AnnotationEntry::CellMode::TopN:
+                cellStr = wxString::Format(_(L"top-%d: %s"), ann.m_topN, ann.m_columnName);
+                break;
+            case AnnotationEntry::CellMode::Range:
+                cellStr = wxString::Format(_(L"range: %s–%s"), ann.m_rangeStart, ann.m_rangeEnd);
+                break;
+                }
+            strs.Add(wxString::Format(L"%s | %s | %s", sideStr, cellStr, ann.m_value));
+            }
+        m_annotationsListBox->SetStrings(strs);
+        }
+
+    //-------------------------------------------
+    wxArrayString InsertTableDlg::GetColumnNames() const
+        {
+        wxArrayString names;
+        const auto dataset = GetSelectedDataset();
+        if (dataset != nullptr)
+            {
+            for (const auto& col : dataset->GetContinuousColumnNames())
+                {
+                names.Add(col);
+                }
+            for (const auto& col : dataset->GetCategoricalColumnNames())
+                {
+                names.Add(col);
+                }
+            for (const auto& col : dataset->GetDateColumnNames())
+                {
+                names.Add(col);
+                }
+            }
+        return names;
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnAddAnnotation()
+        {
+        AnnotationEntry entry;
+        if (!ShowAnnotationDlg(this, _(L"Add Annotation"), entry, GetColumnNames()) ||
+            entry.m_value.empty())
+            {
+            return;
+            }
+        m_annotationEntries.push_back(std::move(entry));
+        RefreshAnnotationList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnEditAnnotation()
+        {
+        const auto sel = m_annotationsListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                          wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_annotationEntries.size()))
+            {
+            return;
+            }
+        if (!ShowAnnotationDlg(this, _(L"Edit Annotation"),
+                               m_annotationEntries[static_cast<size_t>(sel)], GetColumnNames()))
+            {
+            return;
+            }
+        RefreshAnnotationList();
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::OnRemoveAnnotation()
+        {
+        const auto sel = m_annotationsListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                          wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_annotationEntries.size()))
+            {
+            return;
+            }
+        m_annotationEntries.erase(m_annotationEntries.begin() + sel);
+        RefreshAnnotationList();
+        }
+
+    //-------------------------------------------
+    bool InsertTableDlg::ShowAnnotationDlg(wxWindow* parent, const wxString& title,
+                                           AnnotationEntry& entry, const wxArrayString& columnNames)
+        {
+        wxDialog dlg(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* grid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        grid->AddGrowableCol(1, 1);
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Annotation text:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* valueCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_value);
+        grid->Add(valueCtrl, wxSizerFlags{}.Expand());
+
+        wxArrayString sideChoices;
+        sideChoices.Add(_(L"Right"));
+        sideChoices.Add(_(L"Left"));
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Side:")), wxSizerFlags{}.CenterVertical());
+        auto* sideCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, sideChoices);
+        sideCtrl->SetSelection(entry.m_sideRight ? 0 : 1);
+        grid->Add(sideCtrl, wxSizerFlags{}.Expand());
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Background color:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* bgPicker = new wxColourPickerCtrl(
+            &dlg, wxID_ANY, entry.m_bgColor.IsOk() ? entry.m_bgColor : *wxWHITE);
+        grid->Add(bgPicker, wxSizerFlags{});
+
+        wxArrayString modeChoices;
+        modeChoices.Add(_(L"Column outliers"));
+        modeChoices.Add(_(L"Column top-N"));
+        modeChoices.Add(_(L"Cell range"));
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Cell selection:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* modeCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, modeChoices);
+        modeCtrl->SetSelection(static_cast<int>(entry.m_cellMode));
+        grid->Add(modeCtrl, wxSizerFlags{}.Expand());
+
+        auto* colLabel = new wxStaticText(&dlg, wxID_ANY, _(L"Column name:"));
+        grid->Add(colLabel, wxSizerFlags{}.CenterVertical());
+        auto* colCtrl = new wxComboBox(&dlg, wxID_ANY, entry.m_columnName, wxDefaultPosition,
+                                       wxDefaultSize, columnNames, wxCB_DROPDOWN);
+        grid->Add(colCtrl, wxSizerFlags{}.Expand());
+
+        auto* nLabel = new wxStaticText(&dlg, wxID_ANY, _(L"N (top count):"));
+        grid->Add(nLabel, wxSizerFlags{}.CenterVertical());
+        auto* nCtrl =
+            new wxSpinCtrl(&dlg, wxID_ANY, wxString::Format(L"%d", entry.m_topN), wxDefaultPosition,
+                           wxDefaultSize, wxSP_ARROW_KEYS, 1, 9999, entry.m_topN);
+        grid->Add(nCtrl, wxSizerFlags{}.Expand());
+
+        auto* startLabel = new wxStaticText(&dlg, wxID_ANY, _(L"Start cell:"));
+        grid->Add(startLabel, wxSizerFlags{}.CenterVertical());
+        auto* startCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_rangeStart);
+        grid->Add(startCtrl, wxSizerFlags{}.Expand());
+
+        auto* endLabel = new wxStaticText(&dlg, wxID_ANY, _(L"End cell:"));
+        grid->Add(endLabel, wxSizerFlags{}.CenterVertical());
+        auto* endCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_rangeEnd);
+        grid->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        const auto updateFields = [&](int mode)
+        {
+            const bool isOutliers{ mode == 0 };
+            const bool isTopN{ mode == 1 };
+            const bool isRange{ mode == 2 };
+            colLabel->Enable(isOutliers || isTopN);
+            colCtrl->Enable(isOutliers || isTopN);
+            nLabel->Enable(isTopN);
+            nCtrl->Enable(isTopN);
+            startLabel->Enable(isRange);
+            startCtrl->Enable(isRange);
+            endLabel->Enable(isRange);
+            endCtrl->Enable(isRange);
+        };
+        updateFields(modeCtrl->GetSelection());
+        modeCtrl->Bind(wxEVT_CHOICE, [&]([[maybe_unused]] wxCommandEvent&)
+                       { updateFields(modeCtrl->GetSelection()); });
+
+        auto* top = new wxBoxSizer(wxVERTICAL);
+        top->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+        top->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags{}.Expand().Border());
+        dlg.SetSizerAndFit(top);
+        dlg.SetMinSize(dlg.FromDIP(wxSize{ 360, -1 }));
+        dlg.Fit();
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+        entry.m_value = valueCtrl->GetValue().Trim().Trim(false);
+        entry.m_sideRight = (sideCtrl->GetSelection() == 0);
+        const wxColour pickedColor{ bgPicker->GetColour() };
+        entry.m_bgColor = pickedColor;
+        entry.m_cellMode = static_cast<AnnotationEntry::CellMode>(modeCtrl->GetSelection());
+        entry.m_columnName = colCtrl->GetValue().Trim().Trim(false);
+        entry.m_topN = nCtrl->GetValue();
+        entry.m_rangeStart = startCtrl->GetValue().Trim().Trim(false);
+        entry.m_rangeEnd = endCtrl->GetValue().Trim().Trim(false);
+        return true;
         }
     } // namespace Wisteria::UI

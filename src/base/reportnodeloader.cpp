@@ -12,6 +12,38 @@
 namespace Wisteria
     {
     //---------------------------------------------------
+    wxString ReportNodeLoader::BuildAnnotationEntryJson(const wxString& value, bool sideRight,
+                                                        const wxColour& bgColor, int cellMode,
+                                                        const wxString& columnName, int topN,
+                                                        const wxString& rangeStart,
+                                                        const wxString& rangeEnd)
+        {
+        wxString obj{ wxString::Format(L"{\"value\":\"%s\", \"side\":\"%s\"", value,
+                                       sideRight ? L"right" : L"left") };
+        if (bgColor.IsOk())
+            {
+            obj += wxString::Format(L", \"background\":\"%s\"",
+                                    bgColor.GetAsString(wxC2S_HTML_SYNTAX));
+            }
+        if (cellMode == 1)
+            {
+            obj += wxString::Format(L", \"cells\":{\"column-top-n\":\"%s\", \"n\":%d}", columnName,
+                                    topN);
+            }
+        else if (cellMode == 2)
+            {
+            obj += wxString::Format(L", \"cells\":{\"range\":{\"start\":\"%s\", \"end\":\"%s\"}}",
+                                    rangeStart, rangeEnd);
+            }
+        else
+            {
+            obj += wxString::Format(L", \"cells\":{\"column-outliers\":\"%s\"}", columnName);
+            }
+        obj += L"}";
+        return obj;
+        }
+
+    //---------------------------------------------------
     void ReportNodeLoader::ApplyTableSort(std::shared_ptr<Graphs::Table>& table,
                                           const wxSimpleJSON::Ptr_t& sortNode) const
         {
@@ -478,11 +510,19 @@ namespace Wisteria
                         Side::Left :
                         Side::Right;
                 }
-            cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
-            m_reportBuilder.LoadPen(annotation->GetProperty(L"pen"),
-                                    cellAnnotation.m_connectionLinePen.value());
             cellAnnotation.m_bgColor =
                 m_reportBuilder.ConvertColor(annotation->GetProperty(L"background"));
+            if (annotation->HasProperty(L"pen"))
+                {
+                cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
+                m_reportBuilder.LoadPen(annotation->GetProperty(L"pen"),
+                                        cellAnnotation.m_connectionLinePen.value());
+                }
+            else if (cellAnnotation.m_bgColor.IsOk())
+                {
+                cellAnnotation.m_connectionLinePen =
+                    wxPen(cellAnnotation.m_bgColor, 1, wxPENSTYLE_SHORT_DASH);
+                }
 
             const auto cellsNode = annotation->GetProperty(L"cells");
             if (cellsNode->IsOk() && cellsNode->IsValueObject())

@@ -2968,6 +2968,29 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             table->SetPropertyTemplate(L"aggregates", aggregatesJson);
             }
 
+        // cell annotations template
+        const auto& annotations = dlg.GetAnnotationEntries();
+        if (!annotations.empty())
+            {
+            wxString annJson{ L"[" };
+            for (size_t i = 0; i < annotations.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    annJson += L", ";
+                    }
+                const auto& ann{ annotations[i] };
+                annJson += Wisteria::ReportNodeLoader::BuildAnnotationEntryJson(
+                    ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
+                    ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
+                }
+            annJson += L"]";
+            table->SetPropertyTemplate(L"cell-annotations", annJson);
+            }
+
+        // re-apply procedural features from carried-forward templates
+        m_reportBuilder.ApplyTableFeatures(table);
+
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
@@ -3213,8 +3236,28 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             table->SetPropertyTemplate(L"footnotes", footnotesJson);
             }
 
+        // cell annotations template (set before ApplyTableFeatures so it runs in sequence)
+        const auto& editAnnotations = dlg.GetAnnotationEntries();
+        if (!editAnnotations.empty())
+            {
+            wxString annJson{ L"[" };
+            for (size_t i = 0; i < editAnnotations.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    annJson += L", ";
+                    }
+                const auto& ann{ editAnnotations[i] };
+                annJson += Wisteria::ReportNodeLoader::BuildAnnotationEntryJson(
+                    ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
+                    ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
+                }
+            annJson += L"]";
+            table->SetPropertyTemplate(L"cell-annotations", annJson);
+            }
+
         // re-apply procedural features from carried-forward templates
-        // (alternate-row-color is applied here, in the correct order —
+        // (alternate-row-color is applied here, in the correct order -
         // before row additions and aggregates)
         m_reportBuilder.ApplyTableFeatures(table);
 

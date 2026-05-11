@@ -44,6 +44,25 @@ namespace Wisteria
             {
             }
 
+        /** @brief Builds a single cell-annotation JSON object.
+            @details @p cellMode controls which `"cells"` variant is emitted:
+                0 = `"column-outliers"`, 1 = `"column-top-n"`, 2 = `"range"`.
+                @p bgColor is omitted when invalid.
+            @param value The annotation text.
+            @param sideRight @c true for right side, @c false for left.
+            @param bgColor The background color (invalid = omit from JSON).
+            @param cellMode 0 = outliers, 1 = top-N, 2 = range.
+            @param columnName Column name for outliers/top-N modes.
+            @param topN Top-N count for top-N mode.
+            @param rangeStart Start cell name for range mode.
+            @param rangeEnd End cell name for range mode.
+            @returns The JSON object string.*/
+        [[nodiscard]]
+        static wxString
+        BuildAnnotationEntryJson(const wxString& value, bool sideRight, const wxColour& bgColor,
+                                 int cellMode, const wxString& columnName, int topN,
+                                 const wxString& rangeStart, const wxString& rangeEnd);
+
         /// @private
         ReportNodeLoader(const ReportNodeLoader&) = delete;
         /// @private
