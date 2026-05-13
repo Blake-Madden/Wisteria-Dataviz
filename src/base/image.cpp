@@ -1146,7 +1146,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         // draw the outline
         std::array<wxPoint, 5> pts;
         GraphItems::Polygon::GetRectPoints(boundRect, pts);
-        if (GetPen().IsOk())
+        if (GetPen().IsOk() && !IsSelected())
             {
             wxPen scaledPen{ GetPen() };
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
@@ -1155,7 +1155,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
                                          wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
                                          scaledPen };
-            dc.DrawLines(pts.size(), pts.data());
+            if (GetGraphItemInfo().IsShowingTopOutline())
+                {
+                dc.DrawLine(boundRect.GetTopLeft(), boundRect.GetTopRight());
+                }
+            if (GetGraphItemInfo().IsShowingBottomOutline())
+                {
+                dc.DrawLine(boundRect.GetBottomLeft(), boundRect.GetBottomRight());
+                }
+
+            if (GetGraphItemInfo().IsShowingRightOutline())
+                {
+                dc.DrawLine(boundRect.GetTopRight(), boundRect.GetBottomRight());
+                }
+            if (GetGraphItemInfo().IsShowingLeftOutline())
+                {
+                dc.DrawLine(boundRect.GetTopLeft(), boundRect.GetBottomLeft());
+                }
             }
         // just draw selection outline if regular pen isn't in use
         else if (IsSelected())
