@@ -60,6 +60,11 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             paper = wxThePrintPaperDatabase->FindPaperType(wxPAPER_A4);
             }
 
+        const int leftMargin = pdfDC.ToDIP(wxSize{ 5, 0 }).GetWidth();
+        const int topMargin = pdfDC.ToDIP(wxSize{ 0, 0 }).GetHeight();
+        const int rightMargin = pdfDC.ToDIP(wxSize{ 10, 0 }).GetWidth();
+        const int bottomMargin = pdfDC.ToDIP(wxSize{ 0, 10 }).GetHeight();
+
         int dipW{ 0 }, dipH{ 0 };
         if (paper != nullptr)
             {
@@ -71,17 +76,19 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
                 wxRound((landscape ? paperSzTenthsMM.GetWidth() : paperSzTenthsMM.GetHeight()) /
                         254.0 * 72.0));
             const wxSize dipSize = pdfDC.ToDIP(ptsSize);
-            dipW = dipSize.GetWidth();
-            dipH = dipSize.GetHeight();
+            dipW = dipSize.GetWidth() - leftMargin - rightMargin;
+            dipH = dipSize.GetHeight() - topMargin - bottomMargin;
             }
 
         if (dipW <= 0 || dipH <= 0)
             {
             // fallback to US Letter
             const wxSize dipSize = pdfDC.ToDIP(wxSize{ wxRound(8.5 * 72.0), wxRound(11.0 * 72.0) });
-            dipW = dipSize.GetWidth();
-            dipH = dipSize.GetHeight();
+            dipW = dipSize.GetWidth() - leftMargin - rightMargin;
+            dipH = dipSize.GetHeight() - topMargin - bottomMargin;
             }
+
+        pdfDC.SetDeviceOrigin(leftMargin, topMargin);
 
         // save original canvas state
         const int origMinWidth = canvas->GetCanvasMinWidthDIPs();

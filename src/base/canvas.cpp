@@ -459,11 +459,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                          wxRound((landscape ? paperSzTenthsMM.GetWidth() :
                                                               paperSzTenthsMM.GetHeight()) /
                                                  254.0 * 72.0));
+
+                    const int leftMargin = pdfDC.ToDIP(wxSize{ 5, 0 }).GetWidth();
+                    const int topMargin = pdfDC.ToDIP(wxSize{ 0, 0 }).GetHeight();
+                    const int rightMargin = pdfDC.ToDIP(wxSize{ 10, 0 }).GetWidth();
+                    const int bottomMargin = pdfDC.ToDIP(wxSize{ 0, 10 }).GetHeight();
+
                     const wxSize dipSize = pdfDC.ToDIP(ptsSize);
-                    const int dipW = dipSize.GetWidth();
-                    const int dipH = dipSize.GetHeight();
+                    const int dipW = dipSize.GetWidth() - leftMargin - rightMargin;
+                    const int dipH = dipSize.GetHeight() - topMargin - bottomMargin;
                     m_rectDIPs.SetSize(wxSize{ dipW, dipH });
                     m_canvasMinSizeDIPs = wxSize{ dipW, dipH };
+                    pdfDC.SetDeviceOrigin(leftMargin, topMargin);
                     }
                 const wxEventBlocker blocker(this);
                 CalcAllSizes(pdfDC);
@@ -1580,11 +1587,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // fill in the background color with a linear gradient (if there is a user defined color)
         if (m_bgColorUseLinearGradient && GetBackgroundColor().IsOk())
             {
+            const wxDCPenChanger pd{ dc, *wxTRANSPARENT_PEN };
             dc.GradientFillLinear(GetCanvasRect(dc), GetBackgroundColor(),
                                   Colors::ColorBrewer::GetColor(Colors::Color::White), wxSOUTH);
             }
         else
             {
+            const wxDCPenChanger pd{ dc, *wxTRANSPARENT_PEN };
             // If background color is bad, then just fill the canvas with white.
             // Otherwise, fill with color
             const wxDCBrushChanger bc{ dc, !GetBackgroundColor().IsOk() ?
