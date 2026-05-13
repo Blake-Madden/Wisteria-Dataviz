@@ -1623,7 +1623,13 @@ namespace Wisteria::GraphItems
         // measuring lines along stem
         wxRect clipRect{ rect };
         clipRect.SetHeight(clipRect.GetHeight() * 0.90);
-        const wxDCClipper clip{ dc, clipRect };
+        wxRect currentClipRect;
+        wxRegion clipRegion(clipRect);
+        if (dc.GetClippingBox(currentClipRect))
+            {
+            clipRegion.Intersect(currentClipRect);
+            }
+        const wxDCClipper clip{ dc, clipRegion };
         int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
         int currentLine{ 0 };
         while (currentY < drawRect.GetBottom())
@@ -3993,7 +3999,13 @@ namespace Wisteria::GraphItems
             wxRect lineRect{ rect };
             lineRect.SetHeight(lineRect.GetHeight() * math_constants::half);
             lineRect.Offset(0, lineRect.GetHeight());
-            const wxDCClipper clip(dc, lineRect);
+            wxRect currentClipRect;
+            wxRegion clipRegion(lineRect);
+            if (dc.GetClippingBox(currentClipRect))
+                {
+                clipRegion.Intersect(currentClipRect);
+                }
+            const wxDCClipper clip{ dc, clipRegion };
             dc.DrawLine(lineTop, lineBottom);
                 {
                 const wxDCPenChanger pc3(dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(
@@ -4011,7 +4023,13 @@ namespace Wisteria::GraphItems
             wxRect liquidRect{ drawRect };
             liquidRect.SetHeight(liquidRect.GetHeight() * math_constants::half);
             liquidRect.Offset(0, liquidRect.GetHeight());
-            const wxDCClipper clip(dc, liquidRect);
+            wxRect currentClipRect;
+            wxRegion clipRegion(liquidRect);
+            if (dc.GetClippingBox(currentClipRect))
+                {
+                clipRegion.Intersect(currentClipRect);
+                }
+            const wxDCClipper clip{ dc, clipRegion };
             dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
             }
 
@@ -5244,7 +5262,13 @@ namespace Wisteria::GraphItems
             auto bottomRect{ backPage };
             bottomRect.SetHeight(bottomRect.GetHeight() * math_constants::half);
             bottomRect.Offset(0, backPage.GetHeight() - bottomRect.GetHeight());
-            const wxDCClipper clip{ dc, bottomRect };
+            wxRect currentClipRect;
+            wxRegion clipRegion(bottomRect);
+            if (dc.GetClippingBox(currentClipRect))
+                {
+                clipRegion.Intersect(currentClipRect);
+                }
+            const wxDCClipper clip{ dc, clipRegion };
             dc.DrawRoundedRectangle(backPage, ScaleToScreenAndCanvas(3));
             }
             // draw the upper half of the backpage
@@ -5253,14 +5277,26 @@ namespace Wisteria::GraphItems
             topRect.SetHeight(topRect.GetHeight() *
                               // avoid a gap in the lines
                               (math_constants::half + 0.05));
-            const wxDCClipper clip{ dc, topRect };
+            wxRect currentClipRect;
+            wxRegion clipRegion(topRect);
+            if (dc.GetClippingBox(currentClipRect))
+                {
+                clipRegion.Intersect(currentClipRect);
+                }
+            const wxDCClipper clip{ dc, clipRegion };
             dc.DrawRectangle(backPage);
             }
             // draw the front page
             {
             auto topRect{ frontPageRect };
             topRect.SetHeight(topRect.GetHeight() * 0.9);
-            const wxDCClipper clip{ dc, topRect };
+            wxRect currentClipRect;
+            wxRegion clipRegion(topRect);
+            if (dc.GetClippingBox(currentClipRect))
+                {
+                clipRegion.Intersect(currentClipRect);
+                }
+            const wxDCClipper clip{ dc, clipRegion };
             dc.DrawRectangle(frontPageRect);
             }
 
