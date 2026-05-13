@@ -100,7 +100,6 @@ namespace Wisteria::GraphItems
             @param itemInfo Base plot object settings.*/
         explicit Label(const GraphItems::GraphItemInfo& itemInfo) : GraphItemBase(itemInfo)
             {
-            GraphItemBase::GetGraphItemInfo().Outline(true, true, true, true);
             ShowLabelWhenSelected(false);
             InvalidateCachedBoundingBox();
             CalcLongestLineLength();
