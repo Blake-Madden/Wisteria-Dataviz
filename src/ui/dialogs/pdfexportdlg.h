@@ -57,6 +57,13 @@ namespace Wisteria::UI
         void OnPaintPreview(wxPaintEvent& event);
         void UpdatePreview();
 
+        bool Validate() final
+            {
+            m_options.m_paperSize = m_printData.GetPaperId();
+            m_options.m_paperOrientation = m_printData.GetOrientation();
+            return wxDialog::Validate();
+            }
+
         wxPrintData m_printData;
         PdfExportOptions m_options;
 

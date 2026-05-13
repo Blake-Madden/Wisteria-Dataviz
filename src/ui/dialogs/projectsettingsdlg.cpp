@@ -28,6 +28,8 @@ namespace Wisteria::UI
     void ProjectSettingsDlg::LoadFromProject(const Wisteria::ReportBuilder& reportBuilder)
         {
         m_projectName = reportBuilder.GetName();
+        m_subject = reportBuilder.GetSubject();
+        m_keywords = reportBuilder.GetKeywords();
         m_watermarkLabel = reportBuilder.GetWatermarkLabel();
         if (reportBuilder.GetWatermarkColor().IsOk())
             {
@@ -52,10 +54,26 @@ namespace Wisteria::UI
         // project name
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Project name:")),
                        wxSizerFlags{}.CenterVertical());
-        auto* nameCtrl =
-            new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
-                           FromDIP(wxSize{ 300, -1 }), 0, wxGenericValidator{ &m_projectName });
-        gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
+        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
+                                      FromDIP(wxSize{ 300, -1 }), 0,
+                                      wxGenericValidator{ &m_projectName }),
+                       wxSizerFlags{}.Expand());
+
+        // subject
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Subject:")),
+                       wxSizerFlags{}.CenterVertical());
+        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
+                                      FromDIP(wxSize{ 300, -1 }), 0,
+                                      wxGenericValidator{ &m_subject }),
+                       wxSizerFlags{}.Expand());
+
+        // keywords
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Keywords:")),
+                       wxSizerFlags{}.CenterVertical());
+        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
+                                      FromDIP(wxSize{ 300, -1 }), 0,
+                                      wxGenericValidator{ &m_keywords }),
+                       wxSizerFlags{}.Expand());
 
         mainSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 

@@ -87,6 +87,10 @@ namespace Wisteria
         wxString m_keywords;
         /** @brief Whether to compress the PDF content.*/
         bool m_compress{ true };
+        /** @brief The paper size to export as.*/
+        wxPaperSize m_paperSize{ wxPaperSize::wxPAPER_LETTER };
+        /** @brief The paper orientation to export as.*/
+        wxPrintOrientation m_paperOrientation{ wxPrintOrientation::wxPORTRAIT };
         };
 
     /// @brief %Canvas for drawing fixed and movable objects.

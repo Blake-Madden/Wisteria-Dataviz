@@ -56,6 +56,22 @@ namespace Wisteria::UI
             return m_projectName;
             }
 
+        /// @returns The project subject entered by the user.
+        [[nodiscard]]
+        wxString GetSubject()
+            {
+            TransferDataFromWindow();
+            return m_subject;
+            }
+
+        /// @returns The project keywords entered by the user.
+        [[nodiscard]]
+        wxString GetKeywords()
+            {
+            TransferDataFromWindow();
+            return m_keywords;
+            }
+
         /// @returns The watermark label entered by the user.
         [[nodiscard]]
         wxString GetWatermarkLabel()
@@ -78,6 +94,8 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_watermarkColorPicker{ nullptr };
 
         wxString m_projectName;
+        wxString m_subject;
+        wxString m_keywords;
         wxString m_watermarkLabel;
         wxColour m_watermarkColor{ wxColour(255, 0, 0) };
         };

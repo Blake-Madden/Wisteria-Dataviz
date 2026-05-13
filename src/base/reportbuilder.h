@@ -574,6 +574,28 @@ namespace Wisteria
         /// @param name The new report name.
         void SetName(const wxString& name) { m_name = name; }
 
+        /// @returns The subject of the report.
+        [[nodiscard]]
+        const wxString& GetSubject() const noexcept
+            {
+            return m_subject;
+            }
+
+        /// @brief Sets the subject of the report.
+        /// @param subject The new subject.
+        void SetSubject(const wxString& keywords) { m_subject = keywords; }
+
+        /// @returns The keywords of the report.
+        [[nodiscard]]
+        const wxString& GetKeywords() const noexcept
+            {
+            return m_keywords;
+            }
+
+        /// @brief Sets the keywords of the report.
+        /// @param keywords The new keywords.
+        void SetKeywords(const wxString& keywords) { m_keywords = keywords; }
+
         /// @returns The watermark label.
         [[nodiscard]]
         const wxString& GetWatermarkLabel() const noexcept
@@ -1258,6 +1280,8 @@ namespace Wisteria
         std::set<DatasetFormulaInfo> m_constants;
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
+        wxString m_subject;
+        wxString m_keywords;
         wxString m_watermarkLabel;
         wxColour m_watermarkColor;
 

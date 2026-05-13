@@ -764,6 +764,8 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
     Wisteria::PdfExportOptions options;
     options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
                                                              GetReportBuilder().GetName();
+    options.m_subject = GetReportBuilder().GetSubject();
+    options.m_keywords = GetReportBuilder().GetKeywords();
 
     Wisteria::UI::PdfExportDlg pdfOptionsDlg(m_frame, m_pages.front()->GetPrinterSettings(),
                                              options);
@@ -781,7 +783,22 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    const bool optionsChanged = (GetReportBuilder().GetName() != options.m_title ||
+                                 GetReportBuilder().GetSubject() != options.m_subject ||
+                                 GetReportBuilder().GetKeywords() != options.m_keywords);
+    if (optionsChanged)
+        {
+        GetReportBuilder().SetName(options.m_title);
+        GetReportBuilder().SetSubject(options.m_subject);
+        GetReportBuilder().SetKeywords(options.m_keywords);
+        }
+
     Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(), options);
+
+    if (optionsChanged)
+        {
+        GetDocument()->Modify(true);
+        }
 #endif
     }
 
@@ -789,15 +806,17 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
 void WisteriaView::OnProjectSettings([[maybe_unused]] wxCommandEvent& event)
     {
     Wisteria::UI::ProjectSettingsDlg dlg(m_frame);
-    dlg.LoadFromProject(m_reportBuilder);
+    dlg.LoadFromProject(GetReportBuilder());
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
-    m_reportBuilder.SetName(dlg.GetProjectName());
-    m_reportBuilder.SetWatermarkLabel(dlg.GetWatermarkLabel());
-    m_reportBuilder.SetWatermarkColor(dlg.GetWatermarkColor());
+    GetReportBuilder().SetName(dlg.GetProjectName());
+    GetReportBuilder().SetSubject(dlg.GetSubject());
+    GetReportBuilder().SetKeywords(dlg.GetKeywords());
+    GetReportBuilder().SetWatermarkLabel(dlg.GetWatermarkLabel());
+    GetReportBuilder().SetWatermarkColor(dlg.GetWatermarkColor());
 
     // apply the new watermark to all pages
     const Wisteria::Canvas::Watermark newWatermark{ dlg.GetWatermarkLabel(),

@@ -94,7 +94,7 @@ namespace Wisteria::UI
                          wxSizerFlags{}.CenterVertical());
         auto* titleCtrl =
             new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           FromDIP(wxSize{ 300, -1 }), 0, wxGenericValidator{ &m_options.m_title });
+                           FromDIP(wxSize{ 350, -1 }), 0, wxGenericValidator{ &m_options.m_title });
         docInfoGrid->Add(titleCtrl, wxSizerFlags{}.Expand());
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Author:")),

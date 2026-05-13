@@ -42,10 +42,19 @@ namespace Wisteria
             return reportPages;
             }
 
-        const auto reportNameNode = json->GetProperty(_DT(L"name"));
-        if (reportNameNode->IsOk())
+        if (const auto reportNameNode = json->GetProperty(_DT(L"name")); reportNameNode->IsOk())
             {
             m_name = reportNameNode->AsString();
+            }
+
+        if (const auto subjectNode = json->GetProperty(_DT(L"subject")); subjectNode->IsOk())
+            {
+            m_subject = subjectNode->AsString();
+            }
+
+        if (const auto keywordsNode = json->GetProperty(_DT(L"keywords")); keywordsNode->IsOk())
+            {
+            m_keywords = keywordsNode->AsString();
             }
 
         const auto datasetsNode = json->GetProperty(L"datasets");

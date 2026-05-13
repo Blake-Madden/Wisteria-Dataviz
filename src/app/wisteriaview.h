@@ -62,6 +62,13 @@ class WisteriaView final : public wxView
         return m_reportBuilder;
         }
 
+    /// @private
+    [[nodiscard]]
+    Wisteria::ReportBuilder& GetReportBuilder() noexcept
+        {
+        return m_reportBuilder;
+        }
+
   private:
     [[nodiscard]]
     Wisteria::UI::SideBar* GetSideBar() noexcept

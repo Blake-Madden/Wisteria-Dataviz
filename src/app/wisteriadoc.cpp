@@ -76,9 +76,12 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
                                      view->GetReportBuilder().GetName();
 
     auto root = wxSimpleJSON::Create(
-        wxString::Format(L"{\"name\": \"%s\", \"watermark\": {}, \"print\": {}, "
+        wxString::Format(L"{\"name\": \"%s\", \"subject\": \"%s\", \"keywords\": \"%s\", "
+                         L"\"watermark\": {}, \"print\": {}, "
                          L"\"datasets\": [], \"constants\": [], \"pages\": []}",
-                         EscapeJsonStr(projectName)),
+                         EscapeJsonStr(projectName),
+                         EscapeJsonStr(view->GetReportBuilder().GetSubject()),
+                         EscapeJsonStr(view->GetReportBuilder().GetKeywords())),
         true);
 
     // watermark

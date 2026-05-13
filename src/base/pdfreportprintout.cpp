@@ -25,9 +25,8 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         }
 
     wxPrintData printData;
-    printData.SetOrientation(
-        static_cast<wxPrintOrientation>(wxGetApp().GetAppSettings()->GetPrintOrientation()));
-    printData.SetPaperId(wxGetApp().GetAppSettings()->GetPaperId());
+    printData.SetOrientation(options.m_paperOrientation);
+    printData.SetPaperId(options.m_paperSize);
     printData.SetFilename(filePath);
     wxPdfDC pdfDC(printData);
 
