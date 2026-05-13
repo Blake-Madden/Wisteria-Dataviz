@@ -178,7 +178,7 @@ namespace Wisteria::UI
                          { m_bgThumbnail->SetBitmap(wxNullBitmap); });
         auto* bgImgHBox = new wxBoxSizer(wxHORIZONTAL);
         bgImgHBox->Add(m_bgThumbnail, wxSizerFlags{}.Border(wxTOP | wxBOTTOM));
-        bgImgHBox->Add(bgClearBtn, wxSizerFlags{}.CenterVertical().Border());
+        bgImgHBox->Add(bgClearBtn, wxSizerFlags{}.Top().Border());
         appearanceGrid->Add(bgImgHBox, wxSizerFlags{}.Expand());
 
         // background image opacity
