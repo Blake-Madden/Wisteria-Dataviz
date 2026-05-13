@@ -225,7 +225,6 @@ namespace Wisteria::Graphs
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetCaption().GetFont().SetFractionalPointSize(
             GetTitle().GetFont().GetFractionalPointSize() * math_constants::three_quarters);
-        GetCaption().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::DimGray));
         }
 
     //----------------------------------------------------------------
@@ -433,7 +432,7 @@ namespace Wisteria::Graphs
             // if using a background color, stretch it out to the width of the graph area
             // so that it acts as a banner
             if (GetTitle().GetFontBackgroundColor().IsOk() &&
-                GetTitle().GetFontBackgroundColor() != wxTransparentColor)
+                !GetTitle().GetFontBackgroundColor().IsTransparent())
                 {
                 GetTitle().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
                 }
@@ -454,7 +453,7 @@ namespace Wisteria::Graphs
                 titleRect = GetSubtitle().GetBoundingBox(dc);
                 }
             if (GetSubtitle().GetFontBackgroundColor().IsOk() &&
-                GetSubtitle().GetFontBackgroundColor() != wxTransparentColor)
+                !GetSubtitle().GetFontBackgroundColor().IsTransparent())
                 {
                 GetSubtitle().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
                 }
@@ -487,7 +486,7 @@ namespace Wisteria::Graphs
                 titleRect = GetCaption().GetBoundingBox(dc);
                 }
             if (GetCaption().GetFontBackgroundColor().IsOk() &&
-                GetCaption().GetFontBackgroundColor() != wxTransparentColor)
+                !GetCaption().GetFontBackgroundColor().IsTransparent())
                 {
                 GetCaption().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
                 }
