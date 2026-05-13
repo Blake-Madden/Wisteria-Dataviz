@@ -667,6 +667,7 @@ namespace Wisteria::GraphItems
             std::optional<wxColour> m_foreground;
             std::optional<wxColour> m_background;
             std::optional<wxFontStyle> m_fontStyle;
+            std::optional<wxFontWeight> m_fontWeight;
             bool m_underline{ false };
             bool m_strikethrough{ false };
             };

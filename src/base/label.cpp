@@ -2418,6 +2418,22 @@ namespace Wisteria::GraphItems
                             }
                         }
 
+                    // font-weight property (bold)
+                    const wxRegEx reFontWeight(L"font-weight\\s*:\\s*([^;]+)", wxRE_ICASE);
+                    if (reFontWeight.IsValid() && reFontWeight.Matches(styleValue))
+                        {
+                        wxString fontStyleVal = reFontWeight.GetMatch(styleValue, 1).Lower();
+                        fontStyleVal.Trim(true).Trim(false);
+                        if (fontStyleVal == L"bold" || fontStyleVal == L"bolder")
+                            {
+                            styledSeg.m_fontWeight = wxFONTWEIGHT_BOLD;
+                            }
+                        else if (fontStyleVal == L"normal")
+                            {
+                            styledSeg.m_fontWeight = wxFONTWEIGHT_NORMAL;
+                            }
+                        }
+
                     // text-decoration property (underline, line-through)
                     const wxRegEx reTextDecor(L"text-decoration\\s*:\\s*([^;]+)", wxRE_ICASE);
                     if (reTextDecor.IsValid() && reTextDecor.Matches(styleValue))
@@ -2474,6 +2490,10 @@ namespace Wisteria::GraphItems
             if (segment.m_fontStyle.has_value())
                 {
                 segFont.SetStyle(segment.m_fontStyle.value());
+                }
+            if (segment.m_fontWeight.has_value())
+                {
+                segFont.SetWeight(segment.m_fontWeight.value());
                 }
             if (segment.m_underline)
                 {

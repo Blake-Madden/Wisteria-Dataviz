@@ -317,6 +317,7 @@ Standard CSS properties are used for styling.
 | `color` | color value | Text foreground color |
 | `background-color` | color value | Text background color |
 | `font-style` | `italic`, `oblique`, `normal` | Font style |
+| `font-weight` | `bold`, `bolder`, `normal` | Font weight |
 | `text-decoration` | `underline`, `line-through` | Text decoration (can be combined) |
 
 Example:
