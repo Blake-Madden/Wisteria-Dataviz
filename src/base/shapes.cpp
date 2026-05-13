@@ -5264,11 +5264,12 @@ namespace Wisteria::GraphItems
             dc.DrawRectangle(frontPageRect);
             }
 
+        const wxDCPenChanger pc2{ dc, *wxTRANSPARENT_PEN };
+
         // headline
-        const wxDCPenChanger pc2{
-            dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::WarmGray)),
-                       std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half)) }
-        };
+        const wxPen sepLinePen{ ApplyColorOpacity(
+                                    Colors::ColorBrewer::GetColor(Colors::Color::WarmGray)),
+                                std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half)) };
         auto headlineBox{ frontPageRect };
         headlineBox.SetHeight(headlineBox.GetHeight() * math_constants::third);
         headlineBox.Deflate(ScaleToScreenAndCanvas(2));
@@ -5276,12 +5277,12 @@ namespace Wisteria::GraphItems
         Label headline(GraphItemInfo{ _("DAYTON TIMES") }
                            .DPIScaling(GetDPIScaleFactor())
                            .Scaling(GetScaling())
-                           .Pen(wxNullPen));
+                           .Pen(sepLinePen)
+                           .Outline(false, false, true, false));
         headline.SetFontColor(ApplyColorOpacity(headline.GetFontColor()));
         headline.SetBoundingBox(headlineBox, dc, GetScaling());
         headline.Draw(dc);
         headlineBox.Offset(wxPoint{ 0, static_cast<int>(ScaleToScreenAndCanvas(1)) });
-        dc.DrawLine(headlineBox.GetBottomLeft(), headlineBox.GetBottomRight());
 
         // picture on the front page
         auto pictureBox{ frontPageRect };
@@ -5310,6 +5311,7 @@ namespace Wisteria::GraphItems
         columnTop.x += ScaleToScreenAndCanvas(1);
         const wxPoint columnBottom(columnTop.x,
                                    frontPageRect.GetBottom() - ScaleToScreenAndCanvas(2));
+        const wxDCPenChanger sepLinePenChanger{ dc, sepLinePen };
         dc.DrawLine(columnTop, columnBottom);
 
         // text on the right side
