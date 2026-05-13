@@ -1156,6 +1156,13 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveImage(const Wisteria::GraphItems::Image* im
         tmpl += L"}";
         }
 
+    // pen
+    const auto& pen = image->GetPen();
+    if (pen.IsOk() && pen != wxNullPen)
+        {
+        tmpl += L", \"pen\": " + SavePenToStr(pen);
+        }
+
     // size (from cached original values)
     const auto widthStr = image->GetPropertyTemplate(L"size.width");
     const auto heightStr = image->GetPropertyTemplate(L"size.height");
