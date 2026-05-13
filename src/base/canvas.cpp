@@ -439,6 +439,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 pdfDC.GetPdfDocument()->SetSubject(pdfOptions.m_subject);
                 pdfDC.GetPdfDocument()->SetKeywords(pdfOptions.m_keywords);
                 pdfDC.GetPdfDocument()->SetCompression(pdfOptions.m_compress);
+                pdfDC.GetPdfDocument()->SetCreator(wxTheApp->GetAppDisplayName());
 
                 pdfDC.StartPage();
                 // use the same formula as wxPdfDocument::BeginPage to get exact page pts,
