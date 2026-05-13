@@ -190,6 +190,13 @@ namespace Wisteria::Graphs
             m_columnDisplay = columnDisplay;
             }
 
+        /// @returns The column headers.
+        [[nodiscard]]
+        const std::vector<wxString>& GetColumnHeaders() const noexcept
+            {
+            return m_columnHeaders;
+            }
+
         /// @brief Sets the column headers to display above or below the columns.
         /// @details Syntax such as `@COLUMNNAME@` and `@COUNT@` can be
         ///     embedded in this string. (These expand to the column and

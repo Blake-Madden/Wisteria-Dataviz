@@ -155,6 +155,28 @@ namespace Wisteria::UI
                 }
             }
 
+        /** @returns The column labels (with any constant placeholders expanded).
+            @note Only supports two-level flow (From and To) right now.*/
+        [[nodiscard]]
+        std::vector<wxString> GetColumnHeaders() const
+            {
+            return { ExpandVariable(m_fromColumnLabel), ExpandVariable(m_toColumnLabel) };
+            }
+
+        /// @returns The raw "from" column label (possibly with constant placeholders).
+        [[nodiscard]]
+        const wxString& GetFromColumnLabelRaw() const noexcept
+            {
+            return m_fromColumnLabel;
+            }
+
+        /// @returns The raw "to" column label (possibly with constant placeholders).
+        [[nodiscard]]
+        const wxString& GetToColumnLabelRaw() const noexcept
+            {
+            return m_toColumnLabel;
+            }
+
         /// @brief Populates all dialog controls from an existing Sankey diagram.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -173,6 +195,8 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
         constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
+        constexpr static wxWindowID ID_FROM_COL_LABEL{ wxID_HIGHEST + 5 };
+        constexpr static wxWindowID ID_TO_COL_LABEL{ wxID_HIGHEST + 6 };
 
         wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_fromVarLabel{ nullptr };
@@ -191,6 +215,9 @@ namespace Wisteria::UI
         wxString m_fromWeightVariable;
         wxString m_toWeightVariable;
         wxString m_fromGroupVariable;
+
+        wxString m_fromColumnLabel{ L"@COLUMNNAME@" };
+        wxString m_toColumnLabel{ L"@COLUMNNAME@" };
 
         std::vector<wxString> m_datasetNames;
         };

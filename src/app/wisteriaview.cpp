@@ -5055,6 +5055,8 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
                       fromWeightCol, toWeightCol, fromGroupCol);
 
+        plot->SetColumnHeaders(dlg.GetColumnHeaders());
+
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
         plot->SetPropertyTemplate(L"variables.from", dlg.GetFromVariable());
         plot->SetPropertyTemplate(L"variables.to", dlg.GetToVariable());
@@ -5069,6 +5071,16 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
         if (!dlg.GetFromGroupVariable().empty())
             {
             plot->SetPropertyTemplate(L"variables.from-group", dlg.GetFromGroupVariable());
+            }
+
+        const auto colHeaders = dlg.GetColumnHeaders();
+        if (dlg.GetFromColumnLabelRaw() != colHeaders[0])
+            {
+            plot->SetPropertyTemplate(L"column-headers[0]", dlg.GetFromColumnLabelRaw());
+            }
+        if (dlg.GetToColumnLabelRaw() != colHeaders[1])
+            {
+            plot->SetPropertyTemplate(L"column-headers[1]", dlg.GetToColumnLabelRaw());
             }
 
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
@@ -5125,6 +5137,7 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
 
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
                       fromWeightCol, toWeightCol, fromGroupCol);
+        plot->SetColumnHeaders(dlg.GetColumnHeaders());
         dlg.ApplyAxisOverrides(*plot);
 
         // the dialog's variable/dataset getters return expanded values, so the
@@ -5145,6 +5158,11 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
                              oldExpanded(L"variables.to-weight"));
         CarryForwardProperty(graph, *plot, L"variables.from-group", dlg.GetFromGroupVariable(),
                              oldExpanded(L"variables.from-group"));
+
+        CarryForwardProperty(graph, *plot, L"column-headers[0]", dlg.GetFromColumnLabelRaw(),
+                             oldExpanded(L"column-headers[0]"));
+        CarryForwardProperty(graph, *plot, L"column-headers[1]", dlg.GetToColumnLabelRaw(),
+                             oldExpanded(L"column-headers[1]"));
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 

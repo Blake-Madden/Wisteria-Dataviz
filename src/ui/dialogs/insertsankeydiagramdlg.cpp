@@ -160,6 +160,28 @@ namespace Wisteria::UI
                      wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(chSizer, wxSizerFlags{}.Border());
 
+        // column labels
+        auto* clBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Column Labels"));
+        auto* clGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
+        clGrid->AddGrowableCol(1);
+
+        clGrid->Add(new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"From:")),
+                    wxSizerFlags{}.CenterVertical());
+        clGrid->Add(new wxTextCtrl(clBox->GetStaticBox(), ID_FROM_COL_LABEL, wxEmptyString,
+                                   wxDefaultPosition, wxDefaultSize, 0,
+                                   wxGenericValidator(&m_fromColumnLabel)),
+                    wxSizerFlags{ 1 }.Expand().CenterVertical());
+
+        clGrid->Add(new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"To:")),
+                    wxSizerFlags{}.CenterVertical());
+        clGrid->Add(new wxTextCtrl(clBox->GetStaticBox(), ID_TO_COL_LABEL, wxEmptyString,
+                                   wxDefaultPosition, wxDefaultSize, 0,
+                                   wxGenericValidator(&m_toColumnLabel)),
+                    wxSizerFlags{ 1 }.Expand().CenterVertical());
+
+        clBox->Add(clGrid, wxSizerFlags{ 1 }.Expand().Border());
+        optionsSizer->Add(clBox, wxSizerFlags{}.Expand().Border());
+
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -412,6 +434,18 @@ namespace Wisteria::UI
         m_toWeightVariable = sankey->GetPropertyTemplate(L"variables.to-weight");
         m_fromGroupVariable = sankey->GetPropertyTemplate(L"variables.from-group");
         UpdateVariableLabels();
+
+        // column labels
+        m_fromColumnLabel = sankey->GetPropertyTemplate(L"column-headers[0]");
+        if (m_fromColumnLabel.empty() && sankey->GetColumnHeaders().size() >= 1)
+            {
+            m_fromColumnLabel = sankey->GetColumnHeaders()[0];
+            }
+        m_toColumnLabel = sankey->GetPropertyTemplate(L"column-headers[1]");
+        if (m_toColumnLabel.empty() && sankey->GetColumnHeaders().size() >= 2)
+            {
+            m_toColumnLabel = sankey->GetColumnHeaders()[1];
+            }
 
         // flow shape
         m_flowShapeIndex = (sankey->GetFlowShape() == FlowShape::Jagged) ? 1 : 0;

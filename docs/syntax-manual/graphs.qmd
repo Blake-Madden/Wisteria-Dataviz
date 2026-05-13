@@ -527,7 +527,7 @@ Properties for `"sankey-diagram"` nodes:
   - `"as-header"`: Display the column's name as an axis header.
   - `"as-footer"`: Display the column's name as an axis footer.
   - `"no-display"`: Do not display the column's name.
-- "column-headers": If showing column headers, this is an array of strings to use as the column headers. \
+- `"column-headers"`: If showing column headers, this is an array of strings to use as the column headers. \
   User-defined constants (e.g., `"{{MaxFiscalYear}}"`) can be used in these strings, and they can also
   contain `@COLUMNNAME@` and `@COUNT@` to show the columns' names and observation counts.
 - `"flow-shape"`: A string specifying the shape of the streams going between the groups. \
