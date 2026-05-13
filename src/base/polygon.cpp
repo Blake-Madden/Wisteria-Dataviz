@@ -384,6 +384,11 @@ namespace Wisteria::GraphItems
                     // save current transform matrix state
                     gc->PushState();
 
+                    gc->SetPen(scaledPen);
+                    gc->SetBrush((IsSelected() && GetSelectionBrush().IsOk()) ?
+                                     GetSelectionBrush() :
+                                     GetBrush());
+
                     auto outlinePath = gc->CreatePath();
 
                     outlinePath.MoveToPoint(m_scaledPoints[0].x, m_scaledPoints[0].y);
