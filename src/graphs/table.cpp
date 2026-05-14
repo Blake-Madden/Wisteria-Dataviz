@@ -1741,6 +1741,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                                        GetPen(),
                 GetScaling());
             noteConnectionLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
+            // the connection line is always a broken line, regardless of the source
+            // pen's style; wxPENSTYLE_SHORT_DASH survives the width scaling that
+            // Lines::Draw applies, whereas wxPENSTYLE_DOT collapses to nothing
+            noteConnectionLines->GetPen().SetStyle(wxPENSTYLE_SHORT_DASH);
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
             if (auto gutterSide = DeduceGutterSide(note); gutterSide == Side::Right)
                 {

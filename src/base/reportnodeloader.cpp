@@ -512,16 +512,13 @@ namespace Wisteria
                 }
             cellAnnotation.m_bgColor =
                 m_reportBuilder.ConvertColor(annotation->GetProperty(L"background"));
+            // a connection-line pen comes only from an explicit "pen" property;
+            // otherwise it stays std::nullopt and the table's highlight pen is used
             if (annotation->HasProperty(L"pen"))
                 {
                 cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
                 m_reportBuilder.LoadPen(annotation->GetProperty(L"pen"),
                                         cellAnnotation.m_connectionLinePen.value());
-                }
-            else if (cellAnnotation.m_bgColor.IsOk())
-                {
-                cellAnnotation.m_connectionLinePen =
-                    wxPen(cellAnnotation.m_bgColor, 1, wxPENSTYLE_SHORT_DASH);
                 }
 
             const auto cellsNode = annotation->GetProperty(L"cells");
