@@ -1211,7 +1211,8 @@ namespace Wisteria::UI
 
         grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Annotation text:")),
                   wxSizerFlags{}.CenterVertical());
-        auto* valueCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_value);
+        auto* valueCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_value, wxDefaultPosition,
+                                         dlg.FromDIP(wxSize{ -1, 100 }), wxTE_MULTILINE);
         grid->Add(valueCtrl, wxSizerFlags{}.Expand());
 
         wxArrayString sideChoices;
@@ -1285,7 +1286,7 @@ namespace Wisteria::UI
         top->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
         top->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags{}.Expand().Border());
         dlg.SetSizerAndFit(top);
-        dlg.SetMinSize(dlg.FromDIP(wxSize{ 360, -1 }));
+        dlg.SetMinSize(dlg.FromDIP(wxSize{ 500, -1 }));
         dlg.Fit();
 
         if (dlg.ShowModal() != wxID_OK)
