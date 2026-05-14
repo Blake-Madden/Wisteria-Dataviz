@@ -41,7 +41,7 @@ namespace Wisteria::Colors
              // the color for the min value
              Colors::ColorBrewer::GetColor(Colors::Color::Blue),
              // the color for the max value (because it's the last color added)
-             ColorBrewer::GetColor(Color::Red)
+             Colors::ColorBrewer::GetColor(Colors::Color::Red)
              });
 
          std::vector<double> data =
@@ -217,6 +217,32 @@ namespace Wisteria::Colors
         template<typename T>
         [[nodiscard]]
         std::vector<wxColour> BrewColors(const std::initializer_list<T>& values)
+            {
+            std::vector<double> validColorData;
+            std::copy_if(values.cbegin(), values.cend(), std::back_inserter(validColorData),
+                         [](auto x) { return std::isfinite(x); });
+            m_range.first = *std::ranges::min_element(std::as_const(validColorData));
+            m_range.second = *std::ranges::max_element(std::as_const(validColorData));
+
+            std::vector<wxColour> colors;
+            colors.reserve(values.size());
+            for (const auto& value : values)
+                {
+                colors.push_back(BrewColor(value));
+                }
+            return colors;
+            }
+
+        /** @brief Converts a range of numbers into a sequence of color values.
+            @details The color values for each number represent where it falls on the color scale,
+                relative to the overall range of values.
+            @param values The data to convert into a series of colors.
+            @returns A vector of colors respective to each value in the data.
+            @note Any NaN values in the range will be mapped to an invalid `wxColour`,
+                so be sure to call `IsOk()` when using the returned colors.*/
+        template<typename T>
+        [[nodiscard]]
+        std::vector<wxColour> BrewColors(const std::vector<T>& values)
             {
             std::vector<double> validColorData;
             std::copy_if(values.cbegin(), values.cend(), std::back_inserter(validColorData),

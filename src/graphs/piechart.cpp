@@ -3295,6 +3295,37 @@ namespace Wisteria::Graphs
 
         // note that we do NOT clear outerLabels or its smallest font size,
         // both rings use these
+        size_t sliceCounter{ 0 };
+        const auto cheeseColors = [this]()
+        {
+            if (GetInnerPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            else
+                {
+                const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
+                Wisteria::Colors::ColorBrewer cb;
+                cb.SetColorScale({ GetCheeseColor(), GetToastedCheeseColor() });
+                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+                }
+        }();
+        const auto cookieColors = [this]()
+        {
+            if (GetInnerPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            else
+                {
+                const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
+                Wisteria::Colors::ColorBrewer cb;
+                cb.SetColorScale(
+                    { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
+                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+                }
+        }();
+
         for (auto& innerPie : GetInnerPie())
             {
             std::optional<wxColour> sliceColorToUse{ sliceColor };
@@ -3333,7 +3364,7 @@ namespace Wisteria::Graphs
                 GetPieStyle() == PieStyle::PepperoniPizza ||
                 GetPieStyle() == PieStyle::HawaiianPizza)
                 {
-                sliceBrushToUse.SetColour(GetCheeseColor());
+                sliceBrushToUse.SetColour(cheeseColors[sliceCounter]);
                 sliceOutlinePen.SetColour(*wxBLACK);
                 }
             else if (GetPieStyle() == PieStyle::CoffeeRing)
@@ -3353,7 +3384,7 @@ namespace Wisteria::Graphs
                 }
             else if (GetPieStyle() == PieStyle::ChocolateChipCookie)
                 {
-                sliceBrushToUse.SetColour(GetCookieFillColor());
+                sliceBrushToUse.SetColour(cookieColors[sliceCounter]);
                 sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
                 }
 
@@ -3444,6 +3475,7 @@ namespace Wisteria::Graphs
 
             queueObjectForOffsetting(std::move(pSlice));
             startAngle += innerPie.m_percent * 360;
+            ++sliceCounter;
             }
 
         // make the inner ring center labels have a common font size
@@ -3469,6 +3501,37 @@ namespace Wisteria::Graphs
         std::vector<std::unique_ptr<GraphItems::Label>> middleLabels;
         double startAngle{ 0.0 };
         wxPen sliceOutlinePen{ GetPen() };
+
+        const auto cheeseColors = [this]()
+        {
+            if (GetOuterPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            else
+                {
+                const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
+                Wisteria::Colors::ColorBrewer cb;
+                cb.SetColorScale({ GetCheeseColor(), GetToastedCheeseColor() });
+                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+                }
+        }();
+        const auto cookieColors = [this]()
+        {
+            if (GetOuterPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            else
+                {
+                const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
+                Wisteria::Colors::ColorBrewer cb;
+                cb.SetColorScale(
+                    { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
+                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+                }
+        }();
+
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
             const std::optional<wxColour> sliceColor =
@@ -3488,7 +3551,7 @@ namespace Wisteria::Graphs
                 GetPieStyle() == PieStyle::PepperoniPizza ||
                 GetPieStyle() == PieStyle::HawaiianPizza)
                 {
-                sliceBrush.SetColour(GetCheeseColor());
+                sliceBrush.SetColour(cheeseColors[i]);
                 sliceOutlinePen.SetColour(*wxBLACK);
                 }
             else if (GetPieStyle() == PieStyle::CoffeeRing)
@@ -3508,7 +3571,7 @@ namespace Wisteria::Graphs
                 }
             else if (GetPieStyle() == PieStyle::ChocolateChipCookie)
                 {
-                sliceBrush.SetColour(GetCookieFillColor());
+                sliceBrush.SetColour(cookieColors[i]);
                 sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(

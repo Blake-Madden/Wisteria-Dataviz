@@ -1245,6 +1245,13 @@ namespace Wisteria::Graphs
             {
             return { 255, 235, 190 };
             }
+
+        /// @returns Mozzarella (toasted).
+        [[nodiscard]]
+        static wxColour GetToastedCheeseColor()
+            {
+            return { 215, 185, 120 };
+            }
         
         /// @returns A light coffee stain.
         [[nodiscard]]
