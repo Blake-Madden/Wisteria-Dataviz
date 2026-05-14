@@ -172,54 +172,50 @@ include(cmake/ListFiles.cmake)
 # Build Wisteria library
 ########################
 
-# Add wxPDFDocument submodule
-option(INCLUDE_PDF "Include PDF export support (wxPDFDocument)" OFF)
-
 include(${CMAKE_SOURCE_DIR}/cmake/includes/libfiles.cmake)
-if(INCLUDE_PDF)
-    include(${CMAKE_SOURCE_DIR}/cmake/includes/wxpdf.cmake)
-    list(APPEND WISTERIA_SRC ${WXPDF_SRC})
-    # Suppress warnings from wxPDFDocument
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
-        set_source_files_properties(${WXPDF_SRC} PROPERTIES
-            COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter")
-    elseif(MSVC)
-        # /wd4189 — local variable initialized but not referenced
-        # /wd4100 — unreferenced formal parameter
-        # /wd4101 — unreferenced local variable
-        # /wd4267 — conversion from 'size_t' to 'uint32_t', possible loss of data
-        set_source_files_properties(${WXPDF_SRC} PROPERTIES
-            COMPILE_OPTIONS "/wd4189;/wd4100;/wd4101;/wd4267")
-    endif()
+
+set(WISTERIA_LIB wisteria)
+
+# Add wxPDFDocument submodule
+include(${CMAKE_SOURCE_DIR}/cmake/includes/wxpdf.cmake)
+list(APPEND WISTERIA_SRC ${WXPDF_SRC})
+# Suppress warnings from wxPDFDocument
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
+    set_source_files_properties(${WXPDF_SRC} PROPERTIES
+        COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter")
+elseif(MSVC)
+    # /wd4189 — local variable initialized but not referenced
+    # /wd4100 — unreferenced formal parameter
+    # /wd4101 — unreferenced local variable
+    # /wd4267 — conversion from 'size_t' to 'uint32_t', possible loss of data
+    set_source_files_properties(${WXPDF_SRC} PROPERTIES
+        COMPILE_OPTIONS "/wd4189;/wd4100;/wd4101;/wd4267")
 endif()
 
-set(WISTIER_LIB wisteria)
-add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
-if(INCLUDE_PDF)
-    target_include_directories(${WISTIER_LIB} PUBLIC
+add_library(${WISTERIA_LIB} STATIC ${WISTERIA_SRC})
+    target_include_directories(${WISTERIA_LIB} PUBLIC
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/include
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/include
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/brotli/include
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/zint/backend
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/zint/backend/fonts)
-endif()
+
 if(WIN32 OR APPLE)
-    target_link_libraries(${WISTIER_LIB} PUBLIC ${wxWidgets_LIBRARIES})
+    target_link_libraries(${WISTERIA_LIB} PUBLIC ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     # Add OpenMP for multithreading
     find_package(OpenMP)
     find_library(TBB_LIB tbb)
-    target_link_libraries(${WISTIER_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
+    target_link_libraries(${WISTERIA_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
 endif()
 
 # Define wxDEBUG_LEVEL consistently for all platforms
-target_compile_definitions(${WISTIER_LIB} PUBLIC
-    wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL}
-    $<$<BOOL:${INCLUDE_PDF}>:INCLUDE_PDF>)
+target_compile_definitions(${WISTERIA_LIB} PUBLIC
+    wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 if(MSVC)
-    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
+    target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
@@ -235,31 +231,31 @@ if(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    target_compile_options(${WISTIER_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211 /openmp /permissive- /sdl
+    target_compile_options(${WISTERIA_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211 /openmp /permissive- /sdl
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 elseif(MINGW OR MSYS)
-    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
+    target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
             $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(APPLE)
-    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXOSX__
+    target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXOSX__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            # Security hardening (only for GCC and Clang)
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(UNIX)
-    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXGTK__
+    target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
-    target_link_options(${WISTIER_LIB} PUBLIC
+    target_link_options(${WISTERIA_LIB} PUBLIC
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wl,-z,relro,-z,now>)
 endif()
 
@@ -289,7 +285,7 @@ set_target_properties(${DEMO_APP} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/demo")
 
 # Link required libraries to the executable
-target_link_libraries(${DEMO_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
+target_link_libraries(${DEMO_APP} ${WISTERIA_LIB} ${wxWidgets_LIBRARIES})
 
 # Copy resources and datasets into build folder
 message(STATUS "Copying demo resources...")
@@ -337,10 +333,10 @@ set_target_properties(${WISTERIA_APP} PROPERTIES
 
 # Link required libraries to the executable
 if(WIN32 OR APPLE)
-    target_link_libraries(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
+    target_link_libraries(${WISTERIA_APP} ${WISTERIA_LIB} ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     find_library(TBB_LIB tbb)
-    target_link_libraries(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES} ${TBB_LIB})
+    target_link_libraries(${WISTERIA_APP} ${WISTERIA_LIB} ${wxWidgets_LIBRARIES} ${TBB_LIB})
 endif()
 
 # Zip up the res folder into res.wad

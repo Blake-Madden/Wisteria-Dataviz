@@ -13,11 +13,9 @@
 #include "reportprintout.h"
 #include <memory>
 #include <utility>
+#include <wx/paper.h>
+#include <wx/pdfdc.h>
 #include <wx/xrc/xmlres.h>
-#ifdef INCLUDE_PDF
-    #include <wx/paper.h>
-    #include <wx/pdfdc.h>
-#endif
 
 wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
@@ -229,12 +227,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         descriptions.Add(openTag + _DT(L"Web Picture") + closeTag +
                          _(L"A replacement for JPEG, PNG, and GIF file formats "
                            "which supports both lossy and lossless compression."));
-#ifdef INCLUDE_PDF
         choices.Add(L"PDF");
         descriptions.Add(openTag + _DT(L"Portable Document Format") + closeTag +
                          _(L"A vector-based document format that preserves text "
                            "and graphics at any scale."));
-#endif
         UI::RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxString{},
                                        _(L"Image formats:"), _(L"Export Image"), choices,
                                        descriptions);
@@ -269,11 +265,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         case 7:
             fileFilter = _DT(L"WebP (*.webp)|*.webp");
             break;
-#ifdef INCLUDE_PDF
         case 8:
             fileFilter = L"PDF (*.pdf)|*.pdf";
             break;
-#endif
         default:
             fileFilter = L"PNG (*.png)|*.png";
             };
@@ -315,11 +309,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             case 7:
                 filePath.SetExt(L"webp");
                 break;
-#ifdef INCLUDE_PDF
             case 8:
                 filePath.SetExt(L"pdf");
                 break;
-#endif
             default:
                 filePath.SetExt(L"png");
                 };
@@ -351,7 +343,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         if (ext.CmpNoCase(L"pdf") == 0)
             {
-#ifdef INCLUDE_PDF
             UI::PdfExportDlg pdfOptionsDlg(this, GetPrinterSettings(), pdfOptions);
             pdfOptionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
             if (pdfOptionsDlg.ShowModal() != wxID_OK)
@@ -360,7 +351,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             SetPrinterSettings(pdfOptionsDlg.GetPrintData());
             pdfOptions = pdfOptionsDlg.GetOptions();
-#endif
             }
         // no options for SVG (since size doesn't matter),
         // so don't bother showing the dialog for that
@@ -423,7 +413,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             return true;
             }
 
-#ifdef INCLUDE_PDF
         if (filePath.GetExt().CmpNoCase(L"pdf") == 0)
             {
             // save canvas state before resizing layout for PDF
@@ -486,7 +475,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             CalcAllSizes(gdc);
             return true;
             }
-#endif
 
         wxString ext{ filePath.GetExt() };
         const wxBitmapType imageType = GraphItems::Image::GetImageFileTypeFromExtension(ext);

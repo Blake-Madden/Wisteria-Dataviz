@@ -8,11 +8,8 @@
 
 #include "pdfreportprintout.h"
 #include "../app/wisteriaapp.h"
-
-#ifdef INCLUDE_PDF
-
-    #include <wx/paper.h>
-    #include <wx/pdfdc.h>
+#include <wx/paper.h>
+#include <wx/pdfdc.h>
 
 //------------------------------------------------------
 Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
@@ -176,5 +173,3 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
 
     pdfDC.EndDoc();
     }
-
-#endif // INCLUDE_PDF

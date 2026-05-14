@@ -17,8 +17,6 @@
 
 namespace Wisteria
     {
-#ifdef INCLUDE_PDF
-
     /// @brief Exports a collection of canvases as pages into a single multi-page PDF file.
     /// @details Each canvas is rendered into its own page using @c wxPdfDC.
     ///     Page dimensions are derived from the paper size stored in each canvas's
@@ -33,7 +31,6 @@ namespace Wisteria
         ReportPDFExport(const std::vector<Canvas*>& canvases, const wxString& filePath,
                         const PdfExportOptions& options = PdfExportOptions{});
         };
-#endif // INCLUDE_PDF
     } // namespace Wisteria
 
 /** @}*/

@@ -7,11 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriaview.h"
+#include "../base/pdfreportprintout.h"
 #include "../base/reportprintout.h"
 #include "../base/svgreportprintout.h"
-#ifdef INCLUDE_PDF
-    #include "../base/pdfreportprintout.h"
-#endif
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/insertboxplotdlg.h"
@@ -127,9 +125,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
 
     // bind PDF export button
-#ifdef INCLUDE_PDF
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
-#endif
 
     // bind project settings button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnProjectSettings, this,
@@ -755,7 +751,6 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
     {
-#ifdef INCLUDE_PDF
     if (m_pages.empty())
         {
         return;
@@ -799,7 +794,6 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         {
         GetDocument()->Modify(true);
         }
-#endif
     }
 
 //-------------------------------------------

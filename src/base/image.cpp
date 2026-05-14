@@ -12,10 +12,8 @@
 #include <algorithm>
 #include <array>
 #include <wx/dcprint.h>
+#include <wx/pdfdc.h>
 #include <wx/rawbmp.h>
-#ifdef INCLUDE_PDF
-    #include <wx/pdfdc.h>
-#endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Image, Wisteria::GraphItems::GraphItemBase);
 
