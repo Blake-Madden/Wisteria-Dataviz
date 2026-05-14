@@ -1224,11 +1224,18 @@ namespace Wisteria::UI
         sideCtrl->SetSelection(entry.m_sideRight ? 0 : 1);
         grid->Add(sideCtrl, wxSizerFlags{}.Expand());
 
-        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Background color:")),
-                  wxSizerFlags{}.CenterVertical());
+        // a colour picker has no "no colour" state, so gate it with a checkbox;
+        // when unchecked, the entry's background color is left invalid (none)
+        auto* bgCheck = new wxCheckBox(&dlg, wxID_ANY, _(L"Background color:"));
+        bgCheck->SetValue(entry.m_bgColor.IsOk());
+        grid->Add(bgCheck, wxSizerFlags{}.CenterVertical());
         auto* bgPicker = new wxColourPickerCtrl(
             &dlg, wxID_ANY, entry.m_bgColor.IsOk() ? entry.m_bgColor : *wxWHITE);
+        bgPicker->Enable(entry.m_bgColor.IsOk());
         grid->Add(bgPicker, wxSizerFlags{});
+
+        bgCheck->Bind(wxEVT_CHECKBOX, [bgCheck, bgPicker]([[maybe_unused]] wxCommandEvent&)
+                      { bgPicker->Enable(bgCheck->GetValue()); });
 
         wxArrayString modeChoices;
         modeChoices.Add(_(L"Column outliers"));
@@ -1295,8 +1302,7 @@ namespace Wisteria::UI
             }
         entry.m_value = valueCtrl->GetValue().Trim().Trim(false);
         entry.m_sideRight = (sideCtrl->GetSelection() == 0);
-        const wxColour pickedColor{ bgPicker->GetColour() };
-        entry.m_bgColor = pickedColor;
+        entry.m_bgColor = bgCheck->GetValue() ? bgPicker->GetColour() : wxColour{};
         entry.m_cellMode = static_cast<AnnotationEntry::CellMode>(modeCtrl->GetSelection());
         entry.m_columnName = colCtrl->GetValue().Trim().Trim(false);
         entry.m_topN = nCtrl->GetValue();
