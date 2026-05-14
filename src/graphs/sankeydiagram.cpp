@@ -676,7 +676,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(1))
                 .ChildAlignment(RelativeAlignment::FlushRight);
-            GetLeftYAxis().GetHeader().EnableMarkup(true);
+            GetRightYAxis().GetHeader().EnableMarkup(true);
 
             GetLeftYAxis().GetFooter().SetText(wxString{});
             GetRightYAxis().GetFooter().SetText(wxString{});
