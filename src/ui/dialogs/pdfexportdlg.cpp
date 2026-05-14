@@ -75,11 +75,9 @@ namespace Wisteria::UI
         topSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 
         // right column: preview
-        auto* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
+        auto* previewSizer = new wxBoxSizer(wxVERTICAL);
         const wxSize previewBounds = FromDIP(wxSize{ 150, 150 });
-        m_previewPanel =
-            new wxPanel(previewSizer->GetStaticBox(), wxID_ANY, wxDefaultPosition, previewBounds);
-        m_previewPanel->SetBackgroundColour(*wxLIGHT_GREY);
+        m_previewPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, previewBounds);
         previewSizer->Add(m_previewPanel, wxSizerFlags{}.Center());
         previewSizer->SetMinSize(previewBounds);
         topSizer->Add(previewSizer, wxSizerFlags{});
@@ -202,24 +200,30 @@ namespace Wisteria::UI
         wxPaintDC pdc(m_previewPanel);
         wxGCDC dc(pdc);
 
-        const wxColour bgColour = m_previewPanel->GetBackgroundColour();
-        dc.SetBackground(wxBrush{ bgColour });
-        dc.Clear();
+        const wxRect drawArea{ wxPoint{ 0, 0 }, dc.GetSize() };
+        wxRect pageArea{ drawArea };
+        pageArea.Deflate(FromDIP(5));
+        pageArea.SetTopLeft(drawArea.GetTopLeft());
+        wxRect shadowArea{ pageArea };
+        shadowArea.Offset(drawArea.GetRight() - pageArea.GetRight(),
+                          drawArea.GetBottom() - pageArea.GetBottom());
+        dc.SetBrush(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::DimGray));
+        dc.DrawRectangle(shadowArea);
 
-        const wxSize panelSize = m_previewPanel->GetClientSize();
-        constexpr int margin = 15;
-        const int availWidth = panelSize.GetWidth() - (margin * 2);
-        const int availHeight = panelSize.GetHeight() - (margin * 2);
+        const wxColour bgColour =
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AntiqueWhite);
+        dc.SetBrush(wxBrush{ bgColour });
+        dc.SetPen(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::DarkGray));
+        dc.DrawRectangle(pageArea);
+
+        constexpr int margin{ 15 };
+        const int availWidth = pageArea.GetSize().GetWidth() - (margin * 2);
+        const int availHeight = pageArea.GetSize().GetHeight() - (margin * 2);
 
         if (availWidth <= 0 || availHeight <= 0)
             {
             return;
             }
-
-        // draw a stylized "report" page
-        dc.SetPen(*wxTRANSPARENT_PEN);
-        dc.SetBrush(*wxWHITE_BRUSH);
-        dc.DrawRectangle(0, 0, panelSize.GetWidth(), panelSize.GetHeight());
 
         // pie chart occupies roughly half the available height
         const int pieDiameter = std::min(availWidth, availHeight / 2);
