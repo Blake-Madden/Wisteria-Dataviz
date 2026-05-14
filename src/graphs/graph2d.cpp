@@ -420,6 +420,18 @@ namespace Wisteria::Graphs
         // make space for the titles
         if (!GetTitle().GetText().empty() && GetTitle().IsShown())
             {
+            // if using a background color, stretch it out to the width of the graph area
+            // so that it acts as a banner; otherwise clear any stale minimum width
+            // from a previous (e.g., wider) layout pass
+            if (GetTitle().GetFontBackgroundColor().IsOk() &&
+                !GetTitle().GetFontBackgroundColor().IsTransparent())
+                {
+                GetTitle().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
+                }
+            else
+                {
+                GetTitle().SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+                }
             auto titleRect = GetTitle().GetBoundingBox(dc);
             // if too wide, shrink down its scaling
             if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
@@ -429,13 +441,6 @@ namespace Wisteria::Graphs
                 GetTitle().SetScaling(GetTitle().GetScaling() * rescaleFactor);
                 titleRect = GetTitle().GetBoundingBox(dc);
                 }
-            // if using a background color, stretch it out to the width of the graph area
-            // so that it acts as a banner
-            if (GetTitle().GetFontBackgroundColor().IsOk() &&
-                !GetTitle().GetFontBackgroundColor().IsTransparent())
-                {
-                GetTitle().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
-                }
 
             m_plotRect.y += titleRect.GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
@@ -443,6 +448,15 @@ namespace Wisteria::Graphs
             }
         if (!GetSubtitle().GetText().empty() && GetSubtitle().IsShown())
             {
+            if (GetSubtitle().GetFontBackgroundColor().IsOk() &&
+                !GetSubtitle().GetFontBackgroundColor().IsTransparent())
+                {
+                GetSubtitle().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
+                }
+            else
+                {
+                GetSubtitle().SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+                }
             auto titleRect = GetSubtitle().GetBoundingBox(dc);
             // if too wide, shrink down its scaling
             if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
@@ -451,11 +465,6 @@ namespace Wisteria::Graphs
                     safe_divide<double>(GetBoundingBox(dc).GetWidth(), titleRect.GetWidth());
                 GetSubtitle().SetScaling(GetSubtitle().GetScaling() * rescaleFactor);
                 titleRect = GetSubtitle().GetBoundingBox(dc);
-                }
-            if (GetSubtitle().GetFontBackgroundColor().IsOk() &&
-                !GetSubtitle().GetFontBackgroundColor().IsTransparent())
-                {
-                GetSubtitle().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
                 }
 
             m_plotRect.y += titleRect.GetHeight();
@@ -476,6 +485,15 @@ namespace Wisteria::Graphs
         // and caption at the bottom
         if (!GetCaption().GetText().empty() && GetCaption().IsShown())
             {
+            if (GetCaption().GetFontBackgroundColor().IsOk() &&
+                !GetCaption().GetFontBackgroundColor().IsTransparent())
+                {
+                GetCaption().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
+                }
+            else
+                {
+                GetCaption().SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+                }
             auto titleRect = GetCaption().GetBoundingBox(dc);
             // if too wide, shrink down its scaling
             if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
@@ -484,11 +502,6 @@ namespace Wisteria::Graphs
                     safe_divide<double>(GetBoundingBox(dc).GetWidth(), titleRect.GetWidth());
                 GetCaption().SetScaling(GetCaption().GetScaling() * rescaleFactor);
                 titleRect = GetCaption().GetBoundingBox(dc);
-                }
-            if (GetCaption().GetFontBackgroundColor().IsOk() &&
-                !GetCaption().GetFontBackgroundColor().IsTransparent())
-                {
-                GetCaption().SetMinimumUserSizeDIPs(dc.ToDIP(m_rect.GetWidth()), std::nullopt);
                 }
 
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
