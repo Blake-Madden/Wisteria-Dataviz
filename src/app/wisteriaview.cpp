@@ -3004,6 +3004,15 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
         // re-apply procedural features from carried-forward templates
         m_reportBuilder.ApplyTableFeatures(table);
 
+        // side annotations live in the gutters beside the table; a left- or
+        // right-aligned table only has one gutter, so Table::DeduceGutterSide()
+        // collapses every note into it. override the page alignment to centered
+        // so both gutters have room and the requested annotation side is honored
+        if (!annotations.empty())
+            {
+            table->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered);
+            }
+
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
@@ -3273,6 +3282,15 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
         // (alternate-row-color is applied here, in the correct order -
         // before row additions and aggregates)
         m_reportBuilder.ApplyTableFeatures(table);
+
+        // side annotations live in the gutters beside the table; a left- or
+        // right-aligned table only has one gutter, so Table::DeduceGutterSide()
+        // collapses every note into it. override the page alignment to centered
+        // so both gutters have room and the requested annotation side is honored
+        if (!editAnnotations.empty())
+            {
+            table->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered);
+            }
 
         // apply dialog-driven formatting after procedural features,
         // since aggregates and row additions change the table structure
