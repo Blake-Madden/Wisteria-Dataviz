@@ -117,6 +117,8 @@ namespace Wisteria::UI
                                    TransferDataFromWindow();
                                    m_facialHairLabel->Enable(m_gender == 1);
                                    m_facialHairChoice->Enable(m_gender == 1);
+                                   m_lipstickColorLabel->Enable(m_gender == 0);
+                                   m_lipstickColorPicker->Enable(m_gender == 0);
                                    Refresh();
                                });
             }
@@ -139,17 +141,6 @@ namespace Wisteria::UI
             hairStyleChoice->Append(_(L"Long & curly"));
             appearanceSizer->Add(hairStyleChoice);
             }
-
-        // facial hair
-        m_facialHairLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Facial hair:"));
-        appearanceSizer->Add(m_facialHairLabel, wxSizerFlags{}.CenterVertical());
-        m_facialHairChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                          0, nullptr, 0, wxGenericValidator(&m_facialHair));
-        m_facialHairChoice->Append(_(L"Clean shaven"));
-        m_facialHairChoice->Append(_(L"Five o'clock shadow"));
-        m_facialHairLabel->Enable(m_gender == 1);
-        m_facialHairChoice->Enable(m_gender == 1);
-        appearanceSizer->Add(m_facialHairChoice);
 
         // skin color range (lighter and darker side by side)
         appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Skin color:")),
@@ -179,6 +170,37 @@ namespace Wisteria::UI
         appearanceSizer->Add(m_hairColorPicker);
 
         optionsSizer->Add(appearanceSizer, wxSizerFlags{}.Border());
+
+        // cosmetic options (gender-specific)
+        auto* cosmeticBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Cosmetic"));
+        auto* cosmeticGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        // facial hair
+        m_facialHairLabel =
+            new wxStaticText(cosmeticBox->GetStaticBox(), wxID_ANY, _(L"Facial hair:"));
+        cosmeticGrid->Add(m_facialHairLabel, wxSizerFlags{}.CenterVertical());
+        m_facialHairChoice =
+            new wxChoice(cosmeticBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                         nullptr, 0, wxGenericValidator(&m_facialHair));
+        m_facialHairChoice->Append(_(L"Clean shaven"));
+        m_facialHairChoice->Append(_(L"Five o'clock shadow"));
+        m_facialHairLabel->Enable(m_gender == 1);
+        m_facialHairChoice->Enable(m_gender == 1);
+        cosmeticGrid->Add(m_facialHairChoice);
+
+        // lipstick color (female only)
+        m_lipstickColorLabel =
+            new wxStaticText(cosmeticBox->GetStaticBox(), wxID_ANY, _(L"Lipstick color:"));
+        cosmeticGrid->Add(m_lipstickColorLabel, wxSizerFlags{}.CenterVertical());
+        m_lipstickColorPicker =
+            new wxColourPickerCtrl(cosmeticBox->GetStaticBox(), wxID_ANY, wxColour{ 178, 34, 34 });
+        m_lipstickColorLabel->Enable(m_gender == 0);
+        m_lipstickColorPicker->Enable(m_gender == 0);
+        cosmeticGrid->Add(m_lipstickColorPicker);
+
+        cosmeticBox->Add(cosmeticGrid, wxSizerFlags{}.Border());
+        optionsSizer->Add(cosmeticBox, wxSizerFlags{}.Border().Expand());
 
         // show labels
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels (from ID column)"),
@@ -520,6 +542,8 @@ namespace Wisteria::UI
         m_gender = (chernoff->GetGender() == Gender::Male) ? 1 : 0;
         m_facialHairLabel->Enable(m_gender == 1);
         m_facialHairChoice->Enable(m_gender == 1);
+        m_lipstickColorLabel->Enable(m_gender == 0);
+        m_lipstickColorPicker->Enable(m_gender == 0);
 
         switch (chernoff->GetHairStyle())
             {
@@ -562,6 +586,7 @@ namespace Wisteria::UI
         m_skinColorDarkerPicker->SetColour(chernoff->GetFaceColor());
         m_eyeColorPicker->SetColour(chernoff->GetEyeColor());
         m_hairColorPicker->SetColour(chernoff->GetHairColor());
+        m_lipstickColorPicker->SetColour(chernoff->GetLipstickColor());
 
         m_showLabels = chernoff->IsShowingLabels();
 

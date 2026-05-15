@@ -266,14 +266,14 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /// @returns The hair style (female faces only).
+        /// @returns The hair style.
         [[nodiscard]]
         HairStyle GetHairStyle() const noexcept
             {
             return m_hairStyle;
             }
 
-        /// @brief Sets the hair style (female faces only).
+        /// @brief Sets the hair style.
         /// @param style The hair style to use.
         void SetHairStyle(const HairStyle style) noexcept { m_hairStyle = style; }
 
@@ -412,11 +412,11 @@ namespace Wisteria::Graphs
             /// @param color The eye color.
             void SetEyeColor(const wxColour& color) noexcept { m_eyeColor = color; }
 
-            /// @brief Sets the lipstick color (female faces only).
+            /// @brief Sets the lipstick color.
             /// @param color The lipstick color.
             void SetLipstickColor(const wxColour& color) noexcept { m_lipstickColor = color; }
 
-            /// @brief Sets the facial hair style (male faces only).
+            /// @brief Sets the facial hair style.
             /// @param style The facial hair style.
             void SetFacialHair(FacialHair style) noexcept { m_facialHair = style; }
 

@@ -2583,6 +2583,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         plot->SetFacialHair(dlg.GetFacialHair());
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
+        plot->SetLipstickColor(dlg.GetLipstickColor());
         plot->ShowLabels(dlg.GetShowLabels());
 
         plot->SetPropertyTemplate(L"enhanced-legend",
@@ -3892,6 +3893,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         plot->SetFacialHair(dlg.GetFacialHair());
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
+        plot->SetLipstickColor(dlg.GetLipstickColor());
         plot->ShowLabels(dlg.GetShowLabels());
 
         plot->SetPropertyTemplate(L"enhanced-legend",

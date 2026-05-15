@@ -100,6 +100,13 @@ namespace Wisteria::UI
             return m_eyeColorPicker->GetColour();
             }
 
+        /// @returns The selected lipstick color (only meaningful for female faces).
+        [[nodiscard]]
+        wxColour GetLipstickColor() const
+            {
+            return m_lipstickColorPicker->GetColour();
+            }
+
         /// @returns The selected hair color.
         [[nodiscard]]
         wxColour GetHairColor() const
@@ -165,6 +172,8 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_skinColorDarkerPicker{ nullptr };
         wxColourPickerCtrl* m_eyeColorPicker{ nullptr };
         wxColourPickerCtrl* m_hairColorPicker{ nullptr };
+        wxStaticText* m_lipstickColorLabel{ nullptr };
+        wxColourPickerCtrl* m_lipstickColorPicker{ nullptr };
 
         // feature-to-variable mappings (indexed by FeatureId)
         std::map<Graphs::ChernoffFacesPlot::FeatureId, wxString> m_featureVariables;
