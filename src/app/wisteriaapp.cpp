@@ -145,6 +145,13 @@ void WisteriaApp::LoadInterface()
                                  {
                                  GetDocManager()->CreateDocument(event.GetString(), wxDOC_SILENT);
                                  }
+                             else if (wxStartPage::IsBrowseId(event.GetId()))
+                                 {
+                                     {
+                                     wxCommandEvent openEvent(wxEVT_MENU, wxID_OPEN);
+                                     GetMainFrame()->ProcessWindowEvent(openEvent);
+                                     }
+                                 }
                              else if (wxStartPage::IsFileListClearId(event.GetId()))
                                  {
                                  ClearFileHistoryMenu();
@@ -231,6 +238,7 @@ void WisteriaApp::LoadInterface()
         GetMainFrame()->Maximize();
         GetMainFrame()->SetSize(GetMainFrame()->GetSize());
         }
+    m_startPage->SetFocus();
     GetMainFrame()->Show(true);
     }
 
