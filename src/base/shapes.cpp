@@ -109,9 +109,14 @@ namespace Wisteria::GraphItems
 
         const auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
-        // keep drawing area inside the full area
-        drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
-        drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
+        // keep drawing area inside the full area, maintaining aspect ratio
+        if (drawRect.GetWidth() > bBox.GetWidth() || drawRect.GetHeight() > bBox.GetHeight())
+            {
+            const double scale =
+                std::min(safe_divide<double>(bBox.GetWidth(), drawRect.GetWidth()),
+                         safe_divide<double>(bBox.GetHeight(), drawRect.GetHeight()));
+            drawRect.SetSize(drawRect.GetSize() * scale);
+            }
 
         // position the shape inside its (possibly) larger box
         wxPoint shapeTopLeftCorner(bBox.GetLeftTop());
@@ -396,23 +401,38 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger brushGuard{ dc,
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
+        // if small, then just draw a simple circle
+        if (rect.GetWidth() <= ScaleToScreenAndCanvas(10))
+            {
+            const wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
+            const wxDCBrushChanger bc(
+                dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Sunglow)));
+            dc.DrawEllipse(rect);
+            return;
+            }
+
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for sun icon!");
         if (gc != nullptr)
             {
+            gc->PushState();
+            gc->Translate(rect.x, rect.y);
+
+            const wxRect localRect(0, 0, rect.width, rect.height);
             // a sun with a sunset (deeper orange) color blended near the bottom
             gc->SetPen(wxColour{ 0, 0, 0, 0 });
             auto sunBrush = gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, 0), GetXPosFromLeft(rect, 1.5),
-                GetYPosFromTop(rect, 1.5),
+                GetXPosFromLeft(localRect, 0), GetYPosFromTop(localRect, 0),
+                GetXPosFromLeft(localRect, 1.5), GetYPosFromTop(localRect, 1.5),
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Sunglow)),
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
             gc->SetBrush(sunBrush);
 
-            const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
+            const wxRect sunRect = wxRect(localRect).Deflate(ScaleToScreenAndCanvas(1));
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y, sunRect.GetWidth(),
                             sunRect.GetHeight());
+            gc->PopState();
             }
         }
 
@@ -1679,43 +1699,49 @@ namespace Wisteria::GraphItems
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
-        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
-                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
-                             0);
+        // Increase deflation even more to provide a safer buffer for high-res PDF clipping
+        // boundaries
+        drawRect.Deflate(static_cast<int>(ScaleToScreenAndCanvas(2)));
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for apple!");
         if (gc != nullptr)
             {
+            gc->PushState();
+            gc->Translate(rect.x, rect.y);
+            const wxRect2DDouble localRect(0, 0, rect.width, rect.height);
+            const wxRect2DDouble localDrawRect(drawRect.x - rect.x, drawRect.y - rect.y,
+                                               drawRect.width, drawRect.height);
+
             gc->SetPen(wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
                               static_cast<int>(ScaleToScreenAndCanvas(1)) });
 
             gc->SetBrush(gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
-                GetXPosFromLeft(rect, math_constants::three_fourths),
-                GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(localRect, 0), GetYPosFromTop(localRect, math_constants::half),
+                GetXPosFromLeft(localRect, math_constants::three_fourths),
+                GetYPosFromTop(localRect, math_constants::half),
                 ApplyColorOpacity(
                     Colors::ColorContrast::ShadeOrTint(color, math_constants::three_fourths)),
                 ApplyColorOpacity(color)));
 
             wxGraphicsPath applePath = gc->CreatePath();
 
-            applePath.MoveToPoint(wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                                          GetYPosFromTop(drawRect, 0.3)));
-            // left side
+            applePath.MoveToPoint(GetXPosFromLeft(localDrawRect, math_constants::half),
+                                  GetYPosFromTop(localDrawRect, 0.3));
+            // left side - symmetric with right side
+            applePath.AddCurveToPoint(GetXPosFromLeft(localDrawRect, 0.08),
+                                      GetYPosFromTop(localDrawRect, 0),
+                                      GetXPosFromLeft(localDrawRect, math_constants::fifth),
+                                      GetYPosFromTop(localDrawRect, 0.9),
+                                      GetXPosFromLeft(localDrawRect, math_constants::half),
+                                      GetYPosFromTop(localDrawRect, 0.7));
+            // right side - clamp to avoid clipping boundaries
             applePath.AddCurveToPoint(
-                wxPoint(GetXPosFromLeft(drawRect, 0), GetYPosFromTop(drawRect, 0)),
-                wxPoint(GetXPosFromLeft(drawRect, math_constants::fifth),
-                        GetYPosFromTop(drawRect, 0.9)),
-                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                        GetYPosFromTop(drawRect, 0.7)));
-            // right side
-            applePath.AddCurveToPoint(
-                wxPoint(GetXPosFromLeft(drawRect, 0.8), GetYPosFromTop(drawRect, 0.9)),
-                wxPoint(GetXPosFromLeft(drawRect, 1.0), GetYPosFromTop(drawRect, 0)),
-                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                        GetYPosFromTop(drawRect, 0.3)));
+                GetXPosFromLeft(localDrawRect, 0.8), GetYPosFromTop(localDrawRect, 0.9),
+                GetXPosFromLeft(localDrawRect, 0.92), GetYPosFromTop(localDrawRect, 0),
+                GetXPosFromLeft(localDrawRect, math_constants::half),
+                GetYPosFromTop(localDrawRect, 0.3));
 
             applePath.CloseSubpath();
             gc->FillPath(applePath);
@@ -1727,11 +1753,12 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 },
                               static_cast<int>(ScaleToScreenAndCanvas(1)) });
 
-            shinePath.MoveToPoint(
-                wxPoint(GetXPosFromLeft(drawRect, 0.35), GetYPosFromTop(drawRect, 0.35)));
-            shinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(drawRect, math_constants::quarter), GetYPosFromTop(drawRect, 0.37),
-                GetXPosFromLeft(drawRect, 0.3), GetYPosFromTop(drawRect, math_constants::half));
+            shinePath.MoveToPoint(GetXPosFromLeft(localDrawRect, 0.35),
+                                  GetYPosFromTop(localDrawRect, 0.35));
+            shinePath.AddQuadCurveToPoint(GetXPosFromLeft(localDrawRect, math_constants::quarter),
+                                          GetYPosFromTop(localDrawRect, 0.37),
+                                          GetXPosFromLeft(localDrawRect, 0.3),
+                                          GetYPosFromTop(localDrawRect, math_constants::half));
 
             gc->StrokePath(shinePath);
 
@@ -1741,19 +1768,22 @@ namespace Wisteria::GraphItems
 
             wxGraphicsPath leafPath = gc->CreatePath();
 
-            leafPath.MoveToPoint(wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                                         GetYPosFromTop(drawRect, 0.3)));
-            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(drawRect, 0.325),
-                                         GetYPosFromTop(drawRect, math_constants::fifth),
-                                         GetXPosFromLeft(drawRect, math_constants::quarter),
-                                         GetYPosFromTop(drawRect, math_constants::tenth));
-            leafPath.AddQuadCurveToPoint(
-                GetXPosFromLeft(drawRect, 0.475), GetYPosFromTop(drawRect, math_constants::tenth),
-                GetXPosFromLeft(drawRect, math_constants::half), GetYPosFromTop(drawRect, 0.3));
+            leafPath.MoveToPoint(GetXPosFromLeft(localDrawRect, math_constants::half),
+                                 GetYPosFromTop(localDrawRect, 0.3));
+            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(localDrawRect, 0.325),
+                                         GetYPosFromTop(localDrawRect, math_constants::fifth),
+                                         GetXPosFromLeft(localDrawRect, math_constants::quarter),
+                                         GetYPosFromTop(localDrawRect, math_constants::tenth));
+            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(localDrawRect, 0.475),
+                                         GetYPosFromTop(localDrawRect, math_constants::tenth),
+                                         GetXPosFromLeft(localDrawRect, math_constants::half),
+                                         GetYPosFromTop(localDrawRect, 0.3));
 
             leafPath.CloseSubpath();
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
+
+            gc->PopState();
             }
         }
 
@@ -1940,14 +1970,14 @@ namespace Wisteria::GraphItems
 
             // roof
             wxRect roofRect{ rect };
-            roofRect.SetHeight((chimneyRect.GetHeight() * math_constants::third) +
-                               ScaleToScreenAndCanvas(3));
+            roofRect.SetHeight((rect.GetHeight() * math_constants::third) +
+                               ScaleToScreenAndCanvas(2));
 
             gc->SetBrush(gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(chimneyRect, -math_constants::quarter),
-                GetYPosFromTop(chimneyRect, math_constants::half),
-                GetXPosFromLeft(chimneyRect, math_constants::full),
-                GetYPosFromTop(chimneyRect, math_constants::half),
+                GetXPosFromLeft(roofRect, -math_constants::quarter),
+                GetYPosFromTop(roofRect, math_constants::half),
+                GetXPosFromLeft(roofRect, math_constants::full),
+                GetYPosFromTop(roofRect, math_constants::half),
                 TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)),
                 TintIfUsingOpacity(Colors::ColorContrast::ShadeOrTint(
                     Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)))));
@@ -2033,19 +2063,27 @@ namespace Wisteria::GraphItems
             chimneyRect.SetWidth(chimneyRect.GetWidth() * math_constants::fifth);
             chimneyRect.SetHeight(chimneyRect.GetHeight() * 0.9);
 
-            gc->SetBrush(gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(chimneyRect, -math_constants::quarter),
-                GetYPosFromTop(chimneyRect, math_constants::half),
-                GetXPosFromLeft(chimneyRect, math_constants::full),
-                GetYPosFromTop(chimneyRect, math_constants::half),
-                TintIfUsingOpacity(Colors::ColorContrast::ShadeOrTint(
-                    Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
-                TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
+            auto setChimneyBrush = [&](const wxRect& cr)
+            {
+                gc->SetBrush(gc->CreateLinearGradientBrush(
+                    GetXPosFromLeft(cr, -math_constants::quarter),
+                    GetYPosFromTop(cr, math_constants::half),
+                    GetXPosFromLeft(cr, math_constants::full),
+                    GetYPosFromTop(cr, math_constants::half),
+                    TintIfUsingOpacity(Colors::ColorContrast::ShadeOrTint(
+                        Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
+                    TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
+            };
+
+            setChimneyBrush(chimneyRect);
             gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
                               chimneyRect.GetHeight());
+
             const auto yOffset{ chimneyRect.GetHeight() * math_constants::fifth };
             chimneyRect.SetHeight(chimneyRect.GetHeight() * 0.8);
             chimneyRect.Offset(chimneyRect.GetWidth(), yOffset);
+
+            setChimneyBrush(chimneyRect);
             gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
                               chimneyRect.GetHeight());
             }
@@ -2214,22 +2252,15 @@ namespace Wisteria::GraphItems
                                   Colors::ColorBrewer::GetColor(Colors::Color::DarkGray), 75),
                               static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
             gc->PushState();
-            const wxRegion barnRegion{ barnPoints.size(), barnPoints.data() };
+            const wxRegion barnRegion{ static_cast<size_t>(barnPoints.size()), barnPoints.data() };
             gc->Clip(barnRegion);
             wxCoord currentY{ barnRect.GetTop() };
-            // clang-format off
-            wxCLANG_WARNING_SUPPRESS(unused-but-set-variable);
-            // clang-format on
-            int currentLine{ 0 };
             while (currentY < barnRect.GetBottom())
                 {
-                dc.DrawLine({ barnRect.GetLeft(), currentY }, { barnRect.GetRight(), currentY });
-                currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2);
-                ++currentLine;
+                gc->StrokeLine(barnRect.GetLeft(), currentY, barnRect.GetRight(), currentY);
+                currentY +=
+                    static_cast<wxCoord>(ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2));
                 }
-            // clang-format off
-            wxCLANG_WARNING_RESTORE(unused-but-set-variable);
-            // clang-format on
             gc->PopState();
 
             // roof
@@ -2403,48 +2434,51 @@ namespace Wisteria::GraphItems
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
-        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
-                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
-                             0);
+        // Aggressive deflation (4 DIPs) to ensure we are nowhere near the PDF clipping boundaries
+        drawRect.Deflate(static_cast<int>(ScaleToScreenAndCanvas(4)));
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for heart!");
         if (gc != nullptr)
             {
+            gc->PushState();
+            gc->Translate(rect.x, rect.y);
+            const wxRect2DDouble localRect(0, 0, rect.width, rect.height);
+            const wxRect2DDouble localDrawRect(drawRect.x - rect.x, drawRect.y - rect.y,
+                                               drawRect.width, drawRect.height);
+
             gc->SetPen(wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
                               static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
 
             gc->SetBrush(gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
-                GetXPosFromLeft(rect, math_constants::three_fourths),
-                GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(localRect, 0.08), GetYPosFromTop(localRect, math_constants::half),
+                GetXPosFromLeft(localRect, 0.92), GetYPosFromTop(localRect, math_constants::half),
                 ApplyColorOpacity(Colors::ColorContrast::ShadeOrTint(
                     Colors::ColorBrewer::GetColor(Colors::Color::CandyApple),
                     math_constants::three_fourths)),
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::CandyApple))));
 
-            wxGraphicsPath applePath = gc->CreatePath();
+            wxGraphicsPath heartPath = gc->CreatePath();
 
-            applePath.MoveToPoint(wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                                          GetYPosFromTop(drawRect, 0.3)));
-            // left side
-            applePath.AddCurveToPoint(
-                wxPoint(GetXPosFromLeft(drawRect, -.1), GetYPosFromTop(drawRect, 0.0)),
-                wxPoint(GetXPosFromLeft(drawRect, math_constants::fifth),
-                        GetYPosFromTop(drawRect, 0.9)),
-                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                        GetYPosFromTop(drawRect, 0.95)));
-            // right side
-            applePath.AddCurveToPoint(
-                wxPoint(GetXPosFromLeft(drawRect, 0.8), GetYPosFromTop(drawRect, 0.9)),
-                wxPoint(GetXPosFromLeft(drawRect, 1.1), GetYPosFromTop(drawRect, 0.0)),
-                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
-                        GetYPosFromTop(drawRect, 0.3)));
+            heartPath.MoveToPoint(GetXPosFromLeft(localDrawRect, math_constants::half),
+                                  GetYPosFromTop(localDrawRect, 0.25));
+            // left side - broaden back out (0.08)
+            heartPath.AddCurveToPoint(
+                GetXPosFromLeft(localDrawRect, 0.08), GetYPosFromTop(localDrawRect, 0.0),
+                GetXPosFromLeft(localDrawRect, 0.08), GetYPosFromTop(localDrawRect, 0.6),
+                GetXPosFromLeft(localDrawRect, math_constants::half),
+                GetYPosFromTop(localDrawRect, 0.95));
+            // right side - broaden back out (0.92)
+            heartPath.AddCurveToPoint(
+                GetXPosFromLeft(localDrawRect, 0.92), GetYPosFromTop(localDrawRect, 0.6),
+                GetXPosFromLeft(localDrawRect, 0.92), GetYPosFromTop(localDrawRect, 0.0),
+                GetXPosFromLeft(localDrawRect, math_constants::half),
+                GetYPosFromTop(localDrawRect, 0.25));
 
-            applePath.CloseSubpath();
-            gc->FillPath(applePath);
-            gc->StrokePath(applePath);
+            heartPath.CloseSubpath();
+            gc->FillPath(heartPath);
+            gc->StrokePath(heartPath);
 
             // shine
             wxGraphicsPath shinePath = gc->CreatePath();
@@ -2452,13 +2486,16 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 },
                               static_cast<int>(ScaleToScreenAndCanvas(1)) });
 
-            shinePath.MoveToPoint(
-                wxPoint(GetXPosFromLeft(drawRect, 0.35), GetYPosFromTop(drawRect, 0.35)));
-            shinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(drawRect, math_constants::quarter), GetYPosFromTop(drawRect, 0.37),
-                GetXPosFromLeft(drawRect, 0.3), GetYPosFromTop(drawRect, math_constants::half));
+            shinePath.MoveToPoint(GetXPosFromLeft(localDrawRect, 0.35),
+                                  GetYPosFromTop(localDrawRect, 0.35));
+            shinePath.AddQuadCurveToPoint(GetXPosFromLeft(localDrawRect, math_constants::quarter),
+                                          GetYPosFromTop(localDrawRect, 0.37),
+                                          GetXPosFromLeft(localDrawRect, 0.3),
+                                          GetYPosFromTop(localDrawRect, math_constants::half));
 
             gc->StrokePath(shinePath);
+
+            gc->PopState();
             }
         }
 
@@ -2472,13 +2509,15 @@ namespace Wisteria::GraphItems
 
         wxRect flameRect{ rect };
         flameRect.Deflate(flameRect.GetWidth() * 0.24);
-        flameRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
+        flameRect.SetHeight(rect.GetHeight() * math_constants::half);
+        // Anchor to the very top of the bounding box
+        flameRect.SetTop(rect.GetTop());
         DrawFlame(flameRect, dc);
 
         // The heart drawing function uses Bézier curves, meaning it doesn't consume
         // all the rect it was given. Scale down the heart's bounding box to the area
         // that actually has content.
-        heartRect.SetWidth(heartRect.GetWidth() * 0.7);
+        heartRect.SetWidth(heartRect.GetWidth() * 0.55);
         heartRect.Offset((rect.GetWidth() - heartRect.GetWidth()) / 2, 0);
 
         wxRect flowerRect{ heartRect };
@@ -2521,15 +2560,22 @@ namespace Wisteria::GraphItems
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         wxRect drawRect{ rect };
-        drawRect.Deflate(ScaleToScreenAndCanvas(1));
+        // Increase deflation to provide a safer buffer for high-res PDF clipping
+        drawRect.Deflate(static_cast<int>(ScaleToScreenAndCanvas(2)));
 
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for flame!");
         if (gc != nullptr)
             {
-            const auto drawFlame = [&gc, this](const wxRect& drawingRect, const wxColour& color1,
-                                               const wxColour& color2)
+            gc->PushState();
+            gc->Translate(rect.x, rect.y);
+            const wxRect2DDouble localRect(0, 0, rect.width, rect.height);
+            const wxRect2DDouble localDrawRect(drawRect.x - rect.x, drawRect.y - rect.y,
+                                               drawRect.width, drawRect.height);
+
+            const auto drawFlameInner = [&gc, this](const wxRect2DDouble& drawingRect,
+                                                    const wxColour& color1, const wxColour& color2)
             {
                 gc->SetBrush(gc->CreateLinearGradientBrush(
                     GetXPosFromLeft(drawingRect, math_constants::half),
@@ -2541,31 +2587,31 @@ namespace Wisteria::GraphItems
 
                 wxGraphicsPath flamePath = gc->CreatePath();
 
-                flamePath.MoveToPoint(wxPoint(GetXPosFromLeft(drawingRect, math_constants::half),
-                                              GetYPosFromTop(drawingRect, math_constants::full)));
+                flamePath.MoveToPoint(GetXPosFromLeft(drawingRect, math_constants::half),
+                                      GetYPosFromTop(drawingRect, math_constants::full));
                 flamePath.AddCurveToPoint(
-                    GetXPosFromLeft(drawingRect, -.1), GetYPosFromTop(drawingRect, 0.9),
+                    GetXPosFromLeft(drawingRect, 0.05), GetYPosFromTop(drawingRect, 0.9),
                     GetXPosFromLeft(drawingRect, 0.4), GetYPosFromTop(drawingRect, 0.45),
                     GetXPosFromLeft(drawingRect, math_constants::quarter),
                     GetYPosFromTop(drawingRect, 0.4));
                 flamePath.AddQuadCurveToPoint(
                     GetXPosFromLeft(drawingRect, 0.4), GetYPosFromTop(drawingRect, 0.4),
                     GetXPosFromLeft(drawingRect, 0.35), GetYPosFromTop(drawingRect, 0.525));
+                // Tallest tongue - lowered further for PDF headroom
                 flamePath.AddQuadCurveToPoint(GetXPosFromLeft(drawingRect, 0.6),
-                                              GetYPosFromTop(drawingRect, math_constants::fifth),
+                                              GetYPosFromTop(drawingRect, 0.32),
                                               GetXPosFromLeft(drawingRect, math_constants::half),
-                                              GetYPosFromTop(drawingRect, math_constants::tenth));
-                flamePath.AddQuadCurveToPoint(GetXPosFromLeft(drawingRect, 0.7),
-                                              GetYPosFromTop(drawingRect, math_constants::fifth),
-                                              GetXPosFromLeft(drawingRect, 0.6),
+                                              GetYPosFromTop(drawingRect, 0.22));
+                flamePath.AddQuadCurveToPoint(GetXPosFromLeft(drawingRect, 0.65),
+                                              GetYPosFromTop(drawingRect, 0.3),
+                                              GetXPosFromLeft(drawingRect, 0.58),
                                               GetYPosFromTop(drawingRect, math_constants::half));
-                flamePath.AddQuadCurveToPoint(GetXPosFromLeft(drawingRect, 0.8),
-                                              GetYPosFromTop(drawingRect, 0.4),
-                                              GetXPosFromLeft(drawingRect, 0.8),
-                                              GetYPosFromTop(drawingRect, math_constants::fifth));
+                flamePath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(drawingRect, 0.75), GetYPosFromTop(drawingRect, 0.4),
+                    GetXPosFromLeft(drawingRect, 0.75), GetYPosFromTop(drawingRect, 0.28));
                 flamePath.AddCurveToPoint(
-                    GetXPosFromLeft(drawingRect, 1), GetYPosFromTop(drawingRect, 0.6),
-                    GetXPosFromLeft(drawingRect, 0.95), GetYPosFromTop(drawingRect, 0.97),
+                    GetXPosFromLeft(drawingRect, 0.85), GetYPosFromTop(drawingRect, 0.6),
+                    GetXPosFromLeft(drawingRect, 0.82), GetYPosFromTop(drawingRect, 0.97),
                     GetXPosFromLeft(drawingRect, math_constants::half),
                     GetYPosFromTop(drawingRect, math_constants::full));
 
@@ -2574,21 +2620,27 @@ namespace Wisteria::GraphItems
                 gc->StrokePath(flamePath);
             };
 
-            drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::OrangeRed),
-                      Colors::ColorBrewer::GetColor(Colors::Color::Orange));
+            drawFlameInner(localDrawRect, Colors::ColorBrewer::GetColor(Colors::Color::OrangeRed),
+                           Colors::ColorBrewer::GetColor(Colors::Color::Orange));
 
             // draw inner flames
-            wxCoord previousBottom{ drawRect.GetBottom() };
-            drawRect.Deflate(drawRect.GetWidth() * math_constants::fifth);
-            drawRect.Offset(0, previousBottom - drawRect.GetBottom());
-            drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::OrangeYellow),
-                      Colors::ColorBrewer::GetColor(Colors::Color::YellowPepper));
+            wxRect2DDouble innerFlameRect{ localDrawRect };
+            innerFlameRect.Inset(localDrawRect.m_width * math_constants::fifth, 0);
+            innerFlameRect.m_height = localDrawRect.m_height * 0.8;
+            innerFlameRect.m_y = localDrawRect.GetBottom() - innerFlameRect.m_height;
 
-            previousBottom = drawRect.GetBottom();
-            drawRect.Deflate(drawRect.GetWidth() * math_constants::fifth);
-            drawRect.Offset(0, previousBottom - drawRect.GetBottom());
-            drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::PastelOrange),
-                      Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange));
+            drawFlameInner(innerFlameRect,
+                           Colors::ColorBrewer::GetColor(Colors::Color::OrangeYellow),
+                           Colors::ColorBrewer::GetColor(Colors::Color::YellowPepper));
+
+            innerFlameRect.Inset(innerFlameRect.m_width * math_constants::fifth, 0);
+            innerFlameRect.m_height *= 0.8;
+            innerFlameRect.m_y = localDrawRect.GetBottom() - innerFlameRect.m_height;
+            drawFlameInner(innerFlameRect,
+                           Colors::ColorBrewer::GetColor(Colors::Color::PastelOrange),
+                           Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange));
+
+            gc->PopState();
             }
         }
 
@@ -3358,39 +3410,34 @@ namespace Wisteria::GraphItems
             monetaryAmountRect.MoveBottomTo(billRect.GetBottom() -
                                             (billRect.GetHeight() * math_constants::tenth));
 
-            Label amountLabel{ GraphItemInfo{ L"100" }
-                                   .Pen(wxNullPen)
-                                   .FontColor(ApplyColorOpacity(Colors::ColorBrewer::GetColor(
-                                       Colors::Color::OutrageousOrange, 200)))
-                                   .FontBackgroundColor(blueGray)
-                                   .LabelAlignment(TextAlignment::Centered)
-                                   .DPIScaling(GetDPIScaleFactor()) };
-            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
-            amountLabel.SetBoxCorners(BoxCorners::Rounded);
-            amountLabel.SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned);
-            amountLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-            amountLabel.GetFont().SetWeight(wxFONTWEIGHT_HEAVY);
-            amountLabel.Draw(dc);
+            auto drawAmount = [&](const wxRect2DDouble& r, const wxColour& color)
+            {
+                Label amountLabel{ GraphItemInfo{ L"100" }
+                                       .Pen(wxNullPen)
+                                       .FontColor(color)
+                                       .LabelAlignment(TextAlignment::Centered)
+                                       .DPIScaling(GetDPIScaleFactor()) };
+                amountLabel.SetBoundingBox(r.ToRect(), dc, GetScaling());
+                amountLabel.Draw(dc);
+            };
+
+            drawAmount(monetaryAmountRect,
+                       Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange));
 
             // dark green 100 in upper corner
             monetaryAmountRect.MoveTopTo(billRect.GetTop() +
                                          (billRect.GetHeight() * math_constants::tenth));
             monetaryAmountRect.Deflate(monetaryAmountRect.GetWidth() * math_constants::tenth);
-            amountLabel.SetFontColor(frameColor);
-            amountLabel.GetFont().SetWeight(wxFONTWEIGHT_THIN);
-            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
-            amountLabel.Draw(dc);
+            drawAmount(monetaryAmountRect, frameColor);
 
             // top left corner
             monetaryAmountRect.MoveLeftTo(billRect.GetLeft() + (billRect.GetHeight() * 0.15));
-            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
-            amountLabel.Draw(dc);
+            drawAmount(monetaryAmountRect, frameColor);
 
             // bottom left corner
             monetaryAmountRect.MoveBottomTo(billRect.GetBottom() -
                                             (billRect.GetHeight() * math_constants::tenth));
-            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
-            amountLabel.Draw(dc);
+            drawAmount(monetaryAmountRect, frameColor);
 
                 // Seals
                 //------
@@ -3603,55 +3650,64 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRuler(const wxRect rect, wxDC& dc) const
         {
-        const wxPen scaledPen{
-            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
-            static_cast<int>(ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                                                        math_constants::half :
-                                                        math_constants::full))
-        };
-        const DCPenChangerIfDifferent pc{ dc, scaledPen };
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
 
-        wxRect drawRect{ rect };
-        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
-                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
-                             0);
+        const wxPen scaledPen(
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
+            ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                                       math_constants::half :
+                                       math_constants::full));
+
+        wxRect2DDouble drawRect(rect.x, rect.y, rect.width, rect.height);
+        const auto borderPadding =
+            GetGraphItemInfo().GetPen().IsOk() ?
+                ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                0.0;
+        drawRect.Inset(borderPadding, borderPadding);
+
         // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
-            const auto adjustedWidth{ drawRect.GetWidth() * 0.4 };
-            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
-            drawRect.SetWidth(adjustedWidth);
-            drawRect.Offset(wxPoint(adjustLeft, 0));
+            const auto adjustedWidth{ drawRect.m_width * 0.4 };
+            const auto adjustLeft{ (drawRect.m_width - adjustedWidth) * math_constants::half };
+            drawRect.m_width = adjustedWidth;
+            drawRect.m_x += adjustLeft;
             }
             // add padding
             {
-            const auto adjustedWidth{ drawRect.GetWidth() * 0.8 };
-            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
-            drawRect.SetWidth(adjustedWidth);
-            drawRect.Offset(wxPoint(adjustLeft, 0));
+            const auto adjustedWidth{ drawRect.m_width * 0.8 };
+            const auto adjustLeft{ (drawRect.m_width - adjustedWidth) * math_constants::half };
+            drawRect.m_width = adjustedWidth;
+            drawRect.m_x += adjustLeft;
             }
 
-        dc.GradientFillLinear(
-            drawRect,
-            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow)),
+        gc->SetBrush(gc->CreateLinearGradientBrush(
+            drawRect.GetLeft(), drawRect.GetTop(), drawRect.GetRight(), drawRect.GetTop(),
             ApplyColorOpacity(Colors::ColorContrast::Shade(
                 Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
                 math_constants::three_fourths)),
-            wxWEST);
-        const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
-        dc.DrawRectangle(drawRect);
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow))));
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->DrawRectangle(drawRect.m_x, drawRect.m_y, drawRect.m_width, drawRect.m_height);
 
-        int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->SetPen(scaledPen);
+        gc->DrawRectangle(drawRect.m_x, drawRect.m_y, drawRect.m_width, drawRect.m_height);
+
+        double currentY{ drawRect.GetTop() + ScaleToScreenAndCanvas(2) };
         int currentLine{ 0 };
         while (currentY < drawRect.GetBottom())
             {
-            dc.DrawLine(
-                { drawRect.GetLeft() +
-                      static_cast<int>(drawRect.GetWidth() * ((currentLine % 4 == 0) ?
-                                                                  math_constants::half :
-                                                                  math_constants::three_fourths)),
-                  currentY },
-                { drawRect.GetRight(), currentY });
+            const auto startX =
+                drawRect.GetLeft() +
+                (drawRect.m_width *
+                 ((currentLine % 4 == 0) ? math_constants::half : math_constants::three_fourths));
+            gc->StrokeLine(startX, currentY, drawRect.GetRight(), currentY);
             currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
             ++currentLine;
             }
@@ -4986,6 +5042,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawClock(const wxRect rect, wxDC& dc) const
         {
+        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
         wxRect dcRect{ rect };
         dcRect.Deflate(ScaleToScreenAndCanvas(2));
         const wxPoint centerPt(GetXPosFromLeft(dcRect, math_constants::half),
@@ -5333,7 +5390,16 @@ namespace Wisteria::GraphItems
         wxRect sunRect{ pictureBox };
         sunRect.SetWidth(sunRect.GetWidth() * math_constants::three_quarters);
         sunRect.SetHeight(sunRect.GetWidth());
-        DrawSun(sunRect, dc);
+            {
+            wxRect currentClipRect;
+            wxRegion clipRegion(pictureBox);
+            if (dc.GetClippingBox(currentClipRect))
+                {
+                clipRegion.Intersect(currentClipRect);
+                }
+            const wxDCClipper clip{ dc, clipRegion };
+            DrawSun(sunRect, dc);
+            }
 
         // TOC below the picture
         auto tocBox{ pictureBox };
@@ -7178,10 +7244,6 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawPill(wxRect rect, wxDC& dc) const
         {
-        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger brushGuard{ dc,
-                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-
         const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         if (gc == nullptr)
@@ -7189,204 +7251,88 @@ namespace Wisteria::GraphItems
             return;
             }
 
-        rect.Deflate(ScaleToScreenAndCanvas(2));
+        // Increase deflation to ensure tilted diagonal edges don't clip in high-res PDF
+        rect.Deflate(ScaleToScreenAndCanvas(4));
 
         // colors
-        const wxColour outlineColor{ 80, 30, 30 };       // dark reddish-brown outline
-        const wxColour whiteBase{ 240, 240, 240 };       // white half base
-        const wxColour whiteShadow{ 180, 180, 180 };     // shadow on white half
-        const wxColour whiteSheen{ 255, 255, 255, 200 }; // highlight on white half
-        const wxColour redBase{ 200, 60, 60 };           // red half base
-        const wxColour redShadow{ 140, 35, 35 };         // shadow on red half
-        const wxColour redSheen{ 255, 150, 150, 180 };   // highlight on red half
-        const wxColour dividerLine{ 60, 20, 20 };        // line between halves
+        const wxColour outlineColor{ 80, 30, 30 };
+        const wxColour whiteBase{ 240, 240, 240 };
+        const wxColour whiteShadow{ 180, 180, 180 };
+        const wxColour whiteSheen{ 255, 255, 255, 180 };
+        const wxColour redBase{ 200, 60, 60 };
+        const wxColour redShadow{ 140, 35, 35 };
+        const wxColour redSheen{ 255, 150, 150, 160 };
+        const wxColour dividerLine{ 60, 20, 20 };
 
-        const double width = rect.GetWidth();
-        const double height = rect.GetHeight();
-        const double cx = rect.GetX() + (width / 2.0);
-        const double cy = rect.GetY() + (height / 2.0);
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
+        const double cy = rect.GetY() + (rect.GetHeight() / 2.0);
 
-        // pill dimensions - fit diagonal in rect
-        const double diagonal = std::min(width, height) * 0.98;
+        const double diagonal = std::min(rect.GetWidth(), rect.GetHeight());
         const double pillLength = diagonal * 0.85;
         const double pillWidth = pillLength * 0.40;
-        const double r = pillWidth / 2.0;               // cap radius
-        const double halfBody = (pillLength / 2.0) - r; // half of straight section
+        const double r = pillWidth / 2.0;
+        const double halfBody = (pillLength / 2.0) - r;
 
-        // rotation angle (tilted like reference image)
-        constexpr double ANGLE = -45.0 * std::numbers::pi / 180.0;
-        const double cosA = std::cos(ANGLE);
-        const double sinA = std::sin(ANGLE);
+        gc->PushState();
+        gc->Translate(cx, cy);
+        gc->Rotate(-45.0 * std::numbers::pi / 180.0);
 
-        // control point offset for circular arc approximation (4/3 * tan(pi/4) ≈ 0.5523)
-        constexpr double KAPPA = 0.5523;
-        const double k = r * KAPPA;
+        // Single path for the whole pill
+        wxGraphicsPath capsulePath = gc->CreatePath();
+        capsulePath.AddArc(0, -halfBody, r, -std::numbers::pi, 0, true);
+        capsulePath.AddArc(0, halfBody, r, 0, std::numbers::pi, true);
+        capsulePath.CloseSubpath();
 
-        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(1));
+        // build red half path
+        wxGraphicsPath redHalfPath = gc->CreatePath();
+        redHalfPath.AddArc(0, halfBody, r, 0, std::numbers::pi, true);
+        redHalfPath.AddLineToPoint(-r, 0);
+        redHalfPath.AddLineToPoint(r, 0);
+        redHalfPath.CloseSubpath();
 
-        // helper to rotate and translate a point
-        auto transform = [&](double x, double y) -> wxPoint2DDouble
+        // build white half path
+        wxGraphicsPath whiteHalfPath = gc->CreatePath();
+        whiteHalfPath.AddArc(0, -halfBody, r, -std::numbers::pi, 0, true);
+        whiteHalfPath.AddLineToPoint(r, 0);
+        whiteHalfPath.AddLineToPoint(-r, 0);
+        whiteHalfPath.CloseSubpath();
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+
+        // Fill white (top) half
+        gc->SetBrush(gc->CreateLinearGradientBrush(-r, 0, r, 0, whiteBase, whiteShadow));
+        gc->FillPath(whiteHalfPath);
+
+        // Fill red (bottom) half
+        gc->SetBrush(gc->CreateLinearGradientBrush(-r, 0, r, 0, redBase, redShadow));
+        gc->FillPath(redHalfPath);
+
+        // Stroke the outline
+        const auto outlinePenWidth = std::max<double>(1.0, ScaleToScreenAndCanvas(1));
+        gc->SetPen(wxPen{ outlineColor, static_cast<int>(outlinePenWidth) });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->StrokePath(capsulePath);
+
+        // Divider
+        gc->SetPen(wxPen{ dividerLine, static_cast<int>(outlinePenWidth) });
+        gc->StrokeLine(-r, 0, r, 0);
+
+        // Sheens
+        const double sheenW = r * 0.35;
+        const double sheenH = halfBody * 0.9;
+        const double sheenX = -r * 0.5;
+
+        auto drawSheen = [&](double centerY, const wxColour& color)
         {
-            const double rx = x * cosA - y * sinA;
-            const double ry = x * sinA + y * cosA;
-            return { cx + rx, cy + ry };
+            gc->SetBrush(wxBrush{ color });
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->DrawEllipse(sheenX - sheenW / 2.0, centerY - sheenH / 2.0, sheenW, sheenH);
         };
 
-        // build white half (top half with rounded end)
-        // in local coords: from y=0 (middle) to y=-(halfBody+r) (top)
-        wxGraphicsPath whitePath = gc->CreatePath();
-            {
-            // start at middle-right
-            auto p0 = transform(r, 0);
-            whitePath.MoveToPoint(p0.m_x, p0.m_y);
+        drawSheen(-(halfBody * 0.6 + r * 0.2), whiteSheen);
+        drawSheen(halfBody * 0.6 + r * 0.2, redSheen);
 
-            // line up the right side
-            auto p1 = transform(r, -halfBody);
-            whitePath.AddLineToPoint(p1.m_x, p1.m_y);
-
-            // top-right curve (quarter circle using bezier)
-            auto c1 = transform(r, -halfBody - k);
-            auto c2 = transform(k, -halfBody - r);
-            auto p2 = transform(0, -halfBody - r);
-            whitePath.AddCurveToPoint(c1.m_x, c1.m_y, c2.m_x, c2.m_y, p2.m_x, p2.m_y);
-
-            // top-left curve
-            auto c3 = transform(-k, -halfBody - r);
-            auto c4 = transform(-r, -halfBody - k);
-            auto p3 = transform(-r, -halfBody);
-            whitePath.AddCurveToPoint(c3.m_x, c3.m_y, c4.m_x, c4.m_y, p3.m_x, p3.m_y);
-
-            // line down the left side to middle
-            auto p4 = transform(-r, 0);
-            whitePath.AddLineToPoint(p4.m_x, p4.m_y);
-
-            whitePath.CloseSubpath();
-            }
-
-        // build red half (bottom half with rounded end)
-        wxGraphicsPath redPath = gc->CreatePath();
-            {
-            // start at middle-right
-            auto p0 = transform(r, 0);
-            redPath.MoveToPoint(p0.m_x, p0.m_y);
-
-            // line down the right side
-            auto p1 = transform(r, halfBody);
-            redPath.AddLineToPoint(p1.m_x, p1.m_y);
-
-            // bottom-right curve
-            auto c1 = transform(r, halfBody + k);
-            auto c2 = transform(k, halfBody + r);
-            auto p2 = transform(0, halfBody + r);
-            redPath.AddCurveToPoint(c1.m_x, c1.m_y, c2.m_x, c2.m_y, p2.m_x, p2.m_y);
-
-            // bottom-left curve
-            auto c3 = transform(-k, halfBody + r);
-            auto c4 = transform(-r, halfBody + k);
-            auto p3 = transform(-r, halfBody);
-            redPath.AddCurveToPoint(c3.m_x, c3.m_y, c4.m_x, c4.m_y, p3.m_x, p3.m_y);
-
-            // line up the left side to middle
-            auto p4 = transform(-r, 0);
-            redPath.AddLineToPoint(p4.m_x, p4.m_y);
-
-            redPath.CloseSubpath();
-            }
-
-        // gradient direction (perpendicular to pill axis for 3D effect)
-        const double gradLen = pillWidth * 0.6;
-        const double gradAngle = ANGLE + (std::numbers::pi / 2.0);
-        const double gx = gradLen * std::cos(gradAngle);
-        const double gy = gradLen * std::sin(gradAngle);
-
-        // fill white half
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(gc->CreateLinearGradientBrush(cx - gx, cy - gy, cx + gx, cy + gy, whiteBase,
-                                                   whiteShadow));
-        gc->FillPath(whitePath);
-
-        // fill red half
-        gc->SetBrush(
-            gc->CreateLinearGradientBrush(cx - gx, cy - gy, cx + gx, cy + gy, redBase, redShadow));
-        gc->FillPath(redPath);
-
-        // sheen highlights - elongated ellipses along the pill
-        // keep sheens within their respective halves (don't cross y=0 divider)
-        const double sheenW = r * 0.30;
-        const double sheenH = halfBody * 0.85; // shorter to stay in half
-        const double sheenOffsetX = -r * 0.4;  // offset toward left edge
-
-        // white sheen (centered in white half, away from divider)
-        wxGraphicsPath whiteSheenPath = gc->CreatePath();
-            {
-            const double sheenCenterY = -(halfBody * 0.55 + r * 0.3);
-            // approximate ellipse with 4 bezier curves
-            auto top = transform(sheenOffsetX, sheenCenterY - sheenH / 2);
-            auto right = transform(sheenOffsetX + sheenW / 2, sheenCenterY);
-            auto bottom = transform(sheenOffsetX, sheenCenterY + sheenH / 2);
-            auto left = transform(sheenOffsetX - sheenW / 2, sheenCenterY);
-            const double ek = 0.5523;
-            auto tc1 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY - sheenH / 2);
-            auto tc2 = transform(sheenOffsetX + sheenW / 2, sheenCenterY - sheenH / 2 * ek);
-            auto rc1 = transform(sheenOffsetX + sheenW / 2, sheenCenterY + sheenH / 2 * ek);
-            auto rc2 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY + sheenH / 2);
-            auto bc1 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY + sheenH / 2);
-            auto bc2 = transform(sheenOffsetX - sheenW / 2, sheenCenterY + sheenH / 2 * ek);
-            auto lc1 = transform(sheenOffsetX - sheenW / 2, sheenCenterY - sheenH / 2 * ek);
-            auto lc2 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY - sheenH / 2);
-
-            whiteSheenPath.MoveToPoint(top.m_x, top.m_y);
-            whiteSheenPath.AddCurveToPoint(tc1.m_x, tc1.m_y, tc2.m_x, tc2.m_y, right.m_x,
-                                           right.m_y);
-            whiteSheenPath.AddCurveToPoint(rc1.m_x, rc1.m_y, rc2.m_x, rc2.m_y, bottom.m_x,
-                                           bottom.m_y);
-            whiteSheenPath.AddCurveToPoint(bc1.m_x, bc1.m_y, bc2.m_x, bc2.m_y, left.m_x, left.m_y);
-            whiteSheenPath.AddCurveToPoint(lc1.m_x, lc1.m_y, lc2.m_x, lc2.m_y, top.m_x, top.m_y);
-            whiteSheenPath.CloseSubpath();
-            }
-        gc->SetBrush(wxBrush{ whiteSheen });
-        gc->FillPath(whiteSheenPath);
-
-        // red sheen (centered in red half, away from divider)
-        wxGraphicsPath redSheenPath = gc->CreatePath();
-            {
-            const double sheenCenterY = halfBody * 0.55 + r * 0.3;
-            auto top = transform(sheenOffsetX, sheenCenterY - sheenH / 2);
-            auto right = transform(sheenOffsetX + sheenW / 2, sheenCenterY);
-            auto bottom = transform(sheenOffsetX, sheenCenterY + sheenH / 2);
-            auto left = transform(sheenOffsetX - sheenW / 2, sheenCenterY);
-            const double ek = 0.5523;
-            auto tc1 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY - sheenH / 2);
-            auto tc2 = transform(sheenOffsetX + sheenW / 2, sheenCenterY - sheenH / 2 * ek);
-            auto rc1 = transform(sheenOffsetX + sheenW / 2, sheenCenterY + sheenH / 2 * ek);
-            auto rc2 = transform(sheenOffsetX + sheenW / 2 * ek, sheenCenterY + sheenH / 2);
-            auto bc1 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY + sheenH / 2);
-            auto bc2 = transform(sheenOffsetX - sheenW / 2, sheenCenterY + sheenH / 2 * ek);
-            auto lc1 = transform(sheenOffsetX - sheenW / 2, sheenCenterY - sheenH / 2 * ek);
-            auto lc2 = transform(sheenOffsetX - sheenW / 2 * ek, sheenCenterY - sheenH / 2);
-
-            redSheenPath.MoveToPoint(top.m_x, top.m_y);
-            redSheenPath.AddCurveToPoint(tc1.m_x, tc1.m_y, tc2.m_x, tc2.m_y, right.m_x, right.m_y);
-            redSheenPath.AddCurveToPoint(rc1.m_x, rc1.m_y, rc2.m_x, rc2.m_y, bottom.m_x,
-                                         bottom.m_y);
-            redSheenPath.AddCurveToPoint(bc1.m_x, bc1.m_y, bc2.m_x, bc2.m_y, left.m_x, left.m_y);
-            redSheenPath.AddCurveToPoint(lc1.m_x, lc1.m_y, lc2.m_x, lc2.m_y, top.m_x, top.m_y);
-            redSheenPath.CloseSubpath();
-            }
-        gc->SetBrush(wxBrush{ redSheen });
-        gc->FillPath(redSheenPath);
-
-        // draw outlines
-        gc->SetPen(wxPen{ outlineColor, outlinePenWidth });
-        gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->StrokePath(whitePath);
-        gc->StrokePath(redPath);
-
-        // dividing line between halves
-        auto divLeft = transform(-r, 0);
-        auto divRight = transform(r, 0);
-        gc->SetPen(wxPen{ dividerLine, outlinePenWidth });
-        gc->StrokeLine(divLeft.m_x, divLeft.m_y, divRight.m_x, divRight.m_y);
+        gc->PopState();
         }
 
     //---------------------------------------------------
