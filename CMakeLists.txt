@@ -182,7 +182,7 @@ list(APPEND WISTERIA_SRC ${WXPDF_SRC})
 # Suppress warnings from wxPDFDocument
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
     set_source_files_properties(${WXPDF_SRC} PROPERTIES
-        COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter")
+        COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter;-Wno-shadow")
 elseif(MSVC)
     # /wd4189 — local variable initialized but not referenced
     # /wd4100 — unreferenced formal parameter

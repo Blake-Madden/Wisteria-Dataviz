@@ -61,6 +61,7 @@ SUPPRESS_CHECKS = {
     "openmp-use-default-none",
     "clang-diagnostic-error",
     "clang-analyzer-optin.cplusplus.VirtualCall",
+    "clang-analyzer-deadcode.DeadStores",
 }
 # Hide diagnostics whose *message* contains any of these substrings:
 SUPPRESS_MSG_SUBSTR = {
