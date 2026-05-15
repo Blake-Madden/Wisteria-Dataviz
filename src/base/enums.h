@@ -112,7 +112,13 @@ namespace Wisteria
         /// @brief No facial hair.
         CleanShaven,
         /// @brief Light stubble.
-        FiveOClockShadow
+        FiveOClockShadow,
+        /// @brief Van Dyke: pointed chin goatee with a mustache, cheeks shaved.
+        VanDyke,
+        /// @brief Mustache only (cheeks and chin shaved).
+        Mustache,
+        /// @brief Pointed chin goatee only (no mustache, cheeks shaved).
+        Goatee
         };
 
     /// @brief Where a ring is within a circle.

@@ -1283,7 +1283,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 // outer edge strands (on the hair portion outside the face)
-                for (int side = -1; side <= 1; side += 2)
+                for (const int side : { -1, 1 })
                     {
                     for (int s = 0; s < 3; ++s)
                         {
@@ -1352,7 +1352,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 // side strands curving up toward bun
-                for (int side = -1; side <= 1; side += 2)
+                for (const int side : { -1, 1 })
                     {
                     for (int s = 0; s < 3; ++s)
                         {
@@ -1764,7 +1764,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     }
 
                 // sideburns along face edge going up toward ears
-                for (int side = -1; side <= 1; side += 2)
+                for (const int side : { -1, 1 })
                     {
                     const double sideTop = cy + faceHeight * 0.1;
                     const double sideBottom = mouthY + faceHeight * 0.08;
@@ -1842,6 +1842,68 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                             dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
                                             dotSize * sizeVar);
                             }
+                        }
+                    }
+                }
+            else if (facialHair == FacialHair::VanDyke || facialHair == FacialHair::Mustache ||
+                     facialHair == FacialHair::Goatee)
+                {
+                // solid mustache and/or pointed chin goatee (no cheek/jaw growth)
+                const bool drawGoatee =
+                    (facialHair == FacialHair::Goatee || facialHair == FacialHair::VanDyke);
+                const bool drawMustache =
+                    (facialHair == FacialHair::Mustache || facialHair == FacialHair::VanDyke);
+
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                gc->SetBrush(wxBrush{ hairColor });
+
+                if (drawGoatee)
+                    {
+                    // rounded top just under the lower lip,
+                    // narrowing to a point near the chin
+                    const double goateeTop = mouthY + faceHeight * 0.07;
+                    const double goateeTipY = cy + faceHeight * 0.78;
+                    const double goateeHalfTop = faceWidth * 0.18;
+                    const double goateeHalfMid = faceWidth * 0.12;
+
+                    wxGraphicsPath goatee = gc->CreatePath();
+                    goatee.MoveToPoint(cx - goateeHalfTop, goateeTop);
+                    goatee.AddQuadCurveToPoint(cx - goateeHalfMid,
+                                               goateeTop + (goateeTipY - goateeTop) * 0.6, cx,
+                                               goateeTipY);
+                    goatee.AddQuadCurveToPoint(cx + goateeHalfMid,
+                                               goateeTop + (goateeTipY - goateeTop) * 0.6,
+                                               cx + goateeHalfTop, goateeTop);
+                    goatee.AddQuadCurveToPoint(cx, goateeTop - faceHeight * 0.02,
+                                               cx - goateeHalfTop, goateeTop);
+                    goatee.CloseSubpath();
+                    gc->FillPath(goatee);
+                    gc->StrokePath(goatee);
+                    }
+
+                if (drawMustache)
+                    {
+                    // two curved halves with a philtrum gap at the center
+                    const double mustacheY = mouthY - faceHeight * 0.07;
+                    const double mustacheHalfWidth = faceWidth * 0.28;
+                    const double mustacheThickness = faceHeight * 0.06;
+                    const double philtrumHalf = faceWidth * 0.03;
+
+                    for (const int side : { -1, 1 })
+                        {
+                        wxGraphicsPath mustache = gc->CreatePath();
+                        const double innerX = cx + side * philtrumHalf;
+                        const double outerX = cx + side * mustacheHalfWidth;
+                        mustache.MoveToPoint(innerX, mustacheY - mustacheThickness * 0.2);
+                        mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.6,
+                                                     mustacheY - mustacheThickness * 0.9, outerX,
+                                                     mustacheY);
+                        mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.7,
+                                                     mustacheY + mustacheThickness * 0.6, innerX,
+                                                     mustacheY + mustacheThickness * 0.3);
+                        mustache.CloseSubpath();
+                        gc->FillPath(mustache);
+                        gc->StrokePath(mustache);
                         }
                     }
                 }

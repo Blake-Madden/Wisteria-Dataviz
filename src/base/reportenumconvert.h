@@ -962,7 +962,10 @@ namespace Wisteria
             {
             static const std::map<std::wstring, FacialHair> facialHairValues = {
                 { L"clean-shaven", FacialHair::CleanShaven },
-                { L"five-o-clock-shadow", FacialHair::FiveOClockShadow }
+                { L"five-o-clock-shadow", FacialHair::FiveOClockShadow },
+                { L"van-dyke", FacialHair::VanDyke },
+                { L"mustache", FacialHair::Mustache },
+                { L"goatee", FacialHair::Goatee }
             };
 
             const auto foundValue = facialHairValues.find(value.Lower().ToStdWstring());
@@ -1907,7 +1910,10 @@ namespace Wisteria
             {
             static const std::map<FacialHair, wxString> values = {
                 { FacialHair::CleanShaven, L"clean-shaven" },
-                { FacialHair::FiveOClockShadow, L"five-o-clock-shadow" }
+                { FacialHair::FiveOClockShadow, L"five-o-clock-shadow" },
+                { FacialHair::VanDyke, L"van-dyke" },
+                { FacialHair::Mustache, L"mustache" },
+                { FacialHair::Goatee, L"goatee" }
             };
 
             const auto foundValue = values.find(value);

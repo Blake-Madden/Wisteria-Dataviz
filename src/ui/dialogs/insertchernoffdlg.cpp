@@ -185,6 +185,9 @@ namespace Wisteria::UI
                          nullptr, 0, wxGenericValidator(&m_facialHair));
         m_facialHairChoice->Append(_(L"Clean shaven"));
         m_facialHairChoice->Append(_(L"Five o'clock shadow"));
+        m_facialHairChoice->Append(_(L"Mustache"));
+        m_facialHairChoice->Append(_(L"Goatee"));
+        m_facialHairChoice->Append(_(L"Van Dyke"));
         m_facialHairLabel->Enable(m_gender == 1);
         m_facialHairChoice->Enable(m_gender == 1);
         cosmeticGrid->Add(m_facialHairChoice);
@@ -461,7 +464,19 @@ namespace Wisteria::UI
     //-------------------------------------------
     FacialHair InsertChernoffDlg::GetFacialHair() const
         {
-        return (m_facialHair == 1) ? FacialHair::FiveOClockShadow : FacialHair::CleanShaven;
+        switch (m_facialHair)
+            {
+        case 1:
+            return FacialHair::FiveOClockShadow;
+        case 2:
+            return FacialHair::Mustache;
+        case 3:
+            return FacialHair::Goatee;
+        case 4:
+            return FacialHair::VanDyke;
+        default:
+            return FacialHair::CleanShaven;
+            }
         }
 
     //-------------------------------------------
@@ -579,7 +594,26 @@ namespace Wisteria::UI
             break;
             }
 
-        m_facialHair = (chernoff->GetFacialHair() == FacialHair::FiveOClockShadow) ? 1 : 0;
+        switch (chernoff->GetFacialHair())
+            {
+        case FacialHair::FiveOClockShadow:
+            m_facialHair = 1;
+            break;
+        case FacialHair::Mustache:
+            m_facialHair = 2;
+            break;
+        case FacialHair::Goatee:
+            m_facialHair = 3;
+            break;
+        case FacialHair::VanDyke:
+            m_facialHair = 4;
+            break;
+        case FacialHair::CleanShaven:
+            [[fallthrough]];
+        default:
+            m_facialHair = 0;
+            break;
+            }
 
         // color pickers
         m_skinColorLighterPicker->SetColour(chernoff->GetFaceColorLighter());
