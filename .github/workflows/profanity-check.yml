@@ -40,7 +40,7 @@ jobs:
           profanity.load_censor_words()
 
           # Ignore list (all lowercase)
-          ignore_words = {w.lower() for w in ["facial"]}
+          ignore_words = {w.lower() for w in ["facial", "van-dyke"]}
 
           # File extensions to scan
           extensions = ['.md', '.qmd']
