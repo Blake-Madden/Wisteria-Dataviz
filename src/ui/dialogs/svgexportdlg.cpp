@@ -26,39 +26,12 @@ namespace Wisteria::UI
                                const wxPoint& pos /*= wxDefaultPosition*/,
                                const wxSize& size /*= wxDefaultSize*/,
                                long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
-        : m_pageWidth(defaultSize.GetWidth()), m_pageHeight(defaultSize.GetHeight())
+        : DialogWithHelp(parent, id, caption, pos, size, style), m_printData(printData),
+          m_pageWidth(defaultSize.GetWidth()), m_pageHeight(defaultSize.GetHeight())
         {
-        const wxPrintPaperType* paperType =
-            wxThePrintPaperDatabase->FindPaperType(printData.GetPaperId());
-        m_paperType = (paperType != nullptr) ? paperType->GetName() : _(L"Custom");
-        m_orientation =
-            (printData.GetOrientation() == wxLANDSCAPE) ? _(L"Landscape") : _(L"Portrait");
-
-        // paper size is in tenths of a millimeter; convert to DIPs (96 DPI)
-        constexpr double tenthsMmPerInch = 254.0;
-        constexpr double dipsPerInch = 96.0;
-        if (paperType != nullptr)
-            {
-            const wxSize sizeMM = paperType->GetSize();
-            m_globalPageWidth =
-                wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
-            m_globalPageHeight =
-                wxRound(safe_divide<double>(sizeMM.GetHeight(), tenthsMmPerInch) * dipsPerInch);
-            }
-        else
-            {
-            // fallback: US Letter at 96 DPI
-            m_globalPageWidth = static_cast<int>(8.5 * dipsPerInch);
-            m_globalPageHeight = static_cast<int>(11.0 * dipsPerInch);
-            }
-        if (printData.GetOrientation() == wxLANDSCAPE)
-            {
-            std::swap(m_globalPageWidth, m_globalPageHeight);
-            }
-
         if (savedOptions != nullptr)
             {
-            m_useGlobalPrintSettings = savedOptions->m_useGlobalPrintSettings;
+            m_usePageSetup = savedOptions->m_useGlobalPrintSettings;
             m_includeTransitions = savedOptions->m_includeTransitions;
             m_includeHighlighting = savedOptions->m_includeHighlighting;
             m_includeLayoutOptions = savedOptions->m_includeLayoutOptions;
@@ -70,13 +43,13 @@ namespace Wisteria::UI
             }
 
         SetExtraStyle(GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY | wxWS_EX_BLOCK_EVENTS);
-        wxDialog::Create(parent, id, caption, pos, size, style);
 
         CreateControls();
 
         Bind(wxEVT_BUTTON, &SvgExportDlg::OnOK, this, wxID_OK);
-        Bind(wxEVT_SPINCTRL, &SvgExportDlg::OnSizeChanged, this);
         m_previewPanel->Bind(wxEVT_PAINT, &SvgExportDlg::OnPaintPreview, this);
+
+        UpdateLabels();
 
         Centre();
         }
@@ -94,79 +67,144 @@ namespace Wisteria::UI
         contentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 
         // page size controls
-        auto* sizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Page Size"));
+        auto* sizeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Page Size"));
 
-        m_useGlobalPrintSettingsCheckbox =
-            new wxCheckBox(sizeSizer->GetStaticBox(), USE_GLOBAL_PRINT_SETTINGS_ID,
-                           _(L"Use global print settings"));
-        m_useGlobalPrintSettingsCheckbox->SetValidator(
-            wxGenericValidator{ &m_useGlobalPrintSettings });
-        sizeSizer->Add(m_useGlobalPrintSettingsCheckbox, wxSizerFlags{}.Border());
+        // use page setup
+        auto* pageSetupRadioSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_usePageSetupRadio =
+            new wxRadioButton(sizeBoxSizer->GetStaticBox(), wxID_ANY, _(L"Use page setup"),
+                              wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+        m_usePageSetupRadio->SetValue(m_usePageSetup);
+        pageSetupRadioSizer->Add(m_usePageSetupRadio, wxSizerFlags{}.CenterVertical());
+        sizeBoxSizer->Add(pageSetupRadioSizer,
+                          wxSizerFlags{}.Border(wxTOP | wxLEFT | wxRIGHT | wxBOTTOM));
 
-        auto* globalPrintSettingsSizer = new wxBoxSizer(wxVERTICAL);
-        auto* globalPrintSettingsIndentSizer = new wxBoxSizer(wxHORIZONTAL);
-        globalPrintSettingsIndentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
+        auto* pageSetupIndentSizer = new wxBoxSizer(wxHORIZONTAL);
+        pageSetupIndentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
 
-        auto* globalPrintLabelsSizer = new wxBoxSizer(wxVERTICAL);
-        m_paperTypeLabel = new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, m_paperType);
+        auto* pageSetupContentSizer = new wxBoxSizer(wxVERTICAL);
+        m_pageSetupBtn = new wxButton(sizeBoxSizer->GetStaticBox(), wxID_ANY, _(L"Page Setup..."));
+        m_pageSetupBtn->Bind(wxEVT_BUTTON,
+                             [this]([[maybe_unused]] wxCommandEvent&)
+                             {
+                                 wxPageSetupDialogData pageSetupData;
+                                 pageSetupData.SetPrintData(m_printData);
+                                 wxPageSetupDialog dlg(this, &pageSetupData);
+                                 if (dlg.ShowModal() == wxID_OK)
+                                     {
+                                     m_printData = dlg.GetPageSetupData().GetPrintData();
+                                     UpdateLabels();
+                                     }
+                             });
+        pageSetupContentSizer->Add(m_pageSetupBtn, wxSizerFlags{}.Border(wxBOTTOM));
+
+        auto* gridSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        // paper type
+        m_paperTypeStaticLabel =
+            new wxStaticText(sizeBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Paper type:"));
+        gridSizer->Add(m_paperTypeStaticLabel, wxSizerFlags{}.CenterVertical());
+        m_paperTypeLabel = new wxStaticText(sizeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
         m_paperTypeLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        globalPrintLabelsSizer->Add(m_paperTypeLabel);
+        gridSizer->Add(m_paperTypeLabel, wxSizerFlags{}.CenterVertical());
 
+        // orientation
+        m_orientationStaticLabel =
+            new wxStaticText(sizeBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Orientation:"));
+        gridSizer->Add(m_orientationStaticLabel, wxSizerFlags{}.CenterVertical());
         m_orientationLabel =
-            new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, m_orientation);
+            new wxStaticText(sizeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
         m_orientationLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        globalPrintLabelsSizer->Add(m_orientationLabel);
+        gridSizer->Add(m_orientationLabel, wxSizerFlags{}.CenterVertical());
 
-        globalPrintSettingsIndentSizer->Add(globalPrintLabelsSizer);
-        globalPrintSettingsSizer->Add(globalPrintSettingsIndentSizer);
-        sizeSizer->Add(globalPrintSettingsSizer, wxSizerFlags{}.Expand().Border(wxBOTTOM));
+        pageSetupContentSizer->Add(gridSizer, wxSizerFlags{}.Expand());
+        pageSetupIndentSizer->Add(pageSetupContentSizer, wxSizerFlags{}.Expand());
+        sizeBoxSizer->Add(pageSetupIndentSizer,
+                          wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        // custom size
+        auto* customSizeRadioSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_useCustomSizeRadio =
+            new wxRadioButton(sizeBoxSizer->GetStaticBox(), wxID_ANY, _(L"Custom size"));
+        m_useCustomSizeRadio->SetValue(!m_usePageSetup);
+        customSizeRadioSizer->Add(m_useCustomSizeRadio, wxSizerFlags{}.CenterVertical());
+        sizeBoxSizer->Add(customSizeRadioSizer,
+                          wxSizerFlags{}.Border(wxTOP | wxLEFT | wxRIGHT | wxBOTTOM));
+
+        auto* customSizeIndentSizer = new wxBoxSizer(wxHORIZONTAL);
+        customSizeIndentSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
 
         auto* sizeGridSizer = new wxFlexGridSizer(2, 2, wxSizerFlags::GetDefaultBorder(),
                                                   wxSizerFlags::GetDefaultBorder());
         sizeGridSizer->AddGrowableCol(1, 1);
-        sizeSizer->Add(sizeGridSizer, wxSizerFlags{}.Expand().Border());
 
-        m_widthLabel = new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, _(L"Width:"));
+        m_widthLabel = new wxStaticText(sizeBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Width:"));
         sizeGridSizer->Add(m_widthLabel, wxSizerFlags{}.CenterVertical());
         m_widthCtrl =
-            new wxSpinCtrl(sizeSizer->GetStaticBox(), PAGE_WIDTH_ID, std::to_wstring(m_pageWidth),
+            new wxSpinCtrl(sizeBoxSizer->GetStaticBox(), wxID_ANY, std::to_wstring(m_pageWidth),
                            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
         m_widthCtrl->SetValidator(wxGenericValidator{ &m_pageWidth });
         sizeGridSizer->Add(m_widthCtrl, wxSizerFlags{}.Expand());
 
-        m_heightLabel = new wxStaticText(sizeSizer->GetStaticBox(), wxID_STATIC, _(L"Height:"));
+        m_heightLabel = new wxStaticText(sizeBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Height:"));
         sizeGridSizer->Add(m_heightLabel, wxSizerFlags{}.CenterVertical());
         m_heightCtrl =
-            new wxSpinCtrl(sizeSizer->GetStaticBox(), PAGE_HEIGHT_ID, std::to_wstring(m_pageHeight),
+            new wxSpinCtrl(sizeBoxSizer->GetStaticBox(), wxID_ANY, std::to_wstring(m_pageHeight),
                            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
         m_heightCtrl->SetValidator(wxGenericValidator{ &m_pageHeight });
         sizeGridSizer->Add(m_heightCtrl, wxSizerFlags{}.Expand());
 
-        leftColumnSizer->Add(sizeSizer, wxSizerFlags{}.Expand());
+        customSizeIndentSizer->Add(sizeGridSizer, wxSizerFlags{}.Expand());
+        sizeBoxSizer->Add(customSizeIndentSizer,
+                          wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        leftColumnSizer->Add(sizeBoxSizer, wxSizerFlags{}.Expand());
         leftColumnSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 
-        // toggle custom size controls based on global print settings checkbox
-        const auto toggleSizeControls = [this](const bool useGlobal)
+        // toggle logic
+        const auto toggleSizeControls = [this]()
         {
-            m_widthLabel->Enable(!useGlobal);
-            m_widthLabel->Refresh();
-            m_widthCtrl->Enable(!useGlobal);
-            m_heightLabel->Enable(!useGlobal);
-            m_heightLabel->Refresh();
-            m_heightCtrl->Enable(!useGlobal);
-            m_paperTypeLabel->Enable(useGlobal);
+            const bool usePageSetup = m_usePageSetupRadio->GetValue();
+            m_usePageSetup = usePageSetup;
+
+            m_pageSetupBtn->Enable(usePageSetup);
+            m_paperTypeStaticLabel->Enable(usePageSetup);
+            m_paperTypeStaticLabel->Refresh();
+            m_paperTypeLabel->Enable(usePageSetup);
             m_paperTypeLabel->Refresh();
-            m_orientationLabel->Enable(useGlobal);
+            m_orientationStaticLabel->Enable(usePageSetup);
+            m_orientationStaticLabel->Refresh();
+            m_orientationLabel->Enable(usePageSetup);
             m_orientationLabel->Refresh();
+
+            m_widthLabel->Enable(!usePageSetup);
+            m_widthLabel->Refresh();
+            m_widthCtrl->Enable(!usePageSetup);
+            m_heightLabel->Enable(!usePageSetup);
+            m_heightLabel->Refresh();
+            m_heightCtrl->Enable(!usePageSetup);
+
+            UpdatePreview();
         };
-        m_useGlobalPrintSettingsCheckbox->Bind(wxEVT_CHECKBOX,
-                                               [this, toggleSizeControls](wxCommandEvent& event)
-                                               {
-                                                   m_useGlobalPrintSettings = event.IsChecked();
-                                                   toggleSizeControls(m_useGlobalPrintSettings);
-                                                   UpdatePreview();
-                                               });
-        toggleSizeControls(m_useGlobalPrintSettings);
+
+        m_usePageSetupRadio->Bind(wxEVT_RADIOBUTTON,
+                                  [toggleSizeControls](wxCommandEvent&) { toggleSizeControls(); });
+        m_useCustomSizeRadio->Bind(wxEVT_RADIOBUTTON,
+                                   [toggleSizeControls](wxCommandEvent&) { toggleSizeControls(); });
+
+        m_widthCtrl->Bind(wxEVT_SPINCTRL,
+                          [this](wxSpinEvent&)
+                          {
+                              TransferDataFromWindow();
+                              UpdatePreview();
+                          });
+        m_heightCtrl->Bind(wxEVT_SPINCTRL,
+                           [this](wxSpinEvent&)
+                           {
+                               TransferDataFromWindow();
+                               UpdatePreview();
+                           });
 
         // interactive features
         auto* featuresSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Interactive Features"));
@@ -250,14 +288,54 @@ namespace Wisteria::UI
 
         SetSizerAndFit(mainSizer);
 
+        toggleSizeControls();
+        }
+
+    //------------------------------------------------------
+    void SvgExportDlg::UpdateLabels()
+        {
+        const wxPrintPaperType* paperType =
+            wxThePrintPaperDatabase->FindPaperType(m_printData.GetPaperId());
+        m_paperTypeLabel->SetLabel((paperType != nullptr) ? paperType->GetName() : _(L"Custom"));
+        m_orientationLabel->SetLabel(
+            (m_printData.GetOrientation() == wxLANDSCAPE) ? _(L"Landscape") : _(L"Portrait"));
+
+        // update preview dimensions for Page Setup mode
+        constexpr double tenthsMmPerInch = 254.0;
+        constexpr double dipsPerInch = 96.0;
+        if (paperType != nullptr)
+            {
+            const wxSize sizeMM = paperType->GetSize();
+            m_printDataWidth =
+                wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
+            m_printDataHeight =
+                wxRound(safe_divide<double>(sizeMM.GetHeight(), tenthsMmPerInch) * dipsPerInch);
+            }
+        else
+            {
+            // fallback: US Letter at 96 DPI
+            m_printDataWidth = static_cast<int>(8.5 * dipsPerInch);
+            m_printDataHeight = static_cast<int>(11.0 * dipsPerInch);
+            }
+        if (m_printData.GetOrientation() == wxLANDSCAPE)
+            {
+            std::swap(m_printDataWidth, m_printDataHeight);
+            }
+
         UpdatePreview();
         }
 
     //------------------------------------------------------
-    void SvgExportDlg::OnSizeChanged([[maybe_unused]] wxSpinEvent& event)
+    wxSize SvgExportDlg::GetPageSize() const noexcept
         {
-        TransferDataFromWindow();
-        UpdatePreview();
+        if (m_usePageSetup)
+            {
+            return { m_printDataWidth, m_printDataHeight };
+            }
+        else
+            {
+            return { m_pageWidth, m_pageHeight };
+            }
         }
 
     //------------------------------------------------------
@@ -357,8 +435,9 @@ namespace Wisteria::UI
             return;
             }
 
-        const int useWidth = m_useGlobalPrintSettings ? m_globalPageWidth : m_pageWidth;
-        const int useHeight = m_useGlobalPrintSettings ? m_globalPageHeight : m_pageHeight;
+        const wxSize pageSize = GetPageSize();
+        const int useWidth = pageSize.GetWidth();
+        const int useHeight = pageSize.GetHeight();
 
         if (useWidth <= 0 || useHeight <= 0)
             {
@@ -378,6 +457,10 @@ namespace Wisteria::UI
         m_previewPanel->SetMinSize(wxSize{ previewWidth, previewHeight });
         m_previewPanel->SetSize(wxSize{ previewWidth, previewHeight });
 
-        GetSizer()->Layout();
+        if (GetSizer())
+            {
+            GetSizer()->Layout();
+            }
+        m_previewPanel->Refresh();
         }
     } // namespace Wisteria::UI

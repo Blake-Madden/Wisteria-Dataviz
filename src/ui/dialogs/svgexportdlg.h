@@ -14,8 +14,9 @@
 
 #include "../../base/svgreportprintout.h"
 #include "../../math/mathematics.h"
-#include <wx/dialog.h>
+#include "dialogwithhelp.h"
 #include <wx/panel.h>
+#include <wx/printdlg.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
@@ -24,13 +25,14 @@ namespace Wisteria::UI
     /// @brief Options dialog for exporting an SVG report.
     /// @details Prompts the user for the page width and height (in pixels)
     ///     and shows a small aspect-ratio preview panel.
-    class SvgExportDlg final : public wxDialog
+    class SvgExportDlg final : public DialogWithHelp
         {
       public:
         /** @brief Constructor.
             @param parent The parent window.
             @param defaultSize The default page size (in DIPs/pixels) to
                 pre-populate the spin controls with.
+            @param printData The print data to pre-populate the dialog with.
             @param savedOptions Previously saved export options to restore into the dialog,
                 or @c nullptr to use defaults. The @c m_filePath field is ignored.
             @param id The window ID.
@@ -49,19 +51,23 @@ namespace Wisteria::UI
         /// @private
         SvgExportDlg& operator=(const SvgExportDlg&) = delete;
 
+        /// @returns The print data selected by the user.
+        [[nodiscard]]
+        const wxPrintData& GetPrintData() const noexcept
+            {
+            return m_printData;
+            }
+
         /// @returns The page size selected by the user (in DIPs/pixels).
         [[nodiscard]]
-        wxSize GetPageSize() const noexcept
-            {
-            return { m_pageWidth, m_pageHeight };
-            }
+        wxSize GetPageSize() const noexcept;
 
         /// @returns Whether to use the global print settings (paper size and orientation)
         ///     for the SVG dimensions.
         [[nodiscard]]
         bool UseGlobalPrintSettings() const noexcept
             {
-            return m_useGlobalPrintSettings;
+            return m_usePageSetup;
             }
 
         /// @returns Whether to include smooth transitions.
@@ -122,9 +128,9 @@ namespace Wisteria::UI
 
       private:
         void CreateControls();
-        void OnSizeChanged(wxSpinEvent& event);
         void OnPaintPreview(wxPaintEvent& event);
         void UpdatePreview();
+        void UpdateLabels();
 
         void OnOK([[maybe_unused]] wxCommandEvent& event)
             {
@@ -139,17 +145,16 @@ namespace Wisteria::UI
                 }
             }
 
-        constexpr static wxWindowID PAGE_WIDTH_ID{ wxID_HIGHEST };
-        constexpr static wxWindowID PAGE_HEIGHT_ID{ wxID_HIGHEST + 1 };
-        constexpr static wxWindowID USE_GLOBAL_PRINT_SETTINGS_ID{ wxID_HIGHEST + 2 };
         constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID LAYOUT_RADIO_ID{ wxID_HIGHEST + 4 };
 
+        wxPrintData m_printData;
         int m_pageWidth{ 0 };
         int m_pageHeight{ 0 };
-        int m_globalPageWidth{ 816 };
-        int m_globalPageHeight{ 1056 };
-        bool m_useGlobalPrintSettings{ true };
+        int m_printDataWidth{ 0 };
+        int m_printDataHeight{ 0 };
+
+        bool m_usePageSetup{ true };
         bool m_includeTransitions{ true };
         bool m_includeHighlighting{ true };
         bool m_includeLayoutOptions{ true };
@@ -161,15 +166,19 @@ namespace Wisteria::UI
             Wisteria::SVGReportOptions::PageLayout::Duplex
         };
 
-        wxString m_paperType;
-        wxString m_orientation;
-        wxCheckBox* m_useGlobalPrintSettingsCheckbox{ nullptr };
+        wxRadioButton* m_usePageSetupRadio{ nullptr };
+        wxRadioButton* m_useCustomSizeRadio{ nullptr };
+
+        wxButton* m_pageSetupBtn{ nullptr };
+        wxStaticText* m_paperTypeStaticLabel{ nullptr };
+        wxStaticText* m_paperTypeLabel{ nullptr };
+        wxStaticText* m_orientationStaticLabel{ nullptr };
+        wxStaticText* m_orientationLabel{ nullptr };
+
         wxStaticText* m_widthLabel{ nullptr };
         wxSpinCtrl* m_widthCtrl{ nullptr };
         wxStaticText* m_heightLabel{ nullptr };
         wxSpinCtrl* m_heightCtrl{ nullptr };
-        wxStaticText* m_paperTypeLabel{ nullptr };
-        wxStaticText* m_orientationLabel{ nullptr };
 
         wxPanel* m_previewPanel{ nullptr };
         };

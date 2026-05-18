@@ -709,12 +709,14 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_useGlobalPrintSettings = sizeDlg.UseGlobalPrintSettings();
     if (savedOptions.m_useGlobalPrintSettings)
         {
+        const auto& printData = sizeDlg.GetPrintData();
         for (auto* page : m_pages)
             {
-            page->GetPrinterSettings().SetOrientation(
-                static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation()));
-            page->GetPrinterSettings().SetPaperId(appSettings->GetPaperId());
+            page->GetPrinterSettings().SetOrientation(printData.GetOrientation());
+            page->GetPrinterSettings().SetPaperId(printData.GetPaperId());
             }
+        appSettings->SetPrintOrientation(printData.GetOrientation());
+        appSettings->SetPaperId(printData.GetPaperId());
         }
     savedOptions.m_includeTransitions = sizeDlg.IncludeTransitions();
     savedOptions.m_includeHighlighting = sizeDlg.IncludeHighlighting();
