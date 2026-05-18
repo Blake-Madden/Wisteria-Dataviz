@@ -1918,7 +1918,8 @@ namespace Wisteria
                 { FacialHair::Mustache, L"mustache" },
                 { FacialHair::Goatee, L"goatee" },
                 { FacialHair::FuManchu, L"fu-manchu" },
-                { FacialHair::Beard, L"beard" }
+                { FacialHair::Beard, L"beard" },
+                { FacialHair::ChinCurtain, L"chin-curtain" }
             };
 
             const auto foundValue = values.find(value);
