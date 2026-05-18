@@ -1016,6 +1016,634 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             cheekRadius * 2);
             }
 
+        const double mouthY = cy + faceHeight * 0.45;
+        const double mouthWidthVal = faceWidth * 0.35 * (0.5 + features.mouthWidth);
+
+        // draw facial hair before head hair so that hair overlaps the beard and mustache
+        if (gender != Gender::Female)
+            {
+            if (facialHair == FacialHair::FiveOClockShadow)
+                {
+                // stubble using hair color with transparency
+                const wxColour stubbleColor{ hairColor.Red(), hairColor.Green(), hairColor.Blue(),
+                                             80 };
+                gc->SetPen(*wxTRANSPARENT_PEN);
+                gc->SetBrush(wxBrush{ stubbleColor });
+
+                const double dotSize = faceHeight * 0.012;
+                const double spacing = dotSize * 1.4;
+
+                // beard area - from below mouth to chin, and along jawline to ears
+                const double beardTop = mouthY + faceHeight * 0.06;
+                const double chinBottom = cy + faceHeight * 0.95;
+
+                // fill the entire lower face area with stubble
+                const int ySteps = static_cast<int>(safe_divide(chinBottom - beardTop, spacing));
+                for (int yi = 0; yi <= ySteps; ++yi)
+                    {
+                    const double y = beardTop + yi * spacing;
+                    // calculate face width at this y position (ellipse)
+                    const auto normalizedY = safe_divide<double>(y - cy, faceHeight);
+                    const double faceWidthAtY =
+                        faceWidth * std::sqrt(std::max(0.0, 1.0 - normalizedY * normalizedY));
+
+                    const double xStart = cx - faceWidthAtY * 0.95;
+                    const int xSteps = static_cast<int>(safe_divide(faceWidthAtY * 1.9, spacing));
+                    for (int xi = 0; xi <= xSteps; ++xi)
+                        {
+                        const double x = xStart + xi * spacing;
+                        // randomize position
+                        const double offsetX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
+                        const double offsetY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
+                        const double dotX = x + offsetX;
+                        const double dotY = y + offsetY;
+
+                        // check within face ellipse
+                        const auto normX = safe_divide<double>(dotX - cx, faceWidth);
+                        const auto normY = safe_divide<double>(dotY - cy, faceHeight);
+                        if (normX * normX + normY * normY < 0.92)
+                            {
+                            // vary size
+                            const double sizeVar = 0.6 + std::sin(x * 1.1 + y * 0.9) * 0.4;
+                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+                    }
+
+                // sideburns along face edge going up toward ears
+                for (const int side : { -1, 1 })
+                    {
+                    const double sideTop = cy + faceHeight * 0.1;
+                    const double sideBottom = mouthY + faceHeight * 0.08;
+
+                    const int sideYSteps =
+                        static_cast<int>(safe_divide(sideBottom - sideTop, spacing));
+                    for (int syi = 0; syi <= sideYSteps; ++syi)
+                        {
+                        const double y = sideTop + syi * spacing;
+                        // find face edge at this y (ellipse x for given y)
+                        const auto normY = safe_divide<double>(y - cy, faceHeight);
+                        const double edgeX =
+                            faceWidth * std::sqrt(std::max(0.0, 1.0 - normY * normY));
+
+                        // stubble width narrows as we go up
+                        const auto progress =
+                            safe_divide<double>(sideBottom - y, sideBottom - sideTop);
+                        const double stubbleWidth = faceWidth * 0.15 * (1.0 - progress * 0.5);
+
+                        // draw stubble along the edge
+                        const int inwardSteps =
+                            static_cast<int>(safe_divide(stubbleWidth, spacing));
+                        for (int ini = 0; ini <= inwardSteps; ++ini)
+                            {
+                            const double inward = ini * spacing;
+                            const double offsetX = std::sin(inward * 1.2 + y * 0.8) * dotSize * 0.7;
+                            const double offsetY = std::cos(inward * 0.9 + y * 1.1) * dotSize * 0.7;
+                            const double dotX = cx + side * (edgeX * 0.92 - inward) + offsetX;
+                            const double dotY = y + offsetY;
+
+                            const auto normX = safe_divide<double>(dotX - cx, faceWidth);
+                            const auto normDotY = safe_divide<double>(dotY - cy, faceHeight);
+                            if (normX * normX + normDotY * normDotY < 0.88)
+                                {
+                                const double sizeVar = 0.6 + std::cos(inward * 1.3 + y * 0.7) * 0.4;
+                                gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                                dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                                dotSize * sizeVar);
+                                }
+                            }
+                        }
+                    }
+
+                // mustache above upper lip
+                const double mustacheTop = mouthY - faceHeight * 0.12;
+                const double mustacheBottom = mouthY - faceHeight * 0.01;
+                const double mustacheSpacing = spacing * 0.9;
+                const int mustacheYSteps =
+                    static_cast<int>(safe_divide(mustacheBottom - mustacheTop, mustacheSpacing));
+                for (int myi = 0; myi <= mustacheYSteps; ++myi)
+                    {
+                    const double y = mustacheTop + myi * mustacheSpacing;
+                    const auto progress =
+                        safe_divide<double>(y - mustacheTop, mustacheBottom - mustacheTop);
+                    const double mustacheWidth = faceWidth * (0.15 + progress * 0.2);
+
+                    const double mxStart = cx - mustacheWidth;
+                    const int mustacheXSteps =
+                        static_cast<int>(safe_divide(mustacheWidth * 2, mustacheSpacing));
+                    for (int mxi = 0; mxi <= mustacheXSteps; ++mxi)
+                        {
+                        const double x = mxStart + mxi * mustacheSpacing;
+                        const double offsetX = std::sin(x * 1.5 + y * 2.3) * dotSize * 0.5;
+                        const double offsetY = std::cos(x * 1.8 + y * 1.6) * dotSize * 0.5;
+                        const double dotX = x + offsetX;
+                        const double dotY = y + offsetY;
+
+                        // small gap under nose center
+                        const double distFromCenter = std::abs(dotX - cx);
+                        if (distFromCenter > faceWidth * 0.04 ||
+                            y > mustacheTop + faceHeight * 0.04)
+                            {
+                            const double sizeVar = 0.7 + std::sin(x * 2.1 + y * 1.4) * 0.3;
+                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+                    }
+                }
+            else if (facialHair == FacialHair::VanDyke || facialHair == FacialHair::Mustache ||
+                     facialHair == FacialHair::Goatee)
+                {
+                // solid mustache and/or pointed chin goatee (no cheek/jaw growth)
+                const bool drawGoatee =
+                    (facialHair == FacialHair::Goatee || facialHair == FacialHair::VanDyke);
+                const bool drawMustache =
+                    (facialHair == FacialHair::Mustache || facialHair == FacialHair::VanDyke);
+
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                gc->SetBrush(wxBrush{ hairColor });
+
+                if (drawGoatee)
+                    {
+                    // rounded top just under the lower lip,
+                    // narrowing to a point near the chin
+                    const double goateeTop = mouthY + faceHeight * 0.07;
+                    const double goateeTipY = cy + faceHeight * 0.78;
+                    const double goateeHalfTop = faceWidth * 0.18;
+                    const double goateeHalfMid = faceWidth * 0.12;
+
+                    wxGraphicsPath goatee = gc->CreatePath();
+                    goatee.MoveToPoint(cx - goateeHalfTop, goateeTop);
+                    goatee.AddQuadCurveToPoint(cx - goateeHalfMid,
+                                               goateeTop + (goateeTipY - goateeTop) * 0.6, cx,
+                                               goateeTipY);
+                    goatee.AddQuadCurveToPoint(cx + goateeHalfMid,
+                                               goateeTop + (goateeTipY - goateeTop) * 0.6,
+                                               cx + goateeHalfTop, goateeTop);
+                    goatee.AddQuadCurveToPoint(cx, goateeTop - faceHeight * 0.02,
+                                               cx - goateeHalfTop, goateeTop);
+                    goatee.CloseSubpath();
+                    gc->FillPath(goatee);
+                    gc->StrokePath(goatee);
+                    }
+
+                if (drawMustache)
+                    {
+                    // two curved halves with a philtrum gap at the center
+                    const double mustacheY = mouthY - faceHeight * 0.07;
+                    const double mustacheHalfWidth = faceWidth * 0.28;
+                    const double mustacheThickness = faceHeight * 0.06;
+                    const double philtrumHalf = faceWidth * 0.03;
+
+                    for (const int side : { -1, 1 })
+                        {
+                        wxGraphicsPath mustache = gc->CreatePath();
+                        const double innerX = cx + side * philtrumHalf;
+                        const double outerX = cx + side * mustacheHalfWidth;
+                        mustache.MoveToPoint(innerX, mustacheY - mustacheThickness * 0.2);
+                        mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.6,
+                                                     mustacheY - mustacheThickness * 0.9, outerX,
+                                                     mustacheY);
+                        mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.7,
+                                                     mustacheY + mustacheThickness * 0.6, innerX,
+                                                     mustacheY + mustacheThickness * 0.3);
+                        mustache.CloseSubpath();
+                        gc->FillPath(mustache);
+                        gc->StrokePath(mustache);
+                        }
+                    }
+                }
+            else if (facialHair == FacialHair::Beard)
+                {
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                gc->SetBrush(wxBrush{ hairColor });
+
+                // beard follows the jawline: outer edges trace the face ellipse;
+                // inner boundary sweeps from each sideburn down to the mouth corners,
+                // leaving an opening around the mouth/nose for the mustache
+                const double sideTopY = cy - faceHeight * 0.08;
+                const double chinY = cy + faceHeight * 0.80;
+                const double jawMidY = cy + faceHeight * 0.30;
+                const double mouthCornerX = mouthWidthVal * 1.4;
+
+                const auto faceEdgeX = [&](double y) -> double
+                {
+                    const auto normY = safe_divide<double>(y - cy, faceHeight);
+                    return faceWidth * std::sqrt(std::max(0.0, 1.0 - normY * normY));
+                };
+
+                wxGraphicsPath beard = gc->CreatePath();
+                beard.MoveToPoint(cx - faceEdgeX(sideTopY), sideTopY);
+
+                // left outer edge: face ellipse from sideburn to chin
+                constexpr int edgeSamples{ 16 };
+                for (int i = 1; i <= edgeSamples; ++i)
+                    {
+                    const double t = static_cast<double>(i) / edgeSamples;
+                    const double y = sideTopY + t * (chinY - sideTopY);
+                    beard.AddLineToPoint(cx - faceEdgeX(y), y);
+                    }
+
+                // chin: round below the face ellipse
+                beard.AddQuadCurveToPoint(cx, cy + faceHeight * 1.50, cx + faceEdgeX(chinY), chinY);
+
+                // right outer edge: face ellipse from chin to sideburn
+                for (int i = edgeSamples - 1; i >= 1; --i)
+                    {
+                    const double t = static_cast<double>(i) / edgeSamples;
+                    const double y = sideTopY + t * (chinY - sideTopY);
+                    beard.AddLineToPoint(cx + faceEdgeX(y), y);
+                    }
+
+                // right sideburn -> right mouth corner (follows jawline inward)
+                // beardInnerY sits well below the mouth so lips are visible
+                const double beardInnerY = mouthY + faceHeight * 0.18;
+                beard.AddCurveToPoint(
+                    cx + faceEdgeX(jawMidY) * 0.85, jawMidY, cx + mouthCornerX + faceWidth * 0.08,
+                    beardInnerY - faceHeight * 0.05, cx + mouthCornerX, beardInnerY);
+
+                // across the mouth opening: bow downward in the center
+                beard.AddQuadCurveToPoint(cx, beardInnerY + faceHeight * 0.10, cx - mouthCornerX,
+                                          beardInnerY);
+
+                // left mouth corner -> left sideburn (follows jawline outward)
+                beard.AddCurveToPoint(
+                    cx - mouthCornerX - faceWidth * 0.08, beardInnerY - faceHeight * 0.05,
+                    cx - faceEdgeX(jawMidY) * 0.85, jawMidY, cx - faceEdgeX(sideTopY), sideTopY);
+
+                beard.CloseSubpath();
+                gc->FillPath(beard, wxODDEVEN_RULE);
+                gc->StrokePath(beard);
+
+                    // stipple texture over beard
+                    {
+                    const wxColour stubbleColor{ Colors::ColorContrast::ShadeOrTint(hairColor,
+                                                                                    0.35) };
+                    gc->SetPen(*wxTRANSPARENT_PEN);
+                    gc->SetBrush(wxBrush{ stubbleColor });
+                    const double dotSize = faceHeight * 0.012;
+                    const double dotSpacing = dotSize * 1.4;
+
+                    const int ySteps = static_cast<int>(safe_divide(chinY - sideTopY, dotSpacing));
+                    for (int yi = 0; yi <= ySteps; ++yi)
+                        {
+                        const double y = sideTopY + yi * dotSpacing;
+                        const double edgeX = faceEdgeX(y);
+
+                        // linear approximation of the inner bezier side boundary
+                        double innerX{ 0.0 };
+                        if (y < beardInnerY)
+                            {
+                            const auto frac =
+                                safe_divide<double>(y - sideTopY, beardInnerY - sideTopY);
+                            innerX = faceEdgeX(sideTopY) * (1.0 - frac) + mouthCornerX * frac;
+                            }
+                        if (edgeX <= innerX)
+                            {
+                            continue;
+                            }
+
+                        const int xSteps = static_cast<int>(safe_divide(edgeX * 2.0, dotSpacing));
+                        for (int xi = 0; xi <= xSteps; ++xi)
+                            {
+                            const double x = (cx - edgeX) + xi * dotSpacing;
+                            if (std::abs(x - cx) < innerX)
+                                {
+                                continue;
+                                }
+                            // skip dots above the bowing inner boundary in the chin transition zone
+                            if (y >= beardInnerY && y < beardInnerY + faceHeight * 0.11)
+                                {
+                                const double tBow =
+                                    0.5 * (1.0 + safe_divide<double>(x - cx, mouthCornerX));
+                                if (tBow >= 0.0 && tBow <= 1.0)
+                                    {
+                                    const double bowY =
+                                        beardInnerY + 2.0 * tBow * (1.0 - tBow) * faceHeight * 0.10;
+                                    if (y < bowY)
+                                        {
+                                        continue;
+                                        }
+                                    }
+                                }
+                            const double offX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
+                            const double offY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
+                            const double dotX = x + offX;
+                            const double dotY = y + offY;
+                            const auto normX = safe_divide<double>(dotX - cx, faceWidth);
+                            const auto normDotY = safe_divide<double>(dotY - cy, faceHeight);
+                            if (normX * normX + normDotY * normDotY >= 1.0)
+                                {
+                                continue;
+                                }
+                            const double sizeVar = 0.6 + std::sin(dotX * 1.1 + dotY * 0.9) * 0.4;
+                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+
+                    // chin bezier area: quad bezier extends from chinY down to cy+1.15*fH;
+                    // at a given y, x extent =
+                    // cx + or - faceEdgeX(chinY)*sqrt(1 -2*(y-chinY)/(0.70*fH))
+                    const double chinEdgeX = faceEdgeX(chinY);
+                    const double chinBezierScale = 0.70 * faceHeight;
+                    const double chinMaxY = chinY + 0.35 * faceHeight;
+                    const int chinYSteps =
+                        static_cast<int>(safe_divide(chinMaxY - chinY, dotSpacing));
+                    for (int cyi = 1; cyi <= chinYSteps; ++cyi)
+                        {
+                        const double y = chinY + cyi * dotSpacing;
+                        const double D =
+                            1.0 - 2.0 * safe_divide<double>(y - chinY, chinBezierScale);
+                        if (D <= 0.0)
+                            {
+                            break;
+                            }
+                        const double halfW = chinEdgeX * std::sqrt(D);
+                        const int xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
+                        for (int xi = 0; xi <= xSteps; ++xi)
+                            {
+                            const double x = (cx - halfW) + xi * dotSpacing;
+                            const double offX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
+                            const double offY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
+                            const double sizeVar =
+                                0.6 + std::sin((x + offX) * 1.1 + (y + offY) * 0.9) * 0.4;
+                            gc->DrawEllipse(x + offX - dotSize * sizeVar * 0.5,
+                                            y + offY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+                    }
+
+                // restore pen/brush for mustache
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                gc->SetBrush(wxBrush{ hairColor });
+
+                // mustache: narrow band across top lip, wraps around each mouth corner, down to
+                // beard
+                const double mustacheThickness = faceHeight * 0.12;
+                const double philtrumHalf = faceWidth * 0.03;
+                const double mustacheTopY = mouthY - mustacheThickness * 0.6;
+
+                for (const int side : { -1, 1 })
+                    {
+                    wxGraphicsPath mustache = gc->CreatePath();
+                    const double sideInnerX = cx + side * mouthWidthVal;
+                    const double sideOuterX = cx + side * mouthCornerX;
+                    // outer corner: just past the mouth edge
+                    const double cornerOuterX =
+                        cx + side * (mouthWidthVal + mustacheThickness * 0.6);
+
+                    // outer edge: philtrum -> arc across top lip ->
+                    // wrap corner -> down side to beard
+                    mustache.MoveToPoint(cx + side * philtrumHalf, mustacheTopY);
+                    mustache.AddCurveToPoint(
+                        cx + side * mouthWidthVal * 0.5, mustacheTopY - mustacheThickness * 0.5,
+                        cx + side * mouthWidthVal, mustacheTopY - mustacheThickness * 0.1,
+                        cornerOuterX, mouthY);
+                    mustache.AddCurveToPoint(cornerOuterX, mouthY + faceHeight * 0.04, sideOuterX,
+                                             beardInnerY - faceHeight * 0.03, sideOuterX,
+                                             beardInnerY);
+
+                    // inner edge: return from beard up mouth side and across top lip to philtrum
+                    mustache.AddLineToPoint(sideInnerX, beardInnerY);
+                    mustache.AddCurveToPoint(sideInnerX, mouthY + mustacheThickness * 0.3,
+                                             sideInnerX, mouthY - mustacheThickness * 0.2,
+                                             cx + side * mouthWidthVal * 0.9,
+                                             mustacheTopY + mustacheThickness * 0.3);
+                    mustache.AddCurveToPoint(
+                        cx + side * mouthWidthVal * 0.5, mustacheTopY + mustacheThickness * 0.1,
+                        cx + side * philtrumHalf * 1.5, mustacheTopY + mustacheThickness * 0.4,
+                        cx + side * philtrumHalf, mustacheTopY + mustacheThickness * 0.5);
+                    mustache.CloseSubpath();
+                    gc->FillPath(mustache);
+                    gc->StrokePath(mustache);
+                    }
+                }
+            else if (facialHair == FacialHair::ChinCurtain)
+                {
+                // chin curtain (a.k.a. Shenandoah, whaler, Lincoln beard):
+                // same beard shape as Beard but no mustache -- upper lip is clean-shaved
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                gc->SetBrush(wxBrush{ hairColor });
+
+                const double sideTopY = cy - faceHeight * 0.08;
+                const double chinY = cy + faceHeight * 0.80;
+                const double jawMidY = cy + faceHeight * 0.30;
+                const double mouthCornerX = mouthWidthVal * 1.4;
+
+                const auto faceEdgeX = [&](double y) -> double
+                {
+                    const auto normY = safe_divide<double>(y - cy, faceHeight);
+                    return faceWidth * std::sqrt(std::max(0.0, 1.0 - normY * normY));
+                };
+
+                wxGraphicsPath beard = gc->CreatePath();
+                beard.MoveToPoint(cx - faceEdgeX(sideTopY), sideTopY);
+
+                constexpr int edgeSamples{ 16 };
+                for (int i = 1; i <= edgeSamples; ++i)
+                    {
+                    const double t = static_cast<double>(i) / edgeSamples;
+                    const double y = sideTopY + t * (chinY - sideTopY);
+                    beard.AddLineToPoint(cx - faceEdgeX(y), y);
+                    }
+
+                beard.AddQuadCurveToPoint(cx, cy + faceHeight * 1.50, cx + faceEdgeX(chinY), chinY);
+
+                for (int i = edgeSamples - 1; i >= 1; --i)
+                    {
+                    const double t = static_cast<double>(i) / edgeSamples;
+                    const double y = sideTopY + t * (chinY - sideTopY);
+                    beard.AddLineToPoint(cx + faceEdgeX(y), y);
+                    }
+
+                const double beardInnerY = mouthY + faceHeight * 0.18;
+                beard.AddCurveToPoint(
+                    cx + faceEdgeX(jawMidY) * 0.85, jawMidY, cx + mouthCornerX + faceWidth * 0.08,
+                    beardInnerY - faceHeight * 0.05, cx + mouthCornerX, beardInnerY);
+
+                beard.AddQuadCurveToPoint(cx, beardInnerY + faceHeight * 0.10, cx - mouthCornerX,
+                                          beardInnerY);
+
+                beard.AddCurveToPoint(
+                    cx - mouthCornerX - faceWidth * 0.08, beardInnerY - faceHeight * 0.05,
+                    cx - faceEdgeX(jawMidY) * 0.85, jawMidY, cx - faceEdgeX(sideTopY), sideTopY);
+
+                beard.CloseSubpath();
+                gc->FillPath(beard, wxODDEVEN_RULE);
+                gc->StrokePath(beard);
+
+                    {
+                    const wxColour stubbleColor{ Colors::ColorContrast::ShadeOrTint(hairColor,
+                                                                                    0.35) };
+                    gc->SetPen(*wxTRANSPARENT_PEN);
+                    gc->SetBrush(wxBrush{ stubbleColor });
+                    const double dotSize = faceHeight * 0.012;
+                    const double dotSpacing = dotSize * 1.4;
+
+                    const int ySteps = static_cast<int>(safe_divide(chinY - sideTopY, dotSpacing));
+                    for (int yi = 0; yi <= ySteps; ++yi)
+                        {
+                        const double y = sideTopY + yi * dotSpacing;
+                        const double edgeX = faceEdgeX(y);
+
+                        double innerX{ 0.0 };
+                        if (y < beardInnerY)
+                            {
+                            const auto frac =
+                                safe_divide<double>(y - sideTopY, beardInnerY - sideTopY);
+                            innerX = faceEdgeX(sideTopY) * (1.0 - frac) + mouthCornerX * frac;
+                            }
+                        if (edgeX <= innerX)
+                            {
+                            continue;
+                            }
+
+                        const int xSteps = static_cast<int>(safe_divide(edgeX * 2.0, dotSpacing));
+                        for (int xi = 0; xi <= xSteps; ++xi)
+                            {
+                            const double x = (cx - edgeX) + xi * dotSpacing;
+                            if (std::abs(x - cx) < innerX)
+                                {
+                                continue;
+                                }
+                            if (y >= beardInnerY && y < beardInnerY + faceHeight * 0.11)
+                                {
+                                const double tBow =
+                                    0.5 * (1.0 + safe_divide<double>(x - cx, mouthCornerX));
+                                if (tBow >= 0.0 && tBow <= 1.0)
+                                    {
+                                    const double bowY =
+                                        beardInnerY + 2.0 * tBow * (1.0 - tBow) * faceHeight * 0.10;
+                                    if (y < bowY)
+                                        {
+                                        continue;
+                                        }
+                                    }
+                                }
+                            const double offX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
+                            const double offY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
+                            const double dotX = x + offX;
+                            const double dotY = y + offY;
+                            const auto normX = safe_divide<double>(dotX - cx, faceWidth);
+                            const auto normDotY = safe_divide<double>(dotY - cy, faceHeight);
+                            if (normX * normX + normDotY * normDotY >= 1.0)
+                                {
+                                continue;
+                                }
+                            const double sizeVar = 0.6 + std::sin(dotX * 1.1 + dotY * 0.9) * 0.4;
+                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
+                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+
+                    const double chinEdgeX = faceEdgeX(chinY);
+                    const double chinBezierScale = 0.70 * faceHeight;
+                    const double chinMaxY = chinY + 0.35 * faceHeight;
+                    const int chinYSteps =
+                        static_cast<int>(safe_divide(chinMaxY - chinY, dotSpacing));
+                    for (int cyi = 1; cyi <= chinYSteps; ++cyi)
+                        {
+                        const double y = chinY + cyi * dotSpacing;
+                        const double D =
+                            1.0 - 2.0 * safe_divide<double>(y - chinY, chinBezierScale);
+                        if (D <= 0.0)
+                            {
+                            break;
+                            }
+                        const double halfW = chinEdgeX * std::sqrt(D);
+                        const int xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
+                        for (int xi = 0; xi <= xSteps; ++xi)
+                            {
+                            const double x = (cx - halfW) + xi * dotSpacing;
+                            const double offX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
+                            const double offY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
+                            const double sizeVar =
+                                0.6 + std::sin((x + offX) * 1.1 + (y + offY) * 0.9) * 0.4;
+                            gc->DrawEllipse(x + offX - dotSize * sizeVar * 0.5,
+                                            y + offY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
+                                            dotSize * sizeVar);
+                            }
+                        }
+                    }
+                }
+            else if (facialHair == FacialHair::FuManchu)
+                {
+                // thin mustache with two long narrow strands drooping past the mouth corners
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                gc->SetBrush(wxBrush{ hairColor });
+
+                const double mustacheY = mouthY - faceHeight * 0.07;
+                const double mustacheHalfWidth = mouthWidthVal * 1.15;
+                const double mustacheThickness = faceHeight * 0.07;
+                const double philtrumHalf = faceWidth * 0.03;
+                const double strandW = faceWidth * 0.07;
+                const double strandTopY = mustacheY + mustacheThickness * 0.15;
+                const double connBotY = cy + faceHeight * 0.82;
+                const double midMouthY = mouthY + faceHeight * 0.15;
+
+                for (const int side : { -1, 1 })
+                    {
+                    const double innerX = cx + side * philtrumHalf;
+                    const double outerX = cx + side * mustacheHalfWidth;
+
+                    // mustache half with philtrum gap
+                    wxGraphicsPath mustache = gc->CreatePath();
+                    mustache.MoveToPoint(innerX, mustacheY - mustacheThickness * 0.2);
+                    mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.6,
+                                                 mustacheY - mustacheThickness * 0.9, outerX,
+                                                 mustacheY);
+                    mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.7,
+                                                 mustacheY + mustacheThickness * 0.6, innerX,
+                                                 mustacheY + mustacheThickness * 0.3);
+                    mustache.CloseSubpath();
+                    gc->FillPath(mustache);
+                    gc->StrokePath(mustache);
+                    }
+
+                // horseshoe connector: both strands drop around the mouth corners and
+                // connect across the bottom under the chin as one continuous U shape.
+                // Trace inner boundary right-to-left, then outer boundary left-to-right.
+                const double hangX = faceWidth * 0.42;
+
+                wxGraphicsPath horseshoe = gc->CreatePath();
+
+                // right inner top -> inner bottom center
+                horseshoe.MoveToPoint(cx + hangX - strandW, strandTopY);
+                horseshoe.AddCurveToPoint(cx + hangX - strandW, midMouthY, cx + hangX * 0.35,
+                                          connBotY - strandW, cx, connBotY - strandW);
+
+                // inner bottom center -> left inner top
+                horseshoe.AddCurveToPoint(cx - hangX * 0.35, connBotY - strandW,
+                                          cx - hangX + strandW, midMouthY, cx - hangX + strandW,
+                                          strandTopY);
+
+                // across to left outer top
+                horseshoe.AddLineToPoint(cx - hangX - strandW, strandTopY);
+
+                // left outer top -> outer bottom center
+                horseshoe.AddCurveToPoint(cx - hangX - strandW, midMouthY, cx - hangX * 0.35,
+                                          connBotY + strandW, cx, connBotY + strandW);
+
+                // outer bottom center -> right outer top
+                horseshoe.AddCurveToPoint(cx + hangX * 0.35, connBotY + strandW,
+                                          cx + hangX + strandW, midMouthY, cx + hangX + strandW,
+                                          strandTopY);
+
+                // across to start
+                horseshoe.AddLineToPoint(cx + hangX - strandW, strandTopY);
+                horseshoe.CloseSubpath();
+                gc->FillPath(horseshoe);
+                gc->StrokePath(horseshoe);
+                }
+            }
+
         // draw hair that goes over forehead (after face, before eyebrows)
         if (hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade &&
             hairStyle != HairStyle::FlatTop)
@@ -1665,8 +2293,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         gc->StrokePath(nose);
 
         // draw mouth using quadratic curve
-        const double mouthY = cy + faceHeight * 0.45;
-        const double mouthWidthVal = faceWidth * 0.35 * (0.5 + features.mouthWidth);
         // curvature: 0=frown, 0.5=neutral, 1=smile
         const double curvature = (features.mouthCurvature - 0.5) * faceHeight * 0.2;
 
@@ -1711,202 +2337,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             mouth.MoveToPoint(cx - mouthWidthVal, mouthY);
             mouth.AddQuadCurveToPoint(cx, mouthY + curvature, cx + mouthWidthVal, mouthY);
             gc->StrokePath(mouth);
-
-            // draw facial hair for males
-            if (facialHair == FacialHair::FiveOClockShadow)
-                {
-                // stubble using hair color with transparency
-                const wxColour stubbleColor{ hairColor.Red(), hairColor.Green(), hairColor.Blue(),
-                                             80 };
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->SetBrush(wxBrush{ stubbleColor });
-
-                const double dotSize = faceHeight * 0.012;
-                const double spacing = dotSize * 1.4;
-
-                // beard area - from below mouth to chin, and along jawline to ears
-                const double beardTop = mouthY + faceHeight * 0.06;
-                const double chinBottom = cy + faceHeight * 0.95;
-
-                // fill the entire lower face area with stubble
-                const int ySteps = static_cast<int>(safe_divide(chinBottom - beardTop, spacing));
-                for (int yi = 0; yi <= ySteps; ++yi)
-                    {
-                    const double y = beardTop + yi * spacing;
-                    // calculate face width at this y position (ellipse)
-                    const auto normalizedY = safe_divide<double>(y - cy, faceHeight);
-                    const double faceWidthAtY =
-                        faceWidth * std::sqrt(std::max(0.0, 1.0 - normalizedY * normalizedY));
-
-                    const double xStart = cx - faceWidthAtY * 0.95;
-                    const int xSteps = static_cast<int>(safe_divide(faceWidthAtY * 1.9, spacing));
-                    for (int xi = 0; xi <= xSteps; ++xi)
-                        {
-                        const double x = xStart + xi * spacing;
-                        // randomize position
-                        const double offsetX = std::sin(x * 0.5 + y * 0.7) * dotSize * 0.8;
-                        const double offsetY = std::cos(x * 0.6 + y * 0.4) * dotSize * 0.8;
-                        const double dotX = x + offsetX;
-                        const double dotY = y + offsetY;
-
-                        // check within face ellipse
-                        const auto normX = safe_divide<double>(dotX - cx, faceWidth);
-                        const auto normY = safe_divide<double>(dotY - cy, faceHeight);
-                        if (normX * normX + normY * normY < 0.92)
-                            {
-                            // vary size
-                            const double sizeVar = 0.6 + std::sin(x * 1.1 + y * 0.9) * 0.4;
-                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
-                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
-                                            dotSize * sizeVar);
-                            }
-                        }
-                    }
-
-                // sideburns along face edge going up toward ears
-                for (const int side : { -1, 1 })
-                    {
-                    const double sideTop = cy + faceHeight * 0.1;
-                    const double sideBottom = mouthY + faceHeight * 0.08;
-
-                    const int sideYSteps =
-                        static_cast<int>(safe_divide(sideBottom - sideTop, spacing));
-                    for (int syi = 0; syi <= sideYSteps; ++syi)
-                        {
-                        const double y = sideTop + syi * spacing;
-                        // find face edge at this y (ellipse x for given y)
-                        const auto normY = safe_divide<double>(y - cy, faceHeight);
-                        const double edgeX =
-                            faceWidth * std::sqrt(std::max(0.0, 1.0 - normY * normY));
-
-                        // stubble width narrows as we go up
-                        const auto progress =
-                            safe_divide<double>(sideBottom - y, sideBottom - sideTop);
-                        const double stubbleWidth = faceWidth * 0.15 * (1.0 - progress * 0.5);
-
-                        // draw stubble along the edge
-                        const int inwardSteps =
-                            static_cast<int>(safe_divide(stubbleWidth, spacing));
-                        for (int ini = 0; ini <= inwardSteps; ++ini)
-                            {
-                            const double inward = ini * spacing;
-                            const double offsetX = std::sin(inward * 1.2 + y * 0.8) * dotSize * 0.7;
-                            const double offsetY = std::cos(inward * 0.9 + y * 1.1) * dotSize * 0.7;
-                            const double dotX = cx + side * (edgeX * 0.92 - inward) + offsetX;
-                            const double dotY = y + offsetY;
-
-                            const auto normX = safe_divide<double>(dotX - cx, faceWidth);
-                            const auto normDotY = safe_divide<double>(dotY - cy, faceHeight);
-                            if (normX * normX + normDotY * normDotY < 0.88)
-                                {
-                                const double sizeVar = 0.6 + std::cos(inward * 1.3 + y * 0.7) * 0.4;
-                                gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
-                                                dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
-                                                dotSize * sizeVar);
-                                }
-                            }
-                        }
-                    }
-
-                // mustache above upper lip
-                const double mustacheTop = mouthY - faceHeight * 0.12;
-                const double mustacheBottom = mouthY - faceHeight * 0.01;
-                const double mustacheSpacing = spacing * 0.9;
-                const int mustacheYSteps =
-                    static_cast<int>(safe_divide(mustacheBottom - mustacheTop, mustacheSpacing));
-                for (int myi = 0; myi <= mustacheYSteps; ++myi)
-                    {
-                    const double y = mustacheTop + myi * mustacheSpacing;
-                    const auto progress =
-                        safe_divide<double>(y - mustacheTop, mustacheBottom - mustacheTop);
-                    const double mustacheWidth = faceWidth * (0.15 + progress * 0.2);
-
-                    const double mxStart = cx - mustacheWidth;
-                    const int mustacheXSteps =
-                        static_cast<int>(safe_divide(mustacheWidth * 2, mustacheSpacing));
-                    for (int mxi = 0; mxi <= mustacheXSteps; ++mxi)
-                        {
-                        const double x = mxStart + mxi * mustacheSpacing;
-                        const double offsetX = std::sin(x * 1.5 + y * 2.3) * dotSize * 0.5;
-                        const double offsetY = std::cos(x * 1.8 + y * 1.6) * dotSize * 0.5;
-                        const double dotX = x + offsetX;
-                        const double dotY = y + offsetY;
-
-                        // small gap under nose center
-                        const double distFromCenter = std::abs(dotX - cx);
-                        if (distFromCenter > faceWidth * 0.04 ||
-                            y > mustacheTop + faceHeight * 0.04)
-                            {
-                            const double sizeVar = 0.7 + std::sin(x * 2.1 + y * 1.4) * 0.3;
-                            gc->DrawEllipse(dotX - dotSize * sizeVar * 0.5,
-                                            dotY - dotSize * sizeVar * 0.5, dotSize * sizeVar,
-                                            dotSize * sizeVar);
-                            }
-                        }
-                    }
-                }
-            else if (facialHair == FacialHair::VanDyke || facialHair == FacialHair::Mustache ||
-                     facialHair == FacialHair::Goatee)
-                {
-                // solid mustache and/or pointed chin goatee (no cheek/jaw growth)
-                const bool drawGoatee =
-                    (facialHair == FacialHair::Goatee || facialHair == FacialHair::VanDyke);
-                const bool drawMustache =
-                    (facialHair == FacialHair::Mustache || facialHair == FacialHair::VanDyke);
-
-                gc->SetPen(wxPen{ outlineColor, 1 });
-                gc->SetBrush(wxBrush{ hairColor });
-
-                if (drawGoatee)
-                    {
-                    // rounded top just under the lower lip,
-                    // narrowing to a point near the chin
-                    const double goateeTop = mouthY + faceHeight * 0.07;
-                    const double goateeTipY = cy + faceHeight * 0.78;
-                    const double goateeHalfTop = faceWidth * 0.18;
-                    const double goateeHalfMid = faceWidth * 0.12;
-
-                    wxGraphicsPath goatee = gc->CreatePath();
-                    goatee.MoveToPoint(cx - goateeHalfTop, goateeTop);
-                    goatee.AddQuadCurveToPoint(cx - goateeHalfMid,
-                                               goateeTop + (goateeTipY - goateeTop) * 0.6, cx,
-                                               goateeTipY);
-                    goatee.AddQuadCurveToPoint(cx + goateeHalfMid,
-                                               goateeTop + (goateeTipY - goateeTop) * 0.6,
-                                               cx + goateeHalfTop, goateeTop);
-                    goatee.AddQuadCurveToPoint(cx, goateeTop - faceHeight * 0.02,
-                                               cx - goateeHalfTop, goateeTop);
-                    goatee.CloseSubpath();
-                    gc->FillPath(goatee);
-                    gc->StrokePath(goatee);
-                    }
-
-                if (drawMustache)
-                    {
-                    // two curved halves with a philtrum gap at the center
-                    const double mustacheY = mouthY - faceHeight * 0.07;
-                    const double mustacheHalfWidth = faceWidth * 0.28;
-                    const double mustacheThickness = faceHeight * 0.06;
-                    const double philtrumHalf = faceWidth * 0.03;
-
-                    for (const int side : { -1, 1 })
-                        {
-                        wxGraphicsPath mustache = gc->CreatePath();
-                        const double innerX = cx + side * philtrumHalf;
-                        const double outerX = cx + side * mustacheHalfWidth;
-                        mustache.MoveToPoint(innerX, mustacheY - mustacheThickness * 0.2);
-                        mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.6,
-                                                     mustacheY - mustacheThickness * 0.9, outerX,
-                                                     mustacheY);
-                        mustache.AddQuadCurveToPoint(cx + side * mustacheHalfWidth * 0.7,
-                                                     mustacheY + mustacheThickness * 0.6, innerX,
-                                                     mustacheY + mustacheThickness * 0.3);
-                        mustache.CloseSubpath();
-                        gc->FillPath(mustache);
-                        gc->StrokePath(mustache);
-                        }
-                    }
-                }
             }
         }
 

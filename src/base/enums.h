@@ -118,7 +118,15 @@ namespace Wisteria
         /// @brief Mustache only (cheeks and chin shaved).
         Mustache,
         /// @brief Pointed chin goatee only (no mustache, cheeks shaved).
-        Goatee
+        Goatee,
+        /// @brief Thin mustache with long, narrow strands drooping past the mouth corners.
+        FuManchu,
+        /// @brief Dense stubble covering the lower face and extending slightly below the chin.
+        Beard,
+        /// @brief Beard along the jaw and chin with the upper lip cleanly shaved.
+        ///     Also known as the Shenandoah, whaler, Lincoln beard, Donegal, Amish beard,
+        ///     or Quaker beard.
+        ChinCurtain
         };
 
     /// @brief Where a ring is within a circle.

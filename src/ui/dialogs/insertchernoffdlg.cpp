@@ -188,6 +188,9 @@ namespace Wisteria::UI
         m_facialHairChoice->Append(_(L"Mustache"));
         m_facialHairChoice->Append(_(L"Goatee"));
         m_facialHairChoice->Append(_(L"Van Dyke"));
+        m_facialHairChoice->Append(_(L"Fu Manchu"));
+        m_facialHairChoice->Append(_(L"Beard"));
+        m_facialHairChoice->Append(_(L"Chin curtain"));
         m_facialHairLabel->Enable(m_gender == 1);
         m_facialHairChoice->Enable(m_gender == 1);
         cosmeticGrid->Add(m_facialHairChoice);
@@ -474,6 +477,12 @@ namespace Wisteria::UI
             return FacialHair::Goatee;
         case 4:
             return FacialHair::VanDyke;
+        case 5:
+            return FacialHair::FuManchu;
+        case 6:
+            return FacialHair::Beard;
+        case 7:
+            return FacialHair::ChinCurtain;
         default:
             return FacialHair::CleanShaven;
             }
@@ -607,6 +616,15 @@ namespace Wisteria::UI
             break;
         case FacialHair::VanDyke:
             m_facialHair = 4;
+            break;
+        case FacialHair::FuManchu:
+            m_facialHair = 5;
+            break;
+        case FacialHair::Beard:
+            m_facialHair = 6;
+            break;
+        case FacialHair::ChinCurtain:
+            m_facialHair = 7;
             break;
         case FacialHair::CleanShaven:
             [[fallthrough]];

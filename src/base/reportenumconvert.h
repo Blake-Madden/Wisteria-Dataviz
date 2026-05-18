@@ -965,7 +965,10 @@ namespace Wisteria
                 { L"five-o-clock-shadow", FacialHair::FiveOClockShadow },
                 { L"van-dyke", FacialHair::VanDyke },
                 { L"mustache", FacialHair::Mustache },
-                { L"goatee", FacialHair::Goatee }
+                { L"goatee", FacialHair::Goatee },
+                { L"fu-manchu", FacialHair::FuManchu },
+                { L"beard", FacialHair::Beard },
+                { L"chin-curtain", FacialHair::ChinCurtain }
             };
 
             const auto foundValue = facialHairValues.find(value.Lower().ToStdWstring());
@@ -1913,7 +1916,9 @@ namespace Wisteria
                 { FacialHair::FiveOClockShadow, L"five-o-clock-shadow" },
                 { FacialHair::VanDyke, L"van-dyke" },
                 { FacialHair::Mustache, L"mustache" },
-                { FacialHair::Goatee, L"goatee" }
+                { FacialHair::Goatee, L"goatee" },
+                { FacialHair::FuManchu, L"fu-manchu" },
+                { FacialHair::Beard, L"beard" }
             };
 
             const auto foundValue = values.find(value);
