@@ -285,7 +285,9 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                       "      svg.dark-mode [fill=\"#000000\"], svg.dark-mode [fill=\"black\"] "
                       "{ fill: #e8e8e8; }\n"
                       "      svg.dark-mode [stroke=\"#000000\"], svg.dark-mode [stroke=\"black\"] "
-                      "{ stroke: #e8e8e8; }\n" +
+                      "{ stroke: #e8e8e8; }\n"
+                      "      svg.dark-mode [fill=\"#1F4387\"] { fill: #87CEFA; }\n"
+                      "      svg.dark-mode [stroke=\"#1F4387\"] { stroke: #87CEFA; }\n" +
                       GenerateDarkModeFillReplacements(std::wstring_view{ svgContent }) +
                       L"      svg.dark-mode [stroke=\"#FFFFFF\"] { stroke: #000000; }\n"
                       "      svg.dark-mode #svg-bg { fill: #000000; }\n"
