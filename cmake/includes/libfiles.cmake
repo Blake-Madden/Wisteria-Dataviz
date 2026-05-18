@@ -22,6 +22,10 @@ SET(WISTERIA_SRC
     src/base/reportnodeloader.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
+    src/base/shapes_buildings.cpp
+    src/base/shapes_food.cpp
+    src/base/shapes_people.cpp
+    src/base/shapes_vehicles.cpp
     src/base/svgreportprintout.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
