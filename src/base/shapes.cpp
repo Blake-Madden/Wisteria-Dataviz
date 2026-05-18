@@ -3446,92 +3446,54 @@ namespace Wisteria::GraphItems
         gc->SetBrush(wxBrush{ fillColor });
         gc->FillPath(arrowPath);
 
-            // sheen: spans full width and fills the entire upper head
+            // sheen: diagonal highlight band within the arrow head only.
+            // The head region is geometrically well-defined (bounded by the head diagonal),
+            // so no clip region is needed and no pixels escape the arrow boundary.
             {
             const auto width = static_cast<double>(rect.GetWidth());
             const auto height = static_cast<double>(rect.GetHeight());
 
-            // arrow geometry we've already used
-            constexpr double SHEEN_SHAFT_RATIO = math_constants::half;
-            const double xShaftEnd = rect.GetLeft() + (rect.GetWidth() * SHEEN_SHAFT_RATIO);
+            const double xShaftEnd = rect.GetLeft() + (rect.GetWidth() * math_constants::half);
             const double yMid = rect.GetTop() + (rect.GetHeight() * math_constants::half);
             const double yTop = rect.GetTop();
-            const double xLeft = rect.GetLeft();
             const double xRight = rect.GetRight();
 
-            // head top line: (xShaftEnd, yTop) -> (xRight, yMid)
+            // head top diagonal: (xShaftEnd, yTop) -> (xRight, yMid)
             const double headSlope =
                 safe_divide((yMid - yTop), std::max(1.0, (xRight - xShaftEnd)));
             auto yOnHeadTop = [&](double x) { return yTop + (headSlope * (x - xShaftEnd)); };
 
-            // band thickness and caps
             const double bandThickness = std::max(height * 0.22, 2.0);
             const double capRadius = bandThickness * 0.45;
-
-            // left: start just inside shaft, a touch above its mid
-            const double xL = xLeft + (width * 0.04);
-            const double yMidL = ((yTop + yMid) * math_constants::half) +
-                                 (height * 0.03); // comfortable height on the body
-            const double y1L = yMidL - (bandThickness * math_constants::half);
-            const double y2L = yMidL + (bandThickness * math_constants::half);
-
-            // junction: force-contact with head top (epsilon tucked in)
             const double epsPx = std::max(1.0, ScaleToScreenAndCanvas(1.0));
-            const double xJ = xShaftEnd + epsPx; // 1px inside the head
-            const double yJ = yTop + epsPx;      // exactly on head top at junction
 
-            // right end: almost at tip; upper edge glued to head-top line
+            // left edge: just inside the head's top-left corner
+            const double xJ = xShaftEnd + epsPx;
+            const double y1J = yTop + epsPx;
+            const double y2J = std::min(y1J + bandThickness, yMid - epsPx);
+
+            // right edge: near the tip, glued to the head-top diagonal
             const double xR = xRight - (width * 0.005);
             const double y1R = yOnHeadTop(xR) + epsPx;
-            const double y2R = std::min(y1R + bandThickness, yMid);
+            const double y2R = std::min(y1R + bandThickness, yMid - epsPx);
 
             wxGraphicsPath sheen = gc->CreatePath();
-
-            // upper edge: left S-curve -> exactly the junction -> along head-top to near tip
-            sheen.MoveToPoint(xL, y1L);
-            sheen.AddCurveToPoint(xL + (width * 0.30),
-                                  y1L - (height * 0.14), // lift early (pronounced)
-                                  xShaftEnd - (width * 0.02),
-                                  y1L + (height * 0.08), // approach from body side
-                                  xJ, yJ);               // land right on the head's top corner
-            sheen.AddLineToPoint(xR, y1R);               // ride the head-top edge to the right
-
-            // rounded right cap down to lower edge
+            sheen.MoveToPoint(xJ, y1J);
+            sheen.AddLineToPoint(xR, y1R);
             sheen.AddQuadCurveToPoint(xR + (capRadius * 0.70), (y1R + y2R) * math_constants::half,
                                       xR, y2R);
-
-            // lower edge: counter-wave back to left (keeps thickness even)
-            sheen.AddCurveToPoint(xShaftEnd - (width * 0.06),
-                                  y2L - (height * math_constants::tenth), xL + (width * 0.28),
-                                  y2L + (height * 0.05), xL, y2L);
-
-            // rounded left cap back to start
-            sheen.AddQuadCurveToPoint(xL - (capRadius * 0.70), (y1L + y2L) * math_constants::half,
-                                      xL, y1L);
-
+            sheen.AddLineToPoint(xJ, y2J);
+            sheen.AddQuadCurveToPoint(xJ - (capRadius * 0.70), (y1J + y2J) * math_constants::half,
+                                      xJ, y1J);
             sheen.CloseSubpath();
 
-            // vertical gradient (brighter at the upper edge)
-            const double gradTop = std::min(y1L, y1R);
-            const double gradBottom = std::max(y2L, y2R);
-
             const auto sheenBrush = gc->CreateLinearGradientBrush(
-                0, gradTop, 0, gradBottom, Colors::ColorContrast::ChangeOpacity(*wxWHITE, 175),
+                0, y1J, 0, y2J, Colors::ColorContrast::ChangeOpacity(*wxWHITE, 175),
                 Colors::ColorContrast::ChangeOpacity(*wxWHITE, 70));
 
-            std::array<wxPoint, 7> arrowPoints = {
-                wxPoint{ left, shaftTop },    wxPoint{ shaftEndX, shaftTop },
-                wxPoint{ shaftEndX, top },    wxPoint{ right, midY },
-                wxPoint{ shaftEndX, bottom }, wxPoint{ shaftEndX, shaftBottom },
-                wxPoint{ left, shaftBottom }
-            };
-
-            gc->PushState();
-            gc->Clip(wxRegion{ arrowPoints.size(), arrowPoints.data() });
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
-            gc->PopState();
             }
 
             // double outline: outer (base), inner (lighter tint)
