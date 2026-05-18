@@ -127,7 +127,9 @@ namespace Wisteria::Icons
         ChocolateChipCookie,      /*!< A chocolate chip cookie.*/
         CoffeeShopCup,            /*!< A takeaway coffee cup with sleeve and logo.*/
         Pill,                     /*!< A medicine pill/capsule.*/
-        Tractor                   /*!< A side-view of a tractor.*/
+        Tractor,                  /*!< A side-view of a tractor.*/
+        Butterfly,                /*!< A butterfly.*/
+        Star                      /*!< A star.*/
         };
 
     /// @brief Item to draw on a legend.

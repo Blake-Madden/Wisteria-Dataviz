@@ -145,6 +145,14 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the flower within.
         /// @param dc The DC to draw to.
         void DrawSunFlower(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a butterfly.
+        /// @param rect The area to draw the butterfly within.
+        /// @param dc The DC to draw to.
+        void DrawButterfly(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a star.
+        /// @param rect The area to draw the star within.
+        /// @param dc The DC to draw to.
+        void DrawStar(wxRect rect, wxDC& dc) const;
         /// @brief Draws an orange red leaf.
         /// @param rect The area to draw the leaf within.
         /// @param dc The DC to draw to.

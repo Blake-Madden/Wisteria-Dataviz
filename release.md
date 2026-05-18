@@ -9,6 +9,8 @@
 - Added OpenDocument Spreadsheet importer
 - Added new shapes:
     - Tractor
+    - Butterfly
+    - Star
 - Improved *Excel* importer performance
 - Likert chart now implicitly uses default response labels on legend (if none are found in dataset)
 - Fixed group-label display in heatmaps when data are not sorted by groups

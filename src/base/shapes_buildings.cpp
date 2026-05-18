@@ -514,4 +514,440 @@ namespace Wisteria::GraphItems
             }
         }
 
+    //---------------------------------------------------
+    void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc) const
+        {
+        const wxDCBrushChanger bc(
+            dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow)));
+
+        const auto iconRadius = GetRadius(rect);
+
+            // sign post
+            {
+            const std::array<wxPoint, 2> pt = { rect.GetTopLeft() +
+                                                    // top of post is in the middle of the sign
+                                                    // so that pen cap doesn't appear above sign
+                                                    wxSize(rect.GetWidth() / 2, iconRadius),
+                                                // bottom
+                                                rect.GetBottomLeft() +
+                                                    wxSize(rect.GetWidth() / 2, 0) };
+            const auto signPostWidth =
+                std::min<int>(ScaleToScreenAndCanvas(3), (rect.GetWidth() / 15));
+                // dark gray outline of sign post used to contrast black sign post
+                // against a possibly dark background
+                {
+                const wxDCPenChanger pc{
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                  .Cap(wxPenCap::wxCAP_BUTT))
+                };
+                dc.DrawLine(pt[0], pt[1]);
+                }
+                // actual sign post
+                {
+                const wxDCPenChanger pc{
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray),
+                                        signPostWidth)
+                                  .Cap(wxPenCap::wxCAP_BUTT))
+                };
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            }
+            // sign
+            {
+            const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
+            const wxDCPenChanger pc{ dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               ScaleToScreenAndCanvas(signOutlineWidth)) };
+            const auto signHeight = rect.GetHeight() * math_constants::third;
+            const auto signRadius = std::min(signHeight, iconRadius);
+            const auto circleCenter = rect.GetLeftTop() + wxSize(rect.GetWidth() / 2, signRadius);
+            const std::array<wxPoint, 4> points = { circleCenter + wxPoint(0, -signRadius),
+                                                    circleCenter + wxPoint(signRadius, 0),
+                                                    circleCenter + wxPoint(0, signRadius),
+                                                    circleCenter + wxPoint(-signRadius, 0) };
+            dc.DrawPolygon(points.size(), points.data());
+            // ! label
+            Label bangLabel(GraphItemInfo{ L"!" }
+                                .Pen(wxNullPen)
+                                .AnchorPoint(circleCenter)
+                                .Anchoring(Anchoring::Center)
+                                .LabelAlignment(TextAlignment::Centered)
+                                .DPIScaling(GetDPIScaleFactor()));
+            bangLabel.SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+            bangLabel.GetFont().MakeBold();
+            bangLabel.SetBoundingBox(
+                wxRect(rect.GetLeftTop(),
+                       wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::two_thirds)),
+                dc, GetScaling());
+            bangLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            bangLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+            bangLabel.Draw(dc);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc) const
+        {
+        const wxDCBrushChanger bc(
+            dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow)));
+
+            // sign post
+            {
+            const auto iconRadius = GetRadius(rect);
+            const std::array<wxPoint, 2> pt = {
+                rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, iconRadius),
+                // bottom
+                rect.GetBottomLeft() + wxSize(rect.GetWidth() / 2, 0)
+            };
+            const auto signPostWidth =
+                std::min<int>(ScaleToScreenAndCanvas(3), (rect.GetWidth() / 15));
+                // dark gray outline of sign post
+                {
+                const wxDCPenChanger pc(
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                  .Cap(wxPenCap::wxCAP_BUTT)));
+                dc.DrawLine(pt[0], pt[1]);
+                }
+                // actual sign post
+                {
+                const wxDCPenChanger pc(
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray),
+                                        signPostWidth)
+                                  .Cap(wxPenCap::wxCAP_BUTT)));
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            }
+            // sign
+            {
+            const auto signRect =
+                wxRect(rect.GetLeftTop(),
+                       wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::two_thirds));
+            DrawCircularSign(signRect, Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen),
+                             // TRANSLATORS: A GO sign, as in OK to proceed.
+                             _(L"GO"), dc);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawBanner(const wxRect rect, wxDC& dc) const
+        {
+            // sign posts
+            {
+            std::array<wxPoint, 2> pt = { rect.GetTopLeft(), rect.GetBottomLeft() };
+            const auto signPostWidth =
+                std::min<int>(ScaleToScreenAndCanvas(8), (rect.GetWidth() / 5));
+            pt[0].x += signPostWidth / 2;
+            pt[1].x += signPostWidth / 2;
+
+            const auto drawPost = [&]()
+            {
+                // white outline of sign post used to contrast black sign post
+                // against a possibly dark background
+                {
+                const wxDCPenChanger pc{
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::White),
+                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                  .Cap(wxPenCap::wxCAP_BUTT))
+                };
+                dc.DrawLine(pt[0], pt[1]);
+                }
+                // actual sign post
+                {
+                const wxDCPenChanger pc{
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray),
+                                        signPostWidth)
+                                  .Cap(wxPenCap::wxCAP_BUTT))
+                };
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            };
+
+            drawPost();
+            pt[0].x = rect.GetRight() - signPostWidth / 2;
+            pt[1].x = rect.GetRight() - signPostWidth / 2;
+            drawPost();
+            }
+            // sign
+            {
+            auto anchorPt = rect.GetTopLeft();
+            anchorPt.y += rect.GetHeight() * math_constants::twentieth;
+            Label bannerLabel(
+                GraphItemInfo{ GetGraphItemInfo().GetText() }
+                    .Pen(wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::Black), 1)))
+                    .FontBackgroundColor(GetGraphItemInfo().GetBrush().GetColour())
+                    .FontColor(GetGraphItemInfo().GetPen().GetColour())
+                    .Anchoring(Anchoring::TopLeftCorner)
+                    .LabelAlignment(TextAlignment::Centered)
+                    .DPIScaling(GetDPIScaleFactor()));
+            bannerLabel.GetFont().MakeBold();
+            bannerLabel.SetBoundingBox(
+                wxRect(anchorPt, wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::third)),
+                dc, GetScaling());
+            bannerLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            bannerLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+            bannerLabel.Draw(dc);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        const wxRect dcRect{ rect };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for geo marker!");
+        if (gc != nullptr)
+            {
+            wxPen scaledPen = GetGraphItemInfo().GetPen();
+            if (scaledPen.IsOk())
+                {
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                }
+
+            gc->SetPen(scaledPen);
+            gc->SetBrush(GetGraphItemInfo().GetBrush());
+            auto marker = gc->CreatePath();
+            // bottom middle, stretched out to both top corners
+            marker.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
+                               GetYPosFromTop(dcRect, 1));
+            marker.AddCurveToPoint(GetXPosFromLeft(dcRect, -math_constants::three_quarters),
+                                   GetYPosFromTop(dcRect, -math_constants::quarter),
+                                   GetXPosFromLeft(dcRect, 1.75),
+                                   GetYPosFromTop(dcRect, -math_constants::quarter),
+                                   GetXPosFromLeft(dcRect, math_constants::half),
+                                   GetYPosFromTop(dcRect, math_constants::full));
+
+            marker.CloseSubpath();
+            gc->FillPath(marker);
+            gc->StrokePath(marker);
+
+            // outer ring in center of head
+            wxRect topRect = dcRect;
+            topRect.SetHeight(topRect.GetHeight() * math_constants::third);
+            topRect.SetWidth(topRect.GetHeight()); // make it a square
+            topRect.SetX(topRect.GetX() + ((dcRect.GetWidth() / 2) - (topRect.GetWidth() / 2)));
+            topRect.SetY(topRect.GetY() + (topRect.GetHeight() * math_constants::two_thirds));
+
+            gc->SetBrush(wxBrush(
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour())));
+            gc->SetPen(wxPen(
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour())));
+            gc->DrawEllipse(topRect.GetTopLeft().x, topRect.GetTopLeft().y, topRect.GetWidth(),
+                            topRect.GetHeight());
+
+            topRect.Deflate(topRect.GetWidth() * math_constants::third);
+            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
+            gc->SetPen(Colors::ColorBrewer::GetColor(Colors::Color::White));
+            gc->DrawEllipse(topRect.GetTopLeft().x, topRect.GetTopLeft().y, topRect.GetWidth(),
+                            topRect.GetHeight());
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCurvingRoad(const wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        const GraphicsContextFallback gcWrap{ &dc, rect };
+        wxGraphicsContext* gc = gcWrap.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        // clip so stroke caps are cut flat at the edges of rect
+        gc->PushState();
+        gc->Clip(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+
+        const auto width = static_cast<double>(rect.GetWidth());
+        const auto height = static_cast<double>(rect.GetHeight());
+        // Base scale factor for size-independent drawing.
+        // Derived from the smaller rect dimension (clamped ≥1) so all widths,
+        // offsets, and tapers scale proportionally to the available space.
+        const double baseScale = std::max(1.0, std::min(width, height));
+
+        // perspective taper
+        const double roadWidthNear = baseScale * 0.40;
+        const double roadWidthFar = baseScale * 0.12;
+
+        const double shoulderPad = baseScale * 0.035;
+
+        // dashed centerline: thin, constant width
+        const double laneWidth = std::max(1.0, (roadWidthNear + roadWidthFar) * 0.05);
+
+        // ---- left->right spline that climbs upward; sway only in X ------------
+        constexpr int NODES{ 6 };
+        const auto stepX = safe_divide<double>(width, (NODES - 1));
+
+        const double baseY0 = rect.GetBottom() - (height * 0.12); // near
+        const double baseY1 = rect.GetTop() + (height * 0.02);    // far
+
+        const double ampMax = std::max(0.0, (width * 0.45) - (roadWidthNear * 0.6));
+
+        // linear interpolation
+        const auto lerp = [](double a, double b, double t) noexcept { return a + ((b - a) * t); };
+
+        const auto anchorAt = [&](int i) -> wxPoint2DDouble
+        {
+            const auto t = safe_divide<double>(i, (NODES - 1)); // 0..1 left->right
+            const double baseX =
+                rect.GetLeft() - (stepX * math_constants::quarter) + (i * stepX * 1.05);
+            const double baseY = lerp(baseY0, baseY1, t); // climbs upward
+            const double amp = ampMax * (1.0 - t * 0.55); // sway fades with distance
+            const double dir = (i % 2 == 0) ? -1.0 : 1.0;
+            return { baseX + (dir * amp), baseY };
+        };
+
+        std::vector<wxPoint2DDouble> points;
+        points.reserve(NODES + 2);
+        points.push_back(anchorAt(0));
+        for (int i = 0; i < NODES; ++i)
+            {
+            points.push_back(anchorAt(i));
+            }
+        points.push_back(anchorAt(NODES - 1));
+
+        // sample Catmull–Rom into a polyline
+        const auto catmullPoint = [&](int i, double u) -> wxPoint2DDouble
+        {
+            const wxPoint2DDouble& p0 = points[i - 1];
+            const wxPoint2DDouble& p1 = points[i];
+            const wxPoint2DDouble& p2 = points[i + 1];
+            const wxPoint2DDouble& p3 = points[i + 2];
+
+            const double t = 0.55, u2 = u * u, u3 = u2 * u;
+
+            const double m1x = (p2.m_x - p0.m_x) * (t / 2.0);
+            const double m1y = (p2.m_y - p0.m_y) * (t / 2.0);
+            const double m2x = (p3.m_x - p1.m_x) * (t / 2.0);
+            const double m2y = (p3.m_y - p1.m_y) * (t / 2.0);
+
+            const double h00 = ((2 * u3) - (3 * u2) + 1);
+            const double h10 = (u3 - (2 * u2) + u);
+            const double h01 = ((-2 * u3) + (3 * u2));
+            const double h11 = (u3 - u2);
+
+            return { (h00 * p1.m_x) + (h10 * m1x) + (h01 * p2.m_x) + (h11 * m2x),
+                     (h00 * p1.m_y) + (h10 * m1y) + (h01 * p2.m_y) + (h11 * m2y) };
+        };
+
+        std::vector<wxPoint2DDouble> samples;
+        samples.reserve(((NODES - 1) * 18) + 1);
+        for (int i = 1; i < static_cast<int>(points.size()) - 2; ++i)
+            {
+            constexpr int SEGS_PER_SPAN{ 18 };
+            for (int j = 0; j < SEGS_PER_SPAN; ++j)
+                {
+                const auto yVal = safe_divide<double>(j, SEGS_PER_SPAN);
+                samples.push_back(catmullPoint(i, yVal));
+                }
+            }
+        samples.push_back(points[points.size() - 2]);
+
+        // build one continuous GC path from samples (for shadow and lane)
+        wxGraphicsPath splinePath = gc->CreatePath();
+        splinePath.MoveToPoint(samples.front().m_x, samples.front().m_y);
+        for (size_t i = 1; i < samples.size(); ++i)
+            {
+            splinePath.AddLineToPoint(samples[i].m_x, samples[i].m_y);
+            }
+
+        // helper to draw tapered strokes as short segments (for shoulder/asphalt/shadow)
+        const auto strokeTapered = [&](const wxColour& col, double wNear, double wFar)
+        {
+            for (size_t i = 1; i < samples.size(); ++i)
+                {
+                const auto t = safe_divide<double>(i, (samples.size() - 1));
+                const double w = lerp(wNear, wFar, t);
+                const wxGraphicsPen pen =
+                    gc->CreatePen(wxGraphicsPenInfo{ col, w }.Cap(wxCAP_ROUND).Join(wxJOIN_ROUND));
+                gc->SetPen(pen);
+                wxGraphicsPath seg = gc->CreatePath();
+                seg.MoveToPoint(samples[i - 1].m_x, samples[i - 1].m_y);
+                seg.AddLineToPoint(samples[i].m_x, samples[i].m_y);
+                gc->StrokePath(seg);
+                }
+        };
+
+            // ---- hard shadow: same as outline, slightly offset to the right ----------
+            {
+            gc->PushState();
+
+            // push the entire tapered stroke slightly to the right
+            const double nudge = baseScale * 0.03; // small offset
+            gc->Translate(nudge, 0.0);
+
+            // darker, subtle version of the outline
+            const wxColour hardShadowCol{ 0, 0, 0, 20 };
+
+            // just reuse the existing tapered stroke logic
+            strokeTapered(hardShadowCol, roadWidthNear + shoulderPad, roadWidthFar + shoulderPad);
+
+            gc->PopState();
+            }
+
+        // ---- shoulders (tapered) ----------------------------------------------
+        const wxColour shoulderCol{ 226, 232, 242 };
+        strokeTapered(shoulderCol, roadWidthNear + shoulderPad, roadWidthFar + shoulderPad);
+
+        // ---- asphalt (tapered) -------------------------------------------------
+        const wxColour asphalt{ 28, 31, 38 };
+        strokeTapered(asphalt, roadWidthNear * 1.03, roadWidthFar * 1.03);
+
+            // ---- center line: thin, dashed, continuous stroke via GC --------------
+            {
+            const wxGraphicsPen lanePen = gc->CreatePen(wxGraphicsPenInfo{
+                Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow), laneWidth }
+                                                            .Style(wxPENSTYLE_SHORT_DASH)
+                                                            .Cap(wxCAP_ROUND)
+                                                            .Join(wxJOIN_ROUND));
+            gc->SetPen(lanePen);
+            gc->StrokePath(splinePath);
+            }
+
+        gc->PopState();
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCircularSign(const wxRect rect, const wxBrush& brush,
+                                         const wxString& text, wxDC& dc) const
+        {
+        const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
+        const wxDCPenChanger pc(dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                          ScaleToScreenAndCanvas(signOutlineWidth)));
+        const wxDCBrushChanger bc(dc, brush);
+
+        const auto radius = GetRadius(rect);
+        const auto circleCenter = GetMidPoint(rect);
+
+        dc.DrawCircle(circleCenter, radius);
+
+        // lettering on the sign
+        Label theLabel(GraphItemInfo{ text }
+                           .Pen(wxNullPen)
+                           .AnchorPoint(circleCenter)
+                           .Anchoring(Anchoring::Center)
+                           .LabelAlignment(TextAlignment::Centered)
+                           .DPIScaling(GetDPIScaleFactor()));
+        theLabel.SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::White));
+        wxPoint theLabelCorner{ circleCenter };
+        auto rectWithinCircleWidth = geometry::radius_to_inner_rect_width(radius);
+        theLabelCorner.x -= rectWithinCircleWidth / 2;
+        theLabelCorner.y -= rectWithinCircleWidth / 2;
+        theLabel.SetBoundingBox(
+            wxRect(theLabelCorner, wxSize(rectWithinCircleWidth, rectWithinCircleWidth)), dc,
+            GetScaling());
+        theLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+        theLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+        theLabel.Draw(dc);
+        }
     } // namespace Wisteria::GraphItems

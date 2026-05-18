@@ -146,6 +146,7 @@ Properties common to all graphs:
   - `"pencil-rectangle"`
   - `"graduation-cap"`
   - `"book"`
+  - `"butterfly"`
   - `"tire"`
   - `"snowflake"`
   - `"newspaper"`
@@ -183,6 +184,7 @@ Properties common to all graphs:
   - `"chocolate-chip-cookie"`
   - `"coffee-shop-cup"`
   - `"pill"`
+  - `"star"`
   - `"tractor"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \

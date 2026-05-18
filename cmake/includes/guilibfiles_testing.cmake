@@ -22,9 +22,17 @@ SET(WISTERIA_SRC
     ../../src/base/reportnodeloader.cpp
     ../../src/base/reportprintout.cpp
     ../../src/base/shapes.cpp
+    ../../src/base/shapes_art.cpp
     ../../src/base/shapes_buildings.cpp
+    ../../src/base/shapes_business.cpp
+    ../../src/base/shapes_education.cpp
     ../../src/base/shapes_food.cpp
+    ../../src/base/shapes_geometric.cpp
+    ../../src/base/shapes_medical.cpp
+    ../../src/base/shapes_nature.cpp
     ../../src/base/shapes_people.cpp
+    ../../src/base/shapes_religion.cpp
+    ../../src/base/shapes_stats.cpp
     ../../src/base/shapes_vehicles.cpp
     ../../src/base/svgreportprintout.cpp
     ../../src/data/clone.cpp

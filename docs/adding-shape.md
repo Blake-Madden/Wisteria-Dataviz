@@ -76,6 +76,15 @@ In `src/base/reportenumconvert.h`, add string mappings in the `ConvertIcon` func
 { L"hawaiian-pizza", Icons::IconShape::HawaiianPizza }
 ```
 
+UI Support
+=============================
+
+In `src/ui/dialogs/insertshapedlg.cpp`, add the shape to the `shapes` list in `PopulateShapeChoice()` so that it can be selected from the "Insert Shape" dialog:
+
+```cpp
+{ _(L"Hawaiian pizza"), Icons::IconShape::HawaiianPizza }
+```
+
 Documentation
 =============================
 
@@ -92,4 +101,5 @@ Summary of Files to Modify
 2. `src/base/shapes.h` - Declare draw function in `ShapeRenderer`
 3. `src/base/shapes.cpp` - Register in `shapeMap` and implement draw function
 4. `src/base/reportenumconvert.h` - Add string mapping in `ConvertIcon`
-5. `docs/syntax-manual/graphs-properties.qmd` - Add to icon list in documentation
+5. `src/ui/dialogs/insertshapedlg.cpp` - Add to the shape selection dialog
+6. `docs/syntax-manual/graphs-properties.qmd` - Add to icon list in documentation
