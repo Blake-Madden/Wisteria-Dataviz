@@ -709,14 +709,14 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_useGlobalPrintSettings = sizeDlg.UseGlobalPrintSettings();
     if (savedOptions.m_useGlobalPrintSettings)
         {
-        const auto& printData = sizeDlg.GetPrintData();
+        const auto& dlgPrintData = sizeDlg.GetPrintData();
         for (auto* page : m_pages)
             {
-            page->GetPrinterSettings().SetOrientation(printData.GetOrientation());
-            page->GetPrinterSettings().SetPaperId(printData.GetPaperId());
+            page->GetPrinterSettings().SetOrientation(dlgPrintData.GetOrientation());
+            page->GetPrinterSettings().SetPaperId(dlgPrintData.GetPaperId());
             }
-        appSettings->SetPrintOrientation(printData.GetOrientation());
-        appSettings->SetPaperId(printData.GetPaperId());
+        appSettings->SetPrintOrientation(dlgPrintData.GetOrientation());
+        appSettings->SetPaperId(dlgPrintData.GetPaperId());
         }
     savedOptions.m_includeTransitions = sizeDlg.IncludeTransitions();
     savedOptions.m_includeHighlighting = sizeDlg.IncludeHighlighting();
@@ -2582,7 +2582,6 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
         plot->SetGender(dlg.GetGender());
         plot->SetHairStyle(dlg.GetHairStyle());
-        plot->SetFacialHair(dlg.GetFacialHair());
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
         plot->SetLipstickColor(dlg.GetLipstickColor());
@@ -2602,7 +2601,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
                       optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
                       optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
                       optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
-                      optVar(FID::EarSize));
+                      optVar(FID::EarSize), optVar(FID::HairAddition));
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
@@ -2617,7 +2616,8 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
                                                           { FID::MouthWidth, L"mouth-width" },
                                                           { FID::SmileFrown, L"mouth-curvature" },
                                                           { FID::FaceColor, L"face-saturation" },
-                                                          { FID::EarSize, L"ear-size" } };
+                                                          { FID::EarSize, L"ear-size" },
+                                                          { FID::HairAddition, L"hair-addition" } };
         for (const auto& [fid, propName] : featureProps)
             {
             const auto var = dlg.GetFeatureVariable(fid);
@@ -3892,7 +3892,6 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
         plot->SetGender(dlg.GetGender());
         plot->SetHairStyle(dlg.GetHairStyle());
-        plot->SetFacialHair(dlg.GetFacialHair());
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
         plot->SetLipstickColor(dlg.GetLipstickColor());
@@ -3912,7 +3911,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
                       optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
                       optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
                       optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
-                      optVar(FID::EarSize));
+                      optVar(FID::EarSize), optVar(FID::HairAddition));
         dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
@@ -3932,7 +3931,8 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
                                                           { FID::MouthWidth, L"mouth-width" },
                                                           { FID::SmileFrown, L"mouth-curvature" },
                                                           { FID::FaceColor, L"face-saturation" },
-                                                          { FID::EarSize, L"ear-size" } };
+                                                          { FID::EarSize, L"ear-size" },
+                                                          { FID::HairAddition, L"hair-addition" } };
         for (const auto& [fid, propName] : featureProps)
             {
             const auto var = dlg.GetFeatureVariable(fid);

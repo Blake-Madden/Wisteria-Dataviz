@@ -39,6 +39,7 @@ namespace Wisteria::Graphs
         | Mouth curvature | Frown @htmlonly &rarr; @endhtmlonly Smile |
         | Face color | Pale @htmlonly &rarr; @endhtmlonly Saturated |
         | Ear size | Small @htmlonly &rarr; @endhtmlonly Large |
+        | Hair addition | Category string mapped to FacialHair (male) or HairAccessory (female) |
 
         @par %Data:
             This plot accepts a Data::Dataset where multiple continuous columns
@@ -122,6 +123,11 @@ namespace Wisteria::Graphs
             @param mouthCurvatureColumn Column controlling smile/frown (optional).
             @param faceSaturationColumn Column controlling face color saturation (optional).
             @param earSizeColumn Column controlling ear size (optional).
+            @param hairAdditionColumn Optional categorical column controlling per-face hair
+           addition.\n For male faces, category strings are mapped to FacialHair values (e.g., @c
+           "beard", @c "mustache").\n For female faces, category strings are mapped to HairAccessory
+           values (e.g., @c "flower", @c "star").\n Unrecognized strings default to
+           FacialHair::CleanShaven or HairAccessory::None.
             @warning If the dataset contains more than @c MAX_FACES observations,
                 only the first @c MAX_FACES will be displayed and a warning will be logged.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset
@@ -140,7 +146,8 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& mouthWidthColumn = std::nullopt,
                      const std::optional<wxString>& mouthCurvatureColumn = std::nullopt,
                      const std::optional<wxString>& faceSaturationColumn = std::nullopt,
-                     const std::optional<wxString>& earSizeColumn = std::nullopt);
+                     const std::optional<wxString>& earSizeColumn = std::nullopt,
+                     const std::optional<wxString>& hairAdditionColumn = std::nullopt);
 
         /// @name Appearance Functions
         /// @brief Functions relating to the visual appearance of the faces.
@@ -294,17 +301,6 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /// @returns The facial hair style (male faces only).
-        [[nodiscard]]
-        FacialHair GetFacialHair() const noexcept
-            {
-            return m_facialHair;
-            }
-
-        /// @brief Sets the facial hair style (male faces only).
-        /// @param style The facial hair style to use.
-        void SetFacialHair(const FacialHair style) noexcept { m_facialHair = style; }
-
         /// @}
 
         /// @brief Identifiers for facial features.
@@ -321,7 +317,8 @@ namespace Wisteria::Graphs
             MouthWidth,
             SmileFrown,
             FaceColor,
-            EarSize
+            EarSize,
+            HairAddition
             };
 
         /// @brief Returns the localized display name for a feature.
@@ -363,9 +360,9 @@ namespace Wisteria::Graphs
             /// @brief Structure describing a feature label and its position.
             struct FeatureLabel
                 {
-                wxString columnName; ///< data column name (empty = not in use)
-                FeatureId featureId{ FeatureId::FaceWidth }; ///< feature identifier
-                bool leftSide{ true }; ///< whether label is on left or right side
+                wxString m_columnName; ///< data column name (empty = not in use)
+                FeatureId m_featureId{ FeatureId::FaceWidth }; ///< feature identifier
+                bool m_leftSide{ true }; ///< whether label is on left or right side
                 };
 
             [[nodiscard]]
@@ -416,10 +413,6 @@ namespace Wisteria::Graphs
             /// @param color The lipstick color.
             void SetLipstickColor(const wxColour& color) noexcept { m_lipstickColor = color; }
 
-            /// @brief Sets the facial hair style.
-            /// @param style The facial hair style.
-            void SetFacialHair(FacialHair style) noexcept { m_facialHair = style; }
-
             /// @brief Sets the pen for connection lines.
             /// @param pen The pen.
             void SetConnectionLinePen(const wxPen& pen) noexcept { m_connectionLinePen = pen; }
@@ -431,6 +424,24 @@ namespace Wisteria::Graphs
             void SetCanvasBackgroundColor(const wxColour& color) noexcept
                 {
                 m_canvasBackgroundColor = color;
+                }
+
+            /// @brief Sets the hair-addition factor labels (ordered by enum index).
+            /// @details When non-empty, the legend renders an additional "key" section
+            ///     below the face listing each label with its corresponding hair icon
+            ///     (facial hair for male, hair accessory for female).
+            /// @param labels The label list, where index @c N corresponds to
+            ///     @c FacialHair(N) / @c HairAccessory(N).
+            void SetHairAdditionLabels(std::vector<wxString> labels) noexcept
+                {
+                m_hairAdditionLabels = std::move(labels);
+                }
+
+            /// @brief Sets the hair-addition column name (used as the key section header).
+            /// @param name The column name.
+            void SetHairAdditionColumnName(wxString name) noexcept
+                {
+                m_hairAdditionColumnName = std::move(name);
                 }
 
           private:
@@ -446,6 +457,8 @@ namespace Wisteria::Graphs
                 }
 
             std::vector<FeatureLabel> m_features;
+            std::vector<wxString> m_hairAdditionLabels;
+            wxString m_hairAdditionColumnName;
             wxColour m_faceColorLighter{ 255, 239, 219 };
             wxColour m_faceColorDarker{ 255, 224, 189 };
             wxColour m_outlineColor{ *wxBLACK };
@@ -454,7 +467,6 @@ namespace Wisteria::Graphs
             wxColour m_hairColor{ 183, 82, 46 };
             Gender m_gender{ Gender::Female };
             HairStyle m_hairStyle{ HairStyle::Bob };
-            FacialHair m_facialHair{ FacialHair::CleanShaven };
             wxPen m_connectionLinePen{ *wxBLACK, 1 };
             wxColour m_canvasBackgroundColor{ *wxWHITE };
             wxRect m_rect;
@@ -494,19 +506,24 @@ namespace Wisteria::Graphs
         /// @brief Internal structure holding normalized feature values for one face.
         struct FaceFeatures
             {
-            double faceWidth{ DEFAULT_FEATURE_VALUE };
-            double faceHeight{ DEFAULT_FEATURE_VALUE };
-            double eyeSize{ DEFAULT_FEATURE_VALUE };
-            double eyePosition{ DEFAULT_FEATURE_VALUE };
-            double eyebrowSlant{ DEFAULT_FEATURE_VALUE };
-            double pupilPosition{ DEFAULT_FEATURE_VALUE };
-            double noseSize{ DEFAULT_FEATURE_VALUE };
-            double mouthWidth{ DEFAULT_FEATURE_VALUE };
-            double mouthCurvature{ DEFAULT_FEATURE_VALUE };
-            double faceSaturation{ DEFAULT_FEATURE_VALUE };
-            double earSize{ DEFAULT_FEATURE_VALUE };
-            wxString label;
-            bool allDataMissing{ false };
+            double m_faceWidth{ DEFAULT_FEATURE_VALUE };
+            double m_faceHeight{ DEFAULT_FEATURE_VALUE };
+            double m_eyeSize{ DEFAULT_FEATURE_VALUE };
+            double m_eyePosition{ DEFAULT_FEATURE_VALUE };
+            double m_eyebrowSlant{ DEFAULT_FEATURE_VALUE };
+            double m_pupilPosition{ DEFAULT_FEATURE_VALUE };
+            double m_noseSize{ DEFAULT_FEATURE_VALUE };
+            double m_mouthWidth{ DEFAULT_FEATURE_VALUE };
+            double m_mouthCurvature{ DEFAULT_FEATURE_VALUE };
+            double m_faceSaturation{ DEFAULT_FEATURE_VALUE };
+            double m_earSize{ DEFAULT_FEATURE_VALUE };
+            FacialHair m_facialHair{ FacialHair::CleanShaven };
+            HairAccessory m_hairAccessory{ HairAccessory::Butterfly };
+            /// @brief Whether @c m_hairAccessory should be rendered. Set to @c true
+            ///     only when a hair-addition column is mapped for this face.
+            bool m_hasHairAccessory{ false };
+            wxString m_label;
+            bool m_allDataMissing{ false };
             };
 
         /// @brief A drawable face object.
@@ -517,13 +534,12 @@ namespace Wisteria::Graphs
                        const wxSize& sz, const wxColour& faceColorLighter,
                        const wxColour& faceColorDarker, const wxColour& outlineColor,
                        const wxColour& lipstickColor, const wxColour& eyeColor,
-                       const wxColour& hairColor, const HairStyle hairStyle, const Gender gender,
-                       const FacialHair facialHair)
+                       const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
                 : GraphItemBase(itemInfo), m_features(std::move(features)), m_size(sz),
                   m_faceColorLighter(faceColorLighter), m_faceColorDarker(faceColorDarker),
                   m_outlineColor(outlineColor), m_lipstickColor(lipstickColor),
                   m_eyeColor(eyeColor), m_hairColor(hairColor), m_hairStyle(hairStyle),
-                  m_gender(gender), m_facialHair(facialHair)
+                  m_gender(gender)
                 {
                 }
 
@@ -561,10 +577,23 @@ namespace Wisteria::Graphs
             wxColour m_hairColor;
             HairStyle m_hairStyle{ HairStyle::Bob };
             Gender m_gender{ Gender::Female };
-            FacialHair m_facialHair{ FacialHair::CleanShaven };
             };
 
         void RecalcSizes(wxDC& dc) final;
+
+        /// @brief Which parts of the face to include when calling DrawFace().
+        /// @details Each flag defaults to @c true; set fields to @c false to skip
+        ///     drawing that part (useful for minimal/legend-icon renderings).
+        struct FaceParts
+            {
+            bool m_face{ true };       ///< face oval + ears + skin color
+            bool m_cheeks{ true };     ///< rosy cheeks (female only)
+            bool m_eyes{ true };       ///< eyes, pupils, eyelashes, eyebrows
+            bool m_nose{ true };       ///< nose
+            bool m_mouth{ true };      ///< mouth and lips
+            bool m_facialHair{ true }; ///< facial hair (male only)
+            bool m_hair{ true };       ///< head hair
+            };
 
         /// @brief Draws a single face within the specified rectangle.
         /// @param gc The graphics context to draw to.
@@ -578,13 +607,13 @@ namespace Wisteria::Graphs
         /// @param hairColor The hair color.
         /// @param hairStyle The hair style.
         /// @param gender The gender for face styling.
-        /// @param facialHair The facial hair style (male only).
+        /// @param parts Which parts of the face to draw (defaults to all).
         static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,
                              const FaceFeatures& features, const wxColour& faceColorLighter,
                              const wxColour& faceColorDarker, const wxColour& outlineColor,
                              const wxColour& lipstickColor, const wxColour& eyeColor,
                              const wxColour& hairColor, HairStyle hairStyle, Gender gender,
-                             FacialHair facialHair);
+                             const FaceParts& parts = FaceParts{});
 
         /// @brief Normalizes a value to the [0,1] range.
         /// @param value The raw value.
@@ -610,7 +639,6 @@ namespace Wisteria::Graphs
         bool m_showLabels{ true };
         Gender m_gender{ Gender::Female };
         HairStyle m_hairStyle{ HairStyle::Bob };
-        FacialHair m_facialHair{ FacialHair::CleanShaven };
 
         // column names for legend
         wxString m_faceWidthColumnName;
@@ -624,6 +652,11 @@ namespace Wisteria::Graphs
         wxString m_mouthCurvatureColumnName;
         wxString m_faceSaturationColumnName;
         wxString m_earSizeColumnName;
+        wxString m_hairAdditionColumnName;
+
+        // hair-addition factor labels, ordered by enum index
+        // (index N corresponds to FacialHair(N) and HairAccessory(N)).
+        std::vector<wxString> m_hairAdditionLabels;
 
         LegendType m_lastLegendType{ LegendType::Enhanced };
         };

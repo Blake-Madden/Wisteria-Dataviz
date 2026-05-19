@@ -27,7 +27,7 @@ namespace Wisteria::UI
             - A dataset selector (from the project's datasets).
             - A "Variables..." button that opens a VariableSelectDlg.
             - A label grid showing the feature-to-variable mappings.
-            - Choice boxes for gender, hair style, facial hair, and color pickers.*/
+            - Choice boxes for gender and hair style, and color pickers.*/
     class InsertChernoffDlg final : public InsertGraphDlg
         {
       public:
@@ -74,10 +74,6 @@ namespace Wisteria::UI
         /// @returns The selected hair style.
         [[nodiscard]]
         HairStyle GetHairStyle() const;
-
-        /// @returns The selected facial hair style.
-        [[nodiscard]]
-        FacialHair GetFacialHair() const;
 
         /// @returns The lighter skin color (low saturation).
         [[nodiscard]]
@@ -148,7 +144,7 @@ namespace Wisteria::UI
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         /// @brief The number of facial features available for variable mapping.
-        constexpr static size_t FEATURE_COUNT{ 11 };
+        constexpr static size_t FEATURE_COUNT{ 12 };
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -161,13 +157,10 @@ namespace Wisteria::UI
         // DDX data members
         int m_gender{ 0 };
         int m_hairStyle{ 1 };
-        int m_facialHair{ 0 };
         bool m_showLabels{ true };
         bool m_useEnhancedLegend{ true };
 
         // controls needed for event handlers or without DDX support
-        wxStaticText* m_facialHairLabel{ nullptr };
-        wxChoice* m_facialHairChoice{ nullptr };
         wxColourPickerCtrl* m_skinColorLighterPicker{ nullptr };
         wxColourPickerCtrl* m_skinColorDarkerPicker{ nullptr };
         wxColourPickerCtrl* m_eyeColorPicker{ nullptr };

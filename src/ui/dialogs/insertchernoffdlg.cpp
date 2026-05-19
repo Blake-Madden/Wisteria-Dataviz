@@ -72,10 +72,10 @@ namespace Wisteria::UI
 
         // feature-to-variable label grid
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
-        constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
-                                        FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
-                                        FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                        FID::FaceColor,   FID::EarSize };
+        constexpr FID allFeatures[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
+                                        FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
+                                        FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
+                                        FID::FaceColor,     FID::EarSize,      FID::HairAddition };
 
         auto* featureGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
@@ -115,8 +115,6 @@ namespace Wisteria::UI
                                [this]([[maybe_unused]] wxCommandEvent&)
                                {
                                    TransferDataFromWindow();
-                                   m_facialHairLabel->Enable(m_gender == 1);
-                                   m_facialHairChoice->Enable(m_gender == 1);
                                    m_lipstickColorLabel->Enable(m_gender == 0);
                                    m_lipstickColorPicker->Enable(m_gender == 0);
                                    Refresh();
@@ -175,25 +173,6 @@ namespace Wisteria::UI
         auto* cosmeticBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Cosmetic"));
         auto* cosmeticGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-
-        // facial hair
-        m_facialHairLabel =
-            new wxStaticText(cosmeticBox->GetStaticBox(), wxID_ANY, _(L"Facial hair:"));
-        cosmeticGrid->Add(m_facialHairLabel, wxSizerFlags{}.CenterVertical());
-        m_facialHairChoice =
-            new wxChoice(cosmeticBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                         nullptr, 0, wxGenericValidator(&m_facialHair));
-        m_facialHairChoice->Append(_(L"Clean shaven"));
-        m_facialHairChoice->Append(_(L"Five o'clock shadow"));
-        m_facialHairChoice->Append(_(L"Mustache"));
-        m_facialHairChoice->Append(_(L"Goatee"));
-        m_facialHairChoice->Append(_(L"Van Dyke"));
-        m_facialHairChoice->Append(_(L"Fu Manchu"));
-        m_facialHairChoice->Append(_(L"Beard"));
-        m_facialHairChoice->Append(_(L"Chin curtain"));
-        m_facialHairLabel->Enable(m_gender == 1);
-        m_facialHairChoice->Enable(m_gender == 1);
-        cosmeticGrid->Add(m_facialHairChoice);
 
         // lipstick color (female only)
         m_lipstickColorLabel =
@@ -356,7 +335,13 @@ namespace Wisteria::UI
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::EarSize))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
+                                VLI{}
+                                    .Label(_(L"Hair Addition"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::HairAddition))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::String }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -364,10 +349,10 @@ namespace Wisteria::UI
             }
 
         // map feature IDs to selected variable names
-        constexpr FID featureOrder[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
-                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
-                                         FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                         FID::FaceColor,   FID::EarSize };
+        constexpr FID featureOrder[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
+                                         FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
+                                         FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
+                                         FID::FaceColor,     FID::EarSize,      FID::HairAddition };
 
         m_featureVariables.clear();
         for (size_t i = 0; i < std::size(featureOrder); ++i)
@@ -386,10 +371,10 @@ namespace Wisteria::UI
     void InsertChernoffDlg::UpdateFeatureLabels()
         {
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
-        constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
-                                        FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
-                                        FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                        FID::FaceColor,   FID::EarSize };
+        constexpr FID allFeatures[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
+                                        FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
+                                        FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
+                                        FID::FaceColor,     FID::EarSize,      FID::HairAddition };
 
         for (size_t i = 0; i < FEATURE_COUNT; ++i)
             {
@@ -465,30 +450,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    FacialHair InsertChernoffDlg::GetFacialHair() const
-        {
-        switch (m_facialHair)
-            {
-        case 1:
-            return FacialHair::FiveOClockShadow;
-        case 2:
-            return FacialHair::Mustache;
-        case 3:
-            return FacialHair::Goatee;
-        case 4:
-            return FacialHair::VanDyke;
-        case 5:
-            return FacialHair::FuManchu;
-        case 6:
-            return FacialHair::Beard;
-        case 7:
-            return FacialHair::ChinCurtain;
-        default:
-            return FacialHair::CleanShaven;
-            }
-        }
-
-    //-------------------------------------------
     wxString
     InsertChernoffDlg::GetFeatureVariable(Graphs::ChernoffFacesPlot::FeatureId feature) const
         {
@@ -547,10 +508,10 @@ namespace Wisteria::UI
         // load actual column names from the graph
         // (property templates may contain unexpanded {{placeholders}})
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
-        const FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
-                                    FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
-                                    FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                    FID::FaceColor,   FID::EarSize };
+        const FID allFeatures[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
+                                    FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
+                                    FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
+                                    FID::FaceColor,     FID::EarSize,      FID::HairAddition };
         m_featureVariables.clear();
         for (const auto fid : allFeatures)
             {
@@ -564,8 +525,6 @@ namespace Wisteria::UI
 
         // appearance options
         m_gender = (chernoff->GetGender() == Gender::Male) ? 1 : 0;
-        m_facialHairLabel->Enable(m_gender == 1);
-        m_facialHairChoice->Enable(m_gender == 1);
         m_lipstickColorLabel->Enable(m_gender == 0);
         m_lipstickColorPicker->Enable(m_gender == 0);
 
@@ -600,36 +559,6 @@ namespace Wisteria::UI
             break;
         default:
             m_hairStyle = 1;
-            break;
-            }
-
-        switch (chernoff->GetFacialHair())
-            {
-        case FacialHair::FiveOClockShadow:
-            m_facialHair = 1;
-            break;
-        case FacialHair::Mustache:
-            m_facialHair = 2;
-            break;
-        case FacialHair::Goatee:
-            m_facialHair = 3;
-            break;
-        case FacialHair::VanDyke:
-            m_facialHair = 4;
-            break;
-        case FacialHair::FuManchu:
-            m_facialHair = 5;
-            break;
-        case FacialHair::Beard:
-            m_facialHair = 6;
-            break;
-        case FacialHair::ChinCurtain:
-            m_facialHair = 7;
-            break;
-        case FacialHair::CleanShaven:
-            [[fallthrough]];
-        default:
-            m_facialHair = 0;
             break;
             }
 

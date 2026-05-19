@@ -14,6 +14,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         namespace Wisteria::Graphs
     {
+    static_assert(static_cast<int>(FacialHair::FACIAL_HAIR_COUNT) ==
+                      static_cast<int>(HairAccessory::HAIR_ACCESSORY_COUNT),
+                  "FacialHair and HairAccessory must have the same number of values");
+
     //----------------------------------------------------------------
     wxString ChernoffFacesPlot::GetFeatureDisplayName(FeatureId id)
         {
@@ -41,6 +45,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             return _(L"Face color");
         case FeatureId::EarSize:
             return _(L"Ear size");
+        case FeatureId::HairAddition:
+            return _(L"Hair addition");
         default:
             return wxString{};
             }
@@ -73,6 +79,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             return m_faceSaturationColumnName;
         case FeatureId::EarSize:
             return m_earSizeColumnName;
+        case FeatureId::HairAddition:
+            return m_hairAdditionColumnName;
         default:
             return {};
             }
@@ -128,13 +136,100 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         const wxRect boundingBox = GetBoundingBox(dc);
 
-        const GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
-        auto* gc = gcf.GetGraphicsContext();
-        if (gc != nullptr)
             {
-            ChernoffFacesPlot::DrawFace(
-                gc, boundingBox, m_features, m_faceColorLighter, m_faceColorDarker, m_outlineColor,
-                m_lipstickColor, m_eyeColor, m_hairColor, m_hairStyle, m_gender, m_facialHair);
+            const GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
+            auto* gc = gcf.GetGraphicsContext();
+            if (gc != nullptr)
+                {
+                ChernoffFacesPlot::DrawFace(gc, boundingBox, m_features, m_faceColorLighter,
+                                            m_faceColorDarker, m_outlineColor, m_lipstickColor,
+                                            m_eyeColor, m_hairColor, m_hairStyle, m_gender);
+                }
+            }
+
+        // draw hair accessory on top (female only)
+        if (m_gender == Gender::Female && m_features.m_hasHairAccessory)
+            {
+            Icons::IconShape accShape{ Icons::IconShape::Blank };
+            switch (m_features.m_hairAccessory)
+                {
+            case HairAccessory::Butterfly:
+                accShape = Icons::IconShape::Butterfly;
+                break;
+            case HairAccessory::Flower:
+                accShape = Icons::IconShape::Flower;
+                break;
+            case HairAccessory::SunFlower:
+                accShape = Icons::IconShape::Sunflower;
+                break;
+            case HairAccessory::Heart:
+                accShape = Icons::IconShape::Heart;
+                break;
+            case HairAccessory::Leaf:
+                accShape = Icons::IconShape::FallLeaf;
+                break;
+            case HairAccessory::Snowflake:
+                accShape = Icons::IconShape::Snowflake;
+                break;
+            case HairAccessory::Star:
+                accShape = Icons::IconShape::Star;
+                break;
+            case HairAccessory::Pumpkin:
+                accShape = Icons::IconShape::Pumpkin;
+                break;
+            default:
+                break;
+                }
+
+            if (accShape != Icons::IconShape::Blank)
+                {
+                // position accessory in the hair area (upper portion of head,
+                // above the eyes/forehead where bangs/hair are drawn). uses the
+                // same face geometry as DrawFace() so it follows face shape.
+                const double cx =
+                    boundingBox.GetX() + boundingBox.GetWidth() * math_constants::half;
+                const double cy =
+                    boundingBox.GetY() + boundingBox.GetHeight() * math_constants::half;
+                const double baseRadius =
+                    std::min(boundingBox.GetWidth(), boundingBox.GetHeight()) * 0.4;
+                const double faceWidth = baseRadius * (0.7 + 0.6 * m_features.m_faceWidth);
+                const double faceHeight = baseRadius * (0.8 + 0.4 * m_features.m_faceHeight);
+
+                const int accSize = static_cast<int>(faceHeight * 0.5);
+                const int accCenterX = static_cast<int>(cx + faceWidth * 0.5);
+                const int accCenterY = static_cast<int>(cy - faceHeight * 0.7);
+                const wxRect accRect{ accCenterX - accSize / 2, accCenterY - accSize / 2, accSize,
+                                      accSize };
+                GraphItems::Shape sh(GraphItems::GraphItemInfo{}
+                                         .Pen(wxPen{ m_outlineColor, 1 })
+                                         .Anchoring(Anchoring::TopLeftCorner)
+                                         .Scaling(GetScaling())
+                                         .DPIScaling(GetDPIScaleFactor()),
+                                     accShape, accRect.GetSize());
+
+                // some accessories tilt 25° clockwise so they don't sit perfectly
+                // upright against the hair
+                const bool tiltAccessory =
+                    (m_features.m_hairAccessory == HairAccessory::Butterfly ||
+                     m_features.m_hairAccessory == HairAccessory::Heart ||
+                     m_features.m_hairAccessory == HairAccessory::Pumpkin ||
+                     m_features.m_hairAccessory == HairAccessory::Star);
+                auto* accGc = dc.GetGraphicsContext();
+                if (tiltAccessory && accGc != nullptr)
+                    {
+                    const double rotationRad = (25.0 * std::numbers::pi) / 180.0;
+                    accGc->PushState();
+                    accGc->Translate(accCenterX, accCenterY);
+                    accGc->Rotate(rotationRad);
+                    accGc->Translate(-accCenterX, -accCenterY);
+                    sh.Draw(accRect, dc);
+                    accGc->PopState();
+                    }
+                else
+                    {
+                    sh.Draw(accRect, dc);
+                    }
+                }
             }
 
         return boundingBox;
@@ -162,8 +257,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         const wxPoint currentPos = m_rect.GetPosition();
 
         const auto lineGap = ScaleToScreenAndCanvas(5);
-        // face is elongated: height = 1.5 * width, and we want it 2x larger
-        const auto minFaceHeight = ScaleToScreenAndCanvas(160);
+        // face is elongated: height = 1.5 * width, and we want it 2x larger.
+        // When there are many hair entries, halve the face so the legend stays compact.
+        const auto minFaceHeight = m_hairAdditionLabels.size() > 4 ? ScaleToScreenAndCanvas(80) :
+                                                                     ScaleToScreenAndCanvas(160);
         const auto minFaceWidth = minFaceHeight * math_constants::two_thirds;
 
         // measure label widths at reduced scaling (labels will be scaled to fit)
@@ -173,41 +270,102 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         int leftCount = 0;
         int rightCount = 0;
 
+        // pre-count features per side so we can force single-line labels when there
+        // are many on a side (otherwise two-line labels stack too tightly to read)
         for (const auto& feature : m_features)
             {
-            if (!feature.columnName.empty())
+            if (!feature.m_columnName.empty())
                 {
-                const GraphItems::Label label(GraphItems::GraphItemInfo{
-                    GetFeatureDisplayName(feature.featureId) +
-                    // make long variable names fit more nicely by pushing down to next line
-                    (feature.columnName.length() <= 8 ? L": " : L":\n") + feature.columnName }
-                                                  .Pen(wxNullPen)
-                                                  .Scaling(labelScaling)
-                                                  .DPIScaling(GetDPIScaleFactor()));
-                const auto labelSize = label.GetBoundingBox(dc).GetSize();
-
-                if (feature.leftSide)
+                if (feature.m_leftSide)
                     {
-                    maxLeftLabelWidth = std::max(maxLeftLabelWidth, labelSize.GetWidth());
                     ++leftCount;
                     }
                 else
                     {
-                    maxRightLabelWidth = std::max(maxRightLabelWidth, labelSize.GetWidth());
                     ++rightCount;
+                    }
+                }
+            }
+        const bool forceSingleLine = (leftCount > 4 || rightCount > 4);
+
+        for (const auto& feature : m_features)
+            {
+            if (!feature.m_columnName.empty())
+                {
+                const wxString joiner =
+                    (forceSingleLine || feature.m_columnName.length() <= 8) ? L": " : L":\n";
+                GraphItems::Label label(
+                    GraphItems::GraphItemInfo{ GetFeatureDisplayName(feature.m_featureId) + joiner +
+                                               L"<span style='font-style:italic;'>" +
+                                               feature.m_columnName + L"</span>" }
+                                            .Pen(wxNullPen)
+                                            .Scaling(labelScaling)
+                                            .DPIScaling(GetDPIScaleFactor()));
+                label.EnableMarkup(true);
+                const auto labelSize = label.GetBoundingBox(dc).GetSize();
+
+                if (feature.m_leftSide)
+                    {
+                    maxLeftLabelWidth = std::max(maxLeftLabelWidth, labelSize.GetWidth());
+                    }
+                else
+                    {
+                    maxRightLabelWidth = std::max(maxRightLabelWidth, labelSize.GetWidth());
                     }
                 }
             }
 
         // calculate minimum dimensions
         // width: left labels + gap + face + gap + right labels
-        const int minWidth =
+        const int minWidthForFace =
             maxLeftLabelWidth + lineGap + minFaceWidth + lineGap + maxRightLabelWidth;
 
         // height: face uses 2/3 of height, so total = faceHeight * 3/2
         const auto labelHeight = ScaleToScreenAndCanvas(14);
         const int labelsHeight = std::max(leftCount, rightCount) * labelHeight + (labelHeight / 2);
-        const auto minHeight = std::max<int>(minFaceHeight * 3 / 2, labelsHeight);
+        const auto minHeightForFace = std::max<int>(minFaceHeight * 3 / 2, labelsHeight);
+
+        // additional space needed for the hair-addition key section below the face
+        int hairSectionWidth{ 0 };
+        int hairSectionHeight{ 0 };
+        if (!m_hairAdditionLabels.empty())
+            {
+            const auto hairIconSize = ScaleToScreenAndCanvas(28);
+            const auto hairEntryGap = ScaleToScreenAndCanvas(4);
+            int maxHairLabelWidth{ 0 };
+            for (const auto& hairLabel : m_hairAdditionLabels)
+                {
+                const GraphItems::Label lbl(GraphItems::GraphItemInfo{ hairLabel }
+                                                .Pen(wxNullPen)
+                                                .Scaling(labelScaling)
+                                                .DPIScaling(GetDPIScaleFactor()));
+                maxHairLabelWidth = std::max(maxHairLabelWidth, lbl.GetBoundingBox(dc).GetWidth());
+                }
+            // header (column name) above the entries
+            int headerWidth{ 0 };
+            int headerHeight{ 0 };
+            if (!m_hairAdditionColumnName.empty())
+                {
+                GraphItems::Label headerLbl(GraphItems::GraphItemInfo{
+                    L"<span style='font-style:italic;'>" + m_hairAdditionColumnName + L"</span>" }
+                                                .Pen(wxNullPen)
+                                                .Scaling(labelScaling)
+                                                .DPIScaling(GetDPIScaleFactor()));
+                headerLbl.EnableMarkup(true);
+                const auto headerBox = headerLbl.GetBoundingBox(dc);
+                headerWidth = headerBox.GetWidth();
+                headerHeight = headerBox.GetHeight() + ScaleToScreenAndCanvas(4);
+                }
+            hairSectionWidth =
+                std::max<int>(hairIconSize + lineGap + maxHairLabelWidth, headerWidth);
+            hairSectionHeight =
+                headerHeight +
+                static_cast<int>(m_hairAdditionLabels.size()) * (hairIconSize + hairEntryGap) +
+                ScaleToScreenAndCanvas(10);
+            }
+
+        const int minWidth = std::max(minWidthForFace, hairSectionWidth);
+        const auto minHeight = minHeightForFace + hairSectionHeight;
 
         m_rect = wxRect{ currentPos, wxSize{ minWidth, minHeight } };
         }
@@ -231,13 +389,37 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         leftFeatures.reserve(m_features.size());
         std::vector<FeatureInfo> rightFeatures;
         rightFeatures.reserve(m_features.size());
+
+        // count features per side so a side with many entries can force single-line
+        // labels (two-line labels stack too tightly to read past ~4 per side)
+        int leftFeatureCount{ 0 };
+        int rightFeatureCount{ 0 };
+        for (const auto& [columnName, featureId, leftSide] : m_features)
+            {
+            if (!columnName.empty())
+                {
+                if (leftSide)
+                    {
+                    ++leftFeatureCount;
+                    }
+                else
+                    {
+                    ++rightFeatureCount;
+                    }
+                }
+            }
+        const bool forceSingleLineLabels = (leftFeatureCount > 4 || rightFeatureCount > 4);
+
         for (const auto& [columnName, featureId, leftSide] : m_features)
             {
             if (!columnName.empty())
                 {
                 const wxString displayName = GetFeatureDisplayName(featureId);
-                const FeatureInfo info{ displayName + (columnName.length() <= 8 ? L": " : L":\n") +
-                                            columnName,
+                const wxString joiner =
+                    (forceSingleLineLabels || columnName.length() <= 8) ? L": " : L":\n";
+                const FeatureInfo info{ displayName + joiner +
+                                            L"<span style='font-style:italic;'>" + columnName +
+                                            L"</span>",
                                         featureId };
                 if (leftSide)
                     {
@@ -250,8 +432,56 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 }
             }
 
+        // height reserved for the hair-addition key section drawn below the face
+        const auto hairEntryGap = ScaleToScreenAndCanvas(4);
+        const auto hairBottomPadding = ScaleToScreenAndCanvas(10);
+        const auto minHairIconSize = ScaleToScreenAndCanvas(8);
+        auto hairIconSize = ScaleToScreenAndCanvas(28);
+        const double headerScaling = GetScaling() * 0.6;
+        int hairHeaderHeight{ 0 };
+        if (!m_hairAdditionLabels.empty() && !m_hairAdditionColumnName.empty())
+            {
+            GraphItems::Label hdrLbl(GraphItems::GraphItemInfo{
+                L"<span style='font-style:italic;'>" + m_hairAdditionColumnName + L"</span>" }
+                                         .Pen(wxNullPen)
+                                         .Scaling(headerScaling)
+                                         .DPIScaling(GetDPIScaleFactor()));
+            hdrLbl.EnableMarkup(true);
+            hairHeaderHeight = hdrLbl.GetBoundingBox(dc).GetHeight() + ScaleToScreenAndCanvas(4);
+            }
+        const auto hairCount = static_cast<int>(m_hairAdditionLabels.size());
+        // when there are many hair entries, reserve only 1/3 of height for the face
+        // so the hair-section legend has room for everything
+        const double faceAreaFraction =
+            hairCount > 4 ? math_constants::third : math_constants::two_thirds;
+        int hairSectionHeight =
+            m_hairAdditionLabels.empty() ?
+                0 :
+                hairHeaderHeight + hairCount * (hairIconSize + hairEntryGap) + hairBottomPadding;
+        // if hair section still doesn't fit in the allotted space, shrink icons to fit
+        if (hairCount > 0)
+            {
+            const int maxHairSectionHeight =
+                m_rect.GetHeight() - static_cast<int>(m_rect.GetHeight() * faceAreaFraction);
+            if (hairSectionHeight > maxHairSectionHeight)
+                {
+                const int availableForIcons =
+                    maxHairSectionHeight - hairHeaderHeight - hairBottomPadding;
+                if (availableForIcons > 0)
+                    {
+                    hairIconSize =
+                        std::max<int>(safe_divide<int>(availableForIcons, hairCount) - hairEntryGap,
+                                      minHairIconSize);
+                    hairSectionHeight = hairHeaderHeight +
+                                        hairCount * (hairIconSize + hairEntryGap) +
+                                        hairBottomPadding;
+                    }
+                }
+            }
+        const int faceAreaHeight = m_rect.GetHeight() - hairSectionHeight;
+
         // calculate face size - elongated (height = 1.5 * width), use 2/3 of available height
-        const auto faceHeight = m_rect.GetHeight() * math_constants::two_thirds;
+        const auto faceHeight = faceAreaHeight * math_constants::two_thirds;
         const auto faceWidth = faceHeight * math_constants::two_thirds;
         const auto lineGap = ScaleToScreenAndCanvas(5);
 
@@ -271,6 +501,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             GraphItems::Label lbl(
                 GraphItems::GraphItemInfo{ text }.Pen(wxNullPen).Scaling(scaling).DPIScaling(
                     GetDPIScaleFactor()));
+            lbl.EnableMarkup(true);
             lbl.SetFontColor(m_outlineColor);
             return lbl.GetBoundingBox(dc).GetWidth();
         };
@@ -305,7 +536,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             faceX = m_rect.GetX() + safe_divide<int>(m_rect.GetWidth() - faceWidth, 2);
             }
         const wxRect faceRect(faceX,
-                              m_rect.GetY() + safe_divide<int>(m_rect.GetHeight() - faceHeight, 2),
+                              m_rect.GetY() + safe_divide<int>(faceAreaHeight - faceHeight, 2),
                               faceWidth, faceHeight);
 
         // calculate label areas
@@ -331,7 +562,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const FaceFeatures defaultFeatures;
                 DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter, m_faceColorDarker,
                          m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor, m_hairStyle,
-                         m_gender, m_facialHair);
+                         m_gender);
                 }
             }
 
@@ -428,6 +659,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                         .Scaling(labelScaling)
                                         .DPIScaling(GetDPIScaleFactor())
                                         .Padding(0, 4, 0, 0));
+            label.EnableMarkup(true);
             label.SetFontColor(contrastingLabelColor);
             label.SetAnchoring(Anchoring::TopLeftCorner);
             label.SetAnchorPoint(wxPoint(m_rect.GetX(), m_rect.GetY()));
@@ -451,7 +683,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         // draw remaining left labels with lines connecting to feature points
         const auto leftStartY = m_rect.GetY() + faceRect.GetY() - m_rect.GetY();
-        const auto leftAvailableHeight = m_rect.GetHeight() - (faceRect.GetY() - m_rect.GetY());
+        const auto leftAvailableHeight = faceAreaHeight - (faceRect.GetY() - m_rect.GetY());
         const auto leftLabelSpacing =
             (otherLeftFeatures.size() > 1) ?
                 safe_divide(leftAvailableHeight, static_cast<int>(otherLeftFeatures.size() + 1)) :
@@ -466,6 +698,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                         .Scaling(labelScaling)
                                         .DPIScaling(GetDPIScaleFactor())
                                         .Padding(0, 4, 0, 0));
+            label.EnableMarkup(true);
             label.SetFontColor(contrastingLabelColor);
             label.SetAnchoring(Anchoring::BottomLeftCorner);
             label.SetAnchorPoint(wxPoint{ m_rect.GetX(), labelY });
@@ -482,8 +715,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // draw right labels with lines connecting to feature points
         const auto rightLabelSpacing =
             (rightFeatures.size() > 1) ?
-                safe_divide(m_rect.GetHeight(), static_cast<int>(rightFeatures.size() + 1)) :
-                safe_divide(m_rect.GetHeight(), 2);
+                safe_divide(faceAreaHeight, static_cast<int>(rightFeatures.size() + 1)) :
+                safe_divide(faceAreaHeight, 2);
 
         for (size_t i = 0; i < rightFeatures.size(); ++i)
             {
@@ -496,6 +729,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                         .Scaling(labelScaling)
                                         .DPIScaling(GetDPIScaleFactor())
                                         .Padding(0, 0, 0, 4));
+            label.EnableMarkup(true);
             label.SetFontColor(contrastingLabelColor);
             label.SetAnchoring(Anchoring::BottomLeftCorner);
             label.SetAnchorPoint(wxPoint(faceRect.GetRight() + lineGap, labelY));
@@ -511,6 +745,131 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         // draw all arrow lines
         arrowLines.Draw(dc);
+
+        // draw the hair-addition key section below the face
+        if (!m_hairAdditionLabels.empty())
+            {
+            const int sectionTopY = m_rect.GetY() + faceAreaHeight + ScaleToScreenAndCanvas(5);
+            const auto sectionLeftX = m_rect.GetX() + lineGap;
+
+            // header (column name) above the entries
+            if (!m_hairAdditionColumnName.empty())
+                {
+                GraphItems::Label header(GraphItems::GraphItemInfo{
+                    L"<span style='font-style:italic;'>" + m_hairAdditionColumnName + L"</span>" }
+                                             .Pen(wxNullPen)
+                                             .Scaling(headerScaling)
+                                             .DPIScaling(GetDPIScaleFactor()));
+                header.EnableMarkup(true);
+                header.SetFontColor(contrastingLabelColor);
+                header.SetAnchoring(Anchoring::TopLeftCorner);
+                header.SetAnchorPoint(wxPoint(sectionLeftX, sectionTopY));
+                header.Draw(dc);
+                }
+
+            const int entriesTopY = sectionTopY + hairHeaderHeight;
+
+            std::vector<wxRect> iconRects;
+            iconRects.reserve(m_hairAdditionLabels.size());
+            for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
+                {
+                const int iconY = entriesTopY + static_cast<int>(i) * (hairIconSize + hairEntryGap);
+                iconRects.emplace_back(sectionLeftX, iconY, hairIconSize, hairIconSize);
+                }
+
+            if (m_gender == Gender::Female)
+                {
+                // for female: draw HairAccessory IconShape directly
+                for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
+                    {
+                    Icons::IconShape iconShape{ Icons::IconShape::Blank };
+                    switch (static_cast<HairAccessory>(i))
+                        {
+                    case HairAccessory::Butterfly:
+                        iconShape = Icons::IconShape::Butterfly;
+                        break;
+                    case HairAccessory::Flower:
+                        iconShape = Icons::IconShape::Flower;
+                        break;
+                    case HairAccessory::SunFlower:
+                        iconShape = Icons::IconShape::Sunflower;
+                        break;
+                    case HairAccessory::Heart:
+                        iconShape = Icons::IconShape::Heart;
+                        break;
+                    case HairAccessory::Leaf:
+                        iconShape = Icons::IconShape::FallLeaf;
+                        break;
+                    case HairAccessory::Snowflake:
+                        iconShape = Icons::IconShape::Snowflake;
+                        break;
+                    case HairAccessory::Star:
+                        iconShape = Icons::IconShape::Star;
+                        break;
+                    case HairAccessory::Pumpkin:
+                        iconShape = Icons::IconShape::Pumpkin;
+                        break;
+                    default:
+                        break;
+                        }
+                    if (iconShape != Icons::IconShape::Blank)
+                        {
+                        GraphItems::Shape sh(GraphItems::GraphItemInfo{}
+                                                 .Pen(wxPen{ m_outlineColor, 1 })
+                                                 .Anchoring(Anchoring::TopLeftCorner)
+                                                 .Scaling(GetScaling())
+                                                 .DPIScaling(GetDPIScaleFactor()),
+                                             iconShape, iconRects[i].GetSize());
+                        sh.Draw(iconRects[i], dc);
+                        }
+                    }
+                }
+            else
+                {
+                // for male: draw a small face for each entry showing that facial hair
+                // (single GraphicsContextFallback covering all icons)
+                const wxRect allIconsRect{ iconRects.front().GetX(), iconRects.front().GetY(),
+                                           iconRects.front().GetWidth(),
+                                           iconRects.back().GetBottom() - iconRects.front().GetY() +
+                                               1 };
+                const GraphItems::GraphicsContextFallback gcf{ &dc, allIconsRect };
+                auto* gc = gcf.GetGraphicsContext();
+                if (gc != nullptr)
+                    {
+                    // only render the face oval + facial hair (skip eyes, nose, mouth, hair, etc.)
+                    FaceParts minimalParts;
+                    minimalParts.m_cheeks = false;
+                    minimalParts.m_eyes = false;
+                    minimalParts.m_nose = false;
+                    minimalParts.m_mouth = false;
+                    minimalParts.m_hair = false;
+                    for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
+                        {
+                        FaceFeatures features;
+                        features.m_facialHair = static_cast<FacialHair>(i);
+                        DrawFace(gc, iconRects[i], features, m_faceColorLighter, m_faceColorDarker,
+                                 m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
+                                 m_hairStyle, m_gender, minimalParts);
+                        }
+                    }
+                }
+
+            // draw label text for each entry (vertically centered relative to icon)
+            for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
+                {
+                GraphItems::Label lbl(GraphItems::GraphItemInfo{ m_hairAdditionLabels[i] }
+                                          .Pen(wxNullPen)
+                                          .Scaling(labelScaling)
+                                          .DPIScaling(GetDPIScaleFactor()));
+                lbl.SetFontColor(contrastingLabelColor);
+                lbl.SetAnchoring(Anchoring::TopLeftCorner);
+                const auto labelBox = lbl.GetBoundingBox(dc);
+                lbl.SetAnchorPoint(wxPoint(
+                    iconRects[i].GetRight() + lineGap,
+                    iconRects[i].GetY() + (iconRects[i].GetHeight() - labelBox.GetHeight()) / 2));
+                lbl.Draw(dc);
+                }
+            }
 
         // draw the selection outline
         if (IsSelected())
@@ -614,9 +973,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                     const std::optional<wxString>& mouthWidthColumn,
                                     const std::optional<wxString>& mouthCurvatureColumn,
                                     const std::optional<wxString>& faceSaturationColumn,
-                                    const std::optional<wxString>& earSizeColumn)
+                                    const std::optional<wxString>& earSizeColumn,
+                                    const std::optional<wxString>& hairAdditionColumn)
         {
         m_faces.clear();
+        m_hairAdditionLabels.clear();
         SetDataset(data);
 
         if (GetDataset() == nullptr)
@@ -636,6 +997,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         m_mouthCurvatureColumnName = mouthCurvatureColumn.value_or(wxString{});
         m_faceSaturationColumnName = faceSaturationColumn.value_or(wxString{});
         m_earSizeColumnName = earSizeColumn.value_or(wxString{});
+        m_hairAdditionColumnName = hairAdditionColumn.value_or(wxString{});
 
         // validate required column
         const auto faceWidthCol = GetDataset()->GetContinuousColumn(faceWidthColumn);
@@ -647,7 +1009,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     .ToUTF8());
             }
 
-        // get optional column iterators
+        // get optional categorical column for hair addition
+        const auto catColsEnd = GetDataset()->GetCategoricalColumns().cend();
+        const auto hairAdditionCol =
+            GetDataset()->GetCategoricalColumn(hairAdditionColumn.value_or(wxString{}));
+
+        // pre-build group-ID → enum maps from the string table (one lookup per row instead of two)
+        std::map<Data::GroupIdType, FacialHair> facialHairMap;
+        std::map<Data::GroupIdType, HairAccessory> hairAccessoryMap;
+        if (hairAdditionCol != catColsEnd)
+            {
+            const auto categoryCount = hairAdditionCol->GetStringTable().size();
+            if (categoryCount > static_cast<size_t>(FacialHair::FACIAL_HAIR_COUNT))
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': hair addition column has %zu categories; "
+                                       "maximum allowed is %d."),
+                                     hairAdditionColumn.value(), categoryCount,
+                                     static_cast<int>(FacialHair::FACIAL_HAIR_COUNT))
+                        .ToUTF8());
+                }
+            m_hairAdditionLabels.reserve(hairAdditionCol->GetStringTable().size());
+            size_t enumIdx{ 0 };
+            for (const auto& [id, label] : hairAdditionCol->GetStringTable())
+                {
+                facialHairMap[id] = static_cast<FacialHair>(enumIdx);
+                hairAccessoryMap[id] = static_cast<HairAccessory>(enumIdx);
+                m_hairAdditionLabels.push_back(label);
+                ++enumIdx;
+                }
+            }
+
+        // get optional continuous column iterators
         const auto faceHeightCol =
             GetDataset()->GetContinuousColumn(faceHeightColumn.value_or(wxString{}));
         const auto eyeSizeCol =
@@ -723,47 +1116,63 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             FaceFeatures face;
 
-            face.faceWidth = NormalizeValue(faceWidthCol->GetValue(i), fwMin, fwMax);
+            face.m_faceWidth = NormalizeValue(faceWidthCol->GetValue(i), fwMin, fwMax);
 
             if (faceHeightCol != colsEnd)
                 {
-                face.faceHeight = NormalizeValue(faceHeightCol->GetValue(i), fhMin, fhMax);
+                face.m_faceHeight = NormalizeValue(faceHeightCol->GetValue(i), fhMin, fhMax);
                 }
             if (eyeSizeCol != colsEnd)
                 {
-                face.eyeSize = NormalizeValue(eyeSizeCol->GetValue(i), esMin, esMax);
+                face.m_eyeSize = NormalizeValue(eyeSizeCol->GetValue(i), esMin, esMax);
                 }
             if (eyePositionCol != colsEnd)
                 {
-                face.eyePosition = NormalizeValue(eyePositionCol->GetValue(i), epMin, epMax);
+                face.m_eyePosition = NormalizeValue(eyePositionCol->GetValue(i), epMin, epMax);
                 }
             if (eyebrowSlantCol != colsEnd)
                 {
-                face.eyebrowSlant = NormalizeValue(eyebrowSlantCol->GetValue(i), ebsMin, ebsMax);
+                face.m_eyebrowSlant = NormalizeValue(eyebrowSlantCol->GetValue(i), ebsMin, ebsMax);
                 }
             if (pupilPositionCol != colsEnd)
                 {
-                face.pupilPosition = NormalizeValue(pupilPositionCol->GetValue(i), ppMin, ppMax);
+                face.m_pupilPosition = NormalizeValue(pupilPositionCol->GetValue(i), ppMin, ppMax);
                 }
             if (noseSizeCol != colsEnd)
                 {
-                face.noseSize = NormalizeValue(noseSizeCol->GetValue(i), nsMin, nsMax);
+                face.m_noseSize = NormalizeValue(noseSizeCol->GetValue(i), nsMin, nsMax);
                 }
             if (mouthWidthCol != colsEnd)
                 {
-                face.mouthWidth = NormalizeValue(mouthWidthCol->GetValue(i), mwMin, mwMax);
+                face.m_mouthWidth = NormalizeValue(mouthWidthCol->GetValue(i), mwMin, mwMax);
                 }
             if (mouthCurvatureCol != colsEnd)
                 {
-                face.mouthCurvature = NormalizeValue(mouthCurvatureCol->GetValue(i), mcMin, mcMax);
+                face.m_mouthCurvature =
+                    NormalizeValue(mouthCurvatureCol->GetValue(i), mcMin, mcMax);
                 }
             if (faceSaturationCol != colsEnd)
                 {
-                face.faceSaturation = NormalizeValue(faceSaturationCol->GetValue(i), fsMin, fsMax);
+                face.m_faceSaturation =
+                    NormalizeValue(faceSaturationCol->GetValue(i), fsMin, fsMax);
                 }
             if (earSizeCol != colsEnd)
                 {
-                face.earSize = NormalizeValue(earSizeCol->GetValue(i), erMin, erMax);
+                face.m_earSize = NormalizeValue(earSizeCol->GetValue(i), erMin, erMax);
+                }
+            if (hairAdditionCol != catColsEnd)
+                {
+                const auto groupId = hairAdditionCol->GetValue(i);
+                if (const auto fhIt = facialHairMap.find(groupId); fhIt != facialHairMap.cend())
+                    {
+                    face.m_facialHair = fhIt->second;
+                    }
+                if (const auto haIt = hairAccessoryMap.find(groupId);
+                    haIt != hairAccessoryMap.cend())
+                    {
+                    face.m_hairAccessory = haIt->second;
+                    face.m_hasHairAccessory = true;
+                    }
                 }
 
                 // check if all mapped columns have missing data for this row
@@ -809,13 +1218,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     {
                     allMissing = !std::isfinite(earSizeCol->GetValue(i));
                     }
-                face.allDataMissing = allMissing;
+                if (allMissing && hairAdditionCol != catColsEnd)
+                    {
+                    allMissing = hairAdditionCol->IsMissingData(i);
+                    }
+                face.m_allDataMissing = allMissing;
                 }
 
             // get label from ID column if available
             if (GetDataset()->GetIdColumn().GetRowCount() > i)
                 {
-                face.label = GetDataset()->GetIdColumn().GetValue(i);
+                face.m_label = GetDataset()->GetIdColumn().GetValue(i);
                 }
 
             m_faces.push_back(std::move(face));
@@ -870,7 +1283,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                safe_divide<int>(cellWidth - faceSize, 2);
                 const auto y = offsetY + static_cast<int>(row) * cellHeight;
 
-                if (m_faces[faceIndex].allDataMissing)
+                if (m_faces[faceIndex].m_allDataMissing)
                     {
                     // show "No data" label centered where the face would be
                     const auto faceCenterX = x + safe_divide(faceSize, 2);
@@ -895,14 +1308,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             .AnchorPoint(wxPoint{ x, y }),
                         m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
                         m_faceColor, m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
-                        m_hairStyle, m_gender, m_facialHair));
+                        m_hairStyle, m_gender));
                     }
 
                 // add label below face if enabled
-                if (m_showLabels && !m_faces[faceIndex].label.empty())
+                if (m_showLabels && !m_faces[faceIndex].m_label.empty())
                     {
                     auto label = std::make_unique<GraphItems::Label>(
-                        GraphItems::GraphItemInfo{ m_faces[faceIndex].label }
+                        GraphItems::GraphItemInfo{ m_faces[faceIndex].m_label }
                             .Pen(wxNullPen)
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
@@ -940,7 +1353,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                      const wxColour& faceColorDarker, const wxColour& outlineColor,
                                      const wxColour& lipstickColor, const wxColour& eyeColor,
                                      const wxColour& hairColor, const HairStyle hairStyle,
-                                     const Gender gender, const FacialHair facialHair)
+                                     const Gender gender, const FaceParts& parts)
         {
         if (gc == nullptr)
             {
@@ -949,7 +1362,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
         // interpolate between lighter and darker skin colors based on saturation
         // 0 = lighter color, 1 = darker color
-        const double colorBlendFactor = features.faceSaturation;
+        const double colorBlendFactor = features.m_faceSaturation;
         const wxColour faceCol(
             static_cast<unsigned char>(faceColorLighter.Red() +
                                        colorBlendFactor *
@@ -967,31 +1380,36 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         const double baseRadius = std::min(rect.GetWidth(), rect.GetHeight()) * 0.4;
 
         // face width: 0.7 to 1.3 multiplier
-        const double faceWidth = baseRadius * (0.7 + 0.6 * features.faceWidth);
+        const double faceWidth = baseRadius * (0.7 + 0.6 * features.m_faceWidth);
         // face height: 0.8 to 1.2 multiplier
-        const double faceHeight = baseRadius * (0.8 + 0.4 * features.faceHeight);
+        const double faceHeight = baseRadius * (0.8 + 0.4 * features.m_faceHeight);
 
         const wxPen outlinePen{ outlineColor, 1 };
 
-        // draw ears first (behind face)
-        const double earScale = math_constants::half + features.earSize;
-        const double earWidth = faceHeight * 0.12 * earScale;
-        const double earHeight = faceHeight * 0.2 * earScale;
+        if (parts.m_face)
+            {
+            // draw ears first (behind face)
+            const double earScale = math_constants::half + features.m_earSize;
+            const double earWidth = faceHeight * 0.12 * earScale;
+            const double earHeight = faceHeight * 0.2 * earScale;
 
-        gc->SetBrush(wxBrush(faceCol));
-        gc->SetPen(outlinePen);
-        // left ear
-        gc->DrawEllipse(cx - faceWidth - earWidth * 0.3, cy - earHeight * 0.5, earWidth, earHeight);
-        // right ear
-        gc->DrawEllipse(cx + faceWidth - earWidth * 0.7, cy - earHeight * 0.5, earWidth, earHeight);
+            gc->SetBrush(wxBrush{ faceCol });
+            gc->SetPen(outlinePen);
+            // left ear
+            gc->DrawEllipse(cx - faceWidth - earWidth * 0.3, cy - earHeight * 0.5, earWidth,
+                            earHeight);
+            // right ear
+            gc->DrawEllipse(cx + faceWidth - earWidth * 0.7, cy - earHeight * 0.5, earWidth,
+                            earHeight);
 
-        // draw face oval
-        gc->SetBrush(wxBrush{ faceCol });
-        gc->SetPen(outlinePen);
-        gc->DrawEllipse(cx - faceWidth, cy - faceHeight, faceWidth * 2, faceHeight * 2);
+            // draw face oval
+            gc->SetBrush(wxBrush{ faceCol });
+            gc->SetPen(outlinePen);
+            gc->DrawEllipse(cx - faceWidth, cy - faceHeight, faceWidth * 2, faceHeight * 2);
+            }
 
         // draw rosy cheeks for female faces (radial gradient)
-        if (gender == Gender::Female)
+        if (parts.m_cheeks && gender == Gender::Female)
             {
             gc->SetPen(*wxTRANSPARENT_PEN);
             const double cheekRadius = faceHeight * 0.225;
@@ -1017,21 +1435,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
 
         const double mouthY = cy + faceHeight * 0.45;
-        const double mouthWidthVal = faceWidth * 0.35 * (0.5 + features.mouthWidth);
+        const double mouthWidthVal = faceWidth * 0.35 * (0.5 + features.m_mouthWidth);
 
         // draw facial hair before head hair so that hair overlaps the beard and mustache
-        if (gender != Gender::Female)
+        if (parts.m_facialHair && gender != Gender::Female)
             {
-            if (facialHair == FacialHair::FiveOClockShadow)
+            if (features.m_facialHair == FacialHair::FiveOClockShadow)
                 {
-                // stubble using hair color with transparency
+                // stubble using hair color with transparency - make it more pronounced
                 const wxColour stubbleColor{ hairColor.Red(), hairColor.Green(), hairColor.Blue(),
-                                             80 };
+                                             170 };
                 gc->SetPen(*wxTRANSPARENT_PEN);
                 gc->SetBrush(wxBrush{ stubbleColor });
 
-                const double dotSize = faceHeight * 0.012;
-                const double spacing = dotSize * 1.4;
+                const double dotSize = faceHeight * 0.018;
+                const double spacing = dotSize * 1.1;
 
                 // beard area - from below mouth to chin, and along jawline to ears
                 const double beardTop = mouthY + faceHeight * 0.06;
@@ -1154,14 +1572,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         }
                     }
                 }
-            else if (facialHair == FacialHair::VanDyke || facialHair == FacialHair::Mustache ||
-                     facialHair == FacialHair::Goatee)
+            else if (features.m_facialHair == FacialHair::VanDyke ||
+                     features.m_facialHair == FacialHair::Mustache ||
+                     features.m_facialHair == FacialHair::Goatee)
                 {
                 // solid mustache and/or pointed chin goatee (no cheek/jaw growth)
-                const bool drawGoatee =
-                    (facialHair == FacialHair::Goatee || facialHair == FacialHair::VanDyke);
-                const bool drawMustache =
-                    (facialHair == FacialHair::Mustache || facialHair == FacialHair::VanDyke);
+                const bool drawGoatee = (features.m_facialHair == FacialHair::Goatee ||
+                                         features.m_facialHair == FacialHair::VanDyke);
+                const bool drawMustache = (features.m_facialHair == FacialHair::Mustache ||
+                                           features.m_facialHair == FacialHair::VanDyke);
 
                 gc->SetPen(wxPen{ outlineColor, 1 });
                 gc->SetBrush(wxBrush{ hairColor });
@@ -1216,7 +1635,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         }
                     }
                 }
-            else if (facialHair == FacialHair::Beard)
+            else if (features.m_facialHair == FacialHair::Beard)
                 {
                 gc->SetPen(wxPen{ outlineColor, 1 });
                 gc->SetBrush(wxBrush{ hairColor });
@@ -1357,13 +1776,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     for (int cyi = 1; cyi <= chinYSteps; ++cyi)
                         {
                         const double y = chinY + cyi * dotSpacing;
-                        const double D =
+                        const double chinWidthFactorSq =
                             1.0 - 2.0 * safe_divide<double>(y - chinY, chinBezierScale);
-                        if (D <= 0.0)
+                        if (chinWidthFactorSq <= 0.0)
                             {
                             break;
                             }
-                        const double halfW = chinEdgeX * std::sqrt(D);
+                        const double halfW = chinEdgeX * std::sqrt(chinWidthFactorSq);
                         const int xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
                         for (int xi = 0; xi <= xSteps; ++xi)
                             {
@@ -1424,7 +1843,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(mustache);
                     }
                 }
-            else if (facialHair == FacialHair::ChinCurtain)
+            else if (features.m_facialHair == FacialHair::ChinCurtain)
                 {
                 // chin curtain (a.k.a. Shenandoah, whaler, Lincoln beard):
                 // same beard shape as Beard but no mustache -- upper lip is clean-shaved
@@ -1551,13 +1970,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     for (int cyi = 1; cyi <= chinYSteps; ++cyi)
                         {
                         const double y = chinY + cyi * dotSpacing;
-                        const double D =
+                        const double chinWidthFactorSq =
                             1.0 - 2.0 * safe_divide<double>(y - chinY, chinBezierScale);
-                        if (D <= 0.0)
+                        if (chinWidthFactorSq <= 0.0)
                             {
                             break;
                             }
-                        const double halfW = chinEdgeX * std::sqrt(D);
+                        const double halfW = chinEdgeX * std::sqrt(chinWidthFactorSq);
                         const int xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
                         for (int xi = 0; xi <= xSteps; ++xi)
                             {
@@ -1573,7 +1992,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         }
                     }
                 }
-            else if (facialHair == FacialHair::FuManchu)
+            else if (features.m_facialHair == FacialHair::FuManchu)
                 {
                 // thin mustache with two long narrow strands drooping past the mouth corners
                 gc->SetPen(wxPen{ outlineColor, 1 });
@@ -1645,7 +2064,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
 
         // draw hair that goes over forehead (after face, before eyebrows)
-        if (hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade &&
+        if (parts.m_hair && hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade &&
             hairStyle != HairStyle::FlatTop)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
@@ -1657,8 +2076,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     wxColour{ 0, 0, 0, 40 };      // dark strands for light hair
 
             // calculate where eyebrows will be drawn (to stop hair above them)
-            const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.eyePosition);
-            const double eyeRadiusPreCalc = faceHeight * 0.1 * (0.6 + 0.8 * features.eyeSize);
+            const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.m_eyePosition);
+            const double eyeRadiusPreCalc = faceHeight * 0.1 * (0.6 + 0.8 * features.m_eyeSize);
             const double browYLimit = eyeYPreCalc - eyeRadiusPreCalc * 1.8 - faceHeight * 0.05;
 
             if (hairStyle == HairStyle::Bob)
@@ -2102,7 +2521,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 }
             }
         // high top fade - works for both genders
-        else if (hairStyle == HairStyle::HighTopFade)
+        else if (parts.m_hair && hairStyle == HairStyle::HighTopFade)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -2146,7 +2565,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
             }
-        else if (hairStyle == HairStyle::FlatTop)
+        else if (parts.m_hair && hairStyle == HairStyle::FlatTop)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -2192,151 +2611,161 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             gc->FillPath(sheen);
             }
 
-        // draw eyes
-        const double eyeY = cy - faceHeight * (0.15 + 0.2 * features.eyePosition);
-        const double eyeSpacing = faceWidth * 0.4;
-        const double eyeRadius = faceHeight * 0.1 * (0.6 + 0.8 * features.eyeSize);
-
-        // sclera (white of eye)
-        gc->SetBrush(*wxWHITE_BRUSH);
-        gc->SetPen(outlinePen);
-        // left eye
-        gc->DrawEllipse(cx - eyeSpacing - eyeRadius, eyeY - eyeRadius, eyeRadius * 2,
-                        eyeRadius * 1.6);
-        // right eye
-        gc->DrawEllipse(cx + eyeSpacing - eyeRadius, eyeY - eyeRadius, eyeRadius * 2,
-                        eyeRadius * 1.6);
-
-        // iris (colored part) and pupils
-        const double pupilOffset = (features.pupilPosition - 0.5) * eyeRadius * 0.6;
-        const double irisRadius = eyeRadius * 0.55;
-        const double pupilRadius = eyeRadius * 0.25;
-
-        // draw iris
-        gc->SetBrush(wxBrush{ eyeColor });
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        // left iris
-        gc->DrawEllipse(cx - eyeSpacing + pupilOffset - irisRadius, eyeY - irisRadius * 0.9,
-                        irisRadius * 2, irisRadius * 2);
-        // right iris
-        gc->DrawEllipse(cx + eyeSpacing + pupilOffset - irisRadius, eyeY - irisRadius * 0.9,
-                        irisRadius * 2, irisRadius * 2);
-
-        // draw pupils (black center)
-        gc->SetBrush(*wxBLACK_BRUSH);
-        // left pupil
-        gc->DrawEllipse(cx - eyeSpacing + pupilOffset - pupilRadius, eyeY - pupilRadius * 0.9,
-                        pupilRadius * 2, pupilRadius * 2);
-        // right pupil
-        gc->DrawEllipse(cx + eyeSpacing + pupilOffset - pupilRadius, eyeY - pupilRadius * 0.9,
-                        pupilRadius * 2, pupilRadius * 2);
-
-        // draw feminine eyelashes
-        if (gender == Gender::Female)
+        if (parts.m_eyes)
             {
-            gc->SetPen(wxPen{ outlineColor, 1 });
-            const double lashLength = eyeRadius * 0.4;
-            const double eyeTop = eyeY - eyeRadius * 0.8;
+            // draw eyes
+            const double eyeY = cy - faceHeight * (0.15 + 0.2 * features.m_eyePosition);
+            const double eyeSpacing = faceWidth * 0.4;
+            const double eyeRadius = faceHeight * 0.1 * (0.6 + 0.8 * features.m_eyeSize);
 
-            // draw 3 lashes per eye, angled outward
-            for (int i = 0; i < 3; ++i)
+            // sclera (white of eye)
+            gc->SetBrush(*wxWHITE_BRUSH);
+            gc->SetPen(outlinePen);
+            // left eye
+            gc->DrawEllipse(cx - eyeSpacing - eyeRadius, eyeY - eyeRadius, eyeRadius * 2,
+                            eyeRadius * 1.6);
+            // right eye
+            gc->DrawEllipse(cx + eyeSpacing - eyeRadius, eyeY - eyeRadius, eyeRadius * 2,
+                            eyeRadius * 1.6);
+
+            // iris (colored part) and pupils
+            const double pupilOffset = (features.m_pupilPosition - 0.5) * eyeRadius * 0.6;
+            const double irisRadius = eyeRadius * 0.55;
+            const double pupilRadius = eyeRadius * 0.25;
+
+            // draw iris
+            gc->SetBrush(wxBrush{ eyeColor });
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            // left iris
+            gc->DrawEllipse(cx - eyeSpacing + pupilOffset - irisRadius, eyeY - irisRadius * 0.9,
+                            irisRadius * 2, irisRadius * 2);
+            // right iris
+            gc->DrawEllipse(cx + eyeSpacing + pupilOffset - irisRadius, eyeY - irisRadius * 0.9,
+                            irisRadius * 2, irisRadius * 2);
+
+            // draw pupils (black center)
+            gc->SetBrush(*wxBLACK_BRUSH);
+            // left pupil
+            gc->DrawEllipse(cx - eyeSpacing + pupilOffset - pupilRadius, eyeY - pupilRadius * 0.9,
+                            pupilRadius * 2, pupilRadius * 2);
+            // right pupil
+            gc->DrawEllipse(cx + eyeSpacing + pupilOffset - pupilRadius, eyeY - pupilRadius * 0.9,
+                            pupilRadius * 2, pupilRadius * 2);
+
+            // draw feminine eyelashes
+            if (gender == Gender::Female)
                 {
-                const double offset = (i - 1) * eyeRadius * 0.5;
-                const double angle = (i - 1) * 0.3; // angle outward
+                gc->SetPen(wxPen{ outlineColor, 1 });
+                const double lashLength = eyeRadius * 0.4;
+                const double eyeTop = eyeY - eyeRadius * 0.8;
 
-                // left eyelashes
-                wxGraphicsPath leftLash = gc->CreatePath();
-                leftLash.MoveToPoint(cx - eyeSpacing + offset, eyeTop);
-                leftLash.AddLineToPoint(cx - eyeSpacing + offset - angle * lashLength,
-                                        eyeTop - lashLength);
-                gc->StrokePath(leftLash);
+                // draw 3 lashes per eye, angled outward
+                for (int i = 0; i < 3; ++i)
+                    {
+                    const double offset = (i - 1) * eyeRadius * 0.5;
+                    const double angle = (i - 1) * 0.3; // angle outward
 
-                // right eyelashes
-                wxGraphicsPath rightLash = gc->CreatePath();
-                rightLash.MoveToPoint(cx + eyeSpacing + offset, eyeTop);
-                rightLash.AddLineToPoint(cx + eyeSpacing + offset + angle * lashLength,
-                                         eyeTop - lashLength);
-                gc->StrokePath(rightLash);
+                    // left eyelashes
+                    wxGraphicsPath leftLash = gc->CreatePath();
+                    leftLash.MoveToPoint(cx - eyeSpacing + offset, eyeTop);
+                    leftLash.AddLineToPoint(cx - eyeSpacing + offset - angle * lashLength,
+                                            eyeTop - lashLength);
+                    gc->StrokePath(leftLash);
+
+                    // right eyelashes
+                    wxGraphicsPath rightLash = gc->CreatePath();
+                    rightLash.MoveToPoint(cx + eyeSpacing + offset, eyeTop);
+                    rightLash.AddLineToPoint(cx + eyeSpacing + offset + angle * lashLength,
+                                             eyeTop - lashLength);
+                    gc->StrokePath(rightLash);
+                    }
                 }
-            }
 
-        // draw eyebrows using lines
-        gc->SetPen(wxPen{ outlineColor, 2 });
-        const double browY = eyeY - eyeRadius * 1.8;
-        const double browSlant = (features.eyebrowSlant - 0.5) * eyeRadius * 0.8;
-        const double browLength = eyeRadius * 1.2;
-
-        wxGraphicsPath leftBrow = gc->CreatePath();
-        leftBrow.MoveToPoint(cx - eyeSpacing - browLength, browY + browSlant);
-        leftBrow.AddLineToPoint(cx - eyeSpacing + browLength, browY - browSlant);
-        gc->StrokePath(leftBrow);
-
-        wxGraphicsPath rightBrow = gc->CreatePath();
-        rightBrow.MoveToPoint(cx + eyeSpacing - browLength, browY - browSlant);
-        rightBrow.AddLineToPoint(cx + eyeSpacing + browLength, browY + browSlant);
-        gc->StrokePath(rightBrow);
-
-        // draw nose (simple line with small base)
-        gc->SetPen(outlinePen);
-        const double noseScale = 0.6 + 0.8 * features.noseSize;
-        const double noseLength = faceHeight * 0.25 * noseScale;
-        const double noseWidth = faceWidth * 0.08 * noseScale;
-        const double noseTop = cy - faceHeight * 0.05;
-        const double noseBottom = noseTop + noseLength;
-
-        wxGraphicsPath nose = gc->CreatePath();
-        nose.MoveToPoint(cx, noseTop);
-        nose.AddLineToPoint(cx, noseBottom);
-        nose.AddLineToPoint(cx - noseWidth, noseBottom);
-        nose.MoveToPoint(cx, noseBottom);
-        nose.AddLineToPoint(cx + noseWidth, noseBottom);
-        gc->StrokePath(nose);
-
-        // draw mouth using quadratic curve
-        // curvature: 0=frown, 0.5=neutral, 1=smile
-        const double curvature = (features.mouthCurvature - 0.5) * faceHeight * 0.2;
-
-        if (gender == Gender::Female)
-            {
-            // draw lips with lipstick
-            gc->SetBrush(wxBrush{ lipstickColor });
-            gc->SetPen(wxPen{ lipstickColor.ChangeLightness(70), 1 });
-
-            // ensure lips have fullness even when mouth is straight
-            const double lipFullness = faceHeight * 0.06;
-            const double upperLipHeight = faceHeight * 0.045;
-            const double lowerLipDepth = std::max(lipFullness, std::abs(curvature) + lipFullness);
-
-            // upper lip with cupid's bow
-            wxGraphicsPath upperLip = gc->CreatePath();
-            upperLip.MoveToPoint(cx - mouthWidthVal, mouthY);
-            upperLip.AddQuadCurveToPoint(cx - mouthWidthVal * 0.5, mouthY - upperLipHeight, cx,
-                                         mouthY - upperLipHeight * 0.5);
-            upperLip.AddQuadCurveToPoint(cx + mouthWidthVal * 0.5, mouthY - upperLipHeight,
-                                         cx + mouthWidthVal, mouthY);
-            upperLip.AddQuadCurveToPoint(cx, mouthY + curvature * 0.3 + lipFullness * 0.3,
-                                         cx - mouthWidthVal, mouthY);
-            gc->FillPath(upperLip);
-            gc->StrokePath(upperLip);
-
-            // lower lip
-            wxGraphicsPath lowerLip = gc->CreatePath();
-            lowerLip.MoveToPoint(cx - mouthWidthVal, mouthY);
-            lowerLip.AddQuadCurveToPoint(cx, mouthY + curvature + lowerLipDepth, cx + mouthWidthVal,
-                                         mouthY);
-            lowerLip.AddQuadCurveToPoint(cx, mouthY + curvature * 0.3 + lipFullness * 0.3,
-                                         cx - mouthWidthVal, mouthY);
-            gc->FillPath(lowerLip);
-            gc->StrokePath(lowerLip);
-            }
-        else
-            {
-            // male: simple line mouth
+            // draw eyebrows using lines
             gc->SetPen(wxPen{ outlineColor, 2 });
-            wxGraphicsPath mouth = gc->CreatePath();
-            mouth.MoveToPoint(cx - mouthWidthVal, mouthY);
-            mouth.AddQuadCurveToPoint(cx, mouthY + curvature, cx + mouthWidthVal, mouthY);
-            gc->StrokePath(mouth);
+            const double browY = eyeY - eyeRadius * 1.8;
+            const double browSlant = (features.m_eyebrowSlant - 0.5) * eyeRadius * 0.8;
+            const double browLength = eyeRadius * 1.2;
+
+            wxGraphicsPath leftBrow = gc->CreatePath();
+            leftBrow.MoveToPoint(cx - eyeSpacing - browLength, browY + browSlant);
+            leftBrow.AddLineToPoint(cx - eyeSpacing + browLength, browY - browSlant);
+            gc->StrokePath(leftBrow);
+
+            wxGraphicsPath rightBrow = gc->CreatePath();
+            rightBrow.MoveToPoint(cx + eyeSpacing - browLength, browY - browSlant);
+            rightBrow.AddLineToPoint(cx + eyeSpacing + browLength, browY + browSlant);
+            gc->StrokePath(rightBrow);
+            }
+
+        if (parts.m_nose)
+            {
+            // draw nose (simple line with small base)
+            gc->SetPen(outlinePen);
+            const double noseScale = 0.6 + 0.8 * features.m_noseSize;
+            const double noseLength = faceHeight * 0.25 * noseScale;
+            const double noseWidth = faceWidth * 0.08 * noseScale;
+            const double noseTop = cy - faceHeight * 0.05;
+            const double noseBottom = noseTop + noseLength;
+
+            wxGraphicsPath nose = gc->CreatePath();
+            nose.MoveToPoint(cx, noseTop);
+            nose.AddLineToPoint(cx, noseBottom);
+            nose.AddLineToPoint(cx - noseWidth, noseBottom);
+            nose.MoveToPoint(cx, noseBottom);
+            nose.AddLineToPoint(cx + noseWidth, noseBottom);
+            gc->StrokePath(nose);
+            }
+
+        if (parts.m_mouth)
+            {
+            // draw mouth using quadratic curve
+            // curvature: 0=frown, 0.5=neutral, 1=smile
+            const double curvature = (features.m_mouthCurvature - 0.5) * faceHeight * 0.2;
+
+            if (gender == Gender::Female)
+                {
+                // draw lips with lipstick
+                gc->SetBrush(wxBrush{ lipstickColor });
+                gc->SetPen(wxPen{ lipstickColor.ChangeLightness(70), 1 });
+
+                // ensure lips have fullness even when mouth is straight
+                const double lipFullness = faceHeight * 0.06;
+                const double upperLipHeight = faceHeight * 0.045;
+                const double lowerLipDepth =
+                    std::max(lipFullness, std::abs(curvature) + lipFullness);
+
+                // upper lip with cupid's bow
+                wxGraphicsPath upperLip = gc->CreatePath();
+                upperLip.MoveToPoint(cx - mouthWidthVal, mouthY);
+                upperLip.AddQuadCurveToPoint(cx - mouthWidthVal * 0.5, mouthY - upperLipHeight, cx,
+                                             mouthY - upperLipHeight * 0.5);
+                upperLip.AddQuadCurveToPoint(cx + mouthWidthVal * 0.5, mouthY - upperLipHeight,
+                                             cx + mouthWidthVal, mouthY);
+                upperLip.AddQuadCurveToPoint(cx, mouthY + curvature * 0.3 + lipFullness * 0.3,
+                                             cx - mouthWidthVal, mouthY);
+                gc->FillPath(upperLip);
+                gc->StrokePath(upperLip);
+
+                // lower lip
+                wxGraphicsPath lowerLip = gc->CreatePath();
+                lowerLip.MoveToPoint(cx - mouthWidthVal, mouthY);
+                lowerLip.AddQuadCurveToPoint(cx, mouthY + curvature + lowerLipDepth,
+                                             cx + mouthWidthVal, mouthY);
+                lowerLip.AddQuadCurveToPoint(cx, mouthY + curvature * 0.3 + lipFullness * 0.3,
+                                             cx - mouthWidthVal, mouthY);
+                gc->FillPath(lowerLip);
+                gc->StrokePath(lowerLip);
+                }
+            else
+                {
+                // male: simple line mouth
+                gc->SetPen(wxPen{ outlineColor, 2 });
+                wxGraphicsPath mouth = gc->CreatePath();
+                mouth.MoveToPoint(cx - mouthWidthVal, mouthY);
+                mouth.AddQuadCurveToPoint(cx, mouthY + curvature, cx + mouthWidthVal, mouthY);
+                gc->StrokePath(mouth);
+                }
             }
         }
 
@@ -2384,6 +2813,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         addFeatureEntry(FeatureId::SmileFrown, m_mouthCurvatureColumnName);
         addFeatureEntry(FeatureId::FaceColor, m_faceSaturationColumnName);
         addFeatureEntry(FeatureId::EarSize, m_earSizeColumnName);
+        addFeatureEntry(FeatureId::HairAddition, m_hairAdditionColumnName);
 
         legend->SetText(legendText.Trim());
         AdjustLegendSettings(*legend, options.GetPlacementHint());
@@ -2456,8 +2886,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             features.emplace_back(TruncateLabel(m_earSizeColumnName), FeatureId::EarSize, false);
             }
+        // note: hair addition is rendered as its own key section below the face
+        // (handled via SetHairAdditionLabels / SetHairAdditionColumnName below),
+        // not as a connection-line feature
 
         legend->SetFeatures(std::move(features));
+        legend->SetHairAdditionLabels(m_hairAdditionLabels);
+        legend->SetHairAdditionColumnName(m_hairAdditionColumnName);
         legend->SetFaceColors(m_faceColorLighter, m_faceColor);
         legend->SetOutlineColor(m_outlineColor);
         legend->SetGender(m_gender);
@@ -2465,7 +2900,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         legend->SetHairColor(m_hairColor);
         legend->SetEyeColor(m_eyeColor);
         legend->SetLipstickColor(m_lipstickColor);
-        legend->SetFacialHair(m_facialHair);
         legend->SetCanvasBackgroundColor(GetPlotOrCanvasColor());
 
         // apply canvas settings based on placement hint

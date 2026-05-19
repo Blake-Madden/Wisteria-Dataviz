@@ -126,7 +126,32 @@ namespace Wisteria
         /// @brief Beard along the jaw and chin with the upper lip cleanly shaved.
         ///     Also known as the Shenandoah, whaler, Lincoln beard, Donegal, Amish beard,
         ///     or Quaker beard.
-        ChinCurtain
+        ChinCurtain,
+        /// @private
+        FACIAL_HAIR_COUNT
+        };
+
+    /// @brief Hair accessories for female Chernoff faces.
+    enum class HairAccessory
+        {
+        /// @brief A butterfly.
+        Butterfly,
+        /// @brief A flower.
+        Flower,
+        /// @brief A sunflower.
+        SunFlower,
+        /// @brief A heart.
+        Heart,
+        /// @brief A leaf.
+        Leaf,
+        /// @brief A snowflake.
+        Snowflake,
+        /// @brief A star.
+        Star,
+        /// @brief A pumpkin.
+        Pumpkin,
+        /// @private
+        HAIR_ACCESSORY_COUNT
         };
 
     /// @brief Where a ring is within a circle.

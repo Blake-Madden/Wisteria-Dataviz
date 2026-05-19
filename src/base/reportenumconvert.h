@@ -980,6 +980,27 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<HairAccessory> ConvertHairAccessory(const wxString& value)
+            {
+            static const std::map<std::wstring, HairAccessory> hairAccessoryValues = {
+                { L"butterfly", HairAccessory::Butterfly },
+                { L"flower", HairAccessory::Flower },
+                { L"sunflower", HairAccessory::SunFlower },
+                { L"heart", HairAccessory::Heart },
+                { L"leaf", HairAccessory::Leaf },
+                { L"snowflake", HairAccessory::Snowflake },
+                { L"star", HairAccessory::Star },
+                { L"pumpkin", HairAccessory::Pumpkin }
+            };
+
+            const auto foundValue = hairAccessoryValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != hairAccessoryValues.cend()) ?
+                        std::optional<HairAccessory>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<wxPenStyle> ConvertPenStyle(const wxString& value)
             {
             static const std::map<std::wstring, wxPenStyle> styleValues = {
@@ -1922,6 +1943,28 @@ namespace Wisteria
                 { FacialHair::FuManchu, L"fu-manchu" },
                 { FacialHair::Beard, L"beard" },
                 { FacialHair::ChinCurtain, L"chin-curtain" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a HairAccessory enum to its JSON string representation.
+        /// @param value The hair accessory enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertHairAccessoryToString(HairAccessory value)
+            {
+            static const std::map<HairAccessory, wxString> values = {
+                { HairAccessory::Butterfly, L"butterfly" },
+                { HairAccessory::Flower, L"flower" },
+                { HairAccessory::SunFlower, L"sunflower" },
+                { HairAccessory::Heart, L"heart" },
+                { HairAccessory::Leaf, L"leaf" },
+                { HairAccessory::Snowflake, L"snowflake" },
+                { HairAccessory::Star, L"star" },
+                { HairAccessory::Pumpkin, L"pumpkin" }
             };
 
             const auto foundValue = values.find(value);

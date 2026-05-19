@@ -3646,7 +3646,8 @@ namespace Wisteria
                 getOptionalColumn(L"eye-position"), getOptionalColumn(L"eyebrow-slant"),
                 getOptionalColumn(L"pupil-position"), getOptionalColumn(L"nose-size"),
                 getOptionalColumn(L"mouth-width"), getOptionalColumn(L"mouth-curvature"),
-                getOptionalColumn(L"face-saturation"), getOptionalColumn(L"ear-size"));
+                getOptionalColumn(L"face-saturation"), getOptionalColumn(L"ear-size"),
+                getOptionalColumn(L"hair-addition"));
 
             // appearance options
             if (graphNode->HasProperty(L"show-labels"))
@@ -3689,16 +3690,6 @@ namespace Wisteria
                     chernoffPlot->SetHairStyle(hairStyle.value());
                     }
                 }
-            if (graphNode->HasProperty(L"facial-hair"))
-                {
-                const auto facialHair = ReportEnumConvert::ConvertFacialHair(
-                    graphNode->GetProperty(L"facial-hair")->AsString());
-                if (facialHair.has_value())
-                    {
-                    chernoffPlot->SetFacialHair(facialHair.value());
-                    }
-                }
-
             chernoffPlot->SetPropertyTemplate(
                 L"enhanced-legend",
                 graphNode->GetProperty(L"enhanced-legend")->AsBool(true) ? L"true" : L"false");

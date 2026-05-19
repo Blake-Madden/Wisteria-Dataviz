@@ -4177,12 +4177,6 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             node->Add(L"hair-style", hsStr.value());
             }
-        const auto fhStr =
-            Wisteria::ReportEnumConvert::ConvertFacialHairToString(chernoff->GetFacialHair());
-        if (fhStr.has_value())
-            {
-            node->Add(L"facial-hair", fhStr.value());
-            }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
         {
