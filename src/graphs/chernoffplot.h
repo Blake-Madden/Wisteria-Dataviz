@@ -607,13 +607,22 @@ namespace Wisteria::Graphs
         /// @param hairColor The hair color.
         /// @param hairStyle The hair style.
         /// @param gender The gender for face styling.
-        /// @param parts Which parts of the face to draw (defaults to all).
+        /// @param parts Which parts of the face to draw.
         static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,
                              const FaceFeatures& features, const wxColour& faceColorLighter,
                              const wxColour& faceColorDarker, const wxColour& outlineColor,
                              const wxColour& lipstickColor, const wxColour& eyeColor,
                              const wxColour& hairColor, HairStyle hairStyle, Gender gender,
-                             const FaceParts& parts = FaceParts{});
+                             const FaceParts& parts);
+
+        /// @brief Draws a single face within the specified rectangle, including all parts.
+        /// @details Overload that draws every face part; see the other @c DrawFace() for
+        ///     parameter details.
+        static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,
+                             const FaceFeatures& features, const wxColour& faceColorLighter,
+                             const wxColour& faceColorDarker, const wxColour& outlineColor,
+                             const wxColour& lipstickColor, const wxColour& eyeColor,
+                             const wxColour& hairColor, HairStyle hairStyle, Gender gender);
 
         /// @brief Normalizes a value to the [0,1] range.
         /// @param value The raw value.

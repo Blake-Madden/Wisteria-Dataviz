@@ -72,10 +72,10 @@ namespace Wisteria::UI
 
         // feature-to-variable label grid
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
-        constexpr FID allFeatures[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
-                                        FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
-                                        FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
-                                        FID::FaceColor,     FID::EarSize,      FID::HairAddition };
+        constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
+                                        FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
+                                        FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
+                                        FID::FaceColor,   FID::EarSize,      FID::HairAddition };
 
         auto* featureGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
@@ -349,10 +349,10 @@ namespace Wisteria::UI
             }
 
         // map feature IDs to selected variable names
-        constexpr FID featureOrder[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
-                                         FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
-                                         FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
-                                         FID::FaceColor,     FID::EarSize,      FID::HairAddition };
+        constexpr FID featureOrder[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
+                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
+                                         FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
+                                         FID::FaceColor,   FID::EarSize,      FID::HairAddition };
 
         m_featureVariables.clear();
         for (size_t i = 0; i < std::size(featureOrder); ++i)
@@ -371,10 +371,10 @@ namespace Wisteria::UI
     void InsertChernoffDlg::UpdateFeatureLabels()
         {
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
-        constexpr FID allFeatures[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
-                                        FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
-                                        FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
-                                        FID::FaceColor,     FID::EarSize,      FID::HairAddition };
+        constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
+                                        FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
+                                        FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
+                                        FID::FaceColor,   FID::EarSize,      FID::HairAddition };
 
         for (size_t i = 0; i < FEATURE_COUNT; ++i)
             {
@@ -508,10 +508,10 @@ namespace Wisteria::UI
         // load actual column names from the graph
         // (property templates may contain unexpanded {{placeholders}})
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
-        const FID allFeatures[] = { FID::FaceWidth,    FID::FaceHeight,   FID::EyeSize,
-                                    FID::EyePosition,  FID::EyebrowSlant, FID::PupilDirection,
-                                    FID::NoseSize,      FID::MouthWidth,   FID::SmileFrown,
-                                    FID::FaceColor,     FID::EarSize,      FID::HairAddition };
+        const FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
+                                    FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
+                                    FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
+                                    FID::FaceColor,   FID::EarSize,      FID::HairAddition };
         m_featureVariables.clear();
         for (const auto fid : allFeatures)
             {

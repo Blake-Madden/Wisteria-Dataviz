@@ -1022,10 +1022,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             if (categoryCount > static_cast<size_t>(FacialHair::FACIAL_HAIR_COUNT))
                 {
                 throw std::runtime_error(
-                    wxString::Format(_(L"'%s': hair addition column has %zu categories; "
-                                       "maximum allowed is %d."),
-                                     hairAdditionColumn.value(), categoryCount,
-                                     static_cast<int>(FacialHair::FACIAL_HAIR_COUNT))
+                    wxString::Format(
+                        /* TRANSLATORS: Error message. Column name (%s),
+                           actual category count (%zu), and maximum allowed (%d). */
+                        _(L"'%s': hair addition column has %zu categories; "
+                          "maximum allowed is %d."),
+                        hairAdditionColumn.value(), categoryCount,
+                        static_cast<int>(FacialHair::FACIAL_HAIR_COUNT))
                         .ToUTF8());
                 }
             m_hairAdditionLabels.reserve(hairAdditionCol->GetStringTable().size());
@@ -1344,6 +1347,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             label->UnlockBoundingBoxScaling();
             AddObject(std::move(label));
             }
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawFace(
+        wxGraphicsContext * gc, const wxRect& rect, const FaceFeatures& features,
+        const wxColour& faceColorLighter, const wxColour& faceColorDarker,
+        const wxColour& outlineColor, const wxColour& lipstickColor, const wxColour& eyeColor,
+        const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
+        {
+        DrawFace(gc, rect, features, faceColorLighter, faceColorDarker, outlineColor, lipstickColor,
+                 eyeColor, hairColor, hairStyle, gender, FaceParts{});
         }
 
     //----------------------------------------------------------------

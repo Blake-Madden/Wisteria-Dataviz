@@ -2605,19 +2605,14 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        const std::pair<FID, wxString> featureProps[] = { { FID::FaceWidth, L"face-width" },
-                                                          { FID::FaceHeight, L"face-height" },
-                                                          { FID::EyeSize, L"eye-size" },
-                                                          { FID::EyePosition, L"eye-position" },
-                                                          { FID::EyebrowSlant, L"eyebrow-slant" },
-                                                          { FID::PupilDirection,
-                                                            L"pupil-position" },
-                                                          { FID::NoseSize, L"nose-size" },
-                                                          { FID::MouthWidth, L"mouth-width" },
-                                                          { FID::SmileFrown, L"mouth-curvature" },
-                                                          { FID::FaceColor, L"face-saturation" },
-                                                          { FID::EarSize, L"ear-size" },
-                                                          { FID::HairAddition, L"hair-addition" } };
+        const std::pair<FID, wxString> featureProps[] = {
+            { FID::FaceWidth, L"face-width" },       { FID::FaceHeight, L"face-height" },
+            { FID::EyeSize, L"eye-size" },           { FID::EyePosition, L"eye-position" },
+            { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
+            { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
+            { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
+            { FID::EarSize, L"ear-size" },           { FID::HairAddition, L"hair-addition" }
+        };
         for (const auto& [fid, propName] : featureProps)
             {
             const auto var = dlg.GetFeatureVariable(fid);
@@ -3920,19 +3915,14 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
                              graph.GetPropertyTemplate(L"dataset"));
 
-        const std::pair<FID, wxString> featureProps[] = { { FID::FaceWidth, L"face-width" },
-                                                          { FID::FaceHeight, L"face-height" },
-                                                          { FID::EyeSize, L"eye-size" },
-                                                          { FID::EyePosition, L"eye-position" },
-                                                          { FID::EyebrowSlant, L"eyebrow-slant" },
-                                                          { FID::PupilDirection,
-                                                            L"pupil-position" },
-                                                          { FID::NoseSize, L"nose-size" },
-                                                          { FID::MouthWidth, L"mouth-width" },
-                                                          { FID::SmileFrown, L"mouth-curvature" },
-                                                          { FID::FaceColor, L"face-saturation" },
-                                                          { FID::EarSize, L"ear-size" },
-                                                          { FID::HairAddition, L"hair-addition" } };
+        const std::pair<FID, wxString> featureProps[] = {
+            { FID::FaceWidth, L"face-width" },       { FID::FaceHeight, L"face-height" },
+            { FID::EyeSize, L"eye-size" },           { FID::EyePosition, L"eye-position" },
+            { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
+            { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
+            { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
+            { FID::EarSize, L"ear-size" },           { FID::HairAddition, L"hair-addition" }
+        };
         for (const auto& [fid, propName] : featureProps)
             {
             const auto var = dlg.GetFeatureVariable(fid);
