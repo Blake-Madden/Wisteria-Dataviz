@@ -294,10 +294,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 {
                 const wxString joiner =
                     (forceSingleLine || feature.m_columnName.length() <= 8) ? L": " : L":\n";
-                GraphItems::Label label(
-                    GraphItems::GraphItemInfo{ GetFeatureDisplayName(feature.m_featureId) + joiner +
-                                               L"<span style='font-style:italic;'>" +
-                                               feature.m_columnName + L"</span>" }
+                GraphItems::Label label(GraphItems::GraphItemInfo{
+                    GetFeatureDisplayName(feature.m_featureId) + joiner +
+                    L"<span style='font-style:italic;'>" + feature.m_columnName + L"</span>" }
                                             .Pen(wxNullPen)
                                             .Scaling(labelScaling)
                                             .DPIScaling(GetDPIScaleFactor()));
@@ -2729,31 +2728,36 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->SetBrush(wxBrush{ lipstickColor });
                 gc->SetPen(wxPen{ lipstickColor.ChangeLightness(70), 1 });
 
-                // ensure lips have fullness even when mouth is straight
-                const double lipFullness = faceHeight * 0.06;
-                const double upperLipHeight = faceHeight * 0.045;
-                const double lowerLipDepth =
-                    std::max(lipFullness, std::abs(curvature) + lipFullness);
+                // lip thickness is keyed off baseRadius (constant per chart) rather
+                // than faceHeight (which varies with the m_faceHeight feature), so
+                // every face's lips have the same thickness
+                const double lipThickness = baseRadius * 0.06;
+                const double upperLipHeight = baseRadius * 0.045;
+
+                // the whole mouth bows with curvature (smile bows down, frown bows up).
+                // both lip outer edges and the separator follow the same bow, so the
+                // lips keep a uniform thickness regardless of the smile/frown amount
+                const double separatorMidY = mouthY + curvature;
+                const double cupidBowY = separatorMidY - upperLipHeight * 0.5;
+                const double upperLipControlY = separatorMidY - upperLipHeight;
+                const double lowerLipBottomY = separatorMidY + lipThickness;
 
                 // upper lip with cupid's bow
                 wxGraphicsPath upperLip = gc->CreatePath();
                 upperLip.MoveToPoint(cx - mouthWidthVal, mouthY);
-                upperLip.AddQuadCurveToPoint(cx - mouthWidthVal * 0.5, mouthY - upperLipHeight, cx,
-                                             mouthY - upperLipHeight * 0.5);
-                upperLip.AddQuadCurveToPoint(cx + mouthWidthVal * 0.5, mouthY - upperLipHeight,
+                upperLip.AddQuadCurveToPoint(cx - mouthWidthVal * 0.5, upperLipControlY, cx,
+                                             cupidBowY);
+                upperLip.AddQuadCurveToPoint(cx + mouthWidthVal * 0.5, upperLipControlY,
                                              cx + mouthWidthVal, mouthY);
-                upperLip.AddQuadCurveToPoint(cx, mouthY + curvature * 0.3 + lipFullness * 0.3,
-                                             cx - mouthWidthVal, mouthY);
+                upperLip.AddQuadCurveToPoint(cx, separatorMidY, cx - mouthWidthVal, mouthY);
                 gc->FillPath(upperLip);
                 gc->StrokePath(upperLip);
 
-                // lower lip
+                // lower lip - bottom hugs the separator at a constant offset
                 wxGraphicsPath lowerLip = gc->CreatePath();
                 lowerLip.MoveToPoint(cx - mouthWidthVal, mouthY);
-                lowerLip.AddQuadCurveToPoint(cx, mouthY + curvature + lowerLipDepth,
-                                             cx + mouthWidthVal, mouthY);
-                lowerLip.AddQuadCurveToPoint(cx, mouthY + curvature * 0.3 + lipFullness * 0.3,
-                                             cx - mouthWidthVal, mouthY);
+                lowerLip.AddQuadCurveToPoint(cx, lowerLipBottomY, cx + mouthWidthVal, mouthY);
+                lowerLip.AddQuadCurveToPoint(cx, separatorMidY, cx - mouthWidthVal, mouthY);
                 gc->FillPath(lowerLip);
                 gc->StrokePath(lowerLip);
                 }
