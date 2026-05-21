@@ -39,6 +39,7 @@ namespace Wisteria::Graphs
         | Mouth curvature | Frown @htmlonly &rarr; @endhtmlonly Smile |
         | Face color | Pale @htmlonly &rarr; @endhtmlonly Saturated |
         | Ear size | Small @htmlonly &rarr; @endhtmlonly Large |
+        | Hair style | Category string mapped to HairStyle (e.g., @c "bob", @c "pixie") |
         | Hair addition | Category string mapped to FacialHair (male) or HairAccessory (female) |
 
         @par %Data:
@@ -123,6 +124,10 @@ namespace Wisteria::Graphs
             @param mouthCurvatureColumn Column controlling smile/frown (optional).
             @param faceSaturationColumn Column controlling face color saturation (optional).
             @param earSizeColumn Column controlling ear size (optional).
+            @param hairStyleColumn Optional categorical column controlling per-face hair style.\n
+           Category strings are mapped to HairStyle values (e.g., @c "bob", @c "pixie") in the
+           order they appear in the data.\n When this column is not provided, every face uses the
+           plot-wide hair style set via SetHairStyle().
             @param hairAdditionColumn Optional categorical column controlling per-face hair
            addition.\n For male faces, category strings are mapped to FacialHair values (e.g., @c
            "beard", @c "mustache").\n For female faces, category strings are mapped to HairAccessory
@@ -147,6 +152,7 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& mouthCurvatureColumn = std::nullopt,
                      const std::optional<wxString>& faceSaturationColumn = std::nullopt,
                      const std::optional<wxString>& earSizeColumn = std::nullopt,
+                     const std::optional<wxString>& hairStyleColumn = std::nullopt,
                      const std::optional<wxString>& hairAdditionColumn = std::nullopt);
 
         /// @name Appearance Functions
@@ -318,6 +324,7 @@ namespace Wisteria::Graphs
             SmileFrown,
             FaceColor,
             EarSize,
+            HairStyle,
             HairAddition
             };
 
@@ -426,6 +433,24 @@ namespace Wisteria::Graphs
                 m_canvasBackgroundColor = color;
                 }
 
+            /// @brief Sets the hair-style factor labels (ordered by enum index).
+            /// @details When non-empty, the legend renders an additional "key" section
+            ///     below the face listing each label with a small face icon showing
+            ///     that hair style.
+            /// @param labels The label list, where index @c N corresponds to
+            ///     @c HairStyle(N).
+            void SetHairStyleLabels(std::vector<wxString> labels) noexcept
+                {
+                m_hairStyleLabels = std::move(labels);
+                }
+
+            /// @brief Sets the hair-style column name (used as the key section header).
+            /// @param name The column name.
+            void SetHairStyleColumnName(wxString name) noexcept
+                {
+                m_hairStyleColumnName = std::move(name);
+                }
+
             /// @brief Sets the hair-addition factor labels (ordered by enum index).
             /// @details When non-empty, the legend renders an additional "key" section
             ///     below the face listing each label with its corresponding hair icon
@@ -457,6 +482,8 @@ namespace Wisteria::Graphs
                 }
 
             std::vector<FeatureLabel> m_features;
+            std::vector<wxString> m_hairStyleLabels;
+            wxString m_hairStyleColumnName;
             std::vector<wxString> m_hairAdditionLabels;
             wxString m_hairAdditionColumnName;
             wxColour m_faceColorLighter{ 255, 239, 219 };
@@ -517,6 +544,7 @@ namespace Wisteria::Graphs
             double m_mouthCurvature{ DEFAULT_FEATURE_VALUE };
             double m_faceSaturation{ DEFAULT_FEATURE_VALUE };
             double m_earSize{ DEFAULT_FEATURE_VALUE };
+            HairStyle m_hairStyle{ HairStyle::Bob };
             FacialHair m_facialHair{ FacialHair::CleanShaven };
             HairAccessory m_hairAccessory{ HairAccessory::Butterfly };
             /// @brief Whether @c m_hairAccessory should be rendered. Set to @c true
@@ -661,7 +689,12 @@ namespace Wisteria::Graphs
         wxString m_mouthCurvatureColumnName;
         wxString m_faceSaturationColumnName;
         wxString m_earSizeColumnName;
+        wxString m_hairStyleColumnName;
         wxString m_hairAdditionColumnName;
+
+        // hair-style factor labels, ordered by enum index
+        // (index N corresponds to HairStyle(N)).
+        std::vector<wxString> m_hairStyleLabels;
 
         // hair-addition factor labels, ordered by enum index
         // (index N corresponds to FacialHair(N) and HairAccessory(N)).

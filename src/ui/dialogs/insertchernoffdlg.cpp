@@ -75,7 +75,8 @@ namespace Wisteria::UI
         constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
                                         FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                        FID::FaceColor,   FID::EarSize,      FID::HairAddition };
+                                        FID::FaceColor,   FID::EarSize,      FID::HairStyle,
+                                        FID::HairAddition };
 
         auto* featureGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
@@ -121,24 +122,21 @@ namespace Wisteria::UI
                                });
             }
 
-        // hair style
-        appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Hair style:")),
-                             wxSizerFlags{}.CenterVertical());
-            {
-            auto* hairStyleChoice =
-                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_hairStyle));
-            hairStyleChoice->Append(_(L"Bald"));
-            hairStyleChoice->Append(_(L"Bob"));
-            hairStyleChoice->Append(_(L"Pixie"));
-            hairStyleChoice->Append(_(L"Bun"));
-            hairStyleChoice->Append(_(L"Long & straight"));
-            hairStyleChoice->Append(_(L"High top fade"));
-            hairStyleChoice->Append(_(L"Flat top"));
-            hairStyleChoice->Append(_(L"Curly"));
-            hairStyleChoice->Append(_(L"Long & curly"));
-            appearanceSizer->Add(hairStyleChoice);
-            }
+        // hair style (disabled when a categorical variable is mapped to FID::HairStyle)
+        m_hairStyleLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Hair style:"));
+        appearanceSizer->Add(m_hairStyleLabel, wxSizerFlags{}.CenterVertical());
+        m_hairStyleChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                                         nullptr, 0, wxGenericValidator(&m_hairStyle));
+        m_hairStyleChoice->Append(_(L"Bald"));
+        m_hairStyleChoice->Append(_(L"Bob"));
+        m_hairStyleChoice->Append(_(L"Pixie"));
+        m_hairStyleChoice->Append(_(L"Bun"));
+        m_hairStyleChoice->Append(_(L"Long & straight"));
+        m_hairStyleChoice->Append(_(L"High top fade"));
+        m_hairStyleChoice->Append(_(L"Flat top"));
+        m_hairStyleChoice->Append(_(L"Curly"));
+        m_hairStyleChoice->Append(_(L"Long & curly"));
+        appearanceSizer->Add(m_hairStyleChoice);
 
         // skin color range (lighter and darker side by side)
         appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Skin color:")),
@@ -337,6 +335,12 @@ namespace Wisteria::UI
                                     .DefaultVariables(defaultVar(FID::EarSize))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
+                                    .Label(_(L"Hair Style"))
+                                    .SingleSelection(true)
+                                    .Required(false)
+                                    .DefaultVariables(defaultVar(FID::HairStyle))
+                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::String }),
+                                VLI{}
                                     .Label(_(L"Hair Addition"))
                                     .SingleSelection(true)
                                     .Required(false)
@@ -352,7 +356,8 @@ namespace Wisteria::UI
         constexpr FID featureOrder[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
                                          FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
                                          FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                         FID::FaceColor,   FID::EarSize,      FID::HairAddition };
+                                         FID::FaceColor,   FID::EarSize,      FID::HairStyle,
+                                         FID::HairAddition };
 
         m_featureVariables.clear();
         for (size_t i = 0; i < std::size(featureOrder); ++i)
@@ -365,6 +370,13 @@ namespace Wisteria::UI
             }
 
         UpdateFeatureLabels();
+
+        // a categorical hair-style variable overrides the static choice control;
+        // disable the choice so its value can't conflict with the mapped column
+        const bool hairStyleVarMapped =
+            m_featureVariables.find(FID::HairStyle) != m_featureVariables.cend();
+        m_hairStyleLabel->Enable(!hairStyleVarMapped);
+        m_hairStyleChoice->Enable(!hairStyleVarMapped);
         }
 
     //-------------------------------------------
@@ -374,7 +386,8 @@ namespace Wisteria::UI
         constexpr FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
                                         FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                        FID::FaceColor,   FID::EarSize,      FID::HairAddition };
+                                        FID::FaceColor,   FID::EarSize,      FID::HairStyle,
+                                        FID::HairAddition };
 
         for (size_t i = 0; i < FEATURE_COUNT; ++i)
             {
@@ -511,7 +524,8 @@ namespace Wisteria::UI
         const FID allFeatures[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
                                     FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
                                     FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                    FID::FaceColor,   FID::EarSize,      FID::HairAddition };
+                                    FID::FaceColor,   FID::EarSize,      FID::HairStyle,
+                                    FID::HairAddition };
         m_featureVariables.clear();
         for (const auto fid : allFeatures)
             {
@@ -527,6 +541,13 @@ namespace Wisteria::UI
         m_gender = (chernoff->GetGender() == Gender::Male) ? 1 : 0;
         m_lipstickColorLabel->Enable(m_gender == 0);
         m_lipstickColorPicker->Enable(m_gender == 0);
+
+        // mirror the variable-mapping rule: hair-style choice is disabled when a
+        // categorical variable is mapped to FID::HairStyle
+        const bool hairStyleVarMapped =
+            m_featureVariables.find(FID::HairStyle) != m_featureVariables.cend();
+        m_hairStyleLabel->Enable(!hairStyleVarMapped);
+        m_hairStyleChoice->Enable(!hairStyleVarMapped);
 
         switch (chernoff->GetHairStyle())
             {

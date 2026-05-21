@@ -144,7 +144,7 @@ namespace Wisteria::UI
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         /// @brief The number of facial features available for variable mapping.
-        constexpr static size_t FEATURE_COUNT{ 12 };
+        constexpr static size_t FEATURE_COUNT{ 13 };
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -165,6 +165,8 @@ namespace Wisteria::UI
         wxColourPickerCtrl* m_skinColorDarkerPicker{ nullptr };
         wxColourPickerCtrl* m_eyeColorPicker{ nullptr };
         wxColourPickerCtrl* m_hairColorPicker{ nullptr };
+        wxStaticText* m_hairStyleLabel{ nullptr };
+        wxChoice* m_hairStyleChoice{ nullptr };
         wxStaticText* m_lipstickColorLabel{ nullptr };
         wxColourPickerCtrl* m_lipstickColorPicker{ nullptr };
 

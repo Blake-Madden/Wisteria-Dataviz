@@ -3647,7 +3647,7 @@ namespace Wisteria
                 getOptionalColumn(L"pupil-position"), getOptionalColumn(L"nose-size"),
                 getOptionalColumn(L"mouth-width"), getOptionalColumn(L"mouth-curvature"),
                 getOptionalColumn(L"face-saturation"), getOptionalColumn(L"ear-size"),
-                getOptionalColumn(L"hair-addition"));
+                getOptionalColumn(L"hair-style"), getOptionalColumn(L"hair-addition"));
 
             // appearance options
             if (graphNode->HasProperty(L"show-labels"))

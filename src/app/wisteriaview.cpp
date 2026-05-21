@@ -2601,7 +2601,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
                       optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
                       optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
                       optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
-                      optVar(FID::EarSize), optVar(FID::HairAddition));
+                      optVar(FID::EarSize), optVar(FID::HairStyle), optVar(FID::HairAddition));
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
@@ -2611,7 +2611,8 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
             { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
             { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
             { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
-            { FID::EarSize, L"ear-size" },           { FID::HairAddition, L"hair-addition" }
+            { FID::EarSize, L"ear-size" },           { FID::HairStyle, L"hair-style" },
+            { FID::HairAddition, L"hair-addition" }
         };
         for (const auto& [fid, propName] : featureProps)
             {
@@ -3906,7 +3907,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
                       optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
                       optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
                       optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
-                      optVar(FID::EarSize), optVar(FID::HairAddition));
+                      optVar(FID::EarSize), optVar(FID::HairStyle), optVar(FID::HairAddition));
         dlg.ApplyAxisOverrides(*plot);
 
         // carry forward property templates, preserving {{placeholders}}
@@ -3921,7 +3922,8 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
             { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
             { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
             { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
-            { FID::EarSize, L"ear-size" },           { FID::HairAddition, L"hair-addition" }
+            { FID::EarSize, L"ear-size" },           { FID::HairStyle, L"hair-style" },
+            { FID::HairAddition, L"hair-addition" }
         };
         for (const auto& [fid, propName] : featureProps)
             {

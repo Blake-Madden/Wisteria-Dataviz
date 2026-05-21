@@ -103,7 +103,9 @@ namespace Wisteria
         /// @brief Short, curly hair.
         Curly,
         /// @brief Long, curly hair.
-        LongCurly
+        LongCurly,
+        /// @private
+        HAIR_STYLE_COUNT
         };
 
     /// @brief Facial hair style options for Chernoff faces.

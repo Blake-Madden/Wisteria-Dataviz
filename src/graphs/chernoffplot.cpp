@@ -45,6 +45,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             return _(L"Face color");
         case FeatureId::EarSize:
             return _(L"Ear size");
+        case FeatureId::HairStyle:
+            return _(L"Hair style");
         case FeatureId::HairAddition:
             return _(L"Hair addition");
         default:
@@ -79,6 +81,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             return m_faceSaturationColumnName;
         case FeatureId::EarSize:
             return m_earSizeColumnName;
+        case FeatureId::HairStyle:
+            return m_hairStyleColumnName;
         case FeatureId::HairAddition:
             return m_hairAdditionColumnName;
         default:
@@ -257,10 +261,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         const wxPoint currentPos = m_rect.GetPosition();
 
         const auto lineGap = ScaleToScreenAndCanvas(5);
-        // face is elongated: height = 1.5 * width, and we want it 2x larger.
-        // When there are many hair entries, halve the face so the legend stays compact.
-        const auto minFaceHeight = m_hairAdditionLabels.size() > 4 ? ScaleToScreenAndCanvas(80) :
-                                                                     ScaleToScreenAndCanvas(160);
+        // Face is elongated: height = 1.5 * width, and we want it 2x larger.
+        // When either bottom section has many entries, halve the face so the
+        // legend stays compact.
+        const auto maxBottomEntries =
+            std::max(m_hairStyleLabels.size(), m_hairAdditionLabels.size());
+        const auto minFaceHeight =
+            maxBottomEntries > 4 ? ScaleToScreenAndCanvas(80) : ScaleToScreenAndCanvas(160);
         const auto minFaceWidth = minFaceHeight * math_constants::two_thirds;
 
         // measure label widths at reduced scaling (labels will be scaled to fit)
@@ -324,29 +331,37 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         const int labelsHeight = std::max(leftCount, rightCount) * labelHeight + (labelHeight / 2);
         const auto minHeightForFace = std::max<int>(minFaceHeight * 3 / 2, labelsHeight);
 
-        // additional space needed for the hair-addition key section below the face
-        int hairSectionWidth{ 0 };
-        int hairSectionHeight{ 0 };
-        if (!m_hairAdditionLabels.empty())
-            {
-            const auto hairIconSize = ScaleToScreenAndCanvas(28);
-            const auto hairEntryGap = ScaleToScreenAndCanvas(4);
-            int maxHairLabelWidth{ 0 };
-            for (const auto& hairLabel : m_hairAdditionLabels)
+        // additional space needed for the hair-style and hair-addition key sections
+        // (rendered side-by-side below the face)
+        const auto hairIconSize = ScaleToScreenAndCanvas(28);
+        const auto hairEntryGap = ScaleToScreenAndCanvas(4);
+        const auto sectionGap = ScaleToScreenAndCanvas(20);
+
+        const auto measureSection = [&](const std::vector<wxString>& labels,
+                                        const wxString& columnName, int& outWidth, int& outHeight)
+        {
+            outWidth = 0;
+            outHeight = 0;
+            if (labels.empty())
                 {
-                const GraphItems::Label lbl(GraphItems::GraphItemInfo{ hairLabel }
-                                                .Pen(wxNullPen)
-                                                .Scaling(labelScaling)
-                                                .DPIScaling(GetDPIScaleFactor()));
-                maxHairLabelWidth = std::max(maxHairLabelWidth, lbl.GetBoundingBox(dc).GetWidth());
+                return;
                 }
-            // header (column name) above the entries
+            int maxHairLabelWidth{ 0 };
+            for (const auto& hairLabel : labels)
+                {
+                const GraphItems::Label widthLbl(GraphItems::GraphItemInfo{ hairLabel }
+                                                     .Pen(wxNullPen)
+                                                     .Scaling(labelScaling)
+                                                     .DPIScaling(GetDPIScaleFactor()));
+                maxHairLabelWidth =
+                    std::max(maxHairLabelWidth, widthLbl.GetBoundingBox(dc).GetWidth());
+                }
             int headerWidth{ 0 };
             int headerHeight{ 0 };
-            if (!m_hairAdditionColumnName.empty())
+            if (!columnName.empty())
                 {
                 GraphItems::Label headerLbl(GraphItems::GraphItemInfo{
-                    L"<span style='font-style:italic;'>" + m_hairAdditionColumnName + L"</span>" }
+                    L"<span style='font-style:italic;'>" + columnName + L"</span>" }
                                                 .Pen(wxNullPen)
                                                 .Scaling(labelScaling)
                                                 .DPIScaling(GetDPIScaleFactor()));
@@ -355,16 +370,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 headerWidth = headerBox.GetWidth();
                 headerHeight = headerBox.GetHeight() + ScaleToScreenAndCanvas(4);
                 }
-            hairSectionWidth =
-                std::max<int>(hairIconSize + lineGap + maxHairLabelWidth, headerWidth);
-            hairSectionHeight =
-                headerHeight +
-                static_cast<int>(m_hairAdditionLabels.size()) * (hairIconSize + hairEntryGap) +
-                ScaleToScreenAndCanvas(10);
-            }
+            outWidth = std::max<int>(hairIconSize + lineGap + maxHairLabelWidth, headerWidth);
+            outHeight = headerHeight +
+                        static_cast<int>(labels.size()) * (hairIconSize + hairEntryGap) +
+                        ScaleToScreenAndCanvas(10);
+        };
 
-        const int minWidth = std::max(minWidthForFace, hairSectionWidth);
-        const auto minHeight = minHeightForFace + hairSectionHeight;
+        int hairStyleSectionWidth{ 0 };
+        int hairStyleSectionHeight{ 0 };
+        measureSection(m_hairStyleLabels, m_hairStyleColumnName, hairStyleSectionWidth,
+                       hairStyleSectionHeight);
+
+        int hairAdditionSectionWidth{ 0 };
+        int hairAdditionSectionHeight{ 0 };
+        measureSection(m_hairAdditionLabels, m_hairAdditionColumnName, hairAdditionSectionWidth,
+                       hairAdditionSectionHeight);
+
+        const bool bothSections = !m_hairStyleLabels.empty() && !m_hairAdditionLabels.empty();
+        const int bottomSectionWidth =
+            hairStyleSectionWidth + (bothSections ? sectionGap : 0) + hairAdditionSectionWidth;
+        const int bottomSectionHeight = std::max(hairStyleSectionHeight, hairAdditionSectionHeight);
+
+        const int minWidth = std::max(minWidthForFace, bottomSectionWidth);
+        const auto minHeight = minHeightForFace + bottomSectionHeight;
 
         m_rect = wxRect{ currentPos, wxSize{ minWidth, minHeight } };
         }
@@ -431,30 +459,45 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 }
             }
 
-        // height reserved for the hair-addition key section drawn below the face
+        // height reserved for the hair-style and hair-addition key sections drawn
+        // below the face (rendered as side-by-side columns)
         const auto hairEntryGap = ScaleToScreenAndCanvas(4);
         const auto hairBottomPadding = ScaleToScreenAndCanvas(10);
         const auto minHairIconSize = ScaleToScreenAndCanvas(8);
         auto hairIconSize = ScaleToScreenAndCanvas(28);
         const double headerScaling = GetScaling() * 0.6;
-        int hairHeaderHeight{ 0 };
-        if (!m_hairAdditionLabels.empty() && !m_hairAdditionColumnName.empty())
-            {
+
+        const auto measureHeaderHeight = [&](const std::vector<wxString>& labels,
+                                             const wxString& columnName) -> int
+        {
+            if (labels.empty() || columnName.empty())
+                {
+                return 0;
+                }
             GraphItems::Label hdrLbl(GraphItems::GraphItemInfo{
-                L"<span style='font-style:italic;'>" + m_hairAdditionColumnName + L"</span>" }
+                L"<span style='font-style:italic;'>" + columnName + L"</span>" }
                                          .Pen(wxNullPen)
                                          .Scaling(headerScaling)
                                          .DPIScaling(GetDPIScaleFactor()));
             hdrLbl.EnableMarkup(true);
-            hairHeaderHeight = hdrLbl.GetBoundingBox(dc).GetHeight() + ScaleToScreenAndCanvas(4);
-            }
-        const auto hairCount = static_cast<int>(m_hairAdditionLabels.size());
-        // when there are many hair entries, reserve only 1/3 of height for the face
+            return hdrLbl.GetBoundingBox(dc).GetHeight() + ScaleToScreenAndCanvas(4);
+        };
+
+        const int hairStyleHeaderHeight =
+            measureHeaderHeight(m_hairStyleLabels, m_hairStyleColumnName);
+        const int hairAdditionHeaderHeight =
+            measureHeaderHeight(m_hairAdditionLabels, m_hairAdditionColumnName);
+        const int hairHeaderHeight = std::max(hairStyleHeaderHeight, hairAdditionHeaderHeight);
+
+        const auto hairStyleCount = static_cast<int>(m_hairStyleLabels.size());
+        const auto hairAdditionCount = static_cast<int>(m_hairAdditionLabels.size());
+        const auto hairCount = std::max(hairStyleCount, hairAdditionCount);
+        // when either column has many entries, reserve only 1/3 of height for the face
         // so the hair-section legend has room for everything
         const double faceAreaFraction =
             hairCount > 4 ? math_constants::third : math_constants::two_thirds;
         int hairSectionHeight =
-            m_hairAdditionLabels.empty() ?
+            hairCount == 0 ?
                 0 :
                 hairHeaderHeight + hairCount * (hairIconSize + hairEntryGap) + hairBottomPadding;
         // if hair section still doesn't fit in the allotted space, shrink icons to fit
@@ -516,24 +559,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             maxRightWidth = std::max(maxRightWidth, measureLabelWidth(labelText, labelScaling));
             }
 
-        // position face based on measured label widths so that each side
-        // gets only the space it needs
-        int faceX{ 0 };
-        if (rightFeatures.empty() && !leftFeatures.empty())
-            {
-            // position face on the right side (with small margin)
-            faceX = m_rect.GetRight() - faceWidth - lineGap;
-            }
-        else if (!leftFeatures.empty() || !rightFeatures.empty())
-            {
-            // place face right after the left label area
-            faceX = m_rect.GetX() + maxLeftWidth + lineGap;
-            }
-        else
-            {
-            // no labels on either side, center the face
-            faceX = m_rect.GetX() + safe_divide<int>(m_rect.GetWidth() - faceWidth, 2);
-            }
+        // center the face+labels block horizontally within the legend rect so that
+        // when the bottom hair-key sections widen the rect, the empty space splits
+        // evenly on either side of the face
+        const int leftBlockWidth = leftFeatures.empty() ? 0 : (maxLeftWidth + lineGap);
+        const int rightBlockWidth = rightFeatures.empty() ? 0 : (lineGap + maxRightWidth);
+        const int faceBlockTotal = leftBlockWidth + faceWidth + rightBlockWidth;
+        const int blockStartX =
+            m_rect.GetX() + std::max(0, safe_divide<int>(m_rect.GetWidth() - faceBlockTotal, 2));
+        const int faceX = blockStartX + leftBlockWidth;
         const wxRect faceRect(faceX,
                               m_rect.GetY() + safe_divide<int>(faceAreaHeight - faceHeight, 2),
                               faceWidth, faceHeight);
@@ -661,7 +695,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             label.EnableMarkup(true);
             label.SetFontColor(contrastingLabelColor);
             label.SetAnchoring(Anchoring::TopLeftCorner);
-            label.SetAnchorPoint(wxPoint(m_rect.GetX(), m_rect.GetY()));
+            label.SetAnchorPoint(wxPoint(blockStartX, m_rect.GetY()));
             const auto labelBox = label.GetBoundingBox(dc);
             const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
             const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
@@ -700,7 +734,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             label.EnableMarkup(true);
             label.SetFontColor(contrastingLabelColor);
             label.SetAnchoring(Anchoring::BottomLeftCorner);
-            label.SetAnchorPoint(wxPoint{ m_rect.GetX(), labelY });
+            label.SetAnchorPoint(wxPoint{ blockStartX, labelY });
             const auto labelBox = label.GetBoundingBox(dc);
             const int labelCenterX = labelBox.GetX() + labelBox.GetWidth();
             const int labelCenterY = labelBox.GetY() + safe_divide(labelBox.GetHeight(), 2);
@@ -745,129 +779,208 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // draw all arrow lines
         arrowLines.Draw(dc);
 
-        // draw the hair-addition key section below the face
-        if (!m_hairAdditionLabels.empty())
+        // draw the hair-style and hair-addition key sections below the face
+        // (rendered as side-by-side columns, centered horizontally in the legend rect)
+        if (!m_hairStyleLabels.empty() || !m_hairAdditionLabels.empty())
             {
             const int sectionTopY = m_rect.GetY() + faceAreaHeight + ScaleToScreenAndCanvas(5);
-            const auto sectionLeftX = m_rect.GetX() + lineGap;
+            const auto sectionGap = ScaleToScreenAndCanvas(20);
 
-            // header (column name) above the entries
-            if (!m_hairAdditionColumnName.empty())
-                {
-                GraphItems::Label header(GraphItems::GraphItemInfo{
-                    L"<span style='font-style:italic;'>" + m_hairAdditionColumnName + L"</span>" }
-                                             .Pen(wxNullPen)
-                                             .Scaling(headerScaling)
-                                             .DPIScaling(GetDPIScaleFactor()));
-                header.EnableMarkup(true);
-                header.SetFontColor(contrastingLabelColor);
-                header.SetAnchoring(Anchoring::TopLeftCorner);
-                header.SetAnchorPoint(wxPoint(sectionLeftX, sectionTopY));
-                header.Draw(dc);
-                }
-
-            const int entriesTopY = sectionTopY + hairHeaderHeight;
-
-            std::vector<wxRect> iconRects;
-            iconRects.reserve(m_hairAdditionLabels.size());
-            for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
-                {
-                const int iconY = entriesTopY + static_cast<int>(i) * (hairIconSize + hairEntryGap);
-                iconRects.emplace_back(sectionLeftX, iconY, hairIconSize, hairIconSize);
-                }
-
-            if (m_gender == Gender::Female)
-                {
-                // for female: draw HairAccessory IconShape directly
-                for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
+            // width of a column = max of (icon + gap + widest label) vs header width
+            const auto columnWidth = [&](const std::vector<wxString>& labels,
+                                         const wxString& columnName) -> int
+            {
+                if (labels.empty())
                     {
-                    Icons::IconShape iconShape{ Icons::IconShape::Blank };
-                    switch (static_cast<HairAccessory>(i))
+                    return 0;
+                    }
+                int maxLabelWidth{ 0 };
+                for (const auto& lbl : labels)
+                    {
+                    maxLabelWidth = std::max(maxLabelWidth, measureLabelWidth(lbl, labelScaling));
+                    }
+                int headerWidth{ 0 };
+                if (!columnName.empty())
+                    {
+                    headerWidth = measureLabelWidth(L"<span style='font-style:italic;'>" +
+                                                        columnName + L"</span>",
+                                                    headerScaling);
+                    }
+                return std::max<int>(hairIconSize + lineGap + maxLabelWidth, headerWidth);
+            };
+
+            const int styleColWidth = columnWidth(m_hairStyleLabels, m_hairStyleColumnName);
+            const int additionColWidth =
+                columnWidth(m_hairAdditionLabels, m_hairAdditionColumnName);
+            const bool bothExist = !m_hairStyleLabels.empty() && !m_hairAdditionLabels.empty();
+            const int combinedWidth =
+                styleColWidth + (bothExist ? sectionGap : 0) + additionColWidth;
+            const int sectionStartX =
+                m_rect.GetX() + std::max(0, safe_divide<int>(m_rect.GetWidth() - combinedWidth, 2));
+
+            // renders a single key column (header above icons; labels to right of icons).
+            // isHairStyleColumn switches the icon rendering: hair-style icons show a small
+            // face wearing each style; hair-addition icons show an accessory (female) or
+            // a small face with facial hair (male).
+            const auto drawColumn = [&](const int colLeftX, const std::vector<wxString>& labels,
+                                        const wxString& columnName, const bool isHairStyleColumn)
+            {
+                if (labels.empty())
+                    {
+                    return;
+                    }
+
+                // header (column name) above the entries
+                if (!columnName.empty())
+                    {
+                    GraphItems::Label header(GraphItems::GraphItemInfo{
+                        L"<span style='font-style:italic;'>" + columnName + L"</span>" }
+                                                 .Pen(wxNullPen)
+                                                 .Scaling(headerScaling)
+                                                 .DPIScaling(GetDPIScaleFactor()));
+                    header.EnableMarkup(true);
+                    header.SetFontColor(contrastingLabelColor);
+                    header.SetAnchoring(Anchoring::TopLeftCorner);
+                    header.SetAnchorPoint(wxPoint(colLeftX, sectionTopY));
+                    header.Draw(dc);
+                    }
+
+                const int entriesTopY = sectionTopY + hairHeaderHeight;
+
+                std::vector<wxRect> iconRects;
+                iconRects.reserve(labels.size());
+                for (size_t i = 0; i < labels.size(); ++i)
+                    {
+                    const int iconY =
+                        entriesTopY + static_cast<int>(i) * (hairIconSize + hairEntryGap);
+                    iconRects.emplace_back(colLeftX, iconY, hairIconSize, hairIconSize);
+                    }
+
+                if (isHairStyleColumn)
+                    {
+                    // for each entry: a small face wearing that hair style
+                    const wxRect allIconsRect{ iconRects.front().GetX(), iconRects.front().GetY(),
+                                               iconRects.front().GetWidth(),
+                                               iconRects.back().GetBottom() -
+                                                   iconRects.front().GetY() + 1 };
+                    const GraphItems::GraphicsContextFallback gcf{ &dc, allIconsRect };
+                    auto* gc = gcf.GetGraphicsContext();
+                    if (gc != nullptr)
                         {
-                    case HairAccessory::Butterfly:
-                        iconShape = Icons::IconShape::Butterfly;
-                        break;
-                    case HairAccessory::Flower:
-                        iconShape = Icons::IconShape::Flower;
-                        break;
-                    case HairAccessory::SunFlower:
-                        iconShape = Icons::IconShape::Sunflower;
-                        break;
-                    case HairAccessory::Heart:
-                        iconShape = Icons::IconShape::Heart;
-                        break;
-                    case HairAccessory::Leaf:
-                        iconShape = Icons::IconShape::FallLeaf;
-                        break;
-                    case HairAccessory::Snowflake:
-                        iconShape = Icons::IconShape::Snowflake;
-                        break;
-                    case HairAccessory::Star:
-                        iconShape = Icons::IconShape::Star;
-                        break;
-                    case HairAccessory::Pumpkin:
-                        iconShape = Icons::IconShape::Pumpkin;
-                        break;
-                    default:
-                        break;
-                        }
-                    if (iconShape != Icons::IconShape::Blank)
-                        {
-                        GraphItems::Shape sh(GraphItems::GraphItemInfo{}
-                                                 .Pen(wxPen{ m_outlineColor, 1 })
-                                                 .Anchoring(Anchoring::TopLeftCorner)
-                                                 .Scaling(GetScaling())
-                                                 .DPIScaling(GetDPIScaleFactor()),
-                                             iconShape, iconRects[i].GetSize());
-                        sh.Draw(iconRects[i], dc);
+                        // render the face oval + hair (skip eyes, nose, mouth, facial hair)
+                        FaceParts minimalParts;
+                        minimalParts.m_cheeks = false;
+                        minimalParts.m_eyes = false;
+                        minimalParts.m_nose = false;
+                        minimalParts.m_mouth = false;
+                        minimalParts.m_facialHair = false;
+                        for (size_t i = 0; i < labels.size(); ++i)
+                            {
+                            const FaceFeatures features;
+                            DrawFace(gc, iconRects[i], features, m_faceColorLighter,
+                                     m_faceColorDarker, m_outlineColor, m_lipstickColor, m_eyeColor,
+                                     m_hairColor, static_cast<HairStyle>(i), m_gender,
+                                     minimalParts);
+                            }
                         }
                     }
-                }
-            else
-                {
-                // for male: draw a small face for each entry showing that facial hair
-                // (single GraphicsContextFallback covering all icons)
-                const wxRect allIconsRect{ iconRects.front().GetX(), iconRects.front().GetY(),
-                                           iconRects.front().GetWidth(),
-                                           iconRects.back().GetBottom() - iconRects.front().GetY() +
-                                               1 };
-                const GraphItems::GraphicsContextFallback gcf{ &dc, allIconsRect };
-                auto* gc = gcf.GetGraphicsContext();
-                if (gc != nullptr)
+                else if (m_gender == Gender::Female)
                     {
-                    // only render the face oval + facial hair (skip eyes, nose, mouth, hair, etc.)
-                    FaceParts minimalParts;
-                    minimalParts.m_cheeks = false;
-                    minimalParts.m_eyes = false;
-                    minimalParts.m_nose = false;
-                    minimalParts.m_mouth = false;
-                    minimalParts.m_hair = false;
-                    for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
+                    // hair-addition (female): draw HairAccessory IconShape directly
+                    for (size_t i = 0; i < labels.size(); ++i)
                         {
-                        FaceFeatures features;
-                        features.m_facialHair = static_cast<FacialHair>(i);
-                        DrawFace(gc, iconRects[i], features, m_faceColorLighter, m_faceColorDarker,
-                                 m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
-                                 m_hairStyle, m_gender, minimalParts);
+                        Icons::IconShape iconShape{ Icons::IconShape::Blank };
+                        switch (static_cast<HairAccessory>(i))
+                            {
+                        case HairAccessory::Butterfly:
+                            iconShape = Icons::IconShape::Butterfly;
+                            break;
+                        case HairAccessory::Flower:
+                            iconShape = Icons::IconShape::Flower;
+                            break;
+                        case HairAccessory::SunFlower:
+                            iconShape = Icons::IconShape::Sunflower;
+                            break;
+                        case HairAccessory::Heart:
+                            iconShape = Icons::IconShape::Heart;
+                            break;
+                        case HairAccessory::Leaf:
+                            iconShape = Icons::IconShape::FallLeaf;
+                            break;
+                        case HairAccessory::Snowflake:
+                            iconShape = Icons::IconShape::Snowflake;
+                            break;
+                        case HairAccessory::Star:
+                            iconShape = Icons::IconShape::Star;
+                            break;
+                        case HairAccessory::Pumpkin:
+                            iconShape = Icons::IconShape::Pumpkin;
+                            break;
+                        default:
+                            break;
+                            }
+                        if (iconShape != Icons::IconShape::Blank)
+                            {
+                            GraphItems::Shape sh(GraphItems::GraphItemInfo{}
+                                                     .Pen(wxPen{ m_outlineColor, 1 })
+                                                     .Anchoring(Anchoring::TopLeftCorner)
+                                                     .Scaling(GetScaling())
+                                                     .DPIScaling(GetDPIScaleFactor()),
+                                                 iconShape, iconRects[i].GetSize());
+                            sh.Draw(iconRects[i], dc);
+                            }
                         }
                     }
-                }
+                else
+                    {
+                    // hair-addition (male): small face for each entry showing that facial hair
+                    const wxRect allIconsRect{ iconRects.front().GetX(), iconRects.front().GetY(),
+                                               iconRects.front().GetWidth(),
+                                               iconRects.back().GetBottom() -
+                                                   iconRects.front().GetY() + 1 };
+                    const GraphItems::GraphicsContextFallback gcf{ &dc, allIconsRect };
+                    auto* gc = gcf.GetGraphicsContext();
+                    if (gc != nullptr)
+                        {
+                        // render face oval + facial hair (skip eyes, nose, mouth, head hair)
+                        FaceParts minimalParts;
+                        minimalParts.m_cheeks = false;
+                        minimalParts.m_eyes = false;
+                        minimalParts.m_nose = false;
+                        minimalParts.m_mouth = false;
+                        minimalParts.m_hair = false;
+                        for (size_t i = 0; i < labels.size(); ++i)
+                            {
+                            FaceFeatures features;
+                            features.m_facialHair = static_cast<FacialHair>(i);
+                            DrawFace(gc, iconRects[i], features, m_faceColorLighter,
+                                     m_faceColorDarker, m_outlineColor, m_lipstickColor, m_eyeColor,
+                                     m_hairColor, m_hairStyle, m_gender, minimalParts);
+                            }
+                        }
+                    }
 
-            // draw label text for each entry (vertically centered relative to icon)
-            for (size_t i = 0; i < m_hairAdditionLabels.size(); ++i)
-                {
-                GraphItems::Label lbl(GraphItems::GraphItemInfo{ m_hairAdditionLabels[i] }
-                                          .Pen(wxNullPen)
-                                          .Scaling(labelScaling)
-                                          .DPIScaling(GetDPIScaleFactor()));
-                lbl.SetFontColor(contrastingLabelColor);
-                lbl.SetAnchoring(Anchoring::TopLeftCorner);
-                const auto labelBox = lbl.GetBoundingBox(dc);
-                lbl.SetAnchorPoint(wxPoint(
-                    iconRects[i].GetRight() + lineGap,
-                    iconRects[i].GetY() + (iconRects[i].GetHeight() - labelBox.GetHeight()) / 2));
-                lbl.Draw(dc);
-                }
+                // labels next to icons (vertically centered relative to each icon)
+                for (size_t i = 0; i < labels.size(); ++i)
+                    {
+                    GraphItems::Label lbl(GraphItems::GraphItemInfo{ labels[i] }
+                                              .Pen(wxNullPen)
+                                              .Scaling(labelScaling)
+                                              .DPIScaling(GetDPIScaleFactor()));
+                    lbl.SetFontColor(contrastingLabelColor);
+                    lbl.SetAnchoring(Anchoring::TopLeftCorner);
+                    const auto labelBox = lbl.GetBoundingBox(dc);
+                    lbl.SetAnchorPoint(
+                        wxPoint(iconRects[i].GetRight() + lineGap,
+                                iconRects[i].GetY() +
+                                    (iconRects[i].GetHeight() - labelBox.GetHeight()) / 2));
+                    lbl.Draw(dc);
+                    }
+            };
+
+            drawColumn(sectionStartX, m_hairStyleLabels, m_hairStyleColumnName, true);
+            drawColumn(sectionStartX + styleColWidth + (bothExist ? sectionGap : 0),
+                       m_hairAdditionLabels, m_hairAdditionColumnName, false);
             }
 
         // draw the selection outline
@@ -973,9 +1086,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                     const std::optional<wxString>& mouthCurvatureColumn,
                                     const std::optional<wxString>& faceSaturationColumn,
                                     const std::optional<wxString>& earSizeColumn,
+                                    const std::optional<wxString>& hairStyleColumn,
                                     const std::optional<wxString>& hairAdditionColumn)
         {
         m_faces.clear();
+        m_hairStyleLabels.clear();
         m_hairAdditionLabels.clear();
         SetDataset(data);
 
@@ -996,6 +1111,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         m_mouthCurvatureColumnName = mouthCurvatureColumn.value_or(wxString{});
         m_faceSaturationColumnName = faceSaturationColumn.value_or(wxString{});
         m_earSizeColumnName = earSizeColumn.value_or(wxString{});
+        m_hairStyleColumnName = hairStyleColumn.value_or(wxString{});
         m_hairAdditionColumnName = hairAdditionColumn.value_or(wxString{});
 
         // validate required column
@@ -1008,12 +1124,43 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     .ToUTF8());
             }
 
-        // get optional categorical column for hair addition
+        // get optional categorical column for hair style
         const auto catColsEnd = GetDataset()->GetCategoricalColumns().cend();
+        const auto hairStyleCol =
+            GetDataset()->GetCategoricalColumn(hairStyleColumn.value_or(wxString{}));
+
+        // pre-build group-ID -> HairStyle map from the string table
+        std::map<Data::GroupIdType, HairStyle> hairStyleMap;
+        if (hairStyleCol != catColsEnd)
+            {
+            const auto categoryCount = hairStyleCol->GetStringTable().size();
+            if (categoryCount > static_cast<size_t>(HairStyle::HAIR_STYLE_COUNT))
+                {
+                throw std::runtime_error(
+                    wxString::Format(
+                        /* TRANSLATORS: Error message. Column name (%s),
+                           actual category count (%zu), and maximum allowed (%d). */
+                        _(L"'%s': hair style column has %zu categories; "
+                          "maximum allowed is %d."),
+                        hairStyleColumn.value(), categoryCount,
+                        static_cast<int>(HairStyle::HAIR_STYLE_COUNT))
+                        .ToUTF8());
+                }
+            m_hairStyleLabels.reserve(hairStyleCol->GetStringTable().size());
+            size_t styleIdx{ 0 };
+            for (const auto& [id, label] : hairStyleCol->GetStringTable())
+                {
+                hairStyleMap[id] = static_cast<HairStyle>(styleIdx);
+                m_hairStyleLabels.push_back(label);
+                ++styleIdx;
+                }
+            }
+
+        // get optional categorical column for hair addition
         const auto hairAdditionCol =
             GetDataset()->GetCategoricalColumn(hairAdditionColumn.value_or(wxString{}));
 
-        // pre-build group-ID → enum maps from the string table (one lookup per row instead of two)
+        // pre-build group-ID -> enum maps from the string table (one lookup per row instead of two)
         std::map<Data::GroupIdType, FacialHair> facialHairMap;
         std::map<Data::GroupIdType, HairAccessory> hairAccessoryMap;
         if (hairAdditionCol != catColsEnd)
@@ -1162,6 +1309,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 {
                 face.m_earSize = NormalizeValue(earSizeCol->GetValue(i), erMin, erMax);
                 }
+            if (hairStyleCol != catColsEnd)
+                {
+                const auto groupId = hairStyleCol->GetValue(i);
+                if (const auto hsIt = hairStyleMap.find(groupId); hsIt != hairStyleMap.cend())
+                    {
+                    face.m_hairStyle = hsIt->second;
+                    }
+                }
             if (hairAdditionCol != catColsEnd)
                 {
                 const auto groupId = hairAdditionCol->GetValue(i);
@@ -1219,6 +1374,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 if (allMissing && earSizeCol != colsEnd)
                     {
                     allMissing = !std::isfinite(earSizeCol->GetValue(i));
+                    }
+                if (allMissing && hairStyleCol != catColsEnd)
+                    {
+                    allMissing = hairStyleCol->IsMissingData(i);
                     }
                 if (allMissing && hairAdditionCol != catColsEnd)
                     {
@@ -1301,6 +1460,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     }
                 else
                     {
+                    // when a hair-style column is mapped, each face uses its own style;
+                    // otherwise every face uses the plot-wide style
+                    const HairStyle effectiveHairStyle = m_hairStyleColumnName.empty() ?
+                                                             m_hairStyle :
+                                                             m_faces[faceIndex].m_hairStyle;
                     // create face
                     AddObject(std::make_unique<FaceObject>(
                         GraphItems::GraphItemInfo{}
@@ -1310,7 +1474,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             .AnchorPoint(wxPoint{ x, y }),
                         m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
                         m_faceColor, m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
-                        m_hairStyle, m_gender));
+                        effectiveHairStyle, m_gender));
                     }
 
                 // add label below face if enabled
@@ -2831,6 +2995,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         addFeatureEntry(FeatureId::SmileFrown, m_mouthCurvatureColumnName);
         addFeatureEntry(FeatureId::FaceColor, m_faceSaturationColumnName);
         addFeatureEntry(FeatureId::EarSize, m_earSizeColumnName);
+        addFeatureEntry(FeatureId::HairStyle, m_hairStyleColumnName);
         addFeatureEntry(FeatureId::HairAddition, m_hairAdditionColumnName);
 
         legend->SetText(legendText.Trim());
@@ -2904,11 +3069,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             {
             features.emplace_back(TruncateLabel(m_earSizeColumnName), FeatureId::EarSize, false);
             }
-        // note: hair addition is rendered as its own key section below the face
-        // (handled via SetHairAdditionLabels / SetHairAdditionColumnName below),
-        // not as a connection-line feature
+        // note: hair style and hair addition are rendered as their own key sections
+        // below the face (handled via the SetHair*Labels / SetHair*ColumnName setters
+        // below), not as connection-line features
 
         legend->SetFeatures(std::move(features));
+        legend->SetHairStyleLabels(m_hairStyleLabels);
+        legend->SetHairStyleColumnName(m_hairStyleColumnName);
         legend->SetHairAdditionLabels(m_hairAdditionLabels);
         legend->SetHairAdditionColumnName(m_hairAdditionColumnName);
         legend->SetFaceColors(m_faceColorLighter, m_faceColor);
