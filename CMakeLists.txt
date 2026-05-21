@@ -154,10 +154,13 @@ if(UNIX AND NOT APPLE)
     # WebKitGTK dependency (required for wxWebView)
     pkg_check_modules(WEBKIT2 REQUIRED webkit2gtk-4.1)
 
+    # Fontconfig dependency (required by wxPDFDocument's font manager on GTK)
+    pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
+
     # Setup CMake to use GTK+ and WebKitGTK, tell the compiler where to look for headers
     # and to the linker where to look for libraries
-    include_directories(${GTK3_INCLUDE_DIRS} ${WEBKIT2_INCLUDE_DIRS})
-    link_directories(${GTK3_LIBRARY_DIRS} ${WEBKIT2_LIBRARY_DIRS})
+    include_directories(${GTK3_INCLUDE_DIRS} ${WEBKIT2_INCLUDE_DIRS} ${FONTCONFIG_INCLUDE_DIRS})
+    link_directories(${GTK3_LIBRARY_DIRS} ${WEBKIT2_LIBRARY_DIRS} ${FONTCONFIG_LIBRARY_DIRS})
 endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
@@ -206,7 +209,8 @@ elseif(UNIX)
     # Add OpenMP for multithreading
     find_package(OpenMP)
     find_library(TBB_LIB tbb)
-    target_link_libraries(${WISTERIA_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
+    target_link_libraries(${WISTERIA_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES}
+                                                 ${FONTCONFIG_LIBRARIES})
 endif()
 
 # Define wxDEBUG_LEVEL consistently for all platforms
