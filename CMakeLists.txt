@@ -183,9 +183,13 @@ set(WISTERIA_LIB wisteria)
 include(${CMAKE_SOURCE_DIR}/cmake/includes/wxpdf.cmake)
 list(APPEND WISTERIA_SRC ${WXPDF_SRC})
 # Suppress warnings from wxPDFDocument
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # -Wno-maybe-uninitialized is GCC-only (Clang has no equivalent flag)
     set_source_files_properties(${WXPDF_SRC} PROPERTIES
         COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter;-Wno-shadow;-Wno-ignored-qualifiers;-Wno-maybe-uninitialized")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+    set_source_files_properties(${WXPDF_SRC} PROPERTIES
+        COMPILE_OPTIONS "-Wno-unused-but-set-variable;-Wno-unused-variable;-Wno-unused-parameter;-Wno-shadow;-Wno-ignored-qualifiers")
 elseif(MSVC)
     # /wd4189 — local variable initialized but not referenced
     # /wd4100 — unreferenced formal parameter
