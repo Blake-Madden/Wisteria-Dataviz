@@ -295,6 +295,15 @@ Properties for `"chernoff-faces"` nodes:
   - `"bun"`: Hair pulled into a bun (female).
   - `"long-straight"`: Long straight hair past shoulders (female).
   - `"high-top-fade"`: High top fade style (male or female).
+  - `"flat-top"`: Flat top style (male or female).
+  - `"curly"`: Short, curly hair (male or female).
+  - `"long-curly"`: Long, curly hair (male or female).
+  - `"partially-bald"`: Mostly bald with small tufts of hair on the sides, behind the
+    ears (male or female).
+  - `"bald-comb-over"`: Mostly bald with side tufts and remaining hair combed across
+    the crown (male or female).
+  - `"comb-over"`: Full hair with a thick swoosh combed across the top to one side
+    (male or female).
 - `"facial-hair"`: A string specifying the facial hair style (male faces only). \
   Available options are:
   - `"clean-shaven"`: No facial hair (the default).

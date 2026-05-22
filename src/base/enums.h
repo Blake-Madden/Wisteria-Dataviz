@@ -104,6 +104,12 @@ namespace Wisteria
         Curly,
         /// @brief Long, curly hair.
         LongCurly,
+        /// @brief Mostly bald with small tufts of hair on the sides, behind the ears.
+        PartiallyBald,
+        /// @brief Bald with the remaining side hair combed across the crown.
+        BaldCombOver,
+        /// @brief Full hair combed to one side with a thick swoosh across the top.
+        CombOver,
         /// @private
         HAIR_STYLE_COUNT
         };

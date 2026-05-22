@@ -136,6 +136,9 @@ namespace Wisteria::UI
         m_hairStyleChoice->Append(_(L"Flat top"));
         m_hairStyleChoice->Append(_(L"Curly"));
         m_hairStyleChoice->Append(_(L"Long & curly"));
+        m_hairStyleChoice->Append(_(L"Partially bald"));
+        m_hairStyleChoice->Append(_(L"Bald comb-over"));
+        m_hairStyleChoice->Append(_(L"Comb-over"));
         appearanceSizer->Add(m_hairStyleChoice);
 
         // skin color range (lighter and darker side by side)
@@ -453,7 +456,8 @@ namespace Wisteria::UI
                                          HairStyle::Pixie,        HairStyle::Bun,
                                          HairStyle::LongStraight, HairStyle::HighTopFade,
                                          HairStyle::FlatTop,      HairStyle::Curly,
-                                         HairStyle::LongCurly };
+                                         HairStyle::LongCurly,    HairStyle::PartiallyBald,
+                                         HairStyle::BaldCombOver, HairStyle::CombOver };
 
         if (m_hairStyle >= 0 && std::cmp_less(m_hairStyle, std::size(styles)))
             {
@@ -577,6 +581,15 @@ namespace Wisteria::UI
             break;
         case HairStyle::LongCurly:
             m_hairStyle = 8;
+            break;
+        case HairStyle::PartiallyBald:
+            m_hairStyle = 9;
+            break;
+        case HairStyle::BaldCombOver:
+            m_hairStyle = 10;
+            break;
+        case HairStyle::CombOver:
+            m_hairStyle = 11;
             break;
         default:
             m_hairStyle = 1;
