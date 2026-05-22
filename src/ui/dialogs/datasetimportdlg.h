@@ -117,6 +117,7 @@ namespace Wisteria::UI
         void OnColumnHeaderClick(wxGridEvent& event);
         void OnColumnSelected(wxGridEvent& event);
         void OnColumnTypeChanged(wxCommandEvent& event);
+        void OnRefreshFromFile(wxCommandEvent& event);
         void UpdateColumnTypeControls();
 
         // controls

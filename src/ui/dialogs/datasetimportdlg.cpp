@@ -128,9 +128,17 @@ namespace Wisteria::UI
         auto* filePathSizer = new wxBoxSizer(wxHORIZONTAL);
         filePathSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Filepath: ")),
                            wxSizerFlags{}.CenterVertical());
-        auto* fileLabel = new wxStaticText(this, wxID_ANY, m_filePath);
+        auto* fileLabel =
+            new wxStaticText(this, wxID_ANY, wxFileName{ m_filePath }.GetAbsolutePath());
         fileLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        filePathSizer->Add(fileLabel, wxSizerFlags{}.CenterVertical());
+        filePathSizer->Add(fileLabel, wxSizerFlags{ 1 }.CenterVertical());
+
+        auto* refreshButton = new wxButton(this, wxID_REFRESH, _(L"Refresh from file"));
+        refreshButton->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_REFRESH, wxART_BUTTON));
+        refreshButton->SetToolTip(
+            _(L"Re-read columns from the file, preserving your current settings"));
+        filePathSizer->Add(refreshButton, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+
         mainSizer->Add(filePathSizer,
                        wxSizerFlags{}.Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder() * 2));
 
@@ -290,12 +298,121 @@ namespace Wisteria::UI
                             this);
         m_previewGrid->Bind(wxEVT_GRID_SELECT_CELL, &DatasetImportDlg::OnColumnSelected, this);
         m_columnTypeChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnColumnTypeChanged, this);
+        refreshButton->Bind(wxEVT_BUTTON, &DatasetImportDlg::OnRefreshFromFile, this);
         }
 
     //----------------------------------------------
     void DatasetImportDlg::OnOptionChanged([[maybe_unused]] wxCommandEvent& event)
         {
         RefreshPreview();
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnRefreshFromFile([[maybe_unused]] wxCommandEvent& event)
+        {
+        TransferDataFromWindow();
+
+        // for spreadsheets, re-read the worksheet list and verify the current
+        // selection still exists before touching any other state
+        if (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0)
+            {
+            std::vector<std::wstring> freshWorksheetNames;
+            try
+                {
+                if (m_fileExt.CmpNoCase(L"xlsx") == 0)
+                    {
+                    Data::ExcelReader xlReader(m_filePath);
+                    freshWorksheetNames = xlReader.GetWorksheetNames();
+                    }
+                else
+                    {
+                    Data::OdsReader odsReader(m_filePath);
+                    freshWorksheetNames = odsReader.GetWorksheetNames();
+                    }
+                }
+            catch (const std::exception& exc)
+                {
+                wxMessageBox(wxString::Format(_(L"Unable to re-read the file:\n%s"),
+                                              wxString::FromUTF8(exc.what())),
+                             _(L"Refresh Failed"), wxOK | wxICON_ERROR, this);
+                return;
+                }
+
+            const wxString currentWorksheetName =
+                (m_worksheet >= 0 && std::cmp_less(m_worksheet, m_worksheetNames.size())) ?
+                    wxString(m_worksheetNames[static_cast<size_t>(m_worksheet)]) :
+                    wxString{};
+
+            if (!currentWorksheetName.empty())
+                {
+                const auto wsIt = std::ranges::find_if(
+                    freshWorksheetNames, [&currentWorksheetName](const auto& name)
+                    { return currentWorksheetName.CmpNoCase(name) == 0; });
+                if (wsIt == freshWorksheetNames.cend())
+                    {
+                    wxMessageBox(
+                        wxString::Format(_(L"The worksheet \"%s\" no longer exists in the file. "
+                                           L"The current import settings will be kept unchanged."),
+                                         currentWorksheetName),
+                        _(L"Worksheet Missing"), wxOK | wxICON_ERROR, this);
+                    return;
+                    }
+                }
+
+            m_worksheetNames = freshWorksheetNames;
+            }
+
+        // snapshot current state so we can diff after the refresh
+        std::vector<wxString> previousNames;
+        previousNames.reserve(m_columnInfo.size());
+        for (const auto& col : m_columnInfo)
+            {
+            previousNames.push_back(col.m_name);
+            }
+        const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
+                                        m_idColumnChoice->GetStringSelection() :
+                                        wxString{};
+
+        RefreshPreview();
+
+        // detect removed columns
+        std::vector<wxString> removedColumns;
+        for (const auto& name : previousNames)
+            {
+            const auto colIt = std::ranges::find_if(m_columnInfo, [&name](const auto& col)
+                                                    { return col.m_name.CmpNoCase(name) == 0; });
+            if (colIt == m_columnInfo.cend())
+                {
+                removedColumns.push_back(name);
+                }
+            }
+
+        const bool idColumnLost =
+            !previousId.empty() && m_idColumnChoice->FindString(previousId) == wxNOT_FOUND;
+
+        if (!removedColumns.empty() || idColumnLost)
+            {
+            wxString message;
+            if (!removedColumns.empty())
+                {
+                message = _(L"The following columns are no longer in the file:\n");
+                for (const auto& name : removedColumns)
+                    {
+                    message += L"  - " + name + L"\n";
+                    }
+                }
+            if (idColumnLost)
+                {
+                if (!message.empty())
+                    {
+                    message += L"\n";
+                    }
+                message += wxString::Format(
+                    _(L"The previously-selected ID column \"%s\" is no longer available."),
+                    previousId);
+                }
+            wxMessageBox(message, _(L"Columns Removed"), wxOK | wxICON_WARNING, this);
+            }
         }
 
     //----------------------------------------------
