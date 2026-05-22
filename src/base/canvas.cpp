@@ -1572,8 +1572,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 const wxSVGAccessibleGroup accessGroup(*svgDc,
                                                        item->GetAutoAccessibilityAttributes());
                     {
-                    const wxSVGAccessibleGroup hiddenGroup(*svgDc,
-                                                           wxSVGAttributes{}.AriaHidden());
+                    const wxSVGAccessibleGroup hiddenGroup(*svgDc, wxSVGAttributes{}.AriaHidden());
                     item->Draw(dc);
                     }
                 }

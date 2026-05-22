@@ -2972,8 +2972,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         static_cast<double>(idx), static_cast<double>(combOverCount - 1));
                     const double yPos = combTopY + tParam * (combBottomY - combTopY);
                     const double crownHalf = crownHalfAt(yPos);
-                    const double rightX = cx + crownHalf;
-                    const double leftX = cx - crownHalf * leftShorten.at(idx);
                     const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
                     // highlight runs along the upper inner portion of the strand
                     const double hlRight = cx + crownHalf * 0.55;

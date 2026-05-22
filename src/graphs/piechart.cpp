@@ -4536,43 +4536,51 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::SetAutoAccessibilityAttributes()
         {
-        wxString label = IsIncludingDonutHole() ? _(L"A donut chart") : _(L"A pie chart");
+        const bool isDonut = IsIncludingDonutHole();
+        wxString label;
         if (GetPieStyle() != PieStyle::None)
             {
-            wxString styleName;
             switch (GetPieStyle())
                 {
             case PieStyle::Clockface:
-                styleName = _(L"clock");
+                label = isDonut ? _(L"A donut chart in the style of a clock") :
+                                  _(L"A pie chart in the style of a clock");
                 break;
             case PieStyle::CheesePizza:
-                styleName = _(L"cheese pizza");
+                label = isDonut ? _(L"A donut chart in the style of a cheese pizza") :
+                                  _(L"A pie chart in the style of a cheese pizza");
                 break;
             case PieStyle::PepperoniPizza:
-                styleName = _(L"pepperoni pizza");
+                label = isDonut ? _(L"A donut chart in the style of a pepperoni pizza") :
+                                  _(L"A pie chart in the style of a pepperoni pizza");
                 break;
             case PieStyle::HawaiianPizza:
-                styleName = _(L"Hawaiian pizza");
+                label = isDonut ? _(L"A donut chart in the style of a Hawaiian pizza") :
+                                  _(L"A pie chart in the style of a Hawaiian pizza");
                 break;
             case PieStyle::CoffeeRing:
-                styleName = _(L"coffee cup ring");
+                label = isDonut ? _(L"A donut chart in the style of a coffee cup ring") :
+                                  _(L"A pie chart in the style of a coffee cup ring");
                 break;
             case PieStyle::Venus:
-                styleName = _(L"Venus symbol");
+                label = isDonut ? _(L"A donut chart in the style of a Venus symbol") :
+                                  _(L"A pie chart in the style of a Venus symbol");
                 break;
             case PieStyle::Mars:
-                styleName = _(L"Mars symbol");
+                label = isDonut ? _(L"A donut chart in the style of a Mars symbol") :
+                                  _(L"A pie chart in the style of a Mars symbol");
                 break;
             case PieStyle::ChocolateChipCookie:
-                styleName = _(L"chocolate chip cookie");
+                label = isDonut ? _(L"A donut chart in the style of a chocolate chip cookie") :
+                                  _(L"A pie chart in the style of a chocolate chip cookie");
                 break;
             default:
                 break;
                 }
-            if (!styleName.empty())
-                {
-                label += wxString::Format(_(L" in the style of a %s"), styleName);
-                }
+            }
+        if (label.empty())
+            {
+            label = isDonut ? _(L"A donut chart") : _(L"A pie chart");
             }
 
         AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
@@ -4589,6 +4597,9 @@ namespace Wisteria::Graphs
                 slice.m_percent * 100, ((slice.m_percent * 100) < 1) ? 2 : 0,
                 wxNumberFormatter::Style::Style_NoTrailingZeroes);
             return wxString::Format(
+                /* TRANSLATORS: pie slice description for accessibility.
+                   1st %s is the group/slice label, 2nd %s is the numeric value,
+                   3rd %s is the percentage (the literal %% is the percent sign). */
                 _(L"%s: %s (%s%%)"), slice.GetGroupLabel(),
                 wxNumberFormatter::ToString(slice.m_value, 0, Settings::GetDefaultNumberFormat()),
                 percStr);

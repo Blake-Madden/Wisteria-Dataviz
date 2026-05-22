@@ -120,10 +120,21 @@ namespace Wisteria::UI
 
         // Also update templates for round-tripping
         item.SetPropertyTemplate(L"accessibility.aria-label", m_ariaLabelCtrl->GetValue());
-        item.SetPropertyTemplate(L"accessibility.role",
-                                 m_roleChoice->GetStringSelection() == _(L"(default)") ?
-                                     wxString{} :
-                                     m_roleChoice->GetStringSelection());
+        const int roleSelTemplate = m_roleChoice->GetSelection();
+        wxString roleTemplate;
+        if (roleSelTemplate == 1)
+            {
+            roleTemplate = _DT(L"figure");
+            }
+        else if (roleSelTemplate == 2)
+            {
+            roleTemplate = _DT(L"img");
+            }
+        else if (roleSelTemplate == 3)
+            {
+            roleTemplate = _DT(L"presentation");
+            }
+        item.SetPropertyTemplate(L"accessibility.role", roleTemplate);
         item.SetPropertyTemplate(L"accessibility.aria-hidden",
                                  m_ariaHiddenCheck->GetValue() ? L"true" : L"false");
         item.SetPropertyTemplate(L"accessibility.auto", info.m_auto ? L"true" : L"false");
