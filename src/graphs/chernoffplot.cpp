@@ -18,6 +18,92 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                       static_cast<int>(HairAccessory::HAIR_ACCESSORY_COUNT),
                   "FacialHair and HairAccessory must have the same number of values");
 
+    static_assert(static_cast<int>(HairStyleFemale::FEMALE_HAIR_STYLE_COUNT) ==
+                      static_cast<int>(HairStyleMale::MALE_HAIR_STYLE_COUNT),
+                  "HairStyleFemale and HairStyleMale must have the same number of values");
+
+    namespace
+        {
+        // internal unified representation of every distinct hair style that DrawFace knows
+        // how to render. The public API exposes gender-specific HairStyleFemale and
+        // HairStyleMale enums; this helper collapses both to a single kind so the
+        // drawing branches don't need to be duplicated per gender.
+        enum class HairStyleKind
+            {
+            Bob,           // female only
+            Pixie,         // female only
+            Bun,           // female only
+            PartiallyBald, // male only
+            BaldCombOver,  // male only
+            CombOver,      // male only
+            LongStraight,  // shared
+            HighTopFade,   // shared
+            FlatTop,       // shared
+            Curly,         // shared
+            LongCurly,     // shared
+            Bald           // shared
+            };
+
+        [[nodiscard]]
+        HairStyleKind ToHairStyleKind(const HairStyleFemale hsFemale, const HairStyleMale hsMale,
+                                      const Gender gender) noexcept
+            {
+            if (gender == Gender::Female)
+                {
+                switch (hsFemale)
+                    {
+                case HairStyleFemale::Bob:
+                    return HairStyleKind::Bob;
+                case HairStyleFemale::Pixie:
+                    return HairStyleKind::Pixie;
+                case HairStyleFemale::Bun:
+                    return HairStyleKind::Bun;
+                case HairStyleFemale::LongStraight:
+                    return HairStyleKind::LongStraight;
+                case HairStyleFemale::HighTopFade:
+                    return HairStyleKind::HighTopFade;
+                case HairStyleFemale::FlatTop:
+                    return HairStyleKind::FlatTop;
+                case HairStyleFemale::Curly:
+                    return HairStyleKind::Curly;
+                case HairStyleFemale::LongCurly:
+                    return HairStyleKind::LongCurly;
+                case HairStyleFemale::Bald:
+                    return HairStyleKind::Bald;
+                case HairStyleFemale::FEMALE_HAIR_STYLE_COUNT:
+                    [[fallthrough]];
+                default:
+                    return HairStyleKind::Bob;
+                    }
+                }
+            switch (hsMale)
+                {
+            case HairStyleMale::PartiallyBald:
+                return HairStyleKind::PartiallyBald;
+            case HairStyleMale::BaldCombOver:
+                return HairStyleKind::BaldCombOver;
+            case HairStyleMale::CombOver:
+                return HairStyleKind::CombOver;
+            case HairStyleMale::LongStraight:
+                return HairStyleKind::LongStraight;
+            case HairStyleMale::HighTopFade:
+                return HairStyleKind::HighTopFade;
+            case HairStyleMale::FlatTop:
+                return HairStyleKind::FlatTop;
+            case HairStyleMale::Curly:
+                return HairStyleKind::Curly;
+            case HairStyleMale::LongCurly:
+                return HairStyleKind::LongCurly;
+            case HairStyleMale::Bald:
+                return HairStyleKind::Bald;
+            case HairStyleMale::MALE_HAIR_STYLE_COUNT:
+                [[fallthrough]];
+            default:
+                return HairStyleKind::PartiallyBald;
+                }
+            }
+        } // namespace
+
     //----------------------------------------------------------------
     wxString ChernoffFacesPlot::GetFeatureDisplayName(FeatureId id)
         {
@@ -147,7 +233,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 {
                 ChernoffFacesPlot::DrawFace(gc, boundingBox, m_features, m_faceColorLighter,
                                             m_faceColorDarker, m_outlineColor, m_lipstickColor,
-                                            m_eyeColor, m_hairColor, m_hairStyle, m_gender);
+                                            m_eyeColor, m_hairColor, m_hairStyleFemale,
+                                            m_hairStyleMale, m_gender);
                 }
             }
 
@@ -594,8 +681,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 {
                 const FaceFeatures defaultFeatures;
                 DrawFace(gc, faceRect, defaultFeatures, m_faceColorLighter, m_faceColorDarker,
-                         m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor, m_hairStyle,
-                         m_gender);
+                         m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
+                         m_hairStyleFemale, m_hairStyleMale, m_gender);
                 }
             }
 
@@ -877,10 +964,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         for (size_t i = 0; i < labels.size(); ++i)
                             {
                             const FaceFeatures features;
+                            // pass the parallel index as both gender's style; DrawFace
+                            // picks the right one based on m_gender
                             DrawFace(gc, iconRects[i], features, m_faceColorLighter,
                                      m_faceColorDarker, m_outlineColor, m_lipstickColor, m_eyeColor,
-                                     m_hairColor, static_cast<HairStyle>(i), m_gender,
-                                     minimalParts);
+                                     m_hairColor, static_cast<HairStyleFemale>(i),
+                                     static_cast<HairStyleMale>(i), m_gender, minimalParts);
                             }
                         }
                     }
@@ -955,7 +1044,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             features.m_facialHair = static_cast<FacialHair>(i);
                             DrawFace(gc, iconRects[i], features, m_faceColorLighter,
                                      m_faceColorDarker, m_outlineColor, m_lipstickColor, m_eyeColor,
-                                     m_hairColor, m_hairStyle, m_gender, minimalParts);
+                                     m_hairColor, m_hairStyleFemale, m_hairStyleMale, m_gender,
+                                     minimalParts);
                             }
                         }
                     }
@@ -1129,12 +1219,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         const auto hairStyleCol =
             GetDataset()->GetCategoricalColumn(hairStyleColumn.value_or(wxString{}));
 
-        // pre-build group-ID -> HairStyle map from the string table
-        std::map<Data::GroupIdType, HairStyle> hairStyleMap;
+        // Pre-build group-ID -> parallel-index map from the string table.
+        // The index is later cast to HairStyleFemale or HairStyleMale per face.
+        std::map<Data::GroupIdType, size_t> hairStyleMap;
         if (hairStyleCol != catColsEnd)
             {
             const auto categoryCount = hairStyleCol->GetStringTable().size();
-            if (categoryCount > static_cast<size_t>(HairStyle::HAIR_STYLE_COUNT))
+            if (categoryCount > static_cast<size_t>(HairStyleFemale::FEMALE_HAIR_STYLE_COUNT))
                 {
                 throw std::runtime_error(
                     wxString::Format(
@@ -1143,14 +1234,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         _(L"'%s': hair style column has %zu categories; "
                           "maximum allowed is %d."),
                         hairStyleColumn.value(), categoryCount,
-                        static_cast<int>(HairStyle::HAIR_STYLE_COUNT))
+                        static_cast<int>(HairStyleFemale::FEMALE_HAIR_STYLE_COUNT))
                         .ToUTF8());
                 }
             m_hairStyleLabels.reserve(hairStyleCol->GetStringTable().size());
             size_t styleIdx{ 0 };
             for (const auto& [id, label] : hairStyleCol->GetStringTable())
                 {
-                hairStyleMap[id] = static_cast<HairStyle>(styleIdx);
+                hairStyleMap[id] = styleIdx;
                 m_hairStyleLabels.push_back(label);
                 ++styleIdx;
                 }
@@ -1314,7 +1405,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const auto groupId = hairStyleCol->GetValue(i);
                 if (const auto hsIt = hairStyleMap.find(groupId); hsIt != hairStyleMap.cend())
                     {
-                    face.m_hairStyle = hsIt->second;
+                    face.m_hairStyleFemale = static_cast<HairStyleFemale>(hsIt->second);
+                    face.m_hairStyleMale = static_cast<HairStyleMale>(hsIt->second);
                     }
                 }
             if (hairAdditionCol != catColsEnd)
@@ -1462,9 +1554,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     {
                     // when a hair-style column is mapped, each face uses its own style;
                     // otherwise every face uses the plot-wide style
-                    const HairStyle effectiveHairStyle = m_hairStyleColumnName.empty() ?
-                                                             m_hairStyle :
-                                                             m_faces[faceIndex].m_hairStyle;
+                    const HairStyleFemale effectiveHairStyleFemale =
+                        m_hairStyleColumnName.empty() ? m_hairStyleFemale :
+                                                        m_faces[faceIndex].m_hairStyleFemale;
+                    const HairStyleMale effectiveHairStyleMale =
+                        m_hairStyleColumnName.empty() ? m_hairStyleMale :
+                                                        m_faces[faceIndex].m_hairStyleMale;
                     // create face
                     AddObject(std::make_unique<FaceObject>(
                         GraphItems::GraphItemInfo{}
@@ -1474,7 +1569,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             .AnchorPoint(wxPoint{ x, y }),
                         m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
                         m_faceColor, m_outlineColor, m_lipstickColor, m_eyeColor, m_hairColor,
-                        effectiveHairStyle, m_gender));
+                        effectiveHairStyleFemale, effectiveHairStyleMale, m_gender));
                     }
 
                 // add label below face if enabled
@@ -1518,24 +1613,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         wxGraphicsContext * gc, const wxRect& rect, const FaceFeatures& features,
         const wxColour& faceColorLighter, const wxColour& faceColorDarker,
         const wxColour& outlineColor, const wxColour& lipstickColor, const wxColour& eyeColor,
-        const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
+        const wxColour& hairColor, const HairStyleFemale hairStyleFemale,
+        const HairStyleMale hairStyleMale, const Gender gender)
         {
         DrawFace(gc, rect, features, faceColorLighter, faceColorDarker, outlineColor, lipstickColor,
-                 eyeColor, hairColor, hairStyle, gender, FaceParts{});
+                 eyeColor, hairColor, hairStyleFemale, hairStyleMale, gender, FaceParts{});
         }
 
     //----------------------------------------------------------------
-    void ChernoffFacesPlot::DrawFace(wxGraphicsContext * gc, const wxRect& rect,
-                                     const FaceFeatures& features, const wxColour& faceColorLighter,
-                                     const wxColour& faceColorDarker, const wxColour& outlineColor,
-                                     const wxColour& lipstickColor, const wxColour& eyeColor,
-                                     const wxColour& hairColor, const HairStyle hairStyle,
-                                     const Gender gender, const FaceParts& parts)
+    void ChernoffFacesPlot::DrawFace(
+        wxGraphicsContext * gc, const wxRect& rect, const FaceFeatures& features,
+        const wxColour& faceColorLighter, const wxColour& faceColorDarker,
+        const wxColour& outlineColor, const wxColour& lipstickColor, const wxColour& eyeColor,
+        const wxColour& hairColor, const HairStyleFemale hairStyleFemale,
+        const HairStyleMale hairStyleMale, const Gender gender, const FaceParts& parts)
         {
         if (gc == nullptr)
             {
             return;
             }
+
+        // collapse the gender-specific hair-style enums to a single internal kind so the
+        // drawing branches below don't need to be duplicated per gender
+        const HairStyleKind hairStyle = ToHairStyleKind(hairStyleFemale, hairStyleMale, gender);
 
         // interpolate between lighter and darker skin colors based on saturation
         // 0 = lighter color, 1 = darker color
@@ -2241,9 +2341,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
 
         // draw hair that goes over forehead (after face, before eyebrows)
-        if (parts.m_hair && hairStyle != HairStyle::Bald && hairStyle != HairStyle::HighTopFade &&
-            hairStyle != HairStyle::FlatTop && hairStyle != HairStyle::PartiallyBald &&
-            hairStyle != HairStyle::BaldCombOver && hairStyle != HairStyle::CombOver)
+        if (parts.m_hair && hairStyle != HairStyleKind::Bald &&
+            hairStyle != HairStyleKind::HighTopFade && hairStyle != HairStyleKind::FlatTop &&
+            hairStyle != HairStyleKind::PartiallyBald && hairStyle != HairStyleKind::BaldCombOver &&
+            hairStyle != HairStyleKind::CombOver)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -2258,7 +2359,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             const double eyeRadiusPreCalc = faceHeight * 0.1 * (0.6 + 0.8 * features.m_eyeSize);
             const double browYLimit = eyeYPreCalc - eyeRadiusPreCalc * 1.8 - faceHeight * 0.05;
 
-            if (hairStyle == HairStyle::Bob)
+            if (hairStyle == HairStyleKind::Bob)
                 {
                 // bob: hair frames face with bangs covering forehead
                 wxGraphicsPath bobHair = gc->CreatePath();
@@ -2356,7 +2457,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 }
-            else if (hairStyle == HairStyle::Pixie)
+            else if (hairStyle == HairStyleKind::Pixie)
                 {
                 // pixie: short textured hair covering forehead
                 wxGraphicsPath pixieHair = gc->CreatePath();
@@ -2433,7 +2534,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 }
-            else if (hairStyle == HairStyle::LongStraight)
+            else if (hairStyle == HairStyleKind::LongStraight)
                 {
                 // long straight: flowing hair with side-swept bangs
                 wxGraphicsPath longHair = gc->CreatePath();
@@ -2523,7 +2624,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         }
                     }
                 }
-            else if (hairStyle == HairStyle::Bun)
+            else if (hairStyle == HairStyleKind::Bun)
                 {
                 // bun: hair pulled back smoothly with bun on top (no bangs)
                 wxGraphicsPath bunHair = gc->CreatePath();
@@ -2629,7 +2730,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     gc->StrokePath(strand);
                     }
                 }
-            else if (hairStyle == HairStyle::Curly || hairStyle == HairStyle::LongCurly)
+            else if (hairStyle == HairStyleKind::Curly || hairStyle == HairStyleKind::LongCurly)
                 {
                 const wxColour curlHighlightColor =
                     Colors::ColorContrast::BlackOrWhiteContrast(hairColor);
@@ -2652,7 +2753,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
                 // build the hair mass using a high-density "cloud" distribution
                 // to create a natural, rounded volume
-                const int puffCount = (hairStyle == HairStyle::LongCurly) ? 500 : 350;
+                const int puffCount = (hairStyle == HairStyleKind::LongCurly) ? 500 : 350;
                 for (int i = 0; i < puffCount; ++i)
                     {
                     const double t = i / static_cast<double>(puffCount - 1);
@@ -2667,14 +2768,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     // use a shifted vertical center for long hair so it goes down more
                     // without becoming taller at the top
                     const double py =
-                        (hairStyle == HairStyle::LongCurly) ?
+                        (hairStyle == HairStyleKind::LongCurly) ?
                             cy - faceHeight * 0.15 + faceHeight * 1.15 * dist * std::sin(angle) :
                             cy - faceHeight * 0.35 + faceHeight * 0.9 * dist * std::sin(angle);
 
                     // positioning constraints:
                     // vertical length
                     const double verticalLimit =
-                        (hairStyle == HairStyle::LongCurly) ?
+                        (hairStyle == HairStyleKind::LongCurly) ?
                             cy + faceHeight * 1.05 : // shoulder/chest level
                             cy + faceHeight * 0.45;  // neck level
                     // keep bangs well above the eyes, high on forehead
@@ -2699,7 +2800,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 }
             }
         // high top fade - works for both genders
-        else if (parts.m_hair && hairStyle == HairStyle::HighTopFade)
+        else if (parts.m_hair && hairStyle == HairStyleKind::HighTopFade)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -2743,7 +2844,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
             }
-        else if (parts.m_hair && hairStyle == HairStyle::FlatTop)
+        else if (parts.m_hair && hairStyle == HairStyleKind::FlatTop)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -2788,8 +2889,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
             }
-        else if (parts.m_hair &&
-                 (hairStyle == HairStyle::PartiallyBald || hairStyle == HairStyle::BaldCombOver))
+        else if (parts.m_hair && (hairStyle == HairStyleKind::PartiallyBald ||
+                                  hairStyle == HairStyleKind::BaldCombOver))
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(130);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -2858,7 +2959,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             // each curving up to follow the crown's curvature. all strands start
             // at the right-side crown edge; left ends vary so some come up short.
             // strands overlap vertically so the comb-over reads as thicker
-            if (hairStyle == HairStyle::BaldCombOver)
+            if (hairStyle == HairStyleKind::BaldCombOver)
                 {
                 constexpr size_t combOverCount{ 10 };
                 const double strandThickness = std::max(1.0, faceHeight * 0.026);
@@ -2920,7 +3021,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     }
                 }
             }
-        else if (parts.m_hair && hairStyle == HairStyle::CombOver)
+        else if (parts.m_hair && hairStyle == HairStyleKind::CombOver)
             {
             const wxColour hairHighlight = hairColor.ChangeLightness(135);
             const wxColour hairShadow = hairColor.ChangeLightness(80);
@@ -3386,7 +3487,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         legend->SetFaceColors(m_faceColorLighter, m_faceColor);
         legend->SetOutlineColor(m_outlineColor);
         legend->SetGender(m_gender);
-        legend->SetHairStyle(m_hairStyle);
+        legend->SetHairStyle(m_hairStyleFemale);
+        legend->SetHairStyle(m_hairStyleMale);
         legend->SetHairColor(m_hairColor);
         legend->SetEyeColor(m_eyeColor);
         legend->SetLipstickColor(m_lipstickColor);

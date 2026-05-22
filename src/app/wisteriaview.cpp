@@ -2581,7 +2581,8 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
         plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
         plot->SetGender(dlg.GetGender());
-        plot->SetHairStyle(dlg.GetHairStyle());
+        plot->SetHairStyle(dlg.GetHairStyleFemale());
+        plot->SetHairStyle(dlg.GetHairStyleMale());
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
         plot->SetLipstickColor(dlg.GetLipstickColor());
@@ -3887,7 +3888,8 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         dlg.ApplyPageOptions(*plot);
         plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
         plot->SetGender(dlg.GetGender());
-        plot->SetHairStyle(dlg.GetHairStyle());
+        plot->SetHairStyle(dlg.GetHairStyleFemale());
+        plot->SetHairStyle(dlg.GetHairStyleMale());
         plot->SetEyeColor(dlg.GetEyeColor());
         plot->SetHairColor(dlg.GetHairColor());
         plot->SetLipstickColor(dlg.GetLipstickColor());

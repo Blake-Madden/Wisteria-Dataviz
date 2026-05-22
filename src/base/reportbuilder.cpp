@@ -3683,11 +3683,22 @@ namespace Wisteria
                 }
             if (graphNode->HasProperty(L"hair-style"))
                 {
-                const auto hairStyle = ReportEnumConvert::ConvertHairStyle(
-                    graphNode->GetProperty(L"hair-style")->AsString());
-                if (hairStyle.has_value())
+                const auto hairStyleStr = graphNode->GetProperty(L"hair-style")->AsString();
+                if (chernoffPlot->GetGender() == Gender::Male)
                     {
-                    chernoffPlot->SetHairStyle(hairStyle.value());
+                    const auto hairStyle = ReportEnumConvert::ConvertHairStyleMale(hairStyleStr);
+                    if (hairStyle.has_value())
+                        {
+                        chernoffPlot->SetHairStyle(hairStyle.value());
+                        }
+                    }
+                else
+                    {
+                    const auto hairStyle = ReportEnumConvert::ConvertHairStyleFemale(hairStyleStr);
+                    if (hairStyle.has_value())
+                        {
+                        chernoffPlot->SetHairStyle(hairStyle.value());
+                        }
                     }
                 }
             chernoffPlot->SetPropertyTemplate(

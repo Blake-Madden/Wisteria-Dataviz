@@ -39,8 +39,8 @@ namespace Wisteria::Graphs
         | Mouth curvature | Frown @htmlonly &rarr; @endhtmlonly Smile |
         | Face color | Pale @htmlonly &rarr; @endhtmlonly Saturated |
         | Ear size | Small @htmlonly &rarr; @endhtmlonly Large |
-        | Hair style | Category string mapped to HairStyle (e.g., @c "bob", @c "pixie") |
-        | Hair addition | Category string mapped to FacialHair (male) or HairAccessory (female) |
+        | Hair style | Category string mapped to HairStyleFemale or HairStyleMale (gender-dependent)
+       | | Hair addition | Category string mapped to FacialHair (male) or HairAccessory (female) |
 
         @par %Data:
             This plot accepts a Data::Dataset where multiple continuous columns
@@ -125,9 +125,9 @@ namespace Wisteria::Graphs
             @param faceSaturationColumn Column controlling face color saturation (optional).
             @param earSizeColumn Column controlling ear size (optional).
             @param hairStyleColumn Optional categorical column controlling per-face hair style.\n
-           Category strings are mapped to HairStyle values (e.g., @c "bob", @c "pixie") in the
-           order they appear in the data.\n When this column is not provided, every face uses the
-           plot-wide hair style set via SetHairStyle().
+           Category strings are mapped to HairStyleFemale or HairStyleMale values (depending on
+           the plot's gender) in the order they appear in the data.\n When this column is not
+           provided, every face uses the plot-wide hair style set via SetHairStyle().
             @param hairAdditionColumn Optional categorical column controlling per-face hair
            addition.\n For male faces, category strings are mapped to FacialHair values (e.g., @c
            "beard", @c "mustache").\n For female faces, category strings are mapped to HairAccessory
@@ -279,16 +279,27 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /// @returns The hair style.
+        /// @returns The hair style used for female faces.
         [[nodiscard]]
-        HairStyle GetHairStyle() const noexcept
+        HairStyleFemale GetHairStyleFemale() const noexcept
             {
-            return m_hairStyle;
+            return m_hairStyleFemale;
             }
 
-        /// @brief Sets the hair style.
+        /// @returns The hair style used for male faces.
+        [[nodiscard]]
+        HairStyleMale GetHairStyleMale() const noexcept
+            {
+            return m_hairStyleMale;
+            }
+
+        /// @brief Sets the hair style used for female faces.
         /// @param style The hair style to use.
-        void SetHairStyle(const HairStyle style) noexcept { m_hairStyle = style; }
+        void SetHairStyle(const HairStyleFemale style) noexcept { m_hairStyleFemale = style; }
+
+        /// @brief Sets the hair style used for male faces.
+        /// @param style The hair style to use.
+        void SetHairStyle(const HairStyleMale style) noexcept { m_hairStyleMale = style; }
 
         /// @returns The hair color.
         [[nodiscard]]
@@ -404,9 +415,13 @@ namespace Wisteria::Graphs
             /// @param gender The gender.
             void SetGender(Gender gender) noexcept { m_gender = gender; }
 
-            /// @brief Sets the hair style.
+            /// @brief Sets the hair style used for female faces.
             /// @param style The hair style.
-            void SetHairStyle(HairStyle style) noexcept { m_hairStyle = style; }
+            void SetHairStyle(HairStyleFemale style) noexcept { m_hairStyleFemale = style; }
+
+            /// @brief Sets the hair style used for male faces.
+            /// @param style The hair style.
+            void SetHairStyle(HairStyleMale style) noexcept { m_hairStyleMale = style; }
 
             /// @brief Sets the hair color.
             /// @param color The hair color.
@@ -438,7 +453,7 @@ namespace Wisteria::Graphs
             ///     below the face listing each label with a small face icon showing
             ///     that hair style.
             /// @param labels The label list, where index @c N corresponds to
-            ///     @c HairStyle(N).
+            ///     @c HairStyleFemale(N) (for female faces) or @c HairStyleMale(N) (for male).
             void SetHairStyleLabels(std::vector<wxString> labels) noexcept
                 {
                 m_hairStyleLabels = std::move(labels);
@@ -493,7 +508,8 @@ namespace Wisteria::Graphs
             wxColour m_eyeColor{ 143, 188, 143 };
             wxColour m_hairColor{ 183, 82, 46 };
             Gender m_gender{ Gender::Female };
-            HairStyle m_hairStyle{ HairStyle::Bob };
+            HairStyleFemale m_hairStyleFemale{ HairStyleFemale::Bob };
+            HairStyleMale m_hairStyleMale{ HairStyleMale::CombOver };
             wxPen m_connectionLinePen{ *wxBLACK, 1 };
             wxColour m_canvasBackgroundColor{ *wxWHITE };
             wxRect m_rect;
@@ -544,7 +560,8 @@ namespace Wisteria::Graphs
             double m_mouthCurvature{ DEFAULT_FEATURE_VALUE };
             double m_faceSaturation{ DEFAULT_FEATURE_VALUE };
             double m_earSize{ DEFAULT_FEATURE_VALUE };
-            HairStyle m_hairStyle{ HairStyle::Bob };
+            HairStyleFemale m_hairStyleFemale{ HairStyleFemale::Bob };
+            HairStyleMale m_hairStyleMale{ HairStyleMale::CombOver };
             FacialHair m_facialHair{ FacialHair::CleanShaven };
             HairAccessory m_hairAccessory{ HairAccessory::Butterfly };
             /// @brief Whether @c m_hairAccessory should be rendered. Set to @c true
@@ -562,12 +579,13 @@ namespace Wisteria::Graphs
                        const wxSize& sz, const wxColour& faceColorLighter,
                        const wxColour& faceColorDarker, const wxColour& outlineColor,
                        const wxColour& lipstickColor, const wxColour& eyeColor,
-                       const wxColour& hairColor, const HairStyle hairStyle, const Gender gender)
+                       const wxColour& hairColor, const HairStyleFemale hairStyleFemale,
+                       const HairStyleMale hairStyleMale, const Gender gender)
                 : GraphItemBase(itemInfo), m_features(std::move(features)), m_size(sz),
                   m_faceColorLighter(faceColorLighter), m_faceColorDarker(faceColorDarker),
                   m_outlineColor(outlineColor), m_lipstickColor(lipstickColor),
-                  m_eyeColor(eyeColor), m_hairColor(hairColor), m_hairStyle(hairStyle),
-                  m_gender(gender)
+                  m_eyeColor(eyeColor), m_hairColor(hairColor), m_hairStyleFemale(hairStyleFemale),
+                  m_hairStyleMale(hairStyleMale), m_gender(gender)
                 {
                 }
 
@@ -603,7 +621,8 @@ namespace Wisteria::Graphs
             wxColour m_lipstickColor;
             wxColour m_eyeColor;
             wxColour m_hairColor;
-            HairStyle m_hairStyle{ HairStyle::Bob };
+            HairStyleFemale m_hairStyleFemale{ HairStyleFemale::Bob };
+            HairStyleMale m_hairStyleMale{ HairStyleMale::CombOver };
             Gender m_gender{ Gender::Female };
             };
 
@@ -633,15 +652,16 @@ namespace Wisteria::Graphs
         /// @param lipstickColor The lipstick color (female only).
         /// @param eyeColor The eye/iris color.
         /// @param hairColor The hair color.
-        /// @param hairStyle The hair style.
+        /// @param hairStyleFemale The hair style to use when @c gender is @c Female.
+        /// @param hairStyleMale The hair style to use when @c gender is @c Male.
         /// @param gender The gender for face styling.
         /// @param parts Which parts of the face to draw.
         static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,
                              const FaceFeatures& features, const wxColour& faceColorLighter,
                              const wxColour& faceColorDarker, const wxColour& outlineColor,
                              const wxColour& lipstickColor, const wxColour& eyeColor,
-                             const wxColour& hairColor, HairStyle hairStyle, Gender gender,
-                             const FaceParts& parts);
+                             const wxColour& hairColor, HairStyleFemale hairStyleFemale,
+                             HairStyleMale hairStyleMale, Gender gender, const FaceParts& parts);
 
         /// @brief Draws a single face within the specified rectangle, including all parts.
         /// @details Overload that draws every face part; see the other @c DrawFace() for
@@ -650,7 +670,8 @@ namespace Wisteria::Graphs
                              const FaceFeatures& features, const wxColour& faceColorLighter,
                              const wxColour& faceColorDarker, const wxColour& outlineColor,
                              const wxColour& lipstickColor, const wxColour& eyeColor,
-                             const wxColour& hairColor, HairStyle hairStyle, Gender gender);
+                             const wxColour& hairColor, HairStyleFemale hairStyleFemale,
+                             HairStyleMale hairStyleMale, Gender gender);
 
         /// @brief Normalizes a value to the [0,1] range.
         /// @param value The raw value.
@@ -675,7 +696,8 @@ namespace Wisteria::Graphs
         wxColour m_hairColor{ 183, 82, 46 };  // natural auburn/ginger
         bool m_showLabels{ true };
         Gender m_gender{ Gender::Female };
-        HairStyle m_hairStyle{ HairStyle::Bob };
+        HairStyleFemale m_hairStyleFemale{ HairStyleFemale::Bob };
+        HairStyleMale m_hairStyleMale{ HairStyleMale::CombOver };
 
         // column names for legend
         wxString m_faceWidthColumnName;
@@ -693,7 +715,7 @@ namespace Wisteria::Graphs
         wxString m_hairAdditionColumnName;
 
         // hair-style factor labels, ordered by enum index
-        // (index N corresponds to HairStyle(N)).
+        // (index N corresponds to HairStyleFemale(N) or HairStyleMale(N), depending on gender).
         std::vector<wxString> m_hairStyleLabels;
 
         // hair-addition factor labels, ordered by enum index

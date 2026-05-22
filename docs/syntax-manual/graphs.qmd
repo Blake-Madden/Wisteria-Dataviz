@@ -288,22 +288,24 @@ Properties for `"chernoff-faces"` nodes:
 - `"hair-color"`: The hair color (default is auburn).
 - `"lipstick-color"`: The lipstick color, only used for female faces (default is firebrick red).
 - `"hair-style"`: A string specifying the hair style. \
+  The set of valid values depends on `"gender"`; values not valid for the selected
+  gender are ignored. \
   Available options are:
-  - `"bald"`: No hair (male or female).
-  - `"bob"`: Short bob cut at jaw level (the default, female).
+  - `"bob"`: Short bob cut at jaw level (female; default for female).
   - `"pixie"`: Very short cropped style (female).
   - `"bun"`: Hair pulled into a bun (female).
-  - `"long-straight"`: Long straight hair past shoulders (female).
-  - `"high-top-fade"`: High top fade style (male or female).
-  - `"flat-top"`: Flat top style (male or female).
+  - `"long-straight"`: Long straight hair past shoulders (male or female).
   - `"curly"`: Short, curly hair (male or female).
   - `"long-curly"`: Long, curly hair (male or female).
-  - `"partially-bald"`: Mostly bald with small tufts of hair on the sides, behind the
-    ears (male or female).
-  - `"bald-comb-over"`: Mostly bald with side tufts and remaining hair combed across
-    the crown (male or female).
+  - `"high-top-fade"`: High top fade style (male or female).
+  - `"flat-top"`: Flat top style (male or female).
+  - `"bald"`: No hair (male or female).
   - `"comb-over"`: Full hair with a thick swoosh combed across the top to one side
-    (male or female).
+    (male; default for male).
+  - `"partially-bald"`: Mostly bald with small tufts of hair on the sides, behind the
+    ears (male).
+  - `"bald-comb-over"`: Mostly bald with side tufts and remaining hair combed across
+    the crown (male).
 - `"facial-hair"`: A string specifying the facial hair style (male faces only). \
   Available options are:
   - `"clean-shaven"`: No facial hair (the default).

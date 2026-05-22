@@ -937,26 +937,45 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
-        static std::optional<HairStyle> ConvertHairStyle(const wxString& value)
+        static std::optional<HairStyleFemale> ConvertHairStyleFemale(const wxString& value)
             {
-            static const std::map<std::wstring, HairStyle> hairStyleValues = {
-                { L"bald", HairStyle::Bald },
-                { L"bob", HairStyle::Bob },
-                { L"pixie", HairStyle::Pixie },
-                { L"bun", HairStyle::Bun },
-                { L"long-straight", HairStyle::LongStraight },
-                { L"high-top-fade", HairStyle::HighTopFade },
-                { L"flat-top", HairStyle::FlatTop },
-                { L"curly", HairStyle::Curly },
-                { L"long-curly", HairStyle::LongCurly },
-                { L"partially-bald", HairStyle::PartiallyBald },
-                { L"bald-comb-over", HairStyle::BaldCombOver },
-                { L"comb-over", HairStyle::CombOver }
+            static const std::map<std::wstring, HairStyleFemale> hairStyleValues = {
+                { L"bob", HairStyleFemale::Bob },
+                { L"pixie", HairStyleFemale::Pixie },
+                { L"bun", HairStyleFemale::Bun },
+                { L"long-straight", HairStyleFemale::LongStraight },
+                { L"curly", HairStyleFemale::Curly },
+                { L"long-curly", HairStyleFemale::LongCurly },
+                { L"high-top-fade", HairStyleFemale::HighTopFade },
+                { L"flat-top", HairStyleFemale::FlatTop },
+                { L"bald", HairStyleFemale::Bald }
             };
 
             const auto foundValue = hairStyleValues.find(value.Lower().ToStdWstring());
             return ((foundValue != hairStyleValues.cend()) ?
-                        std::optional<HairStyle>(foundValue->second) :
+                        std::optional<HairStyleFemale>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<HairStyleMale> ConvertHairStyleMale(const wxString& value)
+            {
+            static const std::map<std::wstring, HairStyleMale> hairStyleValues = {
+                { L"comb-over", HairStyleMale::CombOver },
+                { L"high-top-fade", HairStyleMale::HighTopFade },
+                { L"flat-top", HairStyleMale::FlatTop },
+                { L"partially-bald", HairStyleMale::PartiallyBald },
+                { L"bald-comb-over", HairStyleMale::BaldCombOver },
+                { L"long-straight", HairStyleMale::LongStraight },
+                { L"bald", HairStyleMale::Bald },
+                { L"curly", HairStyleMale::Curly },
+                { L"long-curly", HairStyleMale::LongCurly }
+            };
+
+            const auto foundValue = hairStyleValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != hairStyleValues.cend()) ?
+                        std::optional<HairStyleMale>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -1908,25 +1927,45 @@ namespace Wisteria
                                                    std::nullopt;
             }
 
-        /// @brief Converts a HairStyle enum to its JSON string representation.
+        /// @brief Converts a HairStyleFemale enum to its JSON string representation.
         /// @param value The hair style enum value.
         /// @returns The string if found, or std::nullopt.
         [[nodiscard]]
-        static std::optional<wxString> ConvertHairStyleToString(HairStyle value)
+        static std::optional<wxString> ConvertHairStyleFemaleToString(HairStyleFemale value)
             {
-            static const std::map<HairStyle, wxString> values = {
-                { HairStyle::Bald, L"bald" },
-                { HairStyle::Bob, L"bob" },
-                { HairStyle::Pixie, L"pixie" },
-                { HairStyle::Bun, L"bun" },
-                { HairStyle::LongStraight, L"long-straight" },
-                { HairStyle::HighTopFade, L"high-top-fade" },
-                { HairStyle::FlatTop, L"flat-top" },
-                { HairStyle::Curly, L"curly" },
-                { HairStyle::LongCurly, L"long-curly" },
-                { HairStyle::PartiallyBald, L"partially-bald" },
-                { HairStyle::BaldCombOver, L"bald-comb-over" },
-                { HairStyle::CombOver, L"comb-over" }
+            static const std::map<HairStyleFemale, wxString> values = {
+                { HairStyleFemale::Bob, L"bob" },
+                { HairStyleFemale::Pixie, L"pixie" },
+                { HairStyleFemale::Bun, L"bun" },
+                { HairStyleFemale::LongStraight, L"long-straight" },
+                { HairStyleFemale::Curly, L"curly" },
+                { HairStyleFemale::LongCurly, L"long-curly" },
+                { HairStyleFemale::HighTopFade, L"high-top-fade" },
+                { HairStyleFemale::FlatTop, L"flat-top" },
+                { HairStyleFemale::Bald, L"bald" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a HairStyleMale enum to its JSON string representation.
+        /// @param value The hair style enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertHairStyleMaleToString(HairStyleMale value)
+            {
+            static const std::map<HairStyleMale, wxString> values = {
+                { HairStyleMale::CombOver, L"comb-over" },
+                { HairStyleMale::HighTopFade, L"high-top-fade" },
+                { HairStyleMale::FlatTop, L"flat-top" },
+                { HairStyleMale::PartiallyBald, L"partially-bald" },
+                { HairStyleMale::BaldCombOver, L"bald-comb-over" },
+                { HairStyleMale::LongStraight, L"long-straight" },
+                { HairStyleMale::Bald, L"bald" },
+                { HairStyleMale::Curly, L"curly" },
+                { HairStyleMale::LongCurly, L"long-curly" }
             };
 
             const auto foundValue = values.find(value);

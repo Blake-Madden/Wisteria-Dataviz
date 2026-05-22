@@ -4171,8 +4171,11 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         node->Add(L"eye-color", ColorToStr(chernoff->GetEyeColor()));
         node->Add(L"hair-color", ColorToStr(chernoff->GetHairColor()));
         node->Add(L"lipstick-color", ColorToStr(chernoff->GetLipstickColor()));
-        const auto hsStr =
-            Wisteria::ReportEnumConvert::ConvertHairStyleToString(chernoff->GetHairStyle());
+        const auto hsStr = (chernoff->GetGender() == Wisteria::Gender::Male) ?
+                               Wisteria::ReportEnumConvert::ConvertHairStyleMaleToString(
+                                   chernoff->GetHairStyleMale()) :
+                               Wisteria::ReportEnumConvert::ConvertHairStyleFemaleToString(
+                                   chernoff->GetHairStyleFemale());
         if (hsStr.has_value())
             {
             node->Add(L"hair-style", hsStr.value());

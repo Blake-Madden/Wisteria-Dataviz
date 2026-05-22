@@ -71,9 +71,17 @@ namespace Wisteria::UI
         [[nodiscard]]
         Gender GetGender() const;
 
-        /// @returns The selected hair style.
+        /// @returns The selected hair style interpreted as a female-gender style.
+        /// @note The dialog stores a single integer combobox index; this getter
+        ///     interprets it as a @c HairStyleFemale. Pair it with @c GetHairStyleMale()
+        ///     and let the plot pick the right one based on its @c Gender setting.
         [[nodiscard]]
-        HairStyle GetHairStyle() const;
+        HairStyleFemale GetHairStyleFemale() const;
+
+        /// @returns The selected hair style interpreted as a male-gender style.
+        /// @sa GetHairStyleFemale().
+        [[nodiscard]]
+        HairStyleMale GetHairStyleMale() const;
 
         /// @returns The lighter skin color (low saturation).
         [[nodiscard]]
@@ -141,6 +149,9 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void UpdateFeatureLabels();
+        /// @brief Clears and repopulates the hair-style combobox with the labels matching
+        ///     the currently selected gender. Preserves the current selection index.
+        void PopulateHairStyleChoice();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         /// @brief The number of facial features available for variable mapping.

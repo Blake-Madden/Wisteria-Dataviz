@@ -118,27 +118,18 @@ namespace Wisteria::UI
                                    TransferDataFromWindow();
                                    m_lipstickColorLabel->Enable(m_gender == 0);
                                    m_lipstickColorPicker->Enable(m_gender == 0);
+                                   PopulateHairStyleChoice();
                                    Refresh();
                                });
             }
 
-        // hair style (disabled when a categorical variable is mapped to FID::HairStyle)
+        // Hair style (disabled when a categorical variable is mapped to FID::HairStyle).
+        // Labels are populated based on gender via PopulateHairStyleChoice().
         m_hairStyleLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Hair style:"));
         appearanceSizer->Add(m_hairStyleLabel, wxSizerFlags{}.CenterVertical());
         m_hairStyleChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
                                          nullptr, 0, wxGenericValidator(&m_hairStyle));
-        m_hairStyleChoice->Append(_(L"Bald"));
-        m_hairStyleChoice->Append(_(L"Bob"));
-        m_hairStyleChoice->Append(_(L"Pixie"));
-        m_hairStyleChoice->Append(_(L"Bun"));
-        m_hairStyleChoice->Append(_(L"Long & straight"));
-        m_hairStyleChoice->Append(_(L"High top fade"));
-        m_hairStyleChoice->Append(_(L"Flat top"));
-        m_hairStyleChoice->Append(_(L"Curly"));
-        m_hairStyleChoice->Append(_(L"Long & curly"));
-        m_hairStyleChoice->Append(_(L"Partially bald"));
-        m_hairStyleChoice->Append(_(L"Bald comb-over"));
-        m_hairStyleChoice->Append(_(L"Comb-over"));
+        PopulateHairStyleChoice();
         appearanceSizer->Add(m_hairStyleChoice);
 
         // skin color range (lighter and darker side by side)
@@ -450,20 +441,67 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    HairStyle InsertChernoffDlg::GetHairStyle() const
+    void InsertChernoffDlg::PopulateHairStyleChoice()
         {
-        constexpr HairStyle styles[] = { HairStyle::Bald,         HairStyle::Bob,
-                                         HairStyle::Pixie,        HairStyle::Bun,
-                                         HairStyle::LongStraight, HairStyle::HighTopFade,
-                                         HairStyle::FlatTop,      HairStyle::Curly,
-                                         HairStyle::LongCurly,    HairStyle::PartiallyBald,
-                                         HairStyle::BaldCombOver, HairStyle::CombOver };
-
-        if (m_hairStyle >= 0 && std::cmp_less(m_hairStyle, std::size(styles)))
+        if (m_hairStyleChoice == nullptr)
             {
-            return styles[m_hairStyle];
+            return;
             }
-        return HairStyle::Bob;
+        // m_hairStyle is the source of truth; the choice is rebuilt from it.
+        // Label order must mirror HairStyleFemale / HairStyleMale enum order.
+        m_hairStyleChoice->Clear();
+        if (m_gender == 1)
+            {
+            m_hairStyleChoice->Append(_(L"Comb-over"));
+            m_hairStyleChoice->Append(_(L"High top fade"));
+            m_hairStyleChoice->Append(_(L"Flat top"));
+            m_hairStyleChoice->Append(_(L"Partially bald"));
+            m_hairStyleChoice->Append(_(L"Bald comb-over"));
+            m_hairStyleChoice->Append(_(L"Long & straight"));
+            m_hairStyleChoice->Append(_(L"Bald"));
+            m_hairStyleChoice->Append(_(L"Curly"));
+            m_hairStyleChoice->Append(_(L"Long & curly"));
+            }
+        else
+            {
+            m_hairStyleChoice->Append(_(L"Bob"));
+            m_hairStyleChoice->Append(_(L"Pixie"));
+            m_hairStyleChoice->Append(_(L"Bun"));
+            m_hairStyleChoice->Append(_(L"Long & straight"));
+            m_hairStyleChoice->Append(_(L"Curly"));
+            m_hairStyleChoice->Append(_(L"Long & curly"));
+            m_hairStyleChoice->Append(_(L"High top fade"));
+            m_hairStyleChoice->Append(_(L"Flat top"));
+            m_hairStyleChoice->Append(_(L"Bald"));
+            }
+
+        if (m_hairStyle < 0 || std::cmp_greater_equal(m_hairStyle, m_hairStyleChoice->GetCount()))
+            {
+            m_hairStyle = 0;
+            }
+        m_hairStyleChoice->SetSelection(m_hairStyle);
+        }
+
+    //-------------------------------------------
+    HairStyleFemale InsertChernoffDlg::GetHairStyleFemale() const
+        {
+        if (m_hairStyle >= 0 &&
+            std::cmp_less(m_hairStyle, static_cast<int>(HairStyleFemale::FEMALE_HAIR_STYLE_COUNT)))
+            {
+            return static_cast<HairStyleFemale>(m_hairStyle);
+            }
+        return HairStyleFemale::Bob;
+        }
+
+    //-------------------------------------------
+    HairStyleMale InsertChernoffDlg::GetHairStyleMale() const
+        {
+        if (m_hairStyle >= 0 &&
+            std::cmp_less(m_hairStyle, static_cast<int>(HairStyleMale::MALE_HAIR_STYLE_COUNT)))
+            {
+            return static_cast<HairStyleMale>(m_hairStyle);
+            }
+        return HairStyleMale::PartiallyBald;
         }
 
     //-------------------------------------------
@@ -553,48 +591,15 @@ namespace Wisteria::UI
         m_hairStyleLabel->Enable(!hairStyleVarMapped);
         m_hairStyleChoice->Enable(!hairStyleVarMapped);
 
-        switch (chernoff->GetHairStyle())
-            {
-        case HairStyle::Bald:
-            m_hairStyle = 0;
-            break;
-        case HairStyle::Bob:
-            m_hairStyle = 1;
-            break;
-        case HairStyle::Pixie:
-            m_hairStyle = 2;
-            break;
-        case HairStyle::Bun:
-            m_hairStyle = 3;
-            break;
-        case HairStyle::LongStraight:
-            m_hairStyle = 4;
-            break;
-        case HairStyle::HighTopFade:
-            m_hairStyle = 5;
-            break;
-        case HairStyle::FlatTop:
-            m_hairStyle = 6;
-            break;
-        case HairStyle::Curly:
-            m_hairStyle = 7;
-            break;
-        case HairStyle::LongCurly:
-            m_hairStyle = 8;
-            break;
-        case HairStyle::PartiallyBald:
-            m_hairStyle = 9;
-            break;
-        case HairStyle::BaldCombOver:
-            m_hairStyle = 10;
-            break;
-        case HairStyle::CombOver:
-            m_hairStyle = 11;
-            break;
-        default:
-            m_hairStyle = 1;
-            break;
-            }
+        // parallel-index mapping: HairStyleFemale and HairStyleMale share the same
+        // integer layout, so the combobox index is just the underlying enum value
+        m_hairStyle = (chernoff->GetGender() == Gender::Male) ?
+                          static_cast<int>(chernoff->GetHairStyleMale()) :
+                          static_cast<int>(chernoff->GetHairStyleFemale());
+
+        // rebuild the choice with the loaded gender's labels; this also syncs
+        // the combobox selection to m_hairStyle
+        PopulateHairStyleChoice();
 
         // color pickers
         m_skinColorLighterPicker->SetColour(chernoff->GetFaceColorLighter());

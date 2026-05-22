@@ -83,11 +83,9 @@ namespace Wisteria
         Male
         };
 
-    /// @brief Hair style options for Chernoff faces.
-    enum class HairStyle
+    /// @brief Hair style options for female Chernoff faces.
+    enum class HairStyleFemale
         {
-        /// @brief No hair.
-        Bald,
         /// @brief Short bob cut at jaw level.
         Bob,
         /// @brief Very short cropped style.
@@ -96,22 +94,43 @@ namespace Wisteria
         Bun,
         /// @brief Long, straight hair past shoulders.
         LongStraight,
-        /// @brief High top fade style.
-        HighTopFade,
-        /// @brief Flat top style.
-        FlatTop,
         /// @brief Short, curly hair.
         Curly,
         /// @brief Long, curly hair.
         LongCurly,
+        /// @brief High top fade style.
+        HighTopFade,
+        /// @brief Flat top style.
+        FlatTop,
+        /// @brief No hair.
+        Bald,
+        /// @private
+        FEMALE_HAIR_STYLE_COUNT
+        };
+
+    /// @brief Hair style options for male Chernoff faces.
+    enum class HairStyleMale
+        {
+        /// @brief Full hair combed to one side with a thick swoosh across the top.
+        CombOver,
+        /// @brief High top fade style.
+        HighTopFade,
+        /// @brief Flat top style.
+        FlatTop,
         /// @brief Mostly bald with small tufts of hair on the sides, behind the ears.
         PartiallyBald,
         /// @brief Bald with the remaining side hair combed across the crown.
         BaldCombOver,
-        /// @brief Full hair combed to one side with a thick swoosh across the top.
-        CombOver,
+        /// @brief Long, straight hair past shoulders.
+        LongStraight,
+        /// @brief No hair.
+        Bald,
+        /// @brief Short, curly hair.
+        Curly,
+        /// @brief Long, curly hair.
+        LongCurly,
         /// @private
-        HAIR_STYLE_COUNT
+        MALE_HAIR_STYLE_COUNT
         };
 
     /// @brief Facial hair style options for Chernoff faces.
