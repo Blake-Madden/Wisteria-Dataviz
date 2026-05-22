@@ -2731,20 +2731,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     const double dist = 0.4 + 0.6 * (std::abs(std::cos(i * 23.456)));
 
                     // wider at the sides, rounded at the top
-                    const double px = cx + faceWidth * 1.35 * dist * std::cos(angle);
+                    const double px = cx + faceWidth * 1.2 * dist * std::cos(angle);
                     // use a shifted vertical center for long hair so it goes down more
                     // without becoming taller at the top
                     const double py =
                         (hairStyle == HairStyleKind::LongCurly) ?
-                            cy - faceHeight * 0.15 + faceHeight * 1.15 * dist * std::sin(angle) :
-                            cy - faceHeight * 0.35 + faceHeight * 0.9 * dist * std::sin(angle);
+                            cy - faceHeight * 0.15 + faceHeight * 1.05 * dist * std::sin(angle) :
+                            cy - faceHeight * 0.35 + faceHeight * 0.8 * dist * std::sin(angle);
 
                     // positioning constraints:
                     // vertical length
                     const double verticalLimit =
                         (hairStyle == HairStyleKind::LongCurly) ?
-                            cy + faceHeight * 1.05 : // shoulder/chest level
-                            cy + faceHeight * 0.45;  // neck level
+                            cy + faceHeight * 1.0 : // shoulder/chest level
+                            cy + faceHeight * 0.4;  // neck level
                     // keep bangs well above the eyes, high on forehead
                     const double bangsLevel = browYLimit - faceHeight * 0.25;
 
@@ -2760,7 +2760,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         {
                         // vary puff size slightly for more organic texture
                         const double puffSize =
-                            faceWidth * (0.2 + 0.1 * std::abs(std::sin(i * 7.89)));
+                            faceWidth * (0.16 + 0.08 * std::abs(std::sin(i * 7.89)));
                         drawCurlyPuff(px, py, puffSize);
                         }
                     }
