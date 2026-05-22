@@ -100,6 +100,7 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/sidebar.cpp
     ../../src/ui/controls/sidebarbook.cpp
     ../../src/ui/controls/thumbnail.cpp
+    ../../src/ui/dialogs/accessibilityoptionspanel.cpp
     ../../src/ui/dialogs/archivedlg.cpp
     ../../src/ui/dialogs/axisoptionspanel.cpp
     ../../src/ui/dialogs/datasetimportdlg.cpp

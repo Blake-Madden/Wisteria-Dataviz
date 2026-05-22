@@ -6128,6 +6128,12 @@ namespace Wisteria
                 item.SetPropertyTemplate(L"accessibility.aria-hidden", L"true");
                 }
 
+            if (accessNode->GetProperty(L"auto")->AsBool())
+                {
+                item.SetAutoAccessibility(true);
+                item.SetPropertyTemplate(L"accessibility.auto", L"true");
+                }
+
             if (!attrs.IsEmpty())
                 {
                 item.GetAccessibility() = (std::move(attrs));

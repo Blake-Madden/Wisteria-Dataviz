@@ -359,6 +359,8 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertLabelDlg::LoadFromLabel(const GraphItems::Label& label)
         {
+        LoadAccessibilityOptions(label);
+
         if (m_includePageOptions)
             {
             LoadPageOptions(label);
@@ -452,6 +454,8 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertLabelDlg::ApplyToLabel(Wisteria::GraphItems::Label& label)
         {
+        ApplyAccessibilityOptions(label);
+
         label.SetText(GetLabelText());
         label.GetFont() = GetLabelFont();
         label.SetFontColor(GetFontColor());

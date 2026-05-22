@@ -33,6 +33,8 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertGraphDlg::ApplyGraphOptions(Graphs::Graph2D& graph) const
         {
+        ApplyAccessibilityOptions(graph);
+
         const auto applyLabel = [this](const GraphItems::Label& src, GraphItems::Label& dest)
         {
             if (src.GetText().empty())
@@ -1946,6 +1948,8 @@ namespace Wisteria::UI
         loadLabel(graph.GetTitle(), m_titleLabel, m_titlePreview);
         loadLabel(graph.GetSubtitle(), m_subtitleLabel, m_subtitlePreview);
         loadLabel(graph.GetCaption(), m_captionLabel, m_captionPreview);
+
+        LoadAccessibilityOptions(graph);
 
         const auto bgColor = graph.GetPlotBackgroundColor();
         if (bgColor.IsOk() && !bgColor.IsTransparent() && m_plotBgColorPicker != nullptr)

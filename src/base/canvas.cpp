@@ -1558,14 +1558,30 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         if (dc.IsKindOf(wxCLASSINFO(wxSVGFileDC)))
             {
             auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc);
-            if (svgDc != nullptr && !item->GetAccessibility().IsEmpty())
+            // user-provided accessibility features
+            if (svgDc != nullptr && !item->IsUsingAutoAccessibility() &&
+                !item->GetAccessibilityAttributes().IsEmpty())
                 {
-                const wxSVGAccessibleGroup accessGroup(*svgDc, item->GetAccessibility());
+                const wxSVGAccessibleGroup accessGroup(*svgDc, item->GetAccessibilityAttributes());
                 item->Draw(dc);
-                return;
+                }
+            // accessibility features built by the object internally
+            else if (svgDc != nullptr && item->IsUsingAutoAccessibility() &&
+                     !item->GetAutoAccessibilityAttributes().IsEmpty())
+                {
+                const wxSVGAccessibleGroup accessGroup(*svgDc,
+                                                       item->GetAutoAccessibilityAttributes());
+                item->Draw(dc);
+                }
+            else
+                {
+                item->Draw(dc);
                 }
             }
-        item->Draw(dc);
+        else
+            {
+            item->Draw(dc);
+            }
         }
 
     //-------------------------------------------

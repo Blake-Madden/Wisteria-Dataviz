@@ -86,6 +86,7 @@ SET(WISTERIA_SRC
     src/import/xlsx_extract_text.cpp
     src/ui/controls/listctrlexcelexporter.cpp
     src/ui/controls/thumbnail.cpp
+    src/ui/dialogs/accessibilityoptionspanel.cpp
     src/ui/dialogs/axisoptionspanel.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp

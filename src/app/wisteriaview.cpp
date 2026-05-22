@@ -7831,6 +7831,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
             {
             shape->SetPropertyTemplate(L"label.text", labelText);
             }
+        dlg.ApplyAccessibilityOptions(*shape);
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
         }
     else
@@ -7852,6 +7853,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
             {
             shape->SetPropertyTemplate(L"label.text", labelText);
             }
+        dlg.ApplyAccessibilityOptions(*shape);
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
         }
 
@@ -7903,6 +7905,7 @@ void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria:
             {
             newShape->SetPropertyTemplate(L"label.text", labelText);
             }
+        dlg.ApplyAccessibilityOptions(*newShape);
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
     else
@@ -7924,6 +7927,7 @@ void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria:
             {
             newShape->SetPropertyTemplate(L"label.text", labelText);
             }
+        dlg.ApplyAccessibilityOptions(*newShape);
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
 
@@ -7976,6 +7980,7 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
             {
             newShape->SetPropertyTemplate(L"label.text", labelText);
             }
+        dlg.ApplyAccessibilityOptions(*newShape);
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
     else
@@ -7997,6 +8002,7 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
             {
             newShape->SetPropertyTemplate(L"label.text", labelText);
             }
+        dlg.ApplyAccessibilityOptions(*newShape);
         canvas->SetFixedObject(shapeRow, shapeCol, newShape);
         }
 

@@ -296,6 +296,8 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertImageDlg::LoadFromImage(const Wisteria::GraphItems::Image& image)
         {
+        LoadAccessibilityOptions(image);
+
         if ((m_options & ImageDlgIncludePageOptions) != 0)
             {
             LoadPageOptions(image);
@@ -375,6 +377,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertImageDlg::ApplyToImage(Wisteria::GraphItems::Image& image) const
         {
+        ApplyAccessibilityOptions(image);
         image.SetResizeMethod(GetResizeMethod());
         }
     } // namespace Wisteria::UI

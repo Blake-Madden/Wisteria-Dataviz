@@ -40,6 +40,18 @@ namespace Wisteria
     {
     class Canvas;
     class CanvasItemScalingChanger;
+
+    /// @brief Information for ARIA accessibility.
+    struct AccessibilityInfo
+        {
+        /// @brief The accessibility attributes.
+        wxSVGAttributes m_attributes;
+        /// @brief The accessibility attributes built internally by its parent (e.g., a graph) that
+        ///     overrides the user-defined attributes.
+        wxSVGAttributes m_autoAttributes;
+        /// @brief Whether accessibility is automatically managed.
+        bool m_auto{ false };
+        };
     } // namespace Wisteria
 
 namespace Wisteria::Graphs
@@ -847,7 +859,30 @@ namespace Wisteria
                 @returns A self reference.*/
             GraphItemInfo& Accessibility(wxSVGAttributes attrs)
                 {
-                m_accessibility = std::move(attrs);
+                m_accessibility.m_attributes = std::move(attrs);
+                return *this;
+                }
+
+            /** @brief Sets the ARIA accessibility attributes for this item, managed by this object.
+                @details These are written as attributes on a @c \<g\> element wrapping
+                    the item in SVG output. Has no effect for non-SVG export targets.
+                @warning This is usually managed by the object itself. Call Accessibility() to set
+                    user-defined options.
+                @param attrs The ARIA attributes (e.g., @c aria-label, @c role).
+                @sa UseAutoAccessibility().
+                @returns A self reference.*/
+            GraphItemInfo& AutoAccessibility(wxSVGAttributes attrs)
+                {
+                m_accessibility.m_autoAttributes = std::move(attrs);
+                return *this;
+                }
+
+            /** @brief Sets whether accessibility is automatically managed.
+                @param autoAccess @c true to automatically manage accessibility.
+                @returns A self reference.*/
+            GraphItemInfo& UseAutoAccessibility(const bool autoAccess) noexcept
+                {
+                m_accessibility.m_auto = autoAccess;
                 return *this;
                 }
 
@@ -909,7 +944,7 @@ namespace Wisteria
             double m_originalCanvasScaling{ 1 };
             std::optional<double> m_dpiScaleFactor{ std::nullopt };
             // accessibility
-            wxSVGAttributes m_accessibility;
+            AccessibilityInfo m_accessibility;
             };
 
         /// @brief Abstract class for elements that can be drawn on a canvas.
@@ -1791,15 +1826,68 @@ namespace Wisteria
 
             /// @}
 
+            /** @name Accessibility Functions
+                @brief Functions related to accessibility features for this item.
+                    This includes options such as ARIA attributes in SVG output.*/
+            /// @{
+
             /** @returns The ARIA accessibility attributes for this item.
                 @details These are written as attributes on a @c \<g\> element wrapping
-                    the item in SVG output. Has no effect for non-SVG export targets.
-                @param attrs The ARIA attributes (e.g., @c aria-label, @c role).*/
+                    the item in SVG output. Has no effect for non-SVG export targets.*/
             [[nodiscard]]
-            wxSVGAttributes& GetAccessibility() noexcept
+            wxSVGAttributes& GetAccessibilityAttributes() noexcept
+                {
+                return m_itemInfo.m_accessibility.m_attributes;
+                }
+
+            /** @returns The ARIA accessibility attributes for this item, managed by this object.
+                @details These are written as attributes on a @c \<g\> element wrapping
+                    the item in SVG output. Has no effect for non-SVG export targets.*/
+            [[nodiscard]]
+            wxSVGAttributes& GetAutoAccessibilityAttributes() noexcept
+                {
+                return m_itemInfo.m_accessibility.m_autoAttributes;
+                }
+
+            /** @brief Sets the ARIA accessibility attributes for this item, managed by this object.
+                @param attribs The attributes to apply.
+                @details These are written as attributes on a @c \<g\> element wrapping
+                    the item in SVG output. Has no effect for non-SVG export targets.*/
+            virtual void SetAutoAccessibilityAttributes(const wxSVGAttributes& attribs)
+                {
+                m_itemInfo.m_accessibility.m_autoAttributes = attribs;
+                }
+
+            /** @returns Information about the object's accessibility settings.*/
+            [[nodiscard]]
+            const AccessibilityInfo& GetAccessibilityInfo() const noexcept
                 {
                 return m_itemInfo.m_accessibility;
                 }
+
+            /** @brief Sets the accessibility info for the item.
+                @param info The accessibility info to set.*/
+            void SetAccessibilityInfo(const AccessibilityInfo& info)
+                {
+                m_itemInfo.m_accessibility = info;
+                }
+
+            /** @returns @c true if accessibility is automatically managed.
+                @sa SetAutoAccessibility().*/
+            [[nodiscard]]
+            bool IsUsingAutoAccessibility() const noexcept
+                {
+                return m_itemInfo.m_accessibility.m_auto;
+                }
+
+            /** @brief Sets whether accessibility is automatically managed.
+                @param autoAccess @c true to automatically manage accessibility.*/
+            void SetAutoAccessibility(const bool autoAccess) noexcept
+                {
+                m_itemInfo.m_accessibility.m_auto = autoAccess;
+                }
+
+            /// @}
 
             /// @returns @c true if the object is valid.
             [[nodiscard]]
@@ -1861,6 +1949,20 @@ namespace Wisteria
 
             /// @private
             [[nodiscard]]
+            const wxSVGAttributes& GetAutoAccessibilityAttributes() const noexcept
+                {
+                return m_itemInfo.m_accessibility.m_autoAttributes;
+                }
+
+            /// @private
+            [[nodiscard]]
+            const wxSVGAttributes& GetAccessibilityAttributes() const noexcept
+                {
+                return m_itemInfo.m_accessibility.m_attributes;
+                }
+
+            /// @private
+            [[nodiscard]]
             const wxBrush& GetBrush() const noexcept
                 {
                 return m_itemInfo.m_brush;
@@ -1906,13 +2008,6 @@ namespace Wisteria
             const std::optional<wxRect>& GetClippingRect() const noexcept
                 {
                 return m_itemInfo.m_clippingRect;
-                }
-
-            /// @private
-            [[nodiscard]]
-            const wxSVGAttributes& GetAccessibility() const noexcept
-                {
-                return m_itemInfo.m_accessibility;
                 }
 
             /// @brief Stores an original template string for a property.

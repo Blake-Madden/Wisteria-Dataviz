@@ -576,7 +576,8 @@ void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
     const auto ariaLabelTmpl = item->GetPropertyTemplate(L"accessibility.aria-label");
     const auto roleTmpl = item->GetPropertyTemplate(L"accessibility.role");
     const bool ariaHidden = item->GetPropertyTemplate(L"accessibility.aria-hidden") == L"true";
-    if (!ariaLabelTmpl.empty() || !roleTmpl.empty() || ariaHidden)
+    const bool ariaAuto = item->GetPropertyTemplate(L"accessibility.auto") == L"true";
+    if (!ariaLabelTmpl.empty() || !roleTmpl.empty() || ariaHidden || ariaAuto)
         {
         wxString accessStr{ L"{" };
         if (!ariaLabelTmpl.empty())
@@ -598,6 +599,14 @@ void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
                 accessStr += L", ";
                 }
             accessStr += L"\"aria-hidden\": true";
+            }
+        if (ariaAuto)
+            {
+            if (accessStr.Last() != L'{')
+                {
+                accessStr += L", ";
+                }
+            accessStr += L"\"auto\": true";
             }
         accessStr += L"}";
         itemNode->Add(L"accessibility", wxSimpleJSON::Create(accessStr));

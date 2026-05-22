@@ -34,6 +34,7 @@
 #include "../../graphs/wcurveplot.h"
 #include "../../graphs/win_loss_sparkline.h"
 #include "../../graphs/wordcloud.h"
+#include "accessibilityoptionspanel.h"
 #include <wx/dcbuffer.h>
 
 namespace Wisteria::UI
@@ -511,6 +512,16 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertItemDlg::CreateAccessibilityPage()
+        {
+        if (m_sideBarBook != nullptr)
+            {
+            m_accessibilityPanel = new AccessibilityOptionsPanel(m_sideBarBook);
+            m_sideBarBook->AddPage(m_accessibilityPanel, _(L"Accessibility"), wxID_ANY, false);
+            }
+        }
+
+    //-------------------------------------------
     PageHorizontalAlignment InsertItemDlg::GetHorizontalPageAlignment() const
         {
         switch (m_horizontalAlign)
@@ -600,6 +611,24 @@ namespace Wisteria::UI
         const auto sides = GetOutlineSides();
         item.GetPen() = GetOutlinePen();
         item.GetGraphItemInfo().Outline(sides[0], sides[1], sides[2], sides[3]);
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::ApplyAccessibilityOptions(GraphItems::GraphItemBase& item) const
+        {
+        if (m_accessibilityPanel != nullptr)
+            {
+            m_accessibilityPanel->ApplyToItem(item);
+            }
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::LoadAccessibilityOptions(const GraphItems::GraphItemBase& item)
+        {
+        if (m_accessibilityPanel != nullptr)
+            {
+            m_accessibilityPanel->LoadFromItem(item);
+            }
         }
 
     //-------------------------------------------
@@ -720,6 +749,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertItemDlg::FinalizeControls()
         {
+        CreateAccessibilityPage();
         GetSizer()->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                         wxSizerFlags{}.Expand().Border());
         GetSizer()->SetSizeHints(this);

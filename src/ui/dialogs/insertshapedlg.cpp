@@ -552,6 +552,8 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertShapeDlg::LoadFromShape(const Wisteria::GraphItems::Shape& shape)
         {
+        LoadAccessibilityOptions(shape);
+
         // alignment
         switch (shape.GetPageHorizontalAlignment())
             {

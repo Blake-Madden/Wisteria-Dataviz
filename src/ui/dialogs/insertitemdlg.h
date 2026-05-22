@@ -28,6 +28,8 @@
 
 namespace Wisteria::UI
     {
+    class AccessibilityOptionsPanel;
+
     /// @brief Flags controlling which parts of the "Page Placement" page are visible.
     enum ItemDlgPageOptions : int
         {
@@ -178,6 +180,14 @@ namespace Wisteria::UI
         /// @param item The item to read the options from.
         void LoadPageOptions(const GraphItems::GraphItemBase& item);
 
+        /** @brief Applies the accessibility options to a graph item.
+            @param item The item to configure.*/
+        void ApplyAccessibilityOptions(GraphItems::GraphItemBase& item) const;
+
+        /** @brief Populates the accessibility controls from an existing graph item.
+            @param item The item to read the options from.*/
+        void LoadAccessibilityOptions(const GraphItems::GraphItemBase& item);
+
         /// @brief Selects a specific cell in the grid preview.
         /// @param row The row to select.
         /// @param column The column to select.
@@ -195,6 +205,9 @@ namespace Wisteria::UI
         /// @details Call this explicitly from CreateControls() at the position
         ///     where the "Page Placement" page should appear in the sidebar.
         void CreatePageOptionsPage();
+
+        /** @brief Adds the "Accessibility" sidebar page.*/
+        void CreateAccessibilityPage();
 
         /// @brief Adds OK/Cancel buttons and finalizes layout.
         /// @details Must be called after all sidebar pages have been added.
@@ -262,6 +275,7 @@ namespace Wisteria::UI
         const ReportBuilder* m_reportBuilder{ nullptr };
         SideBarBook* m_sideBarBook{ nullptr };
         wxPanel* m_gridPanel{ nullptr };
+        AccessibilityOptionsPanel* m_accessibilityPanel{ nullptr };
 
         size_t m_rows{ 1 };
         size_t m_columns{ 1 };
