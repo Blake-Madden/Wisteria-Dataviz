@@ -36,17 +36,17 @@ namespace Wisteria::UI
         /// @brief Describes a single block within a scale.
         struct BlockInfo
             {
-            wxString m_label;
-            double m_length{ 10 };
-            wxColour m_color{ *wxGREEN };
+            wxString m_label;             ///< The label for the block.
+            double m_length{ 10 };        ///< The length (score range) of the block.
+            wxColour m_color{ *wxGREEN }; ///< The color of the block.
             };
 
         /// @brief Describes a complete scale (a stack of colored blocks).
         struct ScaleInfo
             {
-            wxString m_header;
-            std::optional<double> m_startPosition;
-            std::vector<BlockInfo> m_blocks;
+            wxString m_header;                     ///< The header for the scale.
+            std::optional<double> m_startPosition; ///< The start position of the scale.
+            std::vector<BlockInfo> m_blocks;       ///< The blocks within the scale.
             };
 
         /** @brief Constructor.

@@ -87,21 +87,27 @@ class AppSettings
         }
 
     /// @brief Accesses print orientation (wxPORTRAIT or wxLANDSCAPE).
+    /// @returns The print orientation.
     [[nodiscard]]
     int GetPrintOrientation() const noexcept
         {
         return m_printOrientation;
         }
 
+    /// @brief Sets the print orientation.
+    /// @param orientation The print orientation (wxPORTRAIT or wxLANDSCAPE).
     void SetPrintOrientation(const int orientation) noexcept { m_printOrientation = orientation; }
 
     /// @brief Accesses paper ID (wxPaperSize).
+    /// @returns The paper ID.
     [[nodiscard]]
     wxPaperSize GetPaperId() const noexcept
         {
         return m_paperId;
         }
 
+    /// @brief Sets the paper ID.
+    /// @param paperId The paper ID (wxPaperSize).
     void SetPaperId(const wxPaperSize paperId) noexcept { m_paperId = paperId; }
 
     // SVG export options

@@ -583,7 +583,7 @@ namespace Wisteria
 
         /// @brief Sets the subject of the report.
         /// @param subject The new subject.
-        void SetSubject(const wxString& keywords) { m_subject = keywords; }
+        void SetSubject(const wxString& subject) { m_subject = subject; }
 
         /// @returns The keywords of the report.
         [[nodiscard]]

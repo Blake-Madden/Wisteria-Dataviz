@@ -1052,6 +1052,7 @@ EXCLUDE                = ../../src/easyexif \
                          ../../build \
                          ../../src/util/xml_format.h \
                          ../../src/util/xml_format.cpp \
+                         ../../src/wxpdfdoc \
                          ../../src/wxSimpleJSON \
                          ../../src/wxStartPage \
                          ../../src/CRCpp \

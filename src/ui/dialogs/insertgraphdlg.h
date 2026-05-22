@@ -95,7 +95,8 @@ namespace Wisteria::UI
             @param pos The screen position.
             @param size The window size.
             @param style The window style.
-            @param editMode Whether the item is being inserted or edited.*/
+            @param editMode Whether the item is being inserted or edited.
+            @param options The options for which sections to include in the dialog.*/
         InsertGraphDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                        const wxString& caption, wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,

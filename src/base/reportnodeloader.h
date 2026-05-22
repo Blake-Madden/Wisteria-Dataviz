@@ -145,6 +145,7 @@ namespace Wisteria
                                   const wxSimpleJSON::Ptr_t& boldNode) const;
 
         /** @brief Applies column borders to a table.
+            @param table The table to format.
             @param bordersNode The JSON node for column borders.*/
         void ApplyTableColumnBorders(std::shared_ptr<Graphs::Table>& table,
                                      const wxSimpleJSON::Ptr_t& bordersNode) const;
@@ -162,11 +163,13 @@ namespace Wisteria
                                 const wxSimpleJSON::Ptr_t& colorNode) const;
 
         /** @brief Applies row boldness to a table.
+            @param table The table to format.
             @param boldNode The JSON node for row bolding.*/
         void ApplyTableRowBold(std::shared_ptr<Graphs::Table>& table,
                                const wxSimpleJSON::Ptr_t& boldNode) const;
 
         /** @brief Applies row borders to a table.
+            @param table The table to format.
             @param bordersNode The JSON node for row borders.*/
         void ApplyTableRowBorders(std::shared_ptr<Graphs::Table>& table,
                                   const wxSimpleJSON::Ptr_t& bordersNode) const;

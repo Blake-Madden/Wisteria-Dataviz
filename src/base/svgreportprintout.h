@@ -58,6 +58,8 @@ namespace Wisteria
         ///     for the SVG dimensions.
         bool m_useGlobalPrintSettings{ true };
 
+        /// @brief Whether to include any interactive features.
+        /// @returns @c true if any interactive features are enabled.
         [[nodiscard]]
         bool HasInteractiveFeatures() const noexcept
             {
@@ -73,6 +75,8 @@ namespace Wisteria
             }
 
         /// @brief Enables/disables smooth transitions.
+        /// @param include @c true to include smooth transitions.
+        /// @returns A reference to this object.
         SVGReportOptions& Transitions(bool include)
             {
             m_includeTransitions = include;
@@ -80,13 +84,17 @@ namespace Wisteria
             }
 
         /// @brief How the pages are organized.
-        SVGReportOptions& Highlighting(PageLayout layout)
+        /// @param layout The page layout.
+        /// @returns A reference to this object.
+        SVGReportOptions& Layout(PageLayout layout)
             {
             m_layout = layout;
             return *this;
             }
 
         /// @brief Enables/disables interactive highlighting.
+        /// @param include @c true to include interactive highlighting.
+        /// @returns A reference to this object.
         SVGReportOptions& Highlighting(bool include)
             {
             m_includeHighlighting = include;
@@ -94,6 +102,8 @@ namespace Wisteria
             }
 
         /// @brief Enables/disables the layout options.
+        /// @param include @c true to include layout options.
+        /// @returns A reference to this object.
         SVGReportOptions& LayoutOptions(bool include)
             {
             m_includeLayoutOptions = include;
@@ -101,6 +111,8 @@ namespace Wisteria
             }
 
         /// @brief Enables/disables the dark-mode toggle.
+        /// @param include @c true to include the dark-mode toggle.
+        /// @returns A reference to this object.
         SVGReportOptions& DarkModeToggle(bool include)
             {
             m_includeDarkModeToggle = include;
@@ -108,6 +120,8 @@ namespace Wisteria
             }
 
         /// @brief Enables/disables slideshow navigation.
+        /// @param include @c true to include slideshow navigation.
+        /// @returns A reference to this object.
         SVGReportOptions& Slideshow(bool include)
             {
             m_includeSlideshow = include;
@@ -115,6 +129,8 @@ namespace Wisteria
             }
 
         /// @brief Enables/disables the page shadow.
+        /// @param include @c true to include a page shadow.
+        /// @returns A reference to this object.
         SVGReportOptions& PageShadow(bool include)
             {
             m_includePageShadow = include;
@@ -122,6 +138,8 @@ namespace Wisteria
             }
 
         /// @brief Sets the theme color.
+        /// @param color The theme color.
+        /// @returns A reference to this object.
         SVGReportOptions& ThemeColor(const wxColour& color)
             {
             m_themeColor = color;
@@ -129,6 +147,8 @@ namespace Wisteria
             }
 
         /// @brief Sets a uniform page size.
+        /// @param size The page size.
+        /// @returns A reference to this object.
         SVGReportOptions& PageSize(const wxSize& size)
             {
             m_pageSize = size;
@@ -136,6 +156,8 @@ namespace Wisteria
             }
 
         /// @brief Sets whether to use global print settings for the SVG dimensions.
+        /// @param use @c true to use global print settings.
+        /// @returns A reference to this object.
         SVGReportOptions& UseGlobalPrintSettings(bool use)
             {
             m_useGlobalPrintSettings = use;
