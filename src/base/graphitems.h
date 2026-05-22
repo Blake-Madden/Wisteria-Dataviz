@@ -1850,13 +1850,9 @@ namespace Wisteria
                 }
 
             /** @brief Sets the ARIA accessibility attributes for this item, managed by this object.
-                @param attribs The attributes to apply.
-                @details These are written as attributes on a @c \<g\> element wrapping
-                    the item in SVG output. Has no effect for non-SVG export targets.*/
-            virtual void SetAutoAccessibilityAttributes(const wxSVGAttributes& attribs)
-                {
-                m_itemInfo.m_accessibility.m_autoAttributes = attribs;
-                }
+                @details Default implementation does nothing.
+                    Derived classes should overload this.*/
+            virtual void SetAutoAccessibilityAttributes() {}
 
             /** @returns Information about the object's accessibility settings.*/
             [[nodiscard]]
@@ -2264,6 +2260,36 @@ namespace Wisteria
                     align the axes of multiple plots.
                 @param pt The top point to constrain the content into.*/
             void SetContentRight(const std::optional<wxCoord>& pt) noexcept { m_contentRight = pt; }
+
+            /** @brief Appends text to an accessibility string buffer,
+                    removing formatting characters.
+                @details This is a helper method used when building an `AriaLabel` string.
+                    It appends the provided `text` to the `buffer` (preceded by `separator`),
+                    while converting newlines, carriage returns,
+                    and tabs to spaces to ensure screen readers read the text clearly.
+                @param buffer The string buffer to append to.
+                @param text The text to append to the buffer. If empty, nothing is appended.
+                @param separator The separator to insert before the text (e.g., ", " or ": ").*/
+            void AddAccessibilityAttribute(wxString& buffer, const wxString& text,
+                                           const wxString& separator)
+                {
+                if (!text.empty())
+                    {
+                    buffer.reserve(buffer.length() + separator.length() + text.length());
+                    buffer += separator;
+                    for (auto& ch : text)
+                        {
+                        if (ch == L'\n' || ch == L'\r' || ch == L'\t')
+                            {
+                            buffer += L' ';
+                            }
+                        else
+                            {
+                            buffer += ch;
+                            }
+                        }
+                    }
+                }
 
           private:
             /** @brief Sets the original scaling of the element when it was first

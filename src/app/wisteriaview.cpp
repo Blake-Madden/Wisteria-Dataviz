@@ -2526,6 +2526,17 @@ void WisteriaView::PlaceGraphWithLegend(
 
     if (legend != nullptr)
         {
+        // If parent graph has dynamically built screen reader description, then it will
+        // be explaining anything that the legend would, hence making this legend redundant;
+        // hide it.
+        // Extended Chernoff faces legend is the exception, it provided additional information
+        // that the plot can't describe.
+        if (plot->IsUsingAutoAccessibility() &&
+            !legend->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
+            {
+            legend->GetAutoAccessibilityAttributes() = wxSVGAttributes{}.AriaHidden();
+            }
+
         auto* legendLabel = dynamic_cast<Wisteria::GraphItems::Label*>(legend.get());
         if (legendLabel != nullptr)
             {
@@ -7173,6 +7184,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
             {
             plot->SetPropertyTemplate(L"variables.group-2", dlg.GetGroup2Variable());
             }
+        plot->SetAutoAccessibilityAttributes();
 
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
@@ -7323,6 +7335,8 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
                 break;
                 }
             }
+
+        plot->SetAutoAccessibilityAttributes();
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldPie = dynamic_cast<const Wisteria::Graphs::PieChart*>(&graph);

@@ -4532,4 +4532,112 @@ namespace Wisteria::Graphs
         AdjustLegendSettings(*legend, hint);
         return legend;
         }
+
+    //----------------------------------------------------------------
+    void PieChart::SetAutoAccessibilityAttributes()
+        {
+        wxString label = IsIncludingDonutHole() ? _(L"A donut chart") : _(L"A pie chart");
+        if (GetPieStyle() != PieStyle::None)
+            {
+            wxString styleName;
+            switch (GetPieStyle())
+                {
+            case PieStyle::Clockface:
+                styleName = _(L"clock");
+                break;
+            case PieStyle::CheesePizza:
+                styleName = _(L"cheese pizza");
+                break;
+            case PieStyle::PepperoniPizza:
+                styleName = _(L"pepperoni pizza");
+                break;
+            case PieStyle::HawaiianPizza:
+                styleName = _(L"Hawaiian pizza");
+                break;
+            case PieStyle::CoffeeRing:
+                styleName = _(L"coffee cup ring");
+                break;
+            case PieStyle::Venus:
+                styleName = _(L"Venus symbol");
+                break;
+            case PieStyle::Mars:
+                styleName = _(L"Mars symbol");
+                break;
+            case PieStyle::ChocolateChipCookie:
+                styleName = _(L"chocolate chip cookie");
+                break;
+            default:
+                break;
+                }
+            if (!styleName.empty())
+                {
+                label += wxString::Format(_(L" in the style of a %s"), styleName);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        if (IsIncludingDonutHole())
+            {
+            AddAccessibilityAttribute(label, GetDonutHoleLabel().GetText(), L". ");
+            }
+
+        auto formatSlice = [](const SliceInfo& slice)
+        {
+            const auto percStr = wxNumberFormatter::ToString(
+                slice.m_percent * 100, ((slice.m_percent * 100) < 1) ? 2 : 0,
+                wxNumberFormatter::Style::Style_NoTrailingZeroes);
+            return wxString::Format(
+                _(L"%s: %s (%s%%)"), slice.GetGroupLabel(),
+                wxNumberFormatter::ToString(slice.m_value, 0, Settings::GetDefaultNumberFormat()),
+                percStr);
+        };
+
+        if (GetInnerPie().size() > 0)
+            {
+            label +=
+                L". " + wxString::Format(_(L"Outer ring (%zu slices): "), GetOuterPie().size());
+            for (const auto& slice : GetOuterPie())
+                {
+                label += formatSlice(slice) + L", ";
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+
+            label +=
+                L". " + wxString::Format(_(L"Inner ring (%zu slices): "), GetInnerPie().size());
+            for (const auto& slice : GetInnerPie())
+                {
+                label += formatSlice(slice) + L", ";
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+            }
+        else
+            {
+            label += L". " + wxString::Format(_(L"%zu slices: "), GetOuterPie().size());
+            for (const auto& slice : GetOuterPie())
+                {
+                label += formatSlice(slice) + L", ";
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs
