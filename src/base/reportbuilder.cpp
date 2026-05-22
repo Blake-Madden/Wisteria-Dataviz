@@ -6136,7 +6136,7 @@ namespace Wisteria
 
             if (!attrs.IsEmpty())
                 {
-                item.GetAccessibility() = (std::move(attrs));
+                item.GetAccessibilityAttributes() = std::move(attrs);
                 }
             }
         }

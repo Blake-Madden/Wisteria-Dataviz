@@ -673,6 +673,76 @@ namespace Wisteria::Graphs
                              const wxColour& hairColor, HairStyleFemale hairStyleFemale,
                              HairStyleMale hairStyleMale, Gender gender);
 
+        /// @brief Internal hair-style kind used by the drawing helpers.
+        /// @details Collapses the gender-specific @c HairStyleFemale and @c HairStyleMale
+        ///     enums to a single kind so the drawing branches don't need to be duplicated
+        ///     per gender.
+        /// @internal
+        enum class HairStyleKind
+            {
+            Bob,           // female only
+            Pixie,         // female only
+            Bun,           // female only
+            PartiallyBald, // male only
+            BaldCombOver,  // male only
+            CombOver,      // male only
+            LongStraight,  // shared
+            HighTopFade,   // shared
+            FlatTop,       // shared
+            Curly,         // shared
+            LongCurly,     // shared
+            Bald           // shared
+            };
+
+        /// @brief Shared geometry computed once at the top of @c DrawFace and passed to
+        ///     each drawing helper.
+        struct FaceGeometry
+            {
+            double m_cx{ 0.0 };
+            double m_cy{ 0.0 };
+            double m_baseRadius{ 0.0 };
+            double m_faceWidth{ 0.0 };
+            double m_faceHeight{ 0.0 };
+            double m_mouthY{ 0.0 };
+            double m_mouthWidthVal{ 0.0 };
+            wxColour m_faceCol;
+            wxPen m_outlinePen;
+            };
+
+        [[nodiscard]]
+        static HairStyleKind ToHairStyleKind(HairStyleFemale hsFemale, HairStyleMale hsMale,
+                                             Gender gender) noexcept;
+
+        [[nodiscard]]
+        static FaceGeometry ComputeFaceGeometry(const wxRect& rect, const FaceFeatures& features,
+                                                const wxColour& faceColorLighter,
+                                                const wxColour& faceColorDarker,
+                                                const wxColour& outlineColor);
+
+        static void DrawFaceShape(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                  const FaceFeatures& features);
+
+        static void DrawCheeks(wxGraphicsContext* gc, const FaceGeometry& geom);
+
+        static void DrawFacialHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                   const FaceFeatures& features, const wxColour& outlineColor,
+                                   const wxColour& hairColor);
+
+        static void DrawHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                             const FaceFeatures& features, const wxColour& hairColor,
+                             HairStyleKind hairStyle);
+
+        static void DrawEyes(wxGraphicsContext* gc, const FaceGeometry& geom,
+                             const FaceFeatures& features, const wxColour& outlineColor,
+                             const wxColour& eyeColor, Gender gender);
+
+        static void DrawNose(wxGraphicsContext* gc, const FaceGeometry& geom,
+                             const FaceFeatures& features);
+
+        static void DrawMouth(wxGraphicsContext* gc, const FaceGeometry& geom,
+                              const FaceFeatures& features, const wxColour& outlineColor,
+                              const wxColour& lipstickColor, Gender gender);
+
         /// @brief Normalizes a value to the [0,1] range.
         /// @param value The raw value.
         /// @param minVal The minimum value in the column.
