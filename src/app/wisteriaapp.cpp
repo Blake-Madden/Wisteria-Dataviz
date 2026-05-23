@@ -9,6 +9,7 @@
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
+#include <array>
 #include <wx/aboutdlg.h>
 #include <wx/stdpaths.h>
 
@@ -111,6 +112,11 @@ void WisteriaApp::LoadInterface()
         GetAppSettings()->GetAppWindowSize(), wxDEFAULT_FRAME_STYLE));
 
     GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()));
+
+    const std::array<wxAcceleratorEntry, 1> entries = {
+        wxAcceleratorEntry(wxACCEL_CTRL, L'O', wxID_OPEN)
+    };
+    GetMainFrame()->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
     // add start page
     wxArrayString mruFiles;

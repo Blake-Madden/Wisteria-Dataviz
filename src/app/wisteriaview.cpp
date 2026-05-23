@@ -49,6 +49,7 @@
 #include "../ui/dialogs/svgexportdlg.h"
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
+#include <array>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
 
@@ -72,6 +73,13 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     m_frame = new wxDocChildFrame(doc, this, wxGetApp().GetMainFrame(), wxID_ANY, title,
                                   wxDefaultPosition, windowSize, wxDEFAULT_FRAME_STYLE);
+
+    const std::array<wxAcceleratorEntry, 3> entries = {
+        wxAcceleratorEntry(wxACCEL_CTRL, L'O', wxID_OPEN),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'S', ID_SAVE_PROJECT),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'P', wxID_PRINT)
+    };
+    m_frame->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
     // set the icon
     const auto appSvg = wxGetApp().GetResourceManager().GetSVG(L"wisteria.svg");
@@ -119,21 +127,31 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPrintAll, this, wxID_PRINT);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
 
     // bind SVG export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
 
     // bind PDF export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
 
     // bind project settings button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnProjectSettings, this,
                   ID_PROJECT_SETTINGS);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnProjectSettings, this, ID_PROJECT_SETTINGS);
 
     // bind save button
     m_frame->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { GetDocument()->Save(); },
+        ID_SAVE_PROJECT);
+    m_frame->Bind(
+        wxEVT_MENU,
         [this]([[maybe_unused]]
                wxCommandEvent& event) { GetDocument()->Save(); },
         ID_SAVE_PROJECT);
