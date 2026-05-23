@@ -76,6 +76,17 @@ In `src/base/reportenumconvert.h`, add string mappings in the `ConvertIcon` func
 { L"hawaiian-pizza", Icons::IconShape::HawaiianPizza }
 ```
 
+Accessibility Name
+=============================
+
+In `src/base/shapes.cpp`, add a `case` to `ShapeInfo::GetReadableShapeName()` so that screen
+readers and other accessibility descriptions can refer to the shape by a natural-language label:
+
+```cpp
+case Icons::IconShape::HawaiianPizza:
+    return _(L"Hawaiian pizza");
+```
+
 UI Support
 =============================
 
@@ -99,7 +110,8 @@ Summary of Files to Modify
 
 1. `src/base/icons.h` - Add enum value(s) to `IconShape`
 2. `src/base/shapes.h` - Declare draw function in `ShapeRenderer`
-3. `src/base/shapes.cpp` - Register in `shapeMap` and implement draw function
+3. `src/base/shapes.cpp` - Register in `shapeMap`, implement draw function,
+   and add a `case` to `ShapeInfo::GetReadableShapeName()`
 4. `src/base/reportenumconvert.h` - Add string mapping in `ConvertIcon`
 5. `src/ui/dialogs/insertshapedlg.cpp` - Add to the shape selection dialog
 6. `docs/syntax-manual/graphs-properties.qmd` - Add to icon list in documentation

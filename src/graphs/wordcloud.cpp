@@ -416,4 +416,45 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                 }
             }
         }
+    //----------------------------------------------------------------
+    void WordCloud::SetAutoAccessibilityAttributes()
+        {
+        wxString label = _(L"A word cloud");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // list the top 10 most frequently occurring words (highest to lowest)
+        const size_t topN = std::min(m_words.size(), size_t{ 10 });
+        if (topN > 0)
+            {
+            label += L". " + wxString::Format(_(L"Top %zu words: "), topN);
+            // words are sorted ascending by frequency, so iterate backwards
+            for (const auto& word : m_words | std::views::reverse | std::views::take(topN))
+                {
+                const auto percStr = wxNumberFormatter::ToString(
+                    word.m_frequency * 100, ((word.m_frequency * 100) < 1) ? 2 : 0,
+                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                label += wxString::Format(
+                    /* TRANSLATORS: word cloud accessibility description.
+                       1st %s is the word, 2nd %s is the percentage. */
+                    _(L"%s (%s%%)"), wxString{ word.m_word }, percStr);
+                label += L", ";
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
     } // namespace Wisteria::Graphs

@@ -1058,6 +1058,18 @@ namespace Wisteria
                 return { 84, 84, 84, 175 };
                 }
 
+            /// @returns @c true if a brush is effectively empty
+            ///     (i.e., would not paint anything visible).
+            /// @details A brush is considered empty if it is invalid, uses a transparent
+            ///     style, has no valid color, or its color is fully transparent.
+            /// @param brush The brush to inspect.
+            [[nodiscard]]
+            static bool IsBrushEmpty(const wxBrush& brush) noexcept
+                {
+                return !brush.IsOk() || brush.GetStyle() == wxBRUSHSTYLE_TRANSPARENT ||
+                       !brush.GetColour().IsOk() || brush.GetColour().IsTransparent();
+                }
+
             /** @brief Sets the point where the box will be anchored.
                 @note Call SetAnchoring() to control what this point means in relation
                     to how it is anchored. The default is for this point to be the center point.

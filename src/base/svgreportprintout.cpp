@@ -72,6 +72,16 @@ wxString Wisteria::SVGReportPrintout::GenerateDarkModeFillReplacements(std::wstr
 Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canvases,
                                                SVGReportOptions options)
     {
+    // refresh auto-generated accessibility text on every page before rendering,
+    // so descriptions reflect each canvas's current state
+    for (auto* canvas : canvases)
+        {
+        if (canvas != nullptr)
+            {
+            canvas->ApplyAutoAccessibilityAttributes();
+            }
+        }
+
     // collect per-canvas paper sizes for rendering
     std::vector<wxSize> pageSizes;
     pageSizes.reserve(canvases.size());

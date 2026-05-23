@@ -366,12 +366,31 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //--------------------------------------------------
+    void Canvas::ApplyAutoAccessibilityAttributes()
+        {
+        for (auto& row : m_fixedObjects)
+            {
+            for (auto& obj : row)
+                {
+                if (obj != nullptr)
+                    {
+                    obj->SetAutoAccessibilityAttributes();
+                    }
+                }
+            }
+        }
+
+    //--------------------------------------------------
     bool Canvas::Save(const wxFileName& filePath, const UI::ImageExportOptions& options,
                       const PdfExportOptions& pdfOptions)
         {
         // immediately recalc everything when we change the canvas size
         const CanvasResizeDelayChanger resizeDelay{ *this };
         DelayResizing(false);
+
+        // refresh auto-generated accessibility text so the export reflects the
+        // canvas's current state even if no items have been edited recently
+        ApplyAutoAccessibilityAttributes();
 
         // create the folder to the filepath, if necessary
         wxFileName::Mkdir(filePath.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);

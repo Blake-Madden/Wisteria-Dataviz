@@ -272,4 +272,94 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
 
         return legend;
         }
+
+    //-------------------------------------------------------------
+    void WaffleChart::SetAutoAccessibilityAttributes()
+        {
+        wxString label = _(L"A waffle chart");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // group shapes that are drawn by (icon, fill color, fill state) and count them.
+        // empty/transparent fills are kept as their own group so they can be called out --
+        // they often indicate missing/non-applicable/censored observations.
+        struct ShapeGroup
+            {
+            Icons::IconShape m_shape;
+            wxColour m_fillColor;
+            bool m_isEmpty;
+            size_t m_count;
+            };
+
+        std::vector<ShapeGroup> groups;
+        for (const auto& row : m_matrix)
+            {
+            for (const auto& shp : row)
+                {
+                const auto color = shp.GetBrush().IsOk() ? shp.GetBrush().GetColour() : wxColour{};
+                const bool isEmpty = GraphItems::GraphItemBase::IsBrushEmpty(shp.GetBrush());
+                // look for an existing group that matches this shape's icon and fill state.
+                // two empty shapes of the same icon collapse into one group regardless of
+                // their (invisible) brush colors; filled shapes must also match by color.
+                const auto foundPos =
+                    std::ranges::find_if(groups,
+                                         [&shp, &color, isEmpty](const auto& grp) noexcept
+                                         {
+                                             return grp.m_shape == shp.GetShape() &&
+                                                    grp.m_isEmpty == isEmpty &&
+                                                    // fill color is irrelevant when empty
+                                                    (isEmpty || grp.m_fillColor == color);
+                                         });
+                if (foundPos != groups.end())
+                    {
+                    ++foundPos->m_count;
+                    }
+                else
+                    {
+                    groups.emplace_back(shp.GetShape(), color, isEmpty, 1);
+                    }
+                }
+            }
+
+        if (!groups.empty())
+            {
+            label += L". ";
+            for (const auto& grp : groups)
+                {
+                const wxString shapeName = GraphItems::ShapeInfo::GetReadableShapeName(grp.m_shape);
+                if (grp.m_isEmpty)
+                    {
+                    label += wxString::Format(
+                        /* TRANSLATORS: waffle chart accessibility description for unfilled
+                           cells. 1st %zu is the count, 2nd %s is the shape name
+                           (e.g., male). */
+                        _(L"%zu empty %s icons"), grp.m_count, shapeName);
+                    }
+                else
+                    {
+                    label += wxString::Format(
+                        /* TRANSLATORS: waffle chart accessibility description for filled
+                           cells. 1st %zu is count, 2nd %s is shape name,
+                           3rd %s is color name. */
+                        _(L"%zu %s icons filled in %s"), grp.m_count, shapeName,
+                        Colors::ColorLookup::GetReadableColorName(grp.m_fillColor));
+                    }
+                label += L", ";
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

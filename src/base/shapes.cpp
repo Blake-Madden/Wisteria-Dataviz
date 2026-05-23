@@ -392,4 +392,140 @@ namespace Wisteria::GraphItems
             dc.DrawBitmap(scaledImg, rect.GetTopLeft());
             }
         }
+
+    //---------------------------------------------------
+    wxString ShapeInfo::GetReadableShapeName(const Icons::IconShape shape)
+        {
+        switch (shape)
+            {
+        case Icons::IconShape::Circle:
+            return _(L"circle");
+        case Icons::IconShape::Square:
+            return _(L"square");
+        case Icons::IconShape::TriangleUpward:
+            return _(L"upward triangle");
+        case Icons::IconShape::TriangleDownward:
+            return _(L"downward triangle");
+        case Icons::IconShape::TriangleRight:
+            return _(L"right-pointing triangle");
+        case Icons::IconShape::TriangleLeft:
+            return _(L"left-pointing triangle");
+        case Icons::IconShape::Diamond:
+            return _(L"diamond");
+        case Icons::IconShape::Plus:
+            return _(L"plus sign");
+        case Icons::IconShape::Asterisk:
+            return _(L"asterisk");
+        case Icons::IconShape::Hexagon:
+            return _(L"hexagon");
+        case Icons::IconShape::Man:
+            return _(L"male");
+        case Icons::IconShape::Woman:
+            return _(L"female");
+        case Icons::IconShape::BusinessWoman:
+            return _(L"businesswoman");
+        case Icons::IconShape::Heart:
+            return _(L"heart");
+        case Icons::IconShape::ImmaculateHeart:
+            return _(L"Immaculate Heart");
+        case Icons::IconShape::ImmaculateHeartWithSword:
+            return _(L"Immaculate Heart with sword");
+        case Icons::IconShape::Star:
+            return _(L"star");
+        case Icons::IconShape::Sun:
+            return _(L"sun");
+        case Icons::IconShape::Flower:
+            return _(L"flower");
+        case Icons::IconShape::Sunflower:
+            return _(L"sunflower");
+        case Icons::IconShape::FallLeaf:
+            return _(L"fall leaf");
+        case Icons::IconShape::Apple:
+            return _(L"apple");
+        case Icons::IconShape::GrannySmithApple:
+            return _(L"Granny Smith apple");
+        case Icons::IconShape::Snowflake:
+            return _(L"snowflake");
+        case Icons::IconShape::Pumpkin:
+            return _(L"pumpkin");
+        case Icons::IconShape::JackOLantern:
+            return _(L"jack-o'-lantern");
+        case Icons::IconShape::Butterfly:
+            return _(L"butterfly");
+        case Icons::IconShape::Flame:
+            return _(L"flame");
+        case Icons::IconShape::Sword:
+            return _(L"sword");
+        case Icons::IconShape::Pill:
+            return _(L"pill");
+        case Icons::IconShape::IVBag:
+            return _(L"IV bag");
+        case Icons::IconShape::ColdThermometer:
+            return _(L"cold thermometer");
+        case Icons::IconShape::HotThermometer:
+            return _(L"hot thermometer");
+        case Icons::IconShape::GraduationCap:
+            return _(L"graduation cap");
+        case Icons::IconShape::Book:
+            return _(L"book");
+        case Icons::IconShape::Newspaper:
+            return _(L"newspaper");
+        case Icons::IconShape::Tire:
+            return _(L"tire");
+        case Icons::IconShape::Car:
+            return _(L"car");
+        case Icons::IconShape::Office:
+            return _(L"office building");
+        case Icons::IconShape::Factory:
+            return _(L"factory");
+        case Icons::IconShape::House:
+            return _(L"house");
+        case Icons::IconShape::Barn:
+            return _(L"barn");
+        case Icons::IconShape::Farm:
+            return _(L"farm");
+        case Icons::IconShape::HundredDollarBill:
+            return _(L"hundred dollar bill");
+        case Icons::IconShape::Monitor:
+            return _(L"computer monitor");
+        case Icons::IconShape::Clock:
+            return _(L"clock");
+        case Icons::IconShape::Ruler:
+            return _(L"ruler");
+        case Icons::IconShape::Blackboard:
+            return _(L"blackboard");
+        case Icons::IconShape::Tractor:
+            return _(L"tractor");
+        case Icons::IconShape::CheesePizza:
+            return _(L"cheese pizza");
+        case Icons::IconShape::PepperoniPizza:
+            return _(L"pepperoni pizza");
+        case Icons::IconShape::HawaiianPizza:
+            return _(L"Hawaiian pizza");
+        case Icons::IconShape::ChocolateChipCookie:
+            return _(L"chocolate chip cookie");
+        case Icons::IconShape::CoffeeShopCup:
+            return _(L"coffee cup");
+        case Icons::IconShape::Tack:
+            return _(L"tack");
+        case Icons::IconShape::Banner:
+            return _(L"banner");
+        case Icons::IconShape::GoRoadSign:
+            return _(L"go road sign");
+        case Icons::IconShape::WarningRoadSign:
+            return _(L"warning road sign");
+        case Icons::IconShape::LocationMarker:
+            return _(L"location marker");
+        case Icons::IconShape::CurvingRoad:
+            return _(L"curving road");
+        case Icons::IconShape::CrossedOut:
+            return _(L"crossed-out");
+        case Icons::IconShape::CrescentTop:
+        case Icons::IconShape::CrescentBottom:
+        case Icons::IconShape::CrescentRight:
+            return _(L"crescent");
+        default:
+            return _(L"shape");
+            }
+        }
     } // namespace Wisteria::GraphItems

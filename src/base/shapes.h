@@ -806,6 +806,17 @@ namespace Wisteria::GraphItems
             return (iter != m_propertyTemplates.cend()) ? iter->second : wxString{};
             }
 
+        /** @brief Returns a short, human-readable, translatable name for an icon shape.
+            @details Intended for accessibility descriptions (e.g., screen reader text)
+                where a shape needs to be referred to by a natural-language label.\n
+                Returns a generic "shape" for shapes that don't have a meaningful
+                spoken name (e.g., separators, gradients).
+            @param shape The shape to describe.
+            @returns The translatable, lower-case name of the shape
+                (e.g., "male", "hexagon").*/
+        [[nodiscard]]
+        static wxString GetReadableShapeName(Icons::IconShape shape);
+
       private:
         Icons::IconShape m_shape{ Icons::IconShape::Square };
         wxSize m_sizeDIPs{ 16, 16 };

@@ -755,6 +755,16 @@ namespace Wisteria
                 safe_divide<double>(GetCanvasRectDIPs().GetWidth(), GetCanvasMinWidthDIPs()), 1.0);
             }
 
+        /// @brief Refreshes the auto-generated accessibility attributes
+        ///     (e.g., ARIA labels) for every fixed object on the canvas.
+        /// @details Walks the fixed-object grid and invokes
+        ///     @c GraphItemBase::SetAutoAccessibilityAttributes() on each item.
+        ///     Items that don't override the virtual are unaffected.\n
+        ///     Called automatically prior to saving/exporting, so that descriptions
+        ///     reflect the canvas's current state even if items haven't been edited
+        ///     since they were created.
+        void ApplyAutoAccessibilityAttributes();
+
         /// @brief Saves the canvas as an image.
         /// @param filePath The file path of the image to save to.
         /// @param options The export options for the image.

@@ -6,6 +6,7 @@ SET(WISTERIA_SRC
     src/base/brushes.cpp
     src/base/canvas.cpp
     src/base/colorbrewer.cpp
+    src/base/colorlookup.cpp
     src/base/colors.cpp
     src/base/commonaxisbuilder.cpp
     src/base/fillableshape.cpp

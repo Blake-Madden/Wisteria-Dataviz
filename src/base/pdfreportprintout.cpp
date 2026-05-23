@@ -21,6 +21,16 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         return;
         }
 
+    // refresh auto-generated accessibility text on every page before rendering,
+    // so descriptions reflect each canvas's current state
+    for (auto* canvas : canvases)
+        {
+        if (canvas != nullptr)
+            {
+            canvas->ApplyAutoAccessibilityAttributes();
+            }
+        }
+
     wxPrintData printData;
     printData.SetOrientation(options.m_paperOrientation);
     printData.SetPaperId(options.m_paperSize);

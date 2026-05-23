@@ -16,6 +16,7 @@
 #include "../base/brushes.h"
 #include "../base/canvas.h"
 #include "../base/colorbrewer.h"
+#include "../base/colorlookup.h"
 #include "../base/image.h"
 #include "../base/lines.h"
 #include "../base/points.h"

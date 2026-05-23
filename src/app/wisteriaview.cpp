@@ -7184,7 +7184,6 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
             {
             plot->SetPropertyTemplate(L"variables.group-2", dlg.GetGroup2Variable());
             }
-        plot->SetAutoAccessibilityAttributes();
 
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
@@ -7335,8 +7334,6 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
                 break;
                 }
             }
-
-        plot->SetAutoAccessibilityAttributes();
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldPie = dynamic_cast<const Wisteria::Graphs::PieChart*>(&graph);
