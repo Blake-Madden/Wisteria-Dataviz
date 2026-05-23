@@ -284,6 +284,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         wxString label{ _(L"A multi-series line plot") };
         AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
         AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
 
         const auto xColumns = GetXColumns();
 

@@ -246,6 +246,11 @@ namespace Wisteria::Graphs
         /// @brief Removes all embedded annotation objects from the plot.
         void ClearAnnotations() noexcept { m_embeddedObjects.clear(); }
 
+        /** @name Accessibility Functions
+            @brief Functions that build human-readable descriptions of plot elements
+                for inclusion in ARIA labels.*/
+        /// @{
+
         /** @brief Returns a human-readable description of all annotations on the plot,
                 suitable for inclusion in an accessibility (ARIA) label.
             @details Each annotation's text is listed, followed by the data coordinates
@@ -277,6 +282,16 @@ namespace Wisteria::Graphs
                 or an empty string if no axes have brackets.*/
         [[nodiscard]]
         wxString GetReadableAxisBrackets() const;
+
+        /** @brief Returns a human-readable description of the visible axes' titles,
+                suitable for inclusion in an accessibility (ARIA) label.
+            @details Only axes that are visible and have non-empty titles are included.
+            @returns A string of the form `"X axis: [title]. Y axis: [title]"`,
+                or an empty string if no visible axis has a title.*/
+        [[nodiscard]]
+        wxString GetReadableAxisTitles() const;
+
+        /// @}
 
         /** @name Title Functions
             @brief Functions related to the titles and caption.*/

@@ -136,6 +136,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         wxString label{ _(L"A line plot") };
         AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
         AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
 
         const auto groupColumn =
             IsUsingGrouping() ? GetGroupColumn() : GetDataset()->GetCategoricalColumns().cend();

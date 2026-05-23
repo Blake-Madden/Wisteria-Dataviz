@@ -1565,6 +1565,38 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    wxString Graph2D::GetReadableAxisTitles() const
+        {
+        wxString output;
+        const auto append = [&output](const wxString& part)
+        {
+            if (!part.empty())
+                {
+                output += (output.empty() ? output : L". ");
+                output += part;
+                }
+        };
+
+        if (GetBottomXAxis().IsShown() && !GetBottomXAxis().GetTitle().GetText().empty())
+            {
+            append(wxString::Format(_(L"X axis: %s"), GetBottomXAxis().GetTitle().GetText()));
+            }
+        if (GetLeftYAxis().IsShown() && !GetLeftYAxis().GetTitle().GetText().empty())
+            {
+            append(wxString::Format(_(L"Y axis: %s"), GetLeftYAxis().GetTitle().GetText()));
+            }
+        if (GetTopXAxis().IsShown() && !GetTopXAxis().GetTitle().GetText().empty())
+            {
+            append(wxString::Format(_(L"Top X axis: %s"), GetTopXAxis().GetTitle().GetText()));
+            }
+        if (GetRightYAxis().IsShown() && !GetRightYAxis().GetTitle().GetText().empty())
+            {
+            append(wxString::Format(_(L"Right Y axis: %s"), GetRightYAxis().GetTitle().GetText()));
+            }
+        return output;
+        }
+
+    //----------------------------------------------------------------
     bool Graph2D::SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)
         {
         if (!IsSelectable())

@@ -157,6 +157,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
         wxString label{ _(L"A W-Curve plot") };
         AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
         AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
 
         const auto groupColumn =
             IsUsingGrouping() ? GetGroupColumn() : GetDataset()->GetCategoricalColumns().cend();
