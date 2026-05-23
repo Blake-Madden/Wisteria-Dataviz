@@ -145,4 +145,108 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             return {};
             }
         }
+
+    //----------------------------------------------------------------
+    void WCurvePlot::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || GetYColumnName().empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A W-Curve plot") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        const auto groupColumn =
+            IsUsingGrouping() ? GetGroupColumn() : GetDataset()->GetCategoricalColumns().cend();
+        const auto xColumns = GetXColumns();
+        const auto yColumn = GetContinuousColumn(GetYColumnName());
+
+        // orient the listener with the time interval sequence before per-group data
+        const auto& topLabels = GetTopXAxis().GetCustomLabels();
+        if (!topLabels.empty())
+            {
+            wxString timeStr;
+            for (const auto& [val, lbl] : topLabels)
+                {
+                timeStr += (timeStr.empty() ? L"" : L", ");
+                timeStr += lbl.GetText();
+                }
+            /* TRANSLATORS: preface for W-Curve accessibility, listing the time intervals in order.
+               %s is a comma-separated list (e.g., "First year, Second year, Third year"). */
+            label += L". " + wxString::Format(_(L"Time intervals: %s"), timeStr);
+            }
+
+        // top axis holds the human-readable time labels (e.g., "First year", "Second year")
+        const auto formatX = [&](const size_t i) -> wxString
+        {
+            const double xVal = GetXValue(i, xColumns);
+            const auto& topLbl = GetTopXAxis().GetCustomLabel(xVal);
+            if (topLbl.IsOk() && !topLbl.GetText().empty())
+                {
+                return topLbl.GetText();
+                }
+            return wxNumberFormatter::ToString(xVal, GetBottomXAxis().GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        // prefer a custom axis label (e.g., "Low", "High") over a raw number
+        const auto formatY = [&](const double yVal) -> wxString
+        {
+            const auto& customLbl = GetLeftYAxis().GetCustomLabel(yVal);
+            if (customLbl.IsOk() && !customLbl.GetText().empty())
+                {
+                return customLbl.GetText();
+                }
+            return wxNumberFormatter::ToString(yVal, GetLeftYAxis().GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        for (const auto& line : GetLines())
+            {
+            wxString pointsStr;
+            size_t pointCount{ 0 };
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+                {
+                if (IsUsingGrouping() && groupColumn->GetValue(i) != line.GetGroupId())
+                    {
+                    continue;
+                    }
+                const double yVal = yColumn->GetValue(i);
+                // non-finite Y marks a gap in the line; skip it
+                if (!std::isfinite(yVal) || !IsXValid(i, xColumns))
+                    {
+                    continue;
+                    }
+                if (!pointsStr.empty())
+                    {
+                    pointsStr += L"; ";
+                    }
+                pointsStr += wxString::Format(_(L"%s at %s"), formatY(yVal), formatX(i));
+                ++pointCount;
+                }
+
+            if (IsUsingGrouping() && !line.GetText().empty())
+                {
+                label +=
+                    L". " + wxString::Format(_(L"%s (%zu points): "), line.GetText(), pointCount);
+                }
+            else
+                {
+                label += L". " + wxString::Format(_(L"%zu points: "), pointCount);
+                }
+            label += pointsStr;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

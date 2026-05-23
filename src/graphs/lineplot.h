@@ -452,6 +452,10 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
 
+        /// @brief Sets the graph's descriptive string for screen readers.
+        /// @details Call this after all data and features have been set.
+        void SetAutoAccessibilityAttributes() override;
+
         /// @returns The pen styles used for the line(s).
         [[nodiscard]]
         const std::shared_ptr<LineStyleScheme>& GetLineStyleScheme() const noexcept

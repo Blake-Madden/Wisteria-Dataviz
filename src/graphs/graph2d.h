@@ -246,6 +246,27 @@ namespace Wisteria::Graphs
         /// @brief Removes all embedded annotation objects from the plot.
         void ClearAnnotations() noexcept { m_embeddedObjects.clear(); }
 
+        /** @brief Returns a human-readable description of all annotations on the plot,
+                suitable for inclusion in an accessibility (ARIA) label.
+            @details Each annotation's text is listed, followed by the data coordinates
+                it points at (formatted using the axes' custom labels where available).
+            @returns A string of the form
+                `"Annotations: [text], pointing at (x, y); ..."`,
+                or an empty string if there are no annotations.*/
+        [[nodiscard]]
+        wxString GetReadableAnnotations() const;
+
+        /** @brief Returns a human-readable description of all reference lines and areas
+                on the plot, suitable for inclusion in an accessibility (ARIA) label.
+            @details Each reference line's label and axis position are listed
+                (formatted using the axis's custom labels where available).
+                Reference areas also include their end position.
+            @returns A string of the form
+                `"Reference lines: [label] at [position]; [label] from [pos1] to [pos2]; ..."`,
+                or an empty string if there are no reference lines or areas.*/
+        [[nodiscard]]
+        wxString GetReadableReferenceLines() const;
+
         /** @name Title Functions
             @brief Functions related to the titles and caption.*/
         /// @{

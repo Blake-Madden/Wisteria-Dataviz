@@ -124,6 +124,10 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
+        /// @brief Sets the graph's descriptive string for screen readers.
+        /// @details Call this after all data and features have been set.
+        void SetAutoAccessibilityAttributes() override;
+
       private:
         void AddLine(const LinePlot::Line& line, const wxString& yColumnName);
         void RecalcSizes(wxDC& dc) final;

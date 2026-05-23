@@ -1379,6 +1379,113 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    wxString Graph2D::GetReadableAnnotations() const
+        {
+        if (GetAnnotations().empty())
+            {
+            return {};
+            }
+
+        // format a data-coordinate pair using axis custom labels (e.g., date strings or
+        // category names) where available, falling back to plain numbers
+        const auto formatCoord = [&](const double x, const double y) -> wxString
+        {
+            const auto& xLbl = GetBottomXAxis().GetCustomLabel(x);
+            const wxString xStr =
+                (xLbl.IsOk() && !xLbl.GetText().empty()) ?
+                    xLbl.GetText() :
+                    wxNumberFormatter::ToString(x, GetBottomXAxis().GetPrecision(),
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes);
+            const auto& yLbl = GetLeftYAxis().GetCustomLabel(y);
+            const wxString yStr =
+                (yLbl.IsOk() && !yLbl.GetText().empty()) ?
+                    yLbl.GetText() :
+                    wxNumberFormatter::ToString(y, GetLeftYAxis().GetPrecision(),
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes);
+            /* TRANSLATORS: data coordinate pair for an annotation's point of interest.
+               1st %s is the X axis value, 2nd %s is the Y axis value. */
+            return wxString::Format(_(L"(%s, %s)"), xStr, yStr);
+        };
+
+        wxString result;
+        for (const auto& annot : GetAnnotations())
+            {
+            if (annot.GetObject() == nullptr)
+                {
+                continue;
+                }
+            wxString annotStr;
+            // strip newlines/tabs from the label so screen readers read it cleanly
+            AddAccessibilityAttribute(annotStr, annot.GetObject()->GetText(), L"");
+            if (!annot.GetInterestPoints().empty())
+                {
+                annotStr += L" " + wxString(_(L"pointing at"));
+                for (const auto& pt : annot.GetInterestPoints())
+                    {
+                    annotStr += L" " + formatCoord(pt.m_x, pt.m_y);
+                    }
+                }
+            if (!annotStr.empty())
+                {
+                result += (result.empty() ? L"" : L"; ");
+                result += annotStr;
+                }
+            }
+
+        /* TRANSLATORS: header for the annotations accessibility description.
+           %s is the semicolon-separated list of annotation descriptions. */
+        return result.empty() ? wxString{} : wxString::Format(_(L"Annotations: %s"), result);
+        }
+
+    //----------------------------------------------------------------
+    wxString Graph2D::GetReadableReferenceLines() const
+        {
+        if (GetReferenceLines().empty() && GetReferenceAreas().empty())
+            {
+            return {};
+            }
+
+        // format a position on any axis using its custom labels where available
+        const auto formatAxisPos = [&](const AxisType axisType, const double pos) -> wxString
+        {
+            const auto& axis = GetAxis(axisType);
+            const auto& lbl = axis.GetCustomLabel(pos);
+            if (lbl.IsOk() && !lbl.GetText().empty())
+                {
+                return lbl.GetText();
+                }
+            return wxNumberFormatter::ToString(pos, axis.GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        wxString result;
+        for (const auto& refLine : GetReferenceLines())
+            {
+            result += (result.empty() ? L"" : L"; ");
+            /* TRANSLATORS: reference line description for accessibility.
+               1st %s is the line's label, 2nd %s is its position on the axis. */
+            result +=
+                wxString::Format(_(L"%s at %s"), refLine.GetLabel(),
+                                 formatAxisPos(refLine.GetAxisType(), refLine.GetAxisPosition()));
+            }
+        for (const auto& refArea : GetReferenceAreas())
+            {
+            result += (result.empty() ? L"" : L"; ");
+            /* TRANSLATORS: reference area description for accessibility.
+               1st %s is the area's label, 2nd %s is its start position on the axis,
+               3rd %s is its end position on the axis. */
+            result +=
+                wxString::Format(_(L"%s from %s to %s"), refArea.GetLabel(),
+                                 formatAxisPos(refArea.GetAxisType(), refArea.GetAxisPosition()),
+                                 formatAxisPos(refArea.GetAxisType(), refArea.GetAxisPosition2()));
+            }
+
+        /* TRANSLATORS: header for the reference lines accessibility description.
+           %s is the semicolon-separated list of reference line/area descriptions. */
+        return wxString::Format(_(L"Reference lines: %s"), result);
+        }
+
+    //----------------------------------------------------------------
     bool Graph2D::SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)
         {
         if (!IsSelectable())

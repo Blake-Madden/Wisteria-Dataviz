@@ -272,4 +272,87 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
+
+    //----------------------------------------------------------------
+    void MultiSeriesLinePlot::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_yColumnNames.empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A multi-series line plot") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        const auto xColumns = GetXColumns();
+
+        // format X as a locale date string, category label, or plain number
+        const auto formatX = [&](const size_t i) -> wxString
+        {
+            if (IsXDates())
+                {
+                return xColumns.xColumnDate->GetValue(i).Format(L"%B %d, %Y");
+                }
+            if (IsXCategorical())
+                {
+                return xColumns.xColumnCategorical->GetLabelFromID(
+                    xColumns.xColumnCategorical->GetValue(i));
+                }
+            return wxNumberFormatter::ToString(xColumns.xColumnContinuous->GetValue(i),
+                                               GetBottomXAxis().GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        // prefer a custom axis label (e.g., "Low", "High") over a raw number
+        const auto formatY = [&](const double yVal) -> wxString
+        {
+            const auto& customLbl = GetLeftYAxis().GetCustomLabel(yVal);
+            if (customLbl.IsOk() && !customLbl.GetText().empty())
+                {
+                return customLbl.GetText();
+                }
+            return wxNumberFormatter::ToString(yVal, GetLeftYAxis().GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        const auto yColumns = LoadYColumns();
+        const size_t lineCount = std::min(GetLines().size(), yColumns.size());
+        for (size_t lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+            {
+            const auto& line = GetLines()[lineIdx];
+            const auto& yColumn = yColumns[lineIdx];
+
+            wxString pointsStr;
+            size_t pointCount{ 0 };
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+                {
+                const double yVal = yColumn->GetValue(i);
+                // non-finite Y marks a gap in the line; skip it
+                if (!std::isfinite(yVal) || !IsXValid(i, xColumns))
+                    {
+                    continue;
+                    }
+                if (!pointsStr.empty())
+                    {
+                    pointsStr += L"; ";
+                    }
+                pointsStr += wxString::Format(_(L"%s at %s"), formatY(yVal), formatX(i));
+                ++pointCount;
+                }
+
+            label += L". " + wxString::Format(_(L"%s (%zu points): "), line.GetText(), pointCount);
+            label += pointsStr;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

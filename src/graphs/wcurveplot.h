@@ -176,6 +176,10 @@ namespace Wisteria::Graphs
             return m_timeLabel;
             }
 
+        /// @brief Sets the graph's descriptive string for screen readers.
+        /// @details Call this after all data and features have been set.
+        void SetAutoAccessibilityAttributes() final;
+
       private:
         void ResetTimeLabels();
         [[nodiscard]]

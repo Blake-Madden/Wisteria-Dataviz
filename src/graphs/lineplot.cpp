@@ -126,6 +126,99 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         }
 
     //----------------------------------------------------------------
+    void LinePlot::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_yColumnName.empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A line plot") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        const auto groupColumn =
+            IsUsingGrouping() ? GetGroupColumn() : GetDataset()->GetCategoricalColumns().cend();
+        const auto xColumns = GetXColumns();
+        const auto yColumn = GetContinuousColumn(m_yColumnName);
+
+        // format X as a locale date string, category label, or plain number
+        const auto formatX = [&](const size_t i) -> wxString
+        {
+            if (IsXDates())
+                {
+                return xColumns.xColumnDate->GetValue(i).Format(L"%B %d, %Y");
+                }
+            if (IsXCategorical())
+                {
+                return xColumns.xColumnCategorical->GetLabelFromID(
+                    xColumns.xColumnCategorical->GetValue(i));
+                }
+            return wxNumberFormatter::ToString(xColumns.xColumnContinuous->GetValue(i),
+                                               GetBottomXAxis().GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        // prefer a custom axis label (e.g., "Low", "High") over a raw number
+        const auto formatY = [&](const double yVal) -> wxString
+        {
+            const auto& customLbl = GetLeftYAxis().GetCustomLabel(yVal);
+            if (customLbl.IsOk() && !customLbl.GetText().empty())
+                {
+                return customLbl.GetText();
+                }
+            return wxNumberFormatter::ToString(yVal, GetLeftYAxis().GetPrecision(),
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        };
+
+        for (const auto& line : m_lines)
+            {
+            wxString pointsStr;
+            size_t pointCount{ 0 };
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+                {
+                if (IsUsingGrouping() && groupColumn->GetValue(i) != line.GetGroupId())
+                    {
+                    continue;
+                    }
+                const double yVal = yColumn->GetValue(i);
+                // NaN marks a gap in the line; skip it
+                if (!std::isfinite(yVal) || !IsXValid(i, xColumns))
+                    {
+                    continue;
+                    }
+                if (!pointsStr.empty())
+                    {
+                    pointsStr += L"; ";
+                    }
+                pointsStr += wxString::Format(_(L"%s at %s"), formatY(yVal), formatX(i));
+                ++pointCount;
+                }
+
+            if (IsUsingGrouping() && !line.GetText().empty())
+                {
+                label +=
+                    L". " + wxString::Format(_(L"%s (%zu points): "), line.GetText(), pointCount);
+                }
+            else
+                {
+                label += L". " + wxString::Format(_(L"%zu points: "), pointCount);
+                }
+            label += pointsStr;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //----------------------------------------------------------------
     void LinePlot::AddLine(const LinePlot::Line& line)
         {
         if (GetDataset() == nullptr ||

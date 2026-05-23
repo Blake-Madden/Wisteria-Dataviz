@@ -2282,8 +2282,8 @@ namespace Wisteria
                 @param buffer The string buffer to append to.
                 @param text The text to append to the buffer. If empty, nothing is appended.
                 @param separator The separator to insert before the text (e.g., ", " or ": ").*/
-            void AddAccessibilityAttribute(wxString& buffer, const wxString& text,
-                                           const wxString& separator)
+            static void AddAccessibilityAttribute(wxString& buffer, const wxString& text,
+                                                  const wxString& separator)
                 {
                 if (!text.empty())
                     {
