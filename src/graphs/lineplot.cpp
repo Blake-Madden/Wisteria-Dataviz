@@ -182,6 +182,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                     {
                     pointsStr += L"; ";
                     }
+                // TRANSLATORS: description of a data point. The first %s is the Y value, the second
+                // %s is the X value (e.g., a date).
                 pointsStr += wxString::Format(
                     _(L"%s at %s"), GetReadableAxisValue(GetLeftYAxis(), yVal), formatX(i));
                 ++pointCount;

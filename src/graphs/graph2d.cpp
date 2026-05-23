@@ -1402,9 +1402,7 @@ namespace Wisteria::Graphs
                     yLbl.GetText() :
                     wxNumberFormatter::ToString(y, GetLeftYAxis().GetPrecision(),
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes);
-            /* TRANSLATORS: data coordinate pair for an annotation's point of interest.
-               1st %s is the X axis value, 2nd %s is the Y axis value. */
-            return wxString::Format(_(L"(%s, %s)"), xStr, yStr);
+            return wxString::Format(_DT(L"(%s, %s)"), xStr, yStr);
         };
 
         wxString result;

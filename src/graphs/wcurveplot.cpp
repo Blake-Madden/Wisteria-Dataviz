@@ -201,6 +201,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
                     {
                     pointsStr += L"; ";
                     }
+                // TRANSLATORS: description of a data point. The first %s is the Y value, the second
+                // %s is the X value (e.g., a date).
                 pointsStr +=
                     wxString::Format(_(L"%s at %s"), GetReadableAxisValue(GetLeftYAxis(), yVal),
                                      GetReadableAxisValue(GetTopXAxis(), GetXValue(i, xColumns)));

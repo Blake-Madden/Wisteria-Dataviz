@@ -23,10 +23,12 @@ namespace Wisteria::GraphItems
             {
             if (compare_doubles(m_fillPercent, math_constants::empty))
                 {
+                // TRANSLATORS: %s is the name of a shape (e.g., Circle)
                 label = wxString::Format(_(L"Empty %s."), shapeName);
                 }
             else if (compare_doubles(m_fillPercent, math_constants::full))
                 {
+                // TRANSLATORS: %s is the name of a shape (e.g., Circle)
                 label = wxString::Format(_(L"Full %s."), shapeName);
                 }
             else

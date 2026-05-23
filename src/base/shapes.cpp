@@ -334,7 +334,7 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            label = wxString::Format(_(L"A %s shape."), shapeName);
+            label = wxString::Format(_(L"%s shape."), shapeName);
             }
         GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
         }
@@ -576,7 +576,7 @@ namespace Wisteria::GraphItems
         case Icons::IconShape::CurvingRoad:
             return _(L"curving road");
         case Icons::IconShape::CrossedOut:
-            return _(L"crossed-out");
+            return _(L"crossed-out symbol");
         case Icons::IconShape::CrescentTop:
         case Icons::IconShape::CrescentBottom:
         case Icons::IconShape::CrescentRight:
@@ -596,7 +596,7 @@ namespace Wisteria::GraphItems
                 if (parts.size() >= 3)
                     {
                     rangeLabel +=
-                        wxString::Format(_(L", %s"), wxString{ parts[2] }.Trim(false).Trim());
+                        wxString::Format(_DT(L", %s"), wxString{ parts[2] }.Trim(false).Trim());
                     }
                 return rangeLabel;
                 }

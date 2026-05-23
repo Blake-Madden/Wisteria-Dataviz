@@ -207,28 +207,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             if (stats.is_valid())
                 {
                 wxString statsLabel = wxString::Format(
-                    _(L"n=%s"),
+                    _DT(L"n=%s"),
                     wxNumberFormatter::ToString(stats.n, 0, wxNumberFormatter::Style::Style_None));
                 if (std::isfinite(stats.r_squared))
                     {
                     statsLabel += wxString::Format(
-                        L", R-squared=%s",
+                        _DT(L", R-squared=%s"),
                         wxNumberFormatter::ToString(stats.r_squared, 4,
                                                     wxNumberFormatter::Style::Style_None));
                     }
                 if (std::isfinite(stats.correlation))
                     {
                     statsLabel += wxString::Format(
-                        L", r=%s", wxNumberFormatter::ToString(
-                                       stats.correlation, 4, wxNumberFormatter::Style::Style_None));
+                        _DT(L", r=%s"),
+                        wxNumberFormatter::ToString(stats.correlation, 4,
+                                                    wxNumberFormatter::Style::Style_None));
                     }
                 if (std::isfinite(stats.p_value))
                     {
-                    statsLabel += L", p=";
+                    statsLabel += _DT(L", p=");
                     if (compare_doubles_less(stats.p_value, std::numeric_limits<double>::epsilon()))
                         {
-                        statsLabel +=
-                            wxString::Format(L"< %.1e", std::numeric_limits<double>::epsilon());
+                        statsLabel += wxString::Format(_DT(L"< %.1e"),
+                                                       std::numeric_limits<double>::epsilon());
                         }
                     else
                         {
@@ -239,7 +240,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                 if (std::isfinite(stats.slope) && std::isfinite(stats.intercept))
                     {
                     statsLabel += wxString::Format(
-                        L", y-hat = %s + %sx",
+                        _DT(L", y-hat = %s + %sx"),
                         wxNumberFormatter::ToString(stats.intercept, 4,
                                                     wxNumberFormatter::Style::Style_None),
                         wxNumberFormatter::ToString(stats.slope, 4,
