@@ -14,6 +14,55 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::FillableShape, Wisteria::GraphIt
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
+    void FillableShape::SetAutoAccessibilityAttributes()
+        {
+        const wxString shapeName =
+            ShapeInfo::GetReadableShapeName(GetShape(), GetGraphItemInfo().GetText());
+        wxString label;
+        if (GetShape() == Icons::IconShape::NumberRange)
+            {
+            if (compare_doubles(m_fillPercent, math_constants::empty))
+                {
+                label = wxString::Format(_(L"Empty %s."), shapeName);
+                }
+            else if (compare_doubles(m_fillPercent, math_constants::full))
+                {
+                label = wxString::Format(_(L"Full %s."), shapeName);
+                }
+            else
+                {
+                label = wxString::Format(
+                    _(L"%s that is %s%% full."), shapeName,
+                    wxNumberFormatter::ToString(m_fillPercent * 100.0, 0,
+                                                wxNumberFormatter::Style::Style_None));
+                }
+            if (label.length() > 0)
+                {
+                label[0] = wxToupper(label[0]);
+                }
+            }
+        else
+            {
+            if (compare_doubles(m_fillPercent, math_constants::empty))
+                {
+                label = wxString::Format(_(L"An empty %s shape."), shapeName);
+                }
+            else if (compare_doubles(m_fillPercent, math_constants::full))
+                {
+                label = wxString::Format(_(L"A full %s shape."), shapeName);
+                }
+            else
+                {
+                label = wxString::Format(
+                    _(L"A %s shape that is %s%% full."), shapeName,
+                    wxNumberFormatter::ToString(m_fillPercent * 100.0, 0,
+                                                wxNumberFormatter::Style::Style_None));
+                }
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //---------------------------------------------------
     wxRect FillableShape::Draw(wxDC& dc) const
         {
         wxASSERT_MSG(GetBrush().IsOk(), L"Fillable shape must have a valid brush!");

@@ -812,10 +812,11 @@ namespace Wisteria::GraphItems
                 Returns a generic "shape" for shapes that don't have a meaningful
                 spoken name (e.g., separators, gradients).
             @param shape The shape to describe.
+            @param text The text value associated with the shape (e.g., for NumberRange).
             @returns The translatable, lower-case name of the shape
                 (e.g., "male", "hexagon").*/
         [[nodiscard]]
-        static wxString GetReadableShapeName(Icons::IconShape shape);
+        static wxString GetReadableShapeName(Icons::IconShape shape, const wxString& text = wxString{});
 
       private:
         Icons::IconShape m_shape{ Icons::IconShape::Square };
@@ -872,9 +873,19 @@ namespace Wisteria::GraphItems
             return m_sizeDIPs;
             }
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
       protected:
         /// @private
         Shape() = default;
+
+        [[nodiscard]]
+        GraphItemInfo& GetGraphItemInfo() final
+            {
+            m_rendererNeedsUpdating = true;
+            return GraphItemBase::GetGraphItemInfo();
+            }
 
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
@@ -905,13 +916,6 @@ namespace Wisteria::GraphItems
             }
 
       private:
-        [[nodiscard]]
-        GraphItemInfo& GetGraphItemInfo() final
-            {
-            m_rendererNeedsUpdating = true;
-            return GraphItemBase::GetGraphItemInfo();
-            }
-
         void SetDPIScaleFactor(const double scaling) final
             {
             GraphItemBase::SetDPIScaleFactor(scaling);

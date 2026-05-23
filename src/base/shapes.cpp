@@ -318,6 +318,28 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void Shape::SetAutoAccessibilityAttributes()
+        {
+        const wxString shapeName =
+            ShapeInfo::GetReadableShapeName(m_shape, GetGraphItemInfo().GetText());
+        wxString label;
+        if (m_shape == Icons::IconShape::NumberRange)
+            {
+            label = shapeName;
+            if (label.length() > 0)
+                {
+                label[0] = wxToupper(label[0]);
+                }
+            label += L".";
+            }
+        else
+            {
+            label = wxString::Format(_(L"A %s shape."), shapeName);
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //---------------------------------------------------
     wxRect Shape::GetBoundingBox([[maybe_unused]] wxDC& dc) const
         {
         wxRect rect(ScaleToScreenAndCanvas(m_sizeDIPs));
@@ -394,14 +416,25 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    wxString ShapeInfo::GetReadableShapeName(const Icons::IconShape shape)
+    wxString ShapeInfo::GetReadableShapeName(const Icons::IconShape shape,
+                                             const wxString& text /*= wxString{}*/)
         {
         switch (shape)
             {
+        case Icons::IconShape::Blank:
+            return _(L"blank");
+        case Icons::IconShape::ArrowRight:
+            return _(L"right arrow");
+        case Icons::IconShape::HorizontalLine:
+            return _(L"horizontal line");
+        case Icons::IconShape::VerticalLine:
+            return _(L"vertical line");
         case Icons::IconShape::Circle:
             return _(L"circle");
         case Icons::IconShape::Square:
             return _(L"square");
+        case Icons::IconShape::BoxPlot:
+            return _(L"box plot");
         case Icons::IconShape::TriangleUpward:
             return _(L"upward triangle");
         case Icons::IconShape::TriangleDownward:
@@ -418,12 +451,64 @@ namespace Wisteria::GraphItems
             return _(L"asterisk");
         case Icons::IconShape::Hexagon:
             return _(L"hexagon");
+        case Icons::IconShape::WarningRoadSign:
+            return _(L"warning road sign");
+        case Icons::IconShape::GoRoadSign:
+            return _(L"go road sign");
+        case Icons::IconShape::LocationMarker:
+            return _(L"location marker");
+        case Icons::IconShape::Image:
+            return _(L"image");
+        case Icons::IconShape::LeftCurlyBrace:
+            return _(L"left curly brace");
+        case Icons::IconShape::RightCurlyBrace:
+            return _(L"right curly brace");
+        case Icons::IconShape::TopCurlyBrace:
+            return _(L"top curly brace");
+        case Icons::IconShape::BottomCurlyBrace:
+            return _(L"bottom curly brace");
         case Icons::IconShape::Man:
             return _(L"male");
         case Icons::IconShape::Woman:
             return _(L"female");
         case Icons::IconShape::BusinessWoman:
             return _(L"businesswoman");
+        case Icons::IconShape::ChevronDownward:
+            return _(L"downward chevron");
+        case Icons::IconShape::ChevronUpward:
+            return _(L"upward chevron");
+        case Icons::IconShape::Text:
+            return _(L"text");
+        case Icons::IconShape::Tack:
+            return _(L"tack");
+        case Icons::IconShape::Banner:
+            return _(L"banner");
+        case Icons::IconShape::WaterColorRectangle:
+            return _(L"watercolor rectangle");
+        case Icons::IconShape::ThickWaterColorRectangle:
+            return _(L"thick watercolor rectangle");
+        case Icons::IconShape::MarkerRectangle:
+            return _(L"marker rectangle");
+        case Icons::IconShape::PencilRectangle:
+            return _(L"pencil rectangle");
+        case Icons::IconShape::GraduationCap:
+            return _(L"graduation cap");
+        case Icons::IconShape::Book:
+            return _(L"book");
+        case Icons::IconShape::Tire:
+            return _(L"tire");
+        case Icons::IconShape::Newspaper:
+            return _(L"newspaper");
+        case Icons::IconShape::Car:
+            return _(L"car");
+        case Icons::IconShape::Blackboard:
+            return _(L"blackboard");
+        case Icons::IconShape::Clock:
+            return _(L"clock");
+        case Icons::IconShape::Ruler:
+            return _(L"ruler");
+        case Icons::IconShape::IVBag:
+            return _(L"IV bag");
         case Icons::IconShape::Heart:
             return _(L"heart");
         case Icons::IconShape::ImmaculateHeart:
@@ -446,34 +531,6 @@ namespace Wisteria::GraphItems
             return _(L"Granny Smith apple");
         case Icons::IconShape::Snowflake:
             return _(L"snowflake");
-        case Icons::IconShape::Pumpkin:
-            return _(L"pumpkin");
-        case Icons::IconShape::JackOLantern:
-            return _(L"jack-o'-lantern");
-        case Icons::IconShape::Butterfly:
-            return _(L"butterfly");
-        case Icons::IconShape::Flame:
-            return _(L"flame");
-        case Icons::IconShape::Sword:
-            return _(L"sword");
-        case Icons::IconShape::Pill:
-            return _(L"pill");
-        case Icons::IconShape::IVBag:
-            return _(L"IV bag");
-        case Icons::IconShape::ColdThermometer:
-            return _(L"cold thermometer");
-        case Icons::IconShape::HotThermometer:
-            return _(L"hot thermometer");
-        case Icons::IconShape::GraduationCap:
-            return _(L"graduation cap");
-        case Icons::IconShape::Book:
-            return _(L"book");
-        case Icons::IconShape::Newspaper:
-            return _(L"newspaper");
-        case Icons::IconShape::Tire:
-            return _(L"tire");
-        case Icons::IconShape::Car:
-            return _(L"car");
         case Icons::IconShape::Office:
             return _(L"office building");
         case Icons::IconShape::Factory:
@@ -488,12 +545,22 @@ namespace Wisteria::GraphItems
             return _(L"hundred dollar bill");
         case Icons::IconShape::Monitor:
             return _(L"computer monitor");
-        case Icons::IconShape::Clock:
-            return _(L"clock");
-        case Icons::IconShape::Ruler:
-            return _(L"ruler");
-        case Icons::IconShape::Blackboard:
-            return _(L"blackboard");
+        case Icons::IconShape::Pumpkin:
+            return _(L"pumpkin");
+        case Icons::IconShape::JackOLantern:
+            return _(L"jack-o'-lantern");
+        case Icons::IconShape::Butterfly:
+            return _(L"butterfly");
+        case Icons::IconShape::Flame:
+            return _(L"flame");
+        case Icons::IconShape::Sword:
+            return _(L"sword");
+        case Icons::IconShape::Pill:
+            return _(L"pill");
+        case Icons::IconShape::ColdThermometer:
+            return _(L"cold thermometer");
+        case Icons::IconShape::HotThermometer:
+            return _(L"hot thermometer");
         case Icons::IconShape::Tractor:
             return _(L"tractor");
         case Icons::IconShape::CheesePizza:
@@ -506,16 +573,6 @@ namespace Wisteria::GraphItems
             return _(L"chocolate chip cookie");
         case Icons::IconShape::CoffeeShopCup:
             return _(L"coffee cup");
-        case Icons::IconShape::Tack:
-            return _(L"tack");
-        case Icons::IconShape::Banner:
-            return _(L"banner");
-        case Icons::IconShape::GoRoadSign:
-            return _(L"go road sign");
-        case Icons::IconShape::WarningRoadSign:
-            return _(L"warning road sign");
-        case Icons::IconShape::LocationMarker:
-            return _(L"location marker");
         case Icons::IconShape::CurvingRoad:
             return _(L"curving road");
         case Icons::IconShape::CrossedOut:
@@ -524,6 +581,27 @@ namespace Wisteria::GraphItems
         case Icons::IconShape::CrescentBottom:
         case Icons::IconShape::CrescentRight:
             return _(L"crescent");
+        case Icons::IconShape::NumberRange:
+            {
+            if (text.empty())
+                {
+                return _(L"number range");
+                }
+            const wxArrayString parts = wxSplit(text, L':');
+            if (parts.size() >= 2)
+                {
+                wxString rangeLabel = wxString::Format(_(L"number range %s to %s"),
+                                                       wxString{ parts[0] }.Trim(false).Trim(),
+                                                       wxString{ parts[1] }.Trim(false).Trim());
+                if (parts.size() >= 3)
+                    {
+                    rangeLabel +=
+                        wxString::Format(_(L", %s"), wxString{ parts[2] }.Trim(false).Trim());
+                    }
+                return rangeLabel;
+                }
+            return _(L"number range");
+            }
         default:
             return _(L"shape");
             }

@@ -58,6 +58,9 @@ namespace Wisteria::GraphItems
             @returns The box that the shape is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
 
+        /// @private
+        void SetAutoAccessibilityAttributes() final;
+
         /// @returns The fill percent (@c 0.0 to @c 1.0).
         [[nodiscard]]
         double GetFillPercent() const noexcept
