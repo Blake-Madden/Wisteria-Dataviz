@@ -171,7 +171,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             wxString timeStr;
             for (const auto& [val, lbl] : topLabels)
                 {
-                timeStr += (timeStr.empty() ? timeStr : L", ");
+                timeStr += (timeStr.empty() ? timeStr : wxString{ L", " });
                 timeStr += lbl.GetText();
                 }
             /* TRANSLATORS: preface for W-Curve accessibility, listing the time intervals in order.

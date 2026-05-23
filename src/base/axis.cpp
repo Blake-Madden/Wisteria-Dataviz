@@ -17,6 +17,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Axis, Wisteria::GraphItems::Grap
 namespace Wisteria::GraphItems
     {
     //-----------------------------------------
+    wxString Axis::GetReadableAxisValue(double pos) const
+        {
+        // prefer a custom label (e.g., a category name or date string set by the caller)
+        const auto& lbl = GetCustomLabel(pos);
+        if (lbl.IsOk() && !lbl.GetText().empty())
+            {
+            return lbl.GetText();
+            }
+        // for date axes, reconstruct the date from the position (days since the first day)
+        // and format it as a locale-aware long date string
+        const auto [firstDate, lastDate] = GetRangeDates();
+        if (firstDate.IsValid())
+            {
+            return (firstDate + wxDateSpan::Days(static_cast<int>(pos))).Format(L"%B %d, %Y");
+            }
+        return wxNumberFormatter::ToString(pos, GetPrecision(),
+                                           wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        }
+
+    //-----------------------------------------
     void Axis::AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, const bool useMaxWidth) const
         {
         if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor() != wxTransparentColour &&
@@ -4568,5 +4588,40 @@ namespace Wisteria::GraphItems
                 bracket.GetLabel().SetFontColor(contrastingColor);
                 }
             }
+        }
+
+    //----------------------------------------------------------------
+    void Axis::SetAutoAccessibilityAttributes()
+        {
+        wxString label;
+
+        const auto [minVal, maxVal] = GetRange();
+        label += wxString::Format(_(L"Ranging from %s to %s"), GetReadableAxisValue(minVal),
+                                  GetReadableAxisValue(maxVal));
+
+        if (GetHeader().IsShown() && !GetHeader().GetText().empty())
+            {
+            label += wxString::Format(_(L", header: %s"), GetHeader().GetText());
+            }
+
+        if (GetFooter().IsShown() && !GetFooter().GetText().empty())
+            {
+            label += wxString::Format(_(L", footer: %s"), GetFooter().GetText());
+            }
+
+        for (const auto& bracket : GetBrackets())
+            {
+            if (bracket.GetLabel().IsShown() && !bracket.GetLabel().GetText().empty())
+                {
+                label += wxString::Format(_(L", bracket from %s to %s: %s"),
+                                          GetReadableAxisValue(bracket.GetStartPosition()),
+                                          GetReadableAxisValue(bracket.GetEndPosition()),
+                                          bracket.GetLabel().GetText());
+                }
+            }
+
+        label += L".";
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
         }
     } // namespace Wisteria::GraphItems

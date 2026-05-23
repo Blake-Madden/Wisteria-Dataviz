@@ -291,6 +291,18 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxString GetReadableAxisTitles() const;
 
+        /** @brief Formats an axis position as a human-readable string for accessibility output.
+            @details Uses the axis's custom label for the position if one exists; falls back to
+                a locale date string for date axes, then a plain number.
+            @param axis The axis that owns the position.
+            @param pos The axis position to format.
+            @returns A human-readable string for the position.*/
+        [[nodiscard]]
+        static wxString GetReadableAxisValue(const Wisteria::GraphItems::Axis& axis, double pos)
+            {
+            return axis.GetReadableAxisValue(pos);
+            }
+
         /// @}
 
         /** @name Title Functions
@@ -877,15 +889,6 @@ namespace Wisteria::Graphs
             }
 
       protected:
-        /** @brief Formats an axis position as a human-readable string for accessibility output.
-            @details Uses the axis's custom label for the position if one exists; falls back to
-                a locale date string for date axes, then a plain number.
-            @param axis The axis that owns the position.
-            @param pos The axis position to format.
-            @returns A human-readable string for the position.*/
-        [[nodiscard]]
-        static wxString GetReadableAxisValue(const Wisteria::GraphItems::Axis& axis, double pos);
-
         /** @private
             Finds and returns a pointer to a continuous column
                 from the loaded dataset. If not found, throws.*/

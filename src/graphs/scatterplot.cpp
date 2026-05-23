@@ -187,6 +187,80 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
         }
 
     //----------------------------------------------------------------
+    void ScatterPlot::SetAutoAccessibilityAttributes()
+        {
+        wxString label{ _(L"A scatter plot") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAxisBrackets(), L". ");
+
+        for (const auto& series : m_series)
+            {
+            if (IsUsingGrouping() && !series.GetText().empty())
+                {
+                AddAccessibilityAttribute(label, series.GetText(), L". ");
+                label += L": ";
+                }
+
+            const auto& stats = series.GetRegressionResults();
+            if (stats.is_valid())
+                {
+                wxString statsLabel = wxString::Format(
+                    _(L"n=%s"),
+                    wxNumberFormatter::ToString(stats.n, 0, wxNumberFormatter::Style::Style_None));
+                if (std::isfinite(stats.r_squared))
+                    {
+                    statsLabel += wxString::Format(
+                        L", R-squared=%s",
+                        wxNumberFormatter::ToString(stats.r_squared, 4,
+                                                    wxNumberFormatter::Style::Style_None));
+                    }
+                if (std::isfinite(stats.correlation))
+                    {
+                    statsLabel += wxString::Format(
+                        L", r=%s", wxNumberFormatter::ToString(
+                                       stats.correlation, 4, wxNumberFormatter::Style::Style_None));
+                    }
+                if (std::isfinite(stats.p_value))
+                    {
+                    statsLabel += L", p=";
+                    if (compare_doubles_less(stats.p_value, std::numeric_limits<double>::epsilon()))
+                        {
+                        statsLabel +=
+                            wxString::Format(L"< %.1e", std::numeric_limits<double>::epsilon());
+                        }
+                    else
+                        {
+                        statsLabel += wxNumberFormatter::ToString(
+                            stats.p_value, 4, wxNumberFormatter::Style::Style_None);
+                        }
+                    }
+                if (std::isfinite(stats.slope) && std::isfinite(stats.intercept))
+                    {
+                    statsLabel += wxString::Format(
+                        L", y-hat = %s + %sx",
+                        wxNumberFormatter::ToString(stats.intercept, 4,
+                                                    wxNumberFormatter::Style::Style_None),
+                        wxNumberFormatter::ToString(stats.slope, 4,
+                                                    wxNumberFormatter::Style::Style_None));
+                    }
+                label += statsLabel;
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //----------------------------------------------------------------
     void ScatterPlot::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);

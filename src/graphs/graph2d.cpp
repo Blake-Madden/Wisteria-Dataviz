@@ -1379,26 +1379,6 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    wxString Graph2D::GetReadableAxisValue(const GraphItems::Axis& axis, const double pos)
-        {
-        // prefer a custom label (e.g., a category name or date string set by the caller)
-        const auto& lbl = axis.GetCustomLabel(pos);
-        if (lbl.IsOk() && !lbl.GetText().empty())
-            {
-            return lbl.GetText();
-            }
-        // for date axes, reconstruct the date from the position (days since the first day)
-        // and format it as a locale-aware long date string
-        const auto [firstDate, lastDate] = axis.GetRangeDates();
-        if (firstDate.IsValid())
-            {
-            return (firstDate + wxDateSpan::Days(static_cast<int>(pos))).Format(L"%B %d, %Y");
-            }
-        return wxNumberFormatter::ToString(pos, axis.GetPrecision(),
-                                           wxNumberFormatter::Style::Style_NoTrailingZeroes);
-        }
-
-    //----------------------------------------------------------------
     wxString Graph2D::GetReadableAnnotations() const
         {
         if (GetAnnotations().empty())
@@ -1447,7 +1427,7 @@ namespace Wisteria::Graphs
                 }
             if (!annotStr.empty())
                 {
-                result += (result.empty() ? result : L"; ");
+                result += (result.empty() ? result : wxString{ L"; " });
                 result += annotStr;
                 }
             }
@@ -1468,7 +1448,7 @@ namespace Wisteria::Graphs
         wxString result;
         for (const auto& refLine : GetReferenceLines())
             {
-            result += (result.empty() ? result : L"; ");
+            result += (result.empty() ? result : wxString{ L"; " });
             /* TRANSLATORS: reference line description for accessibility.
                1st %s is the line's label, 2nd %s is its position on the axis. */
             result += wxString::Format(
@@ -1477,7 +1457,7 @@ namespace Wisteria::Graphs
             }
         for (const auto& refArea : GetReferenceAreas())
             {
-            result += (result.empty() ? result : L"; ");
+            result += (result.empty() ? result : wxString{ L"; " });
             /* TRANSLATORS: reference area description for accessibility.
                1st %s is the area's label, 2nd %s is its start position on the axis,
                3rd %s is its end position on the axis. */
@@ -1510,7 +1490,7 @@ namespace Wisteria::Graphs
                     {
                     continue;
                     }
-                bracketList += (bracketList.empty() ? bracketList : L"; ");
+                bracketList += (bracketList.empty() ? bracketList : wxString{ L"; " });
                 if (bracket.IsSingleLine())
                     {
                     /* TRANSLATORS: accessibility description of a single-point axis bracket.
@@ -1545,7 +1525,7 @@ namespace Wisteria::Graphs
         {
             if (!part.empty())
                 {
-                output += (output.empty() ? output : L". ");
+                output += (output.empty() ? output : wxString{ L". " });
                 output += part;
                 }
         };
@@ -1572,7 +1552,7 @@ namespace Wisteria::Graphs
         {
             if (!part.empty())
                 {
-                output += (output.empty() ? output : L". ");
+                output += (output.empty() ? output : wxString{ L". " });
                 output += part;
                 }
         };

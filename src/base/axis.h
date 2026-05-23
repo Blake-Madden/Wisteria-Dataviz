@@ -741,6 +741,11 @@ namespace Wisteria::GraphItems
             @param scaling The scaling to use.*/
         void SetScaling(double scaling) final;
 
+        wxString GetReadableAxisValue(double pos) const;
+
+        /// @private
+        void SetAutoAccessibilityAttributes() final;
+
         /// @brief Which parts of the axis should be reset when Reset() is called.
         enum class AxisResetLevel
             {

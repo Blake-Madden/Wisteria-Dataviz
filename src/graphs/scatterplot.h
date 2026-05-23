@@ -317,6 +317,9 @@ namespace Wisteria::Graphs
 
         /// @}
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
         /// @name Legend Functions
         /// @brief Functions relating to the legend.
         /// @{
