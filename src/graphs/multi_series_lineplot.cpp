@@ -304,17 +304,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                                                wxNumberFormatter::Style::Style_NoTrailingZeroes);
         };
 
-        // prefer a custom axis label (e.g., "Low", "High") over a raw number
-        const auto formatY = [&](const double yVal) -> wxString
-        {
-            const auto& customLbl = GetLeftYAxis().GetCustomLabel(yVal);
-            if (customLbl.IsOk() && !customLbl.GetText().empty())
-                {
-                return customLbl.GetText();
-                }
-            return wxNumberFormatter::ToString(yVal, GetLeftYAxis().GetPrecision(),
-                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
-        };
+        AddAccessibilityAttribute(label, GetReadableAxisBrackets(), L". ");
 
         const auto yColumns = LoadYColumns();
         const size_t lineCount = std::min(GetLines().size(), yColumns.size());
@@ -337,7 +327,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                     {
                     pointsStr += L"; ";
                     }
-                pointsStr += wxString::Format(_(L"%s at %s"), formatY(yVal), formatX(i));
+                pointsStr += wxString::Format(
+                    _(L"%s at %s"), GetReadableAxisValue(GetLeftYAxis(), yVal), formatX(i));
                 ++pointCount;
                 }
 

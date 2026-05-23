@@ -170,7 +170,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             wxString timeStr;
             for (const auto& [val, lbl] : topLabels)
                 {
-                timeStr += (timeStr.empty() ? L"" : L", ");
+                timeStr += (timeStr.empty() ? timeStr : L", ");
                 timeStr += lbl.GetText();
                 }
             /* TRANSLATORS: preface for W-Curve accessibility, listing the time intervals in order.
@@ -178,30 +178,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             label += L". " + wxString::Format(_(L"Time intervals: %s"), timeStr);
             }
 
-        // top axis holds the human-readable time labels (e.g., "First year", "Second year")
-        const auto formatX = [&](const size_t i) -> wxString
-        {
-            const double xVal = GetXValue(i, xColumns);
-            const auto& topLbl = GetTopXAxis().GetCustomLabel(xVal);
-            if (topLbl.IsOk() && !topLbl.GetText().empty())
-                {
-                return topLbl.GetText();
-                }
-            return wxNumberFormatter::ToString(xVal, GetBottomXAxis().GetPrecision(),
-                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
-        };
-
-        // prefer a custom axis label (e.g., "Low", "High") over a raw number
-        const auto formatY = [&](const double yVal) -> wxString
-        {
-            const auto& customLbl = GetLeftYAxis().GetCustomLabel(yVal);
-            if (customLbl.IsOk() && !customLbl.GetText().empty())
-                {
-                return customLbl.GetText();
-                }
-            return wxNumberFormatter::ToString(yVal, GetLeftYAxis().GetPrecision(),
-                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
-        };
+        AddAccessibilityAttribute(label, GetReadableAxisBrackets(), L". ");
 
         for (const auto& line : GetLines())
             {
@@ -223,7 +200,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
                     {
                     pointsStr += L"; ";
                     }
-                pointsStr += wxString::Format(_(L"%s at %s"), formatY(yVal), formatX(i));
+                pointsStr +=
+                    wxString::Format(_(L"%s at %s"), GetReadableAxisValue(GetLeftYAxis(), yVal),
+                                     GetReadableAxisValue(GetTopXAxis(), GetXValue(i, xColumns)));
                 ++pointCount;
                 }
 

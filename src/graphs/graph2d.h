@@ -267,6 +267,17 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxString GetReadableReferenceLines() const;
 
+        /** @brief Returns a human-readable description of all brackets on the plot's axes,
+                suitable for inclusion in an accessibility (ARIA) label.
+            @details Brackets from all four main axes and any custom axes are included.
+                Each bracket's label and range are listed (positions formatted using
+                the axis's custom labels where available).
+            @returns A string of the form
+                `"Brackets along left Y axis: [label] from [pos1] to [pos2]; ..."`,
+                or an empty string if no axes have brackets.*/
+        [[nodiscard]]
+        wxString GetReadableAxisBrackets() const;
+
         /** @name Title Functions
             @brief Functions related to the titles and caption.*/
         /// @{
@@ -851,6 +862,15 @@ namespace Wisteria::Graphs
             }
 
       protected:
+        /** @brief Formats an axis position as a human-readable string for accessibility output.
+            @details Uses the axis's custom label for the position if one exists; falls back to
+                a locale date string for date axes, then a plain number.
+            @param axis The axis that owns the position.
+            @param pos The axis position to format.
+            @returns A human-readable string for the position.*/
+        [[nodiscard]]
+        static wxString GetReadableAxisValue(const Wisteria::GraphItems::Axis& axis, double pos);
+
         /** @private
             Finds and returns a pointer to a continuous column
                 from the loaded dataset. If not found, throws.*/

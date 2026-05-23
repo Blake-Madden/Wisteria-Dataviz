@@ -1379,6 +1379,26 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    wxString Graph2D::GetReadableAxisValue(const GraphItems::Axis& axis, const double pos)
+        {
+        // prefer a custom label (e.g., a category name or date string set by the caller)
+        const auto& lbl = axis.GetCustomLabel(pos);
+        if (lbl.IsOk() && !lbl.GetText().empty())
+            {
+            return lbl.GetText();
+            }
+        // for date axes, reconstruct the date from the position (days since the first day)
+        // and format it as a locale-aware long date string
+        const auto [firstDate, lastDate] = axis.GetRangeDates();
+        if (firstDate.IsValid())
+            {
+            return (firstDate + wxDateSpan::Days(static_cast<int>(pos))).Format(L"%B %d, %Y");
+            }
+        return wxNumberFormatter::ToString(pos, axis.GetPrecision(),
+                                           wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        }
+
+    //----------------------------------------------------------------
     wxString Graph2D::GetReadableAnnotations() const
         {
         if (GetAnnotations().empty())
@@ -1427,7 +1447,7 @@ namespace Wisteria::Graphs
                 }
             if (!annotStr.empty())
                 {
-                result += (result.empty() ? L"" : L"; ");
+                result += (result.empty() ? result : L"; ");
                 result += annotStr;
                 }
             }
@@ -1445,44 +1465,103 @@ namespace Wisteria::Graphs
             return {};
             }
 
-        // format a position on any axis using its custom labels where available
-        const auto formatAxisPos = [&](const AxisType axisType, const double pos) -> wxString
-        {
-            const auto& axis = GetAxis(axisType);
-            const auto& lbl = axis.GetCustomLabel(pos);
-            if (lbl.IsOk() && !lbl.GetText().empty())
-                {
-                return lbl.GetText();
-                }
-            return wxNumberFormatter::ToString(pos, axis.GetPrecision(),
-                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
-        };
-
         wxString result;
         for (const auto& refLine : GetReferenceLines())
             {
-            result += (result.empty() ? L"" : L"; ");
+            result += (result.empty() ? result : L"; ");
             /* TRANSLATORS: reference line description for accessibility.
                1st %s is the line's label, 2nd %s is its position on the axis. */
-            result +=
-                wxString::Format(_(L"%s at %s"), refLine.GetLabel(),
-                                 formatAxisPos(refLine.GetAxisType(), refLine.GetAxisPosition()));
+            result += wxString::Format(
+                _(L"%s at %s"), refLine.GetLabel(),
+                GetReadableAxisValue(GetAxis(refLine.GetAxisType()), refLine.GetAxisPosition()));
             }
         for (const auto& refArea : GetReferenceAreas())
             {
-            result += (result.empty() ? L"" : L"; ");
+            result += (result.empty() ? result : L"; ");
             /* TRANSLATORS: reference area description for accessibility.
                1st %s is the area's label, 2nd %s is its start position on the axis,
                3rd %s is its end position on the axis. */
-            result +=
-                wxString::Format(_(L"%s from %s to %s"), refArea.GetLabel(),
-                                 formatAxisPos(refArea.GetAxisType(), refArea.GetAxisPosition()),
-                                 formatAxisPos(refArea.GetAxisType(), refArea.GetAxisPosition2()));
+            result += wxString::Format(
+                _(L"%s from %s to %s"), refArea.GetLabel(),
+                GetReadableAxisValue(GetAxis(refArea.GetAxisType()), refArea.GetAxisPosition()),
+                GetReadableAxisValue(GetAxis(refArea.GetAxisType()), refArea.GetAxisPosition2()));
             }
 
         /* TRANSLATORS: header for the reference lines accessibility description.
            %s is the semicolon-separated list of reference line/area descriptions. */
         return wxString::Format(_(L"Reference lines: %s"), result);
+        }
+
+    //----------------------------------------------------------------
+    wxString Graph2D::GetReadableAxisBrackets() const
+        {
+        // build the bracket list for one axis; returns empty string if the axis has none
+        const auto describeBrackets = [&](const GraphItems::Axis& axis,
+                                          const wxString& axisName) -> wxString
+        {
+            if (axis.GetBrackets().empty())
+                {
+                return {};
+                }
+            wxString bracketList;
+            for (const auto& bracket : axis.GetBrackets())
+                {
+                if (bracket.GetLabel().GetText().empty())
+                    {
+                    continue;
+                    }
+                bracketList += (bracketList.empty() ? bracketList : L"; ");
+                if (bracket.IsSingleLine())
+                    {
+                    /* TRANSLATORS: accessibility description of a single-point axis bracket.
+                       1st %s is the bracket's label, 2nd %s is its position on the axis. */
+                    bracketList +=
+                        wxString::Format(_(L"%s at %s"), bracket.GetLabel().GetText(),
+                                         GetReadableAxisValue(axis, bracket.GetStartPosition()));
+                    }
+                else
+                    {
+                    /* TRANSLATORS: accessibility description of a ranged axis bracket.
+                       1st %s is the bracket's label, 2nd %s is its start position on the axis,
+                       3rd %s is its end position on the axis. */
+                    bracketList +=
+                        wxString::Format(_(L"%s from %s to %s"), bracket.GetLabel().GetText(),
+                                         GetReadableAxisValue(axis, bracket.GetStartPosition()),
+                                         GetReadableAxisValue(axis, bracket.GetEndPosition()));
+                    }
+                }
+            if (bracketList.empty())
+                {
+                return {};
+                }
+            /* TRANSLATORS: header for bracket descriptions along a named axis.
+               1st %s is the axis name (e.g., "left Y axis"),
+               2nd %s is the semicolon-separated list of bracket descriptions. */
+            return wxString::Format(_(L"Brackets along %s: %s"), axisName, bracketList);
+        };
+
+        wxString output;
+        const auto append = [&output](const wxString& part)
+        {
+            if (!part.empty())
+                {
+                output += (output.empty() ? output : L". ");
+                output += part;
+                }
+        };
+
+        append(describeBrackets(GetLeftYAxis(), _(L"left Y axis")));
+        append(describeBrackets(GetRightYAxis(), _(L"right Y axis")));
+        append(describeBrackets(GetBottomXAxis(), _(L"bottom X axis")));
+        append(describeBrackets(GetTopXAxis(), _(L"top X axis")));
+        for (const auto& customAxis : GetCustomAxes())
+            {
+            const wxString customAxisName{ customAxis.GetTitle().GetText().empty() ?
+                                               _(L"custom axis") :
+                                               customAxis.GetTitle().GetText() };
+            append(describeBrackets(customAxis, customAxisName));
+            }
+        return output;
         }
 
     //----------------------------------------------------------------
