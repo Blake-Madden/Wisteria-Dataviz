@@ -848,4 +848,106 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
+
+    //----------------------------------------------------------------
+    void WinLossSparkline::SetAutoAccessibilityAttributes()
+        {
+        if (m_matrix.empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A win/loss sparkline") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // pre-compute each row's longest winning streak so we can flag the best one(s)
+        std::vector<size_t> rowWinningStreaks;
+        rowWinningStreaks.reserve(m_matrix.size());
+        for (const auto& [rowInfo, games] : m_matrix)
+            {
+            size_t longestStreak{ 0 };
+            size_t consecutiveWins{ 0 };
+            for (const auto& game : games)
+                {
+                if (!game.m_valid)
+                    {
+                    continue;
+                    }
+                if (game.m_result == GameResult::Won)
+                    {
+                    ++consecutiveWins;
+                    }
+                else
+                    {
+                    longestStreak = std::max(longestStreak, consecutiveWins);
+                    consecutiveWins = 0;
+                    }
+                }
+            rowWinningStreaks.push_back(std::max(longestStreak, consecutiveWins));
+            }
+
+        for (size_t i = 0; i < m_matrix.size(); ++i)
+            {
+            const auto& [rowInfo, games] = m_matrix[i];
+
+            wxString rowStr;
+            if (!rowInfo.m_seasonLabel.empty())
+                {
+                rowStr = rowInfo.m_seasonLabel + L": ";
+                }
+            if (!rowInfo.m_overallRecordLabel.empty())
+                {
+                /* TRANSLATORS: overall win/loss record for a season row, e.g. "record 8–4" */
+                rowStr += wxString::Format(_(L"record %s"), rowInfo.m_overallRecordLabel);
+                }
+            if (!rowInfo.m_homeRecordLabel.empty())
+                {
+                /* TRANSLATORS: home win/loss record, e.g. "home 5–1" */
+                rowStr += wxString::Format(_(L", home %s"), rowInfo.m_homeRecordLabel);
+                }
+            if (!rowInfo.m_roadRecordLabel.empty())
+                {
+                /* TRANSLATORS: away win/loss record, e.g. "road 3–3" */
+                rowStr += wxString::Format(_(L", road %s"), rowInfo.m_roadRecordLabel);
+                }
+            if (!rowInfo.m_pctLabel.empty())
+                {
+                /* TRANSLATORS: winning percentage for the season, e.g. "percentage .667" */
+                rowStr += wxString::Format(_(L", percentage %s"), rowInfo.m_pctLabel);
+                }
+            if (m_highlightBestRecords)
+                {
+                if (rowInfo.m_highlightPctLabel)
+                    {
+                    rowStr += _(L", best record");
+                    }
+                if (m_longestWinningStreak > 0 && rowWinningStreaks[i] == m_longestWinningStreak)
+                    {
+                    rowStr += L", " + wxString::Format(
+                                          /* TRANSLATORS: longest winning streak annotation, e.g.
+                                             "longest winning streak (5 games)" */
+                                          wxPLURAL(L"longest winning streak (%zu game)",
+                                                   L"longest winning streak (%zu games)",
+                                                   m_longestWinningStreak),
+                                          m_longestWinningStreak);
+                    }
+                }
+
+            if (!rowStr.empty())
+                {
+                label += L". " + rowStr;
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
     } // namespace Wisteria::Graphs

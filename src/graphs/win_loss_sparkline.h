@@ -225,6 +225,9 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
       private:
         void RecalcSizes(wxDC& dc) final;
 
