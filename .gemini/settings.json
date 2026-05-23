@@ -1,0 +1,26 @@
+{
+  "tools": {
+    "excludeTools": [
+      "ShellTool(clang)",
+      "ShellTool(clang++)",
+      "ShellTool(gcc)",
+      "ShellTool(g++)",
+      "ShellTool(cl.exe)",
+      "ShellTool(msbuild)",
+      "ShellTool(ninja)",
+      "ShellTool(cmake)",
+      "ShellTool(make)",
+      "ShellTool(git)"
+    ]
+  },
+  "general": {
+    "autoApprove": false,
+    "respectGitIgnore": true
+  },
+  "context": {
+    "fileName": [
+      "AGENTS.md",
+      "GEMINI.md"
+    ]
+  }
+}
