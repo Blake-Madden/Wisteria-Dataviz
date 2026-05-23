@@ -596,6 +596,9 @@ namespace Wisteria::Graphs
             return m_boxes[index];
             }
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
       private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.

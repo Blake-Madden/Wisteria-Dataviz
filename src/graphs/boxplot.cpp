@@ -1006,4 +1006,94 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
+
+    //----------------------------------------------------------------
+    void BoxPlot::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_boxes.empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A box plot") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAxisBrackets(), L". ");
+
+        const auto groupColumn = GetGroupColumn(m_groupColumn);
+
+        for (const auto& box : m_boxes)
+            {
+            if (!std::isfinite(box.GetMiddlePoint()))
+                {
+                continue;
+                }
+
+            // group label (if using grouping)
+            const wxString groupLabel =
+                box.m_useGrouping ? groupColumn->GetLabelFromID(box.m_groupId) : wxString{};
+
+            // count outliers
+            size_t outlierCount{ 0 };
+            const auto contCol = box.GetContinuousColumn(m_continuousColumn);
+            for (size_t i = 0; i < box.GetDataset()->GetRowCount(); ++i)
+                {
+                const double val = contCol->GetValue(i);
+                if (!std::isfinite(val))
+                    {
+                    continue;
+                    }
+                if (box.m_useGrouping && groupColumn->GetValue(i) != box.m_groupId)
+                    {
+                    continue;
+                    }
+                if (val < box.GetLowerWhisker() || val > box.GetUpperWhisker())
+                    {
+                    ++outlierCount;
+                    }
+                }
+
+            const auto fmt = [this](const double val)
+            {
+                return wxNumberFormatter::ToString(val, GetLabelPrecision(),
+                                                   Settings::GetDefaultNumberFormat());
+            };
+
+            wxString boxStr;
+            if (!groupLabel.empty())
+                {
+                boxStr = groupLabel + L": ";
+                }
+            /* TRANSLATORS: box plot statistics summary for one box.
+               The five %s placeholders are: lower whisker, Q1, median, Q3, upper whisker. */
+            boxStr += wxString::Format(_(L"lower whisker %s, 25th percentile %s, median %s, "
+                                         "75th percentile %s, upper whisker %s"),
+                                       fmt(box.GetLowerWhisker()), fmt(box.GetLowerControlLimit()),
+                                       fmt(box.GetMiddlePoint()), fmt(box.GetUpperControlLimit()),
+                                       fmt(box.GetUpperWhisker()));
+
+            if (outlierCount > 0)
+                {
+                /* TRANSLATORS: appended to the box plot stats when outliers are present.
+                   %zu is the number of outliers. */
+                boxStr += L", " +
+                          wxString::Format(wxPLURAL(L"%zu outlier", L"%zu outliers", outlierCount),
+                                           outlierCount);
+                }
+
+            label += L". " + boxStr;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
     } // namespace Wisteria::Graphs

@@ -741,4 +741,75 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             }
         return value;
         }
+
+    //----------------------------------------------------------------
+    void Histogram::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || GetBars().empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A histogram") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAxisBrackets(), L". ");
+
+        for (const auto& bar : GetBars())
+            {
+            const wxString binLabel = bar.GetAxisLabel().GetText();
+            const wxString binLengthStr = GetReadableAxisValue(GetScalingAxis(), bar.GetLength());
+
+            size_t visibleBlockCount{ 0 };
+            for (const auto& block : bar.GetBlocks())
+                {
+                if (block.IsShown())
+                    {
+                    ++visibleBlockCount;
+                    }
+                }
+
+            if (visibleBlockCount > 1)
+                {
+                /* TRANSLATORS: bin label and its total count in a histogram.
+                   1st %s is the bin's range label, 2nd %s is the total count. */
+                label += L". " + wxString::Format(_(L"%s: %s total"), binLabel, binLengthStr);
+                for (const auto& block : bar.GetBlocks())
+                    {
+                    if (!block.IsShown())
+                        {
+                        continue;
+                        }
+                    const wxString blockName =
+                        (!block.GetTag().empty() ? block.GetTag() : block.GetDecal().GetText());
+                    if (!blockName.empty())
+                        {
+                        /* TRANSLATORS: a named block inside a histogram bin and its count.
+                           1st %s is the group name, 2nd %s is its count. */
+                        label += L", " + wxString::Format(_(L"%s: %s"), blockName,
+                                                          GetReadableAxisValue(GetScalingAxis(),
+                                                                               block.GetLength()));
+                        }
+                    }
+                }
+            else
+                {
+                /* TRANSLATORS: bin label and its count in a histogram.
+                   1st %s is the bin's range label, 2nd %s is its count. */
+                label += L". " + wxString::Format(_(L"%s: %s"), binLabel, binLengthStr);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
     } // namespace Wisteria::Graphs

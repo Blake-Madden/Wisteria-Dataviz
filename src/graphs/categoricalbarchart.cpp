@@ -226,4 +226,77 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                           SortDirection::SortAscending));
             }
         }
+
+    //----------------------------------------------------------------
+    void CategoricalBarChart::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || GetBars().empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A categorical bar chart") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+        AddAccessibilityAttribute(label, GetReadableAxisTitles(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAxisBrackets(), L". ");
+
+        for (const auto& bar : GetBars())
+            {
+            const wxString barAxisLabel = bar.GetAxisLabel().GetText();
+            const wxString barLengthStr = GetReadableAxisValue(GetScalingAxis(), bar.GetLength());
+
+            // count visible blocks
+            size_t visibleBlockCount{ 0 };
+            for (const auto& block : bar.GetBlocks())
+                {
+                if (block.IsShown())
+                    {
+                    ++visibleBlockCount;
+                    }
+                }
+
+            if (visibleBlockCount > 1)
+                {
+                /* TRANSLATORS: bar label and its total length in a categorical bar chart.
+                   1st %s is the bar's category label, 2nd %s is the total length. */
+                label += L". " + wxString::Format(_(L"%s: %s total"), barAxisLabel, barLengthStr);
+                for (const auto& block : bar.GetBlocks())
+                    {
+                    if (!block.IsShown())
+                        {
+                        continue;
+                        }
+                    // prefer the group-name tag; fall back to the decal text
+                    const wxString blockName =
+                        (!block.GetTag().empty() ? block.GetTag() : block.GetDecal().GetText());
+                    if (!blockName.empty())
+                        {
+                        /* TRANSLATORS: a named block inside a bar and its length.
+                           1st %s is the block's name, 2nd %s is its length. */
+                        label += L", " + wxString::Format(_(L"%s: %s"), blockName,
+                                                          GetReadableAxisValue(GetScalingAxis(),
+                                                                               block.GetLength()));
+                        }
+                    }
+                }
+            else
+                {
+                /* TRANSLATORS: bar label and its length in a categorical bar chart.
+                   1st %s is the bar's category label, 2nd %s is its length. */
+                label += L". " + wxString::Format(_(L"%s: %s"), barAxisLabel, barLengthStr);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
     } // namespace Wisteria::Graphs

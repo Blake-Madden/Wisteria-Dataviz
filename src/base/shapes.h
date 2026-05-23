@@ -816,7 +816,8 @@ namespace Wisteria::GraphItems
             @returns The translatable, lower-case name of the shape
                 (e.g., "male", "hexagon").*/
         [[nodiscard]]
-        static wxString GetReadableShapeName(Icons::IconShape shape, const wxString& text = wxString{});
+        static wxString GetReadableShapeName(Icons::IconShape shape,
+                                             const wxString& text = wxString{});
 
       private:
         Icons::IconShape m_shape{ Icons::IconShape::Square };

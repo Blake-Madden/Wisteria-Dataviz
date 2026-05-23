@@ -151,6 +151,9 @@ namespace Wisteria::Graphs
             return m_weightColumn;
             }
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
       private:
         struct CatBarBlock
             {
