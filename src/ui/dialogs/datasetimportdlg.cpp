@@ -563,6 +563,8 @@ namespace Wisteria::UI
             AdjustGridColumnsForIcons();
             m_previewGrid->ForceRefresh();
             wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
+                         this);
             }
         }
 
@@ -576,6 +578,8 @@ namespace Wisteria::UI
         catch (const std::exception& exc)
             {
             wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
+                         this);
             }
         }
 
