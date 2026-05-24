@@ -3194,7 +3194,6 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                                   L"column-highlight",
                                   L"row-totals",
                                   L"cell-update",
-                                  L"cell-annotations",
                                   L"link-id" })
             {
             const auto cached = graph.GetPropertyTemplate(prop);
