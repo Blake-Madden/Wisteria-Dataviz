@@ -745,6 +745,38 @@ TEST_CASE("ODS large empty row repetition stops parsing", "[ods][repeat][trailin
     CHECK(wrk[0][0].get_value() == L"Data");
     }
 
+TEST_CASE("ODS small column repetition on padding rows stops parsing", "[ods][repeat][trailing]")
+    {
+    // padding row uses colsRepeated=20 (too small for the >100 empty-cell skip, but the row
+    // still has only blank cells); a second cell pads to 16364 columns
+    const wchar_t contentXml[] =
+        L"<?xml version=\"1.0\"?>"
+        L"<office:document-content"
+        L" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\""
+        L" xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\""
+        L" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\">"
+        L"<office:body><office:spreadsheet>"
+        L"<table:table table:name=\"Sheet1\">"
+        L"<table:table-row>"
+        L"<table:table-cell office:value-type=\"string\"><text:p>Data</text:p></table:table-cell>"
+        L"</table:table-row>"
+        L"<table:table-row table:number-rows-repeated=\"1048558\">"
+        L"<table:table-cell table:number-columns-repeated=\"20\"/>"
+        L"<table:table-cell table:number-columns-repeated=\"16364\"/>"
+        L"</table:table-row>"
+        L"</table:table>"
+        L"</office:spreadsheet></office:body>"
+        L"</office:document-content>";
+
+    ods_extract_text ext{ true };
+    ods_extract_text::worksheet wrk;
+    ext(contentXml, std::wcslen(contentXml), wrk, static_cast<size_t>(1));
+
+    // only the one real data row; the 1,048,558-row padding block must not be added
+    REQUIRE(wrk.size() == 1);
+    CHECK(wrk[0][0].get_value() == L"Data");
+    }
+
 TEST_CASE("ODS covered table cells (merged regions)", "[ods][covered]")
     {
     // cell A1 spans 2 columns, so B1 is a covered-table-cell placeholder

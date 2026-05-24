@@ -416,8 +416,13 @@ namespace lily_of_the_valley
                 ++cellTag;
                 }
 
-            // if this is a large row repetition on an empty row, stop processing
-            if (parsedRow.empty() && rowsRepeated > 100)
+            // If this is a large row repetition on an empty row, stop processing.
+            // LibreOffice pads trailing rows with small colsRepeated values,
+            // so parsedRow may be non-empty but contain only blank cells.
+            const bool rowHasOnlyEmptyCells =
+                std::all_of(parsedRow.cbegin(), parsedRow.cend(),
+                            [](const auto& cell) { return cell.get_value().empty(); });
+            if ((parsedRow.empty() || rowHasOnlyEmptyCells) && rowsRepeated > 100)
                 {
                 break;
                 }
