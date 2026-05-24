@@ -384,4 +384,111 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
 
         BarChart::RecalcSizes(dc);
         }
+
+    //-------------------------------------------------------------
+    void GanttChart::SetAutoAccessibilityAttributes()
+        {
+        if (m_tasks.empty())
+            {
+            return;
+            }
+
+        wxString label = _(L"A Gantt chart");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        if (GetScalingAxis().GetRangeDates().first.IsValid() &&
+            GetScalingAxis().GetRangeDates().second.IsValid())
+            {
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: Gantt chart accessibility: overall timeline date range.
+                   1st %s is the start date, 2nd %s is the end date. */
+                _(L"Timeline from %s to %s"), GetScalingAxis().GetRangeDates().first.FormatDate(),
+                GetScalingAxis().GetRangeDates().second.FormatDate());
+            }
+
+        label += L". ";
+        label += wxString::Format(
+            /* TRANSLATORS: Gantt chart accessibility: total number of tasks. %zu is the count. */
+            _(L"%zu tasks"), m_tasks.size());
+        label += L": ";
+
+        for (const auto& task : m_tasks)
+            {
+            label += task.m_name;
+
+            if (!task.m_resource.empty())
+                {
+                wxString resource{ task.m_resource };
+                resource.Replace(L"\n", L" ");
+                label += wxString::Format(
+                    /* TRANSLATORS: Gantt chart accessibility: resource assigned to a task.
+                       %s is the resource/person name. */
+                    _(L" (%s)"), resource.Trim(true).Trim(false));
+                }
+
+            if (!task.m_description.empty())
+                {
+                wxString desc{ task.m_description };
+                desc.Replace(L"\n", L" ");
+                label += wxString::Format(
+                    /* TRANSLATORS: Gantt chart accessibility: task description.
+                       %s is the description text. */
+                    _(L", %s"), desc.Trim(true).Trim(false));
+                }
+
+            if (task.m_start.IsValid() && task.m_end.IsValid())
+                {
+                const int daysInTask{ static_cast<int>((task.m_end - task.m_start).GetDays()) };
+                label += wxString::Format(
+                    /* TRANSLATORS: Gantt chart accessibility: task date range and duration.
+                       1st %s is the start date, 2nd %s is the end date, 3rd %d is day count. */
+                    _(L", %s–%s (%d days)"), task.m_start.FormatDate(), task.m_end.FormatDate(),
+                    daysInTask);
+                }
+            else if (!task.m_start.IsValid() && task.m_end.IsValid())
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: Gantt chart accessibility: task with no fixed start date.
+                       %s is the end date. */
+                    _(L", open start through %s"), task.m_end.FormatDate());
+                }
+            else if (task.m_start.IsValid() && !task.m_end.IsValid())
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: Gantt chart accessibility: task with no fixed end date.
+                       %s is the start date. */
+                    _(L", %s through open end"), task.m_start.FormatDate());
+                }
+
+            if (task.m_percentFinished == 100)
+                {
+                label += _(L", complete");
+                }
+            else if (task.m_percentFinished > 0)
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: Gantt chart accessibility: task completion percentage.
+                       %d is the percentage (1-99). */
+                    _(L", %d%% complete"), static_cast<int>(task.m_percentFinished));
+                }
+
+            label += L"; ";
+            }
+        if (label.EndsWith(L"; "))
+            {
+            label.RemoveLast(2);
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

@@ -514,4 +514,127 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
+
+    //----------------------------------------------------------------
+    void HeatMap::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_matrix.empty())
+            {
+            return;
+            }
+
+        wxString label = _(L"A heatmap");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // variable and value range
+        label += L". ";
+        /* TRANSLATORS: heatmap accessibility: %s is the variable name. */
+        label += wxString::Format(_(L"Variable: %s"), m_continuousColumnName);
+        label += L". ";
+        label += wxString::Format(
+            /* TRANSLATORS: heatmap accessibility: value range.
+               1st %s is the minimum, 2nd %s is the maximum. */
+            _(L"Values range from %s to %s"),
+            wxNumberFormatter::ToString(m_range.first, 1, Settings::GetDefaultNumberFormat()),
+            wxNumberFormatter::ToString(m_range.second, 1, Settings::GetDefaultNumberFormat()));
+
+        // helper: appends one cell's contribution — "ID: value" or just "value"
+        const auto appendCell = [](wxString& buf, const HeatCell& cell)
+        {
+            if (cell.m_valueLabel.empty())
+                {
+                return;
+                }
+            if (!cell.m_selectionLabel.empty())
+                {
+                buf += wxString::Format(L"%s: %s", cell.m_selectionLabel, cell.m_valueLabel);
+                }
+            else
+                {
+                buf += cell.m_valueLabel;
+                }
+            buf += L", ";
+        };
+
+        if (IsUsingGrouping())
+            {
+            const auto groupColumn = GetGroupColumn();
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: heatmap accessibility: grouped row count. %zu is number of groups.
+                 */
+                _(L"%zu groups"),
+                m_matrix.size());
+            label += L": ";
+            for (const auto& row : m_matrix)
+                {
+                if (row.empty())
+                    {
+                    continue;
+                    }
+                const auto rowGroupId = row[0].m_groupId;
+                const wxString groupLabelStr = groupColumn->GetLabelFromID(rowGroupId);
+                if (!groupLabelStr.empty())
+                    {
+                    label += groupLabelStr;
+                    label += L": ";
+                    }
+                for (const auto& cell : row)
+                    {
+                    appendCell(label, cell);
+                    }
+                if (label.EndsWith(L", "))
+                    {
+                    label.RemoveLast(2);
+                    }
+                label += L"; ";
+                }
+            if (label.EndsWith(L"; "))
+                {
+                label.RemoveLast(2);
+                }
+            }
+        else
+            {
+            // count non-empty cells
+            size_t cellCount{ 0 };
+            for (const auto& row : m_matrix)
+                {
+                for (const auto& cell : row)
+                    {
+                    if (!cell.m_valueLabel.empty())
+                        {
+                        ++cellCount;
+                        }
+                    }
+                }
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: heatmap accessibility: total observation count. %zu is the count. */
+                _(L"%zu values"), cellCount);
+            label += _(L": ");
+            for (const auto& row : m_matrix)
+                {
+                for (const auto& cell : row)
+                    {
+                    appendCell(label, cell);
+                    }
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs
