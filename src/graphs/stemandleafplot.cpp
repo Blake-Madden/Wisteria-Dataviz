@@ -602,4 +602,117 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
         AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
+
+    //----------------------------------------------------------------
+    void StemAndLeafPlot::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || m_stems.empty())
+            {
+            return;
+            }
+
+        const bool isBackToBack = IsUsingGrouping();
+
+        wxString label =
+            isBackToBack ? _(L"A back-to-back stem-and-leaf plot") : _(L"A stem-and-leaf plot");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // variable and grouping
+        label += L". ";
+        /* TRANSLATORS: stem-and-leaf accessibility: %s is the variable name. */
+        label += wxString::Format(_(L"Variable: %s"), m_continuousColumnName);
+        if (isBackToBack)
+            {
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: back-to-back stem-and-leaf accessibility.
+                   1st %s is the grouping column name,
+                   2nd %s is the left group label,
+                   3rd %s is the right group label. */
+                _(L"Grouped by %s: %s on the left, %s on the right"), GetGroupColumn()->GetName(),
+                m_leftGroupLabel, m_rightGroupLabel);
+            }
+
+        // total observation count
+        size_t totalObs{ 0 };
+        for (const auto& sd : m_stems)
+            {
+            totalObs += sd.m_rightLeaves.size() + sd.m_leftLeaves.size();
+            }
+        label += L". ";
+        label += wxString::Format(
+            /* TRANSLATORS: stem-and-leaf accessibility: observation and stem counts.
+               1st %zu is the number of observations, 2nd %zu is the number of stems. */
+            _(L"%zu observations across %zu stems"), totalObs, m_stems.size());
+
+        // format leaf digits as a comma-separated readable list
+        const auto formatLeafList = [](const std::vector<int>& leaves, bool reversed)
+        {
+            wxString result;
+            const auto appendLeaf = [&result](int lf)
+            {
+                if (!result.empty())
+                    {
+                    result += L", ";
+                    }
+                result += std::to_wstring(lf);
+            };
+            if (reversed)
+                {
+                for (const auto lf : leaves | std::views::reverse)
+                    {
+                    appendLeaf(lf);
+                    }
+                }
+            else
+                {
+                for (const auto lf : leaves)
+                    {
+                    appendLeaf(lf);
+                    }
+                }
+            return result;
+        };
+
+        // describe each row
+        label += _(L". Rows: ");
+        for (const auto& sd : m_stems)
+            {
+            if (isBackToBack)
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: back-to-back stem-and-leaf row description.
+                       1st %s is the left group label, 2nd %s is its leaf digits,
+                       3rd %s is the stem value, 4th %s is the right group label,
+                       5th %s is its leaf digits. */
+                    _(L"%s: %s | stem %s | %s: %s"), m_leftGroupLabel,
+                    formatLeafList(sd.m_leftLeaves, true), std::to_wstring(sd.m_stem),
+                    m_rightGroupLabel, formatLeafList(sd.m_rightLeaves, false));
+                }
+            else
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: single-series stem-and-leaf row description.
+                       1st %s is the stem value, 2nd %s is the leaf digits. */
+                    _(L"stem %s: %s"), std::to_wstring(sd.m_stem),
+                    formatLeafList(sd.m_rightLeaves, false));
+                }
+            label += L"; ";
+            }
+        if (label.EndsWith(L"; "))
+            {
+            label.RemoveLast(2);
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs
