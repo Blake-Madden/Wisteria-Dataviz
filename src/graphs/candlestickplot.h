@@ -179,6 +179,9 @@ namespace Wisteria::Graphs
             return nullptr;
             }
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
       private:
         struct Ohlc
             {

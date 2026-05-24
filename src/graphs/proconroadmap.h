@@ -206,6 +206,9 @@ namespace Wisteria::Graphs
         /// @brief Adds a caption explaining how to interpret the graph.
         void AddDefaultCaption() final;
 
+        /// @private
+        void SetAutoAccessibilityAttributes() override;
+
         /** @brief Sets the legend label for positive influencers.
             @param label The label to display.*/
         void SetPositiveLegendLabel(const wxString& label) { m_positiveLabel = label; }

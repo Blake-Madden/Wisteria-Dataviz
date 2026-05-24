@@ -149,6 +149,70 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
         }
 
     //----------------------------------------------------------------
+    void ProConRoadmap::SetAutoAccessibilityAttributes()
+        {
+        if (GetRoadStops().empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A pro/con roadmap") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // left side: cons (negative values)
+        wxString conStr;
+        for (const auto& stop : GetRoadStops())
+            {
+            if (compare_doubles_less(stop.GetValue(), 0))
+                {
+                if (!conStr.empty())
+                    {
+                    conStr += L", ";
+                    }
+                conStr += wxString::Format(
+                    L"%s (%s)", stop.GetName(),
+                    wxNumberFormatter::ToString(std::abs(stop.GetValue()), 2,
+                                                Settings::GetDefaultNumberFormat()));
+                }
+            }
+        if (!conStr.empty())
+            {
+            label += L". " + GetNegativeLabel() + L": " + conStr;
+            }
+
+        // right side: pros (positive values)
+        wxString proStr;
+        for (const auto& stop : GetRoadStops())
+            {
+            if (compare_doubles_greater(stop.GetValue(), 0))
+                {
+                if (!proStr.empty())
+                    {
+                    proStr += L", ";
+                    }
+                proStr += wxString::Format(
+                    L"%s (%s)", stop.GetName(),
+                    wxNumberFormatter::ToString(std::abs(stop.GetValue()), 2,
+                                                Settings::GetDefaultNumberFormat()));
+                }
+            }
+        if (!proStr.empty())
+            {
+            label += L". " + GetPositiveLabel() + L": " + proStr;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //----------------------------------------------------------------
     void ProConRoadmap::AddDefaultCaption()
         {
         m_hasDefaultCaption = true;

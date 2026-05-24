@@ -154,6 +154,75 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
         }
 
     //----------------------------------------------------------------
+    void CandlestickPlot::SetAutoAccessibilityAttributes()
+        {
+        if (m_ohlcs.empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A candlestick plot") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // date range
+        const auto firstOhlc =
+            std::ranges::min_element(std::as_const(m_ohlcs), [](const auto& lhs, const auto& rhs)
+                                     { return lhs.m_date < rhs.m_date; });
+        const auto lastOhlc =
+            std::ranges::max_element(std::as_const(m_ohlcs), [](const auto& lhs, const auto& rhs)
+                                     { return lhs.m_date < rhs.m_date; });
+        if (firstOhlc->m_date.IsValid() && lastOhlc->m_date.IsValid())
+            {
+            label += wxString::Format(_(L". Date range: %s–%s"), firstOhlc->m_date.FormatDate(),
+                                      lastOhlc->m_date.FormatDate());
+            }
+
+        // highest and lowest closing prices
+        const auto highCloseOhlc =
+            std::ranges::max_element(std::as_const(m_ohlcs), [](const auto& lhs, const auto& rhs)
+                                     { return compare_doubles_less(lhs.m_close, rhs.m_close); });
+        const auto lowCloseOhlc =
+            std::ranges::min_element(std::as_const(m_ohlcs), [](const auto& lhs, const auto& rhs)
+                                     { return compare_doubles_less(lhs.m_close, rhs.m_close); });
+        label += wxString::Format(
+            _(L". Highest close: %s on %s"),
+            wxNumberFormatter::ToString(highCloseOhlc->m_close, Settings::GetDefaultNumberFormat()),
+            highCloseOhlc->m_date.FormatDate());
+        label += wxString::Format(
+            _(L". Lowest close: %s on %s"),
+            wxNumberFormatter::ToString(lowCloseOhlc->m_close, Settings::GetDefaultNumberFormat()),
+            lowCloseOhlc->m_date.FormatDate());
+
+        // overall trend (only meaningful if there are at least two distinct dates)
+        if (firstOhlc != lastOhlc)
+            {
+            const double change = lastOhlc->m_close - firstOhlc->m_close;
+            if (compare_doubles_greater(change, 0))
+                {
+                label += _(L". Overall trend: upward");
+                }
+            else if (compare_doubles_less(change, 0))
+                {
+                label += _(L". Overall trend: downward");
+                }
+            else
+                {
+                label += _(L". Overall trend: flat");
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //----------------------------------------------------------------
     void CandlestickPlot::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);

@@ -148,6 +148,70 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
         }
 
     //----------------------------------------------------------------
+    void LRRoadmap::SetAutoAccessibilityAttributes()
+        {
+        if (GetRoadStops().empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A linear regression roadmap") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // left side: negative factors
+        wxString negStr;
+        for (const auto& stop : GetRoadStops())
+            {
+            if (compare_doubles_less(stop.GetValue(), 0))
+                {
+                if (!negStr.empty())
+                    {
+                    negStr += L", ";
+                    }
+                negStr +=
+                    wxString::Format(L"%s (%s)", stop.GetName(),
+                                     wxNumberFormatter::ToString(
+                                         stop.GetValue(), 2, Settings::GetDefaultNumberFormat()));
+                }
+            }
+        if (!negStr.empty())
+            {
+            label += L". " + GetNegativeLegendLabel() + L": " + negStr;
+            }
+
+        // right side: positive factors
+        wxString posStr;
+        for (const auto& stop : GetRoadStops())
+            {
+            if (compare_doubles_greater(stop.GetValue(), 0))
+                {
+                if (!posStr.empty())
+                    {
+                    posStr += L", ";
+                    }
+                posStr +=
+                    wxString::Format(L"%s (%s)", stop.GetName(),
+                                     wxNumberFormatter::ToString(
+                                         stop.GetValue(), 2, Settings::GetDefaultNumberFormat()));
+                }
+            }
+        if (!posStr.empty())
+            {
+            label += L". " + GetPositiveLegendLabel() + L": " + posStr;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //----------------------------------------------------------------
     void LRRoadmap::AddDefaultCaption()
         {
         m_hasDefaultCaption = true;
