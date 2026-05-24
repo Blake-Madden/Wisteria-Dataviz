@@ -614,6 +614,77 @@ void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
     }
 
 //-------------------------------------------
+wxString WisteriaDoc::BuildHeaderInfoJsonStr(const Wisteria::GraphItems::HeaderInfo& header) const
+    {
+    if (!header.IsEnabled())
+        {
+        return {};
+        }
+    const auto defaultGuiFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+    wxString hdr = L"{";
+    if (header.GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
+        {
+        hdr += L"\"bold\": true";
+        }
+    if (header.GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
+        {
+        if (hdr.Last() != L'{')
+            {
+            hdr += L", ";
+            }
+        hdr += L"\"italic\": true";
+        }
+    if (header.GetFont().IsOk() && header.GetFont().GetFaceName() != defaultGuiFont.GetFaceName())
+        {
+        if (hdr.Last() != L'{')
+            {
+            hdr += L", ";
+            }
+        hdr += L"\"font-name\": \"" + EscapeJsonStr(header.GetFont().GetFaceName()) + L"\"";
+        }
+    if (header.GetFont().IsOk() && !compare_doubles(header.GetFont().GetFractionalPointSize(),
+                                                    defaultGuiFont.GetFractionalPointSize()))
+        {
+        if (hdr.Last() != L'{')
+            {
+            hdr += L", ";
+            }
+        hdr += wxString::Format(L"\"font-size\": %g", header.GetFont().GetFractionalPointSize());
+        }
+    if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
+        {
+        if (hdr.Last() != L'{')
+            {
+            hdr += L", ";
+            }
+        hdr += L"\"color\": \"" + EscapeJsonStr(ColorToStr(header.GetFontColor())) + L"\"";
+        }
+    if (!compare_doubles(header.GetRelativeScaling(), 1.0))
+        {
+        if (hdr.Last() != L'{')
+            {
+            hdr += L", ";
+            }
+        hdr += wxString::Format(L"\"relative-scaling\": %g", header.GetRelativeScaling());
+        }
+    if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
+        {
+        const auto taStr =
+            Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(header.GetLabelAlignment());
+        if (taStr.has_value())
+            {
+            if (hdr.Last() != L'{')
+                {
+                hdr += L", ";
+                }
+            hdr += L"\"text-alignment\": \"" + taStr.value() + L"\"";
+            }
+        }
+    hdr += L"}";
+    return (hdr == L"{}") ? wxString{} : hdr;
+    }
+
+//-------------------------------------------
 wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label) const
     {
     wxString json = L"{";
@@ -752,79 +823,14 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
         }
 
     // header
-    const auto& header = label.GetHeaderInfo();
-    if (header.IsEnabled())
+    const auto hdrStr = BuildHeaderInfoJsonStr(label.GetHeaderInfo());
+    if (!hdrStr.empty())
         {
-        wxString hdrStr = L"{";
-        if (header.GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
+        if (json.Last() != L'{')
             {
-            hdrStr += L"\"bold\": true";
+            json += L", ";
             }
-        if (header.GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
-            {
-            if (hdrStr.Last() != L'{')
-                {
-                hdrStr += L", ";
-                }
-            hdrStr += L"\"italic\": true";
-            }
-        if (header.GetFont().IsOk() &&
-            header.GetFont().GetFaceName() != defaultGuiFont.GetFaceName())
-            {
-            if (hdrStr.Last() != L'{')
-                {
-                hdrStr += L", ";
-                }
-            hdrStr += L"\"font-name\": \"" + EscapeJsonStr(header.GetFont().GetFaceName()) + L"\"";
-            }
-        if (header.GetFont().IsOk() && !compare_doubles(header.GetFont().GetFractionalPointSize(),
-                                                        defaultGuiFont.GetFractionalPointSize()))
-            {
-            if (hdrStr.Last() != L'{')
-                {
-                hdrStr += L", ";
-                }
-            hdrStr +=
-                wxString::Format(L"\"font-size\": %g", header.GetFont().GetFractionalPointSize());
-            }
-        if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
-            {
-            if (hdrStr.Last() != L'{')
-                {
-                hdrStr += L", ";
-                }
-            hdrStr += L"\"color\": \"" + ColorToStr(header.GetFontColor()) + L"\"";
-            }
-        if (!compare_doubles(header.GetRelativeScaling(), 1.0))
-            {
-            if (hdrStr.Last() != L'{')
-                {
-                hdrStr += L", ";
-                }
-            hdrStr += wxString::Format(L"\"relative-scaling\": %g", header.GetRelativeScaling());
-            }
-        if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
-            {
-            const auto htaStr = Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(
-                header.GetLabelAlignment());
-            if (htaStr.has_value())
-                {
-                if (hdrStr.Last() != L'{')
-                    {
-                    hdrStr += L", ";
-                    }
-                hdrStr += L"\"text-alignment\": \"" + htaStr.value() + L"\"";
-                }
-            }
-        hdrStr += L"}";
-        if (hdrStr != L"{}")
-            {
-            if (json.Last() != L'{')
-                {
-                json += L", ";
-                }
-            json += L"\"header\": " + hdrStr;
-            }
+        json += L"\"header\": " + hdrStr;
         }
 
     json += L"}";
@@ -854,78 +860,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
         }
 
     // build header JSON string first (needed for template)
-    wxString headerStr;
-    const auto& header = label->GetHeaderInfo();
-    const auto defaultGuiFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
-    if (header.IsEnabled())
-        {
-        wxString hdrObj = L"{";
-        if (header.GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
-            {
-            hdrObj += L"\"bold\": true";
-            }
-        if (header.GetFont().GetStyle() == wxFONTSTYLE_ITALIC)
-            {
-            if (hdrObj.Last() != L'{')
-                {
-                hdrObj += L", ";
-                }
-            hdrObj += L"\"italic\": true";
-            }
-        if (header.GetFont().IsOk() &&
-            header.GetFont().GetFaceName() != defaultGuiFont.GetFaceName())
-            {
-            if (hdrObj.Last() != L'{')
-                {
-                hdrObj += L", ";
-                }
-            hdrObj += L"\"font-name\": \"" + EscapeJsonStr(header.GetFont().GetFaceName()) + L"\"";
-            }
-        if (header.GetFont().IsOk() && !compare_doubles(header.GetFont().GetFractionalPointSize(),
-                                                        defaultGuiFont.GetFractionalPointSize()))
-            {
-            if (hdrObj.Last() != L'{')
-                {
-                hdrObj += L", ";
-                }
-            hdrObj +=
-                wxString::Format(L"\"font-size\": %g", header.GetFont().GetFractionalPointSize());
-            }
-        if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
-            {
-            if (hdrObj.Last() != L'{')
-                {
-                hdrObj += L", ";
-                }
-            hdrObj += L"\"color\": \"" + EscapeJsonStr(ColorToStr(header.GetFontColor())) + L"\"";
-            }
-        if (!compare_doubles(header.GetRelativeScaling(), 1.0))
-            {
-            if (hdrObj.Last() != L'{')
-                {
-                hdrObj += L", ";
-                }
-            hdrObj += wxString::Format(L"\"relative-scaling\": %g", header.GetRelativeScaling());
-            }
-        if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
-            {
-            const auto htaStr = Wisteria::ReportEnumConvert::ConvertTextAlignmentToString(
-                header.GetLabelAlignment());
-            if (htaStr.has_value())
-                {
-                if (hdrObj.Last() != L'{')
-                    {
-                    hdrObj += L", ";
-                    }
-                hdrObj += L"\"text-alignment\": \"" + htaStr.value() + L"\"";
-                }
-            }
-        hdrObj += L"}";
-        if (hdrObj != L"{}")
-            {
-            headerStr = hdrObj;
-            }
-        }
+    const wxString headerStr = BuildHeaderInfoJsonStr(label->GetHeaderInfo());
 
     // build template with all sub-objects embedded
     wxString tmpl = L"{\"type\": \"label\"";

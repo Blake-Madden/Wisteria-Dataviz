@@ -54,6 +54,8 @@ class WisteriaDoc final : public wxDocument
     [[nodiscard]]
     wxString SaveBrushToStr(const wxBrush& brush) const;
     [[nodiscard]]
+    wxString BuildHeaderInfoJsonStr(const Wisteria::GraphItems::HeaderInfo& header) const;
+    [[nodiscard]]
     wxString SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label) const;
 
     [[nodiscard]]
