@@ -1,7 +1,8 @@
 # Releases
 
-## 1.1.1 Release
+## 1.2.0 Release
 
+- Alpha release of stand-alone application (`WisteriaDV` target)
 - New graph type: Chernoff Faces Plot
 - New graph type: Stem & Leaf Plot
 - Added PDF export (using *wxPdfDocument*)
