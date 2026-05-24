@@ -1165,6 +1165,17 @@ namespace Wisteria::Graphs
         void ClearSelections() final
             {
             GraphItemBase::SetSelected(false);
+            m_title.SetSelected(false);
+            m_subtitle.SetSelected(false);
+            m_caption.SetSelected(false);
+            m_bottomXAxis.SetSelected(false);
+            m_topXAxis.SetSelected(false);
+            m_leftYAxis.SetSelected(false);
+            m_rightYAxis.SetSelected(false);
+            for (auto& axis : m_customAxes)
+                {
+                axis.SetSelected(false);
+                }
             for (auto& object : m_plotObjects)
                 {
                 if (object->IsSelected())

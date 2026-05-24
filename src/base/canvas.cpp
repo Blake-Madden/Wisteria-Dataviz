@@ -1861,49 +1861,55 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             wxASSERT_MSG(currentlyDraggedShape == nullptr,
                          L"Item being dragged should be null upon left mouse down!");
-            // unselect any selected items (if Control/Command isn't held down),
-            // as we are now selecting (and possibly dragging) something else.
-            if (!wxGetMouseState().CmdDown())
-                {
-                for (auto& polygonPtr : GetFreeFloatingObjects())
-                    {
-                    if (polygonPtr && polygonPtr->IsSelected())
-                        {
-                        polygonPtr->SetSelected(false);
-                        }
-                    }
-                for (auto& fixedObjectsRow : GetFixedObjects())
-                    {
-                    for (auto& objectPtr : fixedObjectsRow)
-                        {
-                        if (objectPtr != nullptr)
-                            {
-                            objectPtr->ClearSelections();
-                            }
-                        }
-                    }
-                for (auto& title : GetTitles())
-                    {
-                    if (title != nullptr && title->IsSelected())
-                        {
-                        title->SetSelected(false);
-                        }
-                    }
-                }
+
+            GraphItems::GraphItemBase* hitObject = nullptr;
+
             // see if a movable object is being selected.
             if (const auto movableObjectsPos = FindFreeFloatingObject(unscrolledPosition, gdc);
                 movableObjectsPos != GetFreeFloatingObjects().rend())
                 {
+                hitObject = (*movableObjectsPos).get();
                 // We tentatively start dragging, but wait for
                 // mouse movement before dragging properly.
                 dragMode = DragMode::DragStart;
                 dragStartPos = unscrolledPosition;
-                (*movableObjectsPos)->SetSelected(!(*movableObjectsPos)->IsSelected());
+                hitObject->SetSelected(!hitObject->IsSelected());
+
+                // unselect any selected items (if Control/Command isn't held down),
+                // as we are now selecting (and possibly dragging) something else.
+                if (!wxGetMouseState().CmdDown())
+                    {
+                    for (auto& polygonPtr : GetFreeFloatingObjects())
+                        {
+                        if (polygonPtr && polygonPtr->IsSelected() && polygonPtr.get() != hitObject)
+                            {
+                            polygonPtr->SetSelected(false);
+                            }
+                        }
+                    for (auto& fixedObjectsRow : GetFixedObjects())
+                        {
+                        for (auto& objectPtr : fixedObjectsRow)
+                            {
+                            if (objectPtr != nullptr)
+                                {
+                                objectPtr->ClearSelections();
+                                }
+                            }
+                        }
+                    for (auto& title : GetTitles())
+                        {
+                        if (title != nullptr && title->IsSelected())
+                            {
+                            title->SetSelected(false);
+                            }
+                        }
+                    }
+
                 Refresh(true);
                 Update();
-                m_dragImage = std::make_unique<wxDragImage>((*movableObjectsPos)->ToBitmap(gdc),
+                m_dragImage = std::make_unique<wxDragImage>(hitObject->ToBitmap(gdc),
                                                             wxCursor(wxCURSOR_HAND));
-                (*movableObjectsPos)->SetInDragState(true);
+                hitObject->SetInDragState(true);
                 currentlyDraggedShape = (*movableObjectsPos);
                 event.Skip();
                 return; // we have our selection, so bail before hit testing everything else
@@ -1920,23 +1926,58 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     {
                     if (object && object->SelectObjectAtPoint(unscrolledPosition, gdc))
                         {
-                        Refresh(true);
-                        Update();
-                        event.Skip();
-                        return;
+                        hitObject = object.get();
+                        break;
+                        }
+                    }
+                if (hitObject)
+                    {
+                    break;
+                    }
+                }
+
+            if (!hitObject)
+                {
+                for (const auto& title : GetTitles())
+                    {
+                    if (title != nullptr && title->SelectObjectAtPoint(unscrolledPosition, gdc))
+                        {
+                        hitObject = title.get();
+                        break;
                         }
                     }
                 }
-            for (const auto& title : GetTitles())
+
+            // unselect any selected items (if Control/Command isn't held down),
+            // as we are now selecting (and possibly dragging) something else.
+            if (!wxGetMouseState().CmdDown())
                 {
-                if (title != nullptr && title->SelectObjectAtPoint(unscrolledPosition, gdc))
+                for (auto& polygonPtr : GetFreeFloatingObjects())
                     {
-                    Refresh(true);
-                    Update();
-                    event.Skip();
-                    return;
+                    if (polygonPtr && polygonPtr->IsSelected() && polygonPtr.get() != hitObject)
+                        {
+                        polygonPtr->SetSelected(false);
+                        }
+                    }
+                for (auto& fixedObjectsRow : GetFixedObjects())
+                    {
+                    for (auto& objectPtr : fixedObjectsRow)
+                        {
+                        if (objectPtr != nullptr && objectPtr.get() != hitObject)
+                            {
+                            objectPtr->ClearSelections();
+                            }
+                        }
+                    }
+                for (auto& title : GetTitles())
+                    {
+                    if (title != nullptr && title->IsSelected() && title.get() != hitObject)
+                        {
+                        title->SetSelected(false);
+                        }
                     }
                 }
+
             Refresh(true);
             Update();
             event.Skip();

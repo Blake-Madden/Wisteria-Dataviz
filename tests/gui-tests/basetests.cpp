@@ -151,3 +151,42 @@ TEST_CASE("Point assignment", "[point]")
     CHECK(5 == pi2.GetRadius());
     CHECK(pi2.GetText() == L"hello");
     }
+
+TEST_CASE("GraphItemBase Selection Toggle", "[graphitem]")
+    {
+    class MockItem : public GraphItemBase
+        {
+      public:
+        using GraphItemBase::GraphItemBase;
+        void Offset([[maybe_unused]] int x, [[maybe_unused]] int y) override {}
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override { return wxRect(0, 0, 100, 100); }
+        void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] double scaling) override
+            {
+            }
+        bool HitTest(wxPoint pt, [[maybe_unused]] wxDC& dc) const override
+            {
+            return wxRect(0, 0, 100, 100).Contains(pt);
+            }
+        };
+
+    MockItem item(1.0, L"test");
+    item.SetSelectable(true);
+
+    wxMemoryDC dc;
+
+    SECTION("Initial state") { CHECK_FALSE(item.IsSelected()); }
+
+    SECTION("Toggle on")
+        {
+        item.SelectObjectAtPoint(wxPoint(50, 50), dc);
+        CHECK(item.IsSelected());
+        }
+
+    SECTION("Toggle off")
+        {
+        item.SetSelected(true);
+        item.SelectObjectAtPoint(wxPoint(50, 50), dc);
+        CHECK_FALSE(item.IsSelected());
+        }
+    }

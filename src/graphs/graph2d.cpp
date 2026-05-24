@@ -1581,22 +1581,9 @@ namespace Wisteria::Graphs
             {
             return false;
             }
-        // if CTRL isn't held down, then unselect everything
-        if (!wxGetMouseState().ControlDown())
-            {
-            GetSelectedIds().clear();
-            m_selectedItemsWithSubitems.clear();
-            for (auto& plotObject : m_plotObjects)
-                {
-                plotObject->GetSelectedIds().clear();
-                plotObject->SetSelected(false);
-                }
-            for (auto& plotObject : m_embeddedObjects)
-                {
-                plotObject.GetObject()->GetSelectedIds().clear();
-                plotObject.GetObject()->SetSelected(false);
-                }
-            }
+
+        GraphItems::GraphItemBase* hitObject = nullptr;
+
         // items are added to a plot FILO (i.e., painter's algorithm),
         // so go backwards so that we select the items on top
 
@@ -1607,64 +1594,102 @@ namespace Wisteria::Graphs
             if (embeddedObject.GetObject()->IsSelectable() &&
                 embeddedObject.GetObject()->HitTest(pt, dc))
                 {
-                embeddedObject.GetObject()->SetSelected(!embeddedObject.GetObject()->IsSelected());
-                return true;
+                hitObject = embeddedObject.GetObject().get();
+                break;
                 }
             }
         // the standard graph objects (added via AddObject())
-        for (const auto& plotObject : std::ranges::reverse_view(m_plotObjects))
+        if (!hitObject)
             {
-            if (plotObject->IsSelectable() && plotObject->HitTest(pt, dc))
+            for (const auto& plotObject : std::ranges::reverse_view(m_plotObjects))
                 {
-                // toggle selection (or if it has subitems, then set it to selected
-                // and let it perform its own selection logic)
-                if (!plotObject->GetSelectedIds().empty())
+                if (plotObject->IsSelectable() && plotObject->HitTest(pt, dc))
                     {
-                    // has sub-items selected
-                    plotObject->SetSelected(true);
+                    hitObject = plotObject.get();
+                    break;
                     }
-                else
-                    {
-                    // toggle simple selection
-                    plotObject->SetSelected(!plotObject->IsSelected());
-                    }
-
-                // update list of selected items
-                // (based on whether this is newly selected or just unselected)
-                if (plotObject->IsSelected())
-                    {
-                    GetSelectedIds().insert(plotObject->GetId());
-                    // if object has subitems, then record that for when we
-                    // need to reselect items after recreating managed objects
-                    if (!plotObject->GetSelectedIds().empty())
-                        {
-                        m_selectedItemsWithSubitems.insert_or_assign(plotObject->GetId(),
-                                                                     plotObject->GetSelectedIds());
-                        }
-                    }
-                else
-                    {
-                    // update our selection info if the object (and possibly, its sub-objects)
-                    // were deselected
-                    const auto unselectedItem = GetSelectedIds().find(plotObject->GetId());
-                    if (unselectedItem != GetSelectedIds().end())
-                        {
-                        GetSelectedIds().erase(unselectedItem);
-                        }
-                    const auto unselectedItemWithSubitems =
-                        m_selectedItemsWithSubitems.find(plotObject->GetId());
-                    if (unselectedItemWithSubitems != m_selectedItemsWithSubitems.end())
-                        {
-                        m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems);
-                        }
-                    }
-                return true;
                 }
             }
+
+        if (hitObject)
+            {
+            // if CTRL isn't held down, then unselect everything else
+            if (!wxGetMouseState().ControlDown())
+                {
+                GetSelectedIds().clear();
+                m_selectedItemsWithSubitems.clear();
+                for (auto& plotObject : m_plotObjects)
+                    {
+                    if (plotObject.get() != hitObject)
+                        {
+                        plotObject->GetSelectedIds().clear();
+                        plotObject->SetSelected(false);
+                        }
+                    }
+                for (auto& embeddedObj : m_embeddedObjects)
+                    {
+                    if (embeddedObj.GetObject().get() != hitObject)
+                        {
+                        embeddedObj.GetObject()->GetSelectedIds().clear();
+                        embeddedObj.GetObject()->SetSelected(false);
+                        }
+                    }
+                }
+
+            // toggle selection (or if it has subitems, then set it to selected
+            // and let it perform its own selection logic)
+            if (!hitObject->GetSelectedIds().empty())
+                {
+                // has sub-items selected
+                hitObject->SetSelected(true);
+                }
+            else
+                {
+                // toggle simple selection
+                hitObject->SetSelected(!hitObject->IsSelected());
+                }
+
+            // update list of selected items
+            // (based on whether this is newly selected or just unselected)
+            if (hitObject->IsSelected())
+                {
+                GetSelectedIds().insert(hitObject->GetId());
+                // if object has subitems, then record that for when we
+                // need to reselect items after recreating managed objects
+                if (!hitObject->GetSelectedIds().empty())
+                    {
+                    m_selectedItemsWithSubitems.insert_or_assign(hitObject->GetId(),
+                                                                 hitObject->GetSelectedIds());
+                    }
+                }
+            else
+                {
+                // update our selection info if the object (and possibly, its sub-objects)
+                // were deselected
+                const auto unselectedItem = GetSelectedIds().find(hitObject->GetId());
+                if (unselectedItem != GetSelectedIds().end())
+                    {
+                    GetSelectedIds().erase(unselectedItem);
+                    }
+                const auto unselectedItemWithSubitems =
+                    m_selectedItemsWithSubitems.find(hitObject->GetId());
+                if (unselectedItemWithSubitems != m_selectedItemsWithSubitems.end())
+                    {
+                    m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems);
+                    }
+                }
+            return true;
+            }
+
         // no items selected, so see if we at least clicked inside the plot area
         if (HitTest(pt, dc))
             {
-            SetSelected(true);
+            const bool wasSelected = IsSelected();
+            if (!wxGetMouseState().ControlDown())
+                {
+                ClearSelections();
+                }
+            SetSelected(!wasSelected);
             return true;
             }
         return false;
