@@ -147,24 +147,27 @@ namespace Wisteria::UI
         skinColorSizer->Add(m_skinColorDarkerPicker, wxSizerFlags{}.CenterVertical());
         appearanceSizer->Add(skinColorSizer);
 
-        // eye color
-        appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Eye color:")),
-                             wxSizerFlags{}.CenterVertical());
-        m_eyeColorPicker = new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 143, 188, 143 });
-        appearanceSizer->Add(m_eyeColorPicker);
-
-        // hair color
-        appearanceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Hair color:")),
-                             wxSizerFlags{}.CenterVertical());
-        m_hairColorPicker = new wxColourPickerCtrl(optionsPage, wxID_ANY, wxColour{ 183, 82, 46 });
-        appearanceSizer->Add(m_hairColorPicker);
-
         optionsSizer->Add(appearanceSizer, wxSizerFlags{}.Border());
 
-        // cosmetic options (gender-specific)
+        // cosmetic options
         auto* cosmeticBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Cosmetic"));
         auto* cosmeticGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        // eye color
+        cosmeticGrid->Add(new wxStaticText(cosmeticBox->GetStaticBox(), wxID_ANY, _(L"Eye color:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_eyeColorPicker = new wxColourPickerCtrl(cosmeticBox->GetStaticBox(), wxID_ANY,
+                                                  wxColour{ 143, 188, 143 });
+        cosmeticGrid->Add(m_eyeColorPicker);
+
+        // hair color
+        cosmeticGrid->Add(
+            new wxStaticText(cosmeticBox->GetStaticBox(), wxID_ANY, _(L"Hair color:")),
+            wxSizerFlags{}.CenterVertical());
+        m_hairColorPicker =
+            new wxColourPickerCtrl(cosmeticBox->GetStaticBox(), wxID_ANY, wxColour{ 183, 82, 46 });
+        cosmeticGrid->Add(m_hairColorPicker);
 
         // lipstick color (female only)
         m_lipstickColorLabel =
@@ -263,79 +266,79 @@ namespace Wisteria::UI
 
         VariableSelectDlg dlg(this, columnInfo,
                               { VLI{}
-                                    .Label(_(L"Face Width"))
+                                    .Label(_(L"Face width"))
                                     .SingleSelection(true)
                                     .Required(true)
                                     .DefaultVariables(defaultVar(FID::FaceWidth))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Face Height"))
+                                    .Label(_(L"Face height"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::FaceHeight))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Eye Size"))
+                                    .Label(_(L"Eye size"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::EyeSize))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Eye Position"))
+                                    .Label(_(L"Eye position"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::EyePosition))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Eyebrow Slant"))
+                                    .Label(_(L"Eyebrow slant"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::EyebrowSlant))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Pupil Position"))
+                                    .Label(_(L"Pupil position"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::PupilDirection))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Nose Size"))
+                                    .Label(_(L"Nose size"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::NoseSize))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Mouth Width"))
+                                    .Label(_(L"Mouth width"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::MouthWidth))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Mouth Curvature"))
+                                    .Label(_(L"Mouth curvature"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::SmileFrown))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Face Color"))
+                                    .Label(_(L"Face color"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::FaceColor))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Ear Size"))
+                                    .Label(_(L"Ear size"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::EarSize))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
                                 VLI{}
-                                    .Label(_(L"Hair Style"))
+                                    .Label(_(L"Hair style"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::HairStyle))
                                     .AcceptedTypes({ Data::Dataset::ColumnImportType::String }),
                                 VLI{}
-                                    .Label(_(L"Hair Addition"))
+                                    .Label(_(L"Hair addition"))
                                     .SingleSelection(true)
                                     .Required(false)
                                     .DefaultVariables(defaultVar(FID::HairAddition))
