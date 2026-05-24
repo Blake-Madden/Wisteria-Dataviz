@@ -627,7 +627,7 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
         }
 
     // bold
-    if (label.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+    if (label.GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
         {
         if (json.Last() != L'{')
             {
@@ -756,7 +756,7 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
     if (header.IsEnabled())
         {
         wxString hdrStr = L"{";
-        if (header.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+        if (header.GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
             {
             hdrStr += L"\"bold\": true";
             }
@@ -860,7 +860,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
     if (header.IsEnabled())
         {
         wxString hdrObj = L"{";
-        if (header.GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+        if (header.GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
             {
             hdrObj += L"\"bold\": true";
             }
@@ -1047,7 +1047,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
         }
 
     // bold
-    if (label->GetFont().GetWeight() == wxFONTWEIGHT_BOLD)
+    if (label->GetFont().GetWeight() >= wxFONTWEIGHT_BOLD)
         {
         node->Add(L"bold", true);
         }
