@@ -274,7 +274,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                         {
                         /* TRANSLATORS: a named block inside a bar and its length.
                            1st %s is the block's name, 2nd %s is its length. */
-                        label += L", " + wxString::Format(_(L"%s: %s"), blockName,
+                        label += L", " + wxString::Format(_DT(L"%s: %s"), blockName,
                                                           GetReadableAxisValue(GetScalingAxis(),
                                                                                block.GetLength()));
                         }
@@ -284,7 +284,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                 {
                 /* TRANSLATORS: bar label and its length in a categorical bar chart.
                    1st %s is the bar's category label, 2nd %s is its length. */
-                label += L". " + wxString::Format(_(L"%s: %s"), barAxisLabel, barLengthStr);
+                label += L". " + wxString::Format(_DT(L"%s: %s"), barAxisLabel, barLengthStr);
                 }
             }
 

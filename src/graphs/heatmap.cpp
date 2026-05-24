@@ -565,8 +565,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             label += wxString::Format(
                 /* TRANSLATORS: heatmap accessibility: grouped row count. %zu is number of groups.
                  */
-                _(L"%zu groups"),
-                m_matrix.size());
+                _(L"%zu groups"), m_matrix.size());
             label += L": ";
             for (const auto& row : m_matrix)
                 {
@@ -614,7 +613,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             label += wxString::Format(
                 /* TRANSLATORS: heatmap accessibility: total observation count. %zu is the count. */
                 _(L"%zu values"), cellCount);
-            label += _(L": ");
+            label += _DT(L": ");
             for (const auto& row : m_matrix)
                 {
                 for (const auto& cell : row)

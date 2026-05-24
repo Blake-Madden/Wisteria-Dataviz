@@ -56,7 +56,7 @@ namespace Wisteria::GraphItems
             else
                 {
                 label = wxString::Format(
-                    _(L"A %s shape that is %s%% full."), shapeName,
+                    _(L"%s shape that is %s%% full."), shapeName,
                     wxNumberFormatter::ToString(m_fillPercent * 100.0, 0,
                                                 wxNumberFormatter::Style::Style_None));
                 }

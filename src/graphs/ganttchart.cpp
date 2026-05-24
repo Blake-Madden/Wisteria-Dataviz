@@ -426,7 +426,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 label += wxString::Format(
                     /* TRANSLATORS: Gantt chart accessibility: resource assigned to a task.
                        %s is the resource/person name. */
-                    _(L" (%s)"), resource.Trim(true).Trim(false));
+                    _DT(L" (%s)"), resource.Trim(true).Trim(false));
                 }
 
             if (!task.m_description.empty())
@@ -436,7 +436,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 label += wxString::Format(
                     /* TRANSLATORS: Gantt chart accessibility: task description.
                        %s is the description text. */
-                    _(L", %s"), desc.Trim(true).Trim(false));
+                    _DT(L", %s"), desc.Trim(true).Trim(false));
                 }
 
             if (task.m_start.IsValid() && task.m_end.IsValid())

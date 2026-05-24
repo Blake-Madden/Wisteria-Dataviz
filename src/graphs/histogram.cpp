@@ -787,7 +787,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         {
                         /* TRANSLATORS: a named block inside a histogram bin and its count.
                            1st %s is the group name, 2nd %s is its count. */
-                        label += L", " + wxString::Format(_(L"%s: %s"), blockName,
+                        label += L", " + wxString::Format(_DT(L"%s: %s"), blockName,
                                                           GetReadableAxisValue(GetScalingAxis(),
                                                                                block.GetLength()));
                         }
@@ -797,7 +797,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 {
                 /* TRANSLATORS: bin label and its count in a histogram.
                    1st %s is the bin's range label, 2nd %s is its count. */
-                label += L". " + wxString::Format(_(L"%s: %s"), binLabel, binLengthStr);
+                label += L". " + wxString::Format(_DT(L"%s: %s"), binLabel, binLengthStr);
                 }
             }
 
