@@ -1028,10 +1028,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         // fit it to the layout via the DC's user scale — this embeds a high-DPI
         // copy in the document so it stays crisp when zoomed or printed
         const bool isPrintDC =
-#ifdef INCLUDE_PDF
-            dc.IsKindOf(wxCLASSINFO(wxPdfDC)) ||
-#endif
-            dc.IsKindOf(wxCLASSINFO(wxPrinterDC));
+            dc.IsKindOf(wxCLASSINFO(wxPdfDC)) || dc.IsKindOf(wxCLASSINFO(wxPrinterDC));
 
         wxImage img = m_originalImg;
         if (!isPrintDC && img.GetSize() != scaledSize)
