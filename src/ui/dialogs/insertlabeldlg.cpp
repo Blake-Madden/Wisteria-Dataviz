@@ -456,7 +456,17 @@ namespace Wisteria::UI
         {
         ApplyAccessibilityOptions(label);
 
-        label.SetText(GetLabelText());
+        const auto rawText = GetLabelText();
+        label.SetText(rawText);
+        if (GetReportBuilder() != nullptr)
+            {
+            const auto expanded = GetReportBuilder()->ExpandConstants(rawText);
+            label.SetPropertyTemplate(L"text", (expanded != rawText) ? rawText : wxString{});
+            }
+        else
+            {
+            label.SetPropertyTemplate(L"text", wxString{});
+            }
         label.GetFont() = GetLabelFont();
         label.SetFontColor(GetFontColor());
         label.SetFontBackgroundColor(GetBackgroundColor());

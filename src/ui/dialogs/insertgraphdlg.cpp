@@ -76,16 +76,16 @@ namespace Wisteria::UI
                     {
                     dest.SetPropertyTemplate(L"text", rawText);
                     }
+                else
+                    {
+                    // literal value — clear any stale constant template so
+                    // the next LoadGraphOptions reads the actual text, not the old template
+                    dest.SetPropertyTemplate(L"text", wxString{});
+                    }
                 }
             else
                 {
                 dest.SetText(rawText);
-                }
-            // preserve any existing text template from the source
-            const auto srcTemplate = src.GetPropertyTemplate(L"text");
-            if (!srcTemplate.empty())
-                {
-                dest.SetPropertyTemplate(L"text", srcTemplate);
                 }
         };
 
