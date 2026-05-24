@@ -317,6 +317,7 @@ namespace Wisteria::UI
             currentList.m_removeId = ++currentId;
             currentList.m_required = var.m_required;
             currentList.m_singleSelection = var.m_singleSelection;
+            currentList.m_acceptedTypes = var.m_acceptedTypes;
 
             const long style = currentList.m_singleSelection ?
                                    (wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL) :
@@ -511,6 +512,33 @@ namespace Wisteria::UI
             wxMessageBox(_(L"Variables must be selected for the required lists."),
                          _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
             return false;
+            }
+
+        // verify that each variable's type is compatible with its target list
+        for (const auto& varList : m_varLists)
+            {
+            if (varList.m_list == nullptr || varList.m_acceptedTypes.empty())
+                {
+                continue;
+                }
+            for (auto i = 0; i < varList.m_list->GetItemCount(); ++i)
+                {
+                const wxString varName{ varList.m_list->GetItemText(i) };
+                const auto colIt = std::ranges::find_if(m_columnInfo, [&varName](const auto& col)
+                                                        { return col.m_name == varName; });
+                if (colIt == m_columnInfo.cend())
+                    {
+                    continue;
+                    }
+                if (std::ranges::find(varList.m_acceptedTypes, colIt->m_type) ==
+                    varList.m_acceptedTypes.cend())
+                    {
+                    wxMessageBox(wxString::Format(_(L"'%s' is not a valid variable type for '%s'."),
+                                                  varName, varList.m_label),
+                                 _(L"Invalid Variable Type"), wxOK | wxICON_WARNING | wxCENTRE);
+                    return false;
+                    }
+                }
             }
 
         return true;

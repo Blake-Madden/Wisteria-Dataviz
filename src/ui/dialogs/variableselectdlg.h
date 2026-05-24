@@ -163,6 +163,7 @@ namespace Wisteria::UI
             bool m_singleSelection{ false };
             bool m_required{ true };
             wxListView* m_list{ nullptr };
+            std::vector<Data::Dataset::ColumnImportType> m_acceptedTypes;
             };
 
         bool Validate() final;
