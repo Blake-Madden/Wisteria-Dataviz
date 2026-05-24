@@ -140,6 +140,12 @@ namespace Wisteria
         CleanShaven,
         /// @brief Light stubble.
         FiveOClockShadow,
+        /// @brief Dense stubble covering the lower face and extending slightly below the chin.
+        Beard,
+        /// @brief Beard along the jaw and chin with the upper lip cleanly shaved.
+        ///     Also known as the Shenandoah, whaler, Lincoln beard, Donegal, Amish beard,
+        ///     or Quaker beard.
+        ChinCurtain,
         /// @brief Van Dyke: pointed chin goatee with a mustache, cheeks shaved.
         VanDyke,
         /// @brief Mustache only (cheeks and chin shaved).
@@ -148,12 +154,6 @@ namespace Wisteria
         Goatee,
         /// @brief Thin mustache with long, narrow strands drooping past the mouth corners.
         FuManchu,
-        /// @brief Dense stubble covering the lower face and extending slightly below the chin.
-        Beard,
-        /// @brief Beard along the jaw and chin with the upper lip cleanly shaved.
-        ///     Also known as the Shenandoah, whaler, Lincoln beard, Donegal, Amish beard,
-        ///     or Quaker beard.
-        ChinCurtain,
         /// @private
         FACIAL_HAIR_COUNT
         };
