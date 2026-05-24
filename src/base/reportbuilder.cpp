@@ -5167,7 +5167,7 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table)
         {
-        ReportNodeLoader loader(*this);
+        ReportTableLoader loader(*this);
         loader.ApplyTableFeatures(table);
         }
 
@@ -5176,7 +5176,7 @@ namespace Wisteria
                                                               Canvas* canvas, size_t& currentRow,
                                                               size_t& currentColumn)
         {
-        ReportNodeLoader nodeLoader(*this);
+        ReportTableLoader nodeLoader(*this);
 
         const wxString dsName = tableNode->GetProperty(L"dataset")->AsString();
         const auto foundPos = m_datasets.find(dsName);

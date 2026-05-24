@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef WISTERIA_REPORT_NODE_LOADER_H
-#define WISTERIA_REPORT_NODE_LOADER_H
+#ifndef WISTERIA_REPORT_TABLE_LOADER_H
+#define WISTERIA_REPORT_TABLE_LOADER_H
 
 #include "../graphs/table.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
@@ -32,14 +32,14 @@ namespace Wisteria
         @details Each Apply* method corresponds to a single table JSON property.
             The main entry point is ApplyTableFeatures(), which re-applies
             all cached templates in the correct order.*/
-    class ReportNodeLoader
+    class ReportTableLoader
         {
       public:
         /** @brief Constructs a loader bound to a report builder.
             @details The report builder is used for helper functions such as
                 ConvertColor(), ConvertNumber(), ExpandAndCache(), and LoadPen().
             @param reportBuilder The report builder to use for helper functions.*/
-        explicit ReportNodeLoader(const ReportBuilder& reportBuilder) noexcept
+        explicit ReportTableLoader(const ReportBuilder& reportBuilder) noexcept
             : m_reportBuilder(reportBuilder)
             {
             }
@@ -64,9 +64,9 @@ namespace Wisteria
                                  const wxString& rangeStart, const wxString& rangeEnd);
 
         /// @private
-        ReportNodeLoader(const ReportNodeLoader&) = delete;
+        ReportTableLoader(const ReportTableLoader&) = delete;
         /// @private
-        ReportNodeLoader& operator=(const ReportNodeLoader&) = delete;
+        ReportTableLoader& operator=(const ReportTableLoader&) = delete;
 
         /** @brief Re-applies all cached procedural features to a table.
             @details Parses each property template stored on the table and
@@ -268,4 +268,4 @@ namespace Wisteria
 
 /// @}
 
-#endif // WISTERIA_REPORT_NODE_LOADER_H
+#endif // WISTERIA_REPORT_TABLE_LOADER_H

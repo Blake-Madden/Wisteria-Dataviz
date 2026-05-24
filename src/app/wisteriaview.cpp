@@ -3022,7 +3022,7 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
                     annJson += L", ";
                     }
                 const auto& ann{ annotations[i] };
-                annJson += Wisteria::ReportNodeLoader::BuildAnnotationEntryJson(
+                annJson += Wisteria::ReportTableLoader::BuildAnnotationEntryJson(
                     ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
                     ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
                 }
@@ -3299,7 +3299,7 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                     annJson += L", ";
                     }
                 const auto& ann{ editAnnotations[i] };
-                annJson += Wisteria::ReportNodeLoader::BuildAnnotationEntryJson(
+                annJson += Wisteria::ReportTableLoader::BuildAnnotationEntryJson(
                     ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
                     ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
                 }

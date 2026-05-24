@@ -25,8 +25,8 @@ SET(APP_WISTERIA_SRC
     src/base/polygon.cpp
     src/base/reportbuilder.cpp
     src/base/reportbuildercolors.cpp
-    src/base/reportnodeloader.cpp
     src/base/reportprintout.cpp
+    src/base/reporttableloader.cpp
     src/base/shapes.cpp
     src/base/shapes_art.cpp
     src/base/shapes_buildings.cpp

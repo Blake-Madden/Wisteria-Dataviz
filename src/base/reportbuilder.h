@@ -13,7 +13,7 @@
 #define WISTERIA_REPORT_BUILDER_H
 
 #include "../base/reportenumconvert.h"
-#include "../base/reportnodeloader.h"
+#include "../base/reporttableloader.h"
 #include "../base/tablelink.h"
 #include "../data/join_inner.h"
 #include "../data/join_left.h"
