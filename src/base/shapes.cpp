@@ -334,7 +334,8 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            label = wxString::Format(_(L"%s shape."), shapeName);
+            label = wxString::Format(/* TRANSLATORS: %s is the name of an icon. */ _(L"%s shape."),
+                                     shapeName);
             }
         GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
         }
