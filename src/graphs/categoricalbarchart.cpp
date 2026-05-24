@@ -288,6 +288,43 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                 }
             }
 
+        for (const auto& barGroup : GetBarGroups())
+            {
+            const auto startPos =
+                std::min(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
+            const auto endPos =
+                std::max(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
+            double grandTotal{ 0 };
+            for (size_t i = startPos; i <= endPos; ++i)
+                {
+                grandTotal += GetBars()[i].GetLength();
+                }
+            if (grandTotal == 0)
+                {
+                continue;
+                }
+            const wxString groupTotalStr = GetReadableAxisValue(GetScalingAxis(), grandTotal);
+            const wxString firstBarLabel = GetBars()[startPos].GetAxisLabel().GetText();
+            const wxString lastBarLabel = GetBars()[endPos].GetAxisLabel().GetText();
+            if (!barGroup.m_barDecal.empty())
+                {
+                /* TRANSLATORS: a labeled bar group and its aggregate total in a categorical bar
+                   chart. 1st %s is the group label, 2nd %s is the total, 3rd %s is the first
+                   bar's label, 4th %s is the last bar's label. */
+                label += L". " + wxString::Format(_(L"Group \"%s\": %s total (%s–%s)"),
+                                                  barGroup.m_barDecal, groupTotalStr, firstBarLabel,
+                                                  lastBarLabel);
+                }
+            else
+                {
+                /* TRANSLATORS: an unlabeled bar group and its aggregate total in a categorical
+                   bar chart. 1st %s is the total, 2nd %s is the first bar's label, 3rd %s is
+                   the last bar's label. */
+                label += L". " + wxString::Format(_(L"Group total: %s (%s–%s)"), groupTotalStr,
+                                                  firstBarLabel, lastBarLabel);
+                }
+            }
+
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
