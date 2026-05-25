@@ -723,4 +723,110 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 }
             }
         }
+
+    //----------------------------------------------------------------
+    void SankeyDiagram::SetAutoAccessibilityAttributes()
+        {
+        if (m_sankeyColumns.empty())
+            {
+            return;
+            }
+
+        wxString label = _(L"A Sankey diagram");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // walk each column ("question") left-to-right: read the column header,
+        // then read each block in that column as "<block label> (<size>)".
+        // Column 0 may have axis-bracket groupings (e.g., counties grouping schools);
+        // when present, the bracket label is announced before its run of blocks.
+        for (size_t colIdx = 0; colIdx < m_sankeyColumns.size(); ++colIdx)
+            {
+            label += L". ";
+
+            // column header (the "question"). Prefer the user-supplied header
+            // (which may expand placeholders like @COLUMNNAME@); fall back to
+            // the raw column name if no header is set yet.
+            wxString header;
+            if (colIdx < m_columnHeaders.size() && !m_columnHeaders[colIdx].empty())
+                {
+                header = ExpandColumnHeader(colIdx);
+                }
+            else if (colIdx < m_columnsNames.size())
+                {
+                header = m_columnsNames[colIdx];
+                }
+            if (!header.empty())
+                {
+                label += header;
+                label += L": ";
+                }
+
+            // brackets only apply to column 0 in this implementation
+            const bool useBrackets = (colIdx == 0 && !m_fromAxisGroups.empty());
+
+            wxString currentBracket;
+            bool firstEntry{ true };
+            for (size_t blockIdx = 0; blockIdx < m_sankeyColumns[colIdx].size(); ++blockIdx)
+                {
+                const auto& block = m_sankeyColumns[colIdx][blockIdx];
+                // skip the synthetic padding block used to balance weighted columns
+                if (!block.m_isShown || block.m_label.empty())
+                    {
+                    continue;
+                    }
+
+                if (useBrackets)
+                    {
+                    wxString blockBracket;
+                    for (const auto& br : m_fromAxisGroups)
+                        {
+                        if (blockIdx >= br.m_startGroup && blockIdx <= br.m_endGroup)
+                            {
+                            blockBracket = br.m_label;
+                            break;
+                            }
+                        }
+                    // start a new bracketed run when the bracket label changes
+                    if (blockBracket != currentBracket)
+                        {
+                        currentBracket = blockBracket;
+                        if (!firstEntry)
+                            {
+                            label += L"; ";
+                            }
+                        if (!currentBracket.empty())
+                            {
+                            label += wxString::Format(
+                                /* TRANSLATORS: Sankey accessibility: axis-bracket label
+                                   introducing the run of blocks it covers
+                                   (e.g., "Berkshire: Westland HS (150), West HS (197)"). */
+                                _(L"%s: "), currentBracket);
+                            }
+                        firstEntry = true;
+                        }
+                    }
+
+                if (!firstEntry)
+                    {
+                    label += L", ";
+                    }
+                firstEntry = false;
+
+                label += wxString::Format(
+                    L"%s (%s)", block.m_label,
+                    wxNumberFormatter::ToString(block.m_frequency, 0,
+                                                wxNumberFormatter::Style::Style_WithThousandsSep));
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

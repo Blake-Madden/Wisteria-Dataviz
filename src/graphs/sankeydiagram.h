@@ -300,6 +300,8 @@ namespace Wisteria::Graphs
         void AdjustColumns();
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
+
+        void SetAutoAccessibilityAttributes() final;
         };
     } // namespace Wisteria::Graphs
 

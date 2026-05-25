@@ -312,6 +312,8 @@ namespace Wisteria::Graphs
       private:
         void RecalcSizes(wxDC& dc) override;
 
+        void SetAutoAccessibilityAttributes() override;
+
         void AdjustAxes();
 
         /// @brief Applies the showcase (inverse of ghosting) to the bars.

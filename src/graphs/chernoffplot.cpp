@@ -1586,6 +1586,126 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         }
 
     //----------------------------------------------------------------
+    void ChernoffFacesPlot::SetAutoAccessibilityAttributes()
+        {
+        wxString label = _(L"A Chernoff faces plot");
+
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // count of faces
+        label += L". ";
+        label += wxString::Format(
+            /* TRANSLATORS: Chernoff faces accessibility: face count.
+               %zu is the number of faces. */
+            _(L"%zu faces"), m_faces.size());
+
+        // list face IDs if present (these are the labels shown beneath each face)
+        wxString idList;
+        for (const auto& face : m_faces)
+            {
+            if (!face.m_label.empty())
+                {
+                if (!idList.empty())
+                    {
+                    idList += L", ";
+                    }
+                idList += face.m_label;
+                }
+            }
+        if (!idList.empty())
+            {
+            label += L". ";
+            /* TRANSLATORS: Chernoff faces accessibility: comma-separated list of face IDs. */
+            label += wxString::Format(_(L"Labels: %s"), idList);
+            }
+
+        // list each facial-feature -> variable mapping (the labels shown in the
+        // extended legend, connecting each feature on the face to a data column)
+        wxString featureMappings;
+        const auto appendMapping = [&](const FeatureId featureId)
+        {
+            const wxString colName = GetFeatureColumnName(featureId);
+            if (!colName.empty())
+                {
+                if (!featureMappings.empty())
+                    {
+                    featureMappings += L"; ";
+                    }
+                featureMappings += GetFeatureDisplayName(featureId) + L": " + colName;
+                }
+        };
+        // continuous-mapped features (HairStyle/HairAddition are categorical, handled below)
+        appendMapping(FeatureId::FaceWidth);
+        appendMapping(FeatureId::FaceHeight);
+        appendMapping(FeatureId::EyeSize);
+        appendMapping(FeatureId::EyePosition);
+        appendMapping(FeatureId::EyebrowSlant);
+        appendMapping(FeatureId::PupilDirection);
+        appendMapping(FeatureId::NoseSize);
+        appendMapping(FeatureId::MouthWidth);
+        appendMapping(FeatureId::SmileFrown);
+        appendMapping(FeatureId::FaceColor);
+        appendMapping(FeatureId::EarSize);
+        if (!featureMappings.empty())
+            {
+            label += L". ";
+            /* TRANSLATORS: Chernoff faces accessibility: list of facial feature to
+               variable mappings (e.g., "Face width: age; Eye size: income"). */
+            label += wxString::Format(_(L"Feature mappings: %s"), featureMappings);
+            }
+
+        // categorical hair style: variable + its factor levels
+        if (!m_hairStyleColumnName.empty())
+            {
+            label += L". ";
+            label += GetFeatureDisplayName(FeatureId::HairStyle) + L": " + m_hairStyleColumnName;
+            if (!m_hairStyleLabels.empty())
+                {
+                wxString levels;
+                for (const auto& lvl : m_hairStyleLabels)
+                    {
+                    if (!levels.empty())
+                        {
+                        levels += L", ";
+                        }
+                    levels += lvl;
+                    }
+                label += L" (" + levels + L")";
+                }
+            }
+
+        // categorical hair addition: variable + its factor levels
+        if (!m_hairAdditionColumnName.empty())
+            {
+            label += L". ";
+            label +=
+                GetFeatureDisplayName(FeatureId::HairAddition) + L": " + m_hairAdditionColumnName;
+            if (!m_hairAdditionLabels.empty())
+                {
+                wxString levels;
+                for (const auto& lvl : m_hairAdditionLabels)
+                    {
+                    if (!levels.empty())
+                        {
+                        levels += L", ";
+                        }
+                    levels += lvl;
+                    }
+                label += L" (" + levels + L")";
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
+
+    //----------------------------------------------------------------
     ChernoffFacesPlot::FaceGeometry ChernoffFacesPlot::ComputeFaceGeometry(
         const wxRect& rect, const FaceFeatures& features, const wxColour& faceColorLighter,
         const wxColour& faceColorDarker, const wxColour& outlineColor)

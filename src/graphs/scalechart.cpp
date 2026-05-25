@@ -312,4 +312,182 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             }
         AddObject(std::move(points));
         }
+
+    //----------------------------------------------------------------
+    void ScaleChart::SetAutoAccessibilityAttributes()
+        {
+        wxString label{ _(L"A scale chart") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // collect finite scores (clamped to the scaling-axis range, matching the plot)
+        struct ScoreEntry
+            {
+            double m_value{ 0 };
+            wxString m_idLabel;
+            };
+
+        std::vector<ScoreEntry> scores;
+        if (GetDataset() != nullptr && !m_scoresColumnName.empty())
+            {
+            try
+                {
+                const auto scoresColumn = GetContinuousColumn(m_scoresColumnName);
+                const auto [yStart, yEnd] = GetScalingAxis().GetRange();
+                for (size_t rowIdx = 0; rowIdx < GetDataset()->GetRowCount(); ++rowIdx)
+                    {
+                    const double rawVal = scoresColumn->GetValue(rowIdx);
+                    if (!std::isfinite(rawVal))
+                        {
+                        continue;
+                        }
+                    scores.push_back({ std::clamp<double>(rawVal, yStart, yEnd),
+                                       GetDataset()->GetIdColumn().GetValue(rowIdx) });
+                    }
+                }
+            catch (const std::exception&)
+                {
+                // scores column not available; carry on without score details
+                }
+            }
+
+        // overall summary of where the score(s) fall numerically
+        if (scores.size() == 1)
+            {
+            const wxString valueStr{ wxNumberFormatter::ToString(
+                scores.front().m_value, m_precision,
+                wxNumberFormatter::Style::Style_NoTrailingZeroes) };
+            label += L". ";
+            if (!scores.front().m_idLabel.empty())
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: scale chart accessibility: a single score with its
+                       ID label. 1st %s is the ID label, 2nd %s is the score value. */
+                    _(L"Score for %s: %s"), scores.front().m_idLabel, valueStr);
+                }
+            else
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: scale chart accessibility: a single score with no ID.
+                       %s is the score value. */
+                    _(L"Score: %s"), valueStr);
+                }
+            }
+        else if (scores.size() > 1)
+            {
+            const auto [minIt, maxIt] = std::minmax_element(scores.cbegin(), scores.cend(),
+                                                            [](const auto& lhv, const auto& rhv)
+                                                            { return lhv.m_value < rhv.m_value; });
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: scale chart accessibility: multiple scores summary.
+                   %zu is the score count, 1st %s is the lowest value, 2nd %s is the
+                   highest value. */
+                _(L"%zu scores ranging from %s to %s"), scores.size(),
+                wxNumberFormatter::ToString(minIt->m_value, m_precision,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                wxNumberFormatter::ToString(maxIt->m_value, m_precision,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
+            }
+
+        // helper: returns the label of the block that contains the given score on the bar.
+        const auto findBlockForScore = [](const Bar& theBar, const double scoreVal) -> wxString
+        {
+            double blockStart{ theBar.GetCustomScalingAxisStartPosition().value_or(0) };
+            for (const auto& theBlock : theBar.GetBlocks())
+                {
+                const double blockEnd{ blockStart + theBlock.GetLength() };
+                if (is_within(scoreVal, blockStart, blockEnd))
+                    {
+                    return theBlock.GetDecal().GetText();
+                    }
+                blockStart = blockEnd;
+                }
+            return wxString{};
+        };
+
+        // explain each scale — the main scale ruler and scores column have no blocks,
+        // so they are naturally skipped
+        for (const auto& theBar : GetBars())
+            {
+            if (theBar.GetBlocks().empty())
+                {
+                continue;
+                }
+
+            label += L". ";
+            const auto& scaleHeader{ GetOppositeBarAxis().GetCustomLabel(
+                theBar.GetAxisPosition()) };
+            if (scaleHeader.IsOk() && !scaleHeader.GetText().empty())
+                {
+                label += scaleHeader.GetText() + L": ";
+                }
+
+            // list the blocks with their numeric ranges
+            const double blockBase{ theBar.GetCustomScalingAxisStartPosition().value_or(0) };
+            double currentStart{ blockBase };
+            bool firstBlock{ true };
+            for (const auto& theBlock : theBar.GetBlocks())
+                {
+                const double blockEnd{ currentStart + theBlock.GetLength() };
+                const wxString blockLabel{ theBlock.GetDecal().GetText() };
+                if (theBlock.IsShown() && !blockLabel.empty())
+                    {
+                    if (!firstBlock)
+                        {
+                        label += L", ";
+                        }
+                    firstBlock = false;
+                    label +=
+                        wxString::Format(_DT(L"%s (%s–%s)"), blockLabel,
+                                         wxNumberFormatter::ToString(
+                                             currentStart, m_precision,
+                                             wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                                         wxNumberFormatter::ToString(
+                                             blockEnd, m_precision,
+                                             wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                    }
+                currentStart = blockEnd;
+                }
+
+            // say where the score(s) fall inside this scale
+            if (scores.size() == 1)
+                {
+                const wxString blockName{ findBlockForScore(theBar, scores.front().m_value) };
+                if (!blockName.empty())
+                    {
+                    label += L"; ";
+                    label += wxString::Format(
+                        /* TRANSLATORS: scale chart accessibility: which block of the
+                           current scale the single score lands in. %s is the block's
+                           label (e.g., a letter grade). */
+                        _(L"score falls in %s"), blockName);
+                    }
+                }
+            else if (scores.size() > 1)
+                {
+                const auto [minIt, maxIt] = std::minmax_element(
+                    scores.cbegin(), scores.cend(),
+                    [](const auto& lhv, const auto& rhv) { return lhv.m_value < rhv.m_value; });
+                const wxString lowBlock{ findBlockForScore(theBar, minIt->m_value) };
+                const wxString highBlock{ findBlockForScore(theBar, maxIt->m_value) };
+                if (!lowBlock.empty() && !highBlock.empty())
+                    {
+                    label += L"; ";
+                    label += wxString::Format(
+                        /* TRANSLATORS: scale chart accessibility: where the highest and
+                           lowest scores fall in the current scale. 1st %s is the highest
+                           score's block label, 2nd %s is the lowest score's block label. */
+                        _(L"highest score in %s, lowest in %s"), highBlock, lowBlock);
+                    }
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

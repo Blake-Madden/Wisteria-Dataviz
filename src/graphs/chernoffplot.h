@@ -628,6 +628,8 @@ namespace Wisteria::Graphs
 
         void RecalcSizes(wxDC& dc) final;
 
+        void SetAutoAccessibilityAttributes() final;
+
         /// @brief Which parts of the face to include when calling DrawFace().
         /// @details Each flag defaults to @c true; set fields to @c false to skip
         ///     drawing that part (useful for minimal/legend-icon renderings).
