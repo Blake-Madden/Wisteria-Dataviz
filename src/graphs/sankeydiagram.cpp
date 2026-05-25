@@ -798,11 +798,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                             }
                         if (!currentBracket.empty())
                             {
-                            label += wxString::Format(
-                                /* TRANSLATORS: Sankey accessibility: axis-bracket label
-                                   introducing the run of blocks it covers
-                                   (e.g., "Berkshire: Westland HS (150), West HS (197)"). */
-                                _(L"%s: "), currentBracket);
+                            label += wxString::Format(_DT(L"%s: "), currentBracket);
                             }
                         firstEntry = true;
                         }

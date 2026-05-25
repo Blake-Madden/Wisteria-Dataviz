@@ -81,7 +81,7 @@ Graph and object insertion
 Data management
 -----------------------------
 
-- Manage **multiple datasets** per project, each independently editable and re-usable across graphs
+- Manage **multiple datasets** per project, each independently editable and reusable across graphs
 - **Import** from Excel (`.xlsx`), OpenDocument Spreadsheet (`.ods`), CSV, tab-delimited, and user-defined delimited text files, with a preview dialog for spreadsheet sources
 - Built-in dataset **viewer/editor** for inspecting rows and columns before plotting
 - Interactive **data transformations**:
@@ -91,7 +91,7 @@ Data management
   - Recode and define named **constants** for reuse across the project
 - A log/warning report window that surfaces import issues, data quality warnings, and runtime messages
 
-General Workflow
+Library Workflow
 =============================
 
 - Setup the [library's settings](docs/setup.md) (optionally) when your application starts
