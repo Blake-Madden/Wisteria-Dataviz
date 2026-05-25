@@ -27,8 +27,13 @@ Wisteria Dataviz
 About
 =============================
 
-Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets), with a focus on statistics and social sciences.
-It includes features such as:
+Wisteria Dataviz is a data visualization toolkit based on [wxWidgets](https://github.com/wxWidgets/wxWidgets), with a focus on statistics and social sciences.
+It ships in two forms:
+
+- A stable C++ **library** that can be embedded into any wxWidgets application
+- A stand-alone **application** (currently in alpha release) for building graphical reports interactively, with no coding required
+
+Library features include:
 
 - Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
 - Interface for displaying tabular data
@@ -46,7 +51,46 @@ It includes features such as:
   - Includes support for setting a common axis for all graphs across a row or down a column
 
 See more in the [features overview](docs/features.md).
-  
+
+Stand-Alone Application (Alpha)
+=============================
+
+In addition to the library, Wisteria Dataviz is bundled as a stand-alone desktop application (built as the `WisteriaDV` target). The application exposes the library's full graphing and data-handling capabilities through a ribbon-based interface, with no programming required.
+
+> **Note:** The application is currently an **alpha release**. Project file formats, dialogs, and behaviors may change between versions.
+
+Report authoring
+-----------------------------
+
+- **Page layout manager** for assembling multi-page graphical reports — each project can contain any number of pages, with insert/edit/delete/reorder support
+- Each page is a `Wisteria::Canvas` that can hold multiple graphs, tables, labels, images, shapes, and common axes side-by-side or in a grid layout
+- **PDF export** of the entire report (single- or multi-page), preserving vector graphics and using embedded fonts
+- **SVG export** of individual canvases for high-fidelity scalable output
+- Raster image export (PNG, JPEG, BMP, TIFF, etc.) with configurable size, DPI, and background
+- Full **print and print preview** support, with customizable headers/footers and page setup
+- Copy graphs and tables to the clipboard for pasting into other applications
+- Project save/save-as to a self-contained project file (graphs, datasets, settings, and embedded resources)
+
+Graph and object insertion
+-----------------------------
+
+- Insertion dialogs for every graph type in the library — basic, business, statistical, survey, education, social-sciences, and sports categories
+- Add **multi-series line plots** that combine several series onto a single chart
+- Per-item editing dialogs for customizing colors, axes, titles, captions, accessibility attributes, and more
+
+Data management
+-----------------------------
+
+- Manage **multiple datasets** per project, each independently editable and re-usable across graphs
+- **Import** from Excel (`.xlsx`), OpenDocument Spreadsheet (`.ods`), CSV, tab-delimited, and user-defined delimited text files, with a preview dialog for spreadsheet sources
+- Built-in dataset **viewer/editor** for inspecting rows and columns before plotting
+- Interactive **data transformations**:
+  - Subset (filter rows by criteria)
+  - Pivot longer / pivot wider (reshape between long and wide formats)
+  - Join (left and inner joins against another dataset)
+  - Recode and define named **constants** for reuse across the project
+- A log/warning report window that surfaces import issues, data quality warnings, and runtime messages
+
 General Workflow
 =============================
 
