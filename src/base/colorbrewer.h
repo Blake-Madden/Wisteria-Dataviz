@@ -821,9 +821,9 @@ namespace Wisteria::Colors
           public:
             Decade1980s()
                 : ColorScheme({ ColorBrewer::GetColor(Color::DressyRose),
-                                ColorBrewer::GetColor(Color::Cream),
+                                ColorBrewer::GetColor(Color::Almond),
                                 ColorBrewer::GetColor(Color::FavoriteJeans),
-                                ColorBrewer::GetColor(Color::Cream),
+                                ColorBrewer::GetColor(Color::BungalowBeige),
                                 ColorBrewer::GetColor(Color::FlatteringPeach),
                                 ColorBrewer::GetColor(Color::CooledBlue),
                                 ColorBrewer::GetColor(Color::RosyOutlook) })
