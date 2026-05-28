@@ -26,9 +26,9 @@ namespace Wisteria
     [[nodiscard]]
     static wxVersionInfo GetLibraryVersionInfo()
         {
-        return {_WISTERIA_APP_NAME, _WISTERIA_VERSION_MAJOR, _WISTERIA_VERSION_MINOR,
-                             _WISTERIA_VERSION_PATCH, _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME,
-                             _WISTERIA_COPYRIGHT};
+        return {WISTERIA_APP_NAME, WISTERIA_VERSION_MAJOR, WISTERIA_VERSION_MINOR,
+                             WISTERIA_VERSION_PATCH, WISTERIA_VERSION_TWEAK, WISTERIA_APP_NAME,
+                             WISTERIA_COPYRIGHT};
         }
     /// @private
     wxGCC_WARNING_RESTORE(unused-function)

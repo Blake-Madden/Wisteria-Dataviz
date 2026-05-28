@@ -53,7 +53,7 @@ wxBitmapBundle WisteriaArtProvider::CreateBitmapBundle(const wxArtID& id, const 
 //-------------------------------------------
 bool WisteriaApp::OnInit()
     {
-    SetAppName(_WISTERIA_APP_NAME);
+    SetAppName(WISTERIA_APP_NAME);
     SetVendorName(L"Blake Madden");
 
 #ifdef __WXMSW__
@@ -108,7 +108,7 @@ void WisteriaApp::LoadInterface()
     const wxArrayString extensions{ GetAppFileExtension() };
 
     SetMainFrame(new Wisteria::UI::BaseMainFrame(
-        GetDocManager(), nullptr, extensions, _WISTERIA_APP_NAME, wxPoint{ 0, 0 },
+        GetDocManager(), nullptr, extensions, WISTERIA_APP_NAME, wxPoint{ 0, 0 },
         GetAppSettings()->GetAppWindowSize(), wxDEFAULT_FRAME_STYLE));
 
     GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()));
@@ -188,7 +188,7 @@ void WisteriaApp::LoadInterface()
             wxArrayString devs;
             devs.Add(_DT(L"Blake Madden"));
             aboutInfo.SetDevelopers(devs);
-            aboutInfo.SetName(_WISTERIA_APP_NAME);
+            aboutInfo.SetName(WISTERIA_APP_NAME);
             aboutInfo.SetDescription(_(L"Data visualization application."));
             wxAboutBox(aboutInfo, GetMainFrame());
         },
