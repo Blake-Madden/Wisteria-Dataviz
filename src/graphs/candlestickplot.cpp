@@ -268,8 +268,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
                            Colors::ColorContrast::Shade(m_lossBrush.GetColour(), .2))),
                 GetScaling());
             wick->AddLine(lowPt, hiPt);
-            if (!datePos.has_value() ||
-                !GetPhysicalCoordinates(datePos.value(), ohlc.m_open, lowPt) ||
+            if (!GetPhysicalCoordinates(datePos.value(), ohlc.m_open, lowPt) ||
                 !GetPhysicalCoordinates(datePos.value(), ohlc.m_close, hiPt))
                 {
                 continue;

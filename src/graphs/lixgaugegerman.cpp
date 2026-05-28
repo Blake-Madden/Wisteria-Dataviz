@@ -132,22 +132,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 35, 35, 35,
                 IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"easy text") } :
-                                         wxString{ DONTTRANSLATE("Leichter Text") },
+                                         wxString{ DONTTRANSLATE(L"Leichter Text") },
                 wxColour{ 163, 182, 250 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 45, 45, 45,
                 IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"average text") } :
-                                         wxString{ DONTTRANSLATE("Durchschnittlicher Text") },
+                                         wxString{ DONTTRANSLATE(L"Durchschnittlicher Text") },
                 wxColour{ 239, 173, 186 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 55, 55, 55,
                 IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"difficult text") } :
-                                         wxString{ DONTTRANSLATE("Schwieriger Text") },
+                                         wxString{ DONTTRANSLATE(L"Schwieriger Text") },
                 wxColour{ 237, 27, 37 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 65, 65, 65,
                 IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"very difficult text") } :
-                                         wxString{ DONTTRANSLATE("Sehr schwieriger Text") },
+                                         wxString{ DONTTRANSLATE(L"Sehr schwieriger Text") },
                 wxColour{ 250, 0, 0 }));
             for (auto& bracket : leftRuler.GetBrackets())
                 {

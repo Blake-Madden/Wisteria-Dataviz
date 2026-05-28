@@ -276,7 +276,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
     //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> BubblePlot::CreateLegend(const LegendOptions& options)
         {
-        SetLegendInfo(options);
         // get the base legend from ScatterPlot
         auto legend = ScatterPlot::CreateLegend(options);
 

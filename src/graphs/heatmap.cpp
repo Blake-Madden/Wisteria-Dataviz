@@ -65,13 +65,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         m_matrix.clear();
         m_range = { 0, 0 };
 
-        if (GetDataset()->GetContinuousColumns().empty())
-            {
-            wxFAIL_MSG(L"Heatmap requires a continuous column to analyze!");
-            SetDataset(nullptr);
-            return;
-            }
-
         // prepare the colors
         m_reversedColorSpectrum = GetColorScheme()->GetColors();
         std::ranges::reverse(m_reversedColorSpectrum);
