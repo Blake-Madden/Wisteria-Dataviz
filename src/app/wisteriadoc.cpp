@@ -348,9 +348,43 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
 //-------------------------------------------
 wxString WisteriaDoc::EscapeJsonStr(const wxString& str)
     {
-    wxString escaped = str;
-    escaped.Replace(L"\\", L"\\\\");
-    escaped.Replace(L"\"", L"\\\"");
+    wxString escaped;
+    escaped.reserve(str.length());
+    for (const auto ch : str)
+        {
+        switch (ch.GetValue())
+            {
+        case L'"':
+            escaped += L"\\\"";
+            break;
+        case L'\\':
+            escaped += L"\\\\";
+            break;
+        case L'\b':
+            escaped += L"\\b";
+            break;
+        case L'\f':
+            escaped += L"\\f";
+            break;
+        case L'\n':
+            escaped += L"\\n";
+            break;
+        case L'\r':
+            escaped += L"\\r";
+            break;
+        case L'\t':
+            escaped += L"\\t";
+            break;
+        default:
+            if (std::cmp_less(ch.GetValue(), 0x20))
+                {
+                // skip control characters
+                break;
+                }
+            escaped += ch;
+            break;
+            }
+        }
     return escaped;
     }
 
