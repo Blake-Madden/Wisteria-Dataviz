@@ -44,10 +44,9 @@ namespace Wisteria
             - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawInformationOnSelection and @
            DrawExtraInformation.
             - @c DEBUG_EXPERIMENTAL_CODE enables @ IncludeExperimentalCode.
-            - @c DEBUG_FILE_IO enables @ AllowFileIO.
 
-                By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES, @c DEBUG_FILE_IO,
-                and @c DEBUG_LOG_INFO are enabled. Otherwise, all debugging features are disabled.
+                By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES and
+                @c DEBUG_LOG_INFO are enabled. Otherwise, all debugging features are disabled.
 
                 Note that these are %Wisteria specific debugging features (e.g., bounding boxes
                 being rendered). If running in debug mode, other debugging features (e.g., asserts)
@@ -79,7 +78,6 @@ namespace Wisteria
 #if wxDEBUG_LEVEL >= 2
     #define DEBUG_LOG_INFO
     #define DEBUG_BOXES
-    #define DEBUG_FILE_IO
 #endif
 
     /// @brief Class for managing global library settings.
@@ -264,9 +262,6 @@ namespace Wisteria
 #endif
 #ifdef DEBUG_EXPERIMENTAL_CODE
                 DebugSettings::IncludeExperimentalCode |
-#endif
-#ifdef DEBUG_FILE_IO
-                DebugSettings::AllowFileIO |
 #endif
                 DebugSettings::DebugNone
             };
