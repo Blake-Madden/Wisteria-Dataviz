@@ -424,11 +424,11 @@ namespace Wisteria::Colors
         static wxColour Tint(wxColour color,
                              double maximumLuminance = math_constants::three_quarters)
             {
-            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Shade().");
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Tint().");
             maximumLuminance =
-                std::clamp(maximumLuminance, math_constants::empty, math_constants::half);
+                std::clamp(maximumLuminance, math_constants::empty, math_constants::full);
             int lightenValue{ 100 };
-            while (color.GetLuminance() < maximumLuminance)
+            while (color.GetLuminance() < maximumLuminance && lightenValue < 200)
                 {
                 color = color.ChangeLightness(++lightenValue);
                 }
