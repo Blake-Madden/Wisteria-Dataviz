@@ -417,6 +417,42 @@ TEST_CASE("GetNextKey starts at 0 for empty tables", "[data][md]")
           ColumnWithStringTable::MISSING_DATA_CODE + 1);
     }
 
+TEST_CASE("HasValidStringTableEntries", "[data][md]")
+    {
+    SECTION("Column with only MD code (empty string) returns false")
+        {
+        ColumnWithStringTable col(L"col");
+        col.GetStringTable().insert({ 0, wxString{} });
+        CHECK_FALSE(col.HasValidStringTableEntries());
+        }
+
+    SECTION("Column with MD code at key 0 and valid entries returns true")
+        {
+        // This is the bug case: { 0:"" } was previously making
+        // HasValidStringTableEntries return false because it only
+        // checked cbegin(), which was the MD entry.
+        ColumnWithStringTable col(L"Gender");
+        col.GetStringTable().insert({ 0, wxString{} });
+        col.GetStringTable().insert({ 1, L"Female" });
+        col.GetStringTable().insert({ 2, L"Male" });
+        CHECK(col.HasValidStringTableEntries());
+        }
+
+    SECTION("Column with only valid strings returns true")
+        {
+        ColumnWithStringTable col(L"col");
+        col.GetStringTable().insert({ 0, L"A" });
+        col.GetStringTable().insert({ 1, L"B" });
+        CHECK(col.HasValidStringTableEntries());
+        }
+
+    SECTION("Empty table returns false")
+        {
+        ColumnWithStringTable col(L"col");
+        CHECK_FALSE(col.HasValidStringTableEntries());
+        }
+    }
+
 TEST_CASE("Categorical column with 0 and 1 data values", "[data][md]")
     {
     // this is the original bug scenario: a column with only 0 and 1

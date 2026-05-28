@@ -525,7 +525,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         bool HasValidStringTableEntries() const
             {
-            return !GetStringTable().empty() && !GetStringTable().cbegin()->second.empty();
+            return std::ranges::any_of(GetStringTable(), [](const auto& entry) noexcept
+                                       { return !entry.second.empty(); });
             }
 
         /// @brief Removes string-table entries whose IDs do not appear in the data.
