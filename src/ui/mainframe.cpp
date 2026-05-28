@@ -198,15 +198,20 @@ bool Wisteria::UI::DropFiles::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_un
     for (size_t n = 0; n < filenames.GetCount(); ++n)
         {
         const wxFileName filename(filenames[n]);
+        bool opened = false;
         for (size_t i = 0; i < m_frame->GetDefaultFileExtensions().GetCount(); ++i)
             {
             if (filename.GetExt().CmpNoCase(m_frame->GetDefaultFileExtensions()[i]) == 0)
                 {
                 m_frame->OpenFile(filenames[n]);
-                return true;
+                opened = true;
+                break;
                 }
             }
-        m_frame->OpenFileNew(filenames[n]);
+        if (!opened)
+            {
+            m_frame->OpenFileNew(filenames[n]);
+            }
         }
 
     return true;
