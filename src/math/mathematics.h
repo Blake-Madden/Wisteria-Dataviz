@@ -936,10 +936,9 @@ namespace geometry
 
     /** @brief Given a starting size, calculate the new height if the size is rescaled
             to the given width, maintaining the aspect ratio.
-        @returns The rescaled height.
         @param size The starting size (width x height).
         @param newWidth The width to scale the image to.
-        @returns The new height.
+        @returns The new height after rescaling (aspect ratio maintained).
         @note A negative new width will yield a zero height (a negative width is nonsensical,
             but at least try to return something sensical).*/
     [[nodiscard]]
@@ -957,10 +956,9 @@ namespace geometry
 
     /** @brief Given a starting size, calculate the new width if the size is rescaled
             to the given height, maintaining the aspect ratio.
-        @returns The rescaled width.
         @param size The starting size (width x height).
         @param newHeight The height to scale the image to.
-        @returns The new width.
+        @returns The new width after rescaling (aspect ratio maintained).
         @note A negative new height will yield a zero width (a negative height is nonsensical,
             but at least try to return something sensical).*/
     [[nodiscard]]

@@ -389,6 +389,8 @@ namespace Wisteria::UI
         /// @brief ID for the Axis Options sidebar section.
         constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 102 };
 
+        /// @brief Checks whether placing the graph would overwrite existing cells.
+        /// @returns @c true if placement should proceed, @c false to cancel.
         bool ConfirmOverwrite() final;
 
       private:

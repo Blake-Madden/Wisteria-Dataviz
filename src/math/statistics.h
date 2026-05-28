@@ -534,7 +534,8 @@ namespace statistics
         return safe_divide<double>(value - range_min, range);
         }
 
-    /** @param begin1 The start of the first range.
+    /** @brief Calculates the phi coefficient (contingency coefficient) between two binary arrays.
+        @param begin1 The start of the first range.
         @param end1 The end of the first range.
         @param begin2 The start of the second range.
         @param end2 The end of the second range.

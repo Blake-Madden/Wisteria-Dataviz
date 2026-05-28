@@ -811,7 +811,7 @@ namespace lily_of_the_valley
         static const wchar_t* find_element(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                            std::wstring_view elementTag,
                                            bool accept_self_terminating_elements);
-        /** @c brief Searches a buffer range for an element's matching close (e.g., "</h1>").
+        /** @brief Searches a buffer range for an element's matching close (e.g., "</h1>").
             @details If the search starts on the starting element, then it will search for
                 the matching close tag (i.e., it will skip inner elements that have the same name
                 and go to the correct closing element).

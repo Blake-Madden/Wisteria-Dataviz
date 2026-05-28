@@ -20,6 +20,7 @@
 
 namespace Wisteria::UI
     {
+    /// @brief A single row item consisting of a column name and value pair.
     struct RowTableItem
         {
         RowTableItem(wxString column, wxString value)
@@ -102,7 +103,8 @@ namespace Wisteria::UI
             @param caption The title of this dialog.
             @param pos The position of this dialog.
             @param size The size of this dialog.
-            @param style The style of this dialog.*/
+            @param style The style of this dialog.
+            @returns @c true if the dialog was created successfully.*/
         bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
                     const wxString& caption = _(L"View Item"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -128,9 +130,10 @@ namespace Wisteria::UI
             m_values.emplace_back(columnName, value);
             }
 
+      private:
+        /// @brief Handles button click events.
         void OnButtonClick(wxCommandEvent& event);
 
-      private:
         void CreateControls();
 
         std::vector<RowTableItem> m_values;

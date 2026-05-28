@@ -169,7 +169,8 @@ namespace lily_of_the_valley
         /// The table which stores the unique strings throughout a spreadsheet file.
         using string_table = std::vector<std::wstring>;
 
-        /** @param removeNewlinesAndTabs Set to @c true to replace any newlines or tabs in cells'
+        /** @brief Sets whether to replace newlines and tabs with spaces when reading cell content.
+            @param removeNewlinesAndTabs Set to @c true to replace any newlines or tabs in cells'
                 text with spaces.\n
                 This is recommended @c true (the default) for traditional
                 data, where there may be column headers with newlines that you wish to "clean."\n

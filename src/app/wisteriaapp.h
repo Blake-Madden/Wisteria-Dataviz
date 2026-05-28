@@ -124,6 +124,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
 class WisteriaArtProvider final : public wxArtProvider
     {
   public:
+    /// @brief Constructs the custom art provider and registers it with wxWidgets.
     WisteriaArtProvider();
 
   protected:

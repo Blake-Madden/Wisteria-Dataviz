@@ -39,8 +39,8 @@ namespace Wisteria::Graphs
         | Mouth curvature | Frown @htmlonly &rarr; @endhtmlonly Smile |
         | Face color | Pale @htmlonly &rarr; @endhtmlonly Saturated |
         | Ear size | Small @htmlonly &rarr; @endhtmlonly Large |
-        | Hair style | Category string mapped to HairStyleFemale or HairStyleMale (gender-dependent)
-       | | Hair addition | Category string mapped to FacialHair (male) or HairAccessory (female) |
+        | Hair style | Category string mapped to HairStyleFemale or HairStyleMale |
+        | Hair addition | Category string mapped to FacialHair (male) or HairAccessory (female) |
 
         @par %Data:
             This plot accepts a Data::Dataset where multiple continuous columns

@@ -477,13 +477,13 @@ namespace lily_of_the_valley
         static bool is_buffer_binary_stream(const unsigned char* buffer,
                                             const size_t size) noexcept;
 
-        /* @brief Loads the header of the document.
+        /** @brief Loads the header of the document.
            @param str A CFB stream (i.e., the Word file).
            @returns @c true if a valid header that was successfully loaded.*/
         [[nodiscard]]
         bool load_header(cfb_iostream* str);
 
-        /* @brief Loads a property (usually a storage directory),
+        /** @brief Loads a property (usually a storage directory),
                based on where we are currently in the Entry Table.
            @param str The document stream to read from.
            @returns file_system_entry The property object.*/

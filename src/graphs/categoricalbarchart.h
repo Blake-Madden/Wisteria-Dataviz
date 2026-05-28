@@ -103,7 +103,6 @@ namespace Wisteria::Graphs
             // better with horizontal bars
             SetBarOrientation(Wisteria::Orientation::Horizontal);
             GetBarAxis().GetGridlinePen() = wxNullPen;
-            GetBarAxis().GetGridlinePen() = wxNullPen;
             GetBarAxis().ShowOuterLabels(false);
             GetScalingAxis().GetGridlinePen() = wxNullPen;
             GetRightYAxis().Show(false);

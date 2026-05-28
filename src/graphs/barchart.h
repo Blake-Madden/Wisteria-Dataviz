@@ -502,7 +502,7 @@ namespace Wisteria::Graphs
             ///    parent chart will determine the best outline color.
             wxPen m_outlinePen{ wxNullPen };
             /// @brief An optional background color to use in conjunction with the brush.
-            /// @deails Useful with patterned (hatched) brushes;
+            /// @details Useful with patterned (hatched) brushes;
             ///    the color is painted under the hatch.
             ///    Will be invalid by default; the brush is what is used exclusively.
             wxColour m_color;
@@ -558,7 +558,7 @@ namespace Wisteria::Graphs
                     {
                     m_customWidth = std::nullopt;
                     }
-                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0F,
+                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0,
                                            [](const auto initVal, const auto& block) noexcept
                                            { return initVal + block.GetLength(); });
                 }
@@ -701,7 +701,7 @@ namespace Wisteria::Graphs
             void AddBlock(const BarBlock& block)
                 {
                 m_blocks.push_back(block);
-                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0F,
+                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0,
                                            [](const auto initVal, const auto& bBlock)
                                            { return initVal + bBlock.GetLength(); });
                 }

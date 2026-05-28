@@ -92,7 +92,7 @@ namespace Wisteria::UI
                 }
 
             /// @brief Sets the types of variables that can be moved into this list.
-            /// @brief The default is to accept all variable types.
+            /// @details The default is to accept all variable types.
             /// @param acceptedTypes The acceptable column types.
             /// @returns A self reference.
             VariableListInfo&

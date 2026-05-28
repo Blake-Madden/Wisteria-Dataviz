@@ -227,15 +227,17 @@ namespace Wisteria::UI
             return nullptr;
             }
 
+        /// @brief Searches for a file in the application's resource directory.
+        /// @param subFile The file to look for.
         /// @returns The path to a file in the application's resource directory,
         ///     or empty string if not found.
-        /// @param subFile The file to look for.
         [[nodiscard]]
         wxString FindResourceFile(const wxString& subFile) const;
 
+        /// @brief Searches for a subdirectory in the application's resource directory.
+        /// @param subDir The subdirectory to look for.
         /// @returns A subdirectory's full path in the application's resource directory,
         ///     or empty string if not found.
-        /// @param subDir The subdirectory to look for.
         [[nodiscard]]
         wxString FindResourceDirectory(const wxString& subDir) const;
 

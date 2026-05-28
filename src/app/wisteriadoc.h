@@ -25,14 +25,16 @@ class WisteriaDoc final : public wxDocument
     WisteriaDoc(const WisteriaDoc&) = delete;
     WisteriaDoc& operator=(const WisteriaDoc&) = delete;
 
-    /** @returns The path of a file, relative to the project's path.
-        @param filePath The filepath to convert.*/
+    /// @brief Converts an absolute file path to one relative to the project directory.
+    /// @param filePath The filepath to convert.
+    /// @returns The path of a file, relative to the project's path.
     [[nodiscard]]
     wxString MakeRelativePath(const wxString& filePath) const;
 
-    /** @returns The path of a (relative to the project) file,
-            expanded to its full path.
-        @param filePath The filepath to convert.*/
+    /// @brief Expands a project-relative file path to its full absolute path.
+    /// @param filePath The filepath to convert.
+    /// @returns The path of a (relative to the project) file,
+    ///     expanded to its full path.
     [[nodiscard]]
     wxString ResolveFilePath(const wxString& filePath) const;
 

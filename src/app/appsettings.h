@@ -65,7 +65,7 @@ class AppSettings
         }
 
     /// @brief Sets the application window width.
-    /// @param width The window width.
+    /// @param width The window width in pixels.
     void SetAppWindowWidth(const int width) noexcept { m_appWindowWidth = width; }
 
     /// @returns The application window height.
@@ -76,7 +76,7 @@ class AppSettings
         }
 
     /// @brief Sets the application window height.
-    /// @param height The window height.
+    /// @param height The window height in pixels.
     void SetAppWindowHeight(const int height) noexcept { m_appWindowHeight = height; }
 
     /// @returns The stored window size.

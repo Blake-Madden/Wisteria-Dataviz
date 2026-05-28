@@ -45,8 +45,6 @@ namespace Wisteria::UI
 
             Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DialogWithHelp::OnHelpClicked, this, wxID_HELP);
             Bind(wxEVT_HELP, &DialogWithHelp::OnContextHelp, this);
-
-            Centre();
             }
 
         /// @brief Two-step Constructor (Create() should be called after construction).

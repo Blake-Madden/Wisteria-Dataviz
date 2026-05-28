@@ -1,5 +1,5 @@
-/** @addtogroup Graphics
-    @brief Graphing classes.
+/** @addtogroup Data
+    @brief Data management classes for graphs.
     @date 2005-2026
     @copyright Blake Madden
     @author Blake Madden

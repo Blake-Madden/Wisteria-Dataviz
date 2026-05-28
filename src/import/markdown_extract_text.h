@@ -37,14 +37,29 @@ namespace lily_of_the_valley
             return md_text.starts_with(L"---");
             }
 
-        /// @returns number of characters consumed, or npos on failure
+        /** @brief Parses styled text (e.g., bold, italic) and returns the number of characters consumed.
+            @param input The text to parse.
+            @param[in,out] previousChar The last character processed.
+            @param tag The styled-text tag character.
+            @returns Number of characters consumed, or `npos` on failure.*/
         size_t parse_styled_text(std::wstring_view input, wchar_t& previousChar, wchar_t tag);
 
-        /// @returns number of characters consumed on success, or std::wstring_view::npos on failure
+        /** @brief Parses an HTML block and returns the number of characters consumed.
+            @param input The text to parse.
+            @param tag The opening tag name.
+            @param endTag The closing tag name.
+            @returns Number of characters consumed on success, or `std::wstring_view::npos` on failure.*/
         [[nodiscard]]
         size_t parse_html_block(std::wstring_view input, std::wstring_view tag,
                                 std::wstring_view endTag);
 
+        /** @brief Parses a code block (fenced or indented) and advances the position past it.
+            @param isEscaping Whether escape processing is currently active.
+            @param currentEndSentinel End-of-buffer sentinel pointer.
+            @param[in,out] currentStart Current position in the input; advanced past the code block.
+            @param[in,out] previousChar The last character processed.
+            @param[in,out] headerMode Whether the parser is currently inside a header section.
+            @returns @c true if the code block was successfully parsed.*/
         bool parse_code_block(const bool isEscaping, const wchar_t* currentEndSentinel,
                               const wchar_t*& currentStart, wchar_t& previousChar,
                               bool& headerMode);

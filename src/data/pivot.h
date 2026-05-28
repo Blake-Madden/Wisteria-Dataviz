@@ -87,6 +87,9 @@ namespace Wisteria::Data
                 that other observations have, then an empty cell will be added for that
                 column. This value will be used for fill this cell, with missing data (i.e., NaN)
                 being the default.
+            @note If multiple source rows share the same identifier and the same label from
+                @c namesFromColumn, their values are summed together. This mirrors the
+                `aggfunc = sum` behavior in similar pivot-wide implementations.
             @returns The pivoted dataset.*/
         [[nodiscard]]
         static std::shared_ptr<Dataset>

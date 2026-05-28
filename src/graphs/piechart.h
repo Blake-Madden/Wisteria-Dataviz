@@ -329,7 +329,7 @@ namespace Wisteria::Graphs
                         RingPerimeter(Perimeter::Inner).
                         PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode*/
-    // clang-format off
+    // clang-format on
     class PieChart final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(PieChart);

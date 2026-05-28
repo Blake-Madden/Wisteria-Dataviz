@@ -19,6 +19,7 @@
 
 namespace Wisteria::UI
     {
+    /// @brief Dialog for adjusting the opacity of an image.
     class OpacityDlg final : public wxDialog
         {
       public:
