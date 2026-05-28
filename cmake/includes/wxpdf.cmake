@@ -1,7 +1,5 @@
 SET(WXPDF_SRC
     src/wxpdfdoc/src/pdfannotation.cpp
-    src/wxpdfdoc/src/pdfbarcode.cpp
-    src/wxpdfdoc/src/pdfbarcodezint.cpp
     src/wxpdfdoc/src/pdfcffdecoder.cpp
     src/wxpdfdoc/src/pdfcffindex.cpp
     src/wxpdfdoc/src/pdfcolour.cpp
