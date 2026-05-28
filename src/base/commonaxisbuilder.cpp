@@ -189,7 +189,7 @@ namespace Wisteria
         if (useCommonLeftAxis)
             {
             std::optional<std::pair<double, double>> rangesMinMax;
-            for (const auto& graph : graphs)
+            for (const auto& graph : valid)
                 {
                 const auto minMaxVals = graph->GetLeftYAxis().GetRange();
                 if (rangesMinMax.has_value())
@@ -206,7 +206,7 @@ namespace Wisteria
                 }
             if (rangesMinMax.has_value())
                 {
-                for (const auto& graph : graphs)
+                for (const auto& graph : valid)
                     {
                     graph->GetLeftYAxis().SetRange(rangesMinMax.value().first,
                                                    rangesMinMax.value().second,
