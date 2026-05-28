@@ -9,7 +9,7 @@
 #include "inserttabledlg.h"
 #include "../../graphs/table.h"
 #include "../../wxSimpleJSON/src/wxSimpleJSON.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/combobox.h>
 #include <wx/gbsizer.h>
 #include <wx/spinctrl.h>

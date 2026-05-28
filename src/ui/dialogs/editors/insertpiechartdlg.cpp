@@ -9,8 +9,8 @@
 #include "insertpiechartdlg.h"
 #include "../../base/image.h"
 #include "../../graphs/piechart.h"
+#include "../variableselectdlg.h"
 #include "insertlabeldlg.h"
-#include "variableselectdlg.h"
 #include <wx/clrpicker.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>

@@ -1,26 +1,24 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertwcurvedlg.cpp
+// Name:        inserthistogramdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertwcurvedlg.h"
-#include "../../graphs/wcurveplot.h"
-#include "variableselectdlg.h"
+#include "inserthistogramdlg.h"
+#include "../../graphs/histogram.h"
+#include "../variableselectdlg.h"
 #include <wx/valgen.h>
-#include <wx/valtext.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertWCurveDlg::InsertWCurveDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                     wxWindow* parent, const wxString& caption, const wxWindowID id,
-                                     const wxPoint& pos, const wxSize& size, const long style,
-                                     EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-                         GraphDlgIncludeShapeScheme)
+    InsertHistogramDlg::InsertHistogramDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                           wxWindow* parent, const wxString& caption,
+                                           const wxWindowID id, const wxPoint& pos,
+                                           const wxSize& size, const long style, EditMode editMode)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
         FinalizeControls();
@@ -31,14 +29,14 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWCurveDlg::CreateControls()
+    void InsertHistogramDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"W-Curve"), ID_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Histogram"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(
@@ -74,20 +72,12 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* yLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Y (sentiment):"));
-        yLabel->SetFont(yLabel->GetFont().Bold());
-        varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
-        m_yVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_yVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* xLabel =
-            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (time interval):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* contLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Continuous:"));
+        contLabel->SetFont(contLabel->GetFont().Bold());
+        varGrid->Add(contLabel, wxSizerFlags{}.CenterVertical());
+        m_continuousVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_continuousVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_continuousVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
@@ -99,15 +89,121 @@ namespace Wisteria::UI
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
-        // time interval label
-        auto* timeSizer = new wxFlexGridSizer(
+        // binning options
+        auto* binSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        timeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Time interval label:")),
-                       wxSizerFlags{}.CenterVertical());
-        timeSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                      wxDefaultSize, 0,
-                                      wxTextValidator(wxFILTER_NONE, &m_timeIntervalLabel)));
-        optionsSizer->Add(timeSizer, wxSizerFlags{}.Border());
+
+        // binning method
+        binSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Binning method:")),
+                      wxSizerFlags{}.CenterVertical());
+            {
+            auto* binMethodChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_binningMethod));
+            binMethodChoice->Append(_(L"Unique values"));
+            binMethodChoice->Append(_(L"By range"));
+            binMethodChoice->Append(_(L"By integer range"));
+            binSizer->Add(binMethodChoice);
+            }
+
+        // rounding method
+        binSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Rounding:")),
+                      wxSizerFlags{}.CenterVertical());
+            {
+            auto* roundChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_roundingMethod));
+            roundChoice->Append(_(L"Round"));
+            roundChoice->Append(_(L"Round down"));
+            roundChoice->Append(_(L"Round up"));
+            roundChoice->Append(_(L"No rounding"));
+            binSizer->Add(roundChoice);
+            }
+
+        // interval display
+        binSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Interval display:")),
+                      wxSizerFlags{}.CenterVertical());
+            {
+            auto* intervalChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_intervalDisplay));
+            intervalChoice->Append(_(L"Cutpoints"));
+            intervalChoice->Append(_(L"Midpoints"));
+            binSizer->Add(intervalChoice);
+            }
+
+        // bin label display
+        binSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bin labels:")),
+                      wxSizerFlags{}.CenterVertical());
+            {
+            auto* labelChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_binLabelDisplay));
+            labelChoice->Append(_(L"Value"));
+            labelChoice->Append(_(L"Percentage"));
+            labelChoice->Append(_(L"Value & percentage"));
+            labelChoice->Append(_(L"No labels"));
+            labelChoice->Append(_(L"Name"));
+            labelChoice->Append(_(L"Name & value"));
+            labelChoice->Append(_(L"Name & percentage"));
+            binSizer->Add(labelChoice);
+            }
+
+        optionsSizer->Add(binSizer, wxSizerFlags{}.Border());
+
+        // checkboxes
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show full range of values"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_showFullRange)),
+                          wxSizerFlags{}.Border());
+
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Use neat intervals"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_neatIntervals)),
+                          wxSizerFlags{}.Border());
+
+        // bin count overrides
+        auto* binCountSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        binCountSizer->Add(
+            new wxStaticText(optionsPage, wxID_ANY, _(L"Suggested bin count (0 = auto):")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
+            spin->SetRange(0, 255);
+            spin->SetValidator(wxGenericValidator(&m_suggestedBinCount));
+            binCountSizer->Add(spin);
+            }
+
+        binCountSizer->Add(
+            new wxStaticText(optionsPage, wxID_ANY, _(L"Maximum bin count (0 = default):")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
+            spin->SetRange(0, 255);
+            spin->SetValidator(wxGenericValidator(&m_maxBinCount));
+            binCountSizer->Add(spin);
+            }
+
+        optionsSizer->Add(binCountSizer, wxSizerFlags{}.Border());
+
+        // bin start override
+        auto* binStartSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* binStartCheck =
+            new wxCheckBox(optionsPage, wxID_ANY, _(L"Start first bin at:"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_overrideBinsStart));
+        binStartSizer->Add(binStartCheck, wxSizerFlags{}.CenterVertical());
+            {
+            m_startBinSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
+            m_startBinSpin->SetRange(-1e9, 1e9);
+            m_startBinSpin->SetDigits(2);
+            m_startBinSpin->SetIncrement(1.0);
+            m_startBinSpin->SetValue(m_binsStart);
+            m_startBinSpin->Enable(m_overrideBinsStart);
+            binStartSizer->Add(m_startBinSpin, wxSizerFlags{}.Border(wxLEFT));
+            }
+        optionsSizer->Add(binStartSizer, wxSizerFlags{}.Border());
 
         // showcasing
         auto* ghostBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
@@ -124,13 +220,13 @@ namespace Wisteria::UI
         ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
 
         m_showcaseListBox = new wxEditableListBox(
-            ghostBox->GetStaticBox(), wxID_ANY, _(L"Showcase lines:"), wxDefaultPosition,
+            ghostBox->GetStaticBox(), wxID_ANY, _(L"Showcase bins:"), wxDefaultPosition,
             wxSize{ FromDIP(300), FromDIP(120) },
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         ghostBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
         optionsSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border());
 
-        // override New button for showcase lines
+        // override New button for showcase bins
         m_showcaseListBox->GetNewButton()->Bind(
             wxEVT_BUTTON,
             [this]([[maybe_unused]]
@@ -139,9 +235,8 @@ namespace Wisteria::UI
                 const auto dataset = GetSelectedDataset();
                 if (dataset == nullptr || m_groupVariable.empty())
                     {
-                    wxMessageBox(
-                        _(L"Select a grouping variable first to populate available lines."),
-                        _(L"No Groups"), wxOK | wxICON_INFORMATION, this);
+                    wxMessageBox(_(L"Select a grouping variable first to populate available bins."),
+                                 _(L"No Groups"), wxOK | wxICON_INFORMATION, this);
                     return;
                     }
 
@@ -163,19 +258,19 @@ namespace Wisteria::UI
                     return;
                     }
 
-                wxSingleChoiceDialog dlg(this, _(L"Select line to showcase:"), _(L"Showcase Line"),
+                wxSingleChoiceDialog dlg(this, _(L"Select bin to showcase:"), _(L"Showcase Bin"),
                                          groupChoices);
                 if (dlg.ShowModal() == wxID_OK)
                     {
                     const auto val = dlg.GetStringSelection();
-                    if (std::find(m_showcaseLines.begin(), m_showcaseLines.end(), val) ==
-                        m_showcaseLines.end())
+                    if (std::find(m_showcasedBars.begin(), m_showcasedBars.end(), val) ==
+                        m_showcasedBars.end())
                         {
-                        m_showcaseLines.push_back(val);
+                        m_showcasedBars.push_back(val);
                         wxArrayString strings;
-                        for (const auto& showLine : m_showcaseLines)
+                        for (const auto& showBar : m_showcasedBars)
                             {
-                            strings.Add(showLine);
+                            strings.Add(showBar);
                             }
                         m_showcaseListBox->SetStrings(strings);
                         }
@@ -191,7 +286,7 @@ namespace Wisteria::UI
                 const auto dataset = GetSelectedDataset();
                 auto* listCtrl = m_showcaseListBox->GetListCtrl();
                 const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseLines.size()) ||
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcasedBars.size()) ||
                     dataset == nullptr || m_groupVariable.empty())
                     {
                     return;
@@ -215,14 +310,14 @@ namespace Wisteria::UI
                     return;
                     }
 
-                wxSingleChoiceDialog dlg(this, _(L"Select line to showcase:"), _(L"Showcase Line"),
+                wxSingleChoiceDialog dlg(this, _(L"Select bin to showcase:"), _(L"Showcase Bin"),
                                          groupChoices);
                 dlg.SetSelection(sel);
                 if (dlg.ShowModal() == wxID_OK)
                     {
-                    m_showcaseLines[sel] = dlg.GetStringSelection();
+                    m_showcasedBars[sel] = dlg.GetStringSelection();
                     wxArrayString strings;
-                    for (const auto& s : m_showcaseLines)
+                    for (const auto& s : m_showcasedBars)
                         {
                         strings.Add(s);
                         }
@@ -238,13 +333,13 @@ namespace Wisteria::UI
             {
                 const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(
                     -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseLines.size()))
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcasedBars.size()))
                     {
                     return;
                     }
-                m_showcaseLines.erase(m_showcaseLines.begin() + sel);
+                m_showcasedBars.erase(m_showcasedBars.begin() + sel);
                 wxArrayString strings;
-                for (const auto& s : m_showcaseLines)
+                for (const auto& s : m_showcasedBars)
                     {
                     strings.Add(s);
                     }
@@ -266,6 +361,9 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        binStartCheck->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent& evt)
+                            { m_startBinSpin->Enable(evt.IsChecked()); });
+
         CreateAnnotationsPage();
         CreateAxisOptionsPage();
         CreateGraphOptionsPage();
@@ -273,16 +371,15 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertWCurveDlg::OnDatasetChanged()
+    void InsertHistogramDlg::OnDatasetChanged()
         {
-        m_yVariable.clear();
-        m_xVariable.clear();
+        m_continuousVariable.clear();
         m_groupVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertWCurveDlg::OnSelectVariables()
+    void InsertHistogramDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -292,8 +389,6 @@ namespace Wisteria::UI
             return;
             }
 
-        // prefer the stored column preview info (preserves original file order)
-        // over rebuilding it from the dataset's internal column grouping
         Data::Dataset::ColumnPreviewInfo columnInfo;
         if (GetReportBuilder() != nullptr)
             {
@@ -317,23 +412,17 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"Y (sentiment)"))
+                  .Label(_(L"Continuous"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"X (time interval)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
+                  .DefaultVariables(m_continuousVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_continuousVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Grouping"))
                   .SingleSelection(true)
-                  .Required(true)
+                  .Required(false)
                   .DefaultVariables(m_groupVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_groupVariable })
@@ -347,27 +436,23 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto yVars = dlg.GetSelectedVariables(0);
-        m_yVariable = yVars.empty() ? wxString{} : yVars.front();
+        const auto contVars = dlg.GetSelectedVariables(0);
+        m_continuousVariable = contVars.empty() ? wxString{} : contVars.front();
 
-        const auto xVars = dlg.GetSelectedVariables(1);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
-
-        const auto groupVars = dlg.GetSelectedVariables(2);
+        const auto groupVars = dlg.GetSelectedVariables(1);
         m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertWCurveDlg::UpdateVariableLabels()
+    void InsertHistogramDlg::UpdateVariableLabels()
         {
-        m_yVarLabel->SetLabel(m_yVariable);
-        m_xVarLabel->SetLabel(m_xVariable);
+        m_continuousVarLabel->SetLabel(m_continuousVariable);
         m_groupVarLabel->SetLabel(m_groupVariable);
 
         // clear showcase if group changes
-        m_showcaseLines.clear();
+        m_showcasedBars.clear();
         if (m_showcaseListBox != nullptr)
             {
             m_showcaseListBox->SetStrings(wxArrayString{});
@@ -378,7 +463,7 @@ namespace Wisteria::UI
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertWCurveDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertHistogramDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -399,7 +484,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertWCurveDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertHistogramDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -418,7 +503,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertWCurveDlg::Validate()
+    bool InsertHistogramDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -427,10 +512,10 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_yVariable.empty() || m_xVariable.empty() || m_groupVariable.empty())
+        if (m_continuousVariable.empty())
             {
-            wxMessageBox(_(L"Please select the Y, X, and grouping variables."),
-                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
+            wxMessageBox(_(L"Please select the continuous variable."), _(L"Variable Not Specified"),
+                         wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
             }
@@ -440,14 +525,17 @@ namespace Wisteria::UI
             return false;
             }
 
+        // validators do not work with wxSpinCtrlDouble
+        m_binsStart = m_startBinSpin->GetValue();
+
         return true;
         }
 
     //-------------------------------------------
-    void InsertWCurveDlg::LoadFromGraph(const Graphs::Graph2D& graph)
+    void InsertHistogramDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
-        const auto* wcurve = dynamic_cast<const Graphs::WCurvePlot*>(&graph);
-        if (wcurve == nullptr)
+        const auto* histogram = dynamic_cast<const Graphs::Histogram*>(&graph);
+        if (histogram == nullptr)
             {
             return;
             }
@@ -456,7 +544,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = wcurve->GetPropertyTemplate(L"dataset");
+        const auto dsName = histogram->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -469,22 +557,34 @@ namespace Wisteria::UI
                 }
             }
 
-        // load the actual column names from the graph
-        m_xVariable = wcurve->GetXColumnName();
-        m_yVariable = wcurve->GetYColumnName();
-        m_groupVariable = wcurve->GetGroupColumnName().value_or(wxString{});
+        // load column names from the graph
+        m_continuousVariable = histogram->GetContinuousColumnName();
+        m_groupVariable = histogram->GetGroupColumnName().value_or(wxString{});
         UpdateVariableLabels();
 
-        // W-Curve-specific options
-        m_timeIntervalLabel = wcurve->GetTimeIntervalLabel();
-        m_ghostOpacity = wcurve->GetGhostOpacity();
-        m_showcaseLines = wcurve->GetShowcasedLines();
+        // binning options
+        m_binningMethod = static_cast<int>(histogram->GetBinningMethod());
+        m_roundingMethod = static_cast<int>(histogram->GetRoundingMethod());
+        m_intervalDisplay = static_cast<int>(histogram->GetIntervalDisplay());
+        m_binLabelDisplay = static_cast<int>(histogram->GetBinLabelDisplay());
+        m_showFullRange = histogram->IsShowingFullRangeOfValues();
+        m_neatIntervals = histogram->IsUsingNeatIntervals();
+        m_ghostOpacity = histogram->GetGhostOpacity();
+        m_suggestedBinCount = histogram->GetSuggestedBinCount().has_value() ?
+                                  static_cast<int>(histogram->GetSuggestedBinCount().value()) :
+                                  0;
+        m_maxBinCount = (histogram->GetMaxNumberOfBins() != 255) ?
+                            static_cast<int>(histogram->GetMaxNumberOfBins()) :
+                            0;
+        m_overrideBinsStart = histogram->GetBinsStart().has_value();
+        m_binsStart = histogram->GetBinsStart().value_or(0.0);
+        m_showcasedBars = histogram->GetShowcasedLabels();
         if (m_showcaseListBox != nullptr)
             {
             wxArrayString strings;
-            for (const auto& showLine : m_showcaseLines)
+            for (const auto& showBar : m_showcasedBars)
                 {
-                strings.Add(showLine);
+                strings.Add(showBar);
                 }
             m_showcaseListBox->SetStrings(strings);
             }

@@ -13,8 +13,8 @@
 #define INSERT_PAGE_DIALOG_H
 
 #include "../../base/canvas.h"
-#include "../controls/thumbnail.h"
-#include "dialogwithhelp.h"
+#include "../../controls/thumbnail.h"
+#include "../dialogwithhelp.h"
 #include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>

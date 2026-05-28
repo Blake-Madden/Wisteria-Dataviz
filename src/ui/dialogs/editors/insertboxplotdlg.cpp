@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertboxplotdlg.h"
+#include "../variableselectdlg.h"
 #include "insertimgdlg.h"
 #include "insertshapedlg.h"
-#include "variableselectdlg.h"
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>

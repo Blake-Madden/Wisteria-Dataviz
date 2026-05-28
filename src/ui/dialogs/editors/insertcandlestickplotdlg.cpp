@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertcandlestickplotdlg.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/clrpicker.h>
 #include <wx/valgen.h>
 

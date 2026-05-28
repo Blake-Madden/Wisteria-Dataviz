@@ -101,10 +101,44 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/sidebar.cpp
     ../../src/ui/controls/sidebarbook.cpp
     ../../src/ui/controls/thumbnail.cpp
-    ../../src/ui/dialogs/accessibilityoptionspanel.cpp
     ../../src/ui/dialogs/archivedlg.cpp
-    ../../src/ui/dialogs/axisoptionspanel.cpp
     ../../src/ui/dialogs/datasetimportdlg.cpp
+    ../../src/ui/dialogs/editors/accessibilityoptionspanel.cpp
+    ../../src/ui/dialogs/editors/axisoptionspanel.cpp
+    ../../src/ui/dialogs/editors/insertboxplotdlg.cpp
+    ../../src/ui/dialogs/editors/insertbubbleplotdlg.cpp
+    ../../src/ui/dialogs/editors/insertcandlestickplotdlg.cpp
+    ../../src/ui/dialogs/editors/insertcatbarchartdlg.cpp
+    ../../src/ui/dialogs/editors/insertchernoffdlg.cpp
+    ../../src/ui/dialogs/editors/insertcommonaxisdlg.cpp
+    ../../src/ui/dialogs/editors/insertganttchartdlg.cpp
+    ../../src/ui/dialogs/editors/insertgraphdlg.cpp
+    ../../src/ui/dialogs/editors/insertheatmapdlg.cpp
+    ../../src/ui/dialogs/editors/inserthistogramdlg.cpp
+    ../../src/ui/dialogs/editors/insertimgdlg.cpp
+    ../../src/ui/dialogs/editors/insertitemdlg.cpp
+    ../../src/ui/dialogs/editors/insertlabeldlg.cpp
+    ../../src/ui/dialogs/editors/insertlikertdlg.cpp
+    ../../src/ui/dialogs/editors/insertlineplotdlg.cpp
+    ../../src/ui/dialogs/editors/insertlrroadmapdlg.cpp
+    ../../src/ui/dialogs/editors/insertmultiserieslineplotdlg.cpp
+    ../../src/ui/dialogs/editors/insertpagedlg.cpp
+    ../../src/ui/dialogs/editors/insertpiechartdlg.cpp
+    ../../src/ui/dialogs/editors/insertproconroadmapdlg.cpp
+    ../../src/ui/dialogs/editors/insertsankeydiagramdlg.cpp
+    ../../src/ui/dialogs/editors/insertscalechartdlg.cpp
+    ../../src/ui/dialogs/editors/insertscatterplotdlg.cpp
+    ../../src/ui/dialogs/editors/insertshapedlg.cpp
+    ../../src/ui/dialogs/editors/insertstemandleafdlg.cpp
+    ../../src/ui/dialogs/editors/inserttabledlg.cpp
+    ../../src/ui/dialogs/editors/insertwafflechartdlg.cpp
+    ../../src/ui/dialogs/editors/insertwcurvedlg.cpp
+    ../../src/ui/dialogs/editors/insertwlsparklinedlg.cpp
+    ../../src/ui/dialogs/editors/insertwordclouddlg.cpp
+    ../../src/ui/dialogs/editors/joindlg.cpp
+    ../../src/ui/dialogs/editors/pivotlongerdlg.cpp
+    ../../src/ui/dialogs/editors/pivotwiderrdlg.cpp
+    ../../src/ui/dialogs/editors/subsetdlg.cpp
     ../../src/ui/dialogs/excelpreviewdlg.cpp
     ../../src/ui/dialogs/filelistdlg.cpp
     ../../src/ui/dialogs/getdirdlg.cpp
@@ -112,18 +146,14 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/htmltablepanel.cpp
     ../../src/ui/dialogs/imageexportdlg.cpp
     ../../src/ui/dialogs/imagemergedlg.cpp
-    ../../src/ui/dialogs/joindlg.cpp
     ../../src/ui/dialogs/listctrlitemviewdlg.cpp
     ../../src/ui/dialogs/listctrlsortdlg.cpp
     ../../src/ui/dialogs/listdlg.cpp
     ../../src/ui/dialogs/odspreviewdlg.cpp
     ../../src/ui/dialogs/opacitydlg.cpp
     ../../src/ui/dialogs/pdfexportdlg.cpp
-    ../../src/ui/dialogs/pivotlongerdlg.cpp
-    ../../src/ui/dialogs/pivotwiderrdlg.cpp
     ../../src/ui/dialogs/printerheaderfooterdlg.cpp
     ../../src/ui/dialogs/radioboxdlg.cpp
-    ../../src/ui/dialogs/subsetdlg.cpp
     ../../src/ui/dialogs/svgexportdlg.cpp
     ../../src/ui/dialogs/variableselectdlg.cpp
     ../../src/ui/dialogs/warningmessagesdlg.cpp

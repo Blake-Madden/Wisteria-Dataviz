@@ -8,7 +8,7 @@
 
 #include "insertscalechartdlg.h"
 #include "../../graphs/scalechart.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/clrpicker.h>
 #include <wx/numdlg.h>
 #include <wx/tokenzr.h>

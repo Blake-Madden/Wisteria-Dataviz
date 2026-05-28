@@ -13,7 +13,7 @@
 #define INSERT_LABEL_DIALOG_H
 
 #include "../../base/shapes.h"
-#include "../controls/thumbnail.h"
+#include "../../controls/thumbnail.h"
 #include "insertitemdlg.h"
 #include <wx/clrpicker.h>
 #include <wx/editlbox.h>

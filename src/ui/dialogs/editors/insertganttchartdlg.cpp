@@ -8,7 +8,7 @@
 
 #include "insertganttchartdlg.h"
 #include "../../graphs/ganttchart.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <algorithm>
 #include <set>
 #include <wx/valgen.h>

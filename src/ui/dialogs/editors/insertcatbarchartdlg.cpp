@@ -9,9 +9,9 @@
 #include "insertcatbarchartdlg.h"
 #include "../../app/wisteriaapp.h"
 #include "../../base/reportenumconvert.h"
+#include "../variableselectdlg.h"
 #include "insertimgdlg.h"
 #include "insertshapedlg.h"
-#include "variableselectdlg.h"
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>

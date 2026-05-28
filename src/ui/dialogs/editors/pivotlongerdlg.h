@@ -14,9 +14,9 @@
 
 #include "../../base/reportbuilder.h"
 #include "../../base/settings.h"
+#include "../../controls/datasetgridtable.h"
 #include "../../data/pivot.h"
-#include "../controls/datasetgridtable.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/dialog.h>
 #include <wx/grid.h>
 #include <wx/wx.h>

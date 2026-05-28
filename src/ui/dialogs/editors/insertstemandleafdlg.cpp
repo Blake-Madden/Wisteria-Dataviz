@@ -1,26 +1,27 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertbubbleplotdlg.cpp
+// Name:        insertstemandleafdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertbubbleplotdlg.h"
-#include "../../graphs/bubbleplot.h"
-#include "variableselectdlg.h"
+#include "insertstemandleafdlg.h"
+#include "../../graphs/stemandleafplot.h"
+#include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertBubblePlotDlg::InsertBubblePlotDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                             wxWindow* parent, const wxString& caption,
-                                             const wxWindowID id, const wxPoint& pos,
-                                             const wxSize& size, const long style,
-                                             EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-                         GraphDlgIncludeShapeScheme)
+    InsertStemAndLeafDlg::InsertStemAndLeafDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                               wxWindow* parent, const wxString& caption,
+                                               const wxWindowID id, const wxPoint& pos,
+                                               const wxSize& size, const long style,
+                                               EditMode editMode)
+        : InsertGraphDlg(
+              canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
+              static_cast<GraphDlgOptions>(GraphDlgIncludeMost & ~GraphDlgIncludeColorScheme))
         {
         CreateControls();
         FinalizeControls();
@@ -31,14 +32,14 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertBubblePlotDlg::CreateControls()
+    void InsertStemAndLeafDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Bubble Plot"), ID_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Stem-and-Leaf"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(
@@ -74,26 +75,12 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* xLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (independent):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* yLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Y (dependent):"));
-        yLabel->SetFont(yLabel->GetFont().Bold());
-        varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
-        m_yVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_yVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_yVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* sizeLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Size (area):"));
-        sizeLabel->SetFont(sizeLabel->GetFont().Bold());
-        varGrid->Add(sizeLabel, wxSizerFlags{}.CenterVertical());
-        m_sizeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_sizeVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_sizeVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* contLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Continuous:"));
+        contLabel->SetFont(contLabel->GetFont().Bold());
+        varGrid->Add(contLabel, wxSizerFlags{}.CenterVertical());
+        m_continuousVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_continuousVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_continuousVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
         groupLabel->SetFont(groupLabel->GetFont().Bold());
@@ -104,58 +91,6 @@ namespace Wisteria::UI
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
-
-        // regression options
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showRegressionLines)),
-                          wxSizerFlags{}.Border());
-
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showConfidenceBands)),
-                          wxSizerFlags{}.Border());
-
-        auto* confidenceSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        confidenceSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Confidence level:")),
-                             wxSizerFlags{}.CenterVertical());
-            {
-            m_confidenceLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
-            m_confidenceLevelSpin->SetRange(0.5, 0.99);
-            m_confidenceLevelSpin->SetDigits(2);
-            m_confidenceLevelSpin->SetIncrement(0.01);
-            // validators do not work with wxSpinCtrlDouble
-            m_confidenceLevelSpin->SetValue(m_confidenceLevel);
-            confidenceSizer->Add(m_confidenceLevelSpin);
-            }
-        optionsSizer->Add(confidenceSizer, wxSizerFlags{}.Border());
-
-        // bubble sizing
-        auto* bubbleSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-
-        bubbleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Min bubble radius:")),
-                         wxSizerFlags{}.CenterVertical());
-            {
-            auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
-            spin->SetRange(1, 100);
-            spin->SetValue(m_minBubbleRadius);
-            spin->SetValidator(wxGenericValidator(&m_minBubbleRadius));
-            bubbleSizer->Add(spin);
-            }
-
-        bubbleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Max bubble radius:")),
-                         wxSizerFlags{}.CenterVertical());
-            {
-            auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
-            spin->SetRange(1, 200);
-            spin->SetValue(m_maxBubbleRadius);
-            spin->SetValidator(wxGenericValidator(&m_maxBubbleRadius));
-            bubbleSizer->Add(spin);
-            }
-
-        optionsSizer->Add(bubbleSizer, wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(
@@ -172,24 +107,20 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
-        CreateAnnotationsPage();
-        CreateAxisOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
 
     //-------------------------------------------
-    void InsertBubblePlotDlg::OnDatasetChanged()
+    void InsertStemAndLeafDlg::OnDatasetChanged()
         {
-        m_xVariable.clear();
-        m_yVariable.clear();
-        m_sizeVariable.clear();
+        m_continuousVariable.clear();
         m_groupVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertBubblePlotDlg::OnSelectVariables()
+    void InsertStemAndLeafDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -199,7 +130,6 @@ namespace Wisteria::UI
             return;
             }
 
-        // prefer the stored column preview info (preserves original file order)
         Data::Dataset::ColumnPreviewInfo columnInfo;
         if (GetReportBuilder() != nullptr)
             {
@@ -223,26 +153,12 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"X (independent)"))
+                  .Label(_(L"Continuous"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Y (dependent)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Size (area)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_sizeVariable.empty() ?
+                  .DefaultVariables(m_continuousVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_sizeVariable })
+                                        std::vector<wxString>{ m_continuousVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Grouping"))
@@ -261,27 +177,19 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto xVars = dlg.GetSelectedVariables(0);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
+        const auto contVars = dlg.GetSelectedVariables(0);
+        m_continuousVariable = contVars.empty() ? wxString{} : contVars.front();
 
-        const auto yVars = dlg.GetSelectedVariables(1);
-        m_yVariable = yVars.empty() ? wxString{} : yVars.front();
-
-        const auto sizeVars = dlg.GetSelectedVariables(2);
-        m_sizeVariable = sizeVars.empty() ? wxString{} : sizeVars.front();
-
-        const auto groupVars = dlg.GetSelectedVariables(3);
+        const auto groupVars = dlg.GetSelectedVariables(1);
         m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertBubblePlotDlg::UpdateVariableLabels()
+    void InsertStemAndLeafDlg::UpdateVariableLabels()
         {
-        m_xVarLabel->SetLabel(m_xVariable);
-        m_yVarLabel->SetLabel(m_yVariable);
-        m_sizeVarLabel->SetLabel(m_sizeVariable);
+        m_continuousVarLabel->SetLabel(m_continuousVariable);
         m_groupVarLabel->SetLabel(m_groupVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
@@ -289,7 +197,7 @@ namespace Wisteria::UI
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertBubblePlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertStemAndLeafDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -310,7 +218,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertBubblePlotDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertStemAndLeafDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -329,7 +237,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertBubblePlotDlg::Validate()
+    bool InsertStemAndLeafDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -338,29 +246,22 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_xVariable.empty() || m_yVariable.empty() || m_sizeVariable.empty())
+        if (m_continuousVariable.empty())
             {
-            wxMessageBox(_(L"Please select the X, Y, and size variables."),
-                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
+            wxMessageBox(_(L"Please select the continuous variable."), _(L"Variable Not Specified"),
+                         wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
             }
-
-        if (!ValidateColorScheme())
-            {
-            return false;
-            }
-
-        m_confidenceLevel = m_confidenceLevelSpin->GetValue();
 
         return true;
         }
 
     //-------------------------------------------
-    void InsertBubblePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
+    void InsertStemAndLeafDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
-        const auto* bubble = dynamic_cast<const Graphs::BubblePlot*>(&graph);
-        if (bubble == nullptr)
+        const auto* stemLeaf = dynamic_cast<const Graphs::StemAndLeafPlot*>(&graph);
+        if (stemLeaf == nullptr)
             {
             return;
             }
@@ -369,7 +270,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = bubble->GetPropertyTemplate(L"dataset");
+        const auto dsName = stemLeaf->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -382,23 +283,10 @@ namespace Wisteria::UI
                 }
             }
 
-        // load the actual column names used by the graph
-        m_xVariable = bubble->GetXColumnName();
-        m_yVariable = bubble->GetYColumnName();
-        m_sizeVariable = bubble->GetSizeColumnName();
-        const auto& series = bubble->GetSeriesList();
-        if (!series.empty())
-            {
-            m_groupVariable = series.front().GetGroupColumnName().value_or(wxString{});
-            }
+        // load column names from the graph
+        m_continuousVariable = stemLeaf->GetContinuousColumnName();
+        m_groupVariable = stemLeaf->GetGroupColumnName().value_or(wxString{});
         UpdateVariableLabels();
-
-        // bubble-specific options
-        m_showRegressionLines = bubble->IsShowingRegressionLines();
-        m_showConfidenceBands = bubble->IsShowingConfidenceBands();
-        m_confidenceLevel = bubble->GetConfidenceLevel();
-        m_minBubbleRadius = static_cast<int>(bubble->GetMinBubbleRadius());
-        m_maxBubbleRadius = static_cast<int>(bubble->GetMaxBubbleRadius());
 
         TransferDataToWindow();
         }

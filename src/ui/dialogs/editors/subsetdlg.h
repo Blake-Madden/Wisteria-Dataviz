@@ -14,8 +14,8 @@
 
 #include "../../base/reportbuilder.h"
 #include "../../base/settings.h"
+#include "../../controls/datasetgridtable.h"
 #include "../../data/subset.h"
-#include "../controls/datasetgridtable.h"
 #include <wx/dialog.h>
 #include <wx/grid.h>
 #include <wx/wx.h>

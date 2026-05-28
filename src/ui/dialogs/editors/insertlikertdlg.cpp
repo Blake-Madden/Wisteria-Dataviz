@@ -8,7 +8,7 @@
 
 #include "insertlikertdlg.h"
 #include "../../app/wisteriaapp.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI

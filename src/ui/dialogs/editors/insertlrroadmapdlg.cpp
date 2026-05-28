@@ -1,26 +1,25 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertproconroadmapdlg.cpp
+// Name:        insertlrroadmapdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertproconroadmapdlg.h"
-#include "../../graphs/proconroadmap.h"
-#include "variableselectdlg.h"
+#include "insertlrroadmapdlg.h"
+#include "../../graphs/lrroadmap.h"
+#include "../variableselectdlg.h"
+#include <wx/spinctrl.h>
 #include <wx/valgen.h>
 #include <wx/valtext.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertProConRoadmapDlg::InsertProConRoadmapDlg(Canvas* canvas,
-                                                   const ReportBuilder* reportBuilder,
-                                                   wxWindow* parent, const wxString& caption,
-                                                   const wxWindowID id, const wxPoint& pos,
-                                                   const wxSize& size, const long style,
-                                                   EditMode editMode)
+    InsertLRRoadmapDlg::InsertLRRoadmapDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                           wxWindow* parent, const wxString& caption,
+                                           const wxWindowID id, const wxPoint& pos,
+                                           const wxSize& size, const long style, EditMode editMode)
         : InsertGraphDlg(
               canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
               static_cast<GraphDlgOptions>(GraphDlgIncludeMost & ~GraphDlgIncludeColorScheme))
@@ -34,14 +33,14 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertProConRoadmapDlg::CreateControls()
+    void InsertLRRoadmapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Pro & Con Roadmap"), ID_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"LR Roadmap"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(
@@ -77,67 +76,54 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* posLabel =
-            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Positive (pros):"));
-        posLabel->SetFont(posLabel->GetFont().Bold());
-        varGrid->Add(posLabel, wxSizerFlags{}.CenterVertical());
-        m_positiveVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_positiveVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_positiveVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* predLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Predictor:"));
+        predLabel->SetFont(predLabel->GetFont().Bold());
+        varGrid->Add(predLabel, wxSizerFlags{}.CenterVertical());
+        m_predictorVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_predictorVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_predictorVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* posValLabel =
-            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Positive values:"));
-        posValLabel->SetFont(posValLabel->GetFont().Bold());
-        varGrid->Add(posValLabel, wxSizerFlags{}.CenterVertical());
-        m_positiveValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_positiveValueVarLabel->SetForegroundColour(
-            Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_positiveValueVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* coefLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Coefficient:"));
+        coefLabel->SetFont(coefLabel->GetFont().Bold());
+        varGrid->Add(coefLabel, wxSizerFlags{}.CenterVertical());
+        m_coefficientVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_coefficientVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_coefficientVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* negLabel =
-            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Negative (cons):"));
-        negLabel->SetFont(negLabel->GetFont().Bold());
-        varGrid->Add(negLabel, wxSizerFlags{}.CenterVertical());
-        m_negativeVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_negativeVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_negativeVarLabel, wxSizerFlags{}.CenterVertical());
-
-        auto* negValLabel =
-            new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Negative values:"));
-        negValLabel->SetFont(negValLabel->GetFont().Bold());
-        varGrid->Add(negValLabel, wxSizerFlags{}.CenterVertical());
-        m_negativeValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_negativeValueVarLabel->SetForegroundColour(
-            Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_negativeValueVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* pvalLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"p-value:"));
+        pvalLabel->SetFont(pvalLabel->GetFont().Bold());
+        varGrid->Add(pvalLabel, wxSizerFlags{}.CenterVertical());
+        m_pValueVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_pValueVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_pValueVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
-        // minimum count
-        auto* minCountSizer = new wxFlexGridSizer(
+        // dependent variable name
+        auto* dvSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        minCountSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Minimum count:")),
-                           wxSizerFlags{}.CenterVertical());
-        m_minCountSpin = new wxSpinCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                        wxDefaultSize, wxSP_ARROW_KEYS, 0, 1000, 0);
-        minCountSizer->Add(m_minCountSpin);
-        optionsSizer->Add(minCountSizer, wxSizerFlags{}.Border());
+        dvSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dependent variable description:")),
+                     wxSizerFlags{}.CenterVertical());
+        dvSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                    wxDefaultSize, 0, wxTextValidator(wxFILTER_NONE, &m_dvName)));
+        optionsSizer->Add(dvSizer, wxSizerFlags{}.Border());
 
-        // legend labels
-        auto* labelSizer = new wxFlexGridSizer(
+        // predictors filter
+        auto* filterSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        labelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Positive label:")),
-                        wxSizerFlags{}.CenterVertical());
-        labelSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                       wxDefaultSize, 0,
-                                       wxTextValidator(wxFILTER_NONE, &m_positiveLabel)));
-        labelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Negative label:")),
-                        wxSizerFlags{}.CenterVertical());
-        labelSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                       wxDefaultSize, 0,
-                                       wxTextValidator(wxFILTER_NONE, &m_negativeLabel)));
-        optionsSizer->Add(labelSizer, wxSizerFlags{}.Border());
+        filterSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Show predictors:")),
+                         wxSizerFlags{}.CenterVertical());
+            {
+            auto* filterChoice =
+                new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                             wxGenericValidator(&m_predictorsFilter));
+            filterChoice->Append(_(L"All"));
+            filterChoice->Append(_(L"Positive only"));
+            filterChoice->Append(_(L"Negative only"));
+            filterSizer->Add(filterChoice);
+            }
+        optionsSizer->Add(filterSizer, wxSizerFlags{}.Border());
 
         // marker labels
         auto* markerSizer = new wxFlexGridSizer(
@@ -154,6 +140,16 @@ namespace Wisteria::UI
             markerSizer->Add(labelChoice);
             }
         optionsSizer->Add(markerSizer, wxSizerFlags{}.Border());
+
+        // p-value threshold
+        auto* pLevelSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        pLevelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"p-value threshold:")),
+                         wxSizerFlags{}.CenterVertical());
+        m_pLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                            wxDefaultSize, wxSP_ARROW_KEYS, 0.001, 1.0, 0.05, 0.01);
+        pLevelSizer->Add(m_pLevelSpin);
+        optionsSizer->Add(pLevelSizer, wxSizerFlags{}.Border());
 
         // road appearance
         auto* roadBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Road"));
@@ -221,17 +217,16 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertProConRoadmapDlg::OnDatasetChanged()
+    void InsertLRRoadmapDlg::OnDatasetChanged()
         {
-        m_positiveVariable.clear();
-        m_positiveValueVariable.clear();
-        m_negativeVariable.clear();
-        m_negativeValueVariable.clear();
+        m_predictorVariable.clear();
+        m_coefficientVariable.clear();
+        m_pValueVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertProConRoadmapDlg::OnSelectVariables()
+    void InsertLRRoadmapDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -264,42 +259,31 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"Positive (pros)"))
+                  .Label(_(L"Predictor"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_positiveVariable.empty() ?
+                  .DefaultVariables(m_predictorVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_positiveVariable })
+                                        std::vector<wxString>{ m_predictorVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
                                    Data::Dataset::ColumnImportType::DichotomousDiscrete }),
               VLI{}
-                  .Label(_(L"Positive values"))
+                  .Label(_(L"Coefficient"))
                   .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_positiveValueVariable.empty() ?
+                  .Required(true)
+                  .DefaultVariables(m_coefficientVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_positiveValueVariable })
+                                        std::vector<wxString>{ m_coefficientVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(_(L"Negative (cons)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_negativeVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_negativeVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Negative values"))
+                  .Label(_(L"p-value"))
                   .SingleSelection(true)
                   .Required(false)
-                  .DefaultVariables(m_negativeValueVariable.empty() ?
+                  .DefaultVariables(m_pValueVariable.empty() ?
                                         std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_negativeValueVariable })
+                                        std::vector<wxString>{ m_pValueVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
 
         if (dlg.ShowModal() != wxID_OK)
@@ -307,35 +291,31 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto posVars = dlg.GetSelectedVariables(0);
-        m_positiveVariable = posVars.empty() ? wxString{} : posVars.front();
+        const auto predVars = dlg.GetSelectedVariables(0);
+        m_predictorVariable = predVars.empty() ? wxString{} : predVars.front();
 
-        const auto posValVars = dlg.GetSelectedVariables(1);
-        m_positiveValueVariable = posValVars.empty() ? wxString{} : posValVars.front();
+        const auto coefVars = dlg.GetSelectedVariables(1);
+        m_coefficientVariable = coefVars.empty() ? wxString{} : coefVars.front();
 
-        const auto negVars = dlg.GetSelectedVariables(2);
-        m_negativeVariable = negVars.empty() ? wxString{} : negVars.front();
-
-        const auto negValVars = dlg.GetSelectedVariables(3);
-        m_negativeValueVariable = negValVars.empty() ? wxString{} : negValVars.front();
+        const auto pvalVars = dlg.GetSelectedVariables(2);
+        m_pValueVariable = pvalVars.empty() ? wxString{} : pvalVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertProConRoadmapDlg::UpdateVariableLabels()
+    void InsertLRRoadmapDlg::UpdateVariableLabels()
         {
-        m_positiveVarLabel->SetLabel(m_positiveVariable);
-        m_positiveValueVarLabel->SetLabel(m_positiveValueVariable);
-        m_negativeVarLabel->SetLabel(m_negativeVariable);
-        m_negativeValueVarLabel->SetLabel(m_negativeValueVariable);
+        m_predictorVarLabel->SetLabel(m_predictorVariable);
+        m_coefficientVarLabel->SetLabel(m_coefficientVariable);
+        m_pValueVarLabel->SetLabel(m_pValueVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertProConRoadmapDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertLRRoadmapDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -356,7 +336,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertProConRoadmapDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertLRRoadmapDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -375,14 +355,31 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::optional<size_t> InsertProConRoadmapDlg::GetMinimumCount() const
+    std::optional<double> InsertLRRoadmapDlg::GetPLevel() const
         {
-        const int val = m_minCountSpin->GetValue();
-        return (val > 0) ? std::optional<size_t>(static_cast<size_t>(val)) : std::nullopt;
+        if (m_pValueVariable.empty())
+            {
+            return std::nullopt;
+            }
+        return m_pLevelSpin->GetValue();
         }
 
     //-------------------------------------------
-    bool InsertProConRoadmapDlg::Validate()
+    std::optional<Influence> InsertLRRoadmapDlg::GetPredictorsToInclude() const
+        {
+        switch (m_predictorsFilter)
+            {
+        case 1:
+            return InfluencePositive;
+        case 2:
+            return InfluenceNegative;
+        default:
+            return std::nullopt;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertLRRoadmapDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -391,9 +388,9 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_positiveVariable.empty() || m_negativeVariable.empty())
+        if (m_predictorVariable.empty() || m_coefficientVariable.empty())
             {
-            wxMessageBox(_(L"Please select the positive and negative variables."),
+            wxMessageBox(_(L"Please select the predictor and coefficient variables."),
                          _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
@@ -403,9 +400,9 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertProConRoadmapDlg::LoadFromGraph(const Graphs::Graph2D& graph)
+    void InsertLRRoadmapDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
-        const auto* roadmap = dynamic_cast<const Graphs::ProConRoadmap*>(&graph);
+        const auto* roadmap = dynamic_cast<const Graphs::LRRoadmap*>(&graph);
         if (roadmap == nullptr)
             {
             return;
@@ -429,22 +426,35 @@ namespace Wisteria::UI
             }
 
         // load the actual column names from the graph
-        m_positiveVariable = roadmap->GetPositiveColumnName();
-        m_positiveValueVariable = roadmap->GetPositiveValueColumnName();
-        m_negativeVariable = roadmap->GetNegativeColumnName();
-        m_negativeValueVariable = roadmap->GetNegativeValueColumnName();
+        m_predictorVariable = roadmap->GetPredictorColumnName();
+        m_coefficientVariable = roadmap->GetCoefficientColumnName();
+        m_pValueVariable = roadmap->GetPValueColumnName();
         UpdateVariableLabels();
 
-        // minimum count
-        const auto minCount = roadmap->GetMinimumCount();
-        if (minCount.has_value())
+        // dependent variable name from the goal label
+        m_dvName = roadmap->GetGoalLabel();
+
+        // p-value threshold
+        const auto pThreshold = roadmap->GetPValueThreshold();
+        if (pThreshold.has_value())
             {
-            m_minCountSpin->SetValue(static_cast<int>(minCount.value()));
+            m_pLevelSpin->SetValue(pThreshold.value());
             }
 
-        // legend labels
-        m_positiveLabel = roadmap->GetPositiveLabel();
-        m_negativeLabel = roadmap->GetNegativeLabel();
+        // predictors filter
+        const auto pred = roadmap->GetPredictorsToInclude();
+        if (!pred.has_value() || pred.value() == InfluenceAll)
+            {
+            m_predictorsFilter = 0;
+            }
+        else if (pred.value() == InfluencePositive)
+            {
+            m_predictorsFilter = 1;
+            }
+        else if (pred.value() == InfluenceNegative)
+            {
+            m_predictorsFilter = 2;
+            }
 
         m_addDefaultCaption = roadmap->HasDefaultCaption();
 

@@ -1,25 +1,23 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertmultiserieslineplotdlg.cpp
+// Name:        insertheatmapdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertmultiserieslineplotdlg.h"
-#include "../../graphs/multi_series_lineplot.h"
-#include "variableselectdlg.h"
+#include "insertheatmapdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertMultiSeriesLinePlotDlg::InsertMultiSeriesLinePlotDlg(
-        Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
-        const wxString& caption, const wxWindowID id, const wxPoint& pos, const wxSize& size,
-        const long style, EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-                         GraphDlgIncludeAll)
+    InsertHeatMapDlg::InsertHeatMapDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                       wxWindow* parent, const wxString& caption,
+                                       const wxWindowID id, const wxPoint& pos, const wxSize& size,
+                                       const long style, EditMode editMode)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
         {
         CreateControls();
         FinalizeControls();
@@ -30,15 +28,14 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertMultiSeriesLinePlotDlg::CreateControls()
+    void InsertHeatMapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Multi-Series Line Plot"), ID_OPTIONS_SECTION,
-                                  true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Heat Map"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(
@@ -74,36 +71,63 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* yLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Y (series):"));
-        yLabel->SetFont(yLabel->GetFont().Bold());
-        varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
-        m_yVarsLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_yVarsLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_yVarsLabel, wxSizerFlags{}.CenterVertical());
+        auto* contLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Continuous:"));
+        contLabel->SetFont(contLabel->GetFont().Bold());
+        varGrid->Add(contLabel, wxSizerFlags{}.CenterVertical());
+        m_continuousVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_continuousVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_continuousVarLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* xLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (axis):"));
-        xLabel->SetFont(xLabel->GetFont().Bold());
-        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
-        m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_xVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Group:"));
+        groupLabel->SetFont(groupLabel->GetFont().Bold());
+        varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
+        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
-        // line options
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Auto spline"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_autoSpline)),
-                          wxSizerFlags{}.Border());
+        // group column count
+        auto* groupOptsSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        m_groupColumnCountLabel =
+            new wxStaticText(optionsPage, wxID_ANY, _(L"Group column count:"));
+        groupOptsSizer->Add(m_groupColumnCountLabel, wxSizerFlags{}.CenterVertical());
+        m_groupColumnCountSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
+        m_groupColumnCountSpin->SetRange(1, 5);
+        m_groupColumnCountSpin->SetValue(m_groupColumnCount);
+        m_groupColumnCountSpin->SetValidator(wxGenericValidator(&m_groupColumnCount));
+        groupOptsSizer->Add(m_groupColumnCountSpin, wxSizerFlags{}.CenterVertical());
+
+        optionsSizer->Add(groupOptsSizer, wxSizerFlags{}.Border());
+
+        // show group headers
+        m_showGroupHeadersCheck =
+            new wxCheckBox(optionsPage, wxID_ANY, _(L"Show group headers"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_showGroupHeaders));
+        optionsSizer->Add(m_showGroupHeadersCheck, wxSizerFlags{}.Border(wxLEFT));
+
+        // group header prefix
+        auto* prefixSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        m_groupHeaderPrefixLabel =
+            new wxStaticText(optionsPage, wxID_ANY, _(L"Group header prefix:"));
+        prefixSizer->Add(m_groupHeaderPrefixLabel, wxSizerFlags{}.CenterVertical());
+        m_groupHeaderPrefixText =
+            new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize, 0,
+                           wxGenericValidator(&m_groupHeaderPrefix));
+        prefixSizer->Add(m_groupHeaderPrefixText, wxSizerFlags{}.CenterVertical().Expand());
+
+        optionsSizer->Add(prefixSizer, wxSizerFlags{}.Border());
 
         // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
+        auto* legendGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
+        legendGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
+                        wxSizerFlags{}.CenterVertical());
+        legendGrid->Add(CreateLegendPlacementChoice(optionsPage, 1));
+        optionsSizer->Add(legendGrid, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -112,22 +136,25 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
-        CreateAnnotationsPage();
-        CreateAxisOptionsPage();
+        m_showGroupHeadersCheck->Bind(wxEVT_CHECKBOX, [this]([[maybe_unused]] wxCommandEvent&)
+                                      { UpdateGroupControlStates(); });
+
+        UpdateGroupControlStates();
+
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
 
     //-------------------------------------------
-    void InsertMultiSeriesLinePlotDlg::OnDatasetChanged()
+    void InsertHeatMapDlg::OnDatasetChanged()
         {
-        m_xVariable.clear();
-        m_yVariables.clear();
+        m_continuousVariable.clear();
+        m_groupVariable.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertMultiSeriesLinePlotDlg::OnSelectVariables()
+    void InsertHeatMapDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -138,7 +165,6 @@ namespace Wisteria::UI
             }
 
         // prefer the stored column preview info (preserves original file order)
-        // over rebuilding it from the dataset's internal column grouping
         Data::Dataset::ColumnPreviewInfo columnInfo;
         if (GetReportBuilder() != nullptr)
             {
@@ -158,21 +184,28 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
+        // expand any constant placeholders so the variable selection list
+        // can match the real dataset columns
+        const auto continuousDefault = ExpandVariable(m_continuousVariable);
+        const auto groupDefault = ExpandVariable(m_groupVariable);
+
         using VLI = VariableSelectDlg::VariableListInfo;
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"Y (series)"))
-                  .SingleSelection(false)
-                  .Required(true)
-                  .DefaultVariables(m_yVariables)
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"X (axis)"))
+                  .Label(_(L"Continuous"))
                   .SingleSelection(true)
                   .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
+                  .DefaultVariables(continuousDefault.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ continuousDefault })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
+              VLI{}
+                  .Label(_(L"Group"))
+                  .SingleSelection(true)
+                  .Required(false)
+                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
+                                                           std::vector<wxString>{ groupDefault })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -183,35 +216,42 @@ namespace Wisteria::UI
             return;
             }
 
-        m_yVariables = dlg.GetSelectedVariables(0);
+        const auto contVars = dlg.GetSelectedVariables(0);
+        m_continuousVariable = contVars.empty() ? wxString{} : contVars.front();
 
-        const auto xVars = dlg.GetSelectedVariables(1);
-        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
+        const auto groupVars = dlg.GetSelectedVariables(1);
+        m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertMultiSeriesLinePlotDlg::UpdateVariableLabels()
+    void InsertHeatMapDlg::UpdateVariableLabels()
         {
-        wxString yText;
-        for (size_t i = 0; i < m_yVariables.size(); ++i)
-            {
-            if (i > 0)
-                {
-                yText += L", ";
-                }
-            yText += m_yVariables[i];
-            }
-        m_yVarsLabel->SetLabel(yText);
-        m_xVarLabel->SetLabel(m_xVariable);
+        m_continuousVarLabel->SetLabel(m_continuousVariable);
+        m_groupVarLabel->SetLabel(m_groupVariable);
+
+        UpdateGroupControlStates();
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
 
     //-------------------------------------------
+    void InsertHeatMapDlg::UpdateGroupControlStates()
+        {
+        const bool hasGroup = !m_groupVariable.empty();
+        const bool showHeaders = hasGroup && m_showGroupHeadersCheck->IsChecked();
+
+        m_groupColumnCountLabel->Enable(hasGroup);
+        m_groupColumnCountSpin->Enable(hasGroup);
+        m_showGroupHeadersCheck->Enable(hasGroup);
+        m_groupHeaderPrefixLabel->Enable(showHeaders);
+        m_groupHeaderPrefixText->Enable(showHeaders);
+        }
+
+    //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertMultiSeriesLinePlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertHeatMapDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -232,7 +272,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertMultiSeriesLinePlotDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertHeatMapDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -251,7 +291,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertMultiSeriesLinePlotDlg::Validate()
+    bool InsertHeatMapDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -260,9 +300,9 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_yVariables.empty() || m_xVariable.empty())
+        if (m_continuousVariable.empty())
             {
-            wxMessageBox(_(L"Please select the Y and X variables."), _(L"Variable Not Specified"),
+            wxMessageBox(_(L"Please select a continuous variable."), _(L"Variable Not Specified"),
                          wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
@@ -277,10 +317,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertMultiSeriesLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
+    void InsertHeatMapDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
-        const auto* linePlot = dynamic_cast<const Graphs::LinePlot*>(&graph);
-        if (linePlot == nullptr)
+        const auto* heatmap = dynamic_cast<const Graphs::HeatMap*>(&graph);
+        if (heatmap == nullptr)
             {
             return;
             }
@@ -289,7 +329,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = linePlot->GetPropertyTemplate(L"dataset");
+        const auto dsName = heatmap->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -302,24 +342,21 @@ namespace Wisteria::UI
                 }
             }
 
-        // load Y column names from the lines' labels
-        m_yVariables.clear();
-        for (size_t i = 0; i < linePlot->GetLineCount(); ++i)
-            {
-            const auto& lineLabel = linePlot->GetLines()[i].GetText();
-            if (!lineLabel.empty())
-                {
-                m_yVariables.push_back(lineLabel);
-                }
-            }
-
-        // load X column name
-        m_xVariable = linePlot->GetXColumnName();
+        // load column names from property templates
+        m_continuousVariable = heatmap->GetPropertyTemplate(L"variables.continuous");
+        m_groupVariable = heatmap->GetPropertyTemplate(L"variables.group");
         UpdateVariableLabels();
 
-        // line-specific options
-        m_autoSpline = linePlot->IsAutoSplining();
+        // group options
+        if (heatmap->GetGroupColumnCount().has_value())
+            {
+            m_groupColumnCount = static_cast<int>(heatmap->GetGroupColumnCount().value());
+            }
+        m_showGroupHeaders = heatmap->IsShowingGroupHeaders();
+        m_groupHeaderPrefix = heatmap->GetGroupHeaderPrefix();
 
         TransferDataToWindow();
+
+        UpdateGroupControlStates();
         }
     } // namespace Wisteria::UI

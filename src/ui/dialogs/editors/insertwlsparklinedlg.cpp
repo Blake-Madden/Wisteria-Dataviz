@@ -8,7 +8,7 @@
 
 #include "insertwlsparklinedlg.h"
 #include "../../graphs/win_loss_sparkline.h"
-#include "variableselectdlg.h"
+#include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI

@@ -1,27 +1,25 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertstemandleafdlg.cpp
+// Name:        insertmultiserieslineplotdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertstemandleafdlg.h"
-#include "../../graphs/stemandleafplot.h"
-#include "variableselectdlg.h"
+#include "insertmultiserieslineplotdlg.h"
+#include "../../graphs/multi_series_lineplot.h"
+#include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertStemAndLeafDlg::InsertStemAndLeafDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
-                                               wxWindow* parent, const wxString& caption,
-                                               const wxWindowID id, const wxPoint& pos,
-                                               const wxSize& size, const long style,
-                                               EditMode editMode)
-        : InsertGraphDlg(
-              canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-              static_cast<GraphDlgOptions>(GraphDlgIncludeMost & ~GraphDlgIncludeColorScheme))
+    InsertMultiSeriesLinePlotDlg::InsertMultiSeriesLinePlotDlg(
+        Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
+        const wxString& caption, const wxWindowID id, const wxPoint& pos, const wxSize& size,
+        const long style, EditMode editMode)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
+                         GraphDlgIncludeAll)
         {
         CreateControls();
         FinalizeControls();
@@ -32,14 +30,15 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertStemAndLeafDlg::CreateControls()
+    void InsertMultiSeriesLinePlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Stem-and-Leaf"), ID_OPTIONS_SECTION, true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Multi-Series Line Plot"), ID_OPTIONS_SECTION,
+                                  true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(
@@ -75,22 +74,28 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        auto* contLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Continuous:"));
-        contLabel->SetFont(contLabel->GetFont().Bold());
-        varGrid->Add(contLabel, wxSizerFlags{}.CenterVertical());
-        m_continuousVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_continuousVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_continuousVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* yLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Y (series):"));
+        yLabel->SetFont(yLabel->GetFont().Bold());
+        varGrid->Add(yLabel, wxSizerFlags{}.CenterVertical());
+        m_yVarsLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_yVarsLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_yVarsLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* groupLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Grouping:"));
-        groupLabel->SetFont(groupLabel->GetFont().Bold());
-        varGrid->Add(groupLabel, wxSizerFlags{}.CenterVertical());
-        m_groupVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
-        m_groupVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        varGrid->Add(m_groupVarLabel, wxSizerFlags{}.CenterVertical());
+        auto* xLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"X (axis):"));
+        xLabel->SetFont(xLabel->GetFont().Bold());
+        varGrid->Add(xLabel, wxSizerFlags{}.CenterVertical());
+        m_xVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_xVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_xVarLabel, wxSizerFlags{}.CenterVertical());
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
+
+        // line options
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Auto spline"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator(&m_autoSpline)),
+                          wxSizerFlags{}.Border());
 
         // legend placement
         auto* legendSizer = new wxFlexGridSizer(
@@ -107,20 +112,22 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        CreateAnnotationsPage();
+        CreateAxisOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
 
     //-------------------------------------------
-    void InsertStemAndLeafDlg::OnDatasetChanged()
+    void InsertMultiSeriesLinePlotDlg::OnDatasetChanged()
         {
-        m_continuousVariable.clear();
-        m_groupVariable.clear();
+        m_xVariable.clear();
+        m_yVariables.clear();
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertStemAndLeafDlg::OnSelectVariables()
+    void InsertMultiSeriesLinePlotDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -130,6 +137,8 @@ namespace Wisteria::UI
             return;
             }
 
+        // prefer the stored column preview info (preserves original file order)
+        // over rebuilding it from the dataset's internal column grouping
         Data::Dataset::ColumnPreviewInfo columnInfo;
         if (GetReportBuilder() != nullptr)
             {
@@ -153,20 +162,17 @@ namespace Wisteria::UI
         VariableSelectDlg dlg(
             this, columnInfo,
             { VLI{}
-                  .Label(_(L"Continuous"))
-                  .SingleSelection(true)
+                  .Label(_(L"Y (series)"))
+                  .SingleSelection(false)
                   .Required(true)
-                  .DefaultVariables(m_continuousVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_continuousVariable })
+                  .DefaultVariables(m_yVariables)
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(_(L"Grouping"))
+                  .Label(_(L"X (axis)"))
                   .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
+                  .Required(true)
+                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
+                                                          std::vector<wxString>{ m_xVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
@@ -177,27 +183,35 @@ namespace Wisteria::UI
             return;
             }
 
-        const auto contVars = dlg.GetSelectedVariables(0);
-        m_continuousVariable = contVars.empty() ? wxString{} : contVars.front();
+        m_yVariables = dlg.GetSelectedVariables(0);
 
-        const auto groupVars = dlg.GetSelectedVariables(1);
-        m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
+        const auto xVars = dlg.GetSelectedVariables(1);
+        m_xVariable = xVars.empty() ? wxString{} : xVars.front();
 
         UpdateVariableLabels();
         }
 
     //-------------------------------------------
-    void InsertStemAndLeafDlg::UpdateVariableLabels()
+    void InsertMultiSeriesLinePlotDlg::UpdateVariableLabels()
         {
-        m_continuousVarLabel->SetLabel(m_continuousVariable);
-        m_groupVarLabel->SetLabel(m_groupVariable);
+        wxString yText;
+        for (size_t i = 0; i < m_yVariables.size(); ++i)
+            {
+            if (i > 0)
+                {
+                yText += L", ";
+                }
+            yText += m_yVariables[i];
+            }
+        m_yVarsLabel->SetLabel(yText);
+        m_xVarLabel->SetLabel(m_xVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
 
     //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertStemAndLeafDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
+    InsertMultiSeriesLinePlotDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -218,7 +232,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertStemAndLeafDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertMultiSeriesLinePlotDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -237,7 +251,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertStemAndLeafDlg::Validate()
+    bool InsertMultiSeriesLinePlotDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -246,11 +260,16 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_continuousVariable.empty())
+        if (m_yVariables.empty() || m_xVariable.empty())
             {
-            wxMessageBox(_(L"Please select the continuous variable."), _(L"Variable Not Specified"),
+            wxMessageBox(_(L"Please select the Y and X variables."), _(L"Variable Not Specified"),
                          wxOK | wxICON_WARNING, this);
             OnSelectVariables();
+            return false;
+            }
+
+        if (!ValidateColorScheme())
+            {
             return false;
             }
 
@@ -258,10 +277,10 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertStemAndLeafDlg::LoadFromGraph(const Graphs::Graph2D& graph)
+    void InsertMultiSeriesLinePlotDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
-        const auto* stemLeaf = dynamic_cast<const Graphs::StemAndLeafPlot*>(&graph);
-        if (stemLeaf == nullptr)
+        const auto* linePlot = dynamic_cast<const Graphs::LinePlot*>(&graph);
+        if (linePlot == nullptr)
             {
             return;
             }
@@ -270,7 +289,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = stemLeaf->GetPropertyTemplate(L"dataset");
+        const auto dsName = linePlot->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -283,10 +302,23 @@ namespace Wisteria::UI
                 }
             }
 
-        // load column names from the graph
-        m_continuousVariable = stemLeaf->GetContinuousColumnName();
-        m_groupVariable = stemLeaf->GetGroupColumnName().value_or(wxString{});
+        // load Y column names from the lines' labels
+        m_yVariables.clear();
+        for (size_t i = 0; i < linePlot->GetLineCount(); ++i)
+            {
+            const auto& lineLabel = linePlot->GetLines()[i].GetText();
+            if (!lineLabel.empty())
+                {
+                m_yVariables.push_back(lineLabel);
+                }
+            }
+
+        // load X column name
+        m_xVariable = linePlot->GetXColumnName();
         UpdateVariableLabels();
+
+        // line-specific options
+        m_autoSpline = linePlot->IsAutoSplining();
 
         TransferDataToWindow();
         }

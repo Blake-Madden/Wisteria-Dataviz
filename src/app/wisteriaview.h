@@ -11,7 +11,7 @@
 
 #include "../base/reportbuilder.h"
 #include "../ui/controls/sidebar.h"
-#include "../ui/dialogs/insertgraphdlg.h"
+#include "../ui/dialogs/editors/insertgraphdlg.h"
 #include "../util/windowcontainer.h"
 #include <optional>
 #include <vector>

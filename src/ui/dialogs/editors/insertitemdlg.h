@@ -14,9 +14,9 @@
 
 #include "../../base/canvas.h"
 #include "../../base/reportbuilder.h"
+#include "../../controls/sidebarbook.h"
 #include "../../math/mathematics.h"
-#include "../controls/sidebarbook.h"
-#include "dialogwithhelp.h"
+#include "../dialogwithhelp.h"
 #include <array>
 #include <bitset>
 #include <utility>
