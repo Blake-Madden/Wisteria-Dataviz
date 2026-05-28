@@ -26,9 +26,10 @@ namespace Wisteria::UI
         {
         StyleClearAll();
         const wxFont font{ wxFontInfo().Family(wxFONTFAMILY_MODERN) };
+        const wxFont enlargedBoldFont = font.Larger().Larger().Bold();
         for (auto i = 0; i < wxSTC_STYLE_LASTPREDEFINED; ++i)
             {
-            StyleSetFont(i, font.Larger().Larger().Bold());
+            StyleSetFont(i, enlargedBoldFont);
             }
 
         // code-folding options
@@ -540,12 +541,12 @@ namespace Wisteria::UI
                 }
 
             int foundPos{ 0 };
-            while (foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+            while (std::cmp_less(foundPos + objectName.length() + 2, wordStart))
                 {
                 foundPos = FindText(foundPos, wordStart, objectName,
                                     wxSTC_FIND_WHOLEWORD | wxSTC_FIND_MATCHCASE);
                 if (foundPos != wxSTC_INVALID_POSITION &&
-                    foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+                    std::cmp_less(foundPos + objectName.length() + 2, wordStart))
                     {
                     foundPos += objectName.length();
                     while (foundPos < GetLength() && GetCharAt(foundPos) == L' ')
