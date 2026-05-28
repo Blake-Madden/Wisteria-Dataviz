@@ -330,7 +330,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                         gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
                         m_control->GetWatermark(), 1.0);
                     // copy renderings back into printer DC
-                    dc->Blit(0, 0, dc->GetSize().GetWidth(), dc->GetSize().GetWidth(), &memDc, 0,
+                    dc->Blit(0, 0, dc->GetSize().GetWidth(), dc->GetSize().GetHeight(), &memDc, 0,
                              0);
                     }
                 memDc.SelectObject(wxNullBitmap);
@@ -1033,7 +1033,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         const wxString HIGHLIGHT_TAG = L"\\highlight";
         wxString highlightNumber;
         wxString correctedText;
-        correctedText.reserve(text.length() * 1.5);
+        correctedText.reserve(text.length() * 3);
         // add "chcbpat" to each "highlight"
         long previousPos = 0;
         long highlightTag = text.find(HIGHLIGHT_TAG);
@@ -1066,7 +1066,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         const wxString BACKGROUND_COLOR_TAG2 = _DT(L"\\highlight");
         const wxString HIGHLIGHT_TAG{ _DT(L"\\cb") };
         wxString correctedText;
-        correctedText.reserve(text.length() * 1.5);
+        correctedText.reserve(text.length() * 3);
         // add "chcbpat" to each "cb"
         long previousPos = 0;
         long highlightTag = text.find(HIGHLIGHT_TAG);
