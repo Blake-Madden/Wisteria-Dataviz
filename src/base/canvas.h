@@ -652,7 +652,8 @@ namespace Wisteria
             return m_printData;
             }
 
-        /// @returns @c true if the canvas's content should be scaled to fit the full page when printing.
+        /// @returns @c true if the canvas's content should be scaled to fit the full page when
+        /// printing.
         [[nodiscard]]
         bool IsFittingToPageWhenPrinting() const noexcept
             {

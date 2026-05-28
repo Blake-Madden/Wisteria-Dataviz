@@ -9,7 +9,6 @@
 #include "insertscatterplotdlg.h"
 #include "../../graphs/scatterplot.h"
 #include "../variableselectdlg.h"
-#include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI

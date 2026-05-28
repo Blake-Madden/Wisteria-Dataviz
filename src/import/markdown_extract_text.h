@@ -37,7 +37,8 @@ namespace lily_of_the_valley
             return md_text.starts_with(L"---");
             }
 
-        /** @brief Parses styled text (e.g., bold, italic) and returns the number of characters consumed.
+        /** @brief Parses styled text (e.g., bold, italic) and returns the
+                number of characters consumed.
             @param input The text to parse.
             @param[in,out] previousChar The last character processed.
             @param tag The styled-text tag character.
@@ -48,7 +49,8 @@ namespace lily_of_the_valley
             @param input The text to parse.
             @param tag The opening tag name.
             @param endTag The closing tag name.
-            @returns Number of characters consumed on success, or `std::wstring_view::npos` on failure.*/
+            @returns Number of characters consumed on success, or `std::wstring_view::npos` on
+           failure.*/
         [[nodiscard]]
         size_t parse_html_block(std::wstring_view input, std::wstring_view tag,
                                 std::wstring_view endTag);

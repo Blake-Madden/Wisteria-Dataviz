@@ -330,6 +330,7 @@ namespace Wisteria::Graphs
                         PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode*/
     // clang-format on
+
     class PieChart final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(PieChart);
@@ -415,16 +416,14 @@ namespace Wisteria::Graphs
 
             /// @private
             [[nodiscard]]
-            bool
-            operator==(const SliceInfo& that) const
+            bool operator==(const SliceInfo& that) const
                 {
                 return Data::CmpNoCaseIgnoreControlChars(m_groupLabel, that.m_groupLabel) == 0;
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const SliceInfo& that) const
+            bool operator<(const SliceInfo& that) const
                 {
                 return Data::CmpNoCaseIgnoreControlChars(m_groupLabel, that.m_groupLabel) < 0;
                 }
@@ -482,8 +481,7 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     std::optional<wxString> weightColumnName,
-                     const wxString& groupColumn1Name,
+                     std::optional<wxString> weightColumnName, const wxString& groupColumn1Name,
                      std::optional<wxString> groupColumn2Name = std::nullopt);
 
         /// @returns The name of the weight column, or empty if not used.
@@ -536,8 +534,9 @@ namespace Wisteria::Graphs
                 Also, if showcasing inner-ring slices in conjunction with the
                 PieSliceEffect::Image style, the "ghosted" slices will appear as translucent images,
                 but the showcased inner slices will appear as solid colors. This is because trying
-                to have part of an image translucent and other parts of it opaque will not be obvious.\n
-                If showcasing outer-ring slices, then showcased slices will be the images at full opacity.\n
+                to have part of an image translucent and other parts of it opaque will not be
+           obvious.\n If showcasing outer-ring slices, then showcased slices will be the images at
+           full opacity.\n
                 \n
                 Images will be stippled (repeated) for slices with angles larger than 90 degrees.
                 (The image will be repeated every 90 degrees.)\n
@@ -548,7 +547,7 @@ namespace Wisteria::Graphs
                 color schemes.
             @sa SetImageScheme().*/
         void SetPieSliceEffect(const PieSliceEffect effect) noexcept { m_sliceEffect = effect; }
-        
+
         /// @returns The visual style to apply to the pie chart.
         [[nodiscard]]
         PieStyle GetPieStyle() const noexcept
@@ -722,12 +721,12 @@ namespace Wisteria::Graphs
         /// @brief The showcase mode applied to a pie chart.
         enum class ShowcaseMode
             {
-            None,           /*!< No showcasing.*/
-            ExplicitList,   /*!< Explicit list of slice names.*/
-            LargestOuter,   /*!< Largest outer pie slices.*/
-            SmallestOuter,  /*!< Smallest outer pie slices.*/
-            LargestInner,   /*!< Largest inner pie slices.*/
-            SmallestInner   /*!< Smallest inner pie slices.*/
+            None,          /*!< No showcasing.*/
+            ExplicitList,  /*!< Explicit list of slice names.*/
+            LargestOuter,  /*!< Largest outer pie slices.*/
+            SmallestOuter, /*!< Smallest outer pie slices.*/
+            LargestInner,  /*!< Largest inner pie slices.*/
+            SmallestInner  /*!< Smallest inner pie slices.*/
             };
 
         /// @returns The showcase mode that was applied.
@@ -765,7 +764,7 @@ namespace Wisteria::Graphs
         /// @details This will make all other slices (including their inner slices)
         ///     translucent and hide their labels.
         void ShowcaseOuterPieSlices(const std::vector<wxString>& pieSlices,
-                                     Perimeter outerLabelRingToShow = Perimeter::Outer);
+                                    Perimeter outerLabelRingToShow = Perimeter::Outer);
         /// @brief Brings to focus the largest slice(s) along the outer (or only) pie.
         /// @param outerLabelRingToShow Which ring should have its outer labels shown.
         /// @details This will make all other slices (including their inner slices)
@@ -775,8 +774,7 @@ namespace Wisteria::Graphs
         /// @param outerLabelRingToShow Which ring should have its outer labels shown.
         /// @details This will make all other slices (including their inner slices)
         ///     translucent and hide their labels.
-        void
-        ShowcaseSmallestOuterPieSlices(Perimeter outerLabelRingToShow = Perimeter::Outer);
+        void ShowcaseSmallestOuterPieSlices(Perimeter outerLabelRingToShow = Perimeter::Outer);
 
         /** @brief Gets the labels of the largest slice(s) along the outer (or only) pie.
             @note In the case of ties, multiple labels will be returned.
@@ -1144,8 +1142,8 @@ namespace Wisteria::Graphs
             {
             SetLegendInfo(options);
             return options.GetRingPerimeter() == Perimeter::Inner ?
-                CreateInnerPieLegend(options.GetPlacementHint()) :
-                CreateOuterPieLegend(options.GetPlacementHint());
+                       CreateInnerPieLegend(options.GetPlacementHint()) :
+                       CreateOuterPieLegend(options.GetPlacementHint());
             }
 
         /** @brief Builds and returns a legend for the outer pie
@@ -1156,8 +1154,7 @@ namespace Wisteria::Graphs
             @returns The legend for the chart.
             @note Prefer using CreateLegend().*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateOuterPieLegend(LegendCanvasPlacementHint hint);
+        std::unique_ptr<GraphItems::Label> CreateOuterPieLegend(LegendCanvasPlacementHint hint);
 
         /** @brief Builds and returns a legend for the inner pie (if a dual data series).
             @details This can be managed by the parent canvas and placed next to the plot.
@@ -1166,8 +1163,7 @@ namespace Wisteria::Graphs
             @returns The legend for the chart.
             @note Prefer using CreateLegend().*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateInnerPieLegend(LegendCanvasPlacementHint hint);
+        std::unique_ptr<GraphItems::Label> CreateInnerPieLegend(LegendCanvasPlacementHint hint);
 
         /// @}
 
@@ -1197,8 +1193,9 @@ namespace Wisteria::Graphs
             }
 
       private:
-        using LabelLinePair = std::vector<std::pair<std::unique_ptr<GraphItems::Label>,
-                                                    std::unique_ptr<GraphItems::Points2D>>>;
+        using LabelLinePair = std::vector<
+            std::pair<std::unique_ptr<GraphItems::Label>, std::unique_ptr<GraphItems::Points2D>>>;
+
         struct GutterLabels
             {
             LabelLinePair m_outerTopLeftLabelAndLines;
@@ -1206,19 +1203,20 @@ namespace Wisteria::Graphs
             LabelLinePair m_outerTopRightLabelAndLines;
             LabelLinePair m_outerBottomRightLabelAndLines;
             };
+
         struct DrawAreas
             {
             wxRect m_fullDrawArea;
             wxRect m_outerPieDrawArea;
             wxRect m_pieDrawArea;
             };
+
         /// @returns The indices along the outer pie of the provided slices.
         std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
         void RecalcSizes(wxDC& dc) final;
-        void CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels,
-                DrawAreas drawAreas, auto& pSlice,
-                double& smallestOuterLabelFontSize,
-                bool isInnerSlice);
+        void CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
+                                          auto& pSlice, double& smallestOuterLabelFontSize,
+                                          bool isInnerSlice);
         void DrawOuterPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
                           double& smallestOuterLabelFontSize,
                           std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
@@ -1238,9 +1236,8 @@ namespace Wisteria::Graphs
         void AddCoffeeInnerStains(const DrawAreas& drawAreas);
         void AddPartialCoffeeRingStain(const DrawAreas& drawAreas);
 
-        void DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed,
-                                   const wxColour& color, double sizeScale,
-                                   double minDistancePct, double maxDistancePct,
+        void DrawSingleCoffeeStain(const wxRect& pieRect, uint32_t seed, const wxColour& color,
+                                   double sizeScale, double minDistancePct, double maxDistancePct,
                                    double angleOffset);
 
         /// @returns Mozzarella.
@@ -1256,7 +1253,7 @@ namespace Wisteria::Graphs
             {
             return { 215, 185, 120 };
             }
-        
+
         /// @returns A light coffee stain.
         [[nodiscard]]
         static wxColour GetCoffeeStainColor()
@@ -1327,7 +1324,7 @@ namespace Wisteria::Graphs
                             wxRound(centerY + radiusY * std::sin(angleRadians)) };
             }
 
-         static double HashToUnitInterval(const uint32_t hashValue) noexcept
+        static double HashToUnitInterval(const uint32_t hashValue) noexcept
             {
             uint32_t value = hashValue;
             value ^= value << 13;
@@ -1351,8 +1348,8 @@ namespace Wisteria::Graphs
             const uint32_t jitterHash =
                 static_cast<uint32_t>(angleDegrees * 10.0) ^ (noiseSeed * 2654435761U);
 
-            const double jitter = (HashToUnitInterval(jitterHash) - math_constants::half) *
-                                  math_constants::quarter;
+            const double jitter =
+                (HashToUnitInterval(jitterHash) - math_constants::half) * math_constants::quarter;
 
             return combinedWave + jitter;
             }
@@ -1370,8 +1367,8 @@ namespace Wisteria::Graphs
         LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
 
         wxPen m_connectionLinePen{ wxPen(
-            wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey),
-                      1, wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
+            wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey), 1,
+                      wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
         PieSliceEffect m_sliceEffect{ PieSliceEffect::Solid };

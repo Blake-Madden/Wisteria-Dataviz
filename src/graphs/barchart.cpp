@@ -96,8 +96,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             m_barGroups.push_back(
                 { std::make_pair(firstBar.value(), lastBar.value()),
                   decal.has_value() ? decal.value() : wxString{},
-                  brush.has_value() ? brush.value() :
-                  (GetBrushScheme() ? GetBrushScheme()->GetBrush(0) : wxNullBrush),
+                  brush.has_value() ?
+                      brush.value() :
+                      (GetBrushScheme() ? GetBrushScheme()->GetBrush(0) : wxNullBrush),
                   color.has_value() ?
                       color.value() :
                       (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour) });
@@ -125,8 +126,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             m_barGroups.push_back(
                 { std::make_pair(firstBar.value(), lastBar.value()),
                   decal.has_value() ? decal.value() : wxString{},
-                  brush.has_value() ? brush.value() :
-                  (GetBrushScheme() ? GetBrushScheme()->GetBrush(0) : wxNullBrush),
+                  brush.has_value() ?
+                      brush.value() :
+                      (GetBrushScheme() ? GetBrushScheme()->GetBrush(0) : wxNullBrush),
                   color.has_value() ?
                       color.value() :
                       (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour) });
