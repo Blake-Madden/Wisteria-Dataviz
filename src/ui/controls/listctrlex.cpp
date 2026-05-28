@@ -620,6 +620,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                   event.GetKeyCode() == WXK_NUMPAD9))
             {
             const int columnToCopy{ event.GetKeyCode() - WXK_NUMPAD1 };
+            if (columnToCopy < 0 || columnToCopy >= GetColumnCount())
+                {
+                event.Skip();
+                return;
+                }
             wxString selectedFormattedText;
             FormatToHtml(selectedFormattedText, false, ExportRowSelection::ExportSelected, 0, -1,
                          columnToCopy, columnToCopy, false, true);
