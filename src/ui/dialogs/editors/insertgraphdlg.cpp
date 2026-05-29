@@ -31,6 +31,23 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::FinalizeControls()
+        {
+        InsertItemDlg::FinalizeControls();
+
+        // The dataset is fixed once a graph exists: changing it would orphan the
+        // saved variables and axis state. Lock the selector when editing.
+        if (GetEditMode() == EditMode::Edit)
+            {
+            if (auto* datasetChoice = dynamic_cast<wxChoice*>(FindWindow(ID_DATASET_CHOICE));
+                datasetChoice != nullptr)
+                {
+                datasetChoice->Disable();
+                }
+            }
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::ApplyGraphOptions(Graphs::Graph2D& graph) const
         {
         ApplyAccessibilityOptions(graph);

@@ -211,7 +211,9 @@ namespace Wisteria::UI
 
         /// @brief Adds OK/Cancel buttons and finalizes layout.
         /// @details Must be called after all sidebar pages have been added.
-        void FinalizeControls();
+        ///     Derived classes may override to perform additional finalization
+        ///     (e.g., disabling controls in edit mode); call the base version first.
+        virtual void FinalizeControls();
 
         /// @brief Checks whether placing the item would overwrite existing
         ///     canvas cells and prompts the user for confirmation.

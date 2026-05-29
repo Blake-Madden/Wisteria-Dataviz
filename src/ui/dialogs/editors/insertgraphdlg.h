@@ -382,6 +382,17 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool ValidateShapeScheme();
 
+        /// @brief Shared ID for the dataset-selection wxChoice.
+        /// @details Every graph editor creates its dataset selector with this ID,
+        ///     which lets the base class locate and disable it in edit mode
+        ///     (the dataset cannot be changed once a graph exists).
+        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
+
+        /// @brief Adds OK/Cancel buttons, then disables the dataset selector when editing.
+        /// @details Changing the dataset of an existing graph would invalidate its
+        ///     saved variables and axis state, so the selector is locked in edit mode.
+        void FinalizeControls() override;
+
         /// @brief ID for the Graph Options sidebar section.
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };
         /// @brief ID for the Annotations sidebar section.
