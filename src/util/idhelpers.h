@@ -83,7 +83,7 @@ class IdRange
         @param startId The start of the ID range.
         @param idCount The number of IDs to use in the range.*/
     IdRange(const wxWindowID startId, const size_t idCount) noexcept
-        : m_firstId(startId), m_rangeBegin(startId), m_rangeEnd(startId + idCount)
+        : m_firstId(startId), m_rangeBegin(startId), m_rangeEnd(startId + idCount - 1)
         {
         }
 
