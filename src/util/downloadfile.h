@@ -161,7 +161,7 @@ class QueueDownload
     [[nodiscard]]
     static wxString GetResponseMessage(const int responseCode)
         {
-        if (responseCode > 0 && responseCode < 300 && responseCode != 204)
+        if (responseCode >= 200 && responseCode < 300 && responseCode != 204)
             {
             return _(L"Connection successful");
             }
@@ -527,7 +527,6 @@ class FileDownload
         }
 
     wxEvtHandler* m_handler{ nullptr };
-    mutable std::mutex m_mutex;
     std::vector<char> m_buffer;
     wxString m_userAgent;
     wxString m_cookies;
