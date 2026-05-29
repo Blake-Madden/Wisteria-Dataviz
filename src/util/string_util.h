@@ -46,6 +46,7 @@ namespace string_util
     /// @private
     inline wchar_t tolower(wchar_t c) { return std::towlower(c); }
 
+    /// @brief Concept matching wide-string-like types (those with @c wchar_t as the @c value_type).
     template<typename T>
     concept wide_string_like = std::is_same_v<typename T::value_type, wchar_t> &&
                                requires(T s, const wchar_t* p, std::size_t n) {
@@ -1223,6 +1224,7 @@ namespace string_util
         TKey m_key;
         };
 
+    /// @brief `std::less`-like comparator using `basic_string::compare()`.
     template<typename T>
     class less_basic_string_compare
         {
@@ -1234,6 +1236,7 @@ namespace string_util
             }
         };
 
+    /// @brief Case-insensitive `std::less`-like comparator for `basic_string` types.
     template<typename T>
     class less_basic_string_i_compare
         {
@@ -1245,6 +1248,7 @@ namespace string_util
             }
         };
 
+    /// @brief Natural-order case-insensitive comparator for C-string types.
     template<typename T>
     class less_string_natural_order_i_compare
         {
@@ -1479,7 +1483,7 @@ namespace string_util
 
             for (const char_type ch : val)
                 {
-                if (m_delims.find(ch) != std::wstring::npos)
+                if (m_delims.find(ch) != string_view_type::npos)
                     {
                     if (!m_skip_empty_tokens || inToken)
                         {
