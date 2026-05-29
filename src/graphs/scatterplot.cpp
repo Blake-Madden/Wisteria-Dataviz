@@ -524,12 +524,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                 if (std::isfinite(stats.correlation))
                     {
                     legendText.append(wxString::Format(
+                        /* TRANSLATORS: 'r' is statistic in a regression. */
                         L"r: %s\n", wxNumberFormatter::ToString(
                                         stats.correlation, 4, Settings::GetDefaultNumberFormat())));
                     }
                 else
                     {
-                    legendText.append(_(L"r: Undefined (constant variable detected)\n"));
+                    legendText.append(/* TRANSLATORS: 'r' is statistic in a regression. */
+                                      _(L"r: Undefined (constant variable detected)\n"));
                     }
                 // p-value
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::Blank, *wxTRANSPARENT_PEN,

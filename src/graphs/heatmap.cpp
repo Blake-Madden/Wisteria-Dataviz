@@ -128,6 +128,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 // shouldn't happen, just done as sanity check
                 if (currentRow >= m_matrix.size() || currentColumn >= m_matrix[currentRow].size())
                     {
+                    wxLogWarning("Data was truncated in heatmap: more items found in a group "
+                                 "than the available columns can display.");
                     break;
                     }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
@@ -477,6 +479,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         std::vector<double> validData;
         std::ranges::copy_if(continuousColumn->GetValues(), std::back_inserter(validData),
                              [](auto x) { return std::isfinite(x); });
+        if (validData.empty())
+            {
+            return nullptr;
+            }
         const auto minValue = *std::ranges::min_element(std::as_const(validData));
         const auto maxValue = *std::ranges::max_element(std::as_const(validData));
         auto legend = std::make_unique<GraphItems::Label>(

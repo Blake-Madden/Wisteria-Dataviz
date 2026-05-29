@@ -1259,7 +1259,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         arrowPoints);
                     }
 
-                wxASSERT(box);
+                if (box == nullptr)
+                    {
+                    wxFAIL_MSG(L"Unhandled BarShape encountered in horizontal bar drawing.");
+                    return barBlockRenderInfo.m_middlePointOfBarEnd;
+                    }
 
                 if (barBlock.GetOutlinePen().IsOk())
                     {
@@ -1849,7 +1853,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         arrowPoints);
                     }
 
-                wxASSERT(box);
+                if (box == nullptr)
+                    {
+                    wxFAIL_MSG(L"Unhandled BarShape encountered in vertical bar drawing.");
+                    return barBlockRenderInfo.m_middlePointOfBarEnd;
+                    }
+
                 if (barBlock.GetOutlinePen().IsOk())
                     {
                     box->GetPen() = barBlock.GetOutlinePen();

@@ -713,6 +713,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         validData.reserve(GetDataset()->GetRowCount());
         std::ranges::copy_if(continuousColumn->GetValues(), std::back_inserter(validData),
                              [](auto x) { return std::isfinite(x); });
+        if (validData.empty())
+            {
+            return 1;
+            }
         const auto minVal = *std::ranges::min_element(std::as_const(validData));
         const auto maxVal = *std::ranges::max_element(std::as_const(validData));
         const auto sd = statistics::standard_deviation(validData, true);
