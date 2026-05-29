@@ -30,6 +30,8 @@ jobs:
         src/utfcpp
         src/wxSimpleJSON
         src/easyexif
+        src/wxpdfdoc/samples/
+        src/wxpdfdoc/makefont/
 
     steps:
       - name: Checkout
