@@ -18,24 +18,34 @@
 // wxSystemHardwareInfo
 // ----------------------------------------------------------------------------
 
-// Information about the system's hardware
+/// @brief Information about the system's hardware.
 namespace wxSystemHardwareInfo
     {
+    /// @returns The number of CPU cores/threads available.
     inline int GetCPUCount() { return wxThread::GetCPUCount(); }
 
+    /// @returns The CPU architecture name (as reported by the OS emulation layer).
     inline wxString GetCPUArchitectureName() { return wxGetCpuArchitectureName(); }
 
+    /// @returns The native CPU architecture name of the machine.
     inline wxString GetNativeCPUArchitectureName() { return wxGetNativeCpuArchitectureName(); }
 
+    /// @returns @c true if the process is running under the native CPU architecture
+    ///     (i.e., not emulated).
     inline bool IsRunningNatively()
         {
         return wxGetCpuArchitectureName() == wxGetNativeCpuArchitectureName();
         }
 
+    /// @brief Returns the total physical memory size.
+    /// @returns The total physical memory size.
     wxMemorySize GetMemory();
 
+    /// @brief Returns the peak memory used so far by the process.
+    /// @returns The peak memory usage.
     wxMemorySize GetPeakUsedMemory();
 
+    /// @returns The amount of free memory available.
     inline wxMemorySize GetFreeMemory() { return wxGetFreeMemory(); }
     } // namespace wxSystemHardwareInfo
 
