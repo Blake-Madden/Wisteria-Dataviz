@@ -79,6 +79,8 @@ namespace Wisteria::Graphs
       private:
         void RecalcSizes(wxDC& dc) final;
 
+        void SetAutoAccessibilityAttributes() final;
+
         wxString m_scoresColumn;
         wxString m_syllablesPer100WordsColumn;
         };

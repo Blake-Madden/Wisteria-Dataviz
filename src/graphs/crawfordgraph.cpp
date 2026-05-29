@@ -326,4 +326,68 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             }
         AddObject(std::move(points));
         }
+
+    //----------------------------------------------------------------
+    void CrawfordGraph::SetAutoAccessibilityAttributes()
+        {
+        wxString label{ _(L"A Crawford graph") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // collect the finite scores (clamped to the score-axis range, matching the plot)
+        std::vector<double> scores;
+        if (GetDataset() != nullptr && !m_scoresColumn.empty())
+            {
+            try
+                {
+                const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+                for (size_t rowIdx = 0; rowIdx < GetDataset()->GetRowCount(); ++rowIdx)
+                    {
+                    const double rawVal = scoresColumn->GetValue(rowIdx);
+                    if (!std::isfinite(rawVal))
+                        {
+                        continue;
+                        }
+                    scores.push_back(std::clamp<double>(rawVal, 0.5, 7.0));
+                    }
+                }
+            catch (const std::exception&)
+                {
+                // scores column not available; carry on without score details
+                }
+            }
+
+        // name the single score, or the highest and lowest of multiple scores
+        if (scores.size() == 1)
+            {
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: Crawford graph accessibility: a single score.
+                   %s is the score value. */
+                _(L"Score: %s"),
+                wxNumberFormatter::ToString(scores.front(), 1,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
+            }
+        else if (scores.size() > 1)
+            {
+            const auto [minIt, maxIt] = std::minmax_element(scores.cbegin(), scores.cend());
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: Crawford graph accessibility: multiple scores summary.
+                   %zu is the score count, 1st %s is the lowest value, 2nd %s is the
+                   highest value. */
+                _(L"%zu scores ranging from %s to %s"), scores.size(),
+                wxNumberFormatter::ToString(*minIt, 1,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                wxNumberFormatter::ToString(*maxIt, 1,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs
