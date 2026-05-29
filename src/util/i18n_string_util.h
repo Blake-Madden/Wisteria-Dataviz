@@ -247,7 +247,7 @@ namespace i18n_string_util
         {
         for (size_t i = 0; i < str.length(); ++i)
             {
-            if (str[i] == L'\\' &&
+            if (i + 1 < str.length() && str[i] == L'\\' &&
                 (str[i + 1] == L'n' || str[i + 1] == L'r' || str[i + 1] == L't') &&
                 (i == 0 || str[i - 1] != L'\\'))
                 {
