@@ -414,7 +414,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxRect DownScaleRect(const wxRect& theRect, const double scaling)
             {
-            return { wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
+            return { theRect.GetPosition(),
+                     wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
                             safe_divide<double>(theRect.GetHeight(), scaling)) };
             }
 
@@ -426,7 +427,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxRect2DDouble DownScaleRect(const wxRect2DDouble& theRect, const double scaling)
             {
-            return { 0, 0, safe_divide(theRect.GetWidth(), scaling),
+            return { theRect.GetPosition().m_x, theRect.GetPosition().m_y,
+                     safe_divide(theRect.GetWidth(), scaling),
                      safe_divide(theRect.GetHeight(), scaling) };
             }
 
