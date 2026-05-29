@@ -96,10 +96,6 @@ namespace Wisteria::Colors
         template<CssChar charT, std::size_t N>
         constexpr static long CSS_HEX_TO_LONG(const charT (&css)[N])
             {
-            if (css == nullptr)
-                {
-                return -1;
-                }
             if (css[0] != static_cast<charT>('#'))
                 {
                 return -1;
