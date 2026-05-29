@@ -76,35 +76,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             size_t currentIndex{ 0 };
             for (const auto& group : groups)
                 {
-                Series series;
-                series.SetGroupInfo(groupColumnName, group.second,
-                                    groupColumn->GetLabelFromID(group.second));
-                series.SetColor(GetColorScheme()->GetColor(currentIndex));
-                series.SetShape(GetShapeScheme()->GetShape(currentIndex));
-                const auto& [penStyle, lineStyle] =
-                    m_regressionLineStyles->GetLineStyle(currentIndex);
-                series.GetRegressionPen().SetStyle(penStyle);
-                series.GetRegressionPen().SetColour(Colors::ColorContrast::ShadeOrTint(
-                    GetColorScheme()->GetColor(currentIndex), math_constants::half));
-                series.SetRegressionLineStyle(lineStyle);
-                CalculateRegression(series);
-                m_series.push_back(series);
+                m_series.push_back(BuildSeries(currentIndex, groupColumnName, group.second,
+                                               groupColumn->GetLabelFromID(group.second)));
                 ++currentIndex;
                 }
             }
         else
             {
-            Series series;
-            series.SetGroupInfo(std::nullopt, 0, wxString{});
-            series.SetColor(GetColorScheme()->GetColor(0));
-            series.SetShape(GetShapeScheme()->GetShape(0));
-            const auto& [penStyle, lineStyle] = m_regressionLineStyles->GetLineStyle(0);
-            series.GetRegressionPen().SetStyle(penStyle);
-            series.GetRegressionPen().SetColour(Colors::ColorContrast::ShadeOrTint(
-                GetColorScheme()->GetColor(0), math_constants::half));
-            series.SetRegressionLineStyle(lineStyle);
-            CalculateRegression(series);
-            m_series.push_back(series);
+            m_series.push_back(BuildSeries(0, std::nullopt, 0, wxString{}));
             }
 
         // set axis ranges based on data
@@ -184,6 +163,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             }
 
         series.m_regressionResults = statistics::linear_regression(xValues, yValues);
+        }
+
+    //----------------------------------------------------------------
+    ScatterPlot::Series ScatterPlot::BuildSeries(
+        const size_t schemeIndex, const std::optional<wxString>& groupColumnName,
+        const Data::GroupIdType groupId, const wxString& groupName)
+        {
+        Series series;
+        series.SetGroupInfo(groupColumnName, groupId, groupName);
+        series.SetColor(GetColorScheme()->GetColor(schemeIndex));
+        series.SetShape(GetShapeScheme()->GetShape(schemeIndex));
+        const auto& [penStyle, lineStyle] = m_regressionLineStyles->GetLineStyle(schemeIndex);
+        series.GetRegressionPen().SetStyle(penStyle);
+        series.GetRegressionPen().SetColour(Colors::ColorContrast::ShadeOrTint(
+            GetColorScheme()->GetColor(schemeIndex), math_constants::half));
+        series.SetRegressionLineStyle(lineStyle);
+        CalculateRegression(series);
+        return series;
         }
 
     //----------------------------------------------------------------
@@ -271,174 +268,181 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             return;
             }
 
+        for (const auto& series : m_series)
+            {
+            // draw regression line first so points appear on top
+            DrawRegressionLine(series);
+            DrawPoints(series, dc);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ScatterPlot::DrawRegressionLine(const Series& series)
+        {
+        if (!IsShowingRegressionLines() || !series.GetRegressionResults().is_valid())
+            {
+            return;
+            }
+
+        const auto& stats = series.GetRegressionResults();
+        const auto [xAxisMin, xAxisMax] = GetBottomXAxis().GetRange();
+        const auto [yAxisMin, yAxisMax] = GetLeftYAxis().GetRange();
+
+        // draw confidence bands if enabled (before the regression line)
+        if (IsShowingConfidenceBands() && stats.n > 2 && std::isfinite(stats.standard_error) &&
+            std::isfinite(stats.mean_x) && std::isfinite(stats.ss_xx) && stats.ss_xx > 0)
+            {
+            // calculate t critical value for the confidence level
+            const double alpha = 1.0 - GetConfidenceLevel();
+            const double df = static_cast<double>(stats.n) - 2.0;
+            const double tCritical = statistics::t_distribution_quantile(1.0 - alpha * 0.5, df);
+
+            if (std::isfinite(tCritical))
+                {
+                // generate points along the x range for the confidence band
+                constexpr size_t NUMPOINTS{ 50 };
+                std::vector<wxPoint> upperBand;
+                std::vector<wxPoint> lowerBand;
+                upperBand.reserve(NUMPOINTS);
+                lowerBand.reserve(NUMPOINTS);
+
+                const auto xStep = safe_divide<double>(xAxisMax - xAxisMin, NUMPOINTS - 1);
+                const auto nRecip = safe_divide<double>(1.0, static_cast<double>(stats.n));
+
+                for (size_t i = 0; i < NUMPOINTS; ++i)
+                    {
+                    const double x = xAxisMin + static_cast<double>(i) * xStep;
+                    const double yPred = stats.slope * x + stats.intercept;
+
+                    // SE(ŷ) = s_e * sqrt(1/n + (x - x̄)² / SS_XX)
+                    const double xDev = x - stats.mean_x;
+                    const double seY =
+                        stats.standard_error *
+                        std::sqrt(nRecip + safe_divide<double>(xDev * xDev, stats.ss_xx));
+
+                    const double margin = tCritical * seY;
+                    double yUpper = yPred + margin;
+                    double yLower = yPred - margin;
+
+                    // clip to axis range
+                    yUpper = std::clamp(yUpper, yAxisMin, yAxisMax);
+                    yLower = std::clamp(yLower, yAxisMin, yAxisMax);
+
+                    wxPoint ptUpper, ptLower;
+                    if (GetPhysicalCoordinates(x, yUpper, ptUpper) &&
+                        GetPhysicalCoordinates(x, yLower, ptLower))
+                        {
+                        upperBand.push_back(ptUpper);
+                        lowerBand.push_back(ptLower);
+                        }
+                    }
+
+                // create polygon: upper band forward, lower band backward
+                if (upperBand.size() >= 2)
+                    {
+                    std::vector<wxPoint> bandPolygon;
+                    bandPolygon.reserve(upperBand.size() + lowerBand.size());
+                    bandPolygon.insert(bandPolygon.end(), upperBand.begin(), upperBand.end());
+                    bandPolygon.insert(bandPolygon.end(), lowerBand.rbegin(), lowerBand.rend());
+
+                    auto confidenceBand = std::make_unique<GraphItems::Polygon>(
+                        GraphItems::GraphItemInfo{}
+                            .Pen(wxPen{ wxColour{ 128, 128, 128, 128 }, 1 })
+                            .Brush(wxBrush{ wxColour{ 128, 128, 128, 64 } })
+                            .Scaling(GetScaling()),
+                        bandPolygon);
+                    confidenceBand->SetDPIScaleFactor(GetDPIScaleFactor());
+                    AddObject(std::move(confidenceBand));
+                    }
+                }
+            }
+
+        // calculate Y values at axis endpoints
+        double x1 = xAxisMin;
+        double x2 = xAxisMax;
+        double y1 = stats.slope * x1 + stats.intercept;
+        double y2 = stats.slope * x2 + stats.intercept;
+
+        // clip line to Y axis range
+        // if slope is not zero, find where line intersects Y boundaries
+        if (stats.slope != 0.0)
+            {
+            // x where line crosses yAxisMin: x = (yAxisMin - intercept) / slope
+            // x where line crosses yAxisMax: x = (yAxisMax - intercept) / slope
+            if (y1 < yAxisMin)
+                {
+                x1 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
+                y1 = yAxisMin;
+                }
+            else if (y1 > yAxisMax)
+                {
+                x1 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
+                y1 = yAxisMax;
+                }
+            if (y2 < yAxisMin)
+                {
+                x2 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
+                y2 = yAxisMin;
+                }
+            else if (y2 > yAxisMax)
+                {
+                x2 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
+                y2 = yAxisMax;
+                }
+            }
+
+        wxPoint startPt, endPt;
+        if (GetPhysicalCoordinates(x1, y1, startPt) && GetPhysicalCoordinates(x2, y2, endPt))
+            {
+            auto regressionLine =
+                std::make_unique<GraphItems::Lines>(series.GetRegressionPen(), GetScaling());
+            regressionLine->SetDPIScaleFactor(GetDPIScaleFactor());
+            regressionLine->SetLineStyle(series.GetRegressionLineStyle());
+            regressionLine->AddLine(startPt, endPt);
+            AddObject(std::move(regressionLine));
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ScatterPlot::DrawPoints(const Series& series, wxDC& dc)
+        {
         const auto groupColumn = GetGroupColumn();
         const auto xColumn = GetContinuousColumn(m_xColumnName);
         const auto yColumn = GetContinuousColumn(m_yColumnName);
 
-        for (const auto& series : m_series)
+        auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
+        points->SetScaling(GetScaling());
+        points->SetDPIScaleFactor(GetDPIScaleFactor());
+        points->Reserve(GetDataset()->GetRowCount());
+
+        wxPoint pt;
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            // draw regression line first so points appear on top
-            if (IsShowingRegressionLines() && series.GetRegressionResults().is_valid())
+            // skip if from different group
+            if (IsUsingGrouping() && groupColumn->GetValue(i) != series.GetGroupId())
                 {
-                const auto& stats = series.GetRegressionResults();
-                const auto [xAxisMin, xAxisMax] = GetBottomXAxis().GetRange();
-                const auto [yAxisMin, yAxisMax] = GetLeftYAxis().GetRange();
-
-                // draw confidence bands if enabled (before the regression line)
-                if (IsShowingConfidenceBands() && stats.n > 2 &&
-                    std::isfinite(stats.standard_error) && std::isfinite(stats.mean_x) &&
-                    std::isfinite(stats.ss_xx) && stats.ss_xx > 0)
-                    {
-                    // calculate t critical value for the confidence level
-                    const double alpha = 1.0 - GetConfidenceLevel();
-                    const double df = static_cast<double>(stats.n) - 2.0;
-                    const double tCritical =
-                        statistics::t_distribution_quantile(1.0 - alpha * 0.5, df);
-
-                    if (std::isfinite(tCritical))
-                        {
-                        // generate points along the x range for the confidence band
-                        constexpr size_t NUMPOINTS{ 50 };
-                        std::vector<wxPoint> upperBand;
-                        std::vector<wxPoint> lowerBand;
-                        upperBand.reserve(NUMPOINTS);
-                        lowerBand.reserve(NUMPOINTS);
-
-                        const auto xStep = safe_divide<double>(xAxisMax - xAxisMin, NUMPOINTS - 1);
-                        const auto nRecip = safe_divide<double>(1.0, static_cast<double>(stats.n));
-
-                        for (size_t i = 0; i < NUMPOINTS; ++i)
-                            {
-                            const double x = xAxisMin + static_cast<double>(i) * xStep;
-                            const double yPred = stats.slope * x + stats.intercept;
-
-                            // SE(ŷ) = s_e * sqrt(1/n + (x - x̄)² / SS_XX)
-                            const double xDev = x - stats.mean_x;
-                            const double seY =
-                                stats.standard_error *
-                                std::sqrt(nRecip + safe_divide<double>(xDev * xDev, stats.ss_xx));
-
-                            const double margin = tCritical * seY;
-                            double yUpper = yPred + margin;
-                            double yLower = yPred - margin;
-
-                            // clip to axis range
-                            yUpper = std::clamp(yUpper, yAxisMin, yAxisMax);
-                            yLower = std::clamp(yLower, yAxisMin, yAxisMax);
-
-                            wxPoint ptUpper, ptLower;
-                            if (GetPhysicalCoordinates(x, yUpper, ptUpper) &&
-                                GetPhysicalCoordinates(x, yLower, ptLower))
-                                {
-                                upperBand.push_back(ptUpper);
-                                lowerBand.push_back(ptLower);
-                                }
-                            }
-
-                        // create polygon: upper band forward, lower band backward
-                        if (upperBand.size() >= 2)
-                            {
-                            std::vector<wxPoint> bandPolygon;
-                            bandPolygon.reserve(upperBand.size() + lowerBand.size());
-                            bandPolygon.insert(bandPolygon.end(), upperBand.begin(),
-                                               upperBand.end());
-                            bandPolygon.insert(bandPolygon.end(), lowerBand.rbegin(),
-                                               lowerBand.rend());
-
-                            auto confidenceBand = std::make_unique<GraphItems::Polygon>(
-                                GraphItems::GraphItemInfo{}
-                                    .Pen(wxPen{ wxColour{ 128, 128, 128, 128 }, 1 })
-                                    .Brush(wxBrush{ wxColour{ 128, 128, 128, 64 } })
-                                    .Scaling(GetScaling()),
-                                bandPolygon);
-                            confidenceBand->SetDPIScaleFactor(GetDPIScaleFactor());
-                            AddObject(std::move(confidenceBand));
-                            }
-                        }
-                    }
-
-                // calculate Y values at axis endpoints
-                double x1 = xAxisMin;
-                double x2 = xAxisMax;
-                double y1 = stats.slope * x1 + stats.intercept;
-                double y2 = stats.slope * x2 + stats.intercept;
-
-                // clip line to Y axis range
-                // if slope is not zero, find where line intersects Y boundaries
-                if (stats.slope != 0.0)
-                    {
-                    // x where line crosses yAxisMin: x = (yAxisMin - intercept) / slope
-                    // x where line crosses yAxisMax: x = (yAxisMax - intercept) / slope
-                    if (y1 < yAxisMin)
-                        {
-                        x1 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
-                        y1 = yAxisMin;
-                        }
-                    else if (y1 > yAxisMax)
-                        {
-                        x1 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
-                        y1 = yAxisMax;
-                        }
-                    if (y2 < yAxisMin)
-                        {
-                        x2 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
-                        y2 = yAxisMin;
-                        }
-                    else if (y2 > yAxisMax)
-                        {
-                        x2 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
-                        y2 = yAxisMax;
-                        }
-                    }
-
-                wxPoint startPt, endPt;
-                if (GetPhysicalCoordinates(x1, y1, startPt) &&
-                    GetPhysicalCoordinates(x2, y2, endPt))
-                    {
-                    auto regressionLine = std::make_unique<GraphItems::Lines>(
-                        series.GetRegressionPen(), GetScaling());
-                    regressionLine->SetDPIScaleFactor(GetDPIScaleFactor());
-                    regressionLine->SetLineStyle(series.GetRegressionLineStyle());
-                    regressionLine->AddLine(startPt, endPt);
-                    AddObject(std::move(regressionLine));
-                    }
+                continue;
+                }
+            // skip invalid data
+            if (!std::isfinite(xColumn->GetValue(i)) || !std::isfinite(yColumn->GetValue(i)))
+                {
+                continue;
+                }
+            if (!GetPhysicalCoordinates(xColumn->GetValue(i), yColumn->GetValue(i), pt))
+                {
+                continue;
                 }
 
-            // draw scatter points
-            auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
-            points->SetScaling(GetScaling());
-            points->SetDPIScaleFactor(GetDPIScaleFactor());
-            points->Reserve(GetDataset()->GetRowCount());
-
-            wxPoint pt;
-            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
-                {
-                // skip if from different group
-                if (IsUsingGrouping() && groupColumn->GetValue(i) != series.GetGroupId())
-                    {
-                    continue;
-                    }
-                // skip invalid data
-                if (!std::isfinite(xColumn->GetValue(i)) || !std::isfinite(yColumn->GetValue(i)))
-                    {
-                    continue;
-                    }
-                if (!GetPhysicalCoordinates(xColumn->GetValue(i), yColumn->GetValue(i), pt))
-                    {
-                    continue;
-                    }
-
-                points->AddPoint(
-                    GraphItems::Point2D{
-                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
-                            .AnchorPoint(pt)
-                            .Pen(series.GetColor())
-                            .Brush(Colors::ColorContrast::ChangeOpacity(series.GetColor(), 100)),
-                        Settings::GetPointRadius(), series.GetShape() },
-                    dc);
-                }
-            AddObject(std::move(points));
+            points->AddPoint(
+                GraphItems::Point2D{
+                    GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
+                        .AnchorPoint(pt)
+                        .Pen(series.GetColor())
+                        .Brush(Colors::ColorContrast::ChangeOpacity(series.GetColor(), 100)),
+                    Settings::GetPointRadius(), series.GetShape() },
+                dc);
             }
+        AddObject(std::move(points));
         }
 
     //----------------------------------------------------------------

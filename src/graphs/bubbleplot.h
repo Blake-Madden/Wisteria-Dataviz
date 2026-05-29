@@ -155,9 +155,11 @@ namespace Wisteria::Graphs
         /// @}
 
       protected:
-        /// @brief Recalculates the layout and plots the data.
-        /// @param dc The DC to draw to.
-        void RecalcSizes(wxDC& dc) final;
+        /// @brief Draws the bubble points for a single series, sizing each marker by area
+        ///     from the size column.
+        /// @param series The series whose points to draw.
+        /// @param dc The DC to measure against.
+        void DrawPoints(const Series& series, wxDC& dc) final;
 
       private:
         wxString m_sizeColumnName;

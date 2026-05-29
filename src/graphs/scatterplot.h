@@ -361,8 +361,27 @@ namespace Wisteria::Graphs
         /// @param dc The DC to draw to.
         void RecalcSizes(wxDC& dc) override;
 
+        /** @brief Draws the regression line and (if enabled) confidence band for a series.
+            @details Does nothing if regression lines are turned off or the series'
+                regression results are not valid.
+            @param series The series whose regression results to draw.*/
+        void DrawRegressionLine(const Series& series);
+
+        /** @brief Draws the data points for a single series.
+            @details The base implementation draws fixed-radius markers; derived classes
+                (e.g., BubblePlot) override this to vary point sizing.
+            @param series The series whose points to draw.
+            @param dc The DC to measure against.*/
+        virtual void DrawPoints(const Series& series, wxDC& dc);
+
       private:
         void CalculateRegression(Series& series);
+
+        /// @brief Builds a series, applying the scheme color/shape/line style at @c schemeIndex
+        ///     and calculating its regression.
+        [[nodiscard]]
+        Series BuildSeries(size_t schemeIndex, const std::optional<wxString>& groupColumnName,
+                           Data::GroupIdType groupId, const wxString& groupName);
 
         std::vector<Series> m_series;
         std::shared_ptr<LineStyleScheme> m_regressionLineStyles;

@@ -58,38 +58,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
         }
 
     //----------------------------------------------------------------
-    void BubblePlot::RecalcSizes(wxDC & dc)
+    void BubblePlot::DrawPoints(const Series& series, wxDC& dc)
         {
-        // call Graph2D::RecalcSizes, not ScatterPlot::RecalcSizes
-        // because we need to draw points with variable sizes
-        // NOLINTNEXTLINE(bugprone-parent-virtual-call)
-        Graph2D::RecalcSizes(dc);
-
-        if (GetDataset() == nullptr)
-            {
-            return;
-            }
-
         const auto groupColumn = GetGroupColumn();
         const auto xColumn = GetContinuousColumn(GetXColumnName());
         const auto yColumn = GetContinuousColumn(GetYColumnName());
         const auto sizeColumn = GetContinuousColumn(m_sizeColumnName);
 
-        // find min/max size values for scaling (excluding NaN)
-        double sizeMin = std::numeric_limits<double>::max();
-        double sizeMax = std::numeric_limits<double>::lowest();
-        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
-            {
-            const double sizeVal = sizeColumn->GetValue(i);
-            if (std::isfinite(sizeVal))
-                {
-                sizeMin = std::min(sizeMin, sizeVal);
-                sizeMax = std::max(sizeMax, sizeVal);
-                }
-            }
-
-        // handle edge case where all values are the same
-        const bool uniformSize = (sizeMin >= sizeMax);
+        // size min/max were computed in SetData(); handle the edge case where all values
+        // are the same (or none are valid) by falling back to the minimum radius
+        const bool uniformSize = (m_sizeMin >= m_sizeMax);
 
         // calculate area range for scaling
         // area = π * r², so r = sqrt(area / π)
@@ -99,178 +77,56 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
         const double maxArea =
             static_cast<double>(m_maxBubbleRadius) * static_cast<double>(m_maxBubbleRadius);
 
-        for (const auto& series : GetSeriesList())
+        auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
+        points->SetScaling(GetScaling());
+        points->SetDPIScaleFactor(GetDPIScaleFactor());
+        points->Reserve(GetDataset()->GetRowCount());
+
+        wxPoint pt;
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
-            // draw regression line and confidence bands first (via parent logic)
-            if (IsShowingRegressionLines() && series.GetRegressionResults().is_valid())
+            // skip if from different group
+            if (IsUsingGrouping() && groupColumn->GetValue(i) != series.GetGroupId())
                 {
-                const auto& stats = series.GetRegressionResults();
-                const auto [xAxisMin, xAxisMax] = GetBottomXAxis().GetRange();
-                const auto [yAxisMin, yAxisMax] = GetLeftYAxis().GetRange();
-
-                // draw confidence bands if enabled
-                if (IsShowingConfidenceBands() && stats.n > 2 &&
-                    std::isfinite(stats.standard_error) && std::isfinite(stats.mean_x) &&
-                    std::isfinite(stats.ss_xx) && stats.ss_xx > 0)
-                    {
-                    const double alpha = 1.0 - GetConfidenceLevel();
-                    const double df = static_cast<double>(stats.n) - 2.0;
-                    const double tCritical =
-                        statistics::t_distribution_quantile(1.0 - alpha * 0.5, df);
-
-                    if (std::isfinite(tCritical))
-                        {
-                        constexpr size_t NUMPOINTS{ 50 };
-                        std::vector<wxPoint> upperBand;
-                        std::vector<wxPoint> lowerBand;
-                        upperBand.reserve(NUMPOINTS);
-                        lowerBand.reserve(NUMPOINTS);
-
-                        const auto xStep = safe_divide<double>(xAxisMax - xAxisMin, NUMPOINTS - 1);
-                        const auto nRecip = safe_divide<double>(1.0, static_cast<double>(stats.n));
-
-                        for (size_t i = 0; i < NUMPOINTS; ++i)
-                            {
-                            const double x = xAxisMin + static_cast<double>(i) * xStep;
-                            const double yPred = stats.slope * x + stats.intercept;
-
-                            const double xDev = x - stats.mean_x;
-                            const double seY =
-                                stats.standard_error *
-                                std::sqrt(nRecip + safe_divide<double>(xDev * xDev, stats.ss_xx));
-
-                            const double margin = tCritical * seY;
-                            double yUpper = yPred + margin;
-                            double yLower = yPred - margin;
-
-                            yUpper = std::clamp(yUpper, yAxisMin, yAxisMax);
-                            yLower = std::clamp(yLower, yAxisMin, yAxisMax);
-
-                            wxPoint ptUpper, ptLower;
-                            if (GetPhysicalCoordinates(x, yUpper, ptUpper) &&
-                                GetPhysicalCoordinates(x, yLower, ptLower))
-                                {
-                                upperBand.push_back(ptUpper);
-                                lowerBand.push_back(ptLower);
-                                }
-                            }
-
-                        if (upperBand.size() >= 2)
-                            {
-                            std::vector<wxPoint> bandPolygon;
-                            bandPolygon.reserve(upperBand.size() + lowerBand.size());
-                            bandPolygon.insert(bandPolygon.end(), upperBand.begin(),
-                                               upperBand.end());
-                            bandPolygon.insert(bandPolygon.end(), lowerBand.rbegin(),
-                                               lowerBand.rend());
-
-                            auto confidenceBand = std::make_unique<GraphItems::Polygon>(
-                                GraphItems::GraphItemInfo{}
-                                    .Pen(wxPen{ wxColour{ 128, 128, 128, 128 }, 1 })
-                                    .Brush(wxBrush{ wxColour{ 128, 128, 128, 64 } })
-                                    .Scaling(GetScaling()),
-                                bandPolygon);
-                            confidenceBand->SetDPIScaleFactor(GetDPIScaleFactor());
-                            AddObject(std::move(confidenceBand));
-                            }
-                        }
-                    }
-
-                // draw regression line
-                double x1 = xAxisMin;
-                double x2 = xAxisMax;
-                double y1 = stats.slope * x1 + stats.intercept;
-                double y2 = stats.slope * x2 + stats.intercept;
-
-                if (stats.slope != 0.0)
-                    {
-                    if (y1 < yAxisMin)
-                        {
-                        x1 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
-                        y1 = yAxisMin;
-                        }
-                    else if (y1 > yAxisMax)
-                        {
-                        x1 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
-                        y1 = yAxisMax;
-                        }
-                    if (y2 < yAxisMin)
-                        {
-                        x2 = safe_divide<double>(yAxisMin - stats.intercept, stats.slope);
-                        y2 = yAxisMin;
-                        }
-                    else if (y2 > yAxisMax)
-                        {
-                        x2 = safe_divide<double>(yAxisMax - stats.intercept, stats.slope);
-                        y2 = yAxisMax;
-                        }
-                    }
-
-                wxPoint startPt, endPt;
-                if (GetPhysicalCoordinates(x1, y1, startPt) &&
-                    GetPhysicalCoordinates(x2, y2, endPt))
-                    {
-                    auto regressionLine = std::make_unique<GraphItems::Lines>(
-                        series.GetRegressionPen(), GetScaling());
-                    regressionLine->SetDPIScaleFactor(GetDPIScaleFactor());
-                    regressionLine->SetLineStyle(series.GetRegressionLineStyle());
-                    regressionLine->AddLine(startPt, endPt);
-                    AddObject(std::move(regressionLine));
-                    }
+                continue;
+                }
+            // skip invalid data (including invalid size)
+            if (!std::isfinite(xColumn->GetValue(i)) || !std::isfinite(yColumn->GetValue(i)) ||
+                !std::isfinite(sizeColumn->GetValue(i)))
+                {
+                continue;
+                }
+            if (!GetPhysicalCoordinates(xColumn->GetValue(i), yColumn->GetValue(i), pt))
+                {
+                continue;
                 }
 
-            // draw bubble points
-            auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
-            points->SetScaling(GetScaling());
-            points->SetDPIScaleFactor(GetDPIScaleFactor());
-            points->Reserve(GetDataset()->GetRowCount());
-
-            wxPoint pt;
-            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+            // calculate bubble radius based on size value
+            // scale area proportionally, then compute radius
+            size_t bubbleRadius = m_minBubbleRadius;
+            if (!uniformSize)
                 {
-                // skip if from different group
-                if (IsUsingGrouping() && groupColumn->GetValue(i) != series.GetGroupId())
-                    {
-                    continue;
-                    }
-                // skip invalid data (including invalid size)
-                if (!std::isfinite(xColumn->GetValue(i)) || !std::isfinite(yColumn->GetValue(i)) ||
-                    !std::isfinite(sizeColumn->GetValue(i)))
-                    {
-                    continue;
-                    }
-                if (!GetPhysicalCoordinates(xColumn->GetValue(i), yColumn->GetValue(i), pt))
-                    {
-                    continue;
-                    }
-
-                // calculate bubble radius based on size value
-                // scale area proportionally, then compute radius
-                size_t bubbleRadius = m_minBubbleRadius;
-                if (!uniformSize)
-                    {
-                    const double sizeVal = sizeColumn->GetValue(i);
-                    // normalize to 0-1 range
-                    const auto normalized =
-                        safe_divide<double>(sizeVal - sizeMin, sizeMax - sizeMin);
-                    // interpolate area
-                    const double area = minArea + normalized * (maxArea - minArea);
-                    // radius from area (area = r², omitting π as it cancels out)
-                    bubbleRadius = static_cast<size_t>(std::sqrt(area));
-                    bubbleRadius = std::clamp(bubbleRadius, m_minBubbleRadius, m_maxBubbleRadius);
-                    }
-
-                points->AddPoint(
-                    GraphItems::Point2D{
-                        GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
-                            .AnchorPoint(pt)
-                            .Pen(series.GetColor())
-                            .Brush(Colors::ColorContrast::ChangeOpacity(series.GetColor(), 100)),
-                        bubbleRadius, series.GetShape() },
-                    dc);
+                const double sizeVal = sizeColumn->GetValue(i);
+                // normalize to 0-1 range
+                const auto normalized =
+                    safe_divide<double>(sizeVal - m_sizeMin, m_sizeMax - m_sizeMin);
+                // interpolate area
+                const double area = minArea + normalized * (maxArea - minArea);
+                // radius from area (area = r², omitting π as it cancels out)
+                bubbleRadius = static_cast<size_t>(std::sqrt(area));
+                bubbleRadius = std::clamp(bubbleRadius, m_minBubbleRadius, m_maxBubbleRadius);
                 }
-            AddObject(std::move(points));
+
+            points->AddPoint(
+                GraphItems::Point2D{
+                    GraphItems::GraphItemInfo{ GetDataset()->GetIdColumn().GetValue(i) }
+                        .AnchorPoint(pt)
+                        .Pen(series.GetColor())
+                        .Brush(Colors::ColorContrast::ChangeOpacity(series.GetColor(), 100)),
+                    bubbleRadius, series.GetShape() },
+                dc);
             }
+        AddObject(std::move(points));
         }
 
     //----------------------------------------------------------------
