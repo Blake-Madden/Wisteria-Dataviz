@@ -47,7 +47,7 @@ namespace Wisteria
 
         /// @brief Syncs the dimensions of the tables, so that they all have a minimum
         ///     number of rows and columns (based on the largest number of rows and columns).
-        void SyncTableSizes() const
+        void SyncTableSizes()
             {
             if (m_tables.empty())
                 {
