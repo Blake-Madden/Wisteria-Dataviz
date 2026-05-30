@@ -447,6 +447,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 pdfDC.GetPdfDocument()->SetSubject(pdfOptions.m_subject);
                 pdfDC.GetPdfDocument()->SetKeywords(pdfOptions.m_keywords);
                 pdfDC.GetPdfDocument()->SetCompression(pdfOptions.m_compress);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
                 pdfDC.GetPdfDocument()->SetCreator(wxTheApp->GetAppDisplayName());
 
                 pdfDC.StartPage();
