@@ -422,7 +422,10 @@ class FileDownload
     ///     Read(). This will be a @c char buffer that can be converted
     ///     into a @c wxString.
     [[nodiscard]]
-    const std::vector<char>& GetLastRead() const noexcept { return m_buffer; }
+    const std::vector<char>& GetLastRead() const noexcept
+        {
+        return m_buffer;
+        }
 
     /// @brief Attempts to connect to an URL and load its response.
     /// @param url The URL to check.

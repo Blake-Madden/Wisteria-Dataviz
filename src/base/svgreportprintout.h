@@ -13,8 +13,8 @@
 #define WISTERIA_SVG_REPORT_PRINTOUT_H
 
 #include "canvas.h"
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace Wisteria
     {
