@@ -301,21 +301,21 @@ namespace Wisteria::UI
             (m_printData.GetOrientation() == wxLANDSCAPE) ? _(L"Landscape") : _(L"Portrait"));
 
         // update preview dimensions for Page Setup mode
-        constexpr double tenthsMmPerInch = 254.0;
-        constexpr double dipsPerInch = 96.0;
+        constexpr double TENTHS_MM_PER_INCH = 254.0;
+        constexpr double DIPS_PER_INCH = 96.0;
         if (paperType != nullptr)
             {
             const wxSize sizeMM = paperType->GetSize();
             m_printDataWidth =
-                wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
-            m_printDataHeight =
-                wxRound(safe_divide<double>(sizeMM.GetHeight(), tenthsMmPerInch) * dipsPerInch);
+                wxRound(safe_divide<double>(sizeMM.GetWidth(), TENTHS_MM_PER_INCH) * DIPS_PER_INCH);
+            m_printDataHeight = wxRound(
+                safe_divide<double>(sizeMM.GetHeight(), TENTHS_MM_PER_INCH) * DIPS_PER_INCH);
             }
         else
             {
             // fallback: US Letter at 96 DPI
-            m_printDataWidth = static_cast<int>(8.5 * dipsPerInch);
-            m_printDataHeight = static_cast<int>(11.0 * dipsPerInch);
+            m_printDataWidth = static_cast<int>(8.5 * DIPS_PER_INCH);
+            m_printDataHeight = static_cast<int>(11.0 * DIPS_PER_INCH);
             }
         if (m_printData.GetOrientation() == wxLANDSCAPE)
             {
@@ -332,16 +332,13 @@ namespace Wisteria::UI
             {
             return { m_printDataWidth, m_printDataHeight };
             }
-        else
-            {
-            return { m_pageWidth, m_pageHeight };
-            }
+        return { m_pageWidth, m_pageHeight };
         }
 
     //------------------------------------------------------
     void SvgExportDlg::OnPaintPreview([[maybe_unused]] wxPaintEvent& event)
         {
-        wxPaintDC pdc(m_previewPanel);
+        const wxPaintDC pdc(m_previewPanel);
         wxGCDC dc(pdc);
 
         const wxRect drawArea{ wxPoint{ 0, 0 }, dc.GetSize() };
@@ -360,9 +357,9 @@ namespace Wisteria::UI
         dc.SetPen(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::DarkGray));
         dc.DrawRectangle(pageArea);
 
-        constexpr int margin{ 15 };
-        const int availWidth = pageArea.GetSize().GetWidth() - (margin * 2);
-        const int availHeight = pageArea.GetSize().GetHeight() - (margin * 2);
+        constexpr int MARGIN{ 15 };
+        const int availWidth = pageArea.GetSize().GetWidth() - (MARGIN * 2);
+        const int availHeight = pageArea.GetSize().GetHeight() - (MARGIN * 2);
 
         if (availWidth <= 0 || availHeight <= 0)
             {
@@ -384,8 +381,8 @@ namespace Wisteria::UI
         const int slotBelow = std::max(1, belowHeight / 2);
         const int lineH = std::max(2, slotAbove / 3);
 
-        const int pieY = margin + 4 * slotAbove;
-        const int pieX = margin + (availWidth - pieDiameter) / 2;
+        const int pieY = MARGIN + 4 * slotAbove;
+        const int pieX = MARGIN + (availWidth - pieDiameter) / 2;
 
         // text line widths (varying to look like natural text)
         const std::array<int, 6> widthFracs = { 10, 9, 10, 7, 9, 6 };
@@ -398,8 +395,8 @@ namespace Wisteria::UI
         for (int i = 0; i < 4; ++i)
             {
             const int lineWidth = availWidth * widthFracs[i] / 10;
-            const int lineY = margin + i * slotAbove + (slotAbove - lineH) / 2;
-            dc.DrawRoundedRectangle(margin, lineY, lineWidth, lineH, 1);
+            const int lineY = MARGIN + i * slotAbove + (slotAbove - lineH) / 2;
+            dc.DrawRoundedRectangle(MARGIN, lineY, lineWidth, lineH, 1);
             }
 
         // pie chart
@@ -410,7 +407,7 @@ namespace Wisteria::UI
         dc.SetBrush(*wxBLACK_BRUSH);
         dc.DrawEllipse(pieX, pieY, pieDiameter, pieDiameter);
 
-        wxPen slicePen(bgColour, 2);
+        const wxPen slicePen(bgColour, 2);
         dc.SetPen(slicePen);
         dc.DrawLine(center, wxPoint(center.x, center.y - radius));
         dc.DrawLine(center, wxPoint(center.x + (radius * 0.86), center.y + (radius * 0.5)));
@@ -423,7 +420,7 @@ namespace Wisteria::UI
             {
             const int lineWidth = availWidth * widthFracs[i + 4] / 10;
             const int lineY = pieY + pieDiameter + i * slotBelow + (slotBelow - lineH) / 2;
-            dc.DrawRoundedRectangle(margin, lineY, lineWidth, lineH, 1);
+            dc.DrawRoundedRectangle(MARGIN, lineY, lineWidth, lineH, 1);
             }
         }
 
@@ -447,8 +444,8 @@ namespace Wisteria::UI
         // fit the page aspect ratio into the fixed preview bounding box
         const wxSize bounds = FromDIP(wxSize{ 150, 150 });
 
-        const double scaleX = safe_divide<double>(bounds.GetWidth(), useWidth);
-        const double scaleY = safe_divide<double>(bounds.GetHeight(), useHeight);
+        const auto scaleX = safe_divide<double>(bounds.GetWidth(), useWidth);
+        const auto scaleY = safe_divide<double>(bounds.GetHeight(), useHeight);
         const double scale = std::min(scaleX, scaleY);
 
         const int previewWidth = std::max(1, static_cast<int>(useWidth * scale));
@@ -457,7 +454,7 @@ namespace Wisteria::UI
         m_previewPanel->SetMinSize(wxSize{ previewWidth, previewHeight });
         m_previewPanel->SetSize(wxSize{ previewWidth, previewHeight });
 
-        if (GetSizer())
+        if (GetSizer() != nullptr)
             {
             GetSizer()->Layout();
             }

@@ -64,7 +64,7 @@ namespace Wisteria::UI
             @param style The dialog's style.*/
         DatasetImportDlg(wxWindow* parent, const wxString& filePath,
                          const Data::ImportInfo& importInfo,
-                         const Data::Dataset::ColumnPreviewInfo& columnInfo,
+                         Data::Dataset::ColumnPreviewInfo columnInfo,
                          const std::variant<wxString, size_t>& worksheet, wxWindowID id = wxID_ANY,
                          const wxString& caption = _(L"Edit Import Settings"),
                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,

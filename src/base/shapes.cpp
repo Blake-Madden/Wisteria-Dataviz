@@ -277,8 +277,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     Shape::Shape(const Shape& that)
         : GraphItemBase(that), m_shapeSizeDIPs(that.m_shapeSizeDIPs), m_sizeDIPs(that.m_sizeDIPs),
-          m_shape(that.m_shape), m_renderer(that.m_renderer), m_rendererNeedsUpdating(true),
-          m_drawFunction(that.m_drawFunction)
+          m_shape(that.m_shape), m_renderer(that.m_renderer), m_drawFunction(that.m_drawFunction)
         {
         }
 
@@ -326,7 +325,7 @@ namespace Wisteria::GraphItems
         if (m_shape == Icons::IconShape::NumberRange)
             {
             label = shapeName;
-            if (label.length() > 0)
+            if (!label.empty())
                 {
                 label[0] = wxToupper(label[0]);
                 }

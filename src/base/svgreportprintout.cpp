@@ -550,15 +550,15 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
     // paper size is in tenths of a millimeter;
     // divide by 254 (25.4mm per inch * 10) to get inches,
     // then multiply by 96 (DIPs per inch) to get DIPs
-    constexpr double tenthsMmPerInch = 254.0;
-    constexpr double dipsPerInch = 96.0;
+    constexpr double TENTHS_MM_PER_INCH = 254.0;
+    constexpr double DIPS_PER_INCH = 96.0;
     if (paperType != nullptr)
         {
         const wxSize sizeMM = paperType->GetSize();
         const int widthDIPs =
-            wxRound(safe_divide<double>(sizeMM.GetWidth(), tenthsMmPerInch) * dipsPerInch);
+            wxRound(safe_divide<double>(sizeMM.GetWidth(), TENTHS_MM_PER_INCH) * DIPS_PER_INCH);
         const int heightDIPs =
-            wxRound(safe_divide<double>(sizeMM.GetHeight(), tenthsMmPerInch) * dipsPerInch);
+            wxRound(safe_divide<double>(sizeMM.GetHeight(), TENTHS_MM_PER_INCH) * DIPS_PER_INCH);
 
         if (printData.GetOrientation() == wxLANDSCAPE)
             {
@@ -568,8 +568,8 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
         }
 
     // fallback: US Letter (8.5" x 11") at 96 DPI
-    const int widthDIPs = static_cast<int>(8.5 * dipsPerInch);
-    const int heightDIPs = static_cast<int>(11 * dipsPerInch);
+    const int widthDIPs = static_cast<int>(8.5 * DIPS_PER_INCH);
+    const int heightDIPs = static_cast<int>(11 * DIPS_PER_INCH);
     return (printData.GetOrientation() == wxLANDSCAPE) ? wxSize{ heightDIPs, widthDIPs } :
                                                          wxSize{ widthDIPs, heightDIPs };
     }

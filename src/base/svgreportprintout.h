@@ -14,6 +14,7 @@
 
 #include "canvas.h"
 #include <vector>
+#include <utility>
 
 namespace Wisteria
     {
@@ -31,7 +32,7 @@ namespace Wisteria
 
         /// @brief Constructor.
         /// @param filePath The file path to save the SVG to.
-        explicit SVGReportOptions(const wxString& filePath) : m_filePath(filePath) {}
+        explicit SVGReportOptions(wxString filePath) : m_filePath(std::move(filePath)) {}
 
         /// @brief The file path to save the SVG to.
         wxString m_filePath;

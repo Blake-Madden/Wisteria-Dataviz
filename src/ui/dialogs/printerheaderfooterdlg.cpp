@@ -75,7 +75,7 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     bool PrinterHeaderFooterDlg::Validate()
         {
-        wxRegEx re(L"(@[[:alpha:]]+@)");
+        const wxRegEx re(L"(@[[:alpha:]]+@)");
         const std::set<wxString, Wisteria::Data::wxStringLessNoCase> supportedTags = {
             L"@TITLE@", L"@DATE@", L"@TIME@", L"@DATETIME@", L"@PAGENUM@", L"@PAGESCNT@", L"@USER@"
         };

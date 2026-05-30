@@ -378,28 +378,28 @@ namespace Wisteria::GraphItems
 
         const double width = dcRect.GetWidth();
         const double height = dcRect.GetHeight();
-        const double L = dcRect.GetLeft();
-        const double T = dcRect.GetTop();
-        const double B = T + height;
+        const double rectLeft = dcRect.GetLeft();
+        const double rectTop = dcRect.GetTop();
+        const double rectBottom = rectTop + height;
 
         // tire geometry
         const double rearR = height * 0.28;
-        const double rearCx = L + width * 0.25;
-        const double rearCy = B - rearR;
+        const double rearCx = rectLeft + width * 0.25;
+        const double rearCy = rectBottom - rearR;
 
         const double frontR = height * 0.16;
-        const double frontCx = L + width * 0.79;
-        const double frontCy = B - frontR;
+        const double frontCx = rectLeft + width * 0.79;
+        const double frontCy = rectBottom - frontR;
 
         // body reference points
         const double fenderPeakY = rearCy - rearR - height * 0.04;
         const double ucY = rearCy + rearR * 0.15;
-        const double cabRearX = L + width * 0.08;
-        const double cabTopY = T + height * 0.10;
-        const double roofRightX = L + width * 0.48;
-        const double pillarBotX = L + width * 0.52;
-        const double pillarBotY = T + height * 0.42;
-        const double noseX = L + width * 0.93;
+        const double cabRearX = rectLeft + width * 0.08;
+        const double cabTopY = rectTop + height * 0.10;
+        const double roofRightX = rectLeft + width * 0.48;
+        const double pillarBotX = rectLeft + width * 0.52;
+        const double pillarBotY = rectTop + height * 0.42;
+        const double noseX = rectLeft + width * 0.93;
         const double noseTopY = pillarBotY + height * 0.05;
         const double noseBotY = frontCy - frontR * 0.20;
 
@@ -454,8 +454,8 @@ namespace Wisteria::GraphItems
 
         // body gradient: light at top fading to dark at bottom
         gc->SetPen(hairPen);
-        gc->SetBrush(
-            gc->CreateLinearGradientBrush(L, cabTopY, L, ucY, tractorRedLight, tractorRedDark));
+        gc->SetBrush(gc->CreateLinearGradientBrush(rectLeft, cabTopY, rectLeft, ucY,
+                                                   tractorRedLight, tractorRedDark));
         gc->FillPath(bodyPath);
         gc->StrokePath(bodyPath);
 
@@ -474,7 +474,7 @@ namespace Wisteria::GraphItems
                                       pillarBotX + width * 0.03, hsMid);
         hoodSheenPath.CloseSubpath();
         gc->SetBrush(gc->CreateLinearGradientBrush(
-            L, hsTop, L, hsMid,
+            rectLeft, hsTop, rectLeft, hsMid,
             Colors::ColorContrast::ChangeOpacity(wxColour{ 255, 255, 255 }, 150),
             Colors::ColorContrast::ChangeOpacity(wxColour{ 255, 255, 255 }, 50)));
         gc->FillPath(hoodSheenPath);
@@ -602,7 +602,7 @@ namespace Wisteria::GraphItems
         const double exW = width * 0.022;
         const double exX = pillarBotX + width * 0.035;
         const double exBot = noseTopY - height * 0.005;
-        const double exTop = T + height * 0.02;
+        const double exTop = rectTop + height * 0.02;
 
         wxGraphicsPath exPath = gc->CreatePath();
         exPath.MoveToPoint(exX, exBot);

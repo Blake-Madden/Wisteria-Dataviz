@@ -263,17 +263,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double faceWidth = baseRadius * (0.7 + 0.6 * m_features.m_faceWidth);
                 const double faceHeight = baseRadius * (0.8 + 0.4 * m_features.m_faceHeight);
 
-                const int accSize = static_cast<int>(faceHeight * 0.5);
-                const int accCenterX = static_cast<int>(cx + faceWidth * 0.5);
-                const int accCenterY = static_cast<int>(cy - faceHeight * 0.7);
+                const auto accSize = static_cast<int>(faceHeight * 0.5);
+                const auto accCenterX = static_cast<int>(cx + faceWidth * 0.5);
+                const auto accCenterY = static_cast<int>(cy - faceHeight * 0.7);
                 const wxRect accRect{ accCenterX - accSize / 2, accCenterY - accSize / 2, accSize,
                                       accSize };
-                GraphItems::Shape sh(GraphItems::GraphItemInfo{}
-                                         .Pen(wxPen{ m_outlineColor, 1 })
-                                         .Anchoring(Anchoring::TopLeftCorner)
-                                         .Scaling(GetScaling())
-                                         .DPIScaling(GetDPIScaleFactor()),
-                                     accShape, accRect.GetSize());
+                const GraphItems::Shape sh(GraphItems::GraphItemInfo{}
+                                               .Pen(wxPen{ m_outlineColor, 1 })
+                                               .Anchoring(Anchoring::TopLeftCorner)
+                                               .Scaling(GetScaling())
+                                               .DPIScaling(GetDPIScaleFactor()),
+                                           accShape, accRect.GetSize());
 
                 // some accessories tilt 25° clockwise so they don't sit perfectly
                 // upright against the hair
@@ -987,12 +987,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             }
                         if (iconShape != Icons::IconShape::Blank)
                             {
-                            GraphItems::Shape sh(GraphItems::GraphItemInfo{}
-                                                     .Pen(wxPen{ m_outlineColor, 1 })
-                                                     .Anchoring(Anchoring::TopLeftCorner)
-                                                     .Scaling(GetScaling())
-                                                     .DPIScaling(GetDPIScaleFactor()),
-                                                 iconShape, iconRects[i].GetSize());
+                            const GraphItems::Shape sh(GraphItems::GraphItemInfo{}
+                                                           .Pen(wxPen{ m_outlineColor, 1 })
+                                                           .Anchoring(Anchoring::TopLeftCorner)
+                                                           .Scaling(GetScaling())
+                                                           .DPIScaling(GetDPIScaleFactor()),
+                                                       iconShape, iconRects[i].GetSize());
                             sh.Draw(iconRects[i], dc);
                             }
                         }
@@ -1484,9 +1484,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             safe_divide<double>(static_cast<double>(faceCount), static_cast<double>(cols))));
 
         // calculate cell size, leaving room for labels
-        const int labelHeight = m_showLabels ? static_cast<int>(ScaleToScreenAndCanvas(20)) : 0;
-        const int cellWidth = safe_divide<int>(drawArea.GetWidth(), static_cast<int>(cols));
-        const int cellHeight = safe_divide<int>(drawArea.GetHeight(), static_cast<int>(rows));
+        const auto labelHeight = m_showLabels ? static_cast<int>(ScaleToScreenAndCanvas(20)) : 0;
+        const auto cellWidth = safe_divide<int>(drawArea.GetWidth(), static_cast<int>(cols));
+        const auto cellHeight = safe_divide<int>(drawArea.GetHeight(), static_cast<int>(rows));
         const int faceSize = std::min(cellWidth, cellHeight - labelHeight);
 
         if (faceSize <= 0)
@@ -1827,7 +1827,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             const double chinBottom = cy + faceHeight * 0.95;
 
             // fill the entire lower face area with stubble
-            const int ySteps = static_cast<int>(safe_divide(chinBottom - beardTop, spacing));
+            const auto ySteps = static_cast<int>(safe_divide(chinBottom - beardTop, spacing));
             for (int yi = 0; yi <= ySteps; ++yi)
                 {
                 const double y = beardTop + yi * spacing;
@@ -1837,7 +1837,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     faceWidth * std::sqrt(std::max(0.0, 1.0 - normalizedY * normalizedY));
 
                 const double xStart = cx - faceWidthAtY * 0.95;
-                const int xSteps = static_cast<int>(safe_divide(faceWidthAtY * 1.9, spacing));
+                const auto xSteps = static_cast<int>(safe_divide(faceWidthAtY * 1.9, spacing));
                 for (int xi = 0; xi <= xSteps; ++xi)
                     {
                     const double x = xStart + xi * spacing;
@@ -1867,7 +1867,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double sideTop = cy + faceHeight * 0.1;
                 const double sideBottom = mouthY + faceHeight * 0.08;
 
-                const int sideYSteps = static_cast<int>(safe_divide(sideBottom - sideTop, spacing));
+                const auto sideYSteps =
+                    static_cast<int>(safe_divide(sideBottom - sideTop, spacing));
                 for (int syi = 0; syi <= sideYSteps; ++syi)
                     {
                     const double y = sideTop + syi * spacing;
@@ -1880,7 +1881,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                     const double stubbleWidth = faceWidth * 0.15 * (1.0 - progress * 0.5);
 
                     // draw stubble along the edge
-                    const int inwardSteps = static_cast<int>(safe_divide(stubbleWidth, spacing));
+                    const auto inwardSteps = static_cast<int>(safe_divide(stubbleWidth, spacing));
                     for (int ini = 0; ini <= inwardSteps; ++ini)
                         {
                         const double inward = ini * spacing;
@@ -2023,10 +2024,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             beard.MoveToPoint(cx - faceEdgeX(sideTopY), sideTopY);
 
             // left outer edge: face ellipse from sideburn to chin
-            constexpr int edgeSamples{ 16 };
-            for (int i = 1; i <= edgeSamples; ++i)
+            constexpr int EDGE_SAMPLES{ 16 };
+            for (int i = 1; i <= EDGE_SAMPLES; ++i)
                 {
-                const double t = static_cast<double>(i) / edgeSamples;
+                const auto t = static_cast<double>(i) / EDGE_SAMPLES;
                 const double y = sideTopY + t * (chinY - sideTopY);
                 beard.AddLineToPoint(cx - faceEdgeX(y), y);
                 }
@@ -2035,9 +2036,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             beard.AddQuadCurveToPoint(cx, cy + faceHeight * 1.50, cx + faceEdgeX(chinY), chinY);
 
             // right outer edge: face ellipse from chin to sideburn
-            for (int i = edgeSamples - 1; i >= 1; --i)
+            for (int i = EDGE_SAMPLES - 1; i >= 1; --i)
                 {
-                const double t = static_cast<double>(i) / edgeSamples;
+                const auto t = static_cast<double>(i) / EDGE_SAMPLES;
                 const double y = sideTopY + t * (chinY - sideTopY);
                 beard.AddLineToPoint(cx + faceEdgeX(y), y);
                 }
@@ -2070,7 +2071,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double dotSize = faceHeight * 0.012;
                 const double dotSpacing = dotSize * 1.4;
 
-                const int ySteps = static_cast<int>(safe_divide(chinY - sideTopY, dotSpacing));
+                const auto ySteps = static_cast<int>(safe_divide(chinY - sideTopY, dotSpacing));
                 for (int yi = 0; yi <= ySteps; ++yi)
                     {
                     const double y = sideTopY + yi * dotSpacing;
@@ -2088,7 +2089,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         continue;
                         }
 
-                    const int xSteps = static_cast<int>(safe_divide(edgeX * 2.0, dotSpacing));
+                    const auto xSteps = static_cast<int>(safe_divide(edgeX * 2.0, dotSpacing));
                     for (int xi = 0; xi <= xSteps; ++xi)
                         {
                         const double x = (cx - edgeX) + xi * dotSpacing;
@@ -2134,7 +2135,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double chinEdgeX = faceEdgeX(chinY);
                 const double chinBezierScale = 0.70 * faceHeight;
                 const double chinMaxY = chinY + 0.35 * faceHeight;
-                const int chinYSteps = static_cast<int>(safe_divide(chinMaxY - chinY, dotSpacing));
+                const auto chinYSteps = static_cast<int>(safe_divide(chinMaxY - chinY, dotSpacing));
                 for (int cyi = 1; cyi <= chinYSteps; ++cyi)
                     {
                     const double y = chinY + cyi * dotSpacing;
@@ -2145,7 +2146,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         break;
                         }
                     const double halfW = chinEdgeX * std::sqrt(chinWidthFactorSq);
-                    const int xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
+                    const auto xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
                     for (int xi = 0; xi <= xSteps; ++xi)
                         {
                         const double x = (cx - halfW) + xi * dotSpacing;
@@ -2224,19 +2225,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             wxGraphicsPath beard = gc->CreatePath();
             beard.MoveToPoint(cx - faceEdgeX(sideTopY), sideTopY);
 
-            constexpr int edgeSamples{ 16 };
-            for (int i = 1; i <= edgeSamples; ++i)
+            constexpr int EDGE_SAMPLES{ 16 };
+            for (int i = 1; i <= EDGE_SAMPLES; ++i)
                 {
-                const double t = static_cast<double>(i) / edgeSamples;
+                const auto t = static_cast<double>(i) / EDGE_SAMPLES;
                 const double y = sideTopY + t * (chinY - sideTopY);
                 beard.AddLineToPoint(cx - faceEdgeX(y), y);
                 }
 
             beard.AddQuadCurveToPoint(cx, cy + faceHeight * 1.50, cx + faceEdgeX(chinY), chinY);
 
-            for (int i = edgeSamples - 1; i >= 1; --i)
+            for (int i = EDGE_SAMPLES - 1; i >= 1; --i)
                 {
-                const double t = static_cast<double>(i) / edgeSamples;
+                const auto t = static_cast<double>(i) / EDGE_SAMPLES;
                 const double y = sideTopY + t * (chinY - sideTopY);
                 beard.AddLineToPoint(cx + faceEdgeX(y), y);
                 }
@@ -2264,7 +2265,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double dotSize = faceHeight * 0.012;
                 const double dotSpacing = dotSize * 1.4;
 
-                const int ySteps = static_cast<int>(safe_divide(chinY - sideTopY, dotSpacing));
+                const auto ySteps = static_cast<int>(safe_divide(chinY - sideTopY, dotSpacing));
                 for (int yi = 0; yi <= ySteps; ++yi)
                     {
                     const double y = sideTopY + yi * dotSpacing;
@@ -2281,7 +2282,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         continue;
                         }
 
-                    const int xSteps = static_cast<int>(safe_divide(edgeX * 2.0, dotSpacing));
+                    const auto xSteps = static_cast<int>(safe_divide(edgeX * 2.0, dotSpacing));
                     for (int xi = 0; xi <= xSteps; ++xi)
                         {
                         const double x = (cx - edgeX) + xi * dotSpacing;
@@ -2323,7 +2324,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double chinEdgeX = faceEdgeX(chinY);
                 const double chinBezierScale = 0.70 * faceHeight;
                 const double chinMaxY = chinY + 0.35 * faceHeight;
-                const int chinYSteps = static_cast<int>(safe_divide(chinMaxY - chinY, dotSpacing));
+                const auto chinYSteps = static_cast<int>(safe_divide(chinMaxY - chinY, dotSpacing));
                 for (int cyi = 1; cyi <= chinYSteps; ++cyi)
                     {
                     const double y = chinY + cyi * dotSpacing;
@@ -2334,7 +2335,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         break;
                         }
                     const double halfW = chinEdgeX * std::sqrt(chinWidthFactorSq);
-                    const int xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
+                    const auto xSteps = static_cast<int>(safe_divide(halfW * 2.0, dotSpacing));
                     for (int xi = 0; xi <= xSteps; ++xi)
                         {
                         const double x = (cx - halfW) + xi * dotSpacing;
@@ -3047,32 +3048,32 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             // strands overlap vertically so the comb-over reads as thicker
             if (hairStyle == HairStyleKind::BaldCombOver)
                 {
-                constexpr size_t combOverCount{ 10 };
+                constexpr size_t COMB_OVER_COUNT{ 10 };
                 const double strandThickness = std::max(1.0, faceHeight * 0.026);
                 const double combTopY = cy - faceHeight * 0.92;
                 const double combBottomY = cy - faceHeight * 0.6;
 
                 // shortening factors for the left end (right end is always at the
                 // crown edge); values < 1.0 make a strand stop short of the left edge
-                constexpr std::array<double, combOverCount> leftShorten{
-                    1.0, 0.92, 1.0, 0.85, 0.95, 1.0, 0.78, 0.9, 1.0, 0.7
-                };
+                constexpr std::array<double, COMB_OVER_COUNT> LEFT_SHORTEN{ 1.0,  0.92, 1.0,  0.85,
+                                                                            0.95, 1.0,  0.78, 0.9,
+                                                                            1.0,  0.7 };
 
                 const auto crownHalfAt = [&](const double yPos)
                 {
-                    const double yOff = safe_divide<double>(yPos - cy, faceHeight);
+                    const auto yOff = safe_divide<double>(yPos - cy, faceHeight);
                     return faceWidth * std::sqrt(std::max(0.0, 1.0 - yOff * yOff));
                 };
 
                 gc->SetPen(wxPen(hairColor, strandThickness));
-                for (size_t idx = 0; idx < combOverCount; ++idx)
+                for (size_t idx = 0; idx < COMB_OVER_COUNT; ++idx)
                     {
-                    const double tParam = safe_divide<double>(
-                        static_cast<double>(idx), static_cast<double>(combOverCount - 1));
+                    const auto tParam = safe_divide<double>(
+                        static_cast<double>(idx), static_cast<double>(COMB_OVER_COUNT - 1));
                     const double yPos = combTopY + tParam * (combBottomY - combTopY);
                     const double crownHalf = crownHalfAt(yPos);
                     const double rightX = cx + crownHalf;
-                    const double leftX = cx - crownHalf * leftShorten.at(idx);
+                    const double leftX = cx - crownHalf * LEFT_SHORTEN.at(idx);
                     // lower strands arc up more (they have to travel further over the
                     // curve of the crown to reach the other side)
                     const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
@@ -3086,16 +3087,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
                 // thin highlight strands layered on top for sheen
                 gc->SetPen(wxPen(hairHighlight, std::max(1.0, strandThickness * 0.4)));
-                for (size_t idx = 0; idx < combOverCount; idx += 2)
+                for (size_t idx = 0; idx < COMB_OVER_COUNT; idx += 2)
                     {
-                    const double tParam = safe_divide<double>(
-                        static_cast<double>(idx), static_cast<double>(combOverCount - 1));
+                    const auto tParam = safe_divide<double>(
+                        static_cast<double>(idx), static_cast<double>(COMB_OVER_COUNT - 1));
                     const double yPos = combTopY + tParam * (combBottomY - combTopY);
                     const double crownHalf = crownHalfAt(yPos);
                     const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
                     // highlight runs along the upper inner portion of the strand
                     const double hlRight = cx + crownHalf * 0.55;
-                    const double hlLeft = cx - crownHalf * 0.35 * leftShorten.at(idx);
+                    const double hlLeft = cx - crownHalf * 0.35 * LEFT_SHORTEN.at(idx);
 
                     wxGraphicsPath strand = gc->CreatePath();
                     strand.MoveToPoint(hlRight, yPos - arcLift * 0.5);
@@ -3204,37 +3205,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             // per-strand jitter tables break up the regular fan and add thickness
             // variation, so the strands read as a hand-combed swoosh rather than a
             // uniform pattern
-            constexpr size_t strandCount{ 8 };
-            constexpr std::array<double, strandCount> startYJitter{ 0.00,  -0.022, 0.018, -0.028,
-                                                                    0.012, -0.016, 0.025, -0.01 };
-            constexpr std::array<double, strandCount> endYJitter{ -0.015, 0.022, -0.028, 0.014,
-                                                                  -0.02,  0.03,  -0.008, 0.018 };
-            constexpr std::array<double, strandCount> endXJitter{ -0.025, 0.035, -0.018, 0.022,
-                                                                  -0.032, 0.014, -0.026, 0.02 };
-            constexpr std::array<double, strandCount> cpYJitter{ 0.018, -0.028, 0.024, -0.014,
-                                                                 0.026, -0.02,  0.012, -0.032 };
-            constexpr std::array<double, strandCount> thicknessVar{ 1.00, 1.20, 0.80, 1.15,
-                                                                    0.90, 1.05, 0.95, 1.25 };
+            constexpr size_t STRAND_COUNT{ 8 };
+            constexpr std::array<double, STRAND_COUNT> START_Y_JITTER{
+                0.00, -0.022, 0.018, -0.028, 0.012, -0.016, 0.025, -0.01
+            };
+            constexpr std::array<double, STRAND_COUNT> END_Y_JITTER{ -0.015, 0.022, -0.028, 0.014,
+                                                                     -0.02,  0.03,  -0.008, 0.018 };
+            constexpr std::array<double, STRAND_COUNT> END_X_JITTER{ -0.025, 0.035, -0.018, 0.022,
+                                                                     -0.032, 0.014, -0.026, 0.02 };
+            constexpr std::array<double, STRAND_COUNT> CP_Y_JITTER{ 0.018, -0.028, 0.024, -0.014,
+                                                                    0.026, -0.02,  0.012, -0.032 };
+            constexpr std::array<double, STRAND_COUNT> THICKNESS_VAR{ 1.00, 1.20, 0.80, 1.15,
+                                                                      0.90, 1.05, 0.95, 1.25 };
 
             const double strandThickness = std::max(1.0, faceHeight * 0.014);
-            for (size_t idx = 0; idx < strandCount; ++idx)
+            for (size_t idx = 0; idx < STRAND_COUNT; ++idx)
                 {
-                const double tParam = safe_divide<double>(static_cast<double>(idx),
-                                                          static_cast<double>(strandCount - 1));
+                const auto tParam = safe_divide<double>(static_cast<double>(idx),
+                                                        static_cast<double>(STRAND_COUNT - 1));
                 // strands fan out: upper strands start near the volume peak, lower
                 // strands start closer to the forehead/part. left endpoints stay
                 // inside the swoosh outline (upper strands can extend further left
                 // since the swoosh is wider up top)
                 const double startX = cx + faceWidth * (0.68 - 0.05 * tParam);
                 const double startY =
-                    cy - faceHeight * (1.05 - 0.18 * tParam + startYJitter.at(idx));
-                const double endX = cx - faceWidth * (0.5 - 0.1 * tParam + endXJitter.at(idx));
-                const double endY = cy - faceHeight * (0.92 - 0.27 * tParam + endYJitter.at(idx));
+                    cy - faceHeight * (1.05 - 0.18 * tParam + START_Y_JITTER.at(idx));
+                const double endX = cx - faceWidth * (0.5 - 0.1 * tParam + END_X_JITTER.at(idx));
+                const double endY = cy - faceHeight * (0.92 - 0.27 * tParam + END_Y_JITTER.at(idx));
                 const double cpX = cx + faceWidth * (0.1 - 0.15 * tParam);
-                const double cpY = cy - faceHeight * (1.1 - 0.2 * tParam + cpYJitter.at(idx));
+                const double cpY = cy - faceHeight * (1.1 - 0.2 * tParam + CP_Y_JITTER.at(idx));
 
                 gc->SetPen(
-                    wxPen(hairHighlight, std::max(1.0, strandThickness * thicknessVar.at(idx))));
+                    wxPen(hairHighlight, std::max(1.0, strandThickness * THICKNESS_VAR.at(idx))));
                 wxGraphicsPath strand = gc->CreatePath();
                 strand.MoveToPoint(startX, startY);
                 strand.AddQuadCurveToPoint(cpX, cpY, endX, endY);
@@ -3243,34 +3245,37 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
             // darker contrast strands interleaved for depth - different jitter so
             // they don't visually align with the highlights
-            constexpr std::array<double, strandCount> darkStartYJitter{ -0.018, 0.026, -0.012,
-                                                                        0.022,  -0.03, 0.015,
-                                                                        -0.024, 0.028 };
-            constexpr std::array<double, strandCount> darkEndYJitter{
-                0.02, -0.026, 0.014, -0.022, 0.028, -0.012, 0.024, -0.018
-            };
-            constexpr std::array<double, strandCount> darkEndXJitter{
-                0.022, -0.03, 0.016, -0.026, 0.012, -0.028, 0.02, -0.014
-            };
-            constexpr std::array<double, strandCount> darkCpYJitter{ -0.024, 0.018, -0.028, 0.012,
-                                                                     -0.02,  0.026, -0.014, 0.022 };
-            constexpr std::array<double, strandCount> darkThicknessVar{ 0.95, 1.10, 0.75, 1.05,
-                                                                        0.85, 1.15, 0.80, 1.00 };
-            for (size_t idx = 0; idx < strandCount; ++idx)
+            constexpr std::array<double, STRAND_COUNT> DARK_START_Y_JITTER{ -0.018, 0.026, -0.012,
+                                                                            0.022,  -0.03, 0.015,
+                                                                            -0.024, 0.028 };
+            constexpr std::array<double, STRAND_COUNT> DARK_END_Y_JITTER{ 0.02,   -0.026, 0.014,
+                                                                          -0.022, 0.028,  -0.012,
+                                                                          0.024,  -0.018 };
+            constexpr std::array<double, STRAND_COUNT> DARK_END_X_JITTER{ 0.022,  -0.03, 0.016,
+                                                                          -0.026, 0.012, -0.028,
+                                                                          0.02,   -0.014 };
+            constexpr std::array<double, STRAND_COUNT> DARK_CP_Y_JITTER{ -0.024, 0.018, -0.028,
+                                                                         0.012,  -0.02, 0.026,
+                                                                         -0.014, 0.022 };
+            constexpr std::array<double, STRAND_COUNT> DARK_THICKNESS_VAR{ 0.95, 1.10, 0.75, 1.05,
+                                                                           0.85, 1.15, 0.80, 1.00 };
+            for (size_t idx = 0; idx < STRAND_COUNT; ++idx)
                 {
-                const double tParam = safe_divide<double>(static_cast<double>(idx) + 0.5,
-                                                          static_cast<double>(strandCount - 1));
+                const auto tParam = safe_divide<double>(static_cast<double>(idx) + 0.5,
+                                                        static_cast<double>(STRAND_COUNT - 1));
                 const double startX = cx + faceWidth * (0.66 - 0.05 * tParam);
                 const double startY =
-                    cy - faceHeight * (1.02 - 0.18 * tParam + darkStartYJitter.at(idx));
-                const double endX = cx - faceWidth * (0.48 - 0.1 * tParam + darkEndXJitter.at(idx));
+                    cy - faceHeight * (1.02 - 0.18 * tParam + DARK_START_Y_JITTER.at(idx));
+                const double endX =
+                    cx - faceWidth * (0.48 - 0.1 * tParam + DARK_END_X_JITTER.at(idx));
                 const double endY =
-                    cy - faceHeight * (0.86 - 0.25 * tParam + darkEndYJitter.at(idx));
+                    cy - faceHeight * (0.86 - 0.25 * tParam + DARK_END_Y_JITTER.at(idx));
                 const double cpX = cx + faceWidth * (0.08 - 0.15 * tParam);
-                const double cpY = cy - faceHeight * (1.06 - 0.2 * tParam + darkCpYJitter.at(idx));
+                const double cpY =
+                    cy - faceHeight * (1.06 - 0.2 * tParam + DARK_CP_Y_JITTER.at(idx));
 
-                gc->SetPen(wxPen(hairStrandColor,
-                                 std::max(1.0, strandThickness * 0.7 * darkThicknessVar.at(idx))));
+                gc->SetPen(wxPen(hairStrandColor, std::max(1.0, strandThickness * 0.7 *
+                                                                    DARK_THICKNESS_VAR.at(idx))));
                 wxGraphicsPath strand = gc->CreatePath();
                 strand.MoveToPoint(startX, startY);
                 strand.AddQuadCurveToPoint(cpX, cpY, endX, endY);

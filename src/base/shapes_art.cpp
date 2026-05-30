@@ -370,8 +370,8 @@ namespace Wisteria::GraphItems
 
             // calculate unclipped start/end of the diagonal line
             double x1 = rect.GetX() + offset;
-            double y1 = static_cast<double>(rect.GetY());
-            double x2 = static_cast<double>(rect.GetX());
+            auto y1 = static_cast<double>(rect.GetY());
+            auto x2 = static_cast<double>(rect.GetX());
             double y2 = rect.GetY() + offset;
 
             // add random overflow/underflow at the ends
@@ -406,12 +406,12 @@ namespace Wisteria::GraphItems
 
             // draw the line as a wobbly path with a few segments
             auto hatchPath = gc->CreatePath();
-            constexpr int segments{ 5 };
-            const auto dx = safe_divide<double>(x2 - x1, segments);
-            const auto dy = safe_divide<double>(y2 - y1, segments);
+            constexpr int SEGMENTS{ 5 };
+            const auto dx = safe_divide<double>(x2 - x1, SEGMENTS);
+            const auto dy = safe_divide<double>(y2 - y1, SEGMENTS);
 
             hatchPath.MoveToPoint(x1, y1);
-            for (int segment = 1; segment <= segments; ++segment)
+            for (int segment = 1; segment <= SEGMENTS; ++segment)
                 {
                 const double wx = wiggleDist(GetRNG());
                 const double wy = wiggleDist(GetRNG());

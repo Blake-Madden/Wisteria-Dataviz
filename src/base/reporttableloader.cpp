@@ -578,7 +578,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportTableLoader::ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table)
+    void ReportTableLoader::ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table) const
         {
         // helper to parse and call only when a template exists
         const auto applyIfPresent = [&table](const wxString& prop, const auto& applyFn)

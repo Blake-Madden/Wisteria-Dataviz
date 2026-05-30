@@ -38,7 +38,7 @@ namespace Wisteria::GraphItems
                     wxNumberFormatter::ToString(m_fillPercent * 100.0, 0,
                                                 wxNumberFormatter::Style::Style_None));
                 }
-            if (label.length() > 0)
+            if (!label.empty())
                 {
                 label[0] = wxToupper(label[0]);
                 }

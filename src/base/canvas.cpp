@@ -1457,7 +1457,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
                 // calculate what's left for the flexible items
                 const double availableForFlexible = std::max(0.0, 1.0 - fixedWidthTotal);
-                const double sharePerFlexible =
+                const auto sharePerFlexible =
                     safe_divide<double>(availableForFlexible, flexibleObjects);
 
                 for (auto& currentItem : GetFixedObjects().at(row))
@@ -1924,19 +1924,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 {
                 for (const auto& object : fixedObjectsRow)
                     {
-                    if (object && object->SelectObjectAtPoint(unscrolledPosition, gdc))
+                    if (object != nullptr && object->SelectObjectAtPoint(unscrolledPosition, gdc))
                         {
                         hitObject = object.get();
                         break;
                         }
                     }
-                if (hitObject)
+                if (hitObject != nullptr)
                     {
                     break;
                     }
                 }
 
-            if (!hitObject)
+            if (hitObject == nullptr)
                 {
                 for (const auto& title : GetTitles())
                     {

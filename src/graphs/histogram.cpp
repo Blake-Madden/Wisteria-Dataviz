@@ -592,7 +592,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 }
 
             const double barValue = currentBarBlocksTotal;
-            const double percentage = safe_divide<double>(barValue, total) * 100;
+            const auto percentage = safe_divide<double>(barValue, total) * 100;
             const wxString barLabel =
                 (barValue == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay ||
                  // for ranges, there is no concept of group name

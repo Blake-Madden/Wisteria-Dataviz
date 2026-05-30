@@ -1599,7 +1599,7 @@ namespace Wisteria::Graphs
                 }
             }
         // the standard graph objects (added via AddObject())
-        if (!hitObject)
+        if (hitObject == nullptr)
             {
             for (const auto& plotObject : std::ranges::reverse_view(m_plotObjects))
                 {
@@ -1611,7 +1611,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        if (hitObject)
+        if (hitObject != nullptr)
             {
             // if CTRL isn't held down, then unselect everything else
             if (!wxGetMouseState().ControlDown())

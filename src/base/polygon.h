@@ -135,7 +135,7 @@ namespace Wisteria::GraphItems
         template<typename polygonT>
         void SetPoints(const polygonT& polygon)
             {
-            if (polygon.size() > 0)
+            if (!polygon.empty())
                 {
                 m_points.clear();
                 m_points.reserve(polygon.size());

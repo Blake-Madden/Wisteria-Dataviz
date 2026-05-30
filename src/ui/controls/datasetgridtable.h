@@ -16,6 +16,7 @@
 #include <cmath>
 #include <map>
 #include <memory>
+#include <utility>
 #include <wx/grid.h>
 #include <wx/numformatter.h>
 
@@ -117,7 +118,7 @@ namespace Wisteria::UI
                 return GetValueByMapping(rowIdx, mapping);
                 }
 
-            size_t colIndex = static_cast<size_t>(col);
+            auto colIndex = static_cast<size_t>(col);
 
             // ID column
             if (m_hasId)
@@ -174,7 +175,7 @@ namespace Wisteria::UI
                 return GetNameByMapping(mapping);
                 }
 
-            size_t colIndex = static_cast<size_t>(col);
+            auto colIndex = static_cast<size_t>(col);
 
             if (m_hasId)
                 {
@@ -220,7 +221,7 @@ namespace Wisteria::UI
                 return DatasetGridColumnType::Continuous;
                 }
 
-            size_t colIndex = static_cast<size_t>(col);
+            auto colIndex = static_cast<size_t>(col);
 
             if (m_hasId)
                 {
@@ -412,7 +413,7 @@ namespace Wisteria::UI
 
         /// @brief Constructor.
         /// @param bmp The icon to draw in the header.
-        explicit DatasetColumnHeaderRenderer(const wxBitmap& bmp) : m_bitmap(bmp) {}
+        explicit DatasetColumnHeaderRenderer(wxBitmap bmp) : m_bitmap(std::move(bmp)) {}
 
         /// @private
         void DrawLabel(const wxGrid& grid, wxDC& dc, const wxString& value, const wxRect& rect,

@@ -53,7 +53,7 @@ namespace Wisteria::UI
         // helper lambda to add a file to the ZIP
         const auto addToZip = [&zipStream](const wxString& path, const wxString& content) -> bool
         {
-            wxZipEntry* entry = new wxZipEntry(path);
+            auto* entry = new wxZipEntry(path);
             if (!zipStream.PutNextEntry(entry))
                 {
                 return false;
@@ -92,7 +92,7 @@ namespace Wisteria::UI
     void ListCtrlExcelExporter::CollectStringsAndStyles(const bool includeColumnHeaders)
         {
         // add a default style (index 0) with no formatting
-        CellStyle defaultStyle;
+        const CellStyle defaultStyle;
         GetOrAddStyle(defaultStyle);
 
         // collect column headers
@@ -421,7 +421,7 @@ namespace Wisteria::UI
                         dynamic_cast<const ListCtrlExNumericDataProvider*>(dataProvider.get());
                     return numericProvider->GetItemValue(row, column);
                     }
-                else if (dataProvider->IsKindOf(wxCLASSINFO(ListCtrlExDataProvider)))
+                if (dataProvider->IsKindOf(wxCLASSINFO(ListCtrlExDataProvider)))
                     {
                     const auto* stringProvider =
                         dynamic_cast<const ListCtrlExDataProvider*>(dataProvider.get());
@@ -487,7 +487,7 @@ namespace Wisteria::UI
         // this is not a pure formatted number (letters, percent, currency, etc.)
         for (const auto ch : text)
             {
-            if (std::iswalpha(static_cast<wint_t>(ch)) || ch == L'%' || ch == L'$' ||
+            if (std::iswalpha(static_cast<wint_t>(ch)) != 0 || ch == L'%' || ch == L'$' ||
                 ch == L'€' ||             // euro €
                 ch == L'£' || ch == L'¥') // pound £, yen ¥
                 {
@@ -845,7 +845,7 @@ namespace Wisteria::UI
 
         // fonts: collect unique text colors
         std::vector<wxColour> fontColors;
-        fontColors.emplace_back(wxColour{}); // default (index 0) - no color specified
+        fontColors.emplace_back(); // default (index 0) - no color specified
 
         for (const auto& style : m_stylesList)
             {
@@ -886,8 +886,8 @@ namespace Wisteria::UI
 
         // fills - collect unique background colors
         std::vector<wxColour> fillColors;
-        fillColors.emplace_back(wxColour{}); // default (index 0) - no fill
-        fillColors.emplace_back(wxColour{}); // gray125 pattern (index 1) - required by Excel
+        fillColors.emplace_back(); // default (index 0) - no fill
+        fillColors.emplace_back(); // gray125 pattern (index 1) - required by Excel
 
         for (const auto& style : m_stylesList)
             {

@@ -461,7 +461,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
             }
-        wxRegEx columnRE(colNamePattern);
+        const wxRegEx columnRE(colNamePattern);
         if (!columnRE.IsValid())
             {
             throw std::runtime_error(

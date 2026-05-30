@@ -185,8 +185,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                 GetScreenToPageScaling(scaleX, scaleY);
 
                 // set a suitable scaling factor
-                const double scaleXReciprical = safe_divide<double>(1.0f, scaleX);
-                const double scaleYReciprical = safe_divide<double>(1.0f, scaleY);
+                const auto scaleXReciprical = safe_divide<double>(1.0f, scaleX);
+                const auto scaleYReciprical = safe_divide<double>(1.0f, scaleY);
                 dc->SetUserScale(scaleX, scaleY);
 
                 // get the size of the DC's drawing area in pixels

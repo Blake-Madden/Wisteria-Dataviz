@@ -25,12 +25,12 @@ namespace Wisteria::UI
         // load worksheet names for spreadsheet files
         if (m_fileExt.CmpNoCase(L"xlsx") == 0)
             {
-            Data::ExcelReader xlReader(m_filePath);
+            const Data::ExcelReader xlReader(m_filePath);
             m_worksheetNames = xlReader.GetWorksheetNames();
             }
         else if (m_fileExt.CmpNoCase(L"ods") == 0)
             {
-            Data::OdsReader odsReader(m_filePath);
+            const Data::OdsReader odsReader(m_filePath);
             m_worksheetNames = odsReader.GetWorksheetNames();
             }
 
@@ -44,7 +44,7 @@ namespace Wisteria::UI
     //----------------------------------------------
     DatasetImportDlg::DatasetImportDlg(wxWindow* parent, const wxString& filePath,
                                        const Data::ImportInfo& importInfo,
-                                       const Data::Dataset::ColumnPreviewInfo& columnInfo,
+                                       Data::Dataset::ColumnPreviewInfo columnInfo,
                                        const std::variant<wxString, size_t>& worksheet,
                                        wxWindowID id, const wxString& caption, const wxPoint& pos,
                                        const wxSize& size, long style)
@@ -53,7 +53,7 @@ namespace Wisteria::UI
           m_maxDiscrete(static_cast<int>(importInfo.GetMaxDiscreteValue())),
           m_leadingZeros(importInfo.GetTreatLeadingZerosAsText()),
           m_yearsAsText(importInfo.GetTreatYearsAsText()),
-          m_columnNamesSort(importInfo.GetColumnNamesSort()), m_columnInfo(columnInfo)
+          m_columnNamesSort(importInfo.GetColumnNamesSort()), m_columnInfo(std::move(columnInfo))
         {
         // build the MD values string from the codes
         if (importInfo.GetMDCodes().has_value())
@@ -74,12 +74,12 @@ namespace Wisteria::UI
         // load worksheet names for spreadsheet files
         if (m_fileExt.CmpNoCase(L"xlsx") == 0)
             {
-            Data::ExcelReader xlReader(m_filePath);
+            const Data::ExcelReader xlReader(m_filePath);
             m_worksheetNames = xlReader.GetWorksheetNames();
             }
         else if (m_fileExt.CmpNoCase(L"ods") == 0)
             {
-            Data::OdsReader odsReader(m_filePath);
+            const Data::OdsReader odsReader(m_filePath);
             m_worksheetNames = odsReader.GetWorksheetNames();
             }
 
@@ -321,12 +321,12 @@ namespace Wisteria::UI
                 {
                 if (m_fileExt.CmpNoCase(L"xlsx") == 0)
                     {
-                    Data::ExcelReader xlReader(m_filePath);
+                    const Data::ExcelReader xlReader(m_filePath);
                     freshWorksheetNames = xlReader.GetWorksheetNames();
                     }
                 else
                     {
-                    Data::OdsReader odsReader(m_filePath);
+                    const Data::OdsReader odsReader(m_filePath);
                     freshWorksheetNames = odsReader.GetWorksheetNames();
                     }
                 }
@@ -818,6 +818,8 @@ namespace Wisteria::UI
                 break;
             case 3:
                 newType = Data::Dataset::ColumnImportType::Date;
+                break;
+            default:
                 break;
                 }
 

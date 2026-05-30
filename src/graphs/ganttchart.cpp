@@ -441,7 +441,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
 
             if (task.m_start.IsValid() && task.m_end.IsValid())
                 {
-                const int daysInTask{ static_cast<int>((task.m_end - task.m_start).GetDays()) };
+                const int daysInTask{ (task.m_end - task.m_start).GetDays() };
                 label += wxString::Format(
                     /* TRANSLATORS: Gantt chart accessibility: task date range and duration.
                        1st %s is the start date, 2nd %s is the end date, 3rd %d is day count. */

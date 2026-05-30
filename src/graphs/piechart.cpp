@@ -3302,13 +3302,10 @@ namespace Wisteria::Graphs
                 {
                 return std::vector<wxColour>{};
                 }
-            else
-                {
-                const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
-                Wisteria::Colors::ColorBrewer cb;
-                cb.SetColorScale({ GetCheeseColor(), GetToastedCheeseColor() });
-                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
-                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale({ GetCheeseColor(), GetToastedCheeseColor() });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
         const auto cookieColors = [this]()
         {
@@ -3316,14 +3313,11 @@ namespace Wisteria::Graphs
                 {
                 return std::vector<wxColour>{};
                 }
-            else
-                {
-                const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
-                Wisteria::Colors::ColorBrewer cb;
-                cb.SetColorScale(
-                    { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
-                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
-                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale(
+                { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
 
         for (auto& innerPie : GetInnerPie())
@@ -3508,13 +3502,10 @@ namespace Wisteria::Graphs
                 {
                 return std::vector<wxColour>{};
                 }
-            else
-                {
-                const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
-                Wisteria::Colors::ColorBrewer cb;
-                cb.SetColorScale({ GetCheeseColor(), GetToastedCheeseColor() });
-                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
-                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale({ GetCheeseColor(), GetToastedCheeseColor() });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
         const auto cookieColors = [this]()
         {
@@ -3522,14 +3513,11 @@ namespace Wisteria::Graphs
                 {
                 return std::vector<wxColour>{};
                 }
-            else
-                {
-                const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
-                Wisteria::Colors::ColorBrewer cb;
-                cb.SetColorScale(
-                    { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
-                return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
-                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale(
+                { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
 
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
@@ -4605,7 +4593,7 @@ namespace Wisteria::Graphs
                 percStr);
         };
 
-        if (GetInnerPie().size() > 0)
+        if (!GetInnerPie().empty())
             {
             label +=
                 L". " + wxString::Format(_(L"Outer ring (%zu slices): "), GetOuterPie().size());

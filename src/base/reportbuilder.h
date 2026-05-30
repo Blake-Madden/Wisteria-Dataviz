@@ -515,8 +515,8 @@ namespace Wisteria
                     {
                     return *strVal;
                     }
-                else if (const auto* const dVal{ std::get_if<double>(&foundVal->second) };
-                         dVal != nullptr)
+                if (const auto* const dVal{ std::get_if<double>(&foundVal->second) };
+                    dVal != nullptr)
                     {
                     if (std::isnan(*dVal))
                         {

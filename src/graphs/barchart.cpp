@@ -35,7 +35,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                                   [](auto lhv, const auto& rhv) noexcept
                                                   { return lhv + rhv.GetLength(); });
 
-        const double percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
+        const auto percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
         const wxString labelStr =
             (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
                 wxString{} :

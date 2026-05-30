@@ -28,8 +28,7 @@ namespace Wisteria::UI
             @param printData The print data to pre-populate the dialog with.
             @param options The PDF-specific options (metadata, etc.).
             @param caption The title of the export dialog.*/
-        PdfExportDlg(wxWindow* parent, const wxPrintData& printData,
-                     const PdfExportOptions& options,
+        PdfExportDlg(wxWindow* parent, const wxPrintData& printData, PdfExportOptions options,
                      const wxString& caption = _(L"PDF Export Options"));
 
         /// @private

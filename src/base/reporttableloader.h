@@ -76,7 +76,7 @@ namespace Wisteria
                 column/row formatting, column highlighting, aggregates, row totals,
                 cell updates, annotations, and footnotes.
             @param table The table to apply the features to.*/
-        void ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table);
+        void ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table) const;
 
         /** @brief Applies sorting to a table.
             @param table The table to sort.

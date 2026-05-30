@@ -2279,7 +2279,9 @@ namespace Wisteria::UI
             { return 14; }
         if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade2000s)))
             { return 15; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Dusk)))
+        // default
+        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Dusk)) ||
+            *scheme == Colors::Schemes::Dusk{})
             { return 16; }
         if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::EarthTones)))
             { return 17; }

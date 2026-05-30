@@ -2308,9 +2308,9 @@ namespace Wisteria::GraphItems
                 reRgb.GetMatch(colorStr, 1).ToLong(&r);
                 reRgb.GetMatch(colorStr, 2).ToLong(&g);
                 reRgb.GetMatch(colorStr, 3).ToLong(&b);
-                return wxColour(static_cast<unsigned char>(std::clamp(r, 0L, 255L)),
-                                static_cast<unsigned char>(std::clamp(g, 0L, 255L)),
-                                static_cast<unsigned char>(std::clamp(b, 0L, 255L)));
+                return { static_cast<unsigned char>(std::clamp(r, 0L, 255L)),
+                         static_cast<unsigned char>(std::clamp(g, 0L, 255L)),
+                         static_cast<unsigned char>(std::clamp(b, 0L, 255L)) };
                 }
             }
 
@@ -2343,7 +2343,7 @@ namespace Wisteria::GraphItems
 
         // pattern to match <span ...>content</span>
         // captures: (1) attributes, (2) content
-        wxRegEx reSpan(L"<span([^>]*)>([^<]*)</span>", wxRE_ICASE);
+        const wxRegEx reSpan(L"<span([^>]*)>([^<]*)</span>", wxRE_ICASE);
 
         wxString remaining = line;
 
@@ -2370,7 +2370,7 @@ namespace Wisteria::GraphItems
                 styledSeg.m_text = content;
 
                 // extract the style attribute value: style="..."
-                wxRegEx reStyleAttr(L"style\\s*=\\s*['\"]([^'\"]+)['\"]", wxRE_ICASE);
+                const wxRegEx reStyleAttr(L"style\\s*=\\s*['\"]([^'\"]+)['\"]", wxRE_ICASE);
                 if (reStyleAttr.IsValid() && reStyleAttr.Matches(attributes))
                     {
                     const wxString styleValue = reStyleAttr.GetMatch(attributes, 1);

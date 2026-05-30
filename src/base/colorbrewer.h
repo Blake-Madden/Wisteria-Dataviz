@@ -597,6 +597,14 @@ namespace Wisteria::Colors
             /// @brief Removes all colors from the collection.
             void Clear() noexcept { m_colors.clear(); }
 
+            /** @brief Comparison operator.
+                @param other The other scheme to compare against.
+                @returns @c true if the schemes have the same colors.*/
+            bool operator==(const ColorScheme& other) const noexcept
+                {
+                return m_colors == other.m_colors;
+                }
+
           private:
             /// @brief The colors in the scheme.
             std::vector<wxColour> m_colors;

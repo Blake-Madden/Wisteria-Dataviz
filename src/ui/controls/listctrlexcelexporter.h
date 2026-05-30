@@ -119,8 +119,7 @@ namespace Wisteria::UI
                 if (m_numberFormat.m_displayThousandsSeparator !=
                     other.m_numberFormat.m_displayThousandsSeparator)
                     {
-                    return m_numberFormat.m_displayThousandsSeparator <
-                           other.m_numberFormat.m_displayThousandsSeparator;
+                    return !m_numberFormat.m_displayThousandsSeparator;
                     }
                 return false;
                 }

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "variableselectdlg.h"
+#include <array>
 #include <set>
 #include <tuple>
 #include <wx/artprov.h>
@@ -243,9 +244,9 @@ namespace Wisteria::UI
         // set up the variable groups on the right side
         const auto addVarControls =
             [&](const auto addId, const auto removeId, const wxString& label,
-                const std::vector<Data::Dataset::ColumnImportType> acceptedVarTypes, long listStyle,
-                const int buttonCol, const int listCol, const int buttonRow, const int labelRow,
-                const int listRow)
+                const std::vector<Data::Dataset::ColumnImportType>& acceptedVarTypes,
+                long listStyle, const int buttonCol, const int listCol, const int buttonRow,
+                const int labelRow, const int listRow)
         {
             auto* buttonSz = new wxBoxSizer(wxVERTICAL);
             auto* varButtonAdd = new wxButton(this, addId);
@@ -355,16 +356,18 @@ namespace Wisteria::UI
                     }
                 }
 
-            const std::tuple<Data::Dataset::ColumnImportType, wxString, wxString> typeLegend[] = {
-                { Data::Dataset::ColumnImportType::Numeric, _(L"Continuous"), L"ID_CONTINUOUS" },
-                { Data::Dataset::ColumnImportType::String, _(L"Categorical"), L"ID_CATEGORICAL" },
-                { Data::Dataset::ColumnImportType::Discrete, _(L"Discrete"), L"ID_DISCRETE" },
-                { Data::Dataset::ColumnImportType::Date, _(L"Date"), L"ID_DATE" },
-                { Data::Dataset::ColumnImportType::DichotomousString,
-                  _(L"Dichotomous (Categorical)"), L"ID_DICHOTOMOUS_CATEGORICAL" },
-                { Data::Dataset::ColumnImportType::DichotomousDiscrete,
-                  _(L"Dichotomous (Discrete)"), L"ID_DICHOTOMOUS_DISCRETE" }
-            };
+            const std::array<std::tuple<Data::Dataset::ColumnImportType, wxString, wxString>, 6>
+                typeLegend = { { { Data::Dataset::ColumnImportType::Numeric, _(L"Continuous"),
+                                   L"ID_CONTINUOUS" },
+                                 { Data::Dataset::ColumnImportType::String, _(L"Categorical"),
+                                   L"ID_CATEGORICAL" },
+                                 { Data::Dataset::ColumnImportType::Discrete, _(L"Discrete"),
+                                   L"ID_DISCRETE" },
+                                 { Data::Dataset::ColumnImportType::Date, _(L"Date"), L"ID_DATE" },
+                                 { Data::Dataset::ColumnImportType::DichotomousString,
+                                   _(L"Dichotomous (Categorical)"), L"ID_DICHOTOMOUS_CATEGORICAL" },
+                                 { Data::Dataset::ColumnImportType::DichotomousDiscrete,
+                                   _(L"Dichotomous (Discrete)"), L"ID_DICHOTOMOUS_DISCRETE" } } };
 
             const auto iconSize = wxSize{ FromDIP(16), FromDIP(16) };
             auto* legendSizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(),

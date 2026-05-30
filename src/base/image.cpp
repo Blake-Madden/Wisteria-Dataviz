@@ -1123,8 +1123,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             double oldXScale{ 1.0 };
             double oldYScale{ 1.0 };
             dc.GetUserScale(&oldXScale, &oldYScale);
-            const double xRatio = safe_divide<double>(scaledSize.GetWidth(), bmp.GetWidth());
-            const double yRatio = safe_divide<double>(scaledSize.GetHeight(), bmp.GetHeight());
+            const auto xRatio = safe_divide<double>(scaledSize.GetWidth(), bmp.GetWidth());
+            const auto yRatio = safe_divide<double>(scaledSize.GetHeight(), bmp.GetHeight());
             dc.SetUserScale(oldXScale * xRatio, oldYScale * yRatio);
             const wxPoint scaledTopLeft{
                 static_cast<int>(std::lround(safe_divide<double>(imgTopLeftCorner.x, xRatio))),

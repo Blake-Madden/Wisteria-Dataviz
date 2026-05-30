@@ -437,7 +437,7 @@ namespace Wisteria::UI
 
         // column labels
         m_fromColumnLabel = sankey->GetPropertyTemplate(L"column-headers[0]");
-        if (m_fromColumnLabel.empty() && sankey->GetColumnHeaders().size() >= 1)
+        if (m_fromColumnLabel.empty() && !sankey->GetColumnHeaders().empty())
             {
             m_fromColumnLabel = sankey->GetColumnHeaders()[0];
             }

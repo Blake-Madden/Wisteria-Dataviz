@@ -584,7 +584,7 @@ namespace Wisteria::UI
                 // Lua uses -- for line comments
                 return lineText.find(L"--") != wxString::npos;
                 }
-            else if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
+            if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
                 {
                 // C++ uses // for line comments
                 return lineText.find(L"//") != wxString::npos;

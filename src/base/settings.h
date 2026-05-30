@@ -222,6 +222,10 @@ namespace Wisteria
         [[nodiscard]]
         static Colors::Schemes::ColorScheme GetDefaultColorScheme()
             {
+            // This is intentional. Slicing will discard the polymorphic identity (Dusk),
+            // but the color data is preserved. Identification should be done via
+            // color comparison instead of RTTI in serialization.
+            // NOLINTNEXTLINE(cppcoreguidelines-slicing)
             return Colors::Schemes::Dusk{};
             }
 

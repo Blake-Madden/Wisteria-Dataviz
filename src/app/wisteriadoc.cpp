@@ -3039,7 +3039,8 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             { graphNode->Add(L"color-scheme", wxString{ L"decade1990s" }); }
         else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Decade2000s)))
             { graphNode->Add(L"color-scheme", wxString{ L"decade2000s" }); }
-        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Dusk)))
+        else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::Dusk)) ||
+                 *cs == Wisteria::Colors::Schemes::Dusk{})
             { graphNode->Add(L"color-scheme", wxString{ L"dusk" }); }
         else if (cs->IsKindOf(wxCLASSINFO(Wisteria::Colors::Schemes::EarthTones)))
             { graphNode->Add(L"color-scheme", wxString{ L"earthtones" }); }

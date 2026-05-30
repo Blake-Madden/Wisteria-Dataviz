@@ -213,8 +213,8 @@ namespace Wisteria::GraphItems
             {
             const double angle = startAngle + i * (std::numbers::pi * 2.0 / 10.0);
             const double r = (i % 2 == 0) ? outerRadius : innerRadius;
-            points.push_back(
-                { centerPt.m_x + r * std::cos(angle), centerPt.m_y + r * std::sin(angle) });
+            points.emplace_back(centerPt.m_x + r * std::cos(angle),
+                                centerPt.m_y + r * std::sin(angle));
             }
 
         wxGraphicsPath path = gc->CreatePath();
