@@ -204,6 +204,36 @@ namespace Wisteria::UI
         bool InsertSubItemById(const wxWindowID parentItemId, const wxString& label,
                                const wxWindowID Id, std::optional<size_t> iconIndex);
 
+        /** @brief Sets the label of an existing subitem in place
+                (the subitem keeps its position in the folder).
+            @param parentItemId The ID of the parent folder.
+            @param subItemId The ID of the subitem to relabel.
+            @param label The new label text.
+            @returns @c true if the subitem was found and updated.*/
+        bool SetSubItemLabel(const wxWindowID parentItemId, const wxWindowID subItemId,
+                             const wxString& label)
+            {
+            for (auto& folder : m_folders)
+                {
+                if (folder.m_id == parentItemId)
+                    {
+                    for (auto& sub : folder.m_subItems)
+                        {
+                        if (sub.m_id == subItemId)
+                            {
+                            sub.m_label = label;
+                            AdjustWidthToFitItems();
+                            RecalcSizes();
+                            Refresh();
+                            return true;
+                            }
+                        }
+                    return false;
+                    }
+                }
+            return false;
+            }
+
         /** @brief Deletes a subitem from its parent folder.
             @param parentItemId The ID of the parent folder.
             @param subItemId The ID of the subitem to delete.
