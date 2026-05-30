@@ -83,10 +83,10 @@ bool WisteriaApp::OnInit()
     // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
     [[maybe_unused]]
     auto* docTemplate =
-        new wxDocTemplate(GetDocManager(), _(L"Wisteria project"), L"*.json", wxString{}, L"json",
+        new wxDocTemplate(GetDocManager(), _(L"Wisteria project"), L"*.wdv", wxString{}, L"wdv",
                           _DT(L"Wisteria Doc"), L"WisteriaView", wxCLASSINFO(WisteriaDoc),
                           wxCLASSINFO(WisteriaView));
-    SetAppFileExtension(L"json");
+    SetAppFileExtension(L"wdv");
 
         // load MRU file history before building the start page
         {
