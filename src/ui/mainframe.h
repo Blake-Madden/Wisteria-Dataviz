@@ -140,6 +140,13 @@ namespace Wisteria::UI
             return m_ribbon;
             }
 
+        /// @private
+        [[nodiscard]]
+        wxRibbonBar* GetRibbon() const noexcept
+            {
+            return m_ribbon;
+            }
+
       private:
         // Ribbon features
         /// @private
