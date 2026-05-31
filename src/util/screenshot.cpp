@@ -356,7 +356,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
             highlightRect.y += listCtrl->GetScrollPos(wxVERTICAL);
             const wxDCPenChanger pc(
                 memDC, GetScreenshotHighlightPen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
-            const wxDCBrushChanger bc(memDC, wxColour{ 0, 0, 0, 0 });
+            const wxDCBrushChanger bc(memDC, *wxTRANSPARENT_BRUSH);
             memDC.DrawRectangle(highlightRect);
             }
         }
