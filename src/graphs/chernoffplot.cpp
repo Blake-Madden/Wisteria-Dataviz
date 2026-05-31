@@ -2424,863 +2424,967 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                      const FaceFeatures& features, const wxColour& hairColor,
                                      const HairStyleKind hairStyle)
         {
+        // styles that don't draw over the forehead are dispatched directly
+        switch (hairStyle)
+            {
+        case HairStyleKind::Bald:
+            // nothing to draw
+            return;
+        case HairStyleKind::HighTopFade:
+            DrawHighTopFadeHair(gc, geom, hairColor);
+            return;
+        case HairStyleKind::FlatTop:
+            DrawFlatTopHair(gc, geom, hairColor);
+            return;
+        case HairStyleKind::PartiallyBald:
+            [[fallthrough]];
+        case HairStyleKind::BaldCombOver:
+            DrawPartiallyBaldHair(gc, geom, hairColor, hairStyle);
+            return;
+        case HairStyleKind::CombOver:
+            DrawCombOverHair(gc, geom, hairColor);
+            return;
+        default:
+            break;
+            }
+
+        // the remaining styles draw hair over the forehead (after the face, before the
+        // eyebrows), so they need to know where the eyebrows will sit to keep bangs above them
+        const double cy = geom.m_cy;
+        const double faceHeight = geom.m_faceHeight;
+        const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.m_eyePosition);
+        const double eyeRadiusPreCalc = faceHeight * 0.1 * (0.6 + 0.8 * features.m_eyeSize);
+        const double browYLimit = eyeYPreCalc - eyeRadiusPreCalc * 1.8 - faceHeight * 0.05;
+
+        switch (hairStyle)
+            {
+        case HairStyleKind::Bob:
+            DrawBobHair(gc, geom, hairColor, browYLimit);
+            break;
+        case HairStyleKind::Pixie:
+            DrawPixieHair(gc, geom, hairColor, browYLimit);
+            break;
+        case HairStyleKind::LongStraight:
+            DrawLongStraightHair(gc, geom, hairColor, browYLimit);
+            break;
+        case HairStyleKind::Bun:
+            DrawBunHair(gc, geom, hairColor);
+            break;
+        case HairStyleKind::Curly:
+            [[fallthrough]];
+        case HairStyleKind::LongCurly:
+            DrawCurlyHair(gc, geom, hairColor, browYLimit, hairStyle);
+            break;
+        default:
+            break;
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawBobHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                        const wxColour& hairColor, const double browYLimit)
+        {
         const double cx = geom.m_cx;
         const double cy = geom.m_cy;
         const double faceWidth = geom.m_faceWidth;
         const double faceHeight = geom.m_faceHeight;
 
-        // draw hair that goes over forehead (after face, before eyebrows)
-        if (hairStyle != HairStyleKind::Bald && hairStyle != HairStyleKind::HighTopFade &&
-            hairStyle != HairStyleKind::FlatTop && hairStyle != HairStyleKind::PartiallyBald &&
-            hairStyle != HairStyleKind::BaldCombOver && hairStyle != HairStyleKind::CombOver)
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+        // for dark hair, artists use a blue tint for strands instead of black
+        const wxColour hairStrandColor =
+            Colors::ColorContrast::IsDark(hairColor) ?
+                wxColour{ 70, 90, 160, 90 } : // blue tint for dark hair
+                wxColour{ 0, 0, 0, 40 };      // dark strands for light hair
+
+        // bob: hair frames face with bangs covering forehead
+        wxGraphicsPath bobHair = gc->CreatePath();
+        // outer edge - start from bottom left, go up and around
+        bobHair.MoveToPoint(cx - faceWidth * 0.92, cy + faceHeight * 0.6);
+        bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.98, cy + faceHeight * 0.2,
+                                    cx - faceWidth * 0.98, cy - faceHeight * 0.3);
+        bobHair.AddQuadCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.98, cx,
+                                    cy - faceHeight * 1.03);
+        bobHair.AddQuadCurveToPoint(cx + faceWidth * 1.0, cy - faceHeight * 0.98,
+                                    cx + faceWidth * 0.98, cy - faceHeight * 0.3);
+        bobHair.AddQuadCurveToPoint(cx + faceWidth * 0.98, cy + faceHeight * 0.2,
+                                    cx + faceWidth * 0.92, cy + faceHeight * 0.6);
+        // inner edge - cut out for face, going back up
+        bobHair.AddLineToPoint(cx + faceWidth * 0.82, cy + faceHeight * 0.48);
+        bobHair.AddQuadCurveToPoint(cx + faceWidth * 0.88, cy + faceHeight * 0.1,
+                                    cx + faceWidth * 0.85, browYLimit + faceHeight * 0.15);
+        // bangs across forehead - asymmetric sweep (higher on right, lower on left)
+        bobHair.AddQuadCurveToPoint(cx + faceWidth * 0.3, browYLimit - faceHeight * 0.06, cx,
+                                    browYLimit);
+        bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.4, browYLimit + faceHeight * 0.04,
+                                    cx - faceWidth * 0.72, browYLimit + faceHeight * 0.06);
+        bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.92, browYLimit + faceHeight * 0.02,
+                                    cx - faceWidth * 0.88, cy + faceHeight * 0.1);
+        bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.86, cy + faceHeight * 0.25,
+                                    cx - faceWidth * 0.82, cy + faceHeight * 0.48);
+        bobHair.CloseSubpath();
+
+        gc->SetBrush(wxBrush(hairColor));
+        gc->SetPen(wxPen(hairShadow, 1));
+        gc->FillPath(bobHair);
+        gc->StrokePath(bobHair);
+
+        // curved sheen following top curve of hair
+        wxGraphicsPath bobHairSheen = gc->CreatePath();
+        // outer arc (follows hair outline)
+        bobHairSheen.MoveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.5);
+        bobHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.6, cy - faceHeight * 0.9,
+                                         cx - faceWidth * 0.1, cy - faceHeight * 0.98);
+        // inner arc (parallel, inside the hair)
+        bobHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.8,
+                                         cx - faceWidth * 0.65, cy - faceHeight * 0.5);
+        bobHairSheen.CloseSubpath();
+        auto bobSheenBrush = gc->CreateLinearGradientBrush(
+            cx - faceWidth * 0.5, cy - faceHeight * 0.95, cx - faceWidth * 0.5,
+            cy - faceHeight * 0.6, hairHighlight,
+            wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+        gc->SetBrush(bobSheenBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(bobHairSheen);
+
+        // hair strands for texture
+        gc->SetPen(wxPen(hairStrandColor, 1));
+        // top/crown strands - stay well above bangs line
+        const double strandBottomLimit = browYLimit - faceHeight * 0.08;
+        for (int s = 0; s < 6; ++s)
             {
-            const wxColour hairHighlight = hairColor.ChangeLightness(130);
-            const wxColour hairShadow = hairColor.ChangeLightness(80);
-            // for dark hair, artists use a blue tint for strands instead of black
-            const wxColour hairStrandColor =
-                Colors::ColorContrast::IsDark(hairColor) ?
-                    wxColour{ 70, 90, 160, 90 } : // blue tint for dark hair
-                    wxColour{ 0, 0, 0, 40 };      // dark strands for light hair
+            wxGraphicsPath strand = gc->CreatePath();
+            // add variation to spacing, arc, and length
+            const double spacingVar = std::sin(s * 2.1) * faceWidth * 0.025;
+            const double arcVar = std::cos(s * 1.7) * faceWidth * 0.05;
+            const double lengthVar = std::sin(s * 3.2) * faceHeight * 0.04;
+            // spread across the hair width
+            const double startX = cx - faceWidth * 0.45 + s * faceWidth * 0.18 + spacingVar;
+            const double topY = cy - faceHeight * 0.98 + std::cos(s * 2.5) * faceHeight * 0.02;
+            strand.MoveToPoint(startX, topY);
+            strand.AddQuadCurveToPoint(startX + faceWidth * 0.12 + arcVar, topY + faceHeight * 0.22,
+                                       startX + faceWidth * 0.06, strandBottomLimit + lengthVar);
+            gc->StrokePath(strand);
+            }
+        // left outer side strands - stay within hair boundary, curve outward
+        for (int s = 0; s < 4; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double startX = cx - faceWidth * 0.88;
+            const double startY = cy - faceHeight * 0.4 + s * faceHeight * 0.22;
+            strand.MoveToPoint(startX, startY);
+            strand.AddQuadCurveToPoint(startX - faceWidth * 0.15, startY + faceHeight * 0.12,
+                                       startX - faceWidth * 0.08, startY + faceHeight * 0.28);
+            gc->StrokePath(strand);
+            }
+        // right outer side strands - stay within hair boundary, curve outward
+        for (int s = 0; s < 4; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double startX = cx + faceWidth * 0.88;
+            const double startY = cy - faceHeight * 0.4 + s * faceHeight * 0.22;
+            strand.MoveToPoint(startX, startY);
+            strand.AddQuadCurveToPoint(startX + faceWidth * 0.15, startY + faceHeight * 0.12,
+                                       startX + faceWidth * 0.08, startY + faceHeight * 0.28);
+            gc->StrokePath(strand);
+            }
+        }
 
-            // calculate where eyebrows will be drawn (to stop hair above them)
-            const double eyeYPreCalc = cy - faceHeight * (0.15 + 0.2 * features.m_eyePosition);
-            const double eyeRadiusPreCalc = faceHeight * 0.1 * (0.6 + 0.8 * features.m_eyeSize);
-            const double browYLimit = eyeYPreCalc - eyeRadiusPreCalc * 1.8 - faceHeight * 0.05;
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawPixieHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                          const wxColour& hairColor, const double browYLimit)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
 
-            if (hairStyle == HairStyleKind::Bob)
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+        const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
+                                             wxColour{ 70, 90, 160, 90 } :
+                                             wxColour{ 0, 0, 0, 40 };
+
+        // pixie: short textured hair covering forehead
+        wxGraphicsPath pixieHair = gc->CreatePath();
+        // outer edge
+        pixieHair.MoveToPoint(cx - faceWidth * 0.82, cy - faceHeight * 0.3);
+        pixieHair.AddQuadCurveToPoint(cx - faceWidth * 0.92, cy - faceHeight * 0.95, cx,
+                                      cy - faceHeight * 1.05);
+        pixieHair.AddQuadCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.95,
+                                      cx + faceWidth * 0.82, cy - faceHeight * 0.3);
+        // inner edge with textured bangs
+        pixieHair.AddQuadCurveToPoint(cx + faceWidth * 0.55, browYLimit - faceHeight * 0.05,
+                                      cx + faceWidth * 0.28, browYLimit + faceHeight * 0.02);
+        pixieHair.AddQuadCurveToPoint(cx + faceWidth * 0.1, browYLimit - faceHeight * 0.03,
+                                      cx - faceWidth * 0.1, browYLimit + faceHeight * 0.03);
+        pixieHair.AddQuadCurveToPoint(cx - faceWidth * 0.38, browYLimit - faceHeight * 0.02,
+                                      cx - faceWidth * 0.82, cy - faceHeight * 0.3);
+        pixieHair.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->FillPath(pixieHair);
+        gc->StrokePath(pixieHair);
+
+        // curved sheen following top curve of hair
+        wxGraphicsPath pixieHairSheen = gc->CreatePath();
+        // outer arc (follows hair outline)
+        pixieHairSheen.MoveToPoint(cx - faceWidth * 0.65, cy - faceHeight * 0.5);
+        pixieHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.55, cy - faceHeight * 0.88,
+                                           cx - faceWidth * 0.1, cy - faceHeight * 1.0);
+        // inner arc (parallel, inside the hair)
+        pixieHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.45, cy - faceHeight * 0.78,
+                                           cx - faceWidth * 0.55, cy - faceHeight * 0.5);
+        pixieHairSheen.CloseSubpath();
+        auto pixieSheenBrush = gc->CreateLinearGradientBrush(
+            cx - faceWidth * 0.45, cy - faceHeight * 0.95, cx - faceWidth * 0.45,
+            cy - faceHeight * 0.6, hairHighlight,
+            wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
+        gc->SetBrush(pixieSheenBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(pixieHairSheen);
+
+        // hair strands for texture - short wispy strands
+        gc->SetPen(wxPen(hairStrandColor, 1));
+        // top strands radiating outward with more arc
+        for (int s = 0; s < 7; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            // narrower range and variation
+            const double spacingVar = std::sin(s * 2.3) * 0.02;
+            const double offsetX = -0.38 + s * 0.13 + spacingVar;
+            const double startX = cx + faceWidth * offsetX;
+            // outer strands start lower to stay within hair
+            const double outerAdj = std::abs(offsetX) * faceHeight * 0.15;
+            const double startY = cy - faceHeight * 0.95 + outerAdj;
+            strand.MoveToPoint(startX, startY);
+            const double arcVar = std::cos(s * 1.9) * faceWidth * 0.04;
+            strand.AddQuadCurveToPoint(
+                startX + faceWidth * 0.18 * offsetX + arcVar, startY + faceHeight * 0.22,
+                startX + faceWidth * 0.1 * offsetX, browYLimit + faceHeight * 0.01);
+            gc->StrokePath(strand);
+            }
+        // additional crown strands with strong arc
+        for (int s = 0; s < 5; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double spacingVar = std::sin(s * 2.7) * faceWidth * 0.02;
+            const double arcVar = std::cos(s * 1.5) * faceWidth * 0.04;
+            const double startX = cx - faceWidth * 0.28 + s * faceWidth * 0.14 + spacingVar;
+            strand.MoveToPoint(startX, cy - faceHeight * 0.97);
+            strand.AddQuadCurveToPoint(startX + faceWidth * 0.15 + arcVar, cy - faceHeight * 0.65,
+                                       startX + faceWidth * 0.06, browYLimit - faceHeight * 0.02);
+            gc->StrokePath(strand);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawLongStraightHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                                 const wxColour& hairColor, const double browYLimit)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+        const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
+                                             wxColour{ 70, 90, 160, 90 } :
+                                             wxColour{ 0, 0, 0, 40 };
+
+        // long straight: flowing hair with side-swept bangs
+        wxGraphicsPath longHair = gc->CreatePath();
+        // outer edge - start bottom left, go up and around, down to bottom right
+        longHair.MoveToPoint(cx - faceWidth * 0.95, cy + faceHeight * 0.95);
+        longHair.AddQuadCurveToPoint(cx - faceWidth * 1.0, cy + faceHeight * 0.4,
+                                     cx - faceWidth * 0.98, cy - faceHeight * 0.3);
+        longHair.AddQuadCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.98, cx,
+                                     cy - faceHeight * 1.03);
+        longHair.AddQuadCurveToPoint(cx + faceWidth * 1.0, cy - faceHeight * 0.98,
+                                     cx + faceWidth * 0.98, cy - faceHeight * 0.3);
+        longHair.AddQuadCurveToPoint(cx + faceWidth * 1.0, cy + faceHeight * 0.4,
+                                     cx + faceWidth * 0.95, cy + faceHeight * 0.95);
+        // inner cutout for face - go back up
+        longHair.AddLineToPoint(cx + faceWidth * 0.82, cy + faceHeight * 0.75);
+        longHair.AddQuadCurveToPoint(cx + faceWidth * 0.88, cy + faceHeight * 0.25,
+                                     cx + faceWidth * 0.85, browYLimit + faceHeight * 0.12);
+        // side-swept bangs
+        longHair.AddQuadCurveToPoint(cx + faceWidth * 0.38, browYLimit - faceHeight * 0.02, cx,
+                                     browYLimit + faceHeight * 0.04);
+        longHair.AddQuadCurveToPoint(cx - faceWidth * 0.45, browYLimit + faceHeight * 0.02,
+                                     cx - faceWidth * 0.85, browYLimit + faceHeight * 0.08);
+        longHair.AddQuadCurveToPoint(cx - faceWidth * 0.88, cy + faceHeight * 0.25,
+                                     cx - faceWidth * 0.82, cy + faceHeight * 0.75);
+        longHair.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->FillPath(longHair);
+        gc->StrokePath(longHair);
+
+        // curved sheen following top curve of hair
+        wxGraphicsPath longHairSheen = gc->CreatePath();
+        // outer arc (follows hair outline)
+        longHairSheen.MoveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.5);
+        longHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.6, cy - faceHeight * 0.9,
+                                          cx - faceWidth * 0.1, cy - faceHeight * 0.98);
+        // inner arc (parallel, inside the hair)
+        longHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.8,
+                                          cx - faceWidth * 0.65, cy - faceHeight * 0.5);
+        longHairSheen.CloseSubpath();
+        auto longSheenBrush = gc->CreateLinearGradientBrush(
+            cx - faceWidth * 0.5, cy - faceHeight * 0.95, cx - faceWidth * 0.5,
+            cy - faceHeight * 0.6, hairHighlight,
+            wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
+        gc->SetBrush(longSheenBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(longHairSheen);
+
+        // hair strands for texture - long flowing strands
+        gc->SetPen(wxPen(hairStrandColor, 1));
+        // top/crown strands flowing down with arc
+        for (int s = 0; s < 6; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double startX = cx - faceWidth * 0.5 + s * faceWidth * 0.2;
+            strand.MoveToPoint(startX, cy - faceHeight * 0.98);
+            strand.AddQuadCurveToPoint(startX + faceWidth * 0.18, cy - faceHeight * 0.4,
+                                       startX + faceWidth * 0.1, browYLimit + faceHeight * 0.03);
+            gc->StrokePath(strand);
+            }
+        // bangs strands - side swept with more arc
+        for (int s = 0; s < 6; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double startX = cx - faceWidth * 0.5 + s * faceWidth * 0.2;
+            strand.MoveToPoint(startX, cy - faceHeight * 0.92);
+            strand.AddQuadCurveToPoint(startX + faceWidth * 0.22, browYLimit - faceHeight * 0.12,
+                                       startX + faceWidth * 0.15, browYLimit + faceHeight * 0.05);
+            gc->StrokePath(strand);
+            }
+        // outer edge strands (on the hair portion outside the face)
+        for (const int side : { -1, 1 })
+            {
+            for (int s = 0; s < 3; ++s)
                 {
-                // bob: hair frames face with bangs covering forehead
-                wxGraphicsPath bobHair = gc->CreatePath();
-                // outer edge - start from bottom left, go up and around
-                bobHair.MoveToPoint(cx - faceWidth * 0.92, cy + faceHeight * 0.6);
-                bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.98, cy + faceHeight * 0.2,
-                                            cx - faceWidth * 0.98, cy - faceHeight * 0.3);
-                bobHair.AddQuadCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.98, cx,
-                                            cy - faceHeight * 1.03);
-                bobHair.AddQuadCurveToPoint(cx + faceWidth * 1.0, cy - faceHeight * 0.98,
-                                            cx + faceWidth * 0.98, cy - faceHeight * 0.3);
-                bobHair.AddQuadCurveToPoint(cx + faceWidth * 0.98, cy + faceHeight * 0.2,
-                                            cx + faceWidth * 0.92, cy + faceHeight * 0.6);
-                // inner edge - cut out for face, going back up
-                bobHair.AddLineToPoint(cx + faceWidth * 0.82, cy + faceHeight * 0.48);
-                bobHair.AddQuadCurveToPoint(cx + faceWidth * 0.88, cy + faceHeight * 0.1,
-                                            cx + faceWidth * 0.85, browYLimit + faceHeight * 0.15);
-                // bangs across forehead - asymmetric sweep (higher on right, lower on left)
-                bobHair.AddQuadCurveToPoint(cx + faceWidth * 0.3, browYLimit - faceHeight * 0.06,
-                                            cx, browYLimit);
-                bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.4, browYLimit + faceHeight * 0.04,
-                                            cx - faceWidth * 0.72, browYLimit + faceHeight * 0.06);
-                bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.92, browYLimit + faceHeight * 0.02,
-                                            cx - faceWidth * 0.88, cy + faceHeight * 0.1);
-                bobHair.AddQuadCurveToPoint(cx - faceWidth * 0.86, cy + faceHeight * 0.25,
-                                            cx - faceWidth * 0.82, cy + faceHeight * 0.48);
-                bobHair.CloseSubpath();
-
-                gc->SetBrush(wxBrush(hairColor));
-                gc->SetPen(wxPen(hairShadow, 1));
-                gc->FillPath(bobHair);
-                gc->StrokePath(bobHair);
-
-                // curved sheen following top curve of hair
-                wxGraphicsPath bobHairSheen = gc->CreatePath();
-                // outer arc (follows hair outline)
-                bobHairSheen.MoveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.5);
-                bobHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.6, cy - faceHeight * 0.9,
-                                                 cx - faceWidth * 0.1, cy - faceHeight * 0.98);
-                // inner arc (parallel, inside the hair)
-                bobHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.8,
-                                                 cx - faceWidth * 0.65, cy - faceHeight * 0.5);
-                bobHairSheen.CloseSubpath();
-                auto bobSheenBrush = gc->CreateLinearGradientBrush(
-                    cx - faceWidth * 0.5, cy - faceHeight * 0.95, cx - faceWidth * 0.5,
-                    cy - faceHeight * 0.6, hairHighlight,
-                    wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
-                gc->SetBrush(bobSheenBrush);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->FillPath(bobHairSheen);
-
-                // hair strands for texture
-                gc->SetPen(wxPen(hairStrandColor, 1));
-                // top/crown strands - stay well above bangs line
-                const double strandBottomLimit = browYLimit - faceHeight * 0.08;
-                for (int s = 0; s < 6; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    // add variation to spacing, arc, and length
-                    const double spacingVar = std::sin(s * 2.1) * faceWidth * 0.025;
-                    const double arcVar = std::cos(s * 1.7) * faceWidth * 0.05;
-                    const double lengthVar = std::sin(s * 3.2) * faceHeight * 0.04;
-                    // spread across the hair width
-                    const double startX = cx - faceWidth * 0.45 + s * faceWidth * 0.18 + spacingVar;
-                    const double topY =
-                        cy - faceHeight * 0.98 + std::cos(s * 2.5) * faceHeight * 0.02;
-                    strand.MoveToPoint(startX, topY);
-                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.12 + arcVar,
-                                               topY + faceHeight * 0.22, startX + faceWidth * 0.06,
-                                               strandBottomLimit + lengthVar);
-                    gc->StrokePath(strand);
-                    }
-                // left outer side strands - stay within hair boundary, curve outward
-                for (int s = 0; s < 4; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx - faceWidth * 0.88;
-                    const double startY = cy - faceHeight * 0.4 + s * faceHeight * 0.22;
-                    strand.MoveToPoint(startX, startY);
-                    strand.AddQuadCurveToPoint(
-                        startX - faceWidth * 0.15, startY + faceHeight * 0.12,
-                        startX - faceWidth * 0.08, startY + faceHeight * 0.28);
-                    gc->StrokePath(strand);
-                    }
-                // right outer side strands - stay within hair boundary, curve outward
-                for (int s = 0; s < 4; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx + faceWidth * 0.88;
-                    const double startY = cy - faceHeight * 0.4 + s * faceHeight * 0.22;
-                    strand.MoveToPoint(startX, startY);
-                    strand.AddQuadCurveToPoint(
-                        startX + faceWidth * 0.15, startY + faceHeight * 0.12,
-                        startX + faceWidth * 0.08, startY + faceHeight * 0.28);
-                    gc->StrokePath(strand);
-                    }
-                }
-            else if (hairStyle == HairStyleKind::Pixie)
-                {
-                // pixie: short textured hair covering forehead
-                wxGraphicsPath pixieHair = gc->CreatePath();
-                // outer edge
-                pixieHair.MoveToPoint(cx - faceWidth * 0.82, cy - faceHeight * 0.3);
-                pixieHair.AddQuadCurveToPoint(cx - faceWidth * 0.92, cy - faceHeight * 0.95, cx,
-                                              cy - faceHeight * 1.05);
-                pixieHair.AddQuadCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.95,
-                                              cx + faceWidth * 0.82, cy - faceHeight * 0.3);
-                // inner edge with textured bangs
-                pixieHair.AddQuadCurveToPoint(cx + faceWidth * 0.55, browYLimit - faceHeight * 0.05,
-                                              cx + faceWidth * 0.28,
-                                              browYLimit + faceHeight * 0.02);
-                pixieHair.AddQuadCurveToPoint(cx + faceWidth * 0.1, browYLimit - faceHeight * 0.03,
-                                              cx - faceWidth * 0.1, browYLimit + faceHeight * 0.03);
-                pixieHair.AddQuadCurveToPoint(cx - faceWidth * 0.38, browYLimit - faceHeight * 0.02,
-                                              cx - faceWidth * 0.82, cy - faceHeight * 0.3);
-                pixieHair.CloseSubpath();
-
-                gc->SetBrush(wxBrush{ hairColor });
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->FillPath(pixieHair);
-                gc->StrokePath(pixieHair);
-
-                // curved sheen following top curve of hair
-                wxGraphicsPath pixieHairSheen = gc->CreatePath();
-                // outer arc (follows hair outline)
-                pixieHairSheen.MoveToPoint(cx - faceWidth * 0.65, cy - faceHeight * 0.5);
-                pixieHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.55, cy - faceHeight * 0.88,
-                                                   cx - faceWidth * 0.1, cy - faceHeight * 1.0);
-                // inner arc (parallel, inside the hair)
-                pixieHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.45, cy - faceHeight * 0.78,
-                                                   cx - faceWidth * 0.55, cy - faceHeight * 0.5);
-                pixieHairSheen.CloseSubpath();
-                auto pixieSheenBrush = gc->CreateLinearGradientBrush(
-                    cx - faceWidth * 0.45, cy - faceHeight * 0.95, cx - faceWidth * 0.45,
-                    cy - faceHeight * 0.6, hairHighlight,
-                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
-                gc->SetBrush(pixieSheenBrush);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->FillPath(pixieHairSheen);
-
-                // hair strands for texture - short wispy strands
-                gc->SetPen(wxPen(hairStrandColor, 1));
-                // top strands radiating outward with more arc
-                for (int s = 0; s < 7; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    // narrower range and variation
-                    const double spacingVar = std::sin(s * 2.3) * 0.02;
-                    const double offsetX = -0.38 + s * 0.13 + spacingVar;
-                    const double startX = cx + faceWidth * offsetX;
-                    // outer strands start lower to stay within hair
-                    const double outerAdj = std::abs(offsetX) * faceHeight * 0.15;
-                    const double startY = cy - faceHeight * 0.95 + outerAdj;
-                    strand.MoveToPoint(startX, startY);
-                    const double arcVar = std::cos(s * 1.9) * faceWidth * 0.04;
-                    strand.AddQuadCurveToPoint(
-                        startX + faceWidth * 0.18 * offsetX + arcVar, startY + faceHeight * 0.22,
-                        startX + faceWidth * 0.1 * offsetX, browYLimit + faceHeight * 0.01);
-                    gc->StrokePath(strand);
-                    }
-                // additional crown strands with strong arc
-                for (int s = 0; s < 5; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double spacingVar = std::sin(s * 2.7) * faceWidth * 0.02;
-                    const double arcVar = std::cos(s * 1.5) * faceWidth * 0.04;
-                    const double startX = cx - faceWidth * 0.28 + s * faceWidth * 0.14 + spacingVar;
-                    strand.MoveToPoint(startX, cy - faceHeight * 0.97);
-                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.15 + arcVar,
-                                               cy - faceHeight * 0.65, startX + faceWidth * 0.06,
-                                               browYLimit - faceHeight * 0.02);
-                    gc->StrokePath(strand);
-                    }
-                }
-            else if (hairStyle == HairStyleKind::LongStraight)
-                {
-                // long straight: flowing hair with side-swept bangs
-                wxGraphicsPath longHair = gc->CreatePath();
-                // outer edge - start bottom left, go up and around, down to bottom right
-                longHair.MoveToPoint(cx - faceWidth * 0.95, cy + faceHeight * 0.95);
-                longHair.AddQuadCurveToPoint(cx - faceWidth * 1.0, cy + faceHeight * 0.4,
-                                             cx - faceWidth * 0.98, cy - faceHeight * 0.3);
-                longHair.AddQuadCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.98, cx,
-                                             cy - faceHeight * 1.03);
-                longHair.AddQuadCurveToPoint(cx + faceWidth * 1.0, cy - faceHeight * 0.98,
-                                             cx + faceWidth * 0.98, cy - faceHeight * 0.3);
-                longHair.AddQuadCurveToPoint(cx + faceWidth * 1.0, cy + faceHeight * 0.4,
-                                             cx + faceWidth * 0.95, cy + faceHeight * 0.95);
-                // inner cutout for face - go back up
-                longHair.AddLineToPoint(cx + faceWidth * 0.82, cy + faceHeight * 0.75);
-                longHair.AddQuadCurveToPoint(cx + faceWidth * 0.88, cy + faceHeight * 0.25,
-                                             cx + faceWidth * 0.85, browYLimit + faceHeight * 0.12);
-                // side-swept bangs
-                longHair.AddQuadCurveToPoint(cx + faceWidth * 0.38, browYLimit - faceHeight * 0.02,
-                                             cx, browYLimit + faceHeight * 0.04);
-                longHair.AddQuadCurveToPoint(cx - faceWidth * 0.45, browYLimit + faceHeight * 0.02,
-                                             cx - faceWidth * 0.85, browYLimit + faceHeight * 0.08);
-                longHair.AddQuadCurveToPoint(cx - faceWidth * 0.88, cy + faceHeight * 0.25,
-                                             cx - faceWidth * 0.82, cy + faceHeight * 0.75);
-                longHair.CloseSubpath();
-
-                gc->SetBrush(wxBrush{ hairColor });
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->FillPath(longHair);
-                gc->StrokePath(longHair);
-
-                // curved sheen following top curve of hair
-                wxGraphicsPath longHairSheen = gc->CreatePath();
-                // outer arc (follows hair outline)
-                longHairSheen.MoveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.5);
-                longHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.6, cy - faceHeight * 0.9,
-                                                  cx - faceWidth * 0.1, cy - faceHeight * 0.98);
-                // inner arc (parallel, inside the hair)
-                longHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.8,
-                                                  cx - faceWidth * 0.65, cy - faceHeight * 0.5);
-                longHairSheen.CloseSubpath();
-                auto longSheenBrush = gc->CreateLinearGradientBrush(
-                    cx - faceWidth * 0.5, cy - faceHeight * 0.95, cx - faceWidth * 0.5,
-                    cy - faceHeight * 0.6, hairHighlight,
-                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
-                gc->SetBrush(longSheenBrush);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->FillPath(longHairSheen);
-
-                // hair strands for texture - long flowing strands
-                gc->SetPen(wxPen(hairStrandColor, 1));
-                // top/crown strands flowing down with arc
-                for (int s = 0; s < 6; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx - faceWidth * 0.5 + s * faceWidth * 0.2;
-                    strand.MoveToPoint(startX, cy - faceHeight * 0.98);
-                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.18, cy - faceHeight * 0.4,
-                                               startX + faceWidth * 0.1,
-                                               browYLimit + faceHeight * 0.03);
-                    gc->StrokePath(strand);
-                    }
-                // bangs strands - side swept with more arc
-                for (int s = 0; s < 6; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx - faceWidth * 0.5 + s * faceWidth * 0.2;
-                    strand.MoveToPoint(startX, cy - faceHeight * 0.92);
-                    strand.AddQuadCurveToPoint(
-                        startX + faceWidth * 0.22, browYLimit - faceHeight * 0.12,
-                        startX + faceWidth * 0.15, browYLimit + faceHeight * 0.05);
-                    gc->StrokePath(strand);
-                    }
-                // outer edge strands (on the hair portion outside the face)
-                for (const int side : { -1, 1 })
-                    {
-                    for (int s = 0; s < 3; ++s)
-                        {
-                        wxGraphicsPath strand = gc->CreatePath();
-                        const double startX = cx + side * faceWidth * (0.92 + s * 0.03);
-                        const double startY = cy - faceHeight * (0.5 - s * 0.2);
-                        strand.MoveToPoint(startX, startY);
-                        strand.AddQuadCurveToPoint(
-                            startX + side * faceWidth * 0.12, startY + faceHeight * 0.4,
-                            startX + side * faceWidth * 0.05, cy + faceHeight * 0.85);
-                        gc->StrokePath(strand);
-                        }
-                    }
-                }
-            else if (hairStyle == HairStyleKind::Bun)
-                {
-                // bun: hair pulled back smoothly with bun on top (no bangs)
-                wxGraphicsPath bunHair = gc->CreatePath();
-                // outer edge
-                bunHair.MoveToPoint(cx - faceWidth * 0.85, cy - faceHeight * 0.15);
-                bunHair.AddQuadCurveToPoint(cx - faceWidth * 0.92, cy - faceHeight * 0.9, cx,
-                                            cy - faceHeight * 1.0);
-                bunHair.AddQuadCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.9,
-                                            cx + faceWidth * 0.85, cy - faceHeight * 0.15);
-                // inner edge - follows hairline, no bangs
-                bunHair.AddQuadCurveToPoint(cx + faceWidth * 0.55, cy - faceHeight * 0.45, cx,
-                                            cy - faceHeight * 0.5);
-                bunHair.AddQuadCurveToPoint(cx - faceWidth * 0.55, cy - faceHeight * 0.45,
-                                            cx - faceWidth * 0.85, cy - faceHeight * 0.15);
-                bunHair.CloseSubpath();
-
-                gc->SetBrush(wxBrush{ hairColor });
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->FillPath(bunHair);
-                gc->StrokePath(bunHair);
-
-                // curved sheen following top curve of hair
-                wxGraphicsPath bunHairSheen = gc->CreatePath();
-                // outer arc (follows hair outline)
-                bunHairSheen.MoveToPoint(cx - faceWidth * 0.7, cy - faceHeight * 0.55);
-                bunHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.55, cy - faceHeight * 0.85,
-                                                 cx - faceWidth * 0.1, cy - faceHeight * 0.95);
-                // inner arc (parallel, inside the hair)
-                bunHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.45, cy - faceHeight * 0.75,
-                                                 cx - faceWidth * 0.6, cy - faceHeight * 0.55);
-                bunHairSheen.CloseSubpath();
-                auto bunHairSheenBrush = gc->CreateLinearGradientBrush(
-                    cx - faceWidth * 0.5, cy - faceHeight * 0.9, cx - faceWidth * 0.5,
-                    cy - faceHeight * 0.6, hairHighlight,
-                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
-                gc->SetBrush(bunHairSheenBrush);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->FillPath(bunHairSheen);
-
-                // hair strands for texture - swept back look (drawn before bun)
-                gc->SetPen(wxPen(hairStrandColor, 1));
-                // crown strands sweeping back toward bun with strong arc
-                for (int s = 0; s < 6; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startX = cx - faceWidth * 0.4 + s * faceWidth * 0.16;
-                    const double startY = cy - faceHeight * 0.48;
-                    strand.MoveToPoint(startX, startY);
-                    strand.AddQuadCurveToPoint(startX + faceWidth * 0.15, cy - faceHeight * 0.75,
-                                               cx, cy - faceHeight * 0.95);
-                    gc->StrokePath(strand);
-                    }
-                // side strands curving up toward bun
-                for (const int side : { -1, 1 })
-                    {
-                    for (int s = 0; s < 3; ++s)
-                        {
-                        wxGraphicsPath strand = gc->CreatePath();
-                        const double startX = cx + side * faceWidth * (0.82 - s * 0.06);
-                        const double startY = cy - faceHeight * (0.18 + s * 0.1);
-                        strand.MoveToPoint(startX, startY);
-                        strand.AddQuadCurveToPoint(
-                            cx + side * faceWidth * 0.15, cy - faceHeight * 0.55,
-                            cx + side * faceWidth * 0.1, cy - faceHeight * 0.9);
-                        gc->StrokePath(strand);
-                        }
-                    }
-
-                // the bun itself - drawn on top of strands
-                const double bunRadius = faceHeight * 0.18;
-                const double bunX = cx;
-                const double bunY = cy - faceHeight * 1.05;
-                gc->SetBrush(wxBrush{ hairColor });
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
-
-                // sheen on bun
-                auto bunSheen =
-                    gc->CreateRadialGradientBrush(bunX - bunRadius * 0.3, bunY - bunRadius * 0.3,
-                                                  bunX, bunY, bunRadius, hairHighlight, hairColor);
-                gc->SetBrush(bunSheen);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
-
-                // outline the bun
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->SetBrush(*wxTRANSPARENT_BRUSH);
-                gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
-
-                // strands on the bun itself - spiral pattern with more curve
-                for (int s = 0; s < 6; ++s)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double angle = -1.0 + s * 0.5;
-                    const double innerR = bunRadius * 0.2;
-                    const double outerR = bunRadius * 0.9;
-                    strand.MoveToPoint(bunX + innerR * std::cos(angle),
-                                       bunY + innerR * std::sin(angle));
-                    strand.AddQuadCurveToPoint(bunX + bunRadius * 0.7 * std::cos(angle + 0.5),
-                                               bunY + bunRadius * 0.7 * std::sin(angle + 0.5),
-                                               bunX + outerR * std::cos(angle + 0.8),
-                                               bunY + outerR * std::sin(angle + 0.8));
-                    gc->StrokePath(strand);
-                    }
-                }
-            else if (hairStyle == HairStyleKind::Curly || hairStyle == HairStyleKind::LongCurly)
-                {
-                const wxColour curlHighlightColor =
-                    Colors::ColorContrast::BlackOrWhiteContrast(hairColor);
-                const wxColour curlyStrandColor{ curlHighlightColor.Red(),
-                                                 curlHighlightColor.Green(),
-                                                 curlHighlightColor.Blue(), 130 };
-
-                // helper to draw an individual filled "puff" of hair
-                auto drawCurlyPuff = [&](double x, double y, double r)
-                {
-                    gc->SetBrush(wxBrush(hairColor));
-                    gc->SetPen(wxPen(hairShadow, 1));
-                    gc->DrawEllipse(x - r, y - r, r * 2, r * 2);
-
-                    gc->SetPen(wxPen(curlyStrandColor, 1));
-                    wxGraphicsPath strand = gc->CreatePath();
-                    strand.AddArc(x, y, r * 0.6, 0.5, 3.5, true);
-                    gc->StrokePath(strand);
-                };
-
-                // build the hair mass using a high-density "cloud" distribution
-                // to create a natural, rounded volume
-                const int puffCount = (hairStyle == HairStyleKind::LongCurly) ? 400 : 300;
-                for (int i = 0; i < puffCount; ++i)
-                    {
-                    const double t = i / static_cast<double>(puffCount - 1);
-                    // spread around the head from left shoulder to right shoulder
-                    const double angle = -std::numbers::pi * 1.15 + t * std::numbers::pi * 2.3;
-
-                    // vary distance to fill the volume, ensuring a minimum depth
-                    const double dist = 0.4 + 0.6 * (std::abs(std::cos(i * 23.456)));
-
-                    // wider at the sides, rounded at the top
-                    const double px = cx + faceWidth * 1.1 * dist * std::cos(angle);
-                    // use a shifted vertical center for long hair so it goes down more
-                    // without becoming taller at the top
-                    const double py =
-                        (hairStyle == HairStyleKind::LongCurly) ?
-                            cy - faceHeight * 0.15 + faceHeight * 1.0 * dist * std::sin(angle) :
-                            cy - faceHeight * 0.35 + faceHeight * 0.75 * dist * std::sin(angle);
-
-                    // positioning constraints:
-                    // vertical length
-                    const double verticalLimit = (hairStyle == HairStyleKind::LongCurly) ?
-                                                     cy + faceHeight * 0.9 : // shoulder/chest level
-                                                     cy + faceHeight * 0.35; // neck level
-                    // keep bangs well above the eyes, high on forehead
-                    const double bangsLevel = browYLimit - faceHeight * 0.25;
-
-                    bool showPuff = (py < verticalLimit);
-                    // if over the face center, move the limit even higher for bangs
-                    // and push it to the sides more to expose the face
-                    if (showPuff && std::abs(px - cx) < faceWidth * 0.95)
-                        {
-                        showPuff = (py < bangsLevel);
-                        }
-
-                    if (showPuff)
-                        {
-                        // vary puff size slightly for more organic texture
-                        const double puffSize =
-                            faceWidth * (0.14 + 0.07 * std::abs(std::sin(i * 7.89)));
-                        drawCurlyPuff(px, py, puffSize);
-                        }
-                    }
+                wxGraphicsPath strand = gc->CreatePath();
+                const double startX = cx + side * faceWidth * (0.92 + s * 0.03);
+                const double startY = cy - faceHeight * (0.5 - s * 0.2);
+                strand.MoveToPoint(startX, startY);
+                strand.AddQuadCurveToPoint(
+                    startX + side * faceWidth * 0.12, startY + faceHeight * 0.4,
+                    startX + side * faceWidth * 0.05, cy + faceHeight * 0.85);
+                gc->StrokePath(strand);
                 }
             }
-        // high top fade
-        else if (hairStyle == HairStyleKind::HighTopFade)
-            {
-            const wxColour hairHighlight = hairColor.ChangeLightness(130);
-            const wxColour hairShadow = hairColor.ChangeLightness(80);
+        }
 
-            // thin arc of hair on top - connects to head at sides
-            wxGraphicsPath hair = gc->CreatePath();
-            // outer edge - starts where head curve is, follows around
-            hair.MoveToPoint(cx - faceWidth * 0.95, cy - faceHeight * 0.3);
-            hair.AddCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.7, cx - faceWidth * 0.55,
-                                 cy - faceHeight * 1.05, cx, cy - faceHeight * 1.08);
-            hair.AddCurveToPoint(cx + faceWidth * 0.55, cy - faceHeight * 1.05,
-                                 cx + faceWidth * 1.0, cy - faceHeight * 0.7, cx + faceWidth * 0.95,
-                                 cy - faceHeight * 0.3);
-            // inner edge - higher hairline showing forehead
-            hair.AddCurveToPoint(cx + faceWidth * 0.9, cy - faceHeight * 0.6, cx + faceWidth * 0.5,
-                                 cy - faceHeight * 0.85, cx, cy - faceHeight * 0.88);
-            hair.AddCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.85, cx - faceWidth * 0.9,
-                                 cy - faceHeight * 0.6, cx - faceWidth * 0.95,
-                                 cy - faceHeight * 0.3);
-            hair.CloseSubpath();
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawBunHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                        const wxColour& hairColor)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+        const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
+                                             wxColour{ 70, 90, 160, 90 } :
+                                             wxColour{ 0, 0, 0, 40 };
+
+        // bun: hair pulled back smoothly with bun on top (no bangs)
+        wxGraphicsPath bunHair = gc->CreatePath();
+        // outer edge
+        bunHair.MoveToPoint(cx - faceWidth * 0.85, cy - faceHeight * 0.15);
+        bunHair.AddQuadCurveToPoint(cx - faceWidth * 0.92, cy - faceHeight * 0.9, cx,
+                                    cy - faceHeight * 1.0);
+        bunHair.AddQuadCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.9,
+                                    cx + faceWidth * 0.85, cy - faceHeight * 0.15);
+        // inner edge - follows hairline, no bangs
+        bunHair.AddQuadCurveToPoint(cx + faceWidth * 0.55, cy - faceHeight * 0.45, cx,
+                                    cy - faceHeight * 0.5);
+        bunHair.AddQuadCurveToPoint(cx - faceWidth * 0.55, cy - faceHeight * 0.45,
+                                    cx - faceWidth * 0.85, cy - faceHeight * 0.15);
+        bunHair.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->FillPath(bunHair);
+        gc->StrokePath(bunHair);
+
+        // curved sheen following top curve of hair
+        wxGraphicsPath bunHairSheen = gc->CreatePath();
+        // outer arc (follows hair outline)
+        bunHairSheen.MoveToPoint(cx - faceWidth * 0.7, cy - faceHeight * 0.55);
+        bunHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.55, cy - faceHeight * 0.85,
+                                         cx - faceWidth * 0.1, cy - faceHeight * 0.95);
+        // inner arc (parallel, inside the hair)
+        bunHairSheen.AddQuadCurveToPoint(cx - faceWidth * 0.45, cy - faceHeight * 0.75,
+                                         cx - faceWidth * 0.6, cy - faceHeight * 0.55);
+        bunHairSheen.CloseSubpath();
+        auto bunHairSheenBrush = gc->CreateLinearGradientBrush(
+            cx - faceWidth * 0.5, cy - faceHeight * 0.9, cx - faceWidth * 0.5,
+            cy - faceHeight * 0.6, hairHighlight,
+            wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
+        gc->SetBrush(bunHairSheenBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(bunHairSheen);
+
+        // hair strands for texture - swept back look (drawn before bun)
+        gc->SetPen(wxPen(hairStrandColor, 1));
+        // crown strands sweeping back toward bun with strong arc
+        for (int s = 0; s < 6; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double startX = cx - faceWidth * 0.4 + s * faceWidth * 0.16;
+            const double startY = cy - faceHeight * 0.48;
+            strand.MoveToPoint(startX, startY);
+            strand.AddQuadCurveToPoint(startX + faceWidth * 0.15, cy - faceHeight * 0.75, cx,
+                                       cy - faceHeight * 0.95);
+            gc->StrokePath(strand);
+            }
+        // side strands curving up toward bun
+        for (const int side : { -1, 1 })
+            {
+            for (int s = 0; s < 3; ++s)
+                {
+                wxGraphicsPath strand = gc->CreatePath();
+                const double startX = cx + side * faceWidth * (0.82 - s * 0.06);
+                const double startY = cy - faceHeight * (0.18 + s * 0.1);
+                strand.MoveToPoint(startX, startY);
+                strand.AddQuadCurveToPoint(cx + side * faceWidth * 0.15, cy - faceHeight * 0.55,
+                                           cx + side * faceWidth * 0.1, cy - faceHeight * 0.9);
+                gc->StrokePath(strand);
+                }
+            }
+
+        // the bun itself - drawn on top of strands
+        const double bunRadius = faceHeight * 0.18;
+        const double bunX = cx;
+        const double bunY = cy - faceHeight * 1.05;
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
+
+        // sheen on bun
+        auto bunSheen =
+            gc->CreateRadialGradientBrush(bunX - bunRadius * 0.3, bunY - bunRadius * 0.3, bunX,
+                                          bunY, bunRadius, hairHighlight, hairColor);
+        gc->SetBrush(bunSheen);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
+
+        // outline the bun
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawEllipse(bunX - bunRadius, bunY - bunRadius, bunRadius * 2, bunRadius * 2);
+
+        // strands on the bun itself - spiral pattern with more curve
+        for (int s = 0; s < 6; ++s)
+            {
+            wxGraphicsPath strand = gc->CreatePath();
+            const double angle = -1.0 + s * 0.5;
+            const double innerR = bunRadius * 0.2;
+            const double outerR = bunRadius * 0.9;
+            strand.MoveToPoint(bunX + innerR * std::cos(angle), bunY + innerR * std::sin(angle));
+            strand.AddQuadCurveToPoint(bunX + bunRadius * 0.7 * std::cos(angle + 0.5),
+                                       bunY + bunRadius * 0.7 * std::sin(angle + 0.5),
+                                       bunX + outerR * std::cos(angle + 0.8),
+                                       bunY + outerR * std::sin(angle + 0.8));
+            gc->StrokePath(strand);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawCurlyHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                          const wxColour& hairColor, const double browYLimit,
+                                          const HairStyleKind hairStyle)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+
+        const wxColour curlHighlightColor = Colors::ColorContrast::BlackOrWhiteContrast(hairColor);
+        const wxColour curlyStrandColor{ curlHighlightColor.Red(), curlHighlightColor.Green(),
+                                         curlHighlightColor.Blue(), 130 };
+
+        // helper to draw an individual filled "puff" of hair
+        auto drawCurlyPuff = [&](double x, double y, double r)
+        {
+            gc->SetBrush(wxBrush(hairColor));
+            gc->SetPen(wxPen(hairShadow, 1));
+            gc->DrawEllipse(x - r, y - r, r * 2, r * 2);
+
+            gc->SetPen(wxPen(curlyStrandColor, 1));
+            wxGraphicsPath strand = gc->CreatePath();
+            strand.AddArc(x, y, r * 0.6, 0.5, 3.5, true);
+            gc->StrokePath(strand);
+        };
+
+        // build the hair mass using a high-density "cloud" distribution
+        // to create a natural, rounded volume
+        const int puffCount = (hairStyle == HairStyleKind::LongCurly) ? 400 : 300;
+        for (int i = 0; i < puffCount; ++i)
+            {
+            const double t = i / static_cast<double>(puffCount - 1);
+            // spread around the head from left shoulder to right shoulder
+            const double angle = -std::numbers::pi * 1.15 + t * std::numbers::pi * 2.3;
+
+            // vary distance to fill the volume, ensuring a minimum depth
+            const double dist = 0.4 + 0.6 * (std::abs(std::cos(i * 23.456)));
+
+            // wider at the sides, rounded at the top
+            const double px = cx + faceWidth * 1.1 * dist * std::cos(angle);
+            // use a shifted vertical center for long hair so it goes down more
+            // without becoming taller at the top
+            const double py =
+                (hairStyle == HairStyleKind::LongCurly) ?
+                    cy - faceHeight * 0.15 + faceHeight * 1.0 * dist * std::sin(angle) :
+                    cy - faceHeight * 0.35 + faceHeight * 0.75 * dist * std::sin(angle);
+
+            // positioning constraints:
+            // vertical length
+            const double verticalLimit = (hairStyle == HairStyleKind::LongCurly) ?
+                                             cy + faceHeight * 0.9 : // shoulder/chest level
+                                             cy + faceHeight * 0.35; // neck level
+            // keep bangs well above the eyes, high on forehead
+            const double bangsLevel = browYLimit - faceHeight * 0.25;
+
+            bool showPuff = (py < verticalLimit);
+            // if over the face center, move the limit even higher for bangs
+            // and push it to the sides more to expose the face
+            if (showPuff && std::abs(px - cx) < faceWidth * 0.95)
+                {
+                showPuff = (py < bangsLevel);
+                }
+
+            if (showPuff)
+                {
+                // vary puff size slightly for more organic texture
+                const double puffSize = faceWidth * (0.14 + 0.07 * std::abs(std::sin(i * 7.89)));
+                drawCurlyPuff(px, py, puffSize);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawHighTopFadeHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                                const wxColour& hairColor)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+
+        // thin arc of hair on top - connects to head at sides
+        wxGraphicsPath hair = gc->CreatePath();
+        // outer edge - starts where head curve is, follows around
+        hair.MoveToPoint(cx - faceWidth * 0.95, cy - faceHeight * 0.3);
+        hair.AddCurveToPoint(cx - faceWidth * 1.0, cy - faceHeight * 0.7, cx - faceWidth * 0.55,
+                             cy - faceHeight * 1.05, cx, cy - faceHeight * 1.08);
+        hair.AddCurveToPoint(cx + faceWidth * 0.55, cy - faceHeight * 1.05, cx + faceWidth * 1.0,
+                             cy - faceHeight * 0.7, cx + faceWidth * 0.95, cy - faceHeight * 0.3);
+        // inner edge - higher hairline showing forehead
+        hair.AddCurveToPoint(cx + faceWidth * 0.9, cy - faceHeight * 0.6, cx + faceWidth * 0.5,
+                             cy - faceHeight * 0.85, cx, cy - faceHeight * 0.88);
+        hair.AddCurveToPoint(cx - faceWidth * 0.5, cy - faceHeight * 0.85, cx - faceWidth * 0.9,
+                             cy - faceHeight * 0.6, cx - faceWidth * 0.95, cy - faceHeight * 0.3);
+        hair.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->FillPath(hair);
+        gc->StrokePath(hair);
+
+        // curved sheen
+        wxGraphicsPath sheen = gc->CreatePath();
+        sheen.MoveToPoint(cx - faceWidth * 0.7, cy - faceHeight * 0.65);
+        sheen.AddQuadCurveToPoint(cx - faceWidth * 0.4, cy - faceHeight * 0.95,
+                                  cx - faceWidth * 0.05, cy - faceHeight * 1.0);
+        sheen.AddQuadCurveToPoint(cx - faceWidth * 0.35, cy - faceHeight * 0.88,
+                                  cx - faceWidth * 0.6, cy - faceHeight * 0.65);
+        sheen.CloseSubpath();
+
+        auto sheenBrush = gc->CreateLinearGradientBrush(
+            cx - faceWidth * 0.4, cy - faceHeight * 0.98, cx - faceWidth * 0.4,
+            cy - faceHeight * 0.75, hairHighlight,
+            wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
+        gc->SetBrush(sheenBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(sheen);
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawFlatTopHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                            const wxColour& hairColor)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+
+        // flat top: boxy top, flat surface
+        wxGraphicsPath hair = gc->CreatePath();
+        // left side vertical-ish
+        hair.MoveToPoint(cx - faceWidth * 0.95, cy - faceHeight * 0.3);
+        hair.AddCurveToPoint(cx - faceWidth * 0.98, cy - faceHeight * 0.7, cx - faceWidth * 0.92,
+                             cy - faceHeight * 0.95, cx - faceWidth * 0.85, cy - faceHeight * 1.0);
+        // flat top
+        hair.AddLineToPoint(cx + faceWidth * 0.85, cy - faceHeight * 1.0);
+        // right side vertical-ish
+        hair.AddCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.95, cx + faceWidth * 0.98,
+                             cy - faceHeight * 0.7, cx + faceWidth * 0.95, cy - faceHeight * 0.3);
+        // inner edge
+        hair.AddCurveToPoint(cx + faceWidth * 0.8, cy - faceHeight * 0.5, cx + faceWidth * 0.4,
+                             cy - faceHeight * 0.65, cx, cy - faceHeight * 0.68);
+        hair.AddCurveToPoint(cx - faceWidth * 0.4, cy - faceHeight * 0.65, cx - faceWidth * 0.8,
+                             cy - faceHeight * 0.5, cx - faceWidth * 0.95, cy - faceHeight * 0.3);
+        hair.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->FillPath(hair);
+        gc->StrokePath(hair);
+
+        // top flat surface sheen
+        wxGraphicsPath sheen = gc->CreatePath();
+        sheen.MoveToPoint(cx - faceWidth * 0.85, cy - faceHeight * 1.0);
+        sheen.AddLineToPoint(cx + faceWidth * 0.85, cy - faceHeight * 1.0);
+        sheen.AddLineToPoint(cx + faceWidth * 0.8, cy - faceHeight * 0.95);
+        sheen.AddLineToPoint(cx - faceWidth * 0.8, cy - faceHeight * 0.95);
+        sheen.CloseSubpath();
+
+        auto sheenBrush = gc->CreateLinearGradientBrush(
+            cx, cy - faceHeight * 1.0, cx, cy - faceHeight * 0.95, hairHighlight, hairColor);
+        gc->SetBrush(sheenBrush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(sheen);
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawPartiallyBaldHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                                  const wxColour& hairColor,
+                                                  const HairStyleKind hairStyle)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+
+        const wxColour hairHighlight = hairColor.ChangeLightness(130);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+        const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
+                                             wxColour{ 70, 90, 160, 90 } :
+                                             wxColour{ 0, 0, 0, 40 };
+
+        // small tuft on each side of the head behind the ears; the tuft ends
+        // around ear level and bumps just outside the head outline, leaving the
+        // top and crown bald
+        for (const int side : { -1, 1 })
+            {
+            wxGraphicsPath tuft = gc->CreatePath();
+            // top-inner corner sits at the temple - flat across so the tuft
+            // doesn't curve down toward the eyebrows
+            tuft.MoveToPoint(cx + side * faceWidth * 0.72, cy - faceHeight * 0.52);
+            // top edge - mostly flat across to the outer corner
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.95, cy - faceHeight * 0.55,
+                                     cx + side * faceWidth * 1.04, cy - faceHeight * 0.4);
+            // outer edge down to ear-bottom, extending slightly past head
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 1.04, cy - faceHeight * 0.05,
+                                     cx + side * faceWidth * 0.9, cy + faceHeight * 0.1);
+            // inner edge curves back up, leaving the crown bald
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.78, cy - faceHeight * 0.02,
+                                     cx + side * faceWidth * 0.78, cy - faceHeight * 0.25);
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.75, cy - faceHeight * 0.45,
+                                     cx + side * faceWidth * 0.72, cy - faceHeight * 0.52);
+            tuft.CloseSubpath();
 
             gc->SetBrush(wxBrush{ hairColor });
             gc->SetPen(wxPen{ hairShadow, 1 });
-            gc->FillPath(hair);
-            gc->StrokePath(hair);
+            gc->FillPath(tuft);
+            gc->StrokePath(tuft);
 
-            // curved sheen
+            // subtle sheen along the upper portion of the tuft
             wxGraphicsPath sheen = gc->CreatePath();
-            sheen.MoveToPoint(cx - faceWidth * 0.7, cy - faceHeight * 0.65);
-            sheen.AddQuadCurveToPoint(cx - faceWidth * 0.4, cy - faceHeight * 0.95,
-                                      cx - faceWidth * 0.05, cy - faceHeight * 1.0);
-            sheen.AddQuadCurveToPoint(cx - faceWidth * 0.35, cy - faceHeight * 0.88,
-                                      cx - faceWidth * 0.6, cy - faceHeight * 0.65);
+            sheen.MoveToPoint(cx + side * faceWidth * 0.85, cy - faceHeight * 0.5);
+            sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.98, cy - faceHeight * 0.35,
+                                      cx + side * faceWidth * 0.96, cy - faceHeight * 0.1);
+            sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.85, cy - faceHeight * 0.22,
+                                      cx + side * faceWidth * 0.8, cy - faceHeight * 0.45);
             sheen.CloseSubpath();
-
             auto sheenBrush = gc->CreateLinearGradientBrush(
-                cx - faceWidth * 0.4, cy - faceHeight * 0.98, cx - faceWidth * 0.4,
-                cy - faceHeight * 0.75, hairHighlight,
+                cx + side * faceWidth * 0.9, cy - faceHeight * 0.5, cx + side * faceWidth * 0.9,
+                cy - faceHeight * 0.1, hairHighlight,
                 wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
-            }
-        else if (hairStyle == HairStyleKind::FlatTop)
-            {
-            const wxColour hairHighlight = hairColor.ChangeLightness(130);
-            const wxColour hairShadow = hairColor.ChangeLightness(80);
 
-            // flat top: boxy top, flat surface
-            wxGraphicsPath hair = gc->CreatePath();
-            // left side vertical-ish
-            hair.MoveToPoint(cx - faceWidth * 0.95, cy - faceHeight * 0.3);
-            hair.AddCurveToPoint(cx - faceWidth * 0.98, cy - faceHeight * 0.7,
-                                 cx - faceWidth * 0.92, cy - faceHeight * 0.95,
-                                 cx - faceWidth * 0.85, cy - faceHeight * 1.0);
-            // flat top
-            hair.AddLineToPoint(cx + faceWidth * 0.85, cy - faceHeight * 1.0);
-            // right side vertical-ish
-            hair.AddCurveToPoint(cx + faceWidth * 0.92, cy - faceHeight * 0.95,
-                                 cx + faceWidth * 0.98, cy - faceHeight * 0.7,
-                                 cx + faceWidth * 0.95, cy - faceHeight * 0.3);
-            // inner edge
-            hair.AddCurveToPoint(cx + faceWidth * 0.8, cy - faceHeight * 0.5, cx + faceWidth * 0.4,
-                                 cy - faceHeight * 0.65, cx, cy - faceHeight * 0.68);
-            hair.AddCurveToPoint(cx - faceWidth * 0.4, cy - faceHeight * 0.65, cx - faceWidth * 0.8,
-                                 cy - faceHeight * 0.5, cx - faceWidth * 0.95,
-                                 cy - faceHeight * 0.3);
-            hair.CloseSubpath();
+            // short hair strands for texture
+            gc->SetPen(wxPen{ hairStrandColor, 1 });
+            for (int idx = 0; idx < 3; ++idx)
+                {
+                wxGraphicsPath strand = gc->CreatePath();
+                const double startY = cy - faceHeight * (0.45 - idx * 0.18);
+                strand.MoveToPoint(cx + side * faceWidth * 0.96, startY);
+                strand.AddQuadCurveToPoint(cx + side * faceWidth * 0.88, startY + faceHeight * 0.05,
+                                           cx + side * faceWidth * 0.82,
+                                           startY + faceHeight * 0.09);
+                gc->StrokePath(strand);
+                }
+            }
+
+        // comb-over: 10 thick hair strands sweeping across the bald crown,
+        // each curving up to follow the crown's curvature. all strands start
+        // at the right-side crown edge; left ends vary so some come up short.
+        // strands overlap vertically so the comb-over reads as thicker
+        if (hairStyle == HairStyleKind::BaldCombOver)
+            {
+            constexpr size_t COMB_OVER_COUNT{ 10 };
+            const double strandThickness = std::max(1.0, faceHeight * 0.026);
+            const double combTopY = cy - faceHeight * 0.92;
+            const double combBottomY = cy - faceHeight * 0.6;
+
+            // shortening factors for the left end (right end is always at the
+            // crown edge); values < 1.0 make a strand stop short of the left edge
+            constexpr std::array<double, COMB_OVER_COUNT> LEFT_SHORTEN{ 1.0, 0.92, 1.0, 0.85, 0.95,
+                                                                        1.0, 0.78, 0.9, 1.0,  0.7 };
+
+            const auto crownHalfAt = [&](const double yPos)
+            {
+                const auto yOff = safe_divide<double>(yPos - cy, faceHeight);
+                return faceWidth * std::sqrt(std::max(0.0, 1.0 - yOff * yOff));
+            };
+
+            gc->SetPen(wxPen(hairColor, strandThickness));
+            for (size_t idx = 0; idx < COMB_OVER_COUNT; ++idx)
+                {
+                const auto tParam = safe_divide<double>(static_cast<double>(idx),
+                                                        static_cast<double>(COMB_OVER_COUNT - 1));
+                const double yPos = combTopY + tParam * (combBottomY - combTopY);
+                const double crownHalf = crownHalfAt(yPos);
+                const double rightX = cx + crownHalf;
+                const double leftX = cx - crownHalf * LEFT_SHORTEN.at(idx);
+                // lower strands arc up more (they have to travel further over the
+                // curve of the crown to reach the other side)
+                const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
+
+                wxGraphicsPath strand = gc->CreatePath();
+                strand.MoveToPoint(rightX, yPos);
+                strand.AddQuadCurveToPoint((leftX + rightX) * math_constants::half,
+                                           yPos - 2 * arcLift, leftX, yPos);
+                gc->StrokePath(strand);
+                }
+
+            // thin highlight strands layered on top for sheen
+            gc->SetPen(wxPen(hairHighlight, std::max(1.0, strandThickness * 0.4)));
+            for (size_t idx = 0; idx < COMB_OVER_COUNT; idx += 2)
+                {
+                const auto tParam = safe_divide<double>(static_cast<double>(idx),
+                                                        static_cast<double>(COMB_OVER_COUNT - 1));
+                const double yPos = combTopY + tParam * (combBottomY - combTopY);
+                const double crownHalf = crownHalfAt(yPos);
+                const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
+                // highlight runs along the upper inner portion of the strand
+                const double hlRight = cx + crownHalf * 0.55;
+                const double hlLeft = cx - crownHalf * 0.35 * LEFT_SHORTEN.at(idx);
+
+                wxGraphicsPath strand = gc->CreatePath();
+                strand.MoveToPoint(hlRight, yPos - arcLift * 0.5);
+                strand.AddQuadCurveToPoint((hlLeft + hlRight) * math_constants::half,
+                                           yPos - 1.6 * arcLift, hlLeft, yPos - arcLift * 0.5);
+                gc->StrokePath(strand);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void ChernoffFacesPlot::DrawCombOverHair(wxGraphicsContext * gc, const FaceGeometry& geom,
+                                             const wxColour& hairColor)
+        {
+        const double cx = geom.m_cx;
+        const double cy = geom.m_cy;
+        const double faceWidth = geom.m_faceWidth;
+        const double faceHeight = geom.m_faceHeight;
+
+        const wxColour hairHighlight = hairColor.ChangeLightness(135);
+        const wxColour hairShadow = hairColor.ChangeLightness(80);
+        const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
+                                             wxColour{ 70, 90, 160, 110 } :
+                                             wxColour{ 0, 0, 0, 55 };
+
+        // taller side tufts that reach up the sides of the head, with a thick
+        // swoosh of hair across the crown combed from the viewer's right (the
+        // part side) toward the viewer's left
+        for (const int side : { -1, 1 })
+            {
+            wxGraphicsPath tuft = gc->CreatePath();
+            // top-inner anchor high up the side of the head
+            tuft.MoveToPoint(cx + side * faceWidth * 0.55, cy - faceHeight * 0.85);
+            // top curve out and up to the upper-outer point
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.9, cy - faceHeight * 0.92,
+                                     cx + side * faceWidth * 1.05, cy - faceHeight * 0.6);
+            // outer edge down to ear, just outside the head
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 1.05, cy - faceHeight * 0.05,
+                                     cx + side * faceWidth * 0.9, cy + faceHeight * 0.1);
+            // inner edge up alongside the temple
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.78, cy - faceHeight * 0.02,
+                                     cx + side * faceWidth * 0.78, cy - faceHeight * 0.4);
+            // back up the inner edge to the top-inner anchor
+            tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.6, cy - faceHeight * 0.7,
+                                     cx + side * faceWidth * 0.55, cy - faceHeight * 0.85);
+            tuft.CloseSubpath();
 
             gc->SetBrush(wxBrush{ hairColor });
             gc->SetPen(wxPen{ hairShadow, 1 });
-            gc->FillPath(hair);
-            gc->StrokePath(hair);
+            gc->FillPath(tuft);
+            gc->StrokePath(tuft);
 
-            // top flat surface sheen
+            // sheen along the upper-outer side of the tuft - kept inside the
+            // tuft outline (which arches highest near x = ±0.9, y = -0.92)
             wxGraphicsPath sheen = gc->CreatePath();
-            sheen.MoveToPoint(cx - faceWidth * 0.85, cy - faceHeight * 1.0);
-            sheen.AddLineToPoint(cx + faceWidth * 0.85, cy - faceHeight * 1.0);
-            sheen.AddLineToPoint(cx + faceWidth * 0.8, cy - faceHeight * 0.95);
-            sheen.AddLineToPoint(cx - faceWidth * 0.8, cy - faceHeight * 0.95);
+            sheen.MoveToPoint(cx + side * faceWidth * 0.88, cy - faceHeight * 0.72);
+            sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.98, cy - faceHeight * 0.5,
+                                      cx + side * faceWidth * 0.96, cy - faceHeight * 0.1);
+            sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.86, cy - faceHeight * 0.3,
+                                      cx + side * faceWidth * 0.82, cy - faceHeight * 0.65);
             sheen.CloseSubpath();
-
             auto sheenBrush = gc->CreateLinearGradientBrush(
-                cx, cy - faceHeight * 1.0, cx, cy - faceHeight * 0.95, hairHighlight, hairColor);
+                cx + side * faceWidth * 0.9, cy - faceHeight * 0.72, cx + side * faceWidth * 0.9,
+                cy - faceHeight * 0.1, hairHighlight,
+                wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
             gc->SetBrush(sheenBrush);
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->FillPath(sheen);
-            }
-        else if (hairStyle == HairStyleKind::PartiallyBald ||
-                 hairStyle == HairStyleKind::BaldCombOver)
-            {
-            const wxColour hairHighlight = hairColor.ChangeLightness(130);
-            const wxColour hairShadow = hairColor.ChangeLightness(80);
-            const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
-                                                 wxColour{ 70, 90, 160, 90 } :
-                                                 wxColour{ 0, 0, 0, 40 };
 
-            // small tuft on each side of the head behind the ears; the tuft ends
-            // around ear level and bumps just outside the head outline, leaving the
-            // top and crown bald
-            for (const int side : { -1, 1 })
+            // short vertical strands on the sides for texture
+            gc->SetPen(wxPen{ hairStrandColor, 1 });
+            for (int idx = 0; idx < 4; ++idx)
                 {
-                wxGraphicsPath tuft = gc->CreatePath();
-                // top-inner corner sits at the temple - flat across so the tuft
-                // doesn't curve down toward the eyebrows
-                tuft.MoveToPoint(cx + side * faceWidth * 0.72, cy - faceHeight * 0.52);
-                // top edge - mostly flat across to the outer corner
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.95, cy - faceHeight * 0.55,
-                                         cx + side * faceWidth * 1.04, cy - faceHeight * 0.4);
-                // outer edge down to ear-bottom, extending slightly past head
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 1.04, cy - faceHeight * 0.05,
-                                         cx + side * faceWidth * 0.9, cy + faceHeight * 0.1);
-                // inner edge curves back up, leaving the crown bald
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.78, cy - faceHeight * 0.02,
-                                         cx + side * faceWidth * 0.78, cy - faceHeight * 0.25);
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.75, cy - faceHeight * 0.45,
-                                         cx + side * faceWidth * 0.72, cy - faceHeight * 0.52);
-                tuft.CloseSubpath();
-
-                gc->SetBrush(wxBrush{ hairColor });
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->FillPath(tuft);
-                gc->StrokePath(tuft);
-
-                // subtle sheen along the upper portion of the tuft
-                wxGraphicsPath sheen = gc->CreatePath();
-                sheen.MoveToPoint(cx + side * faceWidth * 0.85, cy - faceHeight * 0.5);
-                sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.98, cy - faceHeight * 0.35,
-                                          cx + side * faceWidth * 0.96, cy - faceHeight * 0.1);
-                sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.85, cy - faceHeight * 0.22,
-                                          cx + side * faceWidth * 0.8, cy - faceHeight * 0.45);
-                sheen.CloseSubpath();
-                auto sheenBrush = gc->CreateLinearGradientBrush(
-                    cx + side * faceWidth * 0.9, cy - faceHeight * 0.5, cx + side * faceWidth * 0.9,
-                    cy - faceHeight * 0.1, hairHighlight,
-                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
-                gc->SetBrush(sheenBrush);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->FillPath(sheen);
-
-                // short hair strands for texture
-                gc->SetPen(wxPen{ hairStrandColor, 1 });
-                for (int idx = 0; idx < 3; ++idx)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startY = cy - faceHeight * (0.45 - idx * 0.18);
-                    strand.MoveToPoint(cx + side * faceWidth * 0.96, startY);
-                    strand.AddQuadCurveToPoint(
-                        cx + side * faceWidth * 0.88, startY + faceHeight * 0.05,
-                        cx + side * faceWidth * 0.82, startY + faceHeight * 0.09);
-                    gc->StrokePath(strand);
-                    }
-                }
-
-            // comb-over: 10 thick hair strands sweeping across the bald crown,
-            // each curving up to follow the crown's curvature. all strands start
-            // at the right-side crown edge; left ends vary so some come up short.
-            // strands overlap vertically so the comb-over reads as thicker
-            if (hairStyle == HairStyleKind::BaldCombOver)
-                {
-                constexpr size_t COMB_OVER_COUNT{ 10 };
-                const double strandThickness = std::max(1.0, faceHeight * 0.026);
-                const double combTopY = cy - faceHeight * 0.92;
-                const double combBottomY = cy - faceHeight * 0.6;
-
-                // shortening factors for the left end (right end is always at the
-                // crown edge); values < 1.0 make a strand stop short of the left edge
-                constexpr std::array<double, COMB_OVER_COUNT> LEFT_SHORTEN{ 1.0,  0.92, 1.0,  0.85,
-                                                                            0.95, 1.0,  0.78, 0.9,
-                                                                            1.0,  0.7 };
-
-                const auto crownHalfAt = [&](const double yPos)
-                {
-                    const auto yOff = safe_divide<double>(yPos - cy, faceHeight);
-                    return faceWidth * std::sqrt(std::max(0.0, 1.0 - yOff * yOff));
-                };
-
-                gc->SetPen(wxPen(hairColor, strandThickness));
-                for (size_t idx = 0; idx < COMB_OVER_COUNT; ++idx)
-                    {
-                    const auto tParam = safe_divide<double>(
-                        static_cast<double>(idx), static_cast<double>(COMB_OVER_COUNT - 1));
-                    const double yPos = combTopY + tParam * (combBottomY - combTopY);
-                    const double crownHalf = crownHalfAt(yPos);
-                    const double rightX = cx + crownHalf;
-                    const double leftX = cx - crownHalf * LEFT_SHORTEN.at(idx);
-                    // lower strands arc up more (they have to travel further over the
-                    // curve of the crown to reach the other side)
-                    const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
-
-                    wxGraphicsPath strand = gc->CreatePath();
-                    strand.MoveToPoint(rightX, yPos);
-                    strand.AddQuadCurveToPoint((leftX + rightX) * math_constants::half,
-                                               yPos - 2 * arcLift, leftX, yPos);
-                    gc->StrokePath(strand);
-                    }
-
-                // thin highlight strands layered on top for sheen
-                gc->SetPen(wxPen(hairHighlight, std::max(1.0, strandThickness * 0.4)));
-                for (size_t idx = 0; idx < COMB_OVER_COUNT; idx += 2)
-                    {
-                    const auto tParam = safe_divide<double>(
-                        static_cast<double>(idx), static_cast<double>(COMB_OVER_COUNT - 1));
-                    const double yPos = combTopY + tParam * (combBottomY - combTopY);
-                    const double crownHalf = crownHalfAt(yPos);
-                    const double arcLift = faceHeight * (0.03 + 0.06 * tParam);
-                    // highlight runs along the upper inner portion of the strand
-                    const double hlRight = cx + crownHalf * 0.55;
-                    const double hlLeft = cx - crownHalf * 0.35 * LEFT_SHORTEN.at(idx);
-
-                    wxGraphicsPath strand = gc->CreatePath();
-                    strand.MoveToPoint(hlRight, yPos - arcLift * 0.5);
-                    strand.AddQuadCurveToPoint((hlLeft + hlRight) * math_constants::half,
-                                               yPos - 1.6 * arcLift, hlLeft, yPos - arcLift * 0.5);
-                    gc->StrokePath(strand);
-                    }
-                }
-            }
-        else if (hairStyle == HairStyleKind::CombOver)
-            {
-            const wxColour hairHighlight = hairColor.ChangeLightness(135);
-            const wxColour hairShadow = hairColor.ChangeLightness(80);
-            const wxColour hairStrandColor = Colors::ColorContrast::IsDark(hairColor) ?
-                                                 wxColour{ 70, 90, 160, 110 } :
-                                                 wxColour{ 0, 0, 0, 55 };
-
-            // taller side tufts that reach up the sides of the head, with a thick
-            // swoosh of hair across the crown combed from the viewer's right (the
-            // part side) toward the viewer's left
-            for (const int side : { -1, 1 })
-                {
-                wxGraphicsPath tuft = gc->CreatePath();
-                // top-inner anchor high up the side of the head
-                tuft.MoveToPoint(cx + side * faceWidth * 0.55, cy - faceHeight * 0.85);
-                // top curve out and up to the upper-outer point
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.9, cy - faceHeight * 0.92,
-                                         cx + side * faceWidth * 1.05, cy - faceHeight * 0.6);
-                // outer edge down to ear, just outside the head
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 1.05, cy - faceHeight * 0.05,
-                                         cx + side * faceWidth * 0.9, cy + faceHeight * 0.1);
-                // inner edge up alongside the temple
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.78, cy - faceHeight * 0.02,
-                                         cx + side * faceWidth * 0.78, cy - faceHeight * 0.4);
-                // back up the inner edge to the top-inner anchor
-                tuft.AddQuadCurveToPoint(cx + side * faceWidth * 0.6, cy - faceHeight * 0.7,
-                                         cx + side * faceWidth * 0.55, cy - faceHeight * 0.85);
-                tuft.CloseSubpath();
-
-                gc->SetBrush(wxBrush{ hairColor });
-                gc->SetPen(wxPen{ hairShadow, 1 });
-                gc->FillPath(tuft);
-                gc->StrokePath(tuft);
-
-                // sheen along the upper-outer side of the tuft - kept inside the
-                // tuft outline (which arches highest near x = ±0.9, y = -0.92)
-                wxGraphicsPath sheen = gc->CreatePath();
-                sheen.MoveToPoint(cx + side * faceWidth * 0.88, cy - faceHeight * 0.72);
-                sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.98, cy - faceHeight * 0.5,
-                                          cx + side * faceWidth * 0.96, cy - faceHeight * 0.1);
-                sheen.AddQuadCurveToPoint(cx + side * faceWidth * 0.86, cy - faceHeight * 0.3,
-                                          cx + side * faceWidth * 0.82, cy - faceHeight * 0.65);
-                sheen.CloseSubpath();
-                auto sheenBrush = gc->CreateLinearGradientBrush(
-                    cx + side * faceWidth * 0.9, cy - faceHeight * 0.72,
-                    cx + side * faceWidth * 0.9, cy - faceHeight * 0.1, hairHighlight,
-                    wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
-                gc->SetBrush(sheenBrush);
-                gc->SetPen(*wxTRANSPARENT_PEN);
-                gc->FillPath(sheen);
-
-                // short vertical strands on the sides for texture
-                gc->SetPen(wxPen{ hairStrandColor, 1 });
-                for (int idx = 0; idx < 4; ++idx)
-                    {
-                    wxGraphicsPath strand = gc->CreatePath();
-                    const double startY = cy - faceHeight * (0.75 - idx * 0.2);
-                    strand.MoveToPoint(cx + side * faceWidth * 0.96, startY);
-                    strand.AddQuadCurveToPoint(
-                        cx + side * faceWidth * 0.88, startY + faceHeight * 0.06,
-                        cx + side * faceWidth * 0.82, startY + faceHeight * 0.1);
-                    gc->StrokePath(strand);
-                    }
-                }
-
-            // thick swoosh of hair across the top, volume peak on viewer's right
-            // (the part side); sweeps down and left across the forehead. endpoints
-            // ride atop the side tufts so the swoosh reads as wide and full
-            wxGraphicsPath swoosh = gc->CreatePath();
-            // start over the right tuft, near its highest point
-            swoosh.MoveToPoint(cx + faceWidth * 0.75, cy - faceHeight * 0.9);
-            // up and over to the volume peak on the right
-            swoosh.AddQuadCurveToPoint(cx + faceWidth * 0.7, cy - faceHeight * 1.17,
-                                       cx + faceWidth * 0.15, cy - faceHeight * 1.13);
-            // across the top with a slight dip toward the left
-            swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.25, cy - faceHeight * 1.08,
-                                       cx - faceWidth * 0.6, cy - faceHeight * 0.95);
-            // down to the top of the left tuft
-            swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.92,
-                                       cx - faceWidth * 0.75, cy - faceHeight * 0.9);
-            // swoosh front edge — low on left (where hair ends), curving up to the
-            // part on viewer's right
-            swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.65, cy - faceHeight * 0.4,
-                                       cx - faceWidth * 0.1, cy - faceHeight * 0.5);
-            swoosh.AddQuadCurveToPoint(cx + faceWidth * 0.35, cy - faceHeight * 0.7,
-                                       cx + faceWidth * 0.75, cy - faceHeight * 0.9);
-            swoosh.CloseSubpath();
-
-            gc->SetBrush(wxBrush{ hairColor });
-            gc->SetPen(wxPen{ hairShadow, 1 });
-            gc->FillPath(swoosh);
-            gc->StrokePath(swoosh);
-
-            // strand highlights flowing across the swoosh in the comb direction
-            // (from the part on the right, sweeping leftward and slightly downward).
-            // per-strand jitter tables break up the regular fan and add thickness
-            // variation, so the strands read as a hand-combed swoosh rather than a
-            // uniform pattern
-            constexpr size_t STRAND_COUNT{ 8 };
-            constexpr std::array<double, STRAND_COUNT> START_Y_JITTER{
-                0.00, -0.022, 0.018, -0.028, 0.012, -0.016, 0.025, -0.01
-            };
-            constexpr std::array<double, STRAND_COUNT> END_Y_JITTER{ -0.015, 0.022, -0.028, 0.014,
-                                                                     -0.02,  0.03,  -0.008, 0.018 };
-            constexpr std::array<double, STRAND_COUNT> END_X_JITTER{ -0.025, 0.035, -0.018, 0.022,
-                                                                     -0.032, 0.014, -0.026, 0.02 };
-            constexpr std::array<double, STRAND_COUNT> CP_Y_JITTER{ 0.018, -0.028, 0.024, -0.014,
-                                                                    0.026, -0.02,  0.012, -0.032 };
-            constexpr std::array<double, STRAND_COUNT> THICKNESS_VAR{ 1.00, 1.20, 0.80, 1.15,
-                                                                      0.90, 1.05, 0.95, 1.25 };
-
-            const double strandThickness = std::max(1.0, faceHeight * 0.014);
-            for (size_t idx = 0; idx < STRAND_COUNT; ++idx)
-                {
-                const auto tParam = safe_divide<double>(static_cast<double>(idx),
-                                                        static_cast<double>(STRAND_COUNT - 1));
-                // strands fan out: upper strands start near the volume peak, lower
-                // strands start closer to the forehead/part. left endpoints stay
-                // inside the swoosh outline (upper strands can extend further left
-                // since the swoosh is wider up top)
-                const double startX = cx + faceWidth * (0.68 - 0.05 * tParam);
-                const double startY =
-                    cy - faceHeight * (1.05 - 0.18 * tParam + START_Y_JITTER.at(idx));
-                const double endX = cx - faceWidth * (0.5 - 0.1 * tParam + END_X_JITTER.at(idx));
-                const double endY = cy - faceHeight * (0.92 - 0.27 * tParam + END_Y_JITTER.at(idx));
-                const double cpX = cx + faceWidth * (0.1 - 0.15 * tParam);
-                const double cpY = cy - faceHeight * (1.1 - 0.2 * tParam + CP_Y_JITTER.at(idx));
-
-                gc->SetPen(
-                    wxPen(hairHighlight, std::max(1.0, strandThickness * THICKNESS_VAR.at(idx))));
                 wxGraphicsPath strand = gc->CreatePath();
-                strand.MoveToPoint(startX, startY);
-                strand.AddQuadCurveToPoint(cpX, cpY, endX, endY);
+                const double startY = cy - faceHeight * (0.75 - idx * 0.2);
+                strand.MoveToPoint(cx + side * faceWidth * 0.96, startY);
+                strand.AddQuadCurveToPoint(cx + side * faceWidth * 0.88, startY + faceHeight * 0.06,
+                                           cx + side * faceWidth * 0.82, startY + faceHeight * 0.1);
                 gc->StrokePath(strand);
                 }
+            }
 
-            // darker contrast strands interleaved for depth - different jitter so
-            // they don't visually align with the highlights
-            constexpr std::array<double, STRAND_COUNT> DARK_START_Y_JITTER{ -0.018, 0.026, -0.012,
-                                                                            0.022,  -0.03, 0.015,
-                                                                            -0.024, 0.028 };
-            constexpr std::array<double, STRAND_COUNT> DARK_END_Y_JITTER{ 0.02,   -0.026, 0.014,
-                                                                          -0.022, 0.028,  -0.012,
-                                                                          0.024,  -0.018 };
-            constexpr std::array<double, STRAND_COUNT> DARK_END_X_JITTER{ 0.022,  -0.03, 0.016,
-                                                                          -0.026, 0.012, -0.028,
-                                                                          0.02,   -0.014 };
-            constexpr std::array<double, STRAND_COUNT> DARK_CP_Y_JITTER{ -0.024, 0.018, -0.028,
-                                                                         0.012,  -0.02, 0.026,
-                                                                         -0.014, 0.022 };
-            constexpr std::array<double, STRAND_COUNT> DARK_THICKNESS_VAR{ 0.95, 1.10, 0.75, 1.05,
-                                                                           0.85, 1.15, 0.80, 1.00 };
-            for (size_t idx = 0; idx < STRAND_COUNT; ++idx)
-                {
-                const auto tParam = safe_divide<double>(static_cast<double>(idx) + 0.5,
-                                                        static_cast<double>(STRAND_COUNT - 1));
-                const double startX = cx + faceWidth * (0.66 - 0.05 * tParam);
-                const double startY =
-                    cy - faceHeight * (1.02 - 0.18 * tParam + DARK_START_Y_JITTER.at(idx));
-                const double endX =
-                    cx - faceWidth * (0.48 - 0.1 * tParam + DARK_END_X_JITTER.at(idx));
-                const double endY =
-                    cy - faceHeight * (0.86 - 0.25 * tParam + DARK_END_Y_JITTER.at(idx));
-                const double cpX = cx + faceWidth * (0.08 - 0.15 * tParam);
-                const double cpY =
-                    cy - faceHeight * (1.06 - 0.2 * tParam + DARK_CP_Y_JITTER.at(idx));
+        // thick swoosh of hair across the top, volume peak on viewer's right
+        // (the part side); sweeps down and left across the forehead. endpoints
+        // ride atop the side tufts so the swoosh reads as wide and full
+        wxGraphicsPath swoosh = gc->CreatePath();
+        // start over the right tuft, near its highest point
+        swoosh.MoveToPoint(cx + faceWidth * 0.75, cy - faceHeight * 0.9);
+        // up and over to the volume peak on the right
+        swoosh.AddQuadCurveToPoint(cx + faceWidth * 0.7, cy - faceHeight * 1.17,
+                                   cx + faceWidth * 0.15, cy - faceHeight * 1.13);
+        // across the top with a slight dip toward the left
+        swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.25, cy - faceHeight * 1.08,
+                                   cx - faceWidth * 0.6, cy - faceHeight * 0.95);
+        // down to the top of the left tuft
+        swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.92,
+                                   cx - faceWidth * 0.75, cy - faceHeight * 0.9);
+        // swoosh front edge — low on left (where hair ends), curving up to the
+        // part on viewer's right
+        swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.65, cy - faceHeight * 0.4,
+                                   cx - faceWidth * 0.1, cy - faceHeight * 0.5);
+        swoosh.AddQuadCurveToPoint(cx + faceWidth * 0.35, cy - faceHeight * 0.7,
+                                   cx + faceWidth * 0.75, cy - faceHeight * 0.9);
+        swoosh.CloseSubpath();
 
-                gc->SetPen(wxPen(hairStrandColor, std::max(1.0, strandThickness * 0.7 *
-                                                                    DARK_THICKNESS_VAR.at(idx))));
-                wxGraphicsPath strand = gc->CreatePath();
-                strand.MoveToPoint(startX, startY);
-                strand.AddQuadCurveToPoint(cpX, cpY, endX, endY);
-                gc->StrokePath(strand);
-                }
+        gc->SetBrush(wxBrush{ hairColor });
+        gc->SetPen(wxPen{ hairShadow, 1 });
+        gc->FillPath(swoosh);
+        gc->StrokePath(swoosh);
+
+        // strand highlights flowing across the swoosh in the comb direction
+        // (from the part on the right, sweeping leftward and slightly downward).
+        // per-strand jitter tables break up the regular fan and add thickness
+        // variation, so the strands read as a hand-combed swoosh rather than a
+        // uniform pattern
+        constexpr size_t STRAND_COUNT{ 8 };
+        constexpr std::array<double, STRAND_COUNT> START_Y_JITTER{ 0.00,  -0.022, 0.018, -0.028,
+                                                                   0.012, -0.016, 0.025, -0.01 };
+        constexpr std::array<double, STRAND_COUNT> END_Y_JITTER{ -0.015, 0.022, -0.028, 0.014,
+                                                                 -0.02,  0.03,  -0.008, 0.018 };
+        constexpr std::array<double, STRAND_COUNT> END_X_JITTER{ -0.025, 0.035, -0.018, 0.022,
+                                                                 -0.032, 0.014, -0.026, 0.02 };
+        constexpr std::array<double, STRAND_COUNT> CP_Y_JITTER{ 0.018, -0.028, 0.024, -0.014,
+                                                                0.026, -0.02,  0.012, -0.032 };
+        constexpr std::array<double, STRAND_COUNT> THICKNESS_VAR{ 1.00, 1.20, 0.80, 1.15,
+                                                                  0.90, 1.05, 0.95, 1.25 };
+
+        const double strandThickness = std::max(1.0, faceHeight * 0.014);
+        for (size_t idx = 0; idx < STRAND_COUNT; ++idx)
+            {
+            const auto tParam = safe_divide<double>(static_cast<double>(idx),
+                                                    static_cast<double>(STRAND_COUNT - 1));
+            // strands fan out: upper strands start near the volume peak, lower
+            // strands start closer to the forehead/part. left endpoints stay
+            // inside the swoosh outline (upper strands can extend further left
+            // since the swoosh is wider up top)
+            const double startX = cx + faceWidth * (0.68 - 0.05 * tParam);
+            const double startY = cy - faceHeight * (1.05 - 0.18 * tParam + START_Y_JITTER.at(idx));
+            const double endX = cx - faceWidth * (0.5 - 0.1 * tParam + END_X_JITTER.at(idx));
+            const double endY = cy - faceHeight * (0.92 - 0.27 * tParam + END_Y_JITTER.at(idx));
+            const double cpX = cx + faceWidth * (0.1 - 0.15 * tParam);
+            const double cpY = cy - faceHeight * (1.1 - 0.2 * tParam + CP_Y_JITTER.at(idx));
+
+            gc->SetPen(
+                wxPen(hairHighlight, std::max(1.0, strandThickness * THICKNESS_VAR.at(idx))));
+            wxGraphicsPath strand = gc->CreatePath();
+            strand.MoveToPoint(startX, startY);
+            strand.AddQuadCurveToPoint(cpX, cpY, endX, endY);
+            gc->StrokePath(strand);
+            }
+
+        // darker contrast strands interleaved for depth - different jitter so
+        // they don't visually align with the highlights
+        constexpr std::array<double, STRAND_COUNT> DARK_START_Y_JITTER{ -0.018, 0.026, -0.012,
+                                                                        0.022,  -0.03, 0.015,
+                                                                        -0.024, 0.028 };
+        constexpr std::array<double, STRAND_COUNT> DARK_END_Y_JITTER{
+            0.02, -0.026, 0.014, -0.022, 0.028, -0.012, 0.024, -0.018
+        };
+        constexpr std::array<double, STRAND_COUNT> DARK_END_X_JITTER{
+            0.022, -0.03, 0.016, -0.026, 0.012, -0.028, 0.02, -0.014
+        };
+        constexpr std::array<double, STRAND_COUNT> DARK_CP_Y_JITTER{ -0.024, 0.018, -0.028, 0.012,
+                                                                     -0.02,  0.026, -0.014, 0.022 };
+        constexpr std::array<double, STRAND_COUNT> DARK_THICKNESS_VAR{ 0.95, 1.10, 0.75, 1.05,
+                                                                       0.85, 1.15, 0.80, 1.00 };
+        for (size_t idx = 0; idx < STRAND_COUNT; ++idx)
+            {
+            const auto tParam = safe_divide<double>(static_cast<double>(idx) + 0.5,
+                                                    static_cast<double>(STRAND_COUNT - 1));
+            const double startX = cx + faceWidth * (0.66 - 0.05 * tParam);
+            const double startY =
+                cy - faceHeight * (1.02 - 0.18 * tParam + DARK_START_Y_JITTER.at(idx));
+            const double endX = cx - faceWidth * (0.48 - 0.1 * tParam + DARK_END_X_JITTER.at(idx));
+            const double endY =
+                cy - faceHeight * (0.86 - 0.25 * tParam + DARK_END_Y_JITTER.at(idx));
+            const double cpX = cx + faceWidth * (0.08 - 0.15 * tParam);
+            const double cpY = cy - faceHeight * (1.06 - 0.2 * tParam + DARK_CP_Y_JITTER.at(idx));
+
+            gc->SetPen(wxPen(hairStrandColor,
+                             std::max(1.0, strandThickness * 0.7 * DARK_THICKNESS_VAR.at(idx))));
+            wxGraphicsPath strand = gc->CreatePath();
+            strand.MoveToPoint(startX, startY);
+            strand.AddQuadCurveToPoint(cpX, cpY, endX, endY);
+            gc->StrokePath(strand);
             }
         }
 

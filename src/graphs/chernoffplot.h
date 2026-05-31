@@ -734,6 +734,77 @@ namespace Wisteria::Graphs
                              const FaceFeatures& features, const wxColour& hairColor,
                              HairStyleKind hairStyle);
 
+        /// @brief Draws the @c Bob hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        /// @param browYLimit The y-coordinate that bangs must stay above (the eyebrow line).
+        static void DrawBobHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                const wxColour& hairColor, double browYLimit);
+
+        /// @brief Draws the @c Pixie hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        /// @param browYLimit The y-coordinate that bangs must stay above (the eyebrow line).
+        static void DrawPixieHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                  const wxColour& hairColor, double browYLimit);
+
+        /// @brief Draws the @c LongStraight hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        /// @param browYLimit The y-coordinate that bangs must stay above (the eyebrow line).
+        static void DrawLongStraightHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                         const wxColour& hairColor, double browYLimit);
+
+        /// @brief Draws the @c Bun hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        static void DrawBunHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                const wxColour& hairColor);
+
+        /// @brief Draws the @c Curly and @c LongCurly hair styles.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        /// @param browYLimit The y-coordinate that bangs must stay above (the eyebrow line).
+        /// @param hairStyle Either @c Curly or @c LongCurly (controls volume and length).
+        static void DrawCurlyHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                  const wxColour& hairColor, double browYLimit,
+                                  HairStyleKind hairStyle);
+
+        /// @brief Draws the @c HighTopFade hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        static void DrawHighTopFadeHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                        const wxColour& hairColor);
+
+        /// @brief Draws the @c FlatTop hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        static void DrawFlatTopHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                    const wxColour& hairColor);
+
+        /// @brief Draws the @c PartiallyBald and @c BaldCombOver hair styles.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        /// @param hairStyle Either @c PartiallyBald or @c BaldCombOver (the latter adds
+        ///     comb-over strands across the bald crown).
+        static void DrawPartiallyBaldHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                          const wxColour& hairColor, HairStyleKind hairStyle);
+
+        /// @brief Draws the @c CombOver hair style.
+        /// @param gc The graphics context to draw to.
+        /// @param geom The shared face geometry.
+        /// @param hairColor The hair color.
+        static void DrawCombOverHair(wxGraphicsContext* gc, const FaceGeometry& geom,
+                                     const wxColour& hairColor);
+
         static void DrawEyes(wxGraphicsContext* gc, const FaceGeometry& geom,
                              const FaceFeatures& features, const wxColour& outlineColor,
                              const wxColour& eyeColor, Gender gender);
