@@ -26,12 +26,11 @@ jobs:
       # Tip: list the folder roots; the step adds '/*' for you.
       EXCLUDE_DIRS: |
         src/CRCpp
-        src/easyexif
         src/utfcpp
         src/wxSimpleJSON
         src/easyexif
-        src/wxpdfdoc/samples/
-        src/wxpdfdoc/makefont/
+        src/wxpdfdoc/samples
+        src/wxpdfdoc/makefont
 
     steps:
       - name: Checkout
