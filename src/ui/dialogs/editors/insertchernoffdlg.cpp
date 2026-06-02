@@ -188,19 +188,6 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_showLabels)),
                           wxSizerFlags{}.Border());
 
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Use enhanced legend"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_useEnhancedLegend)),
-                          wxSizerFlags{}.Border());
-
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
-
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -208,6 +195,15 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        CreateLegendOptionsPage();
+        if (GetLegendPage() != nullptr)
+            {
+            GetLegendPage()->GetSizer()->Add(
+                new wxCheckBox(GetLegendPage(), wxID_ANY, _(L"Use enhanced legend"),
+                               wxDefaultPosition, wxDefaultSize, 0,
+                               wxGenericValidator(&m_useEnhancedLegend)),
+                wxSizerFlags{}.Border());
+            }
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }

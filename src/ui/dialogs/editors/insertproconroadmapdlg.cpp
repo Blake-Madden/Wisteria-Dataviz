@@ -198,14 +198,6 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_addDefaultCaption)),
                           wxSizerFlags{}.Border());
 
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 4));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
-
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -216,6 +208,7 @@ namespace Wisteria::UI
         m_roadColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, [this](wxColourPickerEvent& evt)
                                 { m_roadColor = evt.GetColour(); });
 
+        CreateLegendOptionsPage(false, 4);
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }

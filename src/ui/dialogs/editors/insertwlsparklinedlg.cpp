@@ -119,14 +119,6 @@ namespace Wisteria::UI
                                          wxGenericValidator(&m_highlightBestRecords)),
                           wxSizerFlags{}.Border());
 
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 4));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
-
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -134,6 +126,7 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        CreateLegendOptionsPage(false, 4);
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }

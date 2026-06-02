@@ -487,14 +487,7 @@ namespace Wisteria::UI
         rightColumnSizer->Add(sliceImagesBox, wxSizerFlags{}.Expand().Border());
         rightColumnSizer->Add(donutBox, wxSizerFlags{}.Border().Expand());
 
-        // legend placement (at the bottom of the left column)
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
         leftColumnSizer->AddStretchSpacer(1);
-        leftColumnSizer->Add(legendSizer, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -554,6 +547,7 @@ namespace Wisteria::UI
         m_editDonutLabelButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
                                      { OnEditDonutHoleLabel(); });
 
+        CreateLegendOptionsPage(true);
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }

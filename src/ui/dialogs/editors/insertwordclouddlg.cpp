@@ -113,14 +113,6 @@ namespace Wisteria::UI
 
         optionsSizer->Add(freqSizer, wxSizerFlags{}.Border());
 
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
-
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });

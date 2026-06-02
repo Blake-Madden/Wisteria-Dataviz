@@ -334,9 +334,6 @@ namespace Wisteria::UI
         wxStaticText* m_shapeLabel{ nullptr };
         wxButton* m_imagesButton{ nullptr };
         wxStaticText* m_imagesLabel{ nullptr };
-        wxChoice* m_legendChoice{ nullptr };
-        wxStaticText* m_legendLabel{ nullptr };
-
         // bar sort controls
         wxRadioButton* m_sortNoneRadio{ nullptr };
         wxRadioButton* m_sortAscRadio{ nullptr };

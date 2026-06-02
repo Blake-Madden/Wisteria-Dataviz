@@ -127,6 +127,32 @@ namespace Wisteria::UI
         [[nodiscard]]
         LegendPlacement GetLegendPlacement() const;
 
+        /// @brief Enables or disables the legend-placement control on the Legend page.
+        /// @details Call this when the legend is unavailable (e.g., no grouping variable).
+        /// @param enable @c true to enable, @c false to disable.
+        void EnableLegendPlacement(bool enable);
+
+        /// @returns Whether the legend should include a header row.
+        [[nodiscard]]
+        bool IsLegendIncludingHeader() const noexcept
+            {
+            return m_legendIncludeHeader;
+            }
+
+        /// @returns The custom legend title (empty for no override).
+        [[nodiscard]]
+        const wxString& GetLegendTitle() const noexcept
+            {
+            return m_legendTitle;
+            }
+
+        /// @returns The ring perimeter for pie-chart legends.
+        [[nodiscard]]
+        Perimeter GetLegendRingPerimeter() const noexcept
+            {
+            return (m_legendRingPerimeter == 1) ? Perimeter::Inner : Perimeter::Outer;
+            }
+
         /// @returns The graph title label.
         [[nodiscard]]
         const GraphItems::Label& GetTitleLabel() const noexcept
@@ -273,17 +299,22 @@ namespace Wisteria::UI
         static wxString ColorSchemeToName(int index);
 
       protected:
-        /** @brief Creates a legend placement wxChoice and populates it.
-            @param parent The parent window for the control.
-            @param defaultSelection The initially selected item (0-based index).
-            @returns The created wxChoice control.*/
-        wxChoice* CreateLegendPlacementChoice(wxWindow* parent, int defaultSelection = 1);
+        /** @brief Creates and adds the "Legend" sidebar page.
+            @details This page contains legend placement, include-header,
+                title, and (for pie charts) ring-perimeter options.
+            @param includeRingOption @c true to show an inner/outer ring selector.
+            @param defaultPlacement The initially selected placement index
+                (0=None, 1=Right, 2=Left, 3=Top, 4=Bottom).*/
+        void CreateLegendOptionsPage(bool includeRingOption = false, int defaultPlacement = 1);
 
-        /// @brief Converts a legend wxChoice selection index to a LegendPlacement value.
-        /// @param selection The zero-based index from the wxChoice control.
-        /// @returns The corresponding LegendPlacement value.
+        /// @returns The panel for the "Legend" sidebar page, or @c nullptr if not yet created.
+        /// @details Derived classes can use this to append extra legend-related controls
+        ///     after calling CreateLegendOptionsPage().
         [[nodiscard]]
-        static LegendPlacement SelectionToLegendPlacement(int selection);
+        wxPanel* GetLegendPage() const noexcept
+            {
+            return m_legendPage;
+            }
 
         /// @brief Validates the color scheme selection.
         /// @returns @c true if valid, @c false if the user needs to fix something.
@@ -399,12 +430,18 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_ANNOTATIONS_SECTION{ wxID_HIGHEST + 101 };
         /// @brief ID for the Axis Options sidebar section.
         constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 102 };
+        /// @brief ID for the Legend sidebar section.
+        constexpr static wxWindowID ID_LEGEND_SECTION{ wxID_HIGHEST + 103 };
 
         /// @brief Checks whether placing the graph would overwrite existing cells.
         /// @returns @c true if placement should proceed, @c false to cancel.
         bool ConfirmOverwrite() final;
 
       private:
+        wxChoice* CreateLegendPlacementChoice(wxWindow* parent, int defaultSelection = 1);
+        [[nodiscard]]
+        static LegendPlacement SelectionToLegendPlacement(int selection);
+
         void OnEditTitle();
         void OnEditSubtitle();
         void OnEditCaption();
@@ -441,6 +478,9 @@ namespace Wisteria::UI
 
         // DDX data members
         int m_legendPlacement{ 1 };
+        bool m_legendIncludeHeader{ true };
+        wxString m_legendTitle;
+        int m_legendRingPerimeter{ 0 }; // 0 = Outer, 1 = Inner
         bool m_mirrorXAxis{ false };
         bool m_mirrorYAxis{ false };
         int m_plotBgImageOpacity{ 255 };
@@ -491,6 +531,10 @@ namespace Wisteria::UI
         wxEditableListBox* m_refAreaListBox{ nullptr };
 
         AxisOptionsPanel* m_axisOptionsPanel{ nullptr };
+        wxChoice* m_legendPlacementChoice{ nullptr };
+        wxPanel* m_legendPage{ nullptr };
+        wxStaticText* m_legendTitleLabel{ nullptr };
+        wxTextCtrl* m_legendTitleCtrl{ nullptr };
         };
     } // namespace Wisteria::UI
 

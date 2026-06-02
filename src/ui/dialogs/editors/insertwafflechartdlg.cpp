@@ -144,14 +144,7 @@ namespace Wisteria::UI
         rowCountCheck->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent& evt)
                             { m_rowCountSpin->Enable(evt.IsChecked()); });
 
-        // legend placement
-        auto* legendGrid = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                        wxSizerFlags{}.CenterVertical());
-        legendGrid->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendGrid, wxSizerFlags{}.Border());
-
+        CreateLegendOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }

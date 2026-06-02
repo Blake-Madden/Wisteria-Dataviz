@@ -621,6 +621,82 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::CreateLegendOptionsPage(const bool includeRingOption,
+                                                 const int defaultPlacement)
+        {
+        m_legendPage = new wxPanel(GetSideBarBook());
+        auto* legendSizer = new wxBoxSizer(wxVERTICAL);
+        m_legendPage->SetSizer(legendSizer);
+        GetSideBarBook()->AddPage(m_legendPage, _(L"Legend"), ID_LEGEND_SECTION, false);
+
+        auto* grid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        grid->Add(new wxStaticText(m_legendPage, wxID_ANY, _(L"Placement:")),
+                  wxSizerFlags{}.CenterVertical());
+        m_legendPlacementChoice = CreateLegendPlacementChoice(m_legendPage, defaultPlacement);
+        grid->Add(m_legendPlacementChoice);
+
+        grid->Add(new wxStaticText(m_legendPage, wxID_ANY, _(L"Include header:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* headerCheck =
+            new wxCheckBox(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize, 0,
+                           wxGenericValidator(&m_legendIncludeHeader));
+        grid->Add(headerCheck, wxSizerFlags{}.CenterVertical());
+
+        m_legendTitleLabel = new wxStaticText(m_legendPage, wxID_ANY, _(L"Custom title:"));
+        grid->Add(m_legendTitleLabel, wxSizerFlags{}.CenterVertical());
+        m_legendTitleCtrl = new wxTextCtrl(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                           wxDefaultSize, 0, wxGenericValidator(&m_legendTitle));
+        grid->Add(m_legendTitleCtrl, wxSizerFlags{}.Expand());
+
+        headerCheck->Bind(wxEVT_CHECKBOX,
+                          [this](wxCommandEvent& evt)
+                          {
+                              if (m_legendTitleLabel != nullptr)
+                                  {
+                                  m_legendTitleLabel->Enable(evt.IsChecked());
+                                  }
+                              if (m_legendTitleCtrl != nullptr)
+                                  {
+                                  m_legendTitleCtrl->Enable(evt.IsChecked());
+                                  }
+                          });
+
+        // initial state: title enabled only when header is included
+        m_legendTitleLabel->Enable(m_legendIncludeHeader);
+        m_legendTitleCtrl->Enable(m_legendIncludeHeader);
+
+        if (includeRingOption)
+            {
+            grid->Add(new wxStaticText(m_legendPage, wxID_ANY, _(L"Ring:")),
+                      wxSizerFlags{}.CenterVertical());
+            auto* ringChoice =
+                new wxChoice(m_legendPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
+                             0, wxGenericValidator(&m_legendRingPerimeter));
+            ringChoice->Append(_(L"Outer"));
+            ringChoice->Append(_(L"Inner"));
+            grid->Add(ringChoice);
+            }
+
+        grid->AddGrowableCol(1, 1);
+        legendSizer->Add(grid, wxSizerFlags{}.Expand().Border());
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::EnableLegendPlacement(const bool enable)
+        {
+        if (m_legendPlacementChoice != nullptr)
+            {
+            m_legendPlacementChoice->Enable(enable);
+            if (!enable)
+                {
+                m_legendPlacementChoice->SetSelection(0);
+                }
+            }
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::EditLabelHelper(GraphItems::Label& label, wxStaticText* preview,
                                          const wxString& dlgCaption)
         {
@@ -2087,10 +2163,25 @@ namespace Wisteria::UI
                 m_legendPlacement = 0;
                 break;
                 }
+            m_legendIncludeHeader = legendInfo->IsIncludingHeader();
+            m_legendTitle = legendInfo->GetTitle();
+            m_legendRingPerimeter = (legendInfo->GetRingPerimeter() == Perimeter::Inner) ? 1 : 0;
             }
         else
             {
             m_legendPlacement = 0;
+            m_legendIncludeHeader = true;
+            m_legendTitle.clear();
+            m_legendRingPerimeter = 0;
+            }
+
+        if (m_legendTitleLabel != nullptr)
+            {
+            m_legendTitleLabel->Enable(m_legendIncludeHeader);
+            }
+        if (m_legendTitleCtrl != nullptr)
+            {
+            m_legendTitleCtrl->Enable(m_legendIncludeHeader);
             }
 
         // color scheme

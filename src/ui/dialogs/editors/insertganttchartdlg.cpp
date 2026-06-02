@@ -239,14 +239,6 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         optionsSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border());
 
-        // legend placement
-        auto* legendSizer = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        legendSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:")),
-                         wxSizerFlags{}.CenterVertical());
-        legendSizer->Add(CreateLegendPlacementChoice(optionsPage, 1));
-        optionsSizer->Add(legendSizer, wxSizerFlags{}.Border());
-
         // Helper to collect available bar labels
         auto gatherBarLabels = [this]() -> wxArrayString
         {
@@ -656,6 +648,7 @@ namespace Wisteria::UI
         m_shapeAllChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
                                { OnBarShapeAllChanged(); });
 
+        CreateLegendOptionsPage();
         CreateAnnotationsPage();
         CreateAxisOptionsPage();
         CreateGraphOptionsPage();

@@ -237,17 +237,6 @@ namespace Wisteria::UI
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
         leftSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border());
 
-        // legend placement
-        auto* legendGrid = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        m_legendLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Legend:"));
-        m_legendLabel->Enable(false);
-        legendGrid->Add(m_legendLabel, wxSizerFlags{}.CenterVertical());
-        m_legendChoice = CreateLegendPlacementChoice(optionsPage, 1);
-        m_legendChoice->Enable(false);
-        legendGrid->Add(m_legendChoice);
-        leftSizer->Add(legendGrid, wxSizerFlags{}.Border());
-
         optionsSizer->Add(leftSizer, wxSizerFlags{}.Expand());
 
         // right column: bar sorting and bar groups
@@ -472,6 +461,8 @@ namespace Wisteria::UI
                 editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
+        CreateLegendOptionsPage();
+        EnableLegendPlacement(false);
         CreateAnnotationsPage();
         CreateAxisOptionsPage();
         CreateGraphOptionsPage();
@@ -1407,18 +1398,7 @@ namespace Wisteria::UI
             }
 
         const bool hasGroup = !m_groupVariable.empty();
-        if (m_legendLabel != nullptr)
-            {
-            m_legendLabel->Enable(hasGroup);
-            }
-        if (m_legendChoice != nullptr)
-            {
-            m_legendChoice->Enable(hasGroup);
-            if (!hasGroup)
-                {
-                m_legendChoice->SetSelection(0);
-                }
-            }
+        EnableLegendPlacement(hasGroup);
 
         // populate the sort list box with the categorical variable's labels
         if (m_sortLabelListBox != nullptr)
