@@ -233,8 +233,12 @@ namespace Wisteria::UI
                           });
 
         // enable/disable layout options
-        layoutToggleCheck->Bind(wxEVT_CHECKBOX, [layoutRadio](wxCommandEvent& event)
-                                { layoutRadio->Enable(event.IsChecked()); });
+        layoutToggleCheck->Bind(wxEVT_CHECKBOX,
+                                [layoutRadio](wxCommandEvent& event)
+                                {
+                                    layoutRadio->Enable(event.IsChecked());
+                                    layoutRadio->Refresh();
+                                });
         // initial state
         layoutRadio->Enable(m_includeLayoutOptions);
 
