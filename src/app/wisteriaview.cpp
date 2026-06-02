@@ -346,6 +346,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         m_reportBuilder.GetDatasetTransformOptions()[initialDatasetName].m_columnNamesSort =
             initialImportInfo.GetColumnNamesSort();
         AddPageToProject(1, 1, wxString{});
+        // adding the page selects it in the sidebar; re-select the dataset instead
+        // so the user lands on their imported data rather than the empty page
+        m_sideBar->SelectSubItem(0, 0);
         }
 
     UpdateDatasetButtonStates();
