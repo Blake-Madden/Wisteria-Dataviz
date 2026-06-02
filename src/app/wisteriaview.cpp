@@ -4771,7 +4771,7 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcasedLabels().empty())
             {
-            plot->ShowcaseBars(dlg.GetShowcasedLabels());
+            plot->ShowcaseBars(dlg.GetShowcasedLabels(), dlg.HideLabelsOnGhostedBars());
             }
 
         for (const auto& [label, shape] : dlg.GetBarShapes())
@@ -4869,7 +4869,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcasedLabels().empty())
             {
-            plot->ShowcaseBars(dlg.GetShowcasedLabels());
+            plot->ShowcaseBars(dlg.GetShowcasedLabels(), dlg.HideLabelsOnGhostedBars());
             }
 
         dlg.ApplyAxisOverrides(*plot);
@@ -5667,7 +5667,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcaseBars().empty())
             {
-            plot->ShowcaseBars(dlg.GetShowcaseBars());
+            plot->ShowcaseBars(dlg.GetShowcaseBars(), dlg.HideLabelsOnGhostedBars());
             }
 
         // cache dataset and variable names for round-tripping
@@ -5928,7 +5928,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcaseBars().empty())
             {
-            plot->ShowcaseBars(dlg.GetShowcaseBars());
+            plot->ShowcaseBars(dlg.GetShowcaseBars(), dlg.HideLabelsOnGhostedBars());
             }
 
         // carry forward property templates, preserving {{placeholders}}
@@ -6414,7 +6414,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcasedBars().empty())
             {
-            plot->ShowcaseBars(dlg.GetShowcasedBars());
+            plot->ShowcaseBars(dlg.GetShowcasedBars(), dlg.HideLabelsOnGhostedBars());
             }
 
         // cache dataset and variable names for round-tripping
@@ -6490,7 +6490,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
         plot->SetGhostOpacity(dlg.GetGhostOpacity());
         if (!dlg.GetShowcasedBars().empty())
             {
-            plot->ShowcaseBars(dlg.GetShowcasedBars());
+            plot->ShowcaseBars(dlg.GetShowcasedBars(), dlg.HideLabelsOnGhostedBars());
             }
         dlg.ApplyAxisOverrides(*plot);
 

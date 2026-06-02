@@ -151,6 +151,13 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
+        /// @returns @c true if labels are hidden on non-showcased bars.
+        [[nodiscard]]
+        bool HideLabelsOnGhostedBars() const noexcept
+            {
+            return m_hideLabelsOnGhostedBars;
+            }
+
         /// @returns The labels of the showcased bars.
         [[nodiscard]]
         const std::vector<wxString>& GetShowcasedLabels() const noexcept
@@ -229,6 +236,7 @@ namespace Wisteria::UI
         // showcasing
         std::vector<wxString> m_showcaseBars;
         int m_ghostOpacity{ 128 };
+        bool m_hideLabelsOnGhostedBars{ true };
         wxEditableListBox* m_showcaseListBox{ nullptr };
 
         // bar-block decals (preserved during editing)

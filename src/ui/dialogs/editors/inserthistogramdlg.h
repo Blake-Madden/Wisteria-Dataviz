@@ -130,6 +130,13 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
+        /// @returns @c true if labels are hidden on non-showcased bars.
+        [[nodiscard]]
+        bool HideLabelsOnGhostedBars() const noexcept
+            {
+            return m_hideLabelsOnGhostedBars;
+            }
+
         /// @returns The suggested bin count, or @c std::nullopt if left at auto.
         [[nodiscard]]
         std::optional<size_t> GetSuggestedBinCount() const noexcept
@@ -194,6 +201,7 @@ namespace Wisteria::UI
         bool m_showFullRange{ true };
         bool m_neatIntervals{ false };
         int m_ghostOpacity{ 32 };
+        bool m_hideLabelsOnGhostedBars{ true };
         int m_suggestedBinCount{ 0 }; // 0 = auto
         int m_maxBinCount{ 0 };       // 0 = default (255)
         bool m_overrideBinsStart{ false };

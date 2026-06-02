@@ -209,6 +209,13 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
+        /// @returns @c true if labels are hidden on non-showcased bars.
+        [[nodiscard]]
+        bool HideLabelsOnGhostedBars() const noexcept
+            {
+            return m_hideLabelsOnGhostedBars;
+            }
+
         /// @returns @c true if the color scheme brushes should be applied to ungrouped bars.
         [[nodiscard]]
         bool IsApplyingBrushesToUngroupedBars() const noexcept
@@ -355,6 +362,7 @@ namespace Wisteria::UI
         int m_barLabelDisplayIndex{ 0 };
         int m_barShapeAllIndex{ 0 };
         int m_ghostOpacity{ 32 };
+        bool m_hideLabelsOnGhostedBars{ true };
         bool m_applyBrushesToUngroupedBars{ false };
         bool m_constrainScalingAxisToBars{ false };
         std::vector<wxString> m_showcaseBars;

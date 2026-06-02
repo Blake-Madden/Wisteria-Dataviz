@@ -300,6 +300,12 @@ namespace Wisteria::UI
         ghostOpacitySizer->Add(opacitySpin);
         ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
 
+        ghostBox->Add(new wxCheckBox(ghostBox->GetStaticBox(), wxID_ANY,
+                                     _(L"Hide labels on non-showcased bars"), wxDefaultPosition,
+                                     wxDefaultSize, 0,
+                                     wxGenericValidator(&m_hideLabelsOnGhostedBars)),
+                      wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+
         m_showcaseListBox = new wxEditableListBox(
             ghostBox->GetStaticBox(), wxID_ANY, _(L"Showcase bars:"), wxDefaultPosition,
             wxSize{ FromDIP(300), FromDIP(120) },
@@ -1646,6 +1652,7 @@ namespace Wisteria::UI
         m_applyBrushesToUngroupedBars = barChart->IsApplyingBrushesToUngroupedBars();
         m_constrainScalingAxisToBars = barChart->IsConstrainingScalingAxisToBars();
         m_ghostOpacity = barChart->GetGhostOpacity();
+        m_hideLabelsOnGhostedBars = barChart->IsHidingGhostedLabels();
         m_showcaseBars = barChart->GetShowcasedLabels();
         if (m_showcaseListBox != nullptr)
             {
