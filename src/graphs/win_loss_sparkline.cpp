@@ -846,6 +846,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());
+        // the plot explains everything row-by-row at a higher level, describing the legend
+        // isn't relevant to what is being read.
+        legend->GetAccessibilityAttributes().AriaHidden(true);
         return legend;
         }
 
@@ -898,23 +901,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 }
             if (!rowInfo.m_overallRecordLabel.empty())
                 {
-                /* TRANSLATORS: overall win/loss record for a season row, e.g. "record 8–4" */
-                rowStr += wxString::Format(_(L"record %s"), rowInfo.m_overallRecordLabel);
+                /* TRANSLATORS: overall win/loss record for a season row,
+                   e.g., "overall record 8–4" */
+                rowStr += wxString::Format(_(L"overall record %s"), rowInfo.m_overallRecordLabel);
                 }
             if (!rowInfo.m_homeRecordLabel.empty())
                 {
-                /* TRANSLATORS: home win/loss record, e.g. "home 5–1" */
-                rowStr += wxString::Format(_(L", home %s"), rowInfo.m_homeRecordLabel);
+                /* TRANSLATORS: home win/loss record, e.g., "home record 5–1" */
+                rowStr += wxString::Format(_(L", home record %s"), rowInfo.m_homeRecordLabel);
                 }
             if (!rowInfo.m_roadRecordLabel.empty())
                 {
-                /* TRANSLATORS: away win/loss record, e.g. "road 3–3" */
-                rowStr += wxString::Format(_(L", road %s"), rowInfo.m_roadRecordLabel);
+                /* TRANSLATORS: away win/loss record, e.g., "road record 3–3" */
+                rowStr += wxString::Format(_(L", road record %s"), rowInfo.m_roadRecordLabel);
                 }
             if (!rowInfo.m_pctLabel.empty())
                 {
-                /* TRANSLATORS: winning percentage for the season, e.g. "percentage .667" */
-                rowStr += wxString::Format(_(L", percentage %s"), rowInfo.m_pctLabel);
+                /* TRANSLATORS: winning percentage for the season, e.g., "win percentage .667" */
+                rowStr += wxString::Format(_(L", win percentage %s"), rowInfo.m_pctLabel);
                 }
             if (m_highlightBestRecords)
                 {
@@ -924,14 +928,45 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     }
                 if (m_longestWinningStreak > 0 && rowWinningStreaks[i] == m_longestWinningStreak)
                     {
-                    rowStr += L", " + wxString::Format(
-                                          /* TRANSLATORS: longest winning streak annotation, e.g.
-                                             "longest winning streak (5 games)" */
-                                          wxPLURAL(L"longest winning streak (%zu game)",
-                                                   L"longest winning streak (%zu games)",
-                                                   m_longestWinningStreak),
-                                          m_longestWinningStreak);
+                    rowStr +=
+                        L", " + wxString::Format(wxPLURAL(L"longest winning streak (%zu game)",
+                                                          L"longest winning streak (%zu games)",
+                                                          m_longestWinningStreak),
+                                                 m_longestWinningStreak);
                     }
+                }
+            if (m_hasPostseasonData)
+                {
+                size_t postSeasonGames =
+                    std::accumulate(games.cbegin(), games.cend(), size_t{ 0 },
+                                    [](const auto initVal, const auto& game) noexcept
+                                    { return initVal + (game.m_postseason ? 1 : 0); });
+                if (postSeasonGames > 0)
+                    {
+                    rowStr +=
+                        L", " + wxString::Format(wxPLURAL(L"%zu game played in the postseason",
+                                                          L"%zu games played in the postseason",
+                                                          postSeasonGames),
+                                                 postSeasonGames);
+                    }
+                }
+            size_t winningShutouts = std::accumulate(
+                games.cbegin(), games.cend(), size_t{ 0 },
+                [](const auto initVal, const auto& game) noexcept
+                {
+                    return initVal + ((game.m_result == GameResult::Won && game.m_shutout) ? 1 : 0);
+                });
+            if (winningShutouts > 0)
+                {
+                rowStr +=
+                    L", " + wxString::Format(wxPLURAL(L"%zu winning shutout",
+                                                      L"%zu winning shutouts", winningShutouts),
+                                             winningShutouts);
+                }
+            // check for any seasons that were cancelled or just had practice games
+            if (std::ranges::none_of(games, [](const auto& game) noexcept { return game.m_valid; }))
+                {
+                rowStr += _(L"season was either canceled or all games were scrimmages");
                 }
 
             if (!rowStr.empty())
@@ -949,5 +984,4 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             }
         GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
         }
-
     } // namespace Wisteria::Graphs
