@@ -257,6 +257,11 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     Wisteria::Canvas* GetActiveCanvas() const noexcept;
 
+    /// @brief Returns the active canvas, or prompts the user to select a page if none is active.
+    /// @returns The active canvas, or @c nullptr if no pages exist or the user cancels.
+    [[nodiscard]]
+    Wisteria::Canvas* EnsureActivePage();
+
     [[nodiscard]]
     bool IsPageSelected() const noexcept;
 

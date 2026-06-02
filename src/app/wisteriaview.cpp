@@ -2263,25 +2263,25 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_pagesButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
 
-    // graphs
+    // graphs - always enabled; page selection is handled at insertion time
     if (m_graphButtonBar != nullptr)
         {
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, enabled);
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, enabled);
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, enabled);
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SURVEY, enabled);
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, enabled);
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, enabled);
-        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, enabled);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SURVEY, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, true);
         }
 
-    // objects
+    // objects - insert always enabled; edit/delete require an active page
     if (m_objectsButtonBar != nullptr)
         {
-        m_objectsButtonBar->EnableButton(ID_NEW_LABEL, enabled);
-        m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, enabled);
-        m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, enabled);
-        m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, enabled);
+        m_objectsButtonBar->EnableButton(ID_NEW_LABEL, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, true);
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
         m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
         }
@@ -2490,6 +2490,37 @@ Wisteria::Canvas* WisteriaView::GetActiveCanvas() const noexcept
     }
 
 //-------------------------------------------
+Wisteria::Canvas* WisteriaView::EnsureActivePage()
+    {
+    if (auto* canvas = GetActiveCanvas(); canvas != nullptr)
+        {
+        return canvas;
+        }
+
+    if (m_pages.empty())
+        {
+        return nullptr;
+        }
+
+    wxArrayString pageNames;
+    for (const auto* pg : m_pages)
+        {
+        pageNames.Add(pg->GetLabel());
+        }
+
+    const int sel = wxGetSingleChoiceIndex(_(L"Select the page to insert into:"), _(L"Select Page"),
+                                           pageNames, m_frame);
+    if (sel == wxNOT_FOUND)
+        {
+        return nullptr;
+        }
+
+    m_sideBar->SelectFolder(static_cast<size_t>(sel) + 2, true, true);
+
+    return m_pages[static_cast<size_t>(sel)];
+    }
+
+//-------------------------------------------
 void WisteriaView::PlaceGraphWithLegend(
     Wisteria::Canvas* canvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
     std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
@@ -2589,7 +2620,7 @@ void WisteriaView::PlaceGraphWithLegend(
 //-------------------------------------------
 void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -2686,7 +2717,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -2748,7 +2779,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -3766,7 +3797,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
 //-------------------------------------------
 void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -4055,7 +4086,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
 //-------------------------------------------
 void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -4207,7 +4238,7 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
 //-------------------------------------------
 void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -4333,7 +4364,7 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
 //-------------------------------------------
 void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -4474,7 +4505,7 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
 //-------------------------------------------
 void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -4619,7 +4650,7 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
 //-------------------------------------------
 void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -4782,7 +4813,7 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
 //-------------------------------------------
 void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -5004,7 +5035,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
 //-------------------------------------------
 void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -5114,7 +5145,7 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
 //-------------------------------------------
 void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -5275,7 +5306,7 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
 //-------------------------------------------
 void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -5604,7 +5635,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
 //-------------------------------------------
 void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -6100,7 +6131,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 //-------------------------------------------
 void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -6328,7 +6359,7 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
 //-------------------------------------------
 void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -6462,7 +6493,7 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
 //-------------------------------------------
 void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -6627,7 +6658,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
 //-------------------------------------------
 void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -6809,7 +6840,7 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
 //-------------------------------------------
 void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -6909,7 +6940,7 @@ void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteri
 //-------------------------------------------
 void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -7046,7 +7077,7 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
 //-------------------------------------------
 void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -7170,7 +7201,7 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
 //-------------------------------------------
 void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -7500,7 +7531,7 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
 //-------------------------------------------
 void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -7596,7 +7627,7 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
 //-------------------------------------------
 void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -7671,7 +7702,7 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
 //-------------------------------------------
 void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -7933,7 +7964,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
 //-------------------------------------------
 void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
@@ -8160,7 +8191,7 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
 //-------------------------------------------
 void WisteriaView::OnInsertCommonAxis([[maybe_unused]] wxCommandEvent& event)
     {
-    auto* canvas = GetActiveCanvas();
+    auto* canvas = EnsureActivePage();
     if (canvas == nullptr)
         {
         return;
