@@ -304,7 +304,8 @@ namespace Wisteria::Graphs
 
         if (options.IsIncludingHeader())
             {
-            legendText.Prepend(_(L"Key\n"));
+            const wxString headerText = options.GetTitle().empty() ? _(L"Key") : options.GetTitle();
+            legendText.Prepend(headerText + L"\n");
             legend->GetHeaderInfo()
                 .Enable(true)
                 .LabelAlignment(TextAlignment::Centered)

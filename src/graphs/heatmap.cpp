@@ -500,8 +500,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 .FontColor(GetLeftYAxis().GetFontColor()));
         if (options.IsIncludingHeader())
             {
-            legend->SetText(wxString::Format(L"%s\n", continuousColumn->GetName()) +
-                            legend->GetText());
+            const wxString headerText =
+                options.GetTitle().empty() ? continuousColumn->GetName() : options.GetTitle();
+            legend->SetText(wxString::Format(L"%s\n", headerText) + legend->GetText());
             legend->GetHeaderInfo()
                 .Enable(true)
                 .LabelAlignment(TextAlignment::FlushLeft)

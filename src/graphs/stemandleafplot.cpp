@@ -561,7 +561,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
         if (options.IsIncludingHeader())
             {
             // blank line after header for the separator to occupy
-            legendText = _(L"Key\n \n");
+            const wxString headerText = options.GetTitle().empty() ? _(L"Key") : options.GetTitle();
+            legendText = headerText + L"\n \n";
             }
 
         // show the variable name

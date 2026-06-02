@@ -607,7 +607,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
         // header if requested
         if (options.IsIncludingHeader() && IsUsingGrouping())
             {
-            legendText.Prepend(GetGroupColumn()->GetName() + L'\n');
+            const wxString headerText =
+                options.GetTitle().empty() ? GetGroupColumn()->GetName() : options.GetTitle();
+            legendText.Prepend(headerText + L'\n');
             legend->GetHeaderInfo()
                 .Enable(true)
                 .LabelAlignment(TextAlignment::FlushLeft)

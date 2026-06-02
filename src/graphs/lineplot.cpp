@@ -413,7 +413,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             }
         if (options.IsIncludingHeader())
             {
-            legendText.Prepend(wxString::Format(L"%s\n", groupColumn->GetName()));
+            const wxString headerText =
+                options.GetTitle().empty() ? groupColumn->GetName() : options.GetTitle();
+            legendText.Prepend(wxString::Format(L"%s\n", headerText));
             legend->GetHeaderInfo()
                 .Enable(true)
                 .LabelAlignment(TextAlignment::FlushLeft)

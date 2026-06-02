@@ -3653,7 +3653,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // add header if requested
         if (options.IsIncludingHeader())
             {
-            legendText = _(L"Features:\n");
+            const wxString headerText =
+                options.GetTitle().empty() ? _(L"Features:") : options.GetTitle();
+            legendText = headerText + L"\n";
             legend->GetLinesIgnoringLeftMargin().insert(0);
             legend->GetHeaderInfo().Enable(true);
             }
