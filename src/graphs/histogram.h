@@ -381,10 +381,9 @@ namespace Wisteria::Graphs
                    !IsShowingFullRangeOfValues();
             }
 
-        /// @private
+      private:
         void SetAutoAccessibilityAttributes() override;
 
-      private:
         /** Specifies whether the axis should display each step
                 (even if no bin is associated with a step) or if it should display steps that
                 have categories on them.\n

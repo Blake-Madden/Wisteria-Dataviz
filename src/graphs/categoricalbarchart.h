@@ -150,10 +150,9 @@ namespace Wisteria::Graphs
             return m_weightColumn;
             }
 
-        /// @private
+      private:
         void SetAutoAccessibilityAttributes() override;
 
-      private:
         struct CatBarBlock
             {
             // group ID in the main categorical column, used for the bar axis position ordering

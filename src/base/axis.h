@@ -743,9 +743,6 @@ namespace Wisteria::GraphItems
 
         wxString GetReadableAxisValue(double pos) const;
 
-        /// @private
-        void SetAutoAccessibilityAttributes() final;
-
         /// @brief Which parts of the axis should be reset when Reset() is called.
         enum class AxisResetLevel
             {
@@ -1958,6 +1955,8 @@ namespace Wisteria::GraphItems
             }
 
       private:
+        void SetAutoAccessibilityAttributes() final;
+
         /// @brief Loads the default labels based on the axis values.
         /// @details This will only do anything is the label display is set to use
         ///     the default labels. In other words, if labels are turned off or only

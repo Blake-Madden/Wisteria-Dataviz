@@ -106,11 +106,11 @@ namespace Wisteria::Graphs
             return m_maxWords;
             }
 
+      private:
         /// @brief Sets the graph's descriptive string for screen readers.
         /// @details Call this after all data and features have been set.
         void SetAutoAccessibilityAttributes() final;
 
-      private:
         [[deprecated("Word clouds do not support legends.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label>
         CreateLegend([[maybe_unused]] const LegendOptions& options) override

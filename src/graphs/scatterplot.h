@@ -317,9 +317,6 @@ namespace Wisteria::Graphs
 
         /// @}
 
-        /// @private
-        void SetAutoAccessibilityAttributes() override;
-
         /// @name Legend Functions
         /// @brief Functions relating to the legend.
         /// @{
@@ -375,6 +372,8 @@ namespace Wisteria::Graphs
         virtual void DrawPoints(const Series& series, wxDC& dc);
 
       private:
+        void SetAutoAccessibilityAttributes() override;
+
         void CalculateRegression(Series& series);
 
         /// @brief Builds a series, applying the scheme color/shape/line style at @c schemeIndex

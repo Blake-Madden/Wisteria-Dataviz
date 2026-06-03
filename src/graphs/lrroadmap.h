@@ -144,9 +144,6 @@ namespace Wisteria::Graphs
         /// @brief Adds a caption explaining how to interpret the graph.
         void AddDefaultCaption() final;
 
-        /// @private
-        void SetAutoAccessibilityAttributes() override;
-
         /// @returns The p-value threshold, if specified.
         [[nodiscard]]
         const std::optional<double>& GetPValueThreshold() const noexcept
@@ -190,6 +187,8 @@ namespace Wisteria::Graphs
             }
 
       private:
+        void SetAutoAccessibilityAttributes() override;
+
         /// @returns The positive label used for the legend.
         [[nodiscard]]
         wxString GetPositiveLegendLabel() const final

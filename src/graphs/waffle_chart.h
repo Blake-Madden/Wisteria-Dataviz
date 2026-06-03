@@ -112,11 +112,11 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
+      private:
         /// @brief Sets the graph's descriptive string for screen readers.
         /// @details Call this after all data and features have been set.
         void SetAutoAccessibilityAttributes() final;
 
-      private:
         void LoadShapeGrid(std::vector<GraphItems::ShapeInfo>& shapes,
                            const std::optional<GridRounding>& gridRound,
                            const std::optional<size_t> rowCount);

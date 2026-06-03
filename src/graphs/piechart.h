@@ -1167,10 +1167,6 @@ namespace Wisteria::Graphs
 
         /// @}
 
-        /// @brief Sets the graph's descriptive string for screen readers.
-        /// @details Call this after all data and features have been set.
-        void SetAutoAccessibilityAttributes() final;
-
         /// @private
         [[nodiscard]]
         const PieInfo& GetInnerPie() const noexcept
@@ -1193,6 +1189,10 @@ namespace Wisteria::Graphs
             }
 
       private:
+        /// @brief Sets the graph's descriptive string for screen readers.
+        /// @details Call this after all data and features have been set.
+        void SetAutoAccessibilityAttributes() final;
+
         using LabelLinePair = std::vector<
             std::pair<std::unique_ptr<GraphItems::Label>, std::unique_ptr<GraphItems::Points2D>>>;
 

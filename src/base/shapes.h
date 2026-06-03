@@ -874,9 +874,6 @@ namespace Wisteria::GraphItems
             return m_sizeDIPs;
             }
 
-        /// @private
-        void SetAutoAccessibilityAttributes() override;
-
       protected:
         /// @private
         Shape() = default;
@@ -917,6 +914,8 @@ namespace Wisteria::GraphItems
             }
 
       private:
+        void SetAutoAccessibilityAttributes() override;
+
         void SetDPIScaleFactor(const double scaling) final
             {
             GraphItemBase::SetDPIScaleFactor(scaling);

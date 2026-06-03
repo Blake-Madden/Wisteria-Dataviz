@@ -1548,6 +1548,13 @@ namespace Wisteria::Graphs
 
         void RecalcSizes(wxDC& dc) final;
 
+        /// @brief Builds the table's descriptive string for screen readers.
+        /// @details Reads the title and (if present) a header row, then each data row
+        ///     as "column name: value" pairs. Cell annotations are read inline with their
+        ///     cells, and footnotes (or the caption) are read at the end.
+        /// @note Call this after all data and features have been set.
+        void SetAutoAccessibilityAttributes() final;
+
         void AdjustTextLabelToCell(const TableCell& cell,
                                    Wisteria::GraphItems::Label& cellLabel) const;
 

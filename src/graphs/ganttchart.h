@@ -201,11 +201,11 @@ namespace Wisteria::Graphs
                 }
             }
 
+      private:
         /// @brief Sets the graph's descriptive string for screen readers.
         /// @details Call this after all data and features have been set.
         void SetAutoAccessibilityAttributes() final;
 
-      private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it
         ///     inside a call to GanttChart::AddTask().

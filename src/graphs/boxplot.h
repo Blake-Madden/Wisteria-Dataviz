@@ -597,10 +597,9 @@ namespace Wisteria::Graphs
             return m_boxes.at(index);
             }
 
-        /// @private
+      private:
         void SetAutoAccessibilityAttributes() override;
 
-      private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.
             @note If only one box is on the plot, then no labels will be shown on the bottom x-axis

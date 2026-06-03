@@ -179,10 +179,9 @@ namespace Wisteria::Graphs
             return nullptr;
             }
 
-        /// @private
+      private:
         void SetAutoAccessibilityAttributes() override;
 
-      private:
         struct Ohlc
             {
             wxDateTime m_date;

@@ -123,10 +123,6 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
-        /// @brief Sets the graph's descriptive string for screen readers.
-        /// @details Call this after all data and features have been set.
-        void SetAutoAccessibilityAttributes() final;
-
         /// @name Header Color Functions
         /// @brief Functions for customizing the header colors.
         /// @{
@@ -220,6 +216,10 @@ namespace Wisteria::Graphs
         /// @}
 
       private:
+        /// @brief Sets the graph's descriptive string for screen readers.
+        /// @details Call this after all data and features have been set.
+        void SetAutoAccessibilityAttributes() final;
+
         /// @brief Data for one row (stem) of the display.
         struct StemData
             {

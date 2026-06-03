@@ -2062,4 +2062,155 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         footnoteCaption.Trim();
         GetCaption().SetText(footnoteCaption);
         }
+
+    //----------------------------------------------------------------
+    void Table::SetAutoAccessibilityAttributes()
+        {
+        if (GetRowCount() == 0 || GetColumnCount() == 0)
+            {
+            return;
+            }
+
+        const auto rowCount = GetRowCount();
+        const auto colCount = GetColumnCount();
+
+        wxString label = _(L"A table");
+
+        // tables have no legend or axes, just a title, caption, and footnotes
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // overall dimensions
+        label += L". ";
+        label += wxString::Format(
+            /* TRANSLATORS: table accessibility: dimensions.
+               1st %zu is the row count, 2nd %zu is the column count. */
+            _(L"%zu rows by %zu columns"), rowCount, colCount);
+
+        // Detect a header row: the top row must consist solely of (non-empty)
+        // text labels, with at least one such label present.
+        const auto hasHeaderRow = [this, colCount]()
+        {
+            if (GetRowCount() < 2)
+                {
+                return false;
+                }
+            bool anyText{ false };
+            for (size_t col = 0; col < colCount; ++col)
+                {
+                const auto& cell = GetCell(0, col);
+                // empty cells (e.g., those eclipsed by a grouped header) don't disqualify
+                if (cell.GetDisplayValue().empty())
+                    {
+                    continue;
+                    }
+                if (!cell.IsText())
+                    {
+                    return false;
+                    }
+                anyText = true;
+                }
+            return anyText;
+        }();
+
+        // the column names taken from the header row (if any)
+        std::vector<wxString> columnNames;
+        if (hasHeaderRow)
+            {
+            columnNames.reserve(colCount);
+            for (size_t col = 0; col < colCount; ++col)
+                {
+                columnNames.push_back(GetCell(0, col).GetDisplayValue());
+                }
+            }
+
+        // map each annotated cell to its note so that the note can be
+        // read inline when that cell's value is read
+        std::map<std::pair<size_t, size_t>, wxString> cellNotes;
+        for (const auto& note : m_cellAnnotations)
+            {
+            for (const auto& pos : note.m_cells)
+                {
+                cellNotes.insert_or_assign(std::make_pair(pos.m_row, pos.m_column), note.m_note);
+                }
+            }
+
+        // read the data rows, pairing each value with its column name
+        const size_t firstDataRow = hasHeaderRow ? 1 : 0;
+        label += L". ";
+        label += _(L"Cells: ");
+        size_t dataRowNumber{ 1 };
+        for (size_t row = firstDataRow; row < rowCount; ++row, ++dataRowNumber)
+            {
+            label += wxString::Format(
+                /* TRANSLATORS: table accessibility: row label. %zu is the row number. */
+                _(L"Row %zu: "), dataRowNumber);
+            for (size_t col = 0; col < colCount; ++col)
+                {
+                const auto& cell = GetCell(row, col);
+                const auto cellValue = cell.GetDisplayValue();
+                // skip empty cells (missing data or cells eclipsed by a grouped cell)
+                if (cellValue.empty())
+                    {
+                    continue;
+                    }
+                const wxString columnName =
+                    (hasHeaderRow && col < columnNames.size()) ? columnNames[col] : wxString{};
+                if (!columnName.empty())
+                    {
+                    label += wxString::Format(L"%s: %s", columnName, cellValue);
+                    }
+                else
+                    {
+                    label += cellValue;
+                    }
+                // read any annotation attached to this cell
+                if (const auto note = cellNotes.find(std::make_pair(row, col));
+                    note != cellNotes.cend() && !note->second.empty())
+                    {
+                    label += wxString::Format(
+                        /* TRANSLATORS: table accessibility: a cell's annotation.
+                           %s is the note text. */
+                        _(L" (note: %s)"), note->second);
+                    }
+                label += L", ";
+                }
+            if (label.EndsWith(L", "))
+                {
+                label.RemoveLast(2);
+                }
+            label += L"; ";
+            }
+        if (label.EndsWith(L"; "))
+            {
+            label.RemoveLast(2);
+            }
+
+        // Footnotes are mirrored into the caption by AddFootnote(), so read them
+        // explicitly in lieu of the caption; otherwise, read the caption.
+        if (!m_footnotes.empty())
+            {
+            label += L". ";
+            label += _(L"Footnotes: ");
+            for (size_t i = 0; i < m_footnotes.size(); ++i)
+                {
+                if (!m_footnotes[i].empty())
+                    {
+                    label += wxString::Format(L"%zu. %s ", i + 1, m_footnotes[i]);
+                    }
+                }
+            label.Trim();
+            }
+        else
+            {
+            AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+            }
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs
