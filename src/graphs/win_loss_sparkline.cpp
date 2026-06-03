@@ -846,9 +846,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());
-        // the plot explains everything row-by-row at a higher level, describing the legend
-        // isn't relevant to what is being read.
-        legend->GetAccessibilityAttributes().AriaHidden(true);
         return legend;
         }
 

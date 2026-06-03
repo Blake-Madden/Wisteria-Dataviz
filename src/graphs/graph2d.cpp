@@ -203,6 +203,12 @@ namespace Wisteria::Graphs
                 .CanvasPadding(4, 4, 4, 4)
                 .FitCanvasHeightToContent(true);
             }
+        // plots explain everything at a higher level; describing the legend
+        // isn't relevant to what is being read
+        if (IsUsingAutoAccessibility())
+            {
+            legend.GetAccessibilityAttributes().AriaHidden(true);
+            }
         }
 
     //----------------------------------------------------------------
