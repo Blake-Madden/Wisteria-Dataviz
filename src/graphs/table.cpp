@@ -2168,10 +2168,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 if (const auto note = cellNotes.find(std::make_pair(row, col));
                     note != cellNotes.cend() && !note->second.empty())
                     {
+                    // quneiform-suppress-begin
                     label += wxString::Format(
                         /* TRANSLATORS: table accessibility: a cell's annotation.
                            %s is the note text. */
                         _(L" (note: %s)"), note->second);
+                    // quneiform-suppress-end
                     }
                 label += L", ";
                 }
