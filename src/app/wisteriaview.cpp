@@ -577,11 +577,12 @@ void WisteriaView::LoadProject()
             m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
             m_workWindows.AddWindow(canvas);
 
-            m_sideBar->InsertItem(m_sideBar->GetFolderCount(),
-                                  !canvas->GetNameTemplate().empty() ?
-                                      canvas->GetNameTemplate() :
-                                      wxString::Format(_(L"Page %zu"), pageNum),
-                                  pageId, PAGE_ICON_INDEX);
+            const wxString displayName = !canvas->GetNameTemplate().empty() ?
+                                             canvas->GetNameTemplate() :
+                                             wxString::Format(_(L"Page %zu"), pageNum);
+            canvas->SetLabel(displayName);
+            m_sideBar->InsertItem(m_sideBar->GetFolderCount(), displayName, pageId,
+                                  PAGE_ICON_INDEX);
             ++pageNum;
             }
         }
