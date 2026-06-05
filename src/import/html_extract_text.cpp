@@ -310,7 +310,7 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void html_extract_text::parse_raw_text(const std::wstring_view textView)
         {
-        auto text = textView.data();
+        const auto* text = textView.data();
         auto textSize = textView.length();
         /* Note about superscripts and subscripts.
            Some pages apply this to entire paragraphs to make them appear in
@@ -840,7 +840,7 @@ namespace lily_of_the_valley
             return nullptr;
             }
 
-        auto currentPos = haystack.data();
+        const auto* currentPos = haystack.data();
         bool isInsideOfQuotes = false;
         bool isInsideOfSingleQuotes = false;
         const wchar_t* const endSentinel = haystack.data() + haystack.length();

@@ -49,6 +49,7 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
     pdfDC.GetPdfDocument()->SetSubject(options.m_subject);
     pdfDC.GetPdfDocument()->SetKeywords(options.m_keywords);
     pdfDC.GetPdfDocument()->SetCompression(options.m_compress);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
     pdfDC.GetPdfDocument()->SetCreator(wxTheApp->GetAppDisplayName());
 
     for (auto* canvas : canvases)

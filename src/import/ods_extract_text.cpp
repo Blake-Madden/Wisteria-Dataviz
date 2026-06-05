@@ -329,23 +329,23 @@ namespace lily_of_the_valley
                             // map common ISO 4217 codes to their symbols
                             if (currencyCode == L"USD")
                                 {
-                                cellValue = L"$" + cellValue;
+                                cellValue.insert(0, L"$");
                                 }
                             else if (currencyCode == L"EUR")
                                 {
-                                cellValue = L"€" + cellValue;
+                                cellValue.insert(0, L"€");
                                 }
                             else if (currencyCode == L"GBP")
                                 {
-                                cellValue = L"£" + cellValue;
+                                cellValue.insert(0, L"£");
                                 }
                             else if (currencyCode == L"JPY")
                                 {
-                                cellValue = L"¥" + cellValue;
+                                cellValue.insert(0, L"¥");
                                 }
                             else
                                 {
-                                cellValue = currencyCode + cellValue;
+                                cellValue.insert(0, currencyCode);
                                 }
                             }
                         }

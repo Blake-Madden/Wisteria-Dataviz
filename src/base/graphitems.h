@@ -2289,7 +2289,7 @@ namespace Wisteria
                     {
                     buffer.reserve(buffer.length() + separator.length() + text.length());
                     buffer += separator;
-                    for (auto& ch : text)
+                    for (const auto& ch : text)
                         {
                         if (ch == L'\n' || ch == L'\r' || ch == L'\t')
                             {
