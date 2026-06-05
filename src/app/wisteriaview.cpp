@@ -2781,7 +2781,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-static wxString BuildAggPosJson(const wxString& pos, const wxString& type, int offset = 0)
+wxString WisteriaView::BuildAggPosJson(const wxString& pos, const wxString& dimension, int offset)
     {
     if (pos.empty())
         {
@@ -2806,9 +2806,9 @@ static wxString BuildAggPosJson(const wxString& pos, const wxString& type, int o
         }
     if (offset != 0)
         {
-        return wxString::Format(L"{\"origin\":\"%s:%s\", \"offset\":%d}", type, pos, offset);
+        return wxString::Format(L"{\"origin\":\"%s:%s\", \"offset\":%d}", dimension, pos, offset);
         }
-    return wxString::Format(L"\"%s:%s\"", type, pos);
+    return wxString::Format(L"\"%s:%s\"", dimension, pos);
     }
 
 //-------------------------------------------
@@ -2884,7 +2884,10 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             }
         if (dlg.GetAlternateRowColors())
             {
-            table->ApplyAlternateRowColors(dlg.GetAlternateRowColor(), 1);
+            // apply from the template so start/stops are honored
+            const Wisteria::ReportTableLoader loader(m_reportBuilder);
+            loader.ApplyTableAlternateRowColor(
+                table, wxSimpleJSON::Create(dlg.GetAlternateRowColorTemplate(), true));
             }
 
         // cache property templates for round-tripping
@@ -2916,10 +2919,8 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
             }
         if (dlg.GetAlternateRowColors())
             {
-            const auto color = dlg.GetAlternateRowColor();
-            table->SetPropertyTemplate(
-                L"alternate-row-color",
-                wxString::Format(L"{\"color\":\"%s\"}", color.GetAsString(wxC2S_HTML_SYNTAX)));
+            // use the full template so advanced sub-properties (start, stops) round-trip
+            table->SetPropertyTemplate(L"alternate-row-color", dlg.GetAlternateRowColorTemplate());
             }
         table->SetPropertyTemplate(L"ui.bold-header-row",
                                    dlg.GetBoldHeaderRow() ? L"true" : L"false");
@@ -2983,10 +2984,19 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
                     L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
                     L"\"background\":\"%s\"",
                     agg.m_name, agg.m_type, aggTypeStr,
-                    BuildAggPosJson(agg.m_start, agg.m_type, agg.m_startOffset),
-                    BuildAggPosJson(agg.m_end, agg.m_type, agg.m_endOffset),
+                    BuildAggPosJson(agg.m_start,
+                                    agg.m_startDimension.empty() ? agg.m_type :
+                                                                   agg.m_startDimension,
+                                    agg.m_startOffset),
+                    BuildAggPosJson(agg.m_end,
+                                    agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
+                                    agg.m_endOffset),
                     agg.m_useAdjacentColor ? L"true" : L"false",
-                    agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
+                    // keep the raw named/"{{constant}}" string if the color is unchanged
+                    (!agg.m_bkColorStr.empty() &&
+                     m_reportBuilder.ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
+                        agg.m_bkColorStr :
+                        agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
                 if (agg.m_position.has_value())
                     {
                     aggregatesJson +=
@@ -3222,10 +3232,8 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
             }
         if (dlg.GetAlternateRowColors())
             {
-            const auto color = dlg.GetAlternateRowColor();
-            table->SetPropertyTemplate(
-                L"alternate-row-color",
-                wxString::Format(L"{\"color\":\"%s\"}", color.GetAsString(wxC2S_HTML_SYNTAX)));
+            // use the full template so advanced sub-properties (start, stops) round-trip
+            table->SetPropertyTemplate(L"alternate-row-color", dlg.GetAlternateRowColorTemplate());
             }
 
         table->SetPropertyTemplate(L"ui.bold-header-row",
@@ -3300,10 +3308,19 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                     L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
                     L"\"background\":\"%s\"",
                     agg.m_name, agg.m_type, aggTypeStr,
-                    BuildAggPosJson(agg.m_start, agg.m_type, agg.m_startOffset),
-                    BuildAggPosJson(agg.m_end, agg.m_type, agg.m_endOffset),
+                    BuildAggPosJson(agg.m_start,
+                                    agg.m_startDimension.empty() ? agg.m_type :
+                                                                   agg.m_startDimension,
+                                    agg.m_startOffset),
+                    BuildAggPosJson(agg.m_end,
+                                    agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
+                                    agg.m_endOffset),
                     agg.m_useAdjacentColor ? L"true" : L"false",
-                    agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
+                    // keep the raw named/"{{constant}}" string if the color is unchanged
+                    (!agg.m_bkColorStr.empty() &&
+                     m_reportBuilder.ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
+                        agg.m_bkColorStr :
+                        agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
                 if (agg.m_position.has_value())
                     {
                     aggregatesJson +=

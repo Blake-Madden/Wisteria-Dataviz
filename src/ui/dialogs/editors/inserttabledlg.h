@@ -145,6 +145,13 @@ namespace Wisteria::UI
             return (m_altRowColorPicker != nullptr) ? m_altRowColorPicker->GetColour() : *wxWHITE;
             }
 
+        /// @returns The full @c alternate-row-color JSON template (for round-tripping).
+        /// @details Preserves any advanced sub-properties (e.g., @c start and @c stops)
+        ///     that were loaded from an existing table, only overwriting the user-editable
+        ///     color when it has actually been changed in the picker.
+        [[nodiscard]]
+        wxString GetAlternateRowColorTemplate() const;
+
         /// @returns The minimum width proportion (0.0–1.0),
         ///     or @c std::nullopt for auto-fit.
         [[nodiscard]]
@@ -179,10 +186,14 @@ namespace Wisteria::UI
             AggregateType m_aggregateType{ AggregateType::Total };
             /// @brief The start column/row.
             wxString m_start;
+            /// @brief The start position's dimension ("row"/"column"), empty if none.
+            wxString m_startDimension;
             /// @brief Offset applied to the start position (0 = no offset).
             int m_startOffset{ 0 };
             /// @brief The end column/row.
             wxString m_end;
+            /// @brief The end position's dimension ("row"/"column"), empty if none.
+            wxString m_endDimension;
             /// @brief Offset applied to the end position (0 = no offset).
             int m_endOffset{ 0 };
             /// @brief The insertion position.
@@ -191,6 +202,8 @@ namespace Wisteria::UI
             bool m_useAdjacentColor{ false };
             /// @brief The background color.
             wxColour m_bkColor;
+            /// @brief The raw background string (named/"{{constant}}"), empty if none.
+            wxString m_bkColorStr;
             };
 
         /// @returns The aggregates to add to the table.
@@ -293,6 +306,8 @@ namespace Wisteria::UI
         bool m_boldFirstColumn{ false };
         bool m_clearTrailingRowFormatting{ false };
         bool m_alternateRowColors{ false };
+        // cached alternate-row-color template (preserves start/stops on edit)
+        wxString m_alternateRowColorTemplate;
         bool m_useMinWidth{ false };
         bool m_useMinHeight{ false };
         // stored as 0–100 percentage; converted to 0.0–1.0

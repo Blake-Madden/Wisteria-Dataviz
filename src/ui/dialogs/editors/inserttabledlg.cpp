@@ -402,6 +402,43 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    wxString InsertTableDlg::GetAlternateRowColorTemplate() const
+        {
+        const wxColour pickerColor =
+            (m_altRowColorPicker != nullptr) ? m_altRowColorPicker->GetColour() : *wxWHITE;
+
+        // reuse the cached template (preserves start/stops); fresh object otherwise
+        auto node = (!m_alternateRowColorTemplate.empty()) ?
+                        wxSimpleJSON::Create(m_alternateRowColorTemplate, true) :
+                        wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
+        if (node == nullptr || !node->IsOk())
+            {
+            node = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
+            }
+
+        // keep the original color string (named/constant) if unchanged
+        const auto originalColorStr = node->GetProperty(L"color")->AsString();
+        const wxColour originalColor =
+            (GetReportBuilder() != nullptr) ?
+                GetReportBuilder()->ConvertColor(node->GetProperty(L"color")) :
+                wxColour{ originalColorStr };
+        const bool colorUnchanged =
+            !originalColorStr.empty() && originalColor.IsOk() && (originalColor == pickerColor);
+        node->Add(L"color",
+                  colorUnchanged ? originalColorStr : pickerColor.GetAsString(wxC2S_HTML_SYNTAX));
+
+        // default start to row 1 (skip header) for new tables
+        if (m_alternateRowColorTemplate.empty())
+            {
+            auto startNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
+            startNode->Add(L"origin", static_cast<double>(1));
+            node->Add(L"start", startNode);
+            }
+
+        return node->Print(false);
+        }
+
+    //-------------------------------------------
     bool InsertTableDlg::Validate()
         {
         TransferDataFromWindow();
@@ -542,6 +579,8 @@ namespace Wisteria::UI
         if (!altColorTemplate.empty())
             {
             m_alternateRowColors = true;
+            // cache the full template (preserves start/stops on edit)
+            m_alternateRowColorTemplate = altColorTemplate;
             // extract color from {"color":"#RRGGBB"}
             const auto startPos = altColorTemplate.find(L"\"color\"");
             if (startPos != wxString::npos)
@@ -608,20 +647,23 @@ namespace Wisteria::UI
                     entry.m_aggregateType = AggregateType::Ratio;
                     }
 
-                const auto readPosNode =
-                    [](const wxSimpleJSON::Ptr_t& node, wxString& origin, int& offset)
+                const auto readPosNode = [](const wxSimpleJSON::Ptr_t& node, wxString& origin,
+                                            wxString& dimension, int& offset)
                 {
                     const auto originNode = node->GetProperty(L"origin");
                     const auto& valueNode = originNode->IsOk() ? originNode : node;
                     origin = valueNode->IsValueNumber() ?
                                  wxString{ std::to_wstring(valueNode->AsDouble()) } :
                                  valueNode->AsString();
+                    // split off the dimension prefix so it can be restored on save
                     if (origin.Lower().StartsWith(L"column:"))
                         {
+                        dimension = L"column";
                         origin = origin.substr(7);
                         }
                     else if (origin.Lower().StartsWith(L"row:"))
                         {
+                        dimension = L"row";
                         origin = origin.substr(4);
                         }
                     if (node->HasProperty(L"offset"))
@@ -630,8 +672,10 @@ namespace Wisteria::UI
                         }
                 };
 
-                readPosNode(aggNode->GetProperty(L"start"), entry.m_start, entry.m_startOffset);
-                readPosNode(aggNode->GetProperty(L"end"), entry.m_end, entry.m_endOffset);
+                readPosNode(aggNode->GetProperty(L"start"), entry.m_start, entry.m_startDimension,
+                            entry.m_startOffset);
+                readPosNode(aggNode->GetProperty(L"end"), entry.m_end, entry.m_endDimension,
+                            entry.m_endOffset);
 
                 if (aggNode->HasProperty(L"position"))
                     {
@@ -659,6 +703,7 @@ namespace Wisteria::UI
                         }
                     }
                 entry.m_useAdjacentColor = aggNode->GetProperty(L"use-adjacent-color")->AsBool();
+                entry.m_bkColorStr = aggNode->GetProperty(L"background")->AsString();
                 if (GetReportBuilder() != nullptr)
                     {
                     entry.m_bkColor =

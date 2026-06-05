@@ -249,6 +249,14 @@ class WisteriaView final : public wxView
                                      Wisteria::Graphs::Graph2D& newGraph, const wxString& prop,
                                      const wxString& newVal, const wxString& oldExpanded);
 
+    /// @brief Builds the JSON for an aggregate's start/end position.
+    /// @param pos The position (bare name, number, or "last-row"/"last-column").
+    /// @param dimension The "row"/"column" prefix to apply to a named position.
+    /// @param offset The offset applied to the position (0 = none).
+    /// @returns The JSON string for the position.
+    [[nodiscard]]
+    static wxString BuildAggPosJson(const wxString& pos, const wxString& dimension, int offset = 0);
+
     /// @returns The sidebar icon that displays where a dataset come from
     ///     (i.e., imported vs. a pivot operation).
     [[nodiscard]]
