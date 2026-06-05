@@ -3093,11 +3093,12 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
         // re-apply procedural features from carried-forward templates
         m_reportBuilder.ApplyTableFeatures(table);
 
-        // side annotations live in the gutters beside the table; a left- or
+        // Side annotations live in the gutters beside the table; a left- or
         // right-aligned table only has one gutter, so Table::DeduceGutterSide()
-        // collapses every note into it. override the page alignment to centered
-        // so both gutters have room and the requested annotation side is honored
-        if (!annotations.empty())
+        // collapses every note into it. Only force centering when both sides are
+        // in use — single-side annotations fit in the one available gutter
+        if (std::ranges::any_of(annotations, [](const auto& ann) { return !ann.m_sideRight; }) &&
+            std::ranges::any_of(annotations, [](const auto& ann) { return ann.m_sideRight; }))
             {
             table->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered);
             }
@@ -3360,9 +3361,11 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
 
         // side annotations live in the gutters beside the table; a left- or
         // right-aligned table only has one gutter, so Table::DeduceGutterSide()
-        // collapses every note into it. override the page alignment to centered
-        // so both gutters have room and the requested annotation side is honored
-        if (!editAnnotations.empty())
+        // collapses every note into it. only force centering when both sides are
+        // in use — single-side annotations fit in the one available gutter
+        if (std::ranges::any_of(editAnnotations,
+                                [](const auto& ann) { return !ann.m_sideRight; }) &&
+            std::ranges::any_of(editAnnotations, [](const auto& ann) { return ann.m_sideRight; }))
             {
             table->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered);
             }
