@@ -179,8 +179,12 @@ namespace Wisteria::UI
             AggregateType m_aggregateType{ AggregateType::Total };
             /// @brief The start column/row.
             wxString m_start;
+            /// @brief Offset applied to the start position (0 = no offset).
+            int m_startOffset{ 0 };
             /// @brief The end column/row.
             wxString m_end;
+            /// @brief Offset applied to the end position (0 = no offset).
+            int m_endOffset{ 0 };
             /// @brief The insertion position.
             std::optional<size_t> m_position;
             /// @brief Whether to use adjacent cell color.

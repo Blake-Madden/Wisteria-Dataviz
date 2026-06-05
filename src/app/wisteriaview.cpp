@@ -2780,6 +2780,37 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+static wxString BuildAggPosJson(const wxString& pos, const wxString& type, int offset = 0)
+    {
+    if (pos.empty())
+        {
+        return wxString(L"null");
+        }
+    double dVal = 0;
+    if (pos.ToDouble(&dVal))
+        {
+        if (offset != 0)
+            {
+            return wxString::Format(L"{\"origin\":%s, \"offset\":%d}", pos, offset);
+            }
+        return pos;
+        }
+    if (pos.CmpNoCase(L"last-column") == 0 || pos.CmpNoCase(L"last-row") == 0)
+        {
+        if (offset != 0)
+            {
+            return wxString::Format(L"{\"origin\":\"%s\", \"offset\":%d}", pos, offset);
+            }
+        return wxString::Format(L"\"%s\"", pos);
+        }
+    if (offset != 0)
+        {
+        return wxString::Format(L"{\"origin\":\"%s:%s\", \"offset\":%d}", type, pos, offset);
+        }
+    return wxString::Format(L"\"%s:%s\"", type, pos);
+    }
+
+//-------------------------------------------
 void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
     {
     auto* canvas = EnsureActivePage();
@@ -2946,26 +2977,13 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
                     break;
                     }
 
-                const auto buildPosJson = [](const wxString& pos, const wxString& type)
-                {
-                    if (pos.empty())
-                        {
-                        return wxString(L"null");
-                        }
-                    double dVal = 0;
-                    if (pos.ToDouble(&dVal))
-                        {
-                        return pos;
-                        }
-                    return wxString::Format(L"\"%s:%s\"", type, pos);
-                };
-
                 aggregatesJson += wxString::Format(
                     L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
                     L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
                     L"\"background\":\"%s\"",
-                    agg.m_name, agg.m_type, aggTypeStr, buildPosJson(agg.m_start, agg.m_type),
-                    buildPosJson(agg.m_end, agg.m_type),
+                    agg.m_name, agg.m_type, aggTypeStr,
+                    BuildAggPosJson(agg.m_start, agg.m_type, agg.m_startOffset),
+                    BuildAggPosJson(agg.m_end, agg.m_type, agg.m_endOffset),
                     agg.m_useAdjacentColor ? L"true" : L"false",
                     agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
                 if (agg.m_position.has_value())
@@ -3275,26 +3293,13 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                     break;
                     }
 
-                const auto buildPosJson = [](const wxString& pos, const wxString& type)
-                {
-                    if (pos.empty())
-                        {
-                        return wxString(L"null");
-                        }
-                    double dVal = 0;
-                    if (pos.ToDouble(&dVal))
-                        {
-                        return pos;
-                        }
-                    return wxString::Format(L"\"%s:%s\"", type, pos);
-                };
-
                 aggregatesJson += wxString::Format(
                     L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
                     L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
                     L"\"background\":\"%s\"",
-                    agg.m_name, agg.m_type, aggTypeStr, buildPosJson(agg.m_start, agg.m_type),
-                    buildPosJson(agg.m_end, agg.m_type),
+                    agg.m_name, agg.m_type, aggTypeStr,
+                    BuildAggPosJson(agg.m_start, agg.m_type, agg.m_startOffset),
+                    BuildAggPosJson(agg.m_end, agg.m_type, agg.m_endOffset),
                     agg.m_useAdjacentColor ? L"true" : L"false",
                     agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
                 if (agg.m_position.has_value())

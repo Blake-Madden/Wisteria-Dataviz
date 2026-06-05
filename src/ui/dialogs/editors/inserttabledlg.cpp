@@ -608,31 +608,30 @@ namespace Wisteria::UI
                     entry.m_aggregateType = AggregateType::Ratio;
                     }
 
-                const auto startNode = aggNode->GetProperty(L"start");
-                entry.m_start = startNode->IsValueNumber() ?
-                                    wxString{ std::to_wstring(startNode->AsDouble()) } :
-                                    startNode->AsString();
-                if (entry.m_start.Lower().StartsWith(L"column:"))
-                    {
-                    entry.m_start = entry.m_start.substr(7);
-                    }
-                else if (entry.m_start.Lower().StartsWith(L"row:"))
-                    {
-                    entry.m_start = entry.m_start.substr(4);
-                    }
+                const auto readPosNode =
+                    [](const wxSimpleJSON::Ptr_t& node, wxString& origin, int& offset)
+                {
+                    const auto originNode = node->GetProperty(L"origin");
+                    const auto& valueNode = originNode->IsOk() ? originNode : node;
+                    origin = valueNode->IsValueNumber() ?
+                                 wxString{ std::to_wstring(valueNode->AsDouble()) } :
+                                 valueNode->AsString();
+                    if (origin.Lower().StartsWith(L"column:"))
+                        {
+                        origin = origin.substr(7);
+                        }
+                    else if (origin.Lower().StartsWith(L"row:"))
+                        {
+                        origin = origin.substr(4);
+                        }
+                    if (node->HasProperty(L"offset"))
+                        {
+                        offset = static_cast<int>(node->GetProperty(L"offset")->AsDouble());
+                        }
+                };
 
-                const auto endNode = aggNode->GetProperty(L"end");
-                entry.m_end = endNode->IsValueNumber() ?
-                                  wxString{ std::to_wstring(endNode->AsDouble()) } :
-                                  endNode->AsString();
-                if (entry.m_end.Lower().StartsWith(L"column:"))
-                    {
-                    entry.m_end = entry.m_end.substr(7);
-                    }
-                else if (entry.m_end.Lower().StartsWith(L"row:"))
-                    {
-                    entry.m_end = entry.m_end.substr(4);
-                    }
+                readPosNode(aggNode->GetProperty(L"start"), entry.m_start, entry.m_startOffset);
+                readPosNode(aggNode->GetProperty(L"end"), entry.m_end, entry.m_endOffset);
 
                 if (aggNode->HasProperty(L"position"))
                     {
@@ -921,10 +920,22 @@ namespace Wisteria::UI
         auto* startCtrl = new wxTextCtrl(&dlg, wxID_ANY);
         gridSizer->Add(startCtrl, wxSizerFlags{}.Expand());
 
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start Offset:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* startOffsetCtrl = new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                               wxDefaultSize, wxSP_ARROW_KEYS, -1000, 1000, 0);
+        gridSizer->Add(startOffsetCtrl, wxSizerFlags{}.Expand());
+
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")),
                        wxSizerFlags{}.CenterVertical());
         auto* endCtrl = new wxTextCtrl(&dlg, wxID_ANY);
         gridSizer->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End Offset:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* endOffsetCtrl = new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                             wxDefaultSize, wxSP_ARROW_KEYS, -1000, 1000, 0);
+        gridSizer->Add(endOffsetCtrl, wxSizerFlags{}.Expand());
 
         auto* useAdjCtrl = new wxCheckBox(&dlg, wxID_ANY, _(L"Use adjacent cell color"));
         gridSizer->Add(useAdjCtrl, wxSizerFlags{}.CenterVertical());
@@ -967,7 +978,9 @@ namespace Wisteria::UI
             break;
             }
         entry.m_start = startCtrl->GetValue().Trim().Trim(false);
+        entry.m_startOffset = startOffsetCtrl->GetValue();
         entry.m_end = endCtrl->GetValue().Trim().Trim(false);
+        entry.m_endOffset = endOffsetCtrl->GetValue();
         entry.m_useAdjacentColor = useAdjCtrl->GetValue();
         entry.m_bkColor = colorCtrl->GetColour();
 
@@ -1040,10 +1053,24 @@ namespace Wisteria::UI
         auto* startCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_start);
         gridSizer->Add(startCtrl, wxSizerFlags{}.Expand());
 
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start Offset:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* startOffsetCtrl =
+            new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+                           wxSP_ARROW_KEYS, -1000, 1000, entry.m_startOffset);
+        gridSizer->Add(startOffsetCtrl, wxSizerFlags{}.Expand());
+
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")),
                        wxSizerFlags{}.CenterVertical());
         auto* endCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_end);
         gridSizer->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End Offset:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* endOffsetCtrl =
+            new wxSpinCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+                           wxSP_ARROW_KEYS, -1000, 1000, entry.m_endOffset);
+        gridSizer->Add(endOffsetCtrl, wxSizerFlags{}.Expand());
 
         auto* useAdjCtrl = new wxCheckBox(&dlg, wxID_ANY, _(L"Use adjacent cell color"));
         useAdjCtrl->SetValue(entry.m_useAdjacentColor);
@@ -1086,7 +1113,9 @@ namespace Wisteria::UI
             break;
             }
         entry.m_start = startCtrl->GetValue().Trim().Trim(false);
+        entry.m_startOffset = startOffsetCtrl->GetValue();
         entry.m_end = endCtrl->GetValue().Trim().Trim(false);
+        entry.m_endOffset = endOffsetCtrl->GetValue();
         entry.m_useAdjacentColor = useAdjCtrl->GetValue();
         entry.m_bkColor = colorCtrl->GetColour();
 
