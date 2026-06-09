@@ -72,7 +72,7 @@ namespace Wisteria
         [[nodiscard]]
         bool HasUILayer() const noexcept
             {
-            return m_includeLayoutOptions || m_includeDarkModeToggle || m_includeSlideshow;
+            return m_includeLayoutOptions || m_includeDarkModeToggle;
             }
 
         /// @brief Enables/disables smooth transitions.

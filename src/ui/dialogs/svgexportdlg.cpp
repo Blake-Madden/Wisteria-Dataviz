@@ -217,9 +217,9 @@ namespace Wisteria::UI
         wxArrayString layoutChoices;
         layoutChoices.Add(_(L"Stacked"));
         layoutChoices.Add(_(L"Duplex"));
-        auto* layoutRadio =
-            new wxRadioBox(featuresSizer->GetStaticBox(), LAYOUT_RADIO_ID, _(L"Page Layout"),
-                           wxDefaultPosition, wxDefaultSize, layoutChoices, 1, wxRA_SPECIFY_COLS);
+        auto* layoutRadio = new wxRadioBox(featuresSizer->GetStaticBox(), LAYOUT_RADIO_ID,
+                                           _(L"Default Page Layout"), wxDefaultPosition,
+                                           wxDefaultSize, layoutChoices, 1, wxRA_SPECIFY_COLS);
         // map enum to int
         layoutRadio->SetSelection(m_layout == Wisteria::SVGReportOptions::PageLayout::Stacked ? 0 :
                                                                                                 1);
@@ -269,7 +269,7 @@ namespace Wisteria::UI
 
         auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
         colorSizer->Add(
-            new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Theme Color:")),
+            new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Theme color:")),
             wxSizerFlags{}.CenterVertical());
         auto* colorPicker =
             new wxColourPickerCtrl(featuresSizer->GetStaticBox(), THEME_COLOR_ID, m_themeColor);
