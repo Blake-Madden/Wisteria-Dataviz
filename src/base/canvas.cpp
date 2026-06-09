@@ -1578,21 +1578,31 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         if (dc.IsKindOf(wxCLASSINFO(wxSVGFileDC)))
             {
             auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc);
-            // user-provided accessibility features
+            // user-provided accessibility features...
             if (svgDc != nullptr && !item->IsUsingAutoAccessibility() &&
                 !item->GetAccessibilityAttributes().IsEmpty())
                 {
-                const wxSVGAccessibleGroup accessGroup(*svgDc, item->GetAccessibilityAttributes());
+                const wxSVGAccessibleGroup accessGroup{ *svgDc,
+                                                        item->GetAccessibilityAttributes() };
                 item->Draw(dc);
                 }
-            // accessibility features built by the object internally
+            // ...or accessibility features built by the object internally
             else if (svgDc != nullptr && item->IsUsingAutoAccessibility() &&
                      !item->GetAutoAccessibilityAttributes().IsEmpty())
                 {
-                const wxSVGAccessibleGroup accessGroup(*svgDc,
-                                                       item->GetAutoAccessibilityAttributes());
+                const auto& autoAttrs = item->GetAutoAccessibilityAttributes();
+                wxSVGAttributes groupAttrs;
+                if (!autoAttrs.GetRole().empty())
                     {
-                    const wxSVGAccessibleGroup hiddenGroup(*svgDc, wxSVGAttributes{}.AriaHidden());
+                    groupAttrs.Role(autoAttrs.GetRole());
+                    }
+                // use a <desc> child element instead of aria-label;
+                // easier on screen readers when we have long descriptions
+                const wxSVGAccessibleGroup accessGroup{ *svgDc, groupAttrs, wxString{},
+                                                        autoAttrs.GetAriaLabel() };
+                    {
+                    const wxSVGAccessibleGroup hiddenGroup{ *svgDc,
+                                                            wxSVGAttributes{}.AriaHidden() };
                     item->Draw(dc);
                     }
                 }
