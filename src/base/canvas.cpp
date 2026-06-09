@@ -209,6 +209,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     *static_cast<GraphItems::Label*>(singleSelected));
                 return;
                 }
+            wxMessageBox((totalSelected == 1) ? _(L"No copyable item selected.") :
+                                                _(L"Please select only one item to copy."),
+                         _(L"Copy Item"), wxOK | wxICON_INFORMATION);
+            return;
             }
 
         if (wxTheClipboard->Open())
@@ -258,6 +262,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         {
         if (!Settings::IsReportEditingEnabled())
             {
+            return;
+            }
+        if (m_labelClipboard == nullptr)
+            {
+            wxMessageBox(_(L"No item on the clipboard."), _(L"Paste"), wxOK | wxICON_INFORMATION);
             return;
             }
         PastePlacementDlg dlg(this, this);

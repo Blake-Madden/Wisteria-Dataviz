@@ -362,6 +362,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Insert a shape"));
         objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"axis.svg"),
                                     _(L"Insert an axis"));
+        objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"copy.svg"),
+                                    _(L"Copy the selected item"));
+        objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"paste.svg"),
+                                    _(L"Paste the copied item"));
         objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
                                     _(L"Edit the selected item"));
         objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),

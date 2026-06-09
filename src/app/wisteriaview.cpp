@@ -130,6 +130,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind copy/paste (route accelerator events to the active canvas)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPasteItem, this, wxID_PASTE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnCopyItem, this, wxID_COPY);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPasteItem, this, wxID_PASTE);
 
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
@@ -2222,6 +2224,19 @@ Wisteria::Canvas* WisteriaView::AddPageToProject(const size_t rows, const size_t
     ApplyGlobalPrintSettings(canvas);
     canvas->SetFixedObjectsGridSize(rows, columns);
 
+    canvas->Bind(wxEVT_LEFT_UP,
+                 [this](wxMouseEvent& event)
+                 {
+                     event.Skip();
+                     CallAfter([this]() { UpdateGraphButtonStates(); });
+                 });
+    canvas->Bind(wxEVT_KEY_UP,
+                 [this](wxKeyEvent& event)
+                 {
+                     event.Skip();
+                     CallAfter([this]() { UpdateGraphButtonStates(); });
+                 });
+
     canvas->Hide();
     m_workArea->GetSizer()->Add(canvas, wxSizerFlags{ 1 }.Expand());
     m_workWindows.AddWindow(canvas);
@@ -2309,15 +2324,17 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, true);
         }
 
-    // objects - insert always enabled; edit/delete require an active page
+    // objects - insert always enabled
     if (m_objectsButtonBar != nullptr)
         {
         m_objectsButtonBar->EnableButton(ID_NEW_LABEL, true);
         m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, true);
-        m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
-        m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
+        m_objectsButtonBar->EnableButton(wxID_COPY, true);
+        m_objectsButtonBar->EnableButton(wxID_PASTE, true);
+        m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, true);
+        m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, true);
         }
     }
 
@@ -3483,8 +3500,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    if (selectedItem == nullptr)
+    if (selectedCount == 0 || selectedItem == nullptr)
         {
+        wxMessageBox(_(L"Please select an item to edit."), _(L"Edit"), wxOK | wxICON_INFORMATION,
+                     m_frame);
         return;
         }
 
@@ -3702,8 +3721,10 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    if (selectedItem == nullptr)
+    if (selectedCount == 0 || selectedItem == nullptr)
         {
+        wxMessageBox(_(L"Please select an item to delete."), _(L"Delete"),
+                     wxOK | wxICON_INFORMATION, m_frame);
         return;
         }
 
