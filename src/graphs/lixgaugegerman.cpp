@@ -369,4 +369,117 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             }
         AddObject(std::move(points));
         }
+
+    //----------------------------------------------------------------
+    void LixGaugeGerman::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_scoresColumn.empty() ||
+            GetCustomAxes().size() < 3)
+            {
+            return;
+            }
+
+        wxString label = _(L"A German Lix gauge");
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        const auto& leftAxis = GetCustomAxes()[0];
+        const auto& rightAxis = GetCustomAxes()[2];
+
+        const auto appendBracketLabels = [](wxString& dest, const GraphItems::Axis& axis)
+        {
+            bool firstItem{ true };
+            for (const auto& bracket : axis.GetBrackets())
+                {
+                if (!firstItem)
+                    {
+                    dest += L", ";
+                    }
+                wxString bracketText = bracket.GetLabel().GetText();
+                bracketText.Replace(L"\n", L" ");
+                dest += bracketText;
+                firstItem = false;
+                }
+        };
+
+        // left axis bracket labels, read top to bottom (easy to difficult)
+        if (!leftAxis.GetBrackets().empty())
+            {
+            /* TRANSLATORS: Lix gauge accessibility: left scale header. */
+            label += _(L". Left scale: ");
+            appendBracketLabels(label, leftAxis);
+            }
+
+        // right axis bracket labels, read top to bottom
+        if (!rightAxis.GetBrackets().empty())
+            {
+            /* TRANSLATORS: Lix gauge accessibility: right scale header. */
+            label += _(L". Right scale: ");
+            appendBracketLabels(label, rightAxis);
+            }
+
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+        std::vector<double> validScores;
+        for (const auto& val : scoresColumn->GetValues())
+            {
+            if (std::isfinite(val))
+                {
+                validScores.push_back(std::clamp<double>(val, 0, 100));
+                }
+            }
+
+        if (!validScores.empty())
+            {
+            // resolve which left-axis bracket label covers a given score
+            const auto getSectionLabel = [&leftAxis](double score) -> wxString
+            {
+                for (const auto& bracket : leftAxis.GetBrackets())
+                    {
+                    if (bracket.GetStartPosition() > score)
+                        {
+                        return bracket.GetLabel().GetText();
+                        }
+                    }
+                return leftAxis.GetBrackets().empty() ?
+                           wxString{} :
+                           leftAxis.GetBrackets().back().GetLabel().GetText();
+            };
+
+            label += L". ";
+            if (validScores.size() == 1)
+                {
+                /* TRANSLATORS: Lix gauge accessibility: single score.
+                   1st %s is the score value, 2nd %s is the section label. */
+                label +=
+                    wxString::Format(_(L"Score: %s, classified as %s"),
+                                     wxNumberFormatter::ToString(
+                                         validScores[0], 1, wxNumberFormatter::Style::Style_None),
+                                     getSectionLabel(validScores[0]));
+                }
+            else
+                {
+                const auto minScore = *std::min_element(validScores.cbegin(), validScores.cend());
+                const auto maxScore = *std::max_element(validScores.cbegin(), validScores.cend());
+                /* TRANSLATORS: Lix gauge accessibility: multiple scores.
+                   %zu is the count; 1st %s is lowest value, 2nd %s is its section,
+                   3rd %s is highest value, 4th %s is its section. */
+                label += wxString::Format(
+                    _(L"%zu scores; lowest score (%s) falls in %s; highest score (%s) falls in %s"),
+                    validScores.size(),
+                    wxNumberFormatter::ToString(minScore, 1, wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(minScore),
+                    wxNumberFormatter::ToString(maxScore, 1, wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(maxScore));
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

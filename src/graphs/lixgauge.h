@@ -92,6 +92,7 @@ namespace Wisteria::Graphs
 
       private:
         void RecalcSizes(wxDC& dc) final;
+        void SetAutoAccessibilityAttributes() final;
 
         void AdjustAxes();
 
