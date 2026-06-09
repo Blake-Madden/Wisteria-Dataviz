@@ -961,6 +961,7 @@ namespace Wisteria
         void OnContextMenu([[maybe_unused]] wxContextMenuEvent& event);
         void OnMouseEvents(wxMouseEvent& event);
         void OnKeyDown(wxKeyEvent& event);
+        void OnPaste([[maybe_unused]] wxCommandEvent& event);
 
         [[nodiscard]]
         auto& GetFixedObjects() noexcept
@@ -1031,6 +1032,9 @@ namespace Wisteria
         // so being shared_ptrs is fine.
         std::vector<std::vector<std::shared_ptr<GraphItems::GraphItemBase>>> m_fixedObjects;
         std::vector<CanvasRowInfo> m_rowsInfo;
+
+        // buffered label for report-editing copy/paste (shared across all canvas instances)
+        inline static std::shared_ptr<GraphItems::Label> m_labelClipboard;
 
         // draggable items
         // (note that these objects must be share_ptrs because a state-based share_ptr must be

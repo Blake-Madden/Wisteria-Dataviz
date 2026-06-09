@@ -57,6 +57,7 @@ page-add.svg
 page-delete.svg
 page-edit.svg
 page.svg
+paste.svg
 pdf.svg
 piechart-subgrouped.svg
 piechart.svg

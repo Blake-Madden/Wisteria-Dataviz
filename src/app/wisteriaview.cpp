@@ -74,10 +74,12 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame = new wxDocChildFrame(doc, this, wxGetApp().GetMainFrame(), wxID_ANY, title,
                                   wxDefaultPosition, windowSize, wxDEFAULT_FRAME_STYLE);
 
-    const std::array<wxAcceleratorEntry, 3> entries = {
+    const std::array<wxAcceleratorEntry, 5> entries = {
         wxAcceleratorEntry(wxACCEL_CTRL, L'O', wxID_OPEN),
         wxAcceleratorEntry(wxACCEL_CTRL, L'S', ID_SAVE_PROJECT),
-        wxAcceleratorEntry(wxACCEL_CTRL, L'P', wxID_PRINT)
+        wxAcceleratorEntry(wxACCEL_CTRL, L'P', wxID_PRINT),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'C', wxID_COPY),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'V', wxID_PASTE)
     };
     m_frame->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
@@ -124,6 +126,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind sidebar click event
     m_sideBar->Bind(Wisteria::UI::wxEVT_SIDEBAR_CLICK, &WisteriaView::OnSidebarClick, this);
+
+    // bind copy/paste (route accelerator events to the active canvas)
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPasteItem, this, wxID_PASTE);
 
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
@@ -653,6 +659,30 @@ void WisteriaView::OnPrintSetup([[maybe_unused]] wxCommandEvent& event)
         settings->SetPaperId(updatedData.GetPaperId());
         settings->SaveSettingsFile();
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnCopyItem([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+    wxCommandEvent copyEvent(wxEVT_MENU, wxID_COPY);
+    canvas->GetEventHandler()->ProcessEvent(copyEvent);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+    wxCommandEvent pasteEvent(wxEVT_MENU, wxID_PASTE);
+    canvas->GetEventHandler()->ProcessEvent(pasteEvent);
     }
 
 //-------------------------------------------
