@@ -62,8 +62,9 @@ class Screenshot
         @param filePath The path to save the screenshot to.
         @param windowId The ID of the text window. The window will be searched for from the
             top-level window by looking for this ID.
-        @param clipContents Whether empty area at the bottom of the window should be
-            clipped from the image.
+        @param clipContents If @c true and @c highlightPoints is non-empty, crops the image
+            below the last highlighted section. If @c false or @c highlightPoints is empty,
+            only dead space below the last line of text is clipped (the default behavior).
         @param highlightPoints The pairs of character positions to draw a red highlight
             around in the screenshot.
         @returns @c true if image is saved successfully.*/
@@ -152,6 +153,7 @@ class Screenshot
     static wxWindow* GetActiveDialogOrFrame();
 
   private:
+    static constexpr int RGB_CHANNEL_SIZE{ 24 };
     /// @brief Ensures that everything is repainted and ready for screenshot.
     /// @param windowToCapture The window to prepare for the screenshot.
     static void PrepareWindowForScreenshot(wxWindow* windowToCapture);

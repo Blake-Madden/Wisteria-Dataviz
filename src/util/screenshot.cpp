@@ -80,7 +80,7 @@ bool Screenshot::AnnotateScreenshot(const wxString& filePath, const wxString& te
         memDC.SelectObject(bmp);
         memDC.SetPen(GetOutlinePen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
         memDC.SetBrush(wxColour{ 255, 255, 255 });
-        memDC.DrawRectangle(wxRect(topLeftCorner, bottomRightCorner));
+        memDC.DrawRectangle(wxRect{ topLeftCorner, bottomRightCorner });
         memDC.DrawText(text, topLeftCorner);
 
         memDC.SelectObject(wxNullBitmap);
@@ -179,7 +179,7 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
     wxClientDC dc(ribbonBar);
     wxMemoryDC memDC;
 
-    wxBitmap bitmap(dc.GetSize(), 24);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
@@ -337,7 +337,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
     wxClientDC dc(listCtrl);
     wxMemoryDC memDC;
 
-    wxBitmap bitmap(dc.GetSize(), 24);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
@@ -371,24 +371,24 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
                 // get the top of the row below the cut-off
                 cutOffRow + 1, 0, cutOffRect))
             {
-            bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(), cutOffRect.GetTop()));
+            bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), cutOffRect.GetTop() });
             }
         }
     // chop off any dead space after last column
     if (columnsWidth < bitmap.GetWidth())
         {
-        bitmap = bitmap.GetSubBitmap(wxRect(0, 0,
-                                            columnsWidth +
-                                                // space for the pen if we are right on the edge
-                                                wxTheApp->GetTopWindow()->GetDPIScaleFactor(),
-                                            bitmap.GetHeight()));
+        bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0,
+                                             columnsWidth +
+                                                 // space for the pen if we are right on the edge
+                                                 wxTheApp->GetTopWindow()->GetDPIScaleFactor(),
+                                             bitmap.GetHeight() });
         }
     // and below the last row
     // (this assumes there are fewer rows in the entire list that fix on the screen)
     if (rowHeight < bitmap.GetHeight())
         {
-        bitmap = bitmap.GetSubBitmap(wxRect(
-            0, 0, bitmap.GetWidth(), rowHeight + wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
+        bitmap = bitmap.GetSubBitmap(wxRect{
+            0, 0, bitmap.GetWidth(), rowHeight + wxTheApp->GetTopWindow()->GetDPIScaleFactor() });
         }
 
     // draw a gray border around the image since we are saving the client area
@@ -439,7 +439,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     wxClientDC dc(windowToCapture);
     wxMemoryDC memDC;
 
-    wxBitmap bitmap(dc.GetSize(), 24);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
@@ -491,14 +491,36 @@ bool Screenshot::SaveScreenshotOfTextWindow(
 
     memDC.SelectObject(wxNullBitmap);
 
-    // chop off whitespace if we scrolled to bottom of the file
-    if (clipContents && textWindow != nullptr)
+    // always clip dead space at the bottom
+    if (textWindow != nullptr)
         {
         wxPoint endOfWindowPoint = textWindow->PositionToCoords(textWindow->GetLastPosition());
         endOfWindowPoint.y += (textWindow->GetDefaultStyle().GetFontSize() * 2);
         if (endOfWindowPoint.y < bitmap.GetHeight())
             {
-            bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(), endOfWindowPoint.y));
+            bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), endOfWindowPoint.y });
+            }
+        }
+
+    // if clipping to highlights, additionally crop below the last highlighted section
+    if (clipContents && !highlightPoints.empty() && textWindow != nullptr)
+        {
+        const auto& lastHighlight = highlightPoints.back();
+        wxPoint endPoint = (lastHighlight.second != -1) ?
+                               textWindow->PositionToCoords(lastHighlight.second) :
+                               textWindow->PositionToCoords(textWindow->GetLastPosition());
+        long x{ 0 }, y{ 0 };
+        if ((lastHighlight.second != -1) && textWindow->PositionToXY(lastHighlight.second, &x, &y))
+            {
+            endPoint.y = textWindow->PositionToCoords(textWindow->XYToPosition(0, y + 1)).y;
+            }
+        else
+            {
+            endPoint.y += (textWindow->GetDefaultStyle().GetFontSize() * 2);
+            }
+        if (endPoint.y < bitmap.GetHeight())
+            {
+            bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), endPoint.y });
             }
         }
 
@@ -535,7 +557,7 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
     wxMemoryDC memDC;
 
     // no alpha channel, just a raw RGB bitmap
-    wxBitmap bitmap(dc.GetSize(), 24);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
@@ -637,7 +659,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
 
     // use 24-bit (RGB) bitmap, because including the alpha channel
     // is unnecessary and causes artifacts on HiDPI displays
-    wxBitmap bitmap(dc.GetSize(), 24);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
@@ -770,7 +792,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
 
     // use 24-bit (RGB) bitmap, because including the alpha channel
     // is unnecessary and causes artifacts on HiDPI displays
-    wxBitmap bitmap(dc.GetSize(), 24);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
