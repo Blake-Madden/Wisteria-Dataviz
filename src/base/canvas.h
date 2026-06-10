@@ -233,6 +233,13 @@ namespace Wisteria
             return m_labelClipboard;
             }
 
+        /// @returns The copied image for report-editing paste, or null if none.
+        [[nodiscard]]
+        static const std::shared_ptr<GraphItems::Image>& GetImageClipboard() noexcept
+            {
+            return m_imageClipboard;
+            }
+
         /** @name Background Functions
             @brief Functions related to customizing the canvas's background.*/
         /// @{
@@ -982,13 +989,13 @@ namespace Wisteria
             }
 
         [[nodiscard]]
-        std::vector<std::unique_ptr<GraphItems::Label>>& GetTitles() noexcept
+        std::vector<std::shared_ptr<GraphItems::Label>>& GetTitles() noexcept
             {
             return m_titles;
             }
 
         [[nodiscard]]
-        const std::vector<std::unique_ptr<GraphItems::Label>>& GetTitles() const noexcept
+        const std::vector<std::shared_ptr<GraphItems::Label>>& GetTitles() const noexcept
             {
             return m_titles;
             }
@@ -1031,7 +1038,7 @@ namespace Wisteria
         std::vector<GraphItems::Label> m_topTitles;
         std::vector<GraphItems::Label> m_bottomTitles;
         // internal container for the above titles
-        std::vector<std::unique_ptr<GraphItems::Label>> m_titles;
+        std::vector<std::shared_ptr<GraphItems::Label>> m_titles;
 
         // embedded objects (e.g., graphs, legends)
         // Note that these persist until they are explicitly swapped or cleared by the client,
@@ -1039,8 +1046,9 @@ namespace Wisteria
         std::vector<std::vector<std::shared_ptr<GraphItems::GraphItemBase>>> m_fixedObjects;
         std::vector<CanvasRowInfo> m_rowsInfo;
 
-        // buffered label for report-editing copy/paste (shared across all canvas instances)
+        // buffered items for report-editing copy/paste (shared across all canvas instances)
         inline static std::shared_ptr<GraphItems::Label> m_labelClipboard;
+        inline static std::shared_ptr<GraphItems::Image> m_imageClipboard;
 
         // draggable items
         // (note that these objects must be share_ptrs because a state-based share_ptr must be

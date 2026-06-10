@@ -150,8 +150,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             // reset cached copied objects
             m_labelClipboard = nullptr;
+            m_imageClipboard = nullptr;
             // find the single selected item across all object collections
-            GraphItems::GraphItemBase* singleSelected{ nullptr };
+            std::shared_ptr<GraphItems::GraphItemBase> singleSelected;
             size_t totalSelected{ 0 };
             for (auto& row : GetFixedObjects())
                 {
@@ -159,7 +160,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     {
                     if (obj != nullptr && obj->IsSelected())
                         {
-                        singleSelected = obj.get();
+                        singleSelected = obj;
                         ++totalSelected;
                         }
                     }
@@ -168,7 +169,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 {
                 if (obj && obj->IsSelected())
                     {
-                    singleSelected = obj.get();
+                    singleSelected = obj;
                     ++totalSelected;
                     }
                 }
@@ -176,16 +177,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 {
                 if (title && title->IsSelected())
                     {
-                    singleSelected = title.get();
+                    singleSelected = title;
                     ++totalSelected;
                     }
                 }
-            if (totalSelected == 1 && singleSelected != nullptr &&
-                singleSelected->IsKindOf(CLASSINFO(GraphItems::Label)))
+            if (totalSelected == 1 && singleSelected != nullptr)
                 {
-                m_labelClipboard = std::make_shared<GraphItems::Label>(
-                    *static_cast<GraphItems::Label*>(singleSelected));
-                return;
+                if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Label)))
+                    {
+                    m_labelClipboard = std::make_shared<GraphItems::Label>(
+                        *std::static_pointer_cast<GraphItems::Label>(singleSelected));
+                    return;
+                    }
+                if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Image)))
+                    {
+                    m_imageClipboard = std::make_shared<GraphItems::Image>(
+                        *std::static_pointer_cast<GraphItems::Image>(singleSelected));
+                    return;
+                    }
                 }
             wxMessageBox((totalSelected == 1) ? _(L"No copyable item selected.") :
                                                 _(L"Please select only one item to copy."),
@@ -760,7 +769,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             // contrast the title if its font color (or background color, if in use)
             // is the same as the canvas background
             ContrastTitleLabel(title);
-            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return leftMarginWidth;
         }
@@ -789,7 +798,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             ContrastTitleLabel(title);
-            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return rightMarginWidth;
         }
@@ -815,7 +824,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     PageHorizontalAlignment::LeftAligned);
             topMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             ContrastTitleLabel(title);
-            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return topMarginHeight;
         }
@@ -843,7 +852,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             bottomMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             ContrastTitleLabel(title);
-            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return bottomMarginHeight;
         }
