@@ -377,18 +377,18 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
     // chop off any dead space after last column
     if (columnsWidth < bitmap.GetWidth())
         {
-        bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0,
-                                             columnsWidth +
-                                                 // space for the pen if we are right on the edge
-                                                 wxTheApp->GetTopWindow()->GetDPIScaleFactor(),
-                                             bitmap.GetHeight() });
+        bitmap = bitmap.GetSubBitmap(wxRect(0, 0,
+                                            columnsWidth +
+                                                // space for the pen if we are right on the edge
+                                                wxTheApp->GetTopWindow()->GetDPIScaleFactor(),
+                                            bitmap.GetHeight()));
         }
     // and below the last row
     // (this assumes there are fewer rows in the entire list that fix on the screen)
     if (rowHeight < bitmap.GetHeight())
         {
-        bitmap = bitmap.GetSubBitmap(wxRect{
-            0, 0, bitmap.GetWidth(), rowHeight + wxTheApp->GetTopWindow()->GetDPIScaleFactor() });
+        bitmap = bitmap.GetSubBitmap(wxRect(
+            0, 0, bitmap.GetWidth(), rowHeight + wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
         }
 
     // draw a gray border around the image since we are saving the client area

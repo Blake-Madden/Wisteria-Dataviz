@@ -76,6 +76,7 @@ bool WisteriaApp::OnInit()
         }
     GetAppSettings()->LoadSettingsFile(appSettingFolderPath + L"Settings.xml");
 
+    Wisteria::Settings::SetReportEditingEnabled(true);
     GetResourceManager().LoadArchive(FindResourceFile(L"res.wad"));
     wxArtProvider::Push(new WisteriaArtProvider{});
 

@@ -234,7 +234,7 @@ namespace Wisteria
         static wxColour GetHighlightedLabelColor() { return wxColour{ 0, 102, 204 }; }
 
         /// @returns @c true if report editing features are enabled.
-        /// @details When enabled, copying a single selected certain object buffers its
+        /// @details When enabled, copying a single selected supported item buffers its
         ///     settings internally; pasting then shows a grid dialog for placement.
         ///     When disabled, copy/paste behave as standard canvas bitmap operations.
         [[nodiscard]]
@@ -244,7 +244,7 @@ namespace Wisteria
             }
 
         /// @brief Enables or disables report editing features.
-        /// @param enable @c true (the default) to enable smart label copy/paste.
+        /// @param enable @c true to enable smart copy/paste of supported items.
         static void SetReportEditingEnabled(const bool enable) noexcept
             {
             m_enableReportEditing = enable;
@@ -257,7 +257,7 @@ namespace Wisteria
         constexpr static int PREVIEW_MAX_ROWS{ 1'000 };
 
       private:
-        inline static bool m_enableReportEditing{ true };
+        inline static bool m_enableReportEditing{ false };
         inline static wxSize m_imageResolutionDPI{ 300, 300 };
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };

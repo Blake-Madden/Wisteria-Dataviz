@@ -226,6 +226,13 @@ namespace Wisteria
         /// @private
         void OnCopy([[maybe_unused]] wxCommandEvent& event);
 
+        /// @returns The copied label for report-editing paste, or null if none.
+        [[nodiscard]]
+        static const std::shared_ptr<GraphItems::Label>& GetLabelClipboard() noexcept
+            {
+            return m_labelClipboard;
+            }
+
         /** @name Background Functions
             @brief Functions related to customizing the canvas's background.*/
         /// @{
@@ -961,7 +968,6 @@ namespace Wisteria
         void OnContextMenu([[maybe_unused]] wxContextMenuEvent& event);
         void OnMouseEvents(wxMouseEvent& event);
         void OnKeyDown(wxKeyEvent& event);
-        void OnPaste([[maybe_unused]] wxCommandEvent& event);
 
         [[nodiscard]]
         auto& GetFixedObjects() noexcept

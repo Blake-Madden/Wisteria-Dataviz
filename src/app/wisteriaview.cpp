@@ -22,6 +22,7 @@
 #include "../ui/dialogs/editors/insertheatmapdlg.h"
 #include "../ui/dialogs/editors/inserthistogramdlg.h"
 #include "../ui/dialogs/editors/insertimgdlg.h"
+#include "../ui/dialogs/editors/insertitemdlg.h"
 #include "../ui/dialogs/editors/insertlabeldlg.h"
 #include "../ui/dialogs/editors/insertlikertdlg.h"
 #include "../ui/dialogs/editors/insertlineplotdlg.h"
@@ -52,6 +53,25 @@
 #include <array>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
+
+class PastePlacementDlg final : public Wisteria::UI::InsertItemDlg
+    {
+  public:
+    PastePlacementDlg(Wisteria::Canvas* canvas, wxWindow* parent)
+        : Wisteria::UI::InsertItemDlg(canvas, nullptr, parent, _(L"Paste Item"), wxID_ANY,
+                                      wxDefaultPosition, wxDefaultSize,
+                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                      Wisteria::UI::InsertItemDlg::EditMode::Insert,
+                                      Wisteria::UI::ItemDlgIncludeCanvasPlacement)
+        {
+        CreateControls();
+        CreatePageOptionsPage();
+        FinalizeControls();
+        TransferDataToWindow();
+        SetMinSize(GetSize());
+        Centre();
+        }
+    };
 
 //-------------------------------------------
 bool WisteriaView::OnCreate(wxDocument* doc, long flags)
@@ -683,8 +703,37 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
-    wxCommandEvent pasteEvent(wxEVT_MENU, wxID_PASTE);
-    canvas->GetEventHandler()->ProcessEvent(pasteEvent);
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> canvasItem{
+        Wisteria::Canvas::GetLabelClipboard()
+    };
+    if (canvasItem == nullptr)
+        {
+        wxMessageBox(_(L"No item on the clipboard."), _(L"Paste"), wxOK | wxICON_INFORMATION);
+        return;
+        }
+
+    PastePlacementDlg dlg(canvas, canvas);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    canvasItem->SetScaling(1.0);
+    // don't let the pasted item control the destination row's height;
+    // the existing page layout determines that
+    canvasItem->FitCanvasRowHeightToContent(false);
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), canvasItem);
+
+    // re-compute row proportions now that the destination row has content
+    // (an empty row would otherwise be collapsed to zero height by CalcRowDimensions)
+    canvas->ZoomReset();
+    canvas->CalcRowDimensions();
+    wxGCDC gdc(canvas);
+    canvas->CalcAllSizes(gdc);
+    canvas->ResetResizeDelay();
+    canvas->SendSizeEvent();
+    canvas->Refresh();
+    canvas->Update();
     }
 
 //-------------------------------------------

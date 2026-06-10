@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "canvas.h"
-#include "../ui/dialogs/editors/insertitemdlg.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "axis.h"
 #include "colorbrewer.h"
@@ -24,27 +23,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
     namespace Wisteria
     {
-    /// @brief Minimal placement-only dialog used by paste.
-    /// @details Shows just the canvas grid so that the user can choose
-    ///     which cell to paste into.
-    class PastePlacementDlg final : public UI::InsertItemDlg
-        {
-      public:
-        PastePlacementDlg(Canvas* canvas, wxWindow* parent)
-            : UI::InsertItemDlg(
-                  canvas, nullptr, parent, _(L"Paste Item"), wxID_ANY, wxDefaultPosition,
-                  wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                  UI::InsertItemDlg::EditMode::Insert, UI::ItemDlgIncludeCanvasPlacement)
-            {
-            CreateControls();
-            CreatePageOptionsPage();
-            FinalizeControls();
-            TransferDataToWindow();
-            SetMinSize(GetSize());
-            Centre();
-            }
-        };
-
     //------------------------------------------------------
     void Canvas::SetSizeFromPaperSize()
         {
@@ -253,53 +231,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             wxTheClipboard->SetData(new wxBitmapDataObject(canvasBitmap));
             wxTheClipboard->Close();
             }
-        }
-
-    //------------------------------------------------------
-    void Canvas::OnPaste([[maybe_unused]]
-                         wxCommandEvent &
-                         event)
-        {
-        if (!Settings::IsReportEditingEnabled())
-            {
-            return;
-            }
-        if (m_labelClipboard == nullptr)
-            {
-            wxMessageBox(_(L"No item on the clipboard."), _(L"Paste"), wxOK | wxICON_INFORMATION);
-            return;
-            }
-        PastePlacementDlg dlg(this, this);
-        if (dlg.ShowModal() != wxID_OK)
-            {
-            return;
-            }
-
-        std::shared_ptr<GraphItems::GraphItemBase> canvasItem{
-            m_labelClipboard != nullptr ? std::make_shared<GraphItems::Label>(*m_labelClipboard) :
-                                          nullptr
-        };
-        if (canvasItem == nullptr)
-            {
-            return;
-            }
-
-        canvasItem->SetScaling(1.0);
-        // don't let the pasted item control the destination row's height;
-        // the existing page layout determines that
-        canvasItem->FitCanvasRowHeightToContent(false);
-        SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), canvasItem);
-
-        // Re-compute row proportions now that the destination row has content
-        // (an empty row would otherwise be collapsed to zero height by CalcRowDimensions).
-        ZoomReset();
-        CalcRowDimensions();
-        wxGCDC gdc(this);
-        CalcAllSizes(gdc);
-        ResetResizeDelay();
-        SendSizeEvent();
-        Refresh();
-        Update();
         }
 
     //------------------------------------------------------
@@ -751,7 +682,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         Bind(wxEVT_MENU, &Canvas::OnSave, this, wxID_SAVE);
         Bind(wxEVT_MENU, &Canvas::OnSave, this, XRCID("ID_SAVE_ITEM"));
         Bind(wxEVT_MENU, &Canvas::OnCopy, this, wxID_COPY);
-        Bind(wxEVT_MENU, &Canvas::OnPaste, this, wxID_PASTE);
         Bind(wxEVT_MENU, &Canvas::OnPreview, this, wxID_PREVIEW);
         Bind(wxEVT_MENU, &Canvas::OnPrint, this, wxID_PRINT);
         // numerous mouse events

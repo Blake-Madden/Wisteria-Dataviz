@@ -153,7 +153,7 @@ class Screenshot
     static wxWindow* GetActiveDialogOrFrame();
 
   private:
-    static constexpr int RGB_CHANNEL_SIZE{ 24 };
+    constexpr static int RGB_CHANNEL_SIZE{ 24 };
     /// @brief Ensures that everything is repainted and ready for screenshot.
     /// @param windowToCapture The window to prepare for the screenshot.
     static void PrepareWindowForScreenshot(wxWindow* windowToCapture);
