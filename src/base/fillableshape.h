@@ -50,9 +50,9 @@ namespace Wisteria::GraphItems
             }
 
         /// @private
-        FillableShape(const FillableShape&) = delete;
+        FillableShape(const FillableShape& that);
         /// @private
-        FillableShape& operator=(const FillableShape&) = delete;
+        FillableShape& operator=(const FillableShape& that);
         /** @brief Draws the shape onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/

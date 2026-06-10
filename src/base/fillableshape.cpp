@@ -14,6 +14,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::FillableShape, Wisteria::GraphIt
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
+    FillableShape::FillableShape(const FillableShape& that)
+        : Shape(that), m_fillPercent(that.m_fillPercent)
+        {
+        }
+
+    //---------------------------------------------------
+    FillableShape& FillableShape::operator=(const FillableShape& that)
+        {
+        if (this != &that)
+            {
+            Shape::operator=(that);
+            m_fillPercent = that.m_fillPercent;
+            }
+        return *this;
+        }
+
+    //---------------------------------------------------
     void FillableShape::SetAutoAccessibilityAttributes()
         {
         const wxString shapeName =
