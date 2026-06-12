@@ -688,11 +688,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(0))
                 .ChildAlignment(RelativeAlignment::FlushLeft);
+            GetLeftYAxis().GetFooter().EnableMarkup(true);
             GetRightYAxis()
                 .GetFooter()
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(1))
                 .ChildAlignment(RelativeAlignment::FlushRight);
+            GetRightYAxis().GetFooter().EnableMarkup(true);
 
             GetLeftYAxis().GetHeader().SetText(wxString{});
             GetRightYAxis().GetHeader().SetText(wxString{});
