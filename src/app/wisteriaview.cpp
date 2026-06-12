@@ -295,10 +295,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                           {
                           if (GetActiveCanvas() != nullptr)
                               {
-                          wxCommandEvent cmd;
-                          OnDeleteItem(cmd);
+                              wxCommandEvent cmd;
+                              OnDeleteItem(cmd);
                               return;
-                          }
+                              }
                           }
                       evt.Skip();
                   });
@@ -6114,12 +6114,34 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         if (dlg.HasCustomBarSort())
             {
             plot->SetPropertyTemplate(L"bar-sort", L"true");
-            // SortBars() always clears brackets; save them so they can be
-            // restored if the sort itself did not change.
+            // SortBars() always clears brackets and resets custom labels to raw
+            // data strings; both are restored after the call below.
+            // Brackets: snapshot now, discard if sort changed (positions will differ).
             auto savedBrackets = plot->GetBarAxis().GetBrackets();
             if (dlg.HasBarSortChanged())
                 {
                 savedBrackets.clear();
+                }
+            // Pair raw bar labels with their formatted custom axis labels using the
+            // chart being edited, whose bars and axis labels share the same (sorted)
+            // positions. The new chart's bars are still at their categorical-code
+            // positions here, which do not match the sorted positions of the labels
+            // that ApplyAxisOverrides restored, so the pairing cannot be made
+            // through the new chart's own axis.
+            using FormattedLabel =
+                std::remove_cvref_t<decltype(plot->GetBarAxis().GetCustomLabels())>::mapped_type;
+            std::map<wxString, FormattedLabel> rawToFormatted;
+            if (const auto* origChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(&graph))
+                {
+                const auto& origCustomLabels = origChart->GetBarAxis().GetCustomLabels();
+                for (const auto& bar : origChart->GetBars())
+                    {
+                    const auto labelIt = origCustomLabels.find(bar.GetAxisPosition());
+                    if (labelIt != origCustomLabels.cend())
+                        {
+                        rawToFormatted.emplace(bar.GetAxisLabel().GetText(), labelIt->second);
+                        }
+                    }
                 }
             if (dlg.GetBarSortComparison().has_value())
                 {
@@ -6129,6 +6151,16 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                 {
                 plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
                 }
+            // Re-apply formatted labels at their new positions by matching bars
+            // on raw text (e.g., restores embedded newlines SortBars stripped).
+            for (const auto& bar : plot->GetBars())
+                {
+                const auto it = rawToFormatted.find(bar.GetAxisLabel().GetText());
+                if (it != rawToFormatted.cend())
+                    {
+                    plot->GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), it->second);
+                    }
+                }
             for (const auto& bracket : savedBrackets)
                 {
                 plot->GetBarAxis().AddBracket(bracket);
@@ -6137,13 +6169,18 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         else
             {
             // ApplyAxisOverrides() restored the saved bar axis which may carry stale
-            // custom labels from a previous sort. Re-sync them from the current bar
-            // positions so the axis reflects the default SetData() sort order.
+            // custom labels from a previous sort. Re-sync from current bar positions,
+            // but prefer saved formatted labels (e.g., with embedded newlines) over
+            // the raw dataset strings for positions that still have a bar.
             auto& barAxis = plot->GetBarAxis();
+            const auto savedCustomLabels = barAxis.GetCustomLabels();
             barAxis.ClearCustomLabels();
             for (const auto& bar : plot->GetBars())
                 {
-                barAxis.SetCustomLabel(bar.GetAxisPosition(), bar.GetAxisLabel());
+                const auto savedIt = savedCustomLabels.find(bar.GetAxisPosition());
+                barAxis.SetCustomLabel(bar.GetAxisPosition(), savedIt != savedCustomLabels.cend() ?
+                                                                  savedIt->second :
+                                                                  bar.GetAxisLabel());
                 }
             }
 
