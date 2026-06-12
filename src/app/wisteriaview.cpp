@@ -723,9 +723,6 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvasItem->SetScaling(1.0);
-    // don't let the pasted item control the destination row's height;
-    // the existing page layout determines that
-    canvasItem->FitCanvasRowHeightToContent(false);
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), canvasItem);
 
     // re-compute row proportions now that the destination row has content
