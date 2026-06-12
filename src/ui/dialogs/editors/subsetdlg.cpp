@@ -36,7 +36,7 @@ namespace Wisteria::UI
                          wxWindow* parent, const wxWindowID id, const wxPoint& pos,
                          const wxSize& size, const long style)
         : wxDialog(parent, id, _(L"Edit Subset"), pos, size, style), m_reportBuilder(reportBuilder),
-          m_mode(Mode::Edit)
+          m_mode(subsetOptions.m_mode)
         {
         CreateControls();
 
@@ -156,8 +156,8 @@ namespace Wisteria::UI
             {
             m_datasetChoice->SetSelection(0);
             }
-        datasetLabel->Enable(m_mode == Mode::Insert);
-        m_datasetChoice->Enable(m_mode == Mode::Insert);
+        datasetLabel->Enable(m_mode == SubsetOptions::Mode::Insert);
+        m_datasetChoice->Enable(m_mode == SubsetOptions::Mode::Insert);
         datasetSizer->Add(m_datasetChoice, wxSizerFlags{}.Expand());
         mainSizer->Add(datasetSizer, wxSizerFlags{}.Expand().Border());
 
@@ -233,8 +233,8 @@ namespace Wisteria::UI
         m_outputNameCtrl = new wxTextCtrl(this, wxID_ANY, wxString{});
         nameSizer->Add(m_outputNameCtrl, wxSizerFlags{}.Expand());
         mainSizer->Add(nameSizer, wxSizerFlags{}.Expand().Border());
-        nameLabel->Enable(m_mode == Mode::Insert);
-        m_outputNameCtrl->Enable(m_mode == Mode::Insert);
+        nameLabel->Enable(m_mode == SubsetOptions::Mode::Insert);
+        m_outputNameCtrl->Enable(m_mode == SubsetOptions::Mode::Insert);
 
         // preview grid
         auto* previewBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
@@ -934,7 +934,7 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (m_mode == Mode::Insert && m_reportBuilder != nullptr &&
+        if (m_mode == SubsetOptions::Mode::Insert && m_reportBuilder != nullptr &&
             m_reportBuilder->GetDatasets().contains(GetOutputName()))
             {
             wxMessageBox(_(L"A dataset with this name already exists. "

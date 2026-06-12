@@ -1918,7 +1918,17 @@ void WisteriaView::OnSubsetDataset([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::SubsetDlg dlg(&m_reportBuilder, m_frame);
+    Wisteria::UI::SubsetOptions subOptions;
+    subOptions.m_mode = Wisteria::UI::SubsetOptions::Mode::Insert;
+    if (IsDatasetSelected())
+        {
+        subOptions.m_sourceDatasetName = m_sideBar->GetSelectedLabel();
+        subOptions.m_outputName =
+            wxString::Format(_(L"%s (Subset)"), m_sideBar->GetSelectedLabel());
+        }
+
+    Wisteria::UI::SubsetDlg dlg(&m_reportBuilder, subOptions, m_frame);
+
     if (dlg.ShowModal() != wxID_OK)
         {
         return;

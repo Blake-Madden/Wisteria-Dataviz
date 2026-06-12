@@ -26,6 +26,13 @@ namespace Wisteria::UI
         @details Stored alongside the dataset for future serialization.*/
     struct SubsetOptions
         {
+        /// @brief Whether the subset is being created or edited.
+        enum class Mode
+            {
+            Insert,
+            Edit
+            };
+
         /// @brief The name of the source dataset that was subsetted.
         wxString m_sourceDatasetName;
         /// @brief The user-specified name for the output dataset.
@@ -65,6 +72,8 @@ namespace Wisteria::UI
         wxString m_sectionEndLabel;
         /// @brief Whether to include the sentinel (start/end) rows in the subset.
         bool m_sectionIncludeSentinelLabels{ true };
+        /// @brief Whether being created or edited.
+        Mode m_mode{ Mode::Edit };
         };
 
     /** @brief Dialog for creating or editing a dataset subset.
@@ -192,12 +201,7 @@ namespace Wisteria::UI
         std::shared_ptr<Data::Dataset> m_subsettedDataset;
         std::vector<wxString> m_datasetNames;
 
-        enum class Mode
-            {
-            Insert,
-            Edit
-            };
-        Mode m_mode{ Mode::Insert };
+        SubsetOptions::Mode m_mode{ SubsetOptions::Mode::Insert };
         bool m_suppressPreview{ false };
         };
     } // namespace Wisteria::UI
