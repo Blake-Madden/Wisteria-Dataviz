@@ -830,6 +830,7 @@ namespace Wisteria::UI
     SubsetOptions SubsetDlg::GetSubsetOptions() const
         {
         SubsetOptions opts;
+        opts.m_mode = m_mode;
         opts.m_sourceDatasetName = GetSelectedDatasetName();
         opts.m_outputName = GetOutputName();
         opts.m_filterType = GetSelectedFilterType();

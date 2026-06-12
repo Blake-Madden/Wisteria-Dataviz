@@ -27,6 +27,12 @@ namespace Wisteria::UI
         @details Stored alongside the dataset for future serialization.*/
     struct PivotWiderOptions
         {
+        /// @brief Whether the pivot is being created or edited.
+        enum class Mode
+            {
+            Insert,
+            Edit
+            };
         /// @brief The name of the source dataset that was pivoted.
         wxString m_sourceDatasetName;
         /// @brief The user-specified name for the output dataset.
@@ -43,6 +49,8 @@ namespace Wisteria::UI
         wxString m_namesPrefix;
         /// @brief Value used to fill cells with no corresponding data.
         double m_fillValue{ std::numeric_limits<double>::quiet_NaN() };
+        /// @brief Whether being created or edited.
+        Mode m_mode{ Mode::Edit };
         };
 
     /** @brief Dialog for pivoting a dataset wider (unstacking).
@@ -146,12 +154,7 @@ namespace Wisteria::UI
         std::shared_ptr<Data::Dataset> m_pivotedDataset;
         std::vector<wxString> m_datasetNames;
 
-        enum class Mode
-            {
-            Insert,
-            Edit
-            };
-        Mode m_mode{ Mode::Insert };
+        PivotWiderOptions::Mode m_mode{ PivotWiderOptions::Mode::Insert };
         };
     } // namespace Wisteria::UI
 

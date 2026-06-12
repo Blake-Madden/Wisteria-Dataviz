@@ -1831,7 +1831,16 @@ void WisteriaView::OnPivotWider([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::PivotWiderDlg dlg(&m_reportBuilder, m_frame);
+    Wisteria::UI::PivotWiderOptions widerOpts;
+    widerOpts.m_mode = Wisteria::UI::PivotWiderOptions::Mode::Insert;
+    if (IsDatasetSelected())
+        {
+        widerOpts.m_sourceDatasetName = m_sideBar->GetSelectedLabel();
+        widerOpts.m_outputName =
+            wxString::Format(_(L"%s (Pivoted Wider)"), m_sideBar->GetSelectedLabel());
+        }
+
+    Wisteria::UI::PivotWiderDlg dlg(&m_reportBuilder, widerOpts, m_frame);
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1875,7 +1884,16 @@ void WisteriaView::OnPivotLonger([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::PivotLongerDlg dlg(&m_reportBuilder, m_frame);
+    Wisteria::UI::PivotLongerOptions longerOpts;
+    longerOpts.m_mode = Wisteria::UI::PivotLongerOptions::Mode::Insert;
+    if (IsDatasetSelected())
+        {
+        longerOpts.m_sourceDatasetName = m_sideBar->GetSelectedLabel();
+        longerOpts.m_outputName =
+            wxString::Format(_(L"%s (Pivoted Longer)"), m_sideBar->GetSelectedLabel());
+        }
+
+    Wisteria::UI::PivotLongerDlg dlg(&m_reportBuilder, longerOpts, m_frame);
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
