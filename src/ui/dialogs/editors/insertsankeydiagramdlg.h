@@ -189,6 +189,7 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void UpdateVariableLabels();
+        void UpdateColumnHeaderUI();
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
@@ -197,13 +198,19 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
         constexpr static wxWindowID ID_FROM_COL_LABEL{ wxID_HIGHEST + 5 };
         constexpr static wxWindowID ID_TO_COL_LABEL{ wxID_HIGHEST + 6 };
+        constexpr static wxWindowID ID_COLUMN_HEADER_CHOICE{ wxID_HIGHEST + 7 };
 
         wxChoice* m_datasetChoice{ nullptr };
+        wxChoice* m_columnHeaderChoice{ nullptr };
         wxStaticText* m_fromVarLabel{ nullptr };
         wxStaticText* m_toVarLabel{ nullptr };
         wxStaticText* m_fromWeightVarLabel{ nullptr };
         wxStaticText* m_toWeightVarLabel{ nullptr };
         wxStaticText* m_fromGroupVarLabel{ nullptr };
+        wxStaticText* m_fromColStaticLabel{ nullptr };
+        wxStaticText* m_toColStaticLabel{ nullptr };
+        wxTextCtrl* m_fromColText{ nullptr };
+        wxTextCtrl* m_toColText{ nullptr };
 
         // DDX data members
         int m_flowShapeIndex{ 0 };

@@ -154,10 +154,10 @@ namespace Wisteria::UI
         columnHeaderDisplays.Add(_(L"No Display"));
         columnHeaderDisplays.Add(_(L"As Header"));
         columnHeaderDisplays.Add(_(L"As Footer"));
-        chSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                  columnHeaderDisplays, 0,
-                                  wxGenericValidator(&m_columnHeaderDisplayIndex)),
-                     wxSizerFlags{}.CenterVertical());
+        m_columnHeaderChoice =
+            new wxChoice(optionsPage, ID_COLUMN_HEADER_CHOICE, wxDefaultPosition, wxDefaultSize,
+                         columnHeaderDisplays, 0, wxGenericValidator(&m_columnHeaderDisplayIndex));
+        chSizer->Add(m_columnHeaderChoice, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(chSizer, wxSizerFlags{}.Border());
 
         // column labels
@@ -165,19 +165,19 @@ namespace Wisteria::UI
         auto* clGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
         clGrid->AddGrowableCol(1);
 
-        clGrid->Add(new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"From:")),
-                    wxSizerFlags{}.CenterVertical());
-        clGrid->Add(new wxTextCtrl(clBox->GetStaticBox(), ID_FROM_COL_LABEL, wxEmptyString,
-                                   wxDefaultPosition, wxDefaultSize, 0,
-                                   wxGenericValidator(&m_fromColumnLabel)),
-                    wxSizerFlags{ 1 }.Expand().CenterVertical());
+        m_fromColStaticLabel = new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"From:"));
+        clGrid->Add(m_fromColStaticLabel, wxSizerFlags{}.CenterVertical());
+        m_fromColText = new wxTextCtrl(clBox->GetStaticBox(), ID_FROM_COL_LABEL, wxEmptyString,
+                                       wxDefaultPosition, wxDefaultSize, 0,
+                                       wxGenericValidator(&m_fromColumnLabel));
+        clGrid->Add(m_fromColText, wxSizerFlags{ 1 }.Expand().CenterVertical());
 
-        clGrid->Add(new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"To:")),
-                    wxSizerFlags{}.CenterVertical());
-        clGrid->Add(new wxTextCtrl(clBox->GetStaticBox(), ID_TO_COL_LABEL, wxEmptyString,
-                                   wxDefaultPosition, wxDefaultSize, 0,
-                                   wxGenericValidator(&m_toColumnLabel)),
-                    wxSizerFlags{ 1 }.Expand().CenterVertical());
+        m_toColStaticLabel = new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"To:"));
+        clGrid->Add(m_toColStaticLabel, wxSizerFlags{}.CenterVertical());
+        m_toColText =
+            new wxTextCtrl(clBox->GetStaticBox(), ID_TO_COL_LABEL, wxEmptyString, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_toColumnLabel));
+        clGrid->Add(m_toColText, wxSizerFlags{ 1 }.Expand().CenterVertical());
 
         clBox->Add(clGrid, wxSizerFlags{ 1 }.Expand().Border());
         optionsSizer->Add(clBox, wxSizerFlags{}.Expand().Border());
@@ -186,8 +186,18 @@ namespace Wisteria::UI
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
 
+        m_columnHeaderChoice->Bind(wxEVT_CHOICE,
+                                   [this]([[maybe_unused]] wxCommandEvent&)
+                                   {
+                                       m_columnHeaderDisplayIndex =
+                                           m_columnHeaderChoice->GetSelection();
+                                       UpdateColumnHeaderUI();
+                                   });
+
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
+
+        UpdateColumnHeaderUI();
 
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
@@ -327,6 +337,18 @@ namespace Wisteria::UI
         m_fromGroupVarLabel->SetLabel(m_fromGroupVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
+        }
+
+    //-------------------------------------------
+    void InsertSankeyDiagramDlg::UpdateColumnHeaderUI()
+        {
+        const bool enabled = (GetColumnHeaderDisplay() != GraphColumnHeader::NoDisplay);
+        m_fromColStaticLabel->Enable(enabled);
+        m_fromColStaticLabel->Refresh();
+        m_fromColText->Enable(enabled);
+        m_toColStaticLabel->Enable(enabled);
+        m_toColStaticLabel->Refresh();
+        m_toColText->Enable(enabled);
         }
 
     //-------------------------------------------
@@ -495,5 +517,6 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        UpdateColumnHeaderUI();
         }
     } // namespace Wisteria::UI
