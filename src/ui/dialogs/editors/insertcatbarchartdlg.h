@@ -230,6 +230,20 @@ namespace Wisteria::UI
             return m_constrainScalingAxisToBars;
             }
 
+        /// @returns The suffix appended to each bar label (e.g., @c "%" or @c " units").
+        [[nodiscard]]
+        const wxString& GetBarLabelSuffix() const noexcept
+            {
+            return m_barLabelSuffix;
+            }
+
+        /// @returns @c true if a small gap should be drawn between bars.
+        [[nodiscard]]
+        bool IsIncludingSpacesBetweenBars() const noexcept
+            {
+            return m_includeSpacesBetweenBars;
+            }
+
         /// @returns The bars to showcase.
         [[nodiscard]]
         const std::vector<wxString>& GetShowcaseBars() const noexcept
@@ -362,6 +376,8 @@ namespace Wisteria::UI
         bool m_hideLabelsOnGhostedBars{ true };
         bool m_applyBrushesToUngroupedBars{ false };
         bool m_constrainScalingAxisToBars{ false };
+        bool m_includeSpacesBetweenBars{ false };
+        wxString m_barLabelSuffix;
         std::vector<wxString> m_showcaseBars;
 
         wxString m_categoricalVariable;

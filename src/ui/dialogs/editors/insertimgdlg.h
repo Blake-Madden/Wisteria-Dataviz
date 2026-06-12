@@ -24,7 +24,7 @@ namespace Wisteria::UI
     enum ImageDlgOptions : int
         {
         ImageDlgIncludeNone = 0,              ///< No options enabled.
-        ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Page Placement" section.
+        ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Placement" section.
         ImageDlgIncludeStitch = 1 << 1,       ///< Show the stitch direction control.
         ImageDlgIncludeSize = 1 << 2,         ///< Show the size override controls.
         ImageDlgIncludeResizeMethod = 1 << 3, ///< Show the resize method control.

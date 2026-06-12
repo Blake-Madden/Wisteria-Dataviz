@@ -152,6 +152,20 @@ namespace Wisteria::UI
                                       wxGenericValidator(&m_constrainScalingAxisToBars)),
                        wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
+        leftSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Include spaces between bars"),
+                                      wxDefaultPosition, wxDefaultSize, 0,
+                                      wxGenericValidator(&m_includeSpacesBetweenBars)),
+                       wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
+
+        // bar label suffix
+        auto* suffixSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        suffixSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar label suffix:")),
+                         wxSizerFlags{}.CenterVertical());
+        suffixSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                        wxDefaultSize, 0, wxGenericValidator(&m_barLabelSuffix)));
+        leftSizer->Add(suffixSizer, wxSizerFlags{}.Border());
+
         // box effect
         auto* effectSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
@@ -1633,6 +1647,8 @@ namespace Wisteria::UI
         m_constrainScalingAxisToBars = barChart->IsConstrainingScalingAxisToBars();
         m_ghostOpacity = barChart->GetGhostOpacity();
         m_hideLabelsOnGhostedBars = barChart->IsHidingGhostedLabels();
+        m_includeSpacesBetweenBars = barChart->IsIncludingSpacesBetweenBars();
+        m_barLabelSuffix = barChart->GetBinLabelSuffix();
         m_showcaseBars = barChart->GetShowcasedLabels();
         if (m_showcaseListBox != nullptr)
             {

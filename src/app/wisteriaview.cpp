@@ -5812,6 +5812,14 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
             {
             plot->ConstrainScalingAxisToBars();
             }
+        if (dlg.IsIncludingSpacesBetweenBars())
+            {
+            plot->IncludeSpacesBetweenBars();
+            }
+        if (!dlg.GetBarLabelSuffix().empty())
+            {
+            plot->SetBinLabelSuffix(dlg.GetBarLabelSuffix());
+            }
 
         // apply custom bar sort
         if (dlg.HasCustomBarSort())
@@ -6036,6 +6044,14 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         if (dlg.IsConstrainingScalingAxisToBars())
             {
             plot->ConstrainScalingAxisToBars();
+            }
+        if (dlg.IsIncludingSpacesBetweenBars())
+            {
+            plot->IncludeSpacesBetweenBars();
+            }
+        if (!dlg.GetBarLabelSuffix().empty())
+            {
+            plot->SetBinLabelSuffix(dlg.GetBarLabelSuffix());
             }
 
         // restore bar-block decals

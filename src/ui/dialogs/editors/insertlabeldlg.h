@@ -48,7 +48,7 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.
-            @param includePageOptions Whether to show the "Page Placement" section.
+            @param includePageOptions Whether to show the "Placement" section.
                 Set to @c false when the label is not placed directly on the canvas
                 (e.g., a donut hole label inside a pie chart).*/
         InsertLabelDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,

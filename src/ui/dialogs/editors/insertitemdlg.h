@@ -30,7 +30,7 @@ namespace Wisteria::UI
     {
     class AccessibilityOptionsPanel;
 
-    /// @brief Flags controlling which parts of the "Page Placement" page are visible.
+    /// @brief Flags controlling which parts of the "Placement" page are visible.
     enum ItemDlgPageOptions : int
         {
         /// @brief Show the canvas placement grid.
@@ -43,7 +43,7 @@ namespace Wisteria::UI
         };
 
     /** @brief Base dialog for inserting an item into a canvas cell.
-        @details Provides a sidebar with a "Page Placement" section showing the canvas grid.
+        @details Provides a sidebar with a "Placement" section showing the canvas grid.
             Users click (or Tab/Shift+Tab through) cells to select where
             the item will be placed. The selected cell is drawn with a dotted outline.
 
@@ -72,7 +72,7 @@ namespace Wisteria::UI
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.
             @param pageOptions Bitmask of ItemDlgPageOptions controlling which
-                parts of the "Page Placement" page are shown.*/
+                parts of the "Placement" page are shown.*/
         InsertItemDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                       const wxString& caption, wxWindowID id = wxID_ANY,
                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -196,14 +196,14 @@ namespace Wisteria::UI
       protected:
         /// @brief Creates the dialog controls.
         /// @details Override in derived classes to add additional sidebar pages.
-        ///     Call the base-class version first to create the "Page Placement" page.
+        ///     Call the base-class version first to create the "Placement" page.
         ///     After all controls are added, call FinalizeControls() to add
         ///     the OK/Cancel buttons and finalize the layout.
         virtual void CreateControls();
 
-        /// @brief Adds the "Page Placement" sidebar page.
+        /// @brief Adds the "Placement" sidebar page.
         /// @details Call this explicitly from CreateControls() at the position
-        ///     where the "Page Placement" page should appear in the sidebar.
+        ///     where the "Placement" page should appear in the sidebar.
         void CreatePageOptionsPage();
 
         /** @brief Adds the "Accessibility" sidebar page.*/
