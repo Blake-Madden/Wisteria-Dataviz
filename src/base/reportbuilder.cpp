@@ -711,9 +711,15 @@ namespace Wisteria
                 {
                 if (customLabel->HasProperty(L"value"))
                     {
-                    axis.SetCustomLabel(
-                        customLabel->GetProperty(L"value")->AsDouble(),
-                        *LoadLabel(customLabel->GetProperty(L"label"), GraphItems::Label{}));
+                    const auto label =
+                        LoadLabel(customLabel->GetProperty(L"label"), GraphItems::Label{});
+                    // clean custom label
+                    wxString labelText{ label->GetText() };
+                    labelText.Replace(L"\r", L" ");
+                    labelText.Replace(L"\n", L" ");
+                    labelText.Trim(true).Trim(false);
+                    label->SetText(labelText);
+                    axis.SetCustomLabel(customLabel->GetProperty(L"value")->AsDouble(), *label);
                     }
                 }
             // mark as a user override so the serializer knows to round-trip
