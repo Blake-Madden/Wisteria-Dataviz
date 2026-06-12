@@ -6113,6 +6113,13 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         if (dlg.HasCustomBarSort())
             {
             plot->SetPropertyTemplate(L"bar-sort", L"true");
+            // SortBars() always clears brackets; save them so they can be
+            // restored if the sort itself did not change.
+            auto savedBrackets = plot->GetBarAxis().GetBrackets();
+            if (dlg.HasBarSortChanged())
+                {
+                savedBrackets.clear();
+                }
             if (dlg.GetBarSortComparison().has_value())
                 {
                 plot->SortBars(dlg.GetBarSortComparison().value(), dlg.GetBarSortDirection());
@@ -6120,6 +6127,10 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             else if (!dlg.GetBarSortLabels().empty())
                 {
                 plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
+                }
+            for (const auto& bracket : savedBrackets)
+                {
+                plot->GetBarAxis().AddBracket(bracket);
                 }
             }
         else
