@@ -48,8 +48,11 @@ namespace Wisteria::Graphs
          "Miskatonic University." Finally, the "County" column can be used to sort the groups
          for the "From" column. This will order the labels from the "From" column into groups
          and show axis brackets to the left of these groups showing the counties' names.
-         (Note that if any group from "From" appears in multiple values from "County,"
-          then it will be sorted by the first county that it encountered.)
+         (Note that if any group from "From" appears with multiple values from "County,"
+          then a separate group will be shown under each of those counties. Each of these
+          groups will only include the observations belonging to its respective county;
+          this way, schools from different counties that happen to have the same name
+          are treated as separate schools.)
 
          | From        | Graduated | To                    | Enrolled | County    |
          | :--         | --:       | :--                   | --:      | :--       |
@@ -128,9 +131,11 @@ namespace Wisteria::Graphs
                 the "to" column.
             @param fromSortColumnName The (optional) column used to sort the groups in the
                 "from" column.\n
-                Note that if a group from @c fromSortColumnName occurs with multiple values
-                from this column, then it will be sorted by the first value from this column
-                that it encountered.
+                Note that if a group from the "from" column occurs with multiple values
+                from this column, then a separate group will be created under each of those
+                values, each only including the observations belonging to its respective
+                value. (For example, schools from different counties that happen to have
+                the same name will be shown as separate schools.)
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n

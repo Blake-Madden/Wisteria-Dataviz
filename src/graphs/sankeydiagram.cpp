@@ -51,6 +51,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
 
         GetSelectedIds().clear();
         m_sankeyColumns.clear();
+        m_fromAxisGroups.clear();
 
         const auto fromColumn = data->GetCategoricalColumn(fromColumnName);
         if (fromColumn == data->GetCategoricalColumns().cend())
@@ -124,13 +125,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
 
         m_columnsNames = { fromColumnName, toColumnName };
 
-        // load the combinations of labels (and weights and groups)
-        multi_value_frequency_double_aggregate_map<wxString, wxString, Data::wxStringLessNoCase,
-                                                   Data::wxStringLessNoCase>
+        // compares (sort group, "from" group) pairs
+        struct StringPairLessNoCase
+            {
+            [[nodiscard]]
+            bool operator()(const std::pair<wxString, wxString>& lhv,
+                            const std::pair<wxString, wxString>& rhv) const
+                {
+                const int sortGroupCmp{ lhv.first.CmpNoCase(rhv.first) };
+                return (sortGroupCmp != 0) ? (sortGroupCmp < 0) :
+                                             (lhv.second.CmpNoCase(rhv.second) < 0);
+                }
+            };
+
+        // Load the combinations of labels (and weights and groups).
+        // Keys are (sort group, "from" group) pairs so that the same "from" label
+        // appearing under different sort groups is treated as separate groups.
+        // (For example, schools with the same name, but in different counties.)
+        // If no sort column is in use, then the sort group is simply blank for every key.
+        multi_value_frequency_double_aggregate_map<std::pair<wxString, wxString>, wxString,
+                                                   StringPairLessNoCase, Data::wxStringLessNoCase>
             fromAndToMap;
-        multi_value_aggregate_map<wxString, wxString, Data::wxStringLessNoCase,
-                                  Data::wxStringLessNoCase>
-            fromGrouping;
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
@@ -140,21 +155,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 continue;
                 }
 
-            fromAndToMap.insert(fromColumn->GetValueAsLabel(i), toColumn->GetValueAsLabel(i),
+            fromAndToMap.insert(std::make_pair(fromSortColumnName.has_value() ?
+                                                   fromGroupColumn->GetValueAsLabel(i) :
+                                                   wxString{},
+                                               fromColumn->GetValueAsLabel(i)),
+                                toColumn->GetValueAsLabel(i),
                                 (useWeightColumn ? fromWeightColumn->GetValue(i) : 1),
                                 (useWeightColumn ? toWeightColumn->GetValue(i) : 1));
-
-            if (fromSortColumnName.has_value())
-                {
-                fromGrouping.insert(fromGroupColumn->GetValueAsLabel(i),
-                                    fromColumn->GetValueAsLabel(i));
-                }
             }
 
         m_sankeyColumns.resize(2);
         for (const auto& [key, subValues] : fromAndToMap.get_data())
             {
-            m_sankeyColumns[0].emplace_back(key, subValues.second, subValues.first);
+            const auto& [sortGroupLabel, fromLabel] = key;
+
+            // the map is sorted by sort group, so start a new axis bracket when
+            // the sort group changes (or extend the current one)
+            if (fromSortColumnName.has_value())
+                {
+                const size_t currentIndex{ m_sankeyColumns[0].size() };
+                if (m_fromAxisGroups.empty() ||
+                    m_fromAxisGroups.back().m_label.CmpNoCase(sortGroupLabel) != 0)
+                    {
+                    m_fromAxisGroups.push_back(
+                        SankeyAxisGroup{ sortGroupLabel, currentIndex, currentIndex });
+                    }
+                else
+                    {
+                    m_fromAxisGroups.back().m_endGroup = currentIndex;
+                    }
+                }
+
+            m_sankeyColumns[0].emplace_back(fromLabel, subValues.second, subValues.first);
 
             // add "from" values to second column
             for (const auto& subVal : subValues.first.get_data())
@@ -174,31 +206,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 }
             }
 
-        if (!fromGrouping.get_data().empty())
-            {
-            SankeyColumn tempColumn;
-            size_t groupOffset{ 0 };
-            for (const auto& groups : fromGrouping.get_data())
-                {
-                wxASSERT_MSG(!groups.second.first.empty(), L"No groups in column group info!");
-                m_fromAxisGroups.push_back(SankeyAxisGroup{
-                    groups.first, groupOffset, groupOffset + (groups.second.first.size() - 1) });
-                groupOffset += groups.second.first.size();
-                for (const auto& gr : groups.second.first)
-                    {
-                    const auto subGroupPos =
-                        std::ranges::find(std::as_const(m_sankeyColumns[0]), SankeyGroup{ gr });
-                    wxASSERT_MSG(subGroupPos != m_sankeyColumns[0].cend(),
-                                 L"Unable to find group in Sankey column!");
-                    if (subGroupPos != m_sankeyColumns[0].cend())
-                        {
-                        tempColumn.push_back(*subGroupPos);
-                        }
-                    }
-                }
-            m_sankeyColumns[0] = tempColumn;
-            }
-
         AdjustColumns();
         }
 
@@ -216,8 +223,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             maxGroupTotal = std::max(maxGroupTotal, groupTotal);
             }
 
-        for (auto& col : m_sankeyColumns)
+        for (size_t colIndex = 0; colIndex < m_sankeyColumns.size(); ++colIndex)
             {
+            auto& col = m_sankeyColumns[colIndex];
             const auto groupTotal = std::accumulate(col.cbegin(), col.cend(), 0.0,
                                                     [](const auto initVal, const auto& val) noexcept
                                                     { return val.m_frequency + initVal; });
@@ -229,6 +237,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 col.insert(col.begin(), { wxString{}, (maxGroupTotal - groupTotal),
                                           SankeyGroup::DownStreamGroups{} })
                     ->m_isShown = false;
+                // padding at the top of the first column shifts its groups' indices,
+                // so keep the axis brackets pointing at the correct groups
+                if (colIndex == 0)
+                    {
+                    for (auto& axisGroup : m_fromAxisGroups)
+                        {
+                        ++axisGroup.m_startGroup;
+                        ++axisGroup.m_endGroup;
+                        }
+                    }
                 }
             }
 
