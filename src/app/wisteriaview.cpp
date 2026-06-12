@@ -293,13 +293,14 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                       if (evt.GetKeyCode() == WXK_DELETE || evt.GetKeyCode() == WXK_NUMPAD_DELETE ||
                           evt.GetKeyCode() == WXK_BACK)
                           {
+                          if (GetActiveCanvas() != nullptr)
+                              {
                           wxCommandEvent cmd;
                           OnDeleteItem(cmd);
+                              return;
                           }
-                      else
-                          {
-                          evt.Skip();
                           }
+                      evt.Skip();
                   });
 
     // bind canvas double-click to edit the selected item
