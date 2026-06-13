@@ -13,6 +13,8 @@
 #include "../dialogs/listctrlsortdlg.h"
 #include "../dialogs/radioboxdlg.h"
 #include "listctrlexcelexporter.h"
+#include "wx/pdfdocument.h"
+#include "wx/pdflistctrl.h"
 #include <algorithm>
 #include <cstddef>
 #include <utility>
@@ -2586,6 +2588,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"Excel"),
                              _(L"This format will write the list as an "
                                "<span style='font-style:italic;'>Excel</span> spreadsheet.")));
+        choices.Add(_DT(L"PDF"));
+        descriptions.Add(
+            wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"PDF"),
+                             _(L"This format will write the list as a PDF document.")));
         RadioBoxDlg exportTypesDlg(this, _(L"Select List Format"), wxString{}, _(L"List formats:"),
                                    _(L"Export List"), choices, descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
@@ -2606,6 +2612,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             break;
         case 3:
             fileFilter = _DT(L"Excel (*.xlsx)|*.xlsx");
+            break;
+        case 4:
+            fileFilter = _DT(L"PDF (*.pdf)|*.pdf");
             break;
         default:
             fileFilter = _DT(L"HTML (*.htm;*.html)|*.htm;*.html");
@@ -2636,6 +2645,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             case 3:
                 filePath.SetExt(L"xlsx");
                 break;
+            case 4:
+                filePath.SetExt(L"pdf");
+                break;
             default:
                 filePath.SetExt(L"htm");
                 };
@@ -2654,12 +2666,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             return;
             }
 
-        const GridExportFormat exportFormat = (filePath.GetExt().CmpNoCase(L"HTM") == 0 ||
-                                               filePath.GetExt().CmpNoCase(L"HTML") == 0) ?
-                                                  GridExportFormat::ExportHtml :
-                                              (filePath.GetExt().CmpNoCase(L"TEX") == 0) ?
-                                                  GridExportFormat::ExportLaTeX :
-                                                  GridExportFormat::ExportText;
+        const GridExportFormat exportFormat =
+            (filePath.GetExt().CmpNoCase(L"HTM") == 0 ||
+             filePath.GetExt().CmpNoCase(L"HTML") == 0) ?
+                GridExportFormat::ExportHtml :
+            (filePath.GetExt().CmpNoCase(L"TEX") == 0) ? GridExportFormat::ExportLaTeX :
+            (filePath.GetExt().CmpNoCase(L"PDF") == 0) ? GridExportFormat::ExportPdf :
+                                                         GridExportFormat::ExportText;
         GridExportDlg exportOptionsDlg(GetParent(), GetItemCount(), GetColumnCount(), exportFormat);
         exportOptionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
         if (exportOptionsDlg.ShowModal() != wxID_OK)
@@ -3281,7 +3294,39 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             (path.GetExt().CmpNoCase(L"HTM") == 0 || path.GetExt().CmpNoCase(L"HTML") == 0) ?
                 GridExportFormat::ExportHtml :
             (path.GetExt().CmpNoCase(L"TEX") == 0) ? GridExportFormat::ExportLaTeX :
+            (path.GetExt().CmpNoCase(L"PDF") == 0) ? GridExportFormat::ExportPdf :
                                                      GridExportFormat::ExportText;
+
+        if (exportFormat == GridExportFormat::ExportPdf)
+            {
+            wxPdfDocument pdfDoc;
+            if (!GetLabel().empty())
+                {
+                pdfDoc.SetTitle(GetLabel());
+                }
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+            if (!wxTheApp->GetAppName().empty())
+                {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+                pdfDoc.SetCreator(wxTheApp->GetAppName());
+                }
+            wxPdfListCtrlOptions pdfOpts;
+            if (!exportOptions.m_exportAll)
+                {
+                pdfOpts.SetFromRow(exportOptions.m_fromRow);
+                pdfOpts.SetToRow(exportOptions.m_toRow);
+                pdfOpts.SetFromColumn(exportOptions.m_fromColumn);
+                pdfOpts.SetToColumn(exportOptions.m_toColumn);
+                }
+            pdfOpts.SetIncludeColumnHeaders(exportOptions.m_includeColumnHeaders);
+            pdfOpts.SetFitToPage(exportOptions.m_pdfFitToPage);
+            pdfOpts.SetStyle(exportOptions.m_pdfSimpleStyle ? wxPDF_LISTCTRL_STYLE_SIMPLE :
+                                                              wxPDF_LISTCTRL_STYLE_GRID);
+            pdfOpts.SetShowContinued(exportOptions.m_pdfShowContinued);
+            /// @todo remove const_cast if wxPdfDoc changes API
+            pdfDoc.AddList(const_cast<ListCtrlEx*>(this), pdfOpts);
+            return pdfDoc.SaveAsFile(path.GetFullPath());
+            }
 
         if (exportOptions.m_toRow == -1)
             {

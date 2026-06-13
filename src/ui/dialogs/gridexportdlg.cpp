@@ -122,11 +122,14 @@ namespace Wisteria::UI
                                             wxGenericValidator(&m_options.m_exportAll)),
                           wxSizerFlags{}.Border());
 
-        optionsSizer->Add(new wxRadioButton(this, ControlIDs::ID_EXPORT_SELECTED_OPTION,
-                                            _(L"Export &selected rows"), wxDefaultPosition,
-                                            wxDefaultSize, 0,
-                                            wxGenericValidator(&m_options.m_exportSelected)),
-                          wxSizerFlags{}.Border());
+        m_exportSelectedRadio = new wxRadioButton(
+            this, ControlIDs::ID_EXPORT_SELECTED_OPTION, _(L"Export &selected rows"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_options.m_exportSelected));
+        optionsSizer->Add(m_exportSelectedRadio, wxSizerFlags{}.Border());
+        if (m_exportFormat == GridExportFormat::ExportPdf)
+            {
+            m_exportSelectedRadio->Enable(false);
+            }
 
         optionsSizer->Add(new wxRadioButton(this, ControlIDs::ID_EXPORT_RANGE_OPTION,
                                             _(L"Export a &range of rows"), wxDefaultPosition,
@@ -195,6 +198,30 @@ namespace Wisteria::UI
         for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
             {
             child->Enable(false);
+            }
+
+        if (m_exportFormat == GridExportFormat::ExportPdf)
+            {
+            auto* pdfBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"PDF Options:"));
+            optionsSizer->Add(pdfBoxSizer, wxSizerFlags{}.Expand().Border());
+
+            pdfBoxSizer->Add(new wxCheckBox(pdfBoxSizer->GetStaticBox(), wxID_ANY,
+                                            _(L"&Simple (booktabs) style"), wxDefaultPosition,
+                                            wxDefaultSize, wxCHK_2STATE,
+                                            wxGenericValidator(&m_options.m_pdfSimpleStyle)),
+                             wxSizerFlags{}.Border());
+
+            pdfBoxSizer->Add(new wxCheckBox(pdfBoxSizer->GetStaticBox(), wxID_ANY,
+                                            _(L"&Fit table to page width"), wxDefaultPosition,
+                                            wxDefaultSize, wxCHK_2STATE,
+                                            wxGenericValidator(&m_options.m_pdfFitToPage)),
+                             wxSizerFlags{}.Border());
+
+            pdfBoxSizer->Add(new wxCheckBox(pdfBoxSizer->GetStaticBox(), wxID_ANY,
+                                            _(L"Show &continued labels on page breaks"),
+                                            wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
+                                            wxGenericValidator(&m_options.m_pdfShowContinued)),
+                             wxSizerFlags{}.Border());
             }
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),

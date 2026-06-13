@@ -31,6 +31,7 @@ SET(WXPDF_SRC
     src/wxpdfdoc/src/pdfgraphics.cpp
     src/wxpdfdoc/src/pdfimage.cpp
     src/wxpdfdoc/src/pdfkernel.cpp
+    src/wxpdfdoc/src/pdflistctrl.cpp
     src/wxpdfdoc/src/pdflayer.cpp
     src/wxpdfdoc/src/pdfobjects.cpp
     src/wxpdfdoc/src/pdfocg.cpp

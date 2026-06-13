@@ -45,15 +45,22 @@ namespace Wisteria::UI
         bool m_exportRange{ false };
         /// @brief Whether the output should be paginated.
         bool m_pageUsingPrinterSettings{ false };
+        /// @brief (PDF only) Whether to stretch all columns to the full page width.
+        bool m_pdfFitToPage{ false };
+        /// @brief (PDF only) Whether to use the simple (booktabs) style with only horizontal rules.
+        bool m_pdfSimpleStyle{ false };
+        /// @brief (PDF only) Whether to show "Continued" labels at page breaks.
+        bool m_pdfShowContinued{ true };
         };
 
     /// Formats for exporting a grid/list control.
     enum class GridExportFormat
         {
-        ExportText, /*!< Plain (tab-delimited) text.*/
-        ExportHtml, /*!< HTML table.*/
-        ExportRtf,  /*!< Rich Text Format.*/
-        ExportLaTeX /*!< LaTeX.*/
+        ExportText,  /*!< Plain (tab-delimited) text.*/
+        ExportHtml,  /*!< HTML table.*/
+        ExportRtf,   /*!< Rich Text Format.*/
+        ExportLaTeX, /*!< LaTeX.*/
+        ExportPdf    /*!< PDF document.*/
         };
 
     /// @brief Dialog for requesting export options for
@@ -169,6 +176,7 @@ namespace Wisteria::UI
 
         wxCheckBox* m_paginateCheckBox{ nullptr };
         wxStaticBoxSizer* m_rangeBoxSizer{ nullptr };
+        wxRadioButton* m_exportSelectedRadio{ nullptr };
 
         enum ControlIDs
             {
