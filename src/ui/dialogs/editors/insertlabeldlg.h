@@ -29,7 +29,8 @@ namespace Wisteria::UI
             - Font (via font picker).
             - Font color and background color (via color pickers).
             - Text alignment (Left, Center, Right).
-            - Header options (treat first line as header, with its own
+            - Header options (treat first line as header, with its own font,
+              color, and alignment options).
 
         Can also be used standalone to edit an existing Label's styling
         (e.g., the donut hole label in a pie chart) by calling

@@ -522,7 +522,7 @@ namespace Wisteria::GraphItems
                 return GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                 }
             // if using blocked backgrounds on the axis labels, then account for
-            // the padding above and below the label that that would add
+            // the padding above and below the label that would add
             auto tallestLabel{ GetTallestTextLabel(dc) };
             auto tallestLabelHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
             if (GetFontBackgroundColor().IsOk())

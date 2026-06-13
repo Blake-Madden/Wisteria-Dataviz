@@ -108,8 +108,7 @@ Properties common to all bar-chart-derived graphs:
   - `"end-block"`: A string specifying the tag of the ending block of the bar.
 - `"apply-brushes-to-ungrouped-bars"`: `true` to apply the brushes (from the brush scheme) to the series of bars. \
   This will only take effect if grouping is not in use for the bar chart.
-  Generally, this is not recommended as having different colored bars is generally discouraged in data visualization, but can be useful if
-  only including two bars that need to be contrasted.
+  This is generally not recommended, as using different-colored bars is discouraged in data visualization, but it can be useful if you only have two bars that need to be contrasted.
 - `"constrain-scaling-axis-to-bars"`: `true` to constrain the scaling axis to the longest bar.
 
 ::: {.notesection data-latex=""}

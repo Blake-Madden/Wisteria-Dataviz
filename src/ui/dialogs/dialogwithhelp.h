@@ -78,7 +78,7 @@ namespace Wisteria::UI
             stock icon shortcut. Non-power-of-2 sizes, and all sizes on Windows,
             are returned unmodified.
 
-            @param bundle The @c  wxBitmapBundle containing the bitmap(s) to display.
+            @param bundle The @c wxBitmapBundle containing the bitmap(s) to display.
             @param size The intended display size of the bitmap. Must be fully specified
                         (width and height > 0). This should be in DIPs (logical units).
             @return A wxBitmap suitable for use in @c wxStaticBitmap.

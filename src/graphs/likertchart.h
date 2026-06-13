@@ -714,7 +714,7 @@ namespace Wisteria::Graphs
             return m_showSectionHeaders;
             }
 
-        /// @brief Gets the label displayed about the positive response area.
+        /// @brief Gets the label displayed above the positive response area.
         /// @returns The positive section label.
         [[nodiscard]]
         const wxString& GetPositiveHeader() const noexcept
@@ -732,7 +732,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /// @brief Gets the label displayed about the negative response area.
+        /// @brief Gets the label displayed above the negative response area.
         /// @returns The negative section label.
         [[nodiscard]]
         const wxString& GetNegativeHeader() const noexcept

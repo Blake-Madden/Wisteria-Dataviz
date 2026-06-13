@@ -64,7 +64,7 @@ namespace Wisteria::Graphs
             }
          catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+         wxMessageBox(wxString::FromUTF8(err.what()),
                          _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }

@@ -69,7 +69,7 @@ namespace Wisteria::GraphItems
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
             @param labelDisplay What to display on the label.
-            @returns The label, which will already be anchored to the middle of the slices'
+            @returns The label, which will already be anchored to the middle of the slice's
                 outer ring.*/
         [[nodiscard]]
         std::unique_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(BinLabelDisplay labelDisplay);
@@ -79,7 +79,7 @@ namespace Wisteria::GraphItems
                 This is useful for inner ring slices that need its outer labels to be outside
                 the parent ring.
             @param labelDisplay What to display on the label.
-            @returns The label, which will already be anchored to the middle of the slices'
+            @returns The label, which will already be anchored to the middle of the slice's
                 outer ring.*/
         [[nodiscard]]
         std::unique_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(const wxRect& pieArea,

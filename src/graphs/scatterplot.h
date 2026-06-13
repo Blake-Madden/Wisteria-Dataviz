@@ -323,7 +323,7 @@ namespace Wisteria::Graphs
 
         /** @brief Builds and returns a legend, containing the groups and their
                 regression statistics.
-            @details This can be then be managed by the parent canvas and placed
+            @details This can then be managed by the parent canvas and placed
                 next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/

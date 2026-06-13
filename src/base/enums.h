@@ -411,7 +411,7 @@ namespace Wisteria
         USBusiness /*!< US Businesses (April 1st to March 31st).*/
         };
 
-    /// @brief Types of brackets to shown along an axis.
+    /// @brief Types of brackets to be shown along an axis.
     enum class BracketType
         {
         FiscalQuarterly /*!< Fiscal year, by quarters.*/

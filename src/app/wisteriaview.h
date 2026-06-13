@@ -55,7 +55,7 @@ class WisteriaView final : public wxView
         return m_pages;
         }
 
-    /// @returns The rebuilder builder, which stores all data for serialization.
+    /// @returns The report builder, which stores all data for serialization.
     [[nodiscard]]
     const Wisteria::ReportBuilder& GetReportBuilder() const noexcept
         {
@@ -259,7 +259,7 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     static wxString BuildAggPosJson(const wxString& pos, const wxString& dimension, int offset = 0);
 
-    /// @returns The sidebar icon that displays where a dataset come from
+    /// @returns The sidebar icon that displays where a dataset comes from
     ///     (i.e., imported vs. a pivot operation).
     [[nodiscard]]
     size_t GetDatasetIconFromName(const wxString& name) const;

@@ -141,7 +141,7 @@ namespace Wisteria
             /// @param locked Whether row's proportion is relative to the entire canvas
             ///     and remains locked, regardless of titles.
             /// @warning This should only be used for the first or last row on a page,
-            ///     as it requires to adjust the layout of previous items on the page.
+            ///     as it requires adjusting the layout of previous items on the page.
             ///     If multiple items are locked on the same page or appear in the middle
             ///     of the page, this will result in unexpected page layout.
             /// @returns A self reference.

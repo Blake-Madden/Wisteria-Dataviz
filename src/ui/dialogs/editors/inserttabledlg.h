@@ -26,7 +26,6 @@ namespace Wisteria::UI
             - A variable selection mode (all columns, or a custom list
               mixing plain column names with regex formulas).
             - Alternate row color options.
-            - Alternate row color options.
             - Minimum width/height proportion controls.*/
     class InsertTableDlg final : public InsertGraphDlg
         {

@@ -1138,7 +1138,7 @@ namespace Wisteria::GraphItems
         /// @param dc The DC to measure the text with.
         [[nodiscard]]
         bool ShouldLabelsBeStackedToFit(wxDC& dc) const;
-        /// @returns @c true if the specified value as a label associated to it.
+        /// @returns @c true if the specified value has a label associated with it.
         ///     This checks for both generated labels and custom labels.
         /// @param value The axis value to check.
         [[nodiscard]]
@@ -1246,7 +1246,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets whether to enable auto stacking labels.
             @details If @c true, the axis will set labels to auto stack
-                if it is determined that that is the best way to fit them along the axis.
+                if it is determined that this is the best way to fit them along the axis.
             @param enable Whether to enable auto stacking.
             @note By default, this is turned on for horizontal axes,
                 but turned off for vertical axes.\n
@@ -1584,8 +1584,8 @@ namespace Wisteria::GraphItems
                 title is aligned against the axis
                 (the default is to align it centered to the axis line).
             @note The title manages its own font.
-                To customize this font, call `GetTitle().GetLabelDisplayInfo()`.
-            @returns The header of the axis.
+                To customize this font, call `GetTitle().GetGraphItemInfo().Font(...)`.
+            @returns The title of the axis.
             @sa SetRelativeAlignment().*/
         [[nodiscard]]
         Label& GetTitle() noexcept
@@ -1609,8 +1609,8 @@ namespace Wisteria::GraphItems
 
                 For Y axes, relative alignment controls where the footer is aligned horizontally
                 against the top of the axis.
-            @note The header manages its own font. The customize this font, call
-                `GetHeader().GetLabelDisplayInfo()`.
+            @note The header manages its own font. To customize this font, call
+                `GetHeader().GetGraphItemInfo().Font(...)`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
         [[nodiscard]]
@@ -1629,8 +1629,8 @@ namespace Wisteria::GraphItems
 
              For Y axes, relative alignment controls where the footer is aligned
              horizontally against the bottom of the axis.
-            @note The footer manages its own font. The customize this font, call
-                `GetFooter().GetLabelDisplayInfo()`.
+            @note The footer manages its own font. To customize this font, call
+                `GetFooter().GetGraphItemInfo().Font(...)`.
             @sa SetRelativeAlignment().
             @returns The footer of the axis.*/
         [[nodiscard]]
@@ -1861,7 +1861,7 @@ namespace Wisteria::GraphItems
 
         /// @returns The amount of pixels (scaled to the system's DPI and canvas's scale)
         ///     that the largest tick mark is pushing out from the axis.
-        ///     This is useful for see how wide the axis line and its tickmarks are.
+        ///     This is useful for seeing how wide the axis line and its tickmarks are.
         [[nodiscard]]
         wxCoord CalcTickMarkOuterWidth() const;
         /// @returns The amount of pixels (scaled to the system's DPI and canvas's scale)
@@ -1958,7 +1958,7 @@ namespace Wisteria::GraphItems
         void SetAutoAccessibilityAttributes() final;
 
         /// @brief Loads the default labels based on the axis values.
-        /// @details This will only do anything is the label display is set to use
+        /// @details This will only do anything if the label display is set to use
         ///     the default labels. In other words, if labels are turned off or only
         ///     custom labels are used, then this will not update anything.
         void LoadDefaultLabels();

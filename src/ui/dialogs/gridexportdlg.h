@@ -20,7 +20,7 @@ namespace Wisteria::UI
     {
     /** @brief Stores information about exporting a grid/list control.
         @note Column and row indices are stored as 1-indexed values here because that is the
-            indexing that shown in the dialog for the user.
+            indexing that is shown in the dialog for the user.
             Caller is responsible for converting these to 0-indexed values.*/
     struct GridExportOptions
         {

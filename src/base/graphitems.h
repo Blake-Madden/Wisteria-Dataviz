@@ -620,7 +620,7 @@ namespace Wisteria
 
             /// @brief Sets the text alignment
             ///     (applies to Label objects or labels managed by the object, such as Axis).
-            /// @param alignment How the text is alignment.
+            /// @param alignment How the text is aligned.
             /// @returns A self reference.
             GraphItemInfo& LabelAlignment(const TextAlignment& alignment) noexcept
                 {
@@ -630,7 +630,7 @@ namespace Wisteria
 
             /// @brief Sets the text's vertical alignment
             ///     (applies to Label objects using a minimum user-defined size).
-            /// @param alignment How the text is alignment.
+            /// @param alignment How the text is aligned.
             /// @returns A self reference.
             GraphItemInfo&
             LabelPageVerticalAlignment(const PageVerticalAlignment& alignment) noexcept
@@ -641,7 +641,7 @@ namespace Wisteria
 
             /// @brief Sets the text's horizontal alignment
             ///     (applies to Label objects using a minimum user-defined size).
-            /// @param alignment How the text is alignment.
+            /// @param alignment How the text is aligned.
             /// @returns A self reference.
             GraphItemInfo&
             LabelPageHorizontalAlignment(const PageHorizontalAlignment& alignment) noexcept
@@ -1044,7 +1044,7 @@ namespace Wisteria
                 }
 
             /// @returns The size of the shadow.
-            /// @warning This will need to be scaled with being drawn or measured.
+            /// @warning This will need to be scaled when being drawn or measured.
             [[nodiscard]]
             constexpr static double GetShadowOffset() noexcept
                 {

@@ -84,7 +84,7 @@ namespace Wisteria::UI
             return m_includeHighlighting;
             }
 
-        /// @returns Whether to include a layout options.
+        /// @returns Whether to include layout options.
         [[nodiscard]]
         bool IncludeLayoutOptions() const noexcept
             {

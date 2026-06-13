@@ -79,7 +79,7 @@ namespace Wisteria::Graphs
 
          // set the data and use the grouping column from the dataset to create separate lines
          // for the students
-         WCurve->SetData(BelongingData);
+         WCurve->SetData(BelongingData, L"Belong", L"Year", L"Name");
 
          // add a title
          WCurve->GetTopXAxis().GetTitle().SetText(

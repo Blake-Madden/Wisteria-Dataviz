@@ -27,7 +27,6 @@ namespace Wisteria::UI
             - A "Variables..." button that opens a VariableSelectDlg
               for selecting question columns and an optional grouping column.
             - Labels showing the current variable selections.
-            - A survey format choice.
             - Checkboxes for show response counts, show percentages,
               show section headers, and adjust bar widths.
             - Color pickers for negative, positive, neutral, and no-response colors.

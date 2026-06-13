@@ -18,8 +18,8 @@ namespace Wisteria::Data
     {
     /// @brief Interface for cloning a dataset.
     /// @note This is a base class for subsetting operations and is not recommended
-    ///     for client code. If you are only needing to copy a full dataset,
-    ///     then use a deep copy construction.
+    ///     for client code. If you only need to copy a full dataset,
+    ///     use a deep copy constructor.
     class DatasetClone
         {
       public:

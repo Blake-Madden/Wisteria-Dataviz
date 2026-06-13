@@ -32,7 +32,7 @@ namespace Wisteria::Graphs
         @par Missing Data:
             - Missing data in the group column will be shown as an empty legend label.
             - If either the X or Y value is missing data, then a gap in the line will be shown
-              at where the observation appeared in the series. Because the points are drawn
+              where the observation appeared in the series. Because the points are drawn
               along the x-axis as they appear in the data, a missing data value will not be included
               in the line, but will break the line. The following valid point in the series will
               restart the line.\n

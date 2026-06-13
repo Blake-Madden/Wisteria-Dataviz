@@ -30,7 +30,7 @@ namespace Wisteria::Graphs
 
          When sorting data into binned ranges (the default behavior), the number of bins is
          determined using the Sturges method (if the number of observations is less than 200).
-         If N is 200 or more, then Scott's choice is used.
+         If N is 200 or more, then Scott's rule is used.
          The number of bins can be manually specified as well if you prefer.
 
          Along with range-based bins, bins can also be created for each unique value from the data.

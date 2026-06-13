@@ -41,7 +41,7 @@ Properties for `"box-plot"` nodes:
 Properties for `"candlestick-plot"` nodes:
 
 - `"variables"`: An item containing the following properties:
-  - `"date"`: The date column (usually would be daily intervals).
+  - `"date"`: The date column (usually daily intervals).
   - `"open"`: The opening-value column.
   - `"high"`: The high-value column.
   - `"low"`: The low-value column.
@@ -65,7 +65,7 @@ Properties for `"categorical-bar-chart"` nodes:
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
   - `"category"`: The categorical (or ID) column containing the items to group and count.
   - `"group"`: An (optional) grouping column to further divide the main categorical data into.
-- `"bar-orientation"`: string specifying the orientation of the bars. \
+- `"bar-orientation": A string specifying the orientation of the bars. \
   Available options are:
   - `"vertical"`: Bars are drawn vertically (i.e., top to bottom).
   - `"horizontal"`: Bars are drawn horizontally (i.e., left to right).
@@ -160,7 +160,7 @@ Properties for `"likert-chart"` nodes:
       regular expression pattern *value*.
       The column order will be the ID column (if in use), the categoricals, the continuous columns, and finally the date columns.
   - `"group"`: The grouping column (this is optional).
-- `"survey-format"`: string specifying the scale used for all questions. \
+- `"survey-format": A string specifying the scale used for all questions. \
   Available options are:
   - `"two-point"`: Negative and positive responses.
   - `"two-point-categorized"`: Negative and positive responses, with sub-categories (e.g., male vs. female).
@@ -448,7 +448,7 @@ Properties for `"linear-regression-roadmap"` nodes:
 - `"p-value-threshold"`: If a p-value column is supplied, only predictors with p-values lower than this will be included. \
   (Predictors with missing p-values will be excluded.) \
   Common thresholds are `0.05` or `0.01` (most stringent).
-- `"predictors-to-include"`: Array of strings specifying which types of predictors (e.g., negative influencers) to include. \
+- `"predictors-to-include"`: An array of strings specifying which types of predictors (e.g., negative influencers) to include. \
   Available options are:
   - `"positive"`: Positive influence (e.g., IVs with coefficients > 0).
   - `"negative"`: Negative influence (e.g., IVs with coefficients < 0).

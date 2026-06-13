@@ -361,12 +361,12 @@ Note that instead of properties, a single string can be specified indicating a f
     - `"curly-braces"`: The connecting lines and main bracket line will be a curly brace.
     - `"no-connection-lines"`: Do not draw a line from the axis to the bracket; only the bracket itself will be drawn.
 
-  If building brackets individually, specify an area of items, each with the following properties:
+  If building brackets individually, specify an array of items, each with the following properties:
   - `"start"`: The starting axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
   - `"end"`: The ending axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
-  - `"label"`: The text to display on next to the brackets.
+  - `"label"`: The text to display next to the brackets.
   - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
   - `"style"`: The style of the braces. \
     Available options are:

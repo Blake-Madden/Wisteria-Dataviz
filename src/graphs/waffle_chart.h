@@ -49,7 +49,7 @@ namespace Wisteria::Graphs
                 number of cells from the shapes' repeat counts is less than this, then extra
                 cells will be added to the specified shape (by index). Likewise, if the total
                 number of cells from the shapes' repeat counts is more than this, then cells will be
-                removed to the specified shape (by index).\n
+                removed from the specified shape (by index).\n
                 This is useful for when a cell represents percentages and the cells don't add to 100
                 because of rounding issues.
             @param rowCount The number of rows to split the shapes into. This is optional,

@@ -213,7 +213,7 @@ namespace Wisteria::Graphs
             ///    on top. This is useful if the brush is a pattern (e.g., hatch),
             ///    rather than a solid color.
             /// @note This is only used if the bar block's painting effect is solid.
-            ///    In other works, this color is ignored for fades, glossy effects, stipples, etc.
+            ///    In other words, this color is ignored for fades, glossy effects, stipples, etc.
             /// @param color The background color of the block.
             /// @returns A self reference.
             BarBlockInfo& Color(const wxColour& color)

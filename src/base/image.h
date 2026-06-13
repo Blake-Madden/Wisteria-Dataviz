@@ -418,7 +418,7 @@ namespace Wisteria::GraphItems
         static wxImage FrostedGlass(const wxImage& image,
                                     Wisteria::Orientation orientation = Orientation::Both,
                                     uint8_t coarseness = 50);
-        /** @returns Returns an image with an effect applied to it.
+        /** @returns An image with an effect applied to it.
             @param effect The effect to apply.
             @param img The basis image to apply the effect to.*/
         [[nodiscard]]
