@@ -39,6 +39,7 @@ namespace Wisteria::GraphItems
         else if (GetNumberDisplay() == NumberDisplay::Percentage)
             {
             return wxString::Format(
+                // TRANSLATORS: %s is a formatted number; %% is a literal percent sign
                 _(L"%s%%"),
                 wxNumberFormatter::ToString(pos * 100, GetPrecision(),
                                             wxNumberFormatter::Style::Style_WithThousandsSep |
