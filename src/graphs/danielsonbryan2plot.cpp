@@ -289,4 +289,130 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             }
         AddObject(std::move(points));
         }
+
+    //----------------------------------------------------------------
+    void DanielsonBryan2Plot::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_scoresColumn.empty() ||
+            GetCustomAxes().size() < 3)
+            {
+            return;
+            }
+
+        wxString label = _(L"A Danielson-Bryan 2 plot");
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        const auto& leftAxis = GetCustomAxes()[0];
+        const auto& rightAxis = GetCustomAxes()[2];
+
+        // left axis bracket labels (score ranges), read top to bottom
+        if (!leftAxis.GetBrackets().empty())
+            {
+            /* TRANSLATORS: DB2 plot accessibility: left scale header. */
+            label += _(L". Left scale: ");
+            bool firstItem{ true };
+            for (const auto& bracket : leftAxis.GetBrackets())
+                {
+                if (!firstItem)
+                    {
+                    label += L", ";
+                    }
+                label += wxString{ bracket.GetLabel().GetText() }.Trim(false).Trim(true);
+                firstItem = false;
+                }
+            }
+
+        // right axis bracket labels (descriptions), read top to bottom
+        if (!rightAxis.GetBrackets().empty())
+            {
+            /* TRANSLATORS: DB2 plot accessibility: right scale header. */
+            label += _(L". Right scale: ");
+            bool firstItem{ true };
+            for (const auto& bracket : rightAxis.GetBrackets())
+                {
+                if (!firstItem)
+                    {
+                    label += L", ";
+                    }
+                label += bracket.GetLabel().GetText();
+                firstItem = false;
+                }
+            }
+
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+        std::vector<double> validScores;
+        for (const auto& val : scoresColumn->GetValues())
+            {
+            if (std::isfinite(val))
+                {
+                validScores.push_back(std::clamp<double>(val, 0, 100));
+                }
+            }
+
+        if (!validScores.empty())
+            {
+            // resolve which right-axis bracket label covers a given score
+            const auto getSectionLabel = [&rightAxis](double score) -> wxString
+            {
+                // NOLINTBEGIN(misc-redundant-expression)
+                const auto yAxisPos =
+                    is_within<size_t>(std::make_pair(0, 29), static_cast<size_t>(score))   ? 2 :
+                    is_within<size_t>(std::make_pair(30, 49), static_cast<size_t>(score))  ? 3 :
+                    is_within<size_t>(std::make_pair(50, 59), static_cast<size_t>(score))  ? 4 :
+                    is_within<size_t>(std::make_pair(60, 69), static_cast<size_t>(score))  ? 5 :
+                    is_within<size_t>(std::make_pair(70, 79), static_cast<size_t>(score))  ? 6 :
+                    is_within<size_t>(std::make_pair(80, 89), static_cast<size_t>(score))  ? 7 :
+                    is_within<size_t>(std::make_pair(90, 100), static_cast<size_t>(score)) ? 8 :
+                                                                                             8;
+                // NOLINTEND(misc-redundant-expression)
+                for (const auto& bracket : rightAxis.GetBrackets())
+                    {
+                    if (static_cast<size_t>(bracket.GetStartPosition()) == yAxisPos)
+                        {
+                        return bracket.GetLabel().GetText();
+                        }
+                    }
+                return rightAxis.GetBrackets().empty() ?
+                           wxString{} :
+                           rightAxis.GetBrackets().back().GetLabel().GetText();
+            };
+
+            label += L". ";
+            if (validScores.size() == 1)
+                {
+                /* TRANSLATORS: DB2 plot accessibility: single score.
+                   1st %s is the score value, 2nd %s is the section label. */
+                label +=
+                    wxString::Format(_(L"Score: %s, classified as %s"),
+                                     wxNumberFormatter::ToString(
+                                         validScores[0], 1, wxNumberFormatter::Style::Style_None),
+                                     getSectionLabel(validScores[0]));
+                }
+            else
+                {
+                const auto minScore = *std::min_element(validScores.cbegin(), validScores.cend());
+                const auto maxScore = *std::max_element(validScores.cbegin(), validScores.cend());
+                /* TRANSLATORS: DB2 plot accessibility: multiple scores.
+                   %zu is the count; 1st %s is lowest value, 2nd %s is its section,
+                   3rd %s is highest value, 4th %s is its section. */
+                label += wxString::Format(
+                    _(L"%zu scores; lowest score (%s) falls in %s; highest score (%s) falls in %s"),
+                    validScores.size(),
+                    wxNumberFormatter::ToString(minScore, 1, wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(minScore),
+                    wxNumberFormatter::ToString(maxScore, 1, wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(maxScore));
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs
