@@ -32,6 +32,19 @@ namespace Wisteria::GraphItems
             {
             return (firstDate + wxDateSpan::Days(static_cast<int>(pos))).Format(L"%B %d, %Y");
             }
+        if (GetNumberDisplay() == NumberDisplay::Currency)
+            {
+            return ToCurrency(pos, true);
+            }
+        else if (GetNumberDisplay() == NumberDisplay::Percentage)
+            {
+            return wxString::Format(
+                _(L"%s%%"),
+                wxNumberFormatter::ToString(pos * 100, GetPrecision(),
+                                            wxNumberFormatter::Style::Style_WithThousandsSep |
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes));
+            }
+
         return wxNumberFormatter::ToString(pos, GetPrecision(),
                                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
         }
