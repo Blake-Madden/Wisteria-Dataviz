@@ -2452,6 +2452,16 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::ResetAxisOptions()
+        {
+        m_savedAxes.clear();
+        if (m_axisOptionsPanel != nullptr)
+            {
+            m_axisOptionsPanel->ResetAxes();
+            }
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::ApplyAxisOverrides(Graphs::Graph2D& graph)
         {
         if (m_axisOptionsPanel != nullptr)

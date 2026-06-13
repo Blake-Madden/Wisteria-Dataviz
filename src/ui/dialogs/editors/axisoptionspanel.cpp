@@ -496,6 +496,50 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void AxisOptionsPanel::ResetAxes()
+        {
+        m_savedAxes.clear();
+        m_axisIsDate.clear();
+        m_bracketDatasetHint.clear();
+        m_bracketLabelColumnHint.clear();
+        m_bracketValueColumnHint.clear();
+
+        if (m_autoRangeRadio != nullptr)
+            {
+            m_autoRangeRadio->SetValue(true);
+            m_userRangeRadio->SetValue(false);
+            OnRangeTypeChanged();
+            }
+        if (m_rangeStartSpin != nullptr)
+            {
+            m_rangeStartSpin->SetValue(0);
+            }
+        if (m_rangeEndSpin != nullptr)
+            {
+            m_rangeEndSpin->SetValue(100);
+            }
+        if (m_rangeIntervalSpin != nullptr)
+            {
+            m_rangeIntervalSpin->SetValue(1.0);
+            }
+        if (m_rangeDisplayIntervalSpin != nullptr)
+            {
+            m_rangeDisplayIntervalSpin->SetValue(1);
+            }
+        if (m_numericRangePanel != nullptr)
+            {
+            m_numericRangePanel->Show(true);
+            }
+        if (m_dateRangePanel != nullptr)
+            {
+            m_dateRangePanel->Hide();
+            }
+
+        RefreshBracketList();
+        Layout();
+        }
+
+    //-------------------------------------------
     void AxisOptionsPanel::OnRangeTypeChanged()
         {
         if (m_numericRangePanel == nullptr)

@@ -668,6 +668,7 @@ namespace Wisteria::UI
         m_barShapes.clear();
         m_barBlockDecals.clear();
         UpdateVariableLabels();
+        ResetAxisOptions();
         }
 
     //-------------------------------------------
@@ -806,6 +807,7 @@ namespace Wisteria::UI
         m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
 
         UpdateVariableLabels();
+        ResetAxisOptions();
         }
 
     //-------------------------------------------

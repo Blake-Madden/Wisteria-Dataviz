@@ -166,6 +166,7 @@ namespace Wisteria::UI
         m_lowVariable.clear();
         m_closeVariable.clear();
         UpdateVariableLabels();
+        ResetAxisOptions();
         }
 
     //-------------------------------------------
@@ -267,6 +268,7 @@ namespace Wisteria::UI
         m_closeVariable = closeVars.empty() ? wxString{} : closeVars.front();
 
         UpdateVariableLabels();
+        ResetAxisOptions();
         }
 
     //-------------------------------------------

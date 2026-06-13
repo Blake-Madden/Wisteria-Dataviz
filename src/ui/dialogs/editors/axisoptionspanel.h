@@ -83,6 +83,12 @@ namespace Wisteria::UI
             @param isDate @c true if the axis represents date values.*/
         void SetAxisIsDate(AxisType axisType, bool isDate);
 
+        /** @brief Resets all axes and data-dependent control values to their defaults.
+            @details Clears saved axis state (brackets, custom ranges, date hints) and
+                resets the Range group to Auto. Call this when the variable selection
+                changes so stale axis settings from the previous dataset are discarded.*/
+        void ResetAxes();
+
       private:
         void OnAxisSelectionChanged();
         void ReadControlsFromAxis(const GraphItems::Axis& axis);

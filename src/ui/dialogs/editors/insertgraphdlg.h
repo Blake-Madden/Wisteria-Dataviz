@@ -348,6 +348,14 @@ namespace Wisteria::UI
                 (e.g., heat maps, waffle charts, word clouds).*/
         void CreateAxisOptionsPage();
 
+        /** @brief Resets the axis options panel to its initial (no-variable) state.
+            @details Clears the saved axis overrides and delegates to
+                AxisOptionsPanel::ResetAxes() to discard stale range, bracket, and
+                date-hint state. Call from OnDatasetChanged() and OnSelectVariables()
+                so axis settings from the previous variable selection are not carried
+                over to the newly selected variables.*/
+        void ResetAxisOptions();
+
         /// @brief Returns the suggested dataset name for dataset-driven brackets.
         /// @details Subclasses can override to preselect the dataset.
         /// @returns The dataset name hint, or empty string for no hint.

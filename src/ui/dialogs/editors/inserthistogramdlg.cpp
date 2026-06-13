@@ -375,6 +375,7 @@ namespace Wisteria::UI
         m_continuousVariable.clear();
         m_groupVariable.clear();
         UpdateVariableLabels();
+        ResetAxisOptions();
         }
 
     //-------------------------------------------
@@ -442,6 +443,7 @@ namespace Wisteria::UI
         m_groupVariable = groupVars.empty() ? wxString{} : groupVars.front();
 
         UpdateVariableLabels();
+        ResetAxisOptions();
         }
 
     //-------------------------------------------
