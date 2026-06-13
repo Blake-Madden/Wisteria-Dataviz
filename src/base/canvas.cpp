@@ -888,7 +888,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 {
                 const auto heightToWidthRatio =
                     safe_divide<double>(GetCanvasMinHeightDIPs(), GetCanvasMinWidthDIPs());
-                m_rectDIPs.SetHeight(m_rectDIPs.GetWidth() * heightToWidthRatio);
+                // Constrain the width so the proportional height fits in the viewport;
+                // prevents the canvas from growing taller than the screen on wide monitors.
+                const auto clientHeightDIPs = gdc.ToDIP(GetClientRect().GetHeight());
+                const auto maxWidthForViewport =
+                    static_cast<int>(safe_divide<double>(clientHeightDIPs, heightToWidthRatio));
+                m_rectDIPs.SetWidth(std::min(m_rectDIPs.GetWidth(), maxWidthForViewport));
+                m_rectDIPs.SetHeight(static_cast<int>(m_rectDIPs.GetWidth() * heightToWidthRatio));
                 }
             else
                 {

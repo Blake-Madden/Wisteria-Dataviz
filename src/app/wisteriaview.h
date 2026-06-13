@@ -55,6 +55,10 @@ class WisteriaView final : public wxView
         return m_pages;
         }
 
+    /// @brief Re-applies the global print settings (orientation, paper size) to all pages
+    ///     and refreshes their on-screen aspect ratios.
+    void RefreshPagePrintSettings();
+
     /// @returns The report builder, which stores all data for serialization.
     [[nodiscard]]
     const Wisteria::ReportBuilder& GetReportBuilder() const noexcept

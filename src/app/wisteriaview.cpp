@@ -469,6 +469,9 @@ void WisteriaView::LoadProject()
         for (auto* page : m_pages)
             {
             ApplyGlobalPrintSettings(page);
+            page->FitToPageWhenPrinting(true);
+            page->SetSizeFromPaperSize();
+            page->MaintainAspectRatio(page->GetFixedObjectsGridSize().first > 1);
             }
         }
 
@@ -681,6 +684,15 @@ void WisteriaView::OnPrintSetup([[maybe_unused]] wxCommandEvent& event)
         settings->SetPrintOrientation(updatedData.GetOrientation());
         settings->SetPaperId(updatedData.GetPaperId());
         settings->SaveSettingsFile();
+        for (auto* docBase : wxGetApp().GetDocManager()->GetDocuments())
+            {
+            if (auto* view =
+                    dynamic_cast<WisteriaView*>(dynamic_cast<wxDocument*>(docBase)->GetFirstView());
+                view != nullptr)
+                {
+                view->RefreshPagePrintSettings();
+                }
+            }
         }
     }
 
@@ -2208,6 +2220,9 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
+    canvas->FitToPageWhenPrinting(true);
+    canvas->SetSizeFromPaperSize();
+    canvas->MaintainAspectRatio(dlg.GetRows() > 1);
     canvas->SetWatermark(
         Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
     canvas->SetBackgroundColor(dlg.GetPageBackgroundColor());
@@ -2302,6 +2317,9 @@ Wisteria::Canvas* WisteriaView::AddPageToProject(const size_t rows, const size_t
     auto* canvas = new Wisteria::Canvas(m_workArea, pageId);
     ApplyGlobalPrintSettings(canvas);
     canvas->SetFixedObjectsGridSize(rows, columns);
+    canvas->FitToPageWhenPrinting(true);
+    canvas->SetSizeFromPaperSize();
+    canvas->MaintainAspectRatio(rows > 1);
 
     canvas->Bind(wxEVT_LEFT_UP,
                  [this](wxMouseEvent& event)
@@ -8688,6 +8706,19 @@ void WisteriaView::UpdateCanvas(Wisteria::Canvas* canvas)
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();
     canvas->Refresh();
+    }
+
+//-------------------------------------------
+void WisteriaView::RefreshPagePrintSettings()
+    {
+    for (auto* page : m_pages)
+        {
+        ApplyGlobalPrintSettings(page);
+        page->FitToPageWhenPrinting(true);
+        page->SetSizeFromPaperSize();
+        page->MaintainAspectRatio(page->GetFixedObjectsGridSize().first > 1);
+        UpdateCanvas(page);
+        }
     }
 
 //-------------------------------------------
