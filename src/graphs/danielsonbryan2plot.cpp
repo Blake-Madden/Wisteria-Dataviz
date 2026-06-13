@@ -368,7 +368,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 // NOLINTEND(misc-redundant-expression)
                 for (const auto& bracket : rightAxis.GetBrackets())
                     {
-                    if (static_cast<size_t>(bracket.GetStartPosition()) == yAxisPos)
+                    if (static_cast<int>(bracket.GetStartPosition()) == yAxisPos)
                         {
                         return bracket.GetLabel().GetText();
                         }
