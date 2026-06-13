@@ -34,7 +34,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
            cmake ./
-           msbuild ${{ env.project }}.sln
+           cmake --build . --config Debug
 
     - name: Run low-level tests
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -43,7 +43,7 @@ jobs:
            git clone https://github.com/catchorg/Catch2.git
            cd ${{ github.workspace }}/tests
            cmake ./
-           msbuild ${{ env.testrunner }}.sln
+           cmake --build . --config Debug
            cd bin/Debug
            ./${{ env.testrunner }} --reporter JUnit::out=${{ env.outfile }}
            cat ${{ env.outfile }}
