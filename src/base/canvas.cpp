@@ -181,6 +181,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     ++totalSelected;
                     }
                 }
+            if (totalSelected > 0)
+                {
             if (totalSelected == 1 && singleSelected != nullptr)
                 {
                 if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Label)))
@@ -200,6 +202,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                                 _(L"Please select only one item to copy."),
                          _(L"Copy Item"), wxOK | wxICON_INFORMATION);
             return;
+            }
+            // nothing selected: fall through to copy the full canvas below
             }
 
         if (wxTheClipboard->Open())
