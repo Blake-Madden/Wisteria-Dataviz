@@ -3323,8 +3323,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             pdfOpts.SetStyle(exportOptions.m_pdfSimpleStyle ? wxPDF_LISTCTRL_STYLE_SIMPLE :
                                                               wxPDF_LISTCTRL_STYLE_GRID);
             pdfOpts.SetShowContinued(exportOptions.m_pdfShowContinued);
-            /// @todo remove const_cast if wxPdfDoc changes API
-            pdfDoc.AddList(const_cast<ListCtrlEx*>(this), pdfOpts);
+            pdfDoc.AddList(this, pdfOpts);
             return pdfDoc.SaveAsFile(path.GetFullPath());
             }
 
