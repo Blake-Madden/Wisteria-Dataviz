@@ -46,6 +46,11 @@ namespace Wisteria::UI
         optionsPage->SetSizer(optionsSizer);
         GetSideBarBook()->AddPage(optionsPage, _(L"Bar Chart"), ID_OPTIONS_SECTION, true);
 
+        auto* barLabelsPage = new wxPanel(GetSideBarBook());
+        auto* barLabelsSizer = new wxBoxSizer(wxVERTICAL);
+        barLabelsPage->SetSizer(barLabelsSizer);
+        GetSideBarBook()->AddPage(barLabelsPage, _(L"Bar Labels"), wxID_ANY, false);
+
         // left column: original options
         auto* leftSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -125,7 +130,7 @@ namespace Wisteria::UI
         // bar label display
         auto* labelDispSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        labelDispSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar labels:")),
+        labelDispSizer->Add(new wxStaticText(barLabelsPage, wxID_ANY, _(L"Bar labels:")),
                             wxSizerFlags{}.CenterVertical());
         wxArrayString labelDisplays;
         labelDisplays.Add(_(L"Value"));
@@ -135,11 +140,11 @@ namespace Wisteria::UI
         labelDisplays.Add(_(L"Name"));
         labelDisplays.Add(_(L"Name and Value"));
         labelDisplays.Add(_(L"Name and Percentage"));
-        labelDispSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        labelDispSizer->Add(new wxChoice(barLabelsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          labelDisplays, 0,
                                          wxGenericValidator(&m_barLabelDisplayIndex)),
                             wxSizerFlags{}.CenterVertical());
-        leftSizer->Add(labelDispSizer, wxSizerFlags{}.Border());
+        barLabelsSizer->Add(labelDispSizer, wxSizerFlags{}.Border());
 
         leftSizer->Add(new wxCheckBox(optionsPage, wxID_ANY,
                                       _(L"Apply color scheme to ungrouped bars"), wxDefaultPosition,
@@ -160,11 +165,11 @@ namespace Wisteria::UI
         // bar label suffix
         auto* suffixSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        suffixSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar label suffix:")),
+        suffixSizer->Add(new wxStaticText(barLabelsPage, wxID_ANY, _(L"Bar label suffix:")),
                          wxSizerFlags{}.CenterVertical());
-        suffixSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+        suffixSizer->Add(new wxTextCtrl(barLabelsPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                         wxDefaultSize, 0, wxGenericValidator(&m_barLabelSuffix)));
-        leftSizer->Add(suffixSizer, wxSizerFlags{}.Border());
+        barLabelsSizer->Add(suffixSizer, wxSizerFlags{}.Border());
 
         // box effect
         auto* effectSizer = new wxFlexGridSizer(
@@ -246,18 +251,13 @@ namespace Wisteria::UI
 
         // bar block decals
         m_barBlockDecalListBox = new wxEditableListBox(
-            optionsPage, wxID_ANY, _(L"Bar block decals:"), wxDefaultPosition,
+            barLabelsPage, wxID_ANY, _(L"Bar block decals:"), wxDefaultPosition,
             wxSize{ FromDIP(300), FromDIP(120) },
             wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
-        leftSizer->Add(m_barBlockDecalListBox, wxSizerFlags{ 1 }.Expand().Border());
-
-        optionsSizer->Add(leftSizer, wxSizerFlags{}.Expand());
-
-        // right column: bar sorting and bar groups
-        auto* rightSizer = new wxBoxSizer(wxVERTICAL);
+        barLabelsSizer->Add(m_barBlockDecalListBox, wxSizerFlags{}.Border());
 
         // bar sorting
-        auto* sortBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Bar Sorting"));
+        auto* sortBox = new wxStaticBoxSizer(wxVERTICAL, barLabelsPage, _(L"Bar Sorting"));
 
         m_sortNoneRadio = new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"No custom sort"),
                                             wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -278,9 +278,14 @@ namespace Wisteria::UI
             new wxEditableListBox(sortBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
                                   wxSize{ FromDIP(300), FromDIP(120) }, 0);
         m_sortLabelListBox->Enable(false);
-        sortBox->Add(m_sortLabelListBox, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
+        sortBox->Add(m_sortLabelListBox, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
-        rightSizer->Add(sortBox, wxSizerFlags{ 1 }.Expand());
+        barLabelsSizer->Add(sortBox, wxSizerFlags{}.Border());
+
+        optionsSizer->Add(leftSizer, wxSizerFlags{}.Expand());
+
+        // right column: bar groups
+        auto* rightSizer = new wxBoxSizer(wxVERTICAL);
 
         // bar groups
         m_barGroupListBox = new wxEditableListBox(
@@ -1849,6 +1854,10 @@ namespace Wisteria::UI
                 {
                 m_sortAscRadio->SetValue(true);
                 }
+            }
+        else
+            {
+            m_sortNoneRadio->SetValue(true);
             }
 
         TransferDataToWindow();

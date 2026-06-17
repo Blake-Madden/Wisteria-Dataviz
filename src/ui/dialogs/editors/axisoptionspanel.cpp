@@ -173,7 +173,7 @@ namespace Wisteria::UI
         m_axisReverseCheck = new wxCheckBox(lineBox->GetStaticBox(), wxID_ANY, _(L"Reverse"));
         lineBox->Add(m_axisReverseCheck, wxSizerFlags{}.Border());
 
-        gridSizer->Add(lineBox, wxGBPosition(2, 0), wxDefaultSpan, wxEXPAND | wxALL,
+        gridSizer->Add(lineBox, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 3: Gridlines
@@ -208,7 +208,7 @@ namespace Wisteria::UI
         m_gridlineStyleChoice->SetSelection(0);
         gridlineGrid->Add(m_gridlineStyleChoice, wxSizerFlags{}.Expand());
 
-        gridSizer->Add(gridlineBox, wxGBPosition(3, 0), wxDefaultSpan, wxEXPAND | wxALL,
+        gridSizer->Add(gridlineBox, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 4: Tickmarks
@@ -229,7 +229,7 @@ namespace Wisteria::UI
         m_tickmarkDisplayChoice->SetSelection(0);
         tickGrid->Add(m_tickmarkDisplayChoice, wxSizerFlags{}.Expand());
 
-        gridSizer->Add(tickBox, wxGBPosition(4, 0), wxDefaultSpan, wxEXPAND | wxALL,
+        gridSizer->Add(tickBox, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 5: Labels
@@ -387,7 +387,7 @@ namespace Wisteria::UI
         m_autoRangeRadio->Bind(wxEVT_RADIOBUTTON, onRangeTypeChanged);
         m_userRangeRadio->Bind(wxEVT_RADIOBUTTON, onRangeTypeChanged);
 
-        gridSizer->Add(rangeBox, wxGBPosition{ 0, 1 }, wxGBSpan{ 1, 1 }, wxEXPAND | wxALL,
+        gridSizer->Add(rangeBox, wxGBPosition{ 0, 2 }, wxGBSpan{ 1, 1 }, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // Group 6: Brackets
@@ -417,7 +417,7 @@ namespace Wisteria::UI
                                 [this](wxCommandEvent&) { OnAddBracketsFromDataset(); });
         bracketBox->Add(addFromDatasetBtn, wxSizerFlags{}.Border());
 
-        gridSizer->Add(bracketBox, wxGBPosition{ 1, 1 }, wxGBSpan{ 1, 1 }, wxEXPAND | wxALL,
+        gridSizer->Add(bracketBox, wxGBPosition{ 1, 2 }, wxGBSpan{ 1, 1 }, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         // global mirror checkboxes
@@ -426,7 +426,7 @@ namespace Wisteria::UI
         auto* mirrorSizer = new wxBoxSizer(wxVERTICAL);
         mirrorSizer->Add(m_mirrorXAxisCheck, wxSizerFlags{}.Border(wxBOTTOM));
         mirrorSizer->Add(m_mirrorYAxisCheck);
-        gridSizer->Add(mirrorSizer, wxGBPosition(5, 0), wxDefaultSpan, wxALL,
+        gridSizer->Add(mirrorSizer, wxGBPosition(2, 0), wxDefaultSpan, wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
         axisSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand());

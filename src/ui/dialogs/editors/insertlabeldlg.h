@@ -207,6 +207,7 @@ namespace Wisteria::UI
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_LABEL_SECTION{ wxID_HIGHEST + 2 };
+        constexpr static wxWindowID ID_SHAPES_SECTION{ wxID_HIGHEST + 3 };
 
         bool m_includePageOptions{ true };
 

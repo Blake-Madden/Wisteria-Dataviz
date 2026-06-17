@@ -8,6 +8,7 @@
 
 #include "insertlabeldlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../base/label.h"
 #include "../../base/reportenumconvert.h"
 #include "insertshapedlg.h"
 #include <utility>
@@ -39,17 +40,14 @@ namespace Wisteria::UI
         InsertItemDlg::CreateControls();
 
         auto* labelPage = new wxPanel(GetSideBarBook());
-        auto* mainSizer = new wxBoxSizer(wxHORIZONTAL);
-        auto* col1Sizer = new wxBoxSizer(wxVERTICAL);
-        auto* col2Sizer = new wxBoxSizer(wxVERTICAL);
-
-        mainSizer->Add(col1Sizer, wxSizerFlags{ 1 }.Expand().Border());
-        mainSizer->Add(col2Sizer, wxSizerFlags{ 1 }.Expand().Border());
-        labelPage->SetSizer(mainSizer);
+        auto* labelSizer = new wxBoxSizer(wxVERTICAL);
+        labelPage->SetSizer(labelSizer);
         GetSideBarBook()->AddPage(labelPage, _(L"Label"), ID_LABEL_SECTION, true);
 
-        // first column
-        //-------------
+        auto* shapesPage = new wxPanel(GetSideBarBook());
+        auto* shapesSizer = new wxBoxSizer(wxVERTICAL);
+        shapesPage->SetSizer(shapesSizer);
+        GetSideBarBook()->AddPage(shapesPage, _(L"Shapes"), ID_SHAPES_SECTION, false);
 
         // text
         auto* textSizer = new wxBoxSizer(wxVERTICAL);
@@ -58,7 +56,7 @@ namespace Wisteria::UI
         m_textCtrl = new wxTextCtrl(labelPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                     wxSize{ FromDIP(300), FromDIP(100) }, wxTE_MULTILINE);
         textSizer->Add(m_textCtrl, wxSizerFlags{ 1 }.Expand());
-        col1Sizer->Add(textSizer, wxSizerFlags{}.Expand().Border());
+        labelSizer->Add(textSizer, wxSizerFlags{}.Expand().Border());
 
         // font options
         auto* fontBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Font"));
@@ -68,8 +66,9 @@ namespace Wisteria::UI
 
         fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Font:")),
                       wxSizerFlags{}.CenterVertical());
-        m_fontPicker = new wxFontPickerCtrl(fontBox->GetStaticBox(), wxID_ANY,
-                                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+        auto defaultFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+        GraphItems::Label::FixFont(defaultFont);
+        m_fontPicker = new wxFontPickerCtrl(fontBox->GetStaticBox(), wxID_ANY, defaultFont);
         fontGrid->Add(m_fontPicker, wxSizerFlags{}.Expand());
 
         fontGrid->Add(new wxStaticText(fontBox->GetStaticBox(), wxID_ANY, _(L"Font color:")),
@@ -108,7 +107,7 @@ namespace Wisteria::UI
         fontGrid->Add(m_lineSpacingSpin, wxSizerFlags{}.Expand());
 
         fontBox->Add(fontGrid, wxSizerFlags{}.Expand().Border());
-        col1Sizer->Add(fontBox, wxSizerFlags{}.Expand().Border());
+        labelSizer->Add(fontBox, wxSizerFlags{}.Expand().Border());
 
         // appearance options
         auto* appearanceBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Appearance"));
@@ -148,7 +147,7 @@ namespace Wisteria::UI
             }
 
         appearanceBox->Add(appearanceGrid, wxSizerFlags{}.Expand().Border());
-        col1Sizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border());
+        labelSizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border());
 
         // header options
         auto* headerBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Header"));
@@ -164,8 +163,10 @@ namespace Wisteria::UI
 
         headerGrid->Add(new wxStaticText(headerBox->GetStaticBox(), wxID_ANY, _(L"Font:")),
                         wxSizerFlags{}.CenterVertical());
-        m_headerFontPicker = new wxFontPickerCtrl(
-            headerBox->GetStaticBox(), wxID_ANY, wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+        auto headerDefaultFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+        GraphItems::Label::FixFont(headerDefaultFont);
+        m_headerFontPicker =
+            new wxFontPickerCtrl(headerBox->GetStaticBox(), wxID_ANY, headerDefaultFont);
         headerGrid->Add(m_headerFontPicker, wxSizerFlags{}.Expand());
 
         headerGrid->Add(new wxStaticText(headerBox->GetStaticBox(), wxID_ANY, _(L"Color:")),
@@ -194,13 +195,10 @@ namespace Wisteria::UI
         headerGrid->Add(m_headerScalingSpin, wxSizerFlags{}.Expand());
 
         headerBox->Add(headerGrid, wxSizerFlags{}.Expand().Border());
-        col1Sizer->Add(headerBox, wxSizerFlags{}.Expand().Border());
-
-        // column 2
-        //---------
+        labelSizer->Add(headerBox, wxSizerFlags{}.Expand().Border());
 
         // left image
-        auto* leftImgBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Left Image"));
+        auto* leftImgBox = new wxStaticBoxSizer(wxVERTICAL, shapesPage, _(L"Left Image"));
         auto* leftImgHBox = new wxBoxSizer(wxHORIZONTAL);
         m_leftImageThumbnail = new Thumbnail(
             leftImgBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
@@ -231,10 +229,10 @@ namespace Wisteria::UI
                                m_leftImagePath.clear();
                                m_leftImageThumbnail->SetBitmap(wxNullBitmap);
                            });
-        col2Sizer->Add(leftImgBox, wxSizerFlags{}.Expand().Border());
+        shapesSizer->Add(leftImgBox, wxSizerFlags{}.Expand().Border());
 
         // top image
-        auto* topImgBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Image"));
+        auto* topImgBox = new wxStaticBoxSizer(wxVERTICAL, shapesPage, _(L"Top Image"));
         auto* topImgHBox = new wxBoxSizer(wxHORIZONTAL);
         m_topImageThumbnail = new Thumbnail(
             topImgBox->GetStaticBox(), wxNullBitmap, ClickMode::BrowseForImageFile, true, wxID_ANY,
@@ -265,10 +263,10 @@ namespace Wisteria::UI
                               m_topImagePath.clear();
                               m_topImageThumbnail->SetBitmap(wxNullBitmap);
                           });
-        col2Sizer->Add(topImgBox, wxSizerFlags{}.Expand().Border());
+        shapesSizer->Add(topImgBox, wxSizerFlags{}.Expand().Border());
 
         // top shapes
-        auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, labelPage, _(L"Top Shapes"));
+        auto* topShapeBox = new wxStaticBoxSizer(wxVERTICAL, shapesPage, _(L"Top Shapes"));
 
         m_topShapeListBox = new wxEditableListBox(
             topShapeBox->GetStaticBox(), wxID_ANY, _(L"Shapes:"), wxDefaultPosition,
@@ -312,7 +310,7 @@ namespace Wisteria::UI
         offsetGrid->Add(m_topShapeOffsetSpin, wxSizerFlags{}.Expand());
 
         topShapeBox->Add(offsetGrid, wxSizerFlags{}.Expand().Border());
-        col2Sizer->Add(topShapeBox, wxSizerFlags{}.Expand().Border());
+        shapesSizer->Add(topShapeBox, wxSizerFlags{}.Expand().Border());
 
         // header controls start disabled
         OnEnableHeader(false);
@@ -373,7 +371,9 @@ namespace Wisteria::UI
             }
         if (m_fontPicker != nullptr && label.GetFont().IsOk())
             {
-            m_fontPicker->SetSelectedFont(label.GetFont());
+            auto labelFont = label.GetFont();
+            GraphItems::Label::FixFont(labelFont);
+            m_fontPicker->SetSelectedFont(labelFont);
             }
         if (m_fontColorPicker != nullptr && label.GetFontColor().IsOk())
             {
@@ -404,7 +404,9 @@ namespace Wisteria::UI
         m_headerEnabled = headerInfo.IsEnabled();
         if (m_headerFontPicker != nullptr && headerInfo.GetFont().IsOk())
             {
-            m_headerFontPicker->SetSelectedFont(headerInfo.GetFont());
+            auto headerFont = headerInfo.GetFont();
+            GraphItems::Label::FixFont(headerFont);
+            m_headerFontPicker->SetSelectedFont(headerFont);
             }
         if (m_headerColorPicker != nullptr && headerInfo.GetFontColor().IsOk())
             {
@@ -468,6 +470,7 @@ namespace Wisteria::UI
             label.SetPropertyTemplate(L"text", wxString{});
             }
         label.GetFont() = GetLabelFont();
+        GraphItems::Label::FixFont(label.GetFont());
         label.SetFontColor(GetFontColor());
         label.SetFontBackgroundColor(GetBackgroundColor());
         label.SetTextAlignment(GetLabelAlignment());
@@ -480,6 +483,7 @@ namespace Wisteria::UI
         if (IsHeaderEnabled())
             {
             headerInfo.Font(GetHeaderFont());
+            GraphItems::Label::FixFont(headerInfo.GetFont());
             headerInfo.FontColor(GetHeaderFontColor());
             headerInfo.LabelAlignment(GetHeaderAlignment());
             headerInfo.RelativeScaling(GetHeaderScaling());
