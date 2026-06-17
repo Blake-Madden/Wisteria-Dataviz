@@ -192,6 +192,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             canvas->SetSize(origSize);
             }
         canvas->ResetResizeDelay();
+        canvas->ZoomReset();
         canvas->SendSizeEvent();
         canvas->Refresh();
 

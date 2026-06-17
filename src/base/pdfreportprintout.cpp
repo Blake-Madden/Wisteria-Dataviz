@@ -178,6 +178,7 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             canvas->SetSize(origSize);
             }
         canvas->ResetResizeDelay();
+        canvas->ZoomReset();
         canvas->SendSizeEvent();
         canvas->Refresh();
         }
