@@ -196,17 +196,19 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         canvas->SendSizeEvent();
         canvas->Refresh();
 
-        svgContent += wxString::Format(L"<g class=\"page\" data-width=\"%d\" data-height=\"%d\" "
-                                       "transform=\"translate(0,%d)\">\n",
-                                       layoutWidth, layoutHeight, yOffset);
+        svgContent +=
+            wxString::Format(L"<g class=\"page\" data-width=\"%d\" data-height=\"%d\" "
+                             "transform=\"translate(0,%d)\"%s>\n",
+                             layoutWidth, layoutHeight, yOffset,
+                             options.m_includePageShadow ? L" filter=\"url(#page-shadow)\"" : L"");
         svgContent += StripSvgTags(svgDC.GetSVGDocument());
 
         if (options.m_includeDarkModeToggle)
             {
-            svgContent +=
-                wxString::Format(L"\n<rect class=\"page-outline\" x=\"0\" y=\"0\" width=\"%d\" "
-                                 "height=\"%d\" fill=\"none\" stroke=\"none\"/>",
-                                 layoutWidth, layoutHeight);
+            svgContent += wxString::Format(
+                L"\n<rect class=\"page-outline\" x=\"0\" y=\"0\" width=\"%d\" "
+                "height=\"%d\" fill=\"none\" stroke=\"#CCCCCC\" stroke-width=\"2\"/>",
+                layoutWidth, layoutHeight);
             }
 
         svgContent += L"\n</g>\n";
@@ -232,18 +234,14 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         {
         header += L"<style type=\"text/css\">\n"
                   "  <![CDATA[\n";
-        if (options.m_includePageShadow)
-            {
-            header += L"    .page { filter: drop-shadow(6px 6px 8px rgba(0,0,0,0.5)); }\n";
-            }
+
         if (options.m_includeTransitions)
             {
             header += L"    .page { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }\n";
             }
         if (options.m_includeHighlighting)
             {
-            header += L"    .page:hover { filter: drop-shadow(0 0 10px rgba(0,0,0,0.1)); }\n"
-                      "    .page rect:hover, .page circle:hover, .page path:hover { \n"
+            header += L"    .page rect:hover, .page circle:hover, .page path:hover { \n"
                       "      filter: brightness(1.2); cursor: pointer; \n"
                       "    }\n";
             }
@@ -301,7 +299,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                       L"      svg.dark-mode [stroke=\"#FFFFFF\"] { stroke: #000000; }\n"
                       "      svg.dark-mode #svg-bg { fill: #000000; }\n"
                       "      svg.dark-mode .page-outline "
-                      "{ stroke: #e8e8e8; stroke-width: 2; fill: none; }\n"
+                      "{ stroke: #FFFFFF; stroke-width: 2; fill: none; }\n"
                       "    }\n";
             }
         header += L"  ]]>\n"
@@ -408,6 +406,23 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             }
 
         header += L"]]></script>\n";
+        }
+
+    if (options.m_includePageShadow)
+        {
+        header +=
+            L"<defs>\n"
+            "  <filter id=\"page-shadow\" x=\"-5%\" y=\"-5%\" width=\"115%\" height=\"115%\">\n"
+            "    <feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"4\" result=\"blur\"/>\n"
+            "    <feOffset dx=\"6\" dy=\"6\" result=\"offsetBlur\"/>\n"
+            "    <feFlood flood-color=\"#000000\" flood-opacity=\"0.5\" result=\"color\"/>\n"
+            "    <feComposite in=\"color\" in2=\"offsetBlur\" operator=\"in\" result=\"shadow\"/>\n"
+            "    <feMerge>\n"
+            "      <feMergeNode in=\"shadow\"/>\n"
+            "      <feMergeNode in=\"SourceGraphic\"/>\n"
+            "    </feMerge>\n"
+            "  </filter>\n"
+            "</defs>\n";
         }
 
     if (options.m_includeDarkModeToggle)
