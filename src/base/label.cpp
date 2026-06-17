@@ -2143,10 +2143,17 @@ namespace Wisteria::GraphItems
                     wxString(L"Helvetica Neue") :
                     wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
             }
+        // macOS 10.15+ system UI font (San Francisco); this is a hidden system font
+        // that won't appear in font pickers, so remap to the closest available font
+        else if (theFont.GetFaceName() == L".AppleSystemUIFont")
+            {
+            theFont.SetFaceName(wxFontEnumerator::IsValidFacename(L"Helvetica Neue") ?
+                                    wxString(L"Helvetica Neue") :
+                                    GetFirstAvailableFont({ L"Lucida Grande", L"Calibri", L"Arial",
+                                                            L"Courier New" }));
+            }
         // and finally, make sure the font is valid
-        if (!wxFontEnumerator::IsValidFacename(theFont.GetFaceName()) &&
-            // system mapped font on macOS 10.15+, leave it alone
-            theFont.GetFaceName() != L".AppleSystemUIFont")
+        if (!wxFontEnumerator::IsValidFacename(theFont.GetFaceName()))
             {
             theFont.SetFaceName(GetFirstAvailableFont(
                 { wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
