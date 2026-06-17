@@ -8,7 +8,6 @@
 
 #include "projectsettingsdlg.h"
 #include "../../app/wisteriaapp.h"
-#include <wx/printdlg.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -98,31 +97,6 @@ namespace Wisteria::UI
 
         wmBox->Add(wmGrid, wxSizerFlags{}.Expand().Border());
         mainSizer->Add(wmBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
-
-        auto* pageSetupBtn = new wxButton(this, wxID_ANY, _(L"Page Setup..."));
-        pageSetupBtn->SetBitmap(
-            wxGetApp().ReadSvgIcon(L"print-setup.svg", FromDIP(wxSize(16, 16))));
-        pageSetupBtn->Bind(wxEVT_BUTTON,
-                           [this]([[maybe_unused]] wxCommandEvent&)
-                           {
-                               wxPageSetupDialogData pageSetupData;
-                               wxPrintData printData;
-                               auto& settings = wxGetApp().GetAppSettings();
-                               printData.SetOrientation(static_cast<wxPrintOrientation>(
-                                   settings->GetPrintOrientation()));
-                               printData.SetPaperId(settings->GetPaperId());
-                               pageSetupData.SetPrintData(printData);
-                               wxPageSetupDialog dlg(this, &pageSetupData);
-                               if (dlg.ShowModal() == wxID_OK)
-                                   {
-                                   const wxPrintData updatedData =
-                                       dlg.GetPageSetupData().GetPrintData();
-                                   settings->SetPrintOrientation(updatedData.GetOrientation());
-                                   settings->SetPaperId(updatedData.GetPaperId());
-                                   settings->SaveSettingsFile();
-                                   }
-                           });
-        mainSizer->Add(pageSetupBtn, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
