@@ -1005,6 +1005,8 @@ namespace Wisteria
 
         // the current drawing rect
         wxRect m_rectDIPs;
+        // centering offset in device pixels (used for SetDeviceOrigin in OnPaint)
+        wxPoint m_centeringOffset{ 0, 0 };
         // the minimum size of the canvas
         wxSize m_canvasMinSizeDIPs{ 0, 0 };
         constexpr static int m_defaultWidthDIPs{ 700 };

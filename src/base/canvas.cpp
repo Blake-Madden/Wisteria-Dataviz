@@ -183,26 +183,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             if (totalSelected > 0)
                 {
-            if (totalSelected == 1 && singleSelected != nullptr)
-                {
-                if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Label)))
+                if (totalSelected == 1 && singleSelected != nullptr)
                     {
-                    m_labelClipboard = std::make_shared<GraphItems::Label>(
-                        *std::static_pointer_cast<GraphItems::Label>(singleSelected));
-                    return;
+                    if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Label)))
+                        {
+                        m_labelClipboard = std::make_shared<GraphItems::Label>(
+                            *std::static_pointer_cast<GraphItems::Label>(singleSelected));
+                        return;
+                        }
+                    if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Image)))
+                        {
+                        m_imageClipboard = std::make_shared<GraphItems::Image>(
+                            *std::static_pointer_cast<GraphItems::Image>(singleSelected));
+                        return;
+                        }
                     }
-                if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Image)))
-                    {
-                    m_imageClipboard = std::make_shared<GraphItems::Image>(
-                        *std::static_pointer_cast<GraphItems::Image>(singleSelected));
-                    return;
-                    }
+                wxMessageBox((totalSelected == 1) ? _(L"No copyable item selected.") :
+                                                    _(L"Please select only one item to copy."),
+                             _(L"Copy Item"), wxOK | wxICON_INFORMATION);
+                return;
                 }
-            wxMessageBox((totalSelected == 1) ? _(L"No copyable item selected.") :
-                                                _(L"Please select only one item to copy."),
-                         _(L"Copy Item"), wxOK | wxICON_INFORMATION);
-            return;
-            }
             // nothing selected: fall through to copy the full canvas below
             }
 
@@ -927,6 +927,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         canvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), canvasMinSize.GetWidth()));
         canvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), canvasMinSize.GetHeight()));
         m_rectDIPs.SetSize(canvasMinSize);
+        // position objects at origin; centering is applied via SetDeviceOrigin in OnPaint
+        // so exports (which don't go through OnPaint) render from (0,0) without clipping
+        m_rectDIPs.SetX(0);
+        m_rectDIPs.SetY(0);
 
         const wxCoord titleSpacingWidth = ScaleToScreenAndCanvas(2, dc);
 
@@ -1268,7 +1272,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             }
 
-        SetVirtualSize(GetCanvasRect(dc).GetSize());
+        const wxSize clientSizePx(GetClientRect().GetWidth(), GetClientRect().GetHeight());
+        const auto contentSizePx = GetCanvasRect(dc).GetSize();
+        SetVirtualSize(wxSize(std::max(clientSizePx.GetWidth(), contentSizePx.GetWidth()),
+                              std::max(clientSizePx.GetHeight(), contentSizePx.GetHeight())));
         }
 
     //---------------------------------------------------
@@ -1603,6 +1610,49 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                          wxPaintEvent &
                          event)
         {
+        // Center the page within the viewport (screen-only, not exports).
+        // Only center on an axis when the content is smaller than the viewport on that axis;
+        // otherwise, scrolling handles navigation and centering would break it.
+        m_centeringOffset = { 0, 0 };
+        if (IsMaintainingAspectRatio())
+            {
+            const auto clientWidthDIPs = ToDIP(GetClientRect().GetWidth());
+            const auto clientHeightDIPs = ToDIP(GetClientRect().GetHeight());
+            if (clientWidthDIPs > GetCanvasRectDIPs().GetWidth())
+                {
+                m_centeringOffset.x = FromDIP(
+                    static_cast<int>((clientWidthDIPs - GetCanvasRectDIPs().GetWidth()) / 2));
+                }
+            if (clientHeightDIPs > GetCanvasRectDIPs().GetHeight())
+                {
+                m_centeringOffset.y = FromDIP(
+                    static_cast<int>((clientHeightDIPs - GetCanvasRectDIPs().GetHeight()) / 2));
+                }
+            }
+
+        const auto drawPageDecoration = [this](wxGCDC& dc)
+        {
+            if (!IsMaintainingAspectRatio())
+                {
+                return;
+                }
+            const auto canvasRect = GetCanvasRect(dc);
+            const auto shadowOffset = dc.FromDIP(10);
+                {
+                const wxDCPenChanger pd{ dc, *wxTRANSPARENT_PEN };
+                const wxDCBrushChanger bc{ dc, wxBrush{ wxColour(128, 128, 128, 64) } };
+                dc.DrawRectangle(canvasRect.GetRight() + 1, canvasRect.GetTop() + shadowOffset,
+                                 shadowOffset, canvasRect.GetHeight() - shadowOffset);
+                dc.DrawRectangle(canvasRect.GetLeft() + shadowOffset, canvasRect.GetBottom() + 1,
+                                 canvasRect.GetWidth(), shadowOffset);
+                }
+                {
+                const wxDCPenChanger pd{ dc, *wxBLACK_PEN };
+                const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+                dc.DrawRectangle(canvasRect);
+                }
+        };
+
 #ifdef __WXMSW__
         wxAutoBufferedPaintDC pdc(this);
         pdc.Clear();
@@ -1617,20 +1667,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             wxGCDC dc(context);
             PrepareDC(dc);
+                // add centering offset on top of PrepareDC's scroll origin (don't replace it)
+                {
+                const auto origin = dc.GetDeviceOrigin();
+                dc.SetDeviceOrigin(origin.x + m_centeringOffset.x, origin.y + m_centeringOffset.y);
+                }
             OnDraw(dc);
+            drawPageDecoration(dc);
             }
         else
             {
             wxGCDC dc(pdc);
             PrepareDC(dc);
+                // add centering offset on top of PrepareDC's scroll origin (don't replace it)
+                {
+                const auto origin = dc.GetDeviceOrigin();
+                dc.SetDeviceOrigin(origin.x + m_centeringOffset.x, origin.y + m_centeringOffset.y);
+                }
             OnDraw(dc);
+            drawPageDecoration(dc);
             }
 #else
         wxAutoBufferedPaintDC pdc(this);
         pdc.Clear();
         wxGCDC dc(pdc);
         PrepareDC(dc);
+            // add centering offset on top of PrepareDC's scroll origin (don't replace it)
+            {
+            const auto origin = dc.GetDeviceOrigin();
+            dc.SetDeviceOrigin(origin.x + m_centeringOffset.x, origin.y + m_centeringOffset.y);
+            }
         OnDraw(dc);
+        drawPageDecoration(dc);
 #endif
         }
 
@@ -1931,6 +1999,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         wxPoint unscrolledPosition;
         CalcUnscrolledPosition(event.GetPosition().x, event.GetPosition().y, &unscrolledPosition.x,
                                &unscrolledPosition.y);
+        // inverse the centering offset so hit testing matches the visually centered positions
+        unscrolledPosition -= m_centeringOffset;
         wxGCDC gdc(this);
         const wxCoord refreshPadding = ScaleToScreenAndCanvas(10, gdc);
 
@@ -2301,7 +2371,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         m_rectDIPs = GetClientRect();
         m_rectDIPs.SetWidth(gdc.ToDIP(m_rectDIPs.GetWidth()));
-        m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
+
+        if (IsMaintainingAspectRatio())
+            {
+            const auto heightToWidthRatio =
+                safe_divide<double>(GetCanvasMinHeightDIPs(), GetCanvasMinWidthDIPs());
+            const auto clientHeightDIPs = gdc.ToDIP(GetClientRect().GetHeight());
+            const auto maxWidthForViewport =
+                static_cast<int>(safe_divide<double>(clientHeightDIPs, heightToWidthRatio));
+            m_rectDIPs.SetWidth(std::min(m_rectDIPs.GetWidth(), maxWidthForViewport));
+            m_rectDIPs.SetHeight(static_cast<int>(m_rectDIPs.GetWidth() * heightToWidthRatio));
+            }
+        else
+            {
+            m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
+            }
 
         CalcAllSizes(gdc);
         Refresh();
