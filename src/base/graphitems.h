@@ -543,7 +543,7 @@ namespace Wisteria
             /// @returns A self reference.
             GraphItemInfo& Scaling(const double scaling) noexcept
                 {
-                m_scaling = scaling;
+                m_scaling = std::max(scaling, math_constants::tenth);
                 return *this;
                 }
 
@@ -966,8 +966,9 @@ namespace Wisteria
             GraphItemBase(const double scaling, const wxString& label)
                 {
                 m_itemInfo.m_text = label;
-                m_itemInfo.m_scaling = scaling;
-                wxASSERT_MSG(m_itemInfo.m_scaling >= 0, L"Scaling in canvas object is < 0?!");
+                m_itemInfo.m_scaling = std::max(scaling, math_constants::tenth);
+                wxASSERT_MSG(m_itemInfo.m_scaling > 0,
+                             L"Scaling in canvas object is zero or less?!");
                 }
 
             /** @brief Constructor.
@@ -983,8 +984,8 @@ namespace Wisteria
                     maintain its size and position; scaling will not affect it.*/
             virtual void SetScaling(const double scaling)
                 {
-                wxASSERT_MSG(scaling >= 0, L"Scaling in canvas object is less than zero?!");
-                if (scaling < 0)
+                wxASSERT_MSG(scaling > 0, L"Scaling in canvas object is zero or less?!");
+                if (scaling <= 0)
                     {
                     return;
                     }
