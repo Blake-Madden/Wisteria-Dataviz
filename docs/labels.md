@@ -277,7 +277,7 @@ into a canvas. If edits are made to the returned legend, be sure to call `Canvas
 (see above) to recalculate its best fit after adding it to a canvas.
 
 Finally, an extra step is required for legends that are placed above or below a graph. When placing
-a legend on a separate row in a canvas, its row most be specified as having its proportion locked to
+a legend on a separate row in a canvas, its row must be specified as having its proportion locked to
 the canvas. Basically, this will tell the canvas to maintain the proportion of the legend row to its
 original calculation, no matter how much title spacing (or even height adjustments) the
 canvas undergoes.

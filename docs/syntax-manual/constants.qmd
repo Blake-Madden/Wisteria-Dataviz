@@ -36,13 +36,13 @@ These functions can be used in a dataset's formulas section, the `"constants"` s
 - ``Now(`value`)``: Returns the current date and time (or date component).
     - *value*: the part of today's date to return (if omitted, then the full date is returned). \
       The following options are available:
-      - `` `Year` ``: The year.
-      - `` `Day` ``: The day of the month.
-      - `` `DayName` ``: The day of the month as a name (e.g., Tuesday).
-      - `` `Month` ``: The numeric value of the month.
-      - `` `MonthName` ``: The name of the month.
-      - `` `MonthShortName` ``: The abbreviated name of the month.
-      - `` `Fancy` ``: The date formatted as full month name, day, and four-digit year.
+- `` `year` ``: The year.
+       - `` `day` ``: The day of the month.
+       - `` `dayname` ``: The day of the month as a name (e.g., Tuesday).
+       - `` `month` ``: The numeric value of the month.
+       - `` `monthname` ``: The name of the month.
+       - `` `monthshortname` ``: The abbreviated name of the month.
+       - `` `fancy` ``: The date formatted as full month name, day, and four-digit year.
       
 Example:
 

@@ -8,7 +8,7 @@ The `Wisteria::Graphs::BarChart` class is a highly customizable chart, which is 
 The following is an explanation of how these are built and how they can be customized to create more complex charts.
 
 If deriving a new graph type from `BarChart`, you can create the bars by calling `AddBar()`. This can either be done when the data
-is being set, or inside a derived call to `RecaleSize()`. Note that if you derive `RecalcSizes()`, be sure to call
+is being set, or inside a derived call to `RecalcSizes()`. Note that if you derive `RecalcSizes()`, be sure to call
 `BarChart::RecalcSizes()` after you are done adding the bars. Also note that `ClearBars()` should be called if you are reconstructing
 the bars every time `RecalcSizes()` is called.
 
@@ -36,7 +36,7 @@ This allows for creating categorized bar charts, as well as designing other char
 different thing (e.g., `Wisteria::Graphs::GanttChart`).
 
 Bar blocks can have their own color, decal (i.e., a label drawn on it), tag (to help identify them) and custom width.
-They also be hidden, meaning that section of a bar can be made invisible.
+They can also be hidden, meaning that section of a bar can be made invisible.
 
 Bar blocks are constructed from a `Wisteria::Graphs::BarChart::BarBlockInfo` object, which offers chainable properties
 in a single call (demonstrated later).

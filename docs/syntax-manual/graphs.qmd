@@ -349,7 +349,7 @@ Properties for `"pie-chart"` nodes:
   - `"group-1"`: The inner-ring grouping column (or only ring, if `"group-2"` isn't used).
   - `"group-2"`: The outer-ring grouping column (this is optional).
 - `"dynamic-margins"`: `true` to shift the pie chart to one side if a gutter has no outer labels.
-- `"left-margin-note"`: A label specification for a label within the left margin of the chart.
+- `"left-margin-note"`: A label specification for text within the left margin of the chart.
 - `"right-margin-note"`: A label specification for a label within the right margin of the chart.
 - `"pie-slice-effect"`: A string specifying the effects for the pie slices. \
   Available options are:

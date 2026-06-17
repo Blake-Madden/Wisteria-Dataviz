@@ -7,7 +7,7 @@ Locale Formatting
 =============================
 
 The framework will format numbers using the locale set by `wxUILocale`. For example, to use the
-system's current locale, run the following in your application's start up:
+system's current locale, run the following in your application's startup:
 
 ```cpp
 wxUILocale::UseDefault();
@@ -16,7 +16,7 @@ wxUILocale::UseDefault();
 Image Handling
 =============================
 
-To enable image importing and exporting, call the following in your application's start up:
+To enable image importing and exporting, call the following in your application's startup:
 
 ```cpp
 wxInitAllImageHandlers();

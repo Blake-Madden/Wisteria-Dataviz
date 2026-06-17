@@ -106,7 +106,7 @@ These are performed in the following order:
   or
 
   - `"name-re"`: The column to rename (using a regular expression pattern).
-  - `"new-name-re"`: The new name for the column (an include regular expression pattern relative to `"name-re"`).
+  - `"new-name-re"`: The new name for the column (a replacement regular expression pattern relative to `"name-re"`).
 - `"mutate-categorical-columns"`: An array of categorical column mutation commands. \
   Each command creates or updates a categorical columns and fill it with values based on the provided categorical column.
   This will use a map of regular expression patterns and corresponding replacements, where each value in the source column is compared
@@ -131,16 +131,16 @@ These are performed in the following order:
     Note that capture groups are supported.
 - `"collapse-min"`: collapses strings which appear fewer than a minimum number of times.
     This is an array of specifications which contain the following:
-   - `"column"`: The categorical column to collapse.
-   - `"min"`: The minimum number of times a string must appear in the column to remain in the string table.
-   - `"other-label"`: The label to use for the new category where low-frequency values are lumped into.
-     Default is `"Other"`.
+    - `"column"`: The categorical column to collapse.
+    - `"min"`: The minimum number of times a string must appear in the column to remain in the string table.
+    - `"other-label"`: The label to use for the new category where low-frequency values are lumped into.
+      Default is `"Other"`.
 - `"collapse-except"`: Command to collapse strings into an `"Other"` category, except for a list of provided labels. \
     This is an array of specifications which contain the following:
-   - `"column"`: The categorical column to collapse.
-   - `"labels-to-keep"`: An array of strings to preserve; all others will be lumped into a new `"Other"` category.
-   - `"other-label"`: The label to use for the new category where other labels are lumped into.
-     Default is `"Other"`.
+    - `"column"`: The categorical column to collapse.
+    - `"labels-to-keep"`: An array of strings to preserve; all others will be lumped into a new `"Other"` category.
+    - `"other-label"`: The label to use for the new category where other labels are lumped into.
+      Default is `"Other"`.
    
 ```json
  "datasets": [
@@ -158,7 +158,7 @@ These are performed in the following order:
       "columns-select": "(IRN|Graduated [0-9]{4})"
     }
 ```
-The above example will import the second worksheet from an *Excel* file, recoding all cells with the values `<10`, `< 10`, and `NC` as missing data.
+The above example will import the second worksheet from an *Excel* file, recoding all cells with the values `<10` and `NC` as missing data.
 Next, it will import any numeric columns with leading zeros as text, preserving the leading zero.
 Then it will rename columns that match the matching regex (`"name-re"`) with the value from `"new-name-re"`.
 (Note that the replacement string supports capture groups.)
@@ -217,7 +217,7 @@ This is an array of specifications which include the following properties:
     - *groupColumn*: The group column.
     - *groupId*: The group ID to count.
   
-Note that formula arguments can either be a string (wrapped in a pair of `'`) or an embedded formula
+Note that formula arguments can either be a string (wrapped in single quotes) or an embedded formula
 (which must be wrapped in a set of `{{` and `}}`). \
 For example, the group ID can be a formula getting the highest label (alphabetically) from the grouping column:
 
@@ -378,6 +378,7 @@ Merge nodes can contain their own transformation and formula sections, same as a
           }
         ]
       }
+    ]
   }
 ]
 ```
@@ -412,7 +413,7 @@ If pivoting wider, the following options are available:
 If pivoting longer, the following options are available:
 
 - `"columns-to-keep"`: An array of strings specifying the columns to not pivot.
-   These will be copied to the new dataset and will have their values filled in all new rows created from their observation.
+   These will be copied to the new dataset and will have their values filled in all new rows created from each observation.
   These are usually the ID columns. \
   These columns can be of any type, including the ID column.
 - `"from-columns"`: An array of strings specifying the continuous column(s) to pivot into longer format.

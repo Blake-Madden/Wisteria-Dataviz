@@ -59,7 +59,7 @@ Properties common to all graphs:
     - `"bottom-x"`
     - `"right-y"`
     - `"left-y"`
-    - `"top-y"`
+    - `"top-x"`
   - `"position"`: The axis position for the line. \
        This can either be a numeric position, a date (as a string), or an axis label.
   - `"label"`: The text to display on the legend referring to line.
@@ -74,7 +74,7 @@ Properties common to all graphs:
     - `"bottom-x"`
     - `"right-y"`
     - `"left-y"`
-    - `"top-y"`
+    - `"top-x"`
   - `"start"`: The starting axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
   - `"end"`: The ending axis position for the area. \
@@ -323,13 +323,13 @@ Note that instead of properties, a single string can be specified indicating a f
   - `"value-simple"`: Display the number as-is, no thousands separators.
 - `"custom-labels"`: An array of custom label specifications, which contains the following properties:
   - `"value"`: The axis position.
-  - `"label"`: The text to display on next to the brackets, which will contain [label](#label-properties) properties.
+  - `"label"`: The text to display next to the brackets, which will contain [label](#label-properties) properties.
 - `"range"`: A node describing the range to use for the axis, which contains the following properties:
   - `"start"`: A number specifying the start of the range.
   - `"end"`: A number specifying the end of the range.
   - `"precision"`: A number specifying the precision to use for numbers displayed on the axis.
   - `"interval"`: A number specifying the interval of the tickmarks along the range.
-  - `"display-interval"`: A number specifying the how often the axis points should show a label.
+  - `"display-interval"`: A number specifying how often the axis points should show a label.
 - `"precision"`: A number specifying the precision to use for numbers displayed on the axis. \
   This will override what is passed to the `"range"` property.
 - `"show-outer-labels"`: `true` to show the outer labels on the axis.
@@ -338,7 +338,7 @@ Note that instead of properties, a single string can be specified indicating a f
 - `"label-length-auto"`: If `true`, an attempt will be made to split longer axis labels based on
      various separators in them (e.g., parentheses, commas, conjunctions).
 
-- `"brackets"`: Adds brackets to the axis, which can be an array of bracket definitions or single set of properties
+- `"brackets"`: Adds brackets to the axis, which can be an array of bracket definitions or a single set of properties
   using a dataset. \
   Available options for either method are:
   - `"simplify"`: A boolean value indicating whether to simplify the bracket's labels.
@@ -388,7 +388,7 @@ Properties for row or column table positions:
      To do this, prefix "column:" or "row:" in front of the column or row name.
 - `"offset"`: A numeric value combined with the value for `"origin"`. \
      This is optional and is useful for when `"origin"` is interpreted at run-time. \
-     For example, if `origin` is `"last-row"`: And `"offset"` is `-1`, then this will
+     For example, if `origin` is `"last-row"` and `"offset"` is `-1`, then this will
      result in the second-to-last row.
 
 A position can also be a number or string (e.g., `"last-row"`) if not needing to use the `"origin"`/`"offset"` features.

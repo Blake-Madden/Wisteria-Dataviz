@@ -21,8 +21,8 @@ theChart->GetRightYAxis().Show();
 Headers & Footers
 =============================
 
-Along with labels running along the length of axis, headers and footers can also be added. For vertical
-axes, headers will appear above the axis and drawn perpendicular to it. Likewise, footers will appear
+Along with labels running along the length of an axis, headers and footers can also be added. For vertical
+axes, headers will appear above the axis and are drawn perpendicular to it. Likewise, footers will appear
 below a vertical axis. For horizontal axes, headers are drawn to the right of an axis and footers to the left,
 and both are drawn parallel to the axis.
 

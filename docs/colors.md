@@ -4,7 +4,7 @@ Color Management
 Creating Colors
 =============================
 
-wxWidgets provides a list of standard colors, such as `wxRED` and `wxWHITE`. Wisteria adds hundreds of more
+wxWidgets provides a list of standard colors, such as `wxRED` and `wxWHITE`. Wisteria adds hundreds more
 colors that can be accessed by name and returned as compatible `wxColour` objects.
 These colors can be retrieved as such:
 

@@ -58,7 +58,7 @@ image is drawn, these dimensions are adjusted by the image's scaling. If you wis
 dimensions to stay the same, then keep its scaling at 1, instead of setting it to its parent's scaling.
 
 Generally, these sizes are calculated from the area they are being drawn on inside of a derived
-`RecalcSizes()` call. For example, an image may be consumed 1/4th of the plot area. In this case, the width
+`RecalcSizes()` call. For example, an image may consume 1/4th of the plot area. In this case, the width
 may be set to this size and the scaling of the image should just remain the default 1. This way, the parent's
 scaling and DPI don't need to be accounted for because you already have the correct pixel width for the image.
 
