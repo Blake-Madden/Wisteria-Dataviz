@@ -337,8 +337,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
         printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
                                   _(L"Print all pages"));
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Print Setup"),
-                                  ReadSvgIcon(L"print-setup.svg"), _(L"Configure print settings"));
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
+                                  _(L"Configure print settings"));
 
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
@@ -449,8 +449,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Print Setup"),
-                                  ReadSvgIcon(L"print-setup.svg"), _(L"Configure print settings"));
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
+                                  _(L"Configure print settings"));
         }
 
     // Tools panel
