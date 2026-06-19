@@ -40,9 +40,24 @@ namespace lily_of_the_valley
                 {
                 if (text[i] >= 127)
                     {
-                    encodedText.append(L"&#")
-                        .append(std::to_wstring(static_cast<uint32_t>(text[i])))
-                        .append(L";");
+                    uint32_t codePoint{ static_cast<uint32_t>(text[i]) };
+                    // on Windows wchar_t is UTF-16, so supplementary plane characters
+                    // (e.g., emoji) arrive as surrogate pairs; combine them into the
+                    // full code point so the entity is correct (e.g., &#128027; not
+                    // &#55357;&#56350;)
+                    if constexpr (sizeof(wchar_t) == 2)
+                        {
+                        if (codePoint >= 0xD800 && codePoint <= 0xDBFF && i + 1 < text.length())
+                            {
+                            const uint32_t low{ static_cast<uint32_t>(text[i + 1]) };
+                            if (low >= 0xDC00 && low <= 0xDFFF)
+                                {
+                                codePoint = 0x10000 + ((codePoint - 0xD800) << 10) + (low - 0xDC00);
+                                ++i;
+                                }
+                            }
+                        }
+                    encodedText.append(L"&#").append(std::to_wstring(codePoint)).append(L";");
                     }
                 else if (text[i] == L'<')
                     {
