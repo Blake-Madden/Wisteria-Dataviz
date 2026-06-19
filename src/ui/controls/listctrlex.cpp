@@ -1098,12 +1098,39 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         }
                     wxMemoryDC memDc(m_printCanvas);
                     memDc.Clear();
+#ifdef __WXMSW__
+                    wxGraphicsContext* context{ nullptr };
+                    auto renderer{ wxGraphicsRenderer::GetDirect2DRenderer() };
+                    if (renderer)
+                        {
+                        context = renderer->CreateContext(memDc);
+                        }
+                    if (context != nullptr)
+                        {
+                        wxGCDC gcdc(context);
+                        gcdc.SetFont(m_list->GetFont());
+                        drawTables(gcdc);
+                        drawHeadersAndFooters(gcdc);
+                        Canvas::DrawWatermarkLabel(gcdc,
+                                                   wxRect(wxSize(drawingWidth, drawingHeight)),
+                                                   m_list->GetWatermark(), 1.0);
+                        }
+                    else
+                        {
+                        wxGCDC gcdc(memDc);
+                        drawTables(gcdc);
+                        drawHeadersAndFooters(gcdc);
+                        Canvas::DrawWatermarkLabel(gcdc,
+                                                   wxRect(wxSize(drawingWidth, drawingHeight)),
+                                                   m_list->GetWatermark(), 1.0);
+                        }
+#else
                     wxGCDC gcdc(memDc);
-
                     drawTables(gcdc);
                     drawHeadersAndFooters(gcdc);
                     Canvas::DrawWatermarkLabel(gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
                                                m_list->GetWatermark(), 1.0);
+#endif
                     // copy renderings back into printer DC
                     dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
                     memDc.SelectObject(wxNullBitmap);
