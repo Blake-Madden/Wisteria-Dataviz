@@ -12,6 +12,7 @@
 #include "wx/xrc/xh_bmp.h"
 #include "wx/xrc/xh_menu.h"
 #include "wx/xrc/xmlres.h"
+#include <filesystem>
 #include <wx/regex.h>
 #include <wx/stc/stc.h>
 #include <wx/webrequest.h>
@@ -63,13 +64,6 @@ namespace Wisteria::UI
             return std::filesystem::path(str.utf8_str().data()); // UTF-8 on POSIX
 #endif
         };
-
-        // prepare profile report (only if compiled with profiling)
-        m_profileReportPath =
-            wxString(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
-                     GetAppName() + L" Profile.dat");
-        SET_PROFILER_REPORT_PATH(wxStringToFsPath(m_profileReportPath));
-        DUMP_PROFILER_REPORT(); // flush out data in temp file from previous run
 
         // Logs will be written to file now, delete the old logging system.
         m_logFile = new LogFile{ !IsAppendingDailyLog() };

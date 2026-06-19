@@ -12,7 +12,6 @@
 #ifndef WISTERIA_BASEAPP_H
 #define WISTERIA_BASEAPP_H
 
-#include "../debug/debug_profile.h"
 #include "../math/safe_math.h"
 #include "../util/donttranslate.h"
 #include "../util/logfile.h"
@@ -42,7 +41,7 @@
 
 namespace Wisteria::UI
     {
-    /// @brief Application class with file history, file logger, profiler,
+    /// @brief Application class with file history, file logger,
     ///     exception handling, document manager, and ribbon-based main frame built-in.
     class BaseApp : public wxApp
         {
@@ -171,14 +170,6 @@ namespace Wisteria::UI
         /// @param name The subname.
         void SetAppSubName(const wxString& name) { m_appSubName = name; }
 
-        /// @returns The path of where the debug profiling data is being saved.
-        /// @details This is only used if profiling is enabled.
-        [[nodiscard]]
-        const wxString& GetProfileReportPath() const noexcept
-            {
-            return m_profileReportPath;
-            }
-
         /// @returns Everything sent to the logging system as a formatted string.
         [[nodiscard]]
         wxString GetLogReport() const
@@ -299,7 +290,6 @@ namespace Wisteria::UI
         wxString m_fileExtension;
         wxString m_documentTypeName;
         wxString m_documentVersionNumber;
-        wxString m_profileReportPath;
         wxString m_supportEmail;
         };
     } // namespace Wisteria::UI

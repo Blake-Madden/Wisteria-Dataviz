@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "listctrlex.h"
-#include "../../debug/debug_profile.h"
 #include "../../import/html_encode.h"
 #include "../dialogs/listctrlitemviewdlg.h"
 #include "../dialogs/listctrlsortdlg.h"
@@ -1825,7 +1824,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DistributeColumns(const long maxColumnWidth /*= 300*/)
         {
-        PROFILE();
         const wxWindowUpdateLocker noUpdates(this);
         for (long i = 0; i < GetColumnCount(); ++i)
             {
@@ -2116,7 +2114,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     void ListCtrlEx::SortColumns(
         const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns)
         {
-        PROFILE();
         if (columns.empty() || !IsSortable()) [[unlikely]]
             {
             return;
