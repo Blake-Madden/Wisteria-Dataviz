@@ -110,6 +110,26 @@ class AppSettings
     /// @param paperId The paper ID (wxPaperSize).
     void SetPaperId(const wxPaperSize paperId) noexcept { m_paperId = paperId; }
 
+    /// @returns @c true if the Log tab auto-refresh is enabled.
+    [[nodiscard]]
+    bool IsLogAutoRefresh() const noexcept
+        {
+        return m_logAutoRefresh;
+        }
+
+    /// @brief Enables or disables Log tab auto-refresh.
+    void SetLogAutoRefresh(const bool refresh) noexcept { m_logAutoRefresh = refresh; }
+
+    /// @returns @c true if verbose logging is enabled.
+    [[nodiscard]]
+    bool IsLogVerbose() const noexcept
+        {
+        return m_logVerbose;
+        }
+
+    /// @brief Enables or disables verbose logging.
+    void SetLogVerbose(const bool verbose) noexcept { m_logVerbose = verbose; }
+
     // SVG export options
     //-------------------
 
@@ -134,6 +154,8 @@ class AppSettings
     int m_appWindowHeight{ 700 };
     int m_printOrientation{ wxPORTRAIT };
     wxPaperSize m_paperId{ wxPAPER_LETTER };
+    bool m_logAutoRefresh{ false };
+    bool m_logVerbose{ false };
 
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
     };

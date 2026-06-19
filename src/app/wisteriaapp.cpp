@@ -7,14 +7,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriaapp.h"
+#include "../import/text_matrix.h"
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
 #include <array>
 #include <wx/aboutdlg.h>
+#include <wx/log.h>
 #include <wx/stdpaths.h>
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast,cppcoreguidelines-avoid-non-const-global-variables)
 wxIMPLEMENT_APP(WisteriaApp);
+wxIMPLEMENT_CLASS(MainFrame, Wisteria::UI::BaseMainFrame);
 
 //-------------------------------------------
 WisteriaArtProvider::WisteriaArtProvider()
@@ -98,6 +101,8 @@ bool WisteriaApp::OnInit()
     LoadInterface();
     InitProjectSidebar();
 
+    BaseApp::LogSystemInfo();
+
     return true;
     // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
@@ -107,11 +112,27 @@ void WisteriaApp::LoadInterface()
     {
     const wxArrayString extensions{ GetAppFileExtension() };
 
-    SetMainFrame(new Wisteria::UI::BaseMainFrame(
-        GetDocManager(), nullptr, extensions, WISTERIA_APP_NAME, wxPoint{ 0, 0 },
-        GetAppSettings()->GetAppWindowSize(), wxDEFAULT_FRAME_STYLE));
+    SetMainFrame(new MainFrame(GetDocManager(), nullptr, extensions, WISTERIA_APP_NAME,
+                               wxPoint{ 0, 0 }, GetAppSettings()->GetAppWindowSize(),
+                               wxDEFAULT_FRAME_STYLE));
 
     GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()));
+
+    // create the embedded log panel (hidden until Log tab is activated)
+    GetMainFrameEx()->m_logDataProvider = std::make_shared<Wisteria::UI::ListCtrlExDataProvider>();
+    GetMainFrameEx()->m_logPanel = new wxPanel(GetMainFrameEx());
+    GetMainFrameEx()->m_logPanel->Hide();
+    GetMainFrameEx()->m_logListCtrl =
+        new Wisteria::UI::ListCtrlEx(GetMainFrameEx()->m_logPanel, wxID_ANY, wxDefaultPosition,
+                                     wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxBORDER_NONE);
+    GetMainFrameEx()->m_logListCtrl->SetVirtualDataProvider(GetMainFrameEx()->m_logDataProvider);
+    auto* logPanelSizer = new wxBoxSizer(wxVERTICAL);
+    logPanelSizer->Add(GetMainFrameEx()->m_logListCtrl, wxSizerFlags{ 1 }.Expand());
+    GetMainFrameEx()->m_logPanel->SetSizer(logPanelSizer);
+    GetMainFrameEx()->GetSizer()->Add(GetMainFrameEx()->m_logPanel, wxSizerFlags{ 1 }.Expand());
+
+    GetMainFrameEx()->SetLogAutoRefresh(GetAppSettings()->IsLogAutoRefresh());
+    wxLog::SetVerbose(GetAppSettings()->IsLogVerbose());
 
     const std::array<wxAcceleratorEntry, 1> entries = { wxAcceleratorEntry(wxACCEL_CTRL, L'O',
                                                                            wxID_OPEN) };
@@ -175,12 +196,6 @@ void WisteriaApp::LoadInterface()
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
         [this]([[maybe_unused]]
-               wxRibbonButtonBarEvent& event) { OnViewLogReport(); },
-        ID_VIEW_LOG_REPORT);
-
-    GetMainFrame()->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]]
                wxCommandEvent& event)
         {
             wxAboutDialogInfo aboutInfo;
@@ -226,16 +241,134 @@ void WisteriaApp::LoadInterface()
         wxEVT_CLOSE_WINDOW,
         [this](wxCloseEvent& event)
         {
-            if (m_logWindow != nullptr)
-                {
-                m_logWindow->Destroy();
-                m_logWindow = nullptr;
-                }
             GetAppSettings()->SetAppWindowMaximized(GetMainFrame()->IsMaximized());
             GetAppSettings()->SetAppWindowWidth(GetMainFrame()->GetSize().GetWidth());
             GetAppSettings()->SetAppWindowHeight(GetMainFrame()->GetSize().GetHeight());
             event.Skip();
         });
+
+    // ribbon page-changed: show/hide log panel and manage auto-refresh timer
+    GetMainFrame()->Bind(wxEVT_RIBBONBAR_PAGE_CHANGED,
+                         [this](wxRibbonBarEvent& evt)
+                         {
+                             const bool showLog = GetMainFrameEx()->IsLogTabActive();
+                             if (m_startPage != nullptr)
+                                 {
+                                 m_startPage->Show(!showLog);
+                                 }
+                             if (GetMainFrameEx()->m_logPanel != nullptr)
+                                 {
+                                 GetMainFrameEx()->m_logPanel->Show(showLog);
+                                 }
+                             if (showLog)
+                                 {
+                                 if (GetMainFrameEx()->m_logEditButtonBar != nullptr)
+                                     {
+                                     GetMainFrameEx()->m_logEditButtonBar->ToggleButton(
+                                         ID_LOG_TAB_REALTIME_UPDATE,
+                                         GetMainFrameEx()->m_logAutoRefresh);
+                                     GetMainFrameEx()->m_logEditButtonBar->ToggleButton(
+                                         ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
+                                     }
+                                 if (GetMainFrameEx()->m_logAutoRefresh)
+                                     {
+                                     GetMainFrameEx()->m_logAutoRefreshTimer.Start(3000);
+                                     }
+                                 ReadLogIntoListCtrl(GetMainFrameEx()->m_logListCtrl);
+                                 GetMainFrameEx()->m_logListCtrl->SetFocus();
+                                 }
+                             else
+                                 {
+                                 GetMainFrameEx()->m_logAutoRefreshTimer.Stop();
+                                 }
+                             GetMainFrame()->Layout();
+                             evt.Skip();
+                         });
+
+    // log tab ribbon button handlers
+    const auto withLogList = [this](auto fn)
+    {
+        return [this, fn](wxRibbonButtonBarEvent& event)
+        {
+            if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
+                {
+                fn(GetMainFrameEx()->m_logListCtrl, event);
+                }
+        };
+    };
+
+    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
+                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
+                                     { list->OnSave(evt); }),
+                         ID_LOG_TAB_SAVE);
+    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
+                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
+                                     { list->OnPrint(evt); }),
+                         ID_LOG_TAB_PRINT);
+    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
+                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
+                                     { list->OnCopy(evt); }),
+                         ID_LOG_TAB_COPY);
+    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
+                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
+                                     { list->OnSelectAll(evt); }),
+                         ID_LOG_TAB_SELECT_ALL);
+    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
+                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
+                                     { list->OnMultiColumnSort(evt); }),
+                         ID_LOG_TAB_SORT);
+    GetMainFrame()->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+        {
+            if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
+                {
+                if (GetLogFile() != nullptr)
+                    {
+                    GetLogFile()->Clear();
+                    }
+                GetMainFrameEx()->m_logListCtrl->DeleteAllItems();
+                }
+        },
+        ID_LOG_TAB_CLEAR);
+    GetMainFrame()->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+        {
+            if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
+                {
+                ReadLogIntoListCtrl(GetMainFrameEx()->m_logListCtrl);
+                }
+        },
+        ID_LOG_TAB_REFRESH);
+    GetMainFrame()->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+        {
+            GetMainFrameEx()->SetLogAutoRefresh(!GetMainFrameEx()->m_logAutoRefresh);
+            GetAppSettings()->SetLogAutoRefresh(GetMainFrameEx()->m_logAutoRefresh);
+            GetAppSettings()->SaveSettingsFile();
+        },
+        ID_LOG_TAB_REALTIME_UPDATE);
+    GetMainFrame()->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+        {
+            wxLog::SetVerbose(!wxLog::GetVerbose());
+            GetAppSettings()->SetLogVerbose(wxLog::GetVerbose());
+            GetAppSettings()->SaveSettingsFile();
+        },
+        ID_LOG_TAB_VERBOSE);
+    GetMainFrame()->Bind(
+        wxEVT_TIMER,
+        [this]([[maybe_unused]] wxTimerEvent&)
+        {
+            if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
+                {
+                ReadLogIntoListCtrl(GetMainFrameEx()->m_logListCtrl);
+                }
+        },
+        GetMainFrameEx()->m_logAutoRefreshTimer.GetId());
 
     GetMainFrame()->CenterOnScreen();
     if (GetAppSettings()->IsAppWindowMaximized())
@@ -248,41 +381,166 @@ void WisteriaApp::LoadInterface()
     }
 
 //-------------------------------------------
-void WisteriaApp::OnViewLogReport()
+void WisteriaApp::LoadRibbonLogPage(wxRibbonBar* ribbon)
     {
-    if (m_logWindow != nullptr && m_logWindow->IsShown())
+    GetMainFrameEx()->m_logRibbonPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Log"));
+
+    auto* exportBar = new wxRibbonButtonBar(new wxRibbonPanel(
+        GetMainFrameEx()->GetLogRibbonPage(), wxID_ANY, _(L"Export"), wxNullBitmap,
+        wxDefaultPosition, wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE));
+    exportBar->AddButton(ID_LOG_TAB_SAVE, _(L"Save"), ReadSvgIcon(L"file-save.svg"),
+                         _(L"Save the log report."));
+    exportBar->AddButton(ID_LOG_TAB_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
+                         _(L"Print the log report."));
+
+    GetMainFrameEx()->m_logEditButtonBar = new wxRibbonButtonBar(
+        new wxRibbonPanel(GetMainFrameEx()->GetLogRibbonPage(), wxID_ANY, _(L"Edit"), wxNullBitmap,
+                          wxDefaultPosition, wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE));
+    GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_COPY, _(L"Copy Selection"),
+                                                    ReadSvgIcon(L"copy.svg"),
+                                                    _(L"Copy the selected items."));
+    GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_SELECT_ALL, _(L"Select All"),
+                                                    ReadSvgIcon(L"select-all.svg"),
+                                                    _(L"Select the entire list."));
+    GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_SORT, _(L"Sort"),
+                                                    ReadSvgIcon(L"sort.svg"), _(L"Sort the list."));
+    GetMainFrameEx()->m_logEditButtonBar->AddButton(
+        ID_LOG_TAB_CLEAR, _(L"Clear"), ReadSvgIcon(L"clear.svg"), _(L"Clear the log report."));
+    GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_REFRESH, _(L"Refresh"),
+                                                    ReadSvgIcon(L"reload.svg"),
+                                                    _(L"Refresh the log report."));
+    GetMainFrameEx()->m_logEditButtonBar->AddToggleButton(
+        ID_LOG_TAB_REALTIME_UPDATE, _(L"Auto Refresh"), ReadSvgIcon(L"realtime.svg"),
+        _(L"Refresh the log report automatically."));
+    GetMainFrameEx()->m_logEditButtonBar->AddToggleButton(
+        ID_LOG_TAB_VERBOSE, _(L"Verbose"), ReadSvgIcon(L"edit.svg"),
+        _(L"Toggles whether the logging system includes more detailed information."));
+    }
+
+//-------------------------------------------
+void WisteriaApp::ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl)
+    {
+    if (listCtrl == nullptr || GetLogFile() == nullptr)
         {
-        m_logWindow->Hide();
         return;
         }
+    wxTheApp->Yield();
+    listCtrl->SetLabel(
+        wxString::Format(_(L"%s Log %s"), GetAppDisplayName(), wxDateTime::Now().FormatISODate()));
+    const long style = listCtrl->GetExtraStyle();
+    listCtrl->SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
+    const wxWindowUpdateLocker wl{ listCtrl };
 
-    if (m_logWindow == nullptr)
+    if (listCtrl->GetColumnCount() < 4)
         {
-        const wxSize screenSize{ wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_SCREEN_X),
-                                 wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_SCREEN_Y) };
-        m_logWindow = new Wisteria::UI::ListDlg(
-            nullptr, wxNullColour, wxNullColour, wxNullColour,
-            Wisteria::UI::LD_SAVE_BUTTON | Wisteria::UI::LD_COPY_BUTTON |
-                Wisteria::UI::LD_PRINT_BUTTON | Wisteria::UI::LD_SELECT_ALL_BUTTON |
-                Wisteria::UI::LD_FIND_BUTTON | Wisteria::UI::LD_COLUMN_HEADERS |
-                Wisteria::UI::LD_SORT_BUTTON | Wisteria::UI::LD_CLEAR_BUTTON |
-                Wisteria::UI::LD_REFRESH_BUTTON | Wisteria::UI::LD_LOG_VERBOSE_BUTTON,
-            wxID_ANY, _(L"Log Report"), wxString{}, wxDefaultPosition,
-            wxSize{ screenSize.GetWidth() / 2, screenSize.GetHeight() / 2 });
-
-        // move over to the right side of the screen
-        const int screenWidth{ wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_SCREEN_X) };
-        int xPos{ 0 }, yPos{ 0 };
-        m_logWindow->GetScreenPosition(&xPos, &yPos);
-        m_logWindow->Move(
-            wxPoint{ xPos + (screenWidth - (xPos + m_logWindow->GetSize().GetWidth())), yPos });
+        listCtrl->DeleteAllColumns();
+        listCtrl->InsertColumn(0, _(L"Message"));
+        listCtrl->InsertColumn(1, _(L"Timestamp"));
+        listCtrl->InsertColumn(2, _(L"Function"));
+        listCtrl->InsertColumn(3, _(L"Source"));
         }
-    m_logWindow->SetActiveLog(GetLogFile());
-    m_logWindow->ReadLog();
+    listCtrl->EnableAlternateRowColours(false);
+    listCtrl->DeleteAllItems();
 
-    m_logWindow->Show();
-    m_logWindow->GetListCtrl()->DistributeColumns(-1);
-    m_logWindow->SetFocus();
+    const lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+    lily_of_the_valley::text_column<lily_of_the_valley::text_column_delimited_character_parser>
+        myColumn(parser, std::nullopt);
+    lily_of_the_valley::text_row<Wisteria::UI::ListCtrlExDataProvider::ListCellString> myRow(
+        std::nullopt);
+    myRow.treat_consecutive_delimiters_as_one(false);
+    myRow.add_column(myColumn);
+
+    auto* dataProvider = dynamic_cast<Wisteria::UI::ListCtrlExDataProvider*>(
+        listCtrl->GetVirtualDataProvider().get());
+    if (dataProvider == nullptr)
+        {
+        return;
+        }
+    lily_of_the_valley::text_matrix<Wisteria::UI::ListCtrlExDataProvider::ListCellString> importer(
+        &dataProvider->GetMatrix());
+    importer.add_row_definition(myRow);
+
+    const wxString logBuffer{ GetLogFile()->Read() };
+    lily_of_the_valley::text_preview preview;
+    size_t rowCount = preview(logBuffer, L'\t', true, false);
+    rowCount = importer.read(logBuffer, rowCount, 4, true);
+
+    listCtrl->SetVirtualDataSize(rowCount, 4);
+    listCtrl->SetItemCount(static_cast<long>(rowCount));
+
+    for (long i = 0; i < listCtrl->GetItemCount(); ++i)
+        {
+        const auto currentRow = listCtrl->GetItemText(i, 0);
+        const wxColour rowColor =
+            (currentRow.find(L"Error: ") != wxString::npos) ?
+                wxColour(242, 94, 101) :
+            (currentRow.find(L"Warning: ") != wxString::npos) ?
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Yellow) :
+            (currentRow.find(L"Debug: ") != wxString::npos) ? wxColour(143, 214, 159) :
+                                                              wxNullColour;
+        if (rowColor.IsOk())
+            {
+            listCtrl->SetRowAttributes(
+                i, wxListItemAttr(wxColour{ 0, 0, 0 }, rowColor, listCtrl->GetFont()));
+            }
+        }
+
+    if (listCtrl->GetItemCount() > 0)
+        {
+        listCtrl->EnsureVisible(listCtrl->GetItemCount() - 1);
+        }
+    listCtrl->SetSortedColumn(0, Wisteria::SortDirection::SortAscending);
+    listCtrl->SetExtraStyle(style);
+    listCtrl->DistributeColumns(-1);
+    }
+
+//-------------------------------------------
+void MainFrame::ActivateLogTab()
+    {
+    if (m_logRibbonPage == nullptr)
+        {
+        return;
+        }
+    if (!IsShown())
+        {
+        Show();
+        }
+    Raise();
+    GetRibbon()->SetActivePage(m_logRibbonPage);
+    if (auto* app = dynamic_cast<WisteriaApp*>(wxTheApp))
+        {
+        if (app->GetStartPage() != nullptr)
+            {
+            app->GetStartPage()->Hide();
+            }
+        }
+    m_logPanel->Show();
+    if (m_logEditButtonBar != nullptr)
+        {
+        m_logEditButtonBar->ToggleButton(ID_LOG_TAB_REALTIME_UPDATE, m_logAutoRefresh);
+        m_logEditButtonBar->ToggleButton(ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
+        }
+    Layout();
+    wxGetApp().ReadLogIntoListCtrl(m_logListCtrl);
+    m_logListCtrl->SetFocus();
+    }
+
+//-------------------------------------------
+void MainFrame::SetLogAutoRefresh(const bool enable)
+    {
+    m_logAutoRefresh = enable;
+    if (m_logEditButtonBar != nullptr)
+        {
+        m_logEditButtonBar->ToggleButton(ID_LOG_TAB_REALTIME_UPDATE, enable);
+        }
+    if (enable && IsLogTabActive())
+        {
+        m_logAutoRefreshTimer.Start(3000);
+        }
+    else
+        {
+        m_logAutoRefreshTimer.Stop();
+        }
     }
 
 //-------------------------------------------
@@ -443,6 +701,12 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
                                           ReadSvgIcon(L"chart-sports.svg"), _(L"Sports graphs"));
+
+        // Tools panel (project frames only — navigates to main frame log tab)
+        auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
+        auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
+        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"log-book.svg"),
+                                  _(L"View the log report"));
         }
     else
         {
@@ -451,14 +715,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
         printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
                                   _(L"Configure print settings"));
+
+        // Log tab (main frame only)
+        LoadRibbonLogPage(ribbon);
         }
-
-    // Tools panel
-    auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
-    auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
-
-    toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"log-book.svg"),
-                              _(L"View the log report"));
 
     // Help tab
     auto* helpPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Help"));

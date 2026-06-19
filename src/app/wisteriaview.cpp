@@ -147,6 +147,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind sidebar click event
     m_sideBar->Bind(Wisteria::UI::wxEVT_SIDEBAR_CLICK, &WisteriaView::OnSidebarClick, this);
 
+    // log button: show main frame and activate its embedded log tab
+    m_frame->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED, []([[maybe_unused]] wxRibbonButtonBarEvent&)
+        { wxGetApp().GetMainFrameEx()->ActivateLogTab(); }, ID_VIEW_LOG_REPORT);
+
     // bind copy/paste (route accelerator events to the active canvas)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPasteItem, this, wxID_PASTE);
@@ -399,8 +404,6 @@ bool WisteriaView::OnClose(bool deleteWindow)
         {
         return false;
         }
-
-    wxGetApp().DestroyLogWindow();
 
     Activate(false);
 

@@ -64,6 +64,18 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_paperId = static_cast<wxPaperSize>(val);
                 }
             }
+        else if (child->GetName() == L"log")
+            {
+            long val{ 0 };
+            if (child->GetAttribute(L"autoRefresh", L"0").ToLong(&val))
+                {
+                m_logAutoRefresh = (val != 0);
+                }
+            if (child->GetAttribute(L"verbose", L"0").ToLong(&val))
+                {
+                m_logVerbose = (val != 0);
+                }
+            }
         else if (child->GetName() == L"svg-export")
             {
             const auto boolAttr = [&child](const wxString& name, const bool fallback)
@@ -150,6 +162,11 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     printerNode->AddAttribute(L"orientation", std::to_wstring(m_printOrientation));
     printerNode->AddAttribute(L"paperId", std::to_wstring(static_cast<int>(m_paperId)));
     root->AddChild(printerNode);
+
+    auto* logNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"log");
+    logNode->AddAttribute(L"autoRefresh", m_logAutoRefresh ? L"1" : L"0");
+    logNode->AddAttribute(L"verbose", m_logVerbose ? L"1" : L"0");
+    root->AddChild(logNode);
 
     auto* svgNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"svg-export");
     svgNode->AddAttribute(L"page-width",

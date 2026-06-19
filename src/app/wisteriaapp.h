@@ -11,8 +11,9 @@
 
 #include "../base/version.h"
 #include "../ui/app.h"
+#include "../ui/controls/listctrlex.h"
 #include "../ui/controls/sidebar.h"
-#include "../ui/dialogs/listdlg.h"
+#include "../ui/mainframe.h"
 #include "../wxStartPage/startpage.h"
 #include "appsettings.h"
 #include <map>
@@ -28,6 +29,49 @@ namespace Wisteria::GraphItems
     {
     class GraphItemBase;
     }
+
+class WisteriaApp;
+
+/// @brief Main frame with an embedded log tab.
+class MainFrame final : public Wisteria::UI::BaseMainFrame
+    {
+  public:
+    using Wisteria::UI::BaseMainFrame::BaseMainFrame;
+
+    /// @returns The Log ribbon tab page.
+    [[nodiscard]]
+    wxRibbonPage* GetLogRibbonPage() const noexcept
+        {
+        return m_logRibbonPage;
+        }
+
+    /// @returns @c true if the Log ribbon tab is currently the active page.
+    [[nodiscard]]
+    bool IsLogTabActive() const noexcept
+        {
+        return (GetRibbon() != nullptr && m_logRibbonPage != nullptr &&
+                GetRibbon()->GetActivePage() == GetRibbon()->GetPageNumber(m_logRibbonPage));
+        }
+
+    /// @brief Show main frame, switch to the Log tab, and refresh the log list.
+    void ActivateLogTab();
+
+    /// @brief Enables or disables log auto-refresh, syncing the ribbon button and timer.
+    void SetLogAutoRefresh(bool enable);
+
+    friend class WisteriaApp;
+
+  private:
+    wxPanel* m_logPanel{ nullptr };
+    Wisteria::UI::ListCtrlEx* m_logListCtrl{ nullptr };
+    std::shared_ptr<Wisteria::UI::ListCtrlExDataProvider> m_logDataProvider;
+    wxTimer m_logAutoRefreshTimer;
+    bool m_logAutoRefresh{ false };
+    wxRibbonButtonBar* m_logEditButtonBar{ nullptr };
+    wxRibbonPage* m_logRibbonPage{ nullptr };
+
+    wxDECLARE_CLASS(MainFrame);
+    };
 
 /// @brief The Wisteria Dataviz application.
 class WisteriaApp final : public Wisteria::UI::BaseApp
@@ -49,25 +93,15 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         return m_projectSideBarImageList;
         }
 
-    /// @returns The log window.
+    /// @returns The main frame cast to the custom MainFrame type.
     [[nodiscard]]
-    Wisteria::UI::ListDlg* GetLogWindow() noexcept
+    MainFrame* GetMainFrameEx() noexcept
         {
-        return m_logWindow;
+        return dynamic_cast<MainFrame*>(GetMainFrame());
         }
 
-    /// @brief Resets the log window.
-    /// @note This should be called from document view's close event
-    ///     to ensure that this window gets cleaned up and re-parented.
-    void DestroyLogWindow()
-        {
-        if (m_logWindow != nullptr)
-            {
-            m_logWindow->Hide();
-            m_logWindow->Destroy();
-            m_logWindow = nullptr;
-            }
-        }
+    /// @brief Reads the log file into the given list control.
+    void ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl);
 
     /// @brief Returns the SVG icon filename for a canvas item,
     ///     based on its RTTI type.
@@ -84,9 +118,6 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     ///     string if the type is not recognized.
     [[nodiscard]]
     static wxString GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph);
-
-    /// @brief Shows or hides the log report window.
-    void OnViewLogReport();
 
     /// @returns The start page.
     [[nodiscard]]
@@ -112,9 +143,9 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     int OnExit() override;
     void LoadInterface();
     void InitProjectSidebar();
+    void LoadRibbonLogPage(wxRibbonBar* ribbon);
 
     std::unique_ptr<AppSettings> m_appSettings{ nullptr };
-    Wisteria::UI::ListDlg* m_logWindow{ nullptr };
     wxStartPage* m_startPage{ nullptr };
     std::vector<wxBitmapBundle> m_projectSideBarImageList;
     };
@@ -240,6 +271,17 @@ constexpr wxWindowID ID_PROJECT_SETTINGS{ wxID_HIGHEST + 59 };
 
 // Tools
 constexpr wxWindowID ID_VIEW_LOG_REPORT{ wxID_HIGHEST + 33 };
+
+// Log tab ribbon buttons
+constexpr wxWindowID ID_LOG_TAB_SAVE{ wxID_HIGHEST + 60 };
+constexpr wxWindowID ID_LOG_TAB_PRINT{ wxID_HIGHEST + 61 };
+constexpr wxWindowID ID_LOG_TAB_COPY{ wxID_HIGHEST + 62 };
+constexpr wxWindowID ID_LOG_TAB_SELECT_ALL{ wxID_HIGHEST + 63 };
+constexpr wxWindowID ID_LOG_TAB_SORT{ wxID_HIGHEST + 64 };
+constexpr wxWindowID ID_LOG_TAB_CLEAR{ wxID_HIGHEST + 65 };
+constexpr wxWindowID ID_LOG_TAB_REFRESH{ wxID_HIGHEST + 66 };
+constexpr wxWindowID ID_LOG_TAB_REALTIME_UPDATE{ wxID_HIGHEST + 67 };
+constexpr wxWindowID ID_LOG_TAB_VERBOSE{ wxID_HIGHEST + 68 };
 
 wxDECLARE_APP(WisteriaApp);
 
