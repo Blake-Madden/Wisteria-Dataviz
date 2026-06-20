@@ -35,10 +35,11 @@
     #include <mach/task_info.h>
     #include <sys/sysctl.h>
 #elif defined(__UNIX__)
-    #include <filesystem>
-    #include <fstream>
     #include <sys/resource.h>
     #include <sys/sysinfo.h>
+    #include <wx/dir.h>
+    #include <wx/file.h>
+    #include <wx/textfile.h>
 #endif
 
 namespace wxSystemHardwareInfo
