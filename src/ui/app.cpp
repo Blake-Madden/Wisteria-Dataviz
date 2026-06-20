@@ -13,9 +13,11 @@
 #include "wx/xrc/xh_menu.h"
 #include "wx/xrc/xmlres.h"
 #include <filesystem>
+#include <wx/display.h>
 #include <wx/regex.h>
 #include <wx/stc/stc.h>
 #include <wx/webrequest.h>
+#include <wx/webview.h>
 #include <wx/xml/xml.h>
 
 /// @brief Temporarily turn off AppName being appended to @c wxStandardPaths calls.
@@ -150,9 +152,19 @@ namespace Wisteria::UI
             {
             wxLogMessage(L"Direct2D Rendering: unavailable");
             }
+        if (const auto gpu = wxSystemHardwareInfo::GetGPUDescription(); !gpu.empty())
+            {
+            wxLogMessage(L"GPU: %s", gpu);
+            }
+        if (const auto vram = wxSystemHardwareInfo::GetGPUDedicatedVRAM(); vram != -1)
+            {
+            wxLogMessage(L"GPU VRAM: %s", wxFileName::GetHumanReadableSize(
+                                              static_cast<wxULongLong>(vram.GetValue())));
+            }
 #endif
         wxLogMessage(L"Web Engine: %s",
                      wxWebSession::GetDefault().GetLibraryVersionInfo().GetVersionString());
+        wxLogMessage(L"Web Viewer: %s", wxWebView::GetBackendVersionInfo().GetVersionString());
         wxLogMessage(L"Code Editor: %s",
                      wxStyledTextCtrl::GetLibraryVersionInfo().GetVersionString());
         wxLogMessage(L"XML Parser: %s", wxXmlDocument::GetLibraryVersionInfo().GetVersionString());
@@ -169,10 +181,12 @@ namespace Wisteria::UI
                      wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
         wxLogMessage(L"Screen Size: %d wide, %d tall", wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
                      wxSystemSettings::GetMetric(wxSYS_SCREEN_Y));
+        wxLogMessage(L"Display DPI: %d x %d", wxDisplay{}.GetPPI().x, wxDisplay{}.GetPPI().y);
         if (!wxSystemSettings::GetAppearance().GetName().empty())
             {
             wxLogMessage(L"System Theme: %s", wxSystemSettings::GetAppearance().GetName());
             }
+        wxLogMessage(L"Dark Mode: %s", wxSystemSettings::GetAppearance().IsDark() ? L"yes" : L"no");
 
         wxLogMessage(L"System Language: %s", wxUILocale::GetCurrent().GetName());
         wxLogMessage(L"System Encoding: %s", wxLocale::GetSystemEncodingName());
