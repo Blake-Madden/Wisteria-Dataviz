@@ -24,6 +24,7 @@
 #endif // WX_PRECOMP
 
 #ifdef __WXMSW__
+    #include <dxgi.h>
     #include <psapi.h>
     #include <sysinfoapi.h>
     #include <windows.h>
@@ -40,6 +41,7 @@
 
 namespace wxSystemHardwareInfo
     {
+    //----------------------------------------------------------
     wxMemorySize GetPeakUsedMemory()
         {
 #ifdef __WXMSW__
@@ -72,6 +74,7 @@ namespace wxSystemHardwareInfo
         return -1;
         }
 
+    //----------------------------------------------------------
     wxMemorySize GetMemory()
         {
 #ifdef __WXMSW__
@@ -96,6 +99,58 @@ namespace wxSystemHardwareInfo
             }
 #endif
 
+        return -1;
+        }
+
+    //----------------------------------------------------------
+    wxString GetGPUDescription()
+        {
+#ifdef __WXMSW__
+        IDXGIFactory* factory{ nullptr };
+        if (SUCCEEDED(
+                CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory))))
+            {
+            IDXGIAdapter* adapter{ nullptr };
+            if (SUCCEEDED(factory->EnumAdapters(0, &adapter)))
+                {
+                DXGI_ADAPTER_DESC desc{};
+                if (SUCCEEDED(adapter->GetDesc(&desc)))
+                    {
+                    adapter->Release();
+                    factory->Release();
+                    return wxString(desc.Description);
+                    }
+                adapter->Release();
+                }
+            factory->Release();
+            }
+#endif
+        return {};
+        }
+
+    //----------------------------------------------------------
+    wxMemorySize GetGPUDedicatedVRAM()
+        {
+#ifdef __WXMSW__
+        IDXGIFactory* factory{ nullptr };
+        if (SUCCEEDED(
+                CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory))))
+            {
+            IDXGIAdapter* adapter{ nullptr };
+            if (SUCCEEDED(factory->EnumAdapters(0, &adapter)))
+                {
+                DXGI_ADAPTER_DESC desc{};
+                if (SUCCEEDED(adapter->GetDesc(&desc)))
+                    {
+                    adapter->Release();
+                    factory->Release();
+                    return static_cast<wxMemorySize>(desc.DedicatedVideoMemory);
+                    }
+                adapter->Release();
+                }
+            factory->Release();
+            }
+#endif
         return -1;
         }
     } // namespace wxSystemHardwareInfo

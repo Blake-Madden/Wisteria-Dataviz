@@ -207,6 +207,9 @@ add_library(${WISTERIA_LIB} STATIC ${WISTERIA_SRC})
 
 if(WIN32 OR APPLE)
     target_link_libraries(${WISTERIA_LIB} PUBLIC ${wxWidgets_LIBRARIES})
+    if(WIN32)
+        target_link_libraries(${WISTERIA_LIB} PUBLIC dxgi)
+    endif()
 elseif(UNIX)
     # Add OpenMP for multithreading
     find_package(OpenMP)
