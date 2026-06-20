@@ -127,7 +127,7 @@ namespace wxSystemHardwareInfo
                 }
             factory->Release();
             }
-#elif defined(__UNIX__)
+#elif defined(__UNIX__) && !defined(__APPLE__)
         // NVIDIA proprietary driver exposes model name in /proc
         wxDir nvGpuDir{ L"/proc/driver/nvidia/gpus" };
         if (nvGpuDir.IsOpened())
@@ -215,7 +215,7 @@ namespace wxSystemHardwareInfo
                 }
             factory->Release();
             }
-#elif defined(__UNIX__)
+#elif defined(__UNIX__) && !defined(__APPLE__)
         // AMD (amdgpu driver) exposes total VRAM via sysfs
         wxFile vramFile{ L"/sys/class/drm/card0/device/mem_info_vram_total" };
         if (vramFile.IsOpened())
