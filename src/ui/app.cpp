@@ -161,6 +161,7 @@ namespace Wisteria::UI
             {
             wxLogMessage(L"Direct2D Rendering: unavailable");
             }
+#endif
         if (const auto gpu = wxSystemHardwareInfo::GetGPUDescription(); !gpu.empty())
             {
             wxLogMessage(L"GPU: %s", gpu);
@@ -170,7 +171,6 @@ namespace Wisteria::UI
             wxLogMessage(L"GPU VRAM: %s", wxFileName::GetHumanReadableSize(
                                               static_cast<wxULongLong>(vram.GetValue())));
             }
-#endif
         wxLogMessage(L"Web Engine: %s",
                      wxWebSession::GetDefault().GetLibraryVersionInfo().GetVersionString());
         wxLogMessage(L"Web Viewer: %s", wxWebView::GetBackendVersionInfo().GetVersionString());

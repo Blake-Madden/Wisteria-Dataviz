@@ -49,11 +49,11 @@ namespace wxSystemHardwareInfo
     inline wxMemorySize GetFreeMemory() { return wxGetFreeMemory(); }
 
     /// @returns The primary GPU description (name/model), or an empty string if unavailable.
-    /// @note Windows only.
+    /// @note Windows and Linux.
     wxString GetGPUDescription();
 
     /// @returns The dedicated VRAM of the primary GPU in bytes, or -1 if unavailable.
-    /// @note Windows only.
+    /// @note Windows and Linux (AMD only).
     wxMemorySize GetGPUDedicatedVRAM();
     } // namespace wxSystemHardwareInfo
 

@@ -35,6 +35,8 @@
     #include <mach/task_info.h>
     #include <sys/sysctl.h>
 #elif defined(__UNIX__)
+    #include <filesystem>
+    #include <fstream>
     #include <sys/resource.h>
     #include <sys/sysinfo.h>
 #endif
@@ -124,6 +126,68 @@ namespace wxSystemHardwareInfo
                 }
             factory->Release();
             }
+#elif defined(__UNIX__)
+        // NVIDIA proprietary driver exposes model name in /proc
+        wxDir nvGpuDir{ L"/proc/driver/nvidia/gpus" };
+        if (nvGpuDir.IsOpened())
+            {
+            wxString subdir;
+            if (nvGpuDir.GetFirst(&subdir, wxEmptyString, wxDIR_DIRS))
+                {
+                wxTextFile infoFile{ L"/proc/driver/nvidia/gpus/" + subdir + L"/information" };
+                if (infoFile.Open())
+                    {
+                    for (wxString line = infoFile.GetFirstLine(); !infoFile.Eof();
+                         line = infoFile.GetNextLine())
+                        {
+                        if (line.StartsWith(L"Model:"))
+                            {
+                            return line.AfterFirst(L':').Strip(wxString::both);
+                            }
+                        }
+                    }
+                }
+            }
+        // fall back to vendor ID + driver name from sysfs
+        wxString vendorId, driver;
+        wxFile vendorFile{ L"/sys/class/drm/card0/device/vendor" };
+        if (vendorFile.IsOpened())
+            {
+            vendorFile.ReadAll(&vendorId);
+            vendorId.Trim();
+            }
+        wxTextFile ueventFile{ L"/sys/class/drm/card0/device/uevent" };
+        if (ueventFile.Open())
+            {
+            for (wxString line = ueventFile.GetFirstLine(); !ueventFile.Eof();
+                 line = ueventFile.GetNextLine())
+                {
+                if (line.StartsWith(L"DRIVER="))
+                    {
+                    driver = line.AfterFirst(L'=');
+                    break;
+                    }
+                }
+            }
+        if (!vendorId.empty() || !driver.empty())
+            {
+            if (vendorId == L"0x10de")
+                {
+                return wxString::Format(L"NVIDIA GPU (%s)", driver);
+                }
+            if (vendorId == L"0x1002")
+                {
+                return wxString::Format(L"AMD GPU (%s)", driver);
+                }
+            if (vendorId == L"0x8086")
+                {
+                return wxString::Format(L"Intel GPU (%s)", driver);
+                }
+            if (!driver.empty())
+                {
+                return driver;
+                }
+            }
 #endif
         return {};
         }
@@ -149,6 +213,21 @@ namespace wxSystemHardwareInfo
                 adapter->Release();
                 }
             factory->Release();
+            }
+#elif defined(__UNIX__)
+        // AMD (amdgpu driver) exposes total VRAM via sysfs
+        wxFile vramFile{ L"/sys/class/drm/card0/device/mem_info_vram_total" };
+        if (vramFile.IsOpened())
+            {
+            wxString content;
+            if (vramFile.ReadAll(&content))
+                {
+                unsigned long long vram{ 0 };
+                if (content.Trim().ToULongLong(&vram) && vram > 0)
+                    {
+                    return static_cast<wxMemorySize>(vram);
+                    }
+                }
             }
 #endif
         return -1;
