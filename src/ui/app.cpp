@@ -53,8 +53,7 @@ namespace Wisteria::UI
             }
 
 #ifdef __WXGTK__
-        // fixes blank wxWebView in WebKitGTK 2.42+ (affects both Wayland and X11)
-        wxSetEnv("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+        DisableWebViewGPUOptimization();
 #endif
 
         [[maybe_unused]]
@@ -108,6 +107,16 @@ namespace Wisteria::UI
         wxDELETE(m_locale);
 
         return wxApp::OnExit();
+        }
+
+    //----------------------------------------------------------
+    void BaseApp::DisableWebViewGPUOptimization()
+        {
+#ifdef __WXGTK__
+        wxSetEnv("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+#elif defined(__WXMSW__)
+        wxSetEnv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-gpu");
+#endif
         }
 
     //----------------------------------------------------------

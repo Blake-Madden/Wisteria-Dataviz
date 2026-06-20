@@ -62,6 +62,9 @@ namespace Wisteria::UI
         /// @details Call this after OnInit().
         void LogSystemInfo() const;
 
+        /// @brief Disables the WebView GPU renderer under GTK+ and Windows.
+        static void DisableWebViewGPUOptimization();
+
         /// @private
         void OnFatalException() final;
         // this is where we really generate the debug report
