@@ -174,15 +174,15 @@ namespace wxSystemHardwareInfo
             {
             if (vendorId == L"0x10de")
                 {
-                return wxString::Format(L"NVIDIA GPU (%s)", driver);
+                return wxString::Format(L"NVIDIA (%s)", driver);
                 }
             if (vendorId == L"0x1002")
                 {
-                return wxString::Format(L"AMD GPU (%s)", driver);
+                return wxString::Format(L"AMD (%s)", driver);
                 }
             if (vendorId == L"0x8086")
                 {
-                return wxString::Format(L"Intel GPU (%s)", driver);
+                return wxString::Format(L"Intel (%s)", driver);
                 }
             if (!driver.empty())
                 {

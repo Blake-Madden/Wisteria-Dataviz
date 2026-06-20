@@ -425,8 +425,10 @@ void WisteriaApp::ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl)
         return;
         }
     wxTheApp->Yield();
-    listCtrl->SetLabel(
-        wxString::Format(_(L"%s Log %s"), GetAppDisplayName(), wxDateTime::Now().FormatISODate()));
+    listCtrl->SetLabel(wxString::Format(
+        // TRANSLATORS: %1$s is the application name;
+        // %2$s is today's date in ISO format (YYYY-MM-DD)
+        _(L"%1$s Log %2$s"), GetAppDisplayName(), wxDateTime::Now().FormatISODate()));
     const long style = listCtrl->GetExtraStyle();
     listCtrl->SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
     const wxWindowUpdateLocker wl{ listCtrl };
