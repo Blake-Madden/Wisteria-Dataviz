@@ -17,6 +17,7 @@
 
 // for compilers that support precompilation, includes "wx.h".
 #include "hardwareinfo.h"
+#include "wx/dir.h"
 #include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
@@ -106,6 +107,31 @@ namespace wxSystemHardwareInfo
         }
 
     //----------------------------------------------------------
+    std::vector<wxString> GetDRMDevicePaths()
+        {
+        std::vector<wxString> paths;
+        const wxString drmDir(L"/sys/class/drm");
+        wxDir dir(drmDir);
+        if (!dir.IsOpened())
+            {
+            return paths;
+            }
+
+        wxString filename;
+        bool cont = dir.GetFirst(&filename, L"card*", wxDIR_DIRS);
+        while (cont)
+            {
+            wxString devicePath = drmDir + L"/" + filename + L"/device";
+            if (wxDirExists(devicePath))
+                {
+                paths.push_back(devicePath);
+                }
+            cont = dir.GetNext(&filename);
+            }
+        return paths;
+        }
+
+    //----------------------------------------------------------
     wxString GetGPUDescription()
         {
 #ifdef __WXMSW__
@@ -128,66 +154,62 @@ namespace wxSystemHardwareInfo
             factory->Release();
             }
 #elif defined(__UNIX__) && !defined(__APPLE__)
-        // NVIDIA proprietary driver exposes model name in /proc
-        wxDir nvGpuDir{ L"/proc/driver/nvidia/gpus" };
-        if (nvGpuDir.IsOpened())
+        // try standard DRM sysfs first...
+        const std::vector<wxString> devicePaths = GetDRMDevicePaths();
+        wxString fallbackVendor, fallbackDevice;
+        for (const auto& base : devicePaths)
             {
-            wxString subdir;
-            if (nvGpuDir.GetFirst(&subdir, wxEmptyString, wxDIR_DIRS))
+            wxString vendorId, deviceId;
+
+            const wxString vendorPath = base + L"/vendor";
+            const wxString devicePath = base + L"/device";
+            if (wxFileExists(vendorPath) && wxFileExists(devicePath))
                 {
-                wxTextFile infoFile{ L"/proc/driver/nvidia/gpus/" + subdir + L"/information" };
-                if (infoFile.Open())
+                if (wxFile vendorFile(vendorPath); vendorFile.IsOpened())
                     {
-                    for (wxString line = infoFile.GetFirstLine(); !infoFile.Eof();
-                         line = infoFile.GetNextLine())
-                        {
-                        if (line.StartsWith(L"Model:"))
-                            {
-                            return line.AfterFirst(L':').Strip(wxString::both);
-                            }
-                        }
+                    vendorFile.ReadAll(&vendorId);
+                    }
+                if (wxFile deviceFile(devicePath); deviceFile.IsOpened())
+                    {
+                    deviceFile.ReadAll(&deviceId);
                     }
                 }
-            }
-        // fall back to vendor ID + driver name from sysfs
-        wxString vendorId, driver;
-        wxFile vendorFile{ L"/sys/class/drm/card0/device/vendor" };
-        if (vendorFile.IsOpened())
-            {
-            vendorFile.ReadAll(&vendorId);
+
             vendorId.Trim();
-            }
-        wxTextFile ueventFile{ L"/sys/class/drm/card0/device/uevent" };
-        if (ueventFile.Open())
-            {
-            for (wxString line = ueventFile.GetFirstLine(); !ueventFile.Eof();
-                 line = ueventFile.GetNextLine())
+            deviceId.Trim();
+
+            if (!vendorId.empty() && !deviceId.empty())
                 {
-                if (line.StartsWith(L"DRIVER="))
+                if (vendorId == L"0x10de")
                     {
-                    driver = line.AfterFirst(L'=');
-                    break;
+                    return L"NVIDIA (DRM)";
+                    }
+                if (vendorId == L"0x1002")
+                    {
+                    return L"AMD";
+                    }
+                if (vendorId == L"0x8086")
+                    {
+                    return L"Intel";
+                    }
+                // save first unrecognized vendor as fallback
+                if (fallbackVendor.empty())
+                    {
+                    fallbackVendor = vendorId;
+                    fallbackDevice = deviceId;
                     }
                 }
             }
-        if (!vendorId.empty() || !driver.empty())
+
+        if (!fallbackVendor.empty())
             {
-            if (vendorId == L"0x10de")
-                {
-                return wxString::Format(L"NVIDIA (%s)", driver);
-                }
-            if (vendorId == L"0x1002")
-                {
-                return wxString::Format(L"AMD (%s)", driver);
-                }
-            if (vendorId == L"0x8086")
-                {
-                return wxString::Format(L"Intel (%s)", driver);
-                }
-            if (!driver.empty())
-                {
-                return driver;
-                }
+            return wxString::Format(L"%s:%s", fallbackVendor, fallbackDevice);
+            }
+
+        // ...fallback for NVIDIA Proprietary Driver
+        if (wxDirExists(L"/proc/driver/nvidia"))
+            {
+            return L"NVIDIA";
             }
 #endif
         return {};
@@ -216,17 +238,68 @@ namespace wxSystemHardwareInfo
             factory->Release();
             }
 #elif defined(__UNIX__) && !defined(__APPLE__)
-        // AMD (amdgpu driver) exposes total VRAM via sysfs
-        wxFile vramFile{ L"/sys/class/drm/card0/device/mem_info_vram_total" };
-        if (vramFile.IsOpened())
+        const std::vector<wxString> devicePaths = GetDRMDevicePaths();
+        for (const auto& base : devicePaths)
             {
-            wxString content;
-            if (vramFile.ReadAll(&content))
+            wxString vendorId, deviceId;
+
+            const wxString vendorPath = base + L"/vendor";
+            const wxString devicePath = base + L"/device";
+            if (wxFileExists(vendorPath) && wxFileExists(devicePath))
                 {
-                unsigned long long vram{ 0 };
-                if (content.Trim().ToULongLong(&vram) && vram > 0)
+                if (wxFile vendorFile(vendorPath); vendorFile.IsOpened())
                     {
-                    return static_cast<wxMemorySize>(vram);
+                    vendorFile.ReadAll(&vendorId);
+                    }
+                if (wxFile deviceFile(devicePath); deviceFile.IsOpened())
+                    {
+                    deviceFile.ReadAll(&deviceId);
+                    }
+                }
+
+            vendorId.Trim();
+            deviceId.Trim();
+
+            if (vendorId.empty() || deviceId.empty())
+                {
+                continue;
+                }
+
+            // try VRAM
+            const wxString vramPath = base + L"/mem_info_vram_total";
+            if (wxFileExists(vramPath))
+                {
+                wxFile vramFile(vramPath);
+                if (vramFile.IsOpened())
+                    {
+                    wxString content;
+                    if (vramFile.ReadAll(&content))
+                        {
+                        unsigned long long vram = 0;
+                        if (content.Trim().ToULongLong(&vram) && vram > 0)
+                            {
+                            return static_cast<wxMemorySize>(vram);
+                            }
+                        }
+                    }
+                }
+
+            // some drivers expose memory differently
+            const wxString memInfoPath = base + L"/mem_info_vis_vram_total";
+            if (wxFileExists(memInfoPath))
+                {
+                wxFile memInfo(memInfoPath);
+                if (memInfo.IsOpened())
+                    {
+                    wxString content;
+                    if (memInfo.ReadAll(&content))
+                        {
+                        unsigned long long vram = 0;
+                        if (content.Trim().ToULongLong(&vram) && vram > 0)
+                            {
+                            return static_cast<wxMemorySize>(vram);
+                            }
+                        }
                     }
                 }
             }

@@ -13,6 +13,7 @@
 #include "wx/power.h"
 #include "wx/string.h"
 #include "wx/utils.h"
+#include <vector>
 
 // ----------------------------------------------------------------------------
 // wxSystemHardwareInfo
@@ -47,6 +48,10 @@ namespace wxSystemHardwareInfo
 
     /// @returns The amount of free memory available.
     inline wxMemorySize GetFreeMemory() { return wxGetFreeMemory(); }
+
+    /// @returns A list of `/sys/class/drm/card*/device` paths that exist on this system.
+    /// @note Linux only.
+    std::vector<wxString> GetDRMDevicePaths();
 
     /// @returns The primary GPU description (name/model), or an empty string if unavailable.
     /// @note Windows and Linux.
