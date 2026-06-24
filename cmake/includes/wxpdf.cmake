@@ -29,6 +29,7 @@ SET(WXPDF_SRC
     src/wxpdfdoc/src/pdfgc.cpp
     src/wxpdfdoc/src/pdfgradient.cpp
     src/wxpdfdoc/src/pdfgraphics.cpp
+    src/wxpdfdoc/src/pdfgridctrl.cpp
     src/wxpdfdoc/src/pdfimage.cpp
     src/wxpdfdoc/src/pdfkernel.cpp
     src/wxpdfdoc/src/pdflistctrl.cpp
