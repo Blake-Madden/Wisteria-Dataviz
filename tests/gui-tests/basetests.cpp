@@ -158,6 +158,7 @@ TEST_CASE("GraphItemBase Selection Toggle", "[graphitem]")
         {
       public:
         using GraphItemBase::GraphItemBase;
+        using GraphItemBase::SelectObjectAtPoint;
         void Offset([[maybe_unused]] int x, [[maybe_unused]] int y) override {}
         wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override { return wxRect(0, 0, 100, 100); }
         void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
@@ -168,6 +169,7 @@ TEST_CASE("GraphItemBase Selection Toggle", "[graphitem]")
             {
             return wxRect(0, 0, 100, 100).Contains(pt);
             }
+        wxRect Draw([[maybe_unused]] wxDC& dc) const override { return wxRect{}; }
         };
 
     MockItem item(1.0, L"test");

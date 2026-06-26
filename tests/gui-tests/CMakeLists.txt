@@ -43,7 +43,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 find_directory("wxWidgets" wxWidgets_BASEDIR)
 add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
-set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
+set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext wx::webview)
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 
 if(UNIX AND NOT APPLE)
@@ -78,8 +78,22 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/ListFiles.cmake)
 set(TEST_APP WisteriaGuiTestRunner)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/includes/guilibfiles_testing.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/includes/guitestfiles.cmake)
+
+# Add wxPDFDocument
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/includes/wxpdf.cmake)
+list(TRANSFORM WXPDF_SRC PREPEND "../../")
+if(MSVC)
+    set_source_files_properties(${WXPDF_SRC} PROPERTIES
+        COMPILE_OPTIONS "/wd4189;/wd4100;/wd4101;/wd4267")
+endif()
+list(APPEND WISTERIA_SRC ${WXPDF_SRC})
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 add_executable(${TEST_APP} WIN32 MACOSX_BUNDLE ${WISTERIA_SRC} ${TEST_SRC_FILES})
+target_include_directories(${TEST_APP} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/thirdparty/woff2/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/thirdparty/woff2/brotli/include)
 
 message(STATUS "Finding Catch2...")
 find_cmake_project_directory("Catch2" CATCH_DIR)
@@ -124,7 +138,9 @@ elseif(UNIX)
 endif()
 
 # Link required libraries to the executable
-if(WIN32 OR APPLE)
+if(WIN32)
+    target_link_libraries(${TEST_APP} PRIVATE Catch2::Catch2 ${wxWidgets_LIBRARIES} dxgi)
+elseif(APPLE)
     target_link_libraries(${TEST_APP} PRIVATE Catch2::Catch2 ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     find_library(TBB_LIB tbb)

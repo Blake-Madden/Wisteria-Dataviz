@@ -103,38 +103,6 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/thumbnail.cpp
     ../../src/ui/dialogs/archivedlg.cpp
     ../../src/ui/dialogs/datasetimportdlg.cpp
-    ../../src/ui/dialogs/editors/accessibilityoptionspanel.cpp
-    ../../src/ui/dialogs/editors/axisoptionspanel.cpp
-    ../../src/ui/dialogs/editors/insertboxplotdlg.cpp
-    ../../src/ui/dialogs/editors/insertbubbleplotdlg.cpp
-    ../../src/ui/dialogs/editors/insertcandlestickplotdlg.cpp
-    ../../src/ui/dialogs/editors/insertcatbarchartdlg.cpp
-    ../../src/ui/dialogs/editors/insertchernoffdlg.cpp
-    ../../src/ui/dialogs/editors/insertcommonaxisdlg.cpp
-    ../../src/ui/dialogs/editors/insertganttchartdlg.cpp
-    ../../src/ui/dialogs/editors/insertgraphdlg.cpp
-    ../../src/ui/dialogs/editors/insertheatmapdlg.cpp
-    ../../src/ui/dialogs/editors/inserthistogramdlg.cpp
-    ../../src/ui/dialogs/editors/insertimgdlg.cpp
-    ../../src/ui/dialogs/editors/insertitemdlg.cpp
-    ../../src/ui/dialogs/editors/insertlabeldlg.cpp
-    ../../src/ui/dialogs/editors/insertlikertdlg.cpp
-    ../../src/ui/dialogs/editors/insertlineplotdlg.cpp
-    ../../src/ui/dialogs/editors/insertlrroadmapdlg.cpp
-    ../../src/ui/dialogs/editors/insertmultiserieslineplotdlg.cpp
-    ../../src/ui/dialogs/editors/insertpagedlg.cpp
-    ../../src/ui/dialogs/editors/insertpiechartdlg.cpp
-    ../../src/ui/dialogs/editors/insertproconroadmapdlg.cpp
-    ../../src/ui/dialogs/editors/insertsankeydiagramdlg.cpp
-    ../../src/ui/dialogs/editors/insertscalechartdlg.cpp
-    ../../src/ui/dialogs/editors/insertscatterplotdlg.cpp
-    ../../src/ui/dialogs/editors/insertshapedlg.cpp
-    ../../src/ui/dialogs/editors/insertstemandleafdlg.cpp
-    ../../src/ui/dialogs/editors/inserttabledlg.cpp
-    ../../src/ui/dialogs/editors/insertwafflechartdlg.cpp
-    ../../src/ui/dialogs/editors/insertwcurvedlg.cpp
-    ../../src/ui/dialogs/editors/insertwlsparklinedlg.cpp
-    ../../src/ui/dialogs/editors/insertwordclouddlg.cpp
     ../../src/ui/dialogs/editors/joindlg.cpp
     ../../src/ui/dialogs/editors/pivotlongerdlg.cpp
     ../../src/ui/dialogs/editors/pivotwiderrdlg.cpp
