@@ -1324,7 +1324,8 @@ namespace Wisteria::Graphs
                     const wxDCPenChanger pc(
                         dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Blue),
                                   ScaleToScreenAndCanvas(4)));
-                    dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
+                    dc.DrawLine(GetBoundingBox(dc).GetTopLeft(),
+                                GetBoundingBox(dc).GetBottomLeft());
                     // top-to-bottom
                     for (auto i = GetBoundingBox(dc).GetTopLeft().y;
                          i < GetBoundingBox(dc).GetBottomLeft().y; i += 100)
