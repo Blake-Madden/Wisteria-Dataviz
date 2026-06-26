@@ -1632,6 +1632,29 @@ namespace Wisteria::Graphs
 
         if (hitObject != nullptr)
             {
+            // record which sub-object was hit for SetSelected() propagation
+            m_lastHitPointIndex = static_cast<size_t>(-1);
+            m_lastHitPointEmbeddedObjectIndex = static_cast<size_t>(-1);
+            for (size_t i = 0; i < m_embeddedObjects.size(); ++i)
+                {
+                if (m_embeddedObjects[i].GetObject().get() == hitObject)
+                    {
+                    m_lastHitPointEmbeddedObjectIndex = i;
+                    break;
+                    }
+                }
+            if (m_lastHitPointEmbeddedObjectIndex >= m_embeddedObjects.size())
+                {
+                for (size_t i = 0; i < m_plotObjects.size(); ++i)
+                    {
+                    if (m_plotObjects[i].get() == hitObject)
+                        {
+                        m_lastHitPointIndex = i;
+                        break;
+                        }
+                    }
+                }
+
             // if CTRL isn't held down, then unselect everything else
             if (!wxGetMouseState().ControlDown())
                 {
