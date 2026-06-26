@@ -253,7 +253,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
             auto bBox = label->GetBoundingBox(dc); // will already be cached
 
             if (bBox.GetWidth() > polyBoundingBox.GetWidth() ||
-                bBox.GetHeight() > polyBoundingBox.GetWidth())
+                bBox.GetHeight() > polyBoundingBox.GetHeight())
                 {
                 return false;
                 }
