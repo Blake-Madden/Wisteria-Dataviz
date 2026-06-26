@@ -399,7 +399,7 @@ namespace Wisteria::Data
         {
         if (colNamePattern.empty())
             {
-            throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
+            throw std::runtime_error(_(L"Column name pattern cannot be empty.").ToUTF8());
             }
         const wxRegEx columnRE(colNamePattern);
         if (!columnRE.IsValid())
@@ -975,13 +975,12 @@ namespace Wisteria::Data
         const auto groupColumnIterator =
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
-        wxASSERT_MSG(
-            (!groupColumn || groupId),
-            L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+        wxASSERT_MSG((!groupColumn || groupId),
+                     L"Group ID must be provided if using grouping for GetContinuousTotal()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                wxString::Format(_(L"'%s': grouping column not found when calculating total."),
                                  groupColumn.value())
                     .ToUTF8());
             }
@@ -989,7 +988,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(
                 wxString::Format(
-                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    _(L"'%s': grouping ID not specified for column when calculating total."),
                     groupColumn.value())
                     .ToUTF8());
             }
