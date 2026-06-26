@@ -263,12 +263,24 @@ namespace Wisteria::UI
                                             wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
         sortBox->Add(m_sortNoneRadio, wxSizerFlags{}.Border());
 
-        m_sortAscRadio = new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort ascending"));
-        sortBox->Add(m_sortAscRadio, wxSizerFlags{}.Border());
+        auto* sortComparisonSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        sortComparisonSizer->Add(
+            new wxStaticText(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort by:")),
+            wxSizerFlags{}.CenterVertical());
+        wxArrayString sortComparisons;
+        sortComparisons.Add(_(L"Bar length"));
+        sortComparisons.Add(_(L"Bar label"));
+        m_sortComparisonChoice = new wxChoice(sortBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                                              wxDefaultSize, sortComparisons);
+        sortComparisonSizer->Add(m_sortComparisonChoice, wxSizerFlags{}.CenterVertical());
+        sortBox->Add(sortComparisonSizer, wxSizerFlags{}.Border(wxLEFT, FromDIP(20)));
 
-        m_sortDescRadio =
-            new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort descending"));
-        sortBox->Add(m_sortDescRadio, wxSizerFlags{}.Border());
+        m_sortAscRadio = new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Ascending"));
+        sortBox->Add(m_sortAscRadio, wxSizerFlags{}.Border(wxLEFT, FromDIP(20)));
+
+        m_sortDescRadio = new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Descending"));
+        sortBox->Add(m_sortDescRadio, wxSizerFlags{}.Border(wxLEFT, FromDIP(20)));
 
         m_sortCustomRadio =
             new wxRadioButton(sortBox->GetStaticBox(), wxID_ANY, _(L"Custom order:"));
@@ -1130,6 +1142,13 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertCatBarChartDlg::OnBarSortChanged()
         {
+        const bool isLengthOrLabelSort =
+            (m_sortAscRadio != nullptr && m_sortAscRadio->GetValue()) ||
+            (m_sortDescRadio != nullptr && m_sortDescRadio->GetValue());
+        if (m_sortComparisonChoice != nullptr)
+            {
+            m_sortComparisonChoice->Enable(isLengthOrLabelSort);
+            }
         if (m_sortLabelListBox != nullptr)
             {
             m_sortLabelListBox->Enable(m_sortCustomRadio->GetValue());
@@ -1208,7 +1227,10 @@ namespace Wisteria::UI
         {
         if (m_sortAscRadio->GetValue() || m_sortDescRadio->GetValue())
             {
-            return Graphs::BarChart::BarSortComparison::SortByBarLength;
+            return (m_sortComparisonChoice != nullptr &&
+                    m_sortComparisonChoice->GetSelection() == 1) ?
+                       Graphs::BarChart::BarSortComparison::SortByAxisLabel :
+                       Graphs::BarChart::BarSortComparison::SortByBarLength;
             }
         return std::nullopt;
         }
@@ -1854,6 +1876,14 @@ namespace Wisteria::UI
                 {
                 m_sortAscRadio->SetValue(true);
                 }
+            if (m_sortComparisonChoice != nullptr && barChart->GetSortComparison().has_value())
+                {
+                m_sortComparisonChoice->SetSelection(
+                    barChart->GetSortComparison().value() ==
+                            Graphs::BarChart::BarSortComparison::SortByAxisLabel ?
+                        1 :
+                        0);
+                }
             }
         else
             {
@@ -1868,6 +1898,14 @@ namespace Wisteria::UI
         if (m_sortLabelListBox != nullptr)
             {
             m_sortLabelListBox->Enable(m_sortCustomRadio->GetValue());
+            }
+        // enable/disable the sort comparison choice
+        if (m_sortComparisonChoice != nullptr)
+            {
+            const bool isLengthOrLabelSort =
+                (m_sortAscRadio != nullptr && m_sortAscRadio->GetValue()) ||
+                (m_sortDescRadio != nullptr && m_sortDescRadio->GetValue());
+            m_sortComparisonChoice->Enable(isLengthOrLabelSort);
             }
         // sync bar-shape controls (populates list and sets enable state)
         if (m_shapeAllChoice != nullptr)

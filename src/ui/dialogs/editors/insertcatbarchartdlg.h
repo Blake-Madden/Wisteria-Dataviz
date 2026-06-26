@@ -352,6 +352,7 @@ namespace Wisteria::UI
         wxRadioButton* m_sortNoneRadio{ nullptr };
         wxRadioButton* m_sortAscRadio{ nullptr };
         wxRadioButton* m_sortDescRadio{ nullptr };
+        wxChoice* m_sortComparisonChoice{ nullptr };
         wxRadioButton* m_sortCustomRadio{ nullptr };
         wxEditableListBox* m_sortLabelListBox{ nullptr };
 
