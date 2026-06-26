@@ -2839,17 +2839,22 @@ namespace Wisteria::Graphs
                 wxRound(center.x + std::cos(geometry::degrees_to_radians(angle)) * distance),
                 wxRound(center.y + std::sin(geometry::degrees_to_radians(angle)) * distance));
 
+            bool tooClose = false;
             for (const wxPoint& existing : acceptedCenters)
                 {
                 if (geometry::segment_length(GraphItems::Polygon::PointToPair(candidate),
                                              GraphItems::Polygon::PointToPair(existing)) <
                     minSpotSpacing)
                     {
+                    tooClose = true;
                     break;
                     }
                 }
 
-            acceptedCenters.push_back(candidate);
+            if (!tooClose)
+                {
+                acceptedCenters.push_back(candidate);
+                }
             }
 
         // irregular toasted blobs
