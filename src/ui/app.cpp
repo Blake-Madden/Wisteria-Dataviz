@@ -52,10 +52,6 @@ namespace Wisteria::UI
             return false;
             }
 
-#ifdef __WXGTK__
-        DisableWebViewGPUOptimization();
-#endif
-
         [[maybe_unused]]
         const auto wxStringToFsPath = [](const wxString& str)
         {
