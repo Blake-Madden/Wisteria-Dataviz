@@ -1289,3 +1289,566 @@ TEST_CASE("InnerJoin: date columns", "[Join][InnerJoin][Date]")
     auto dc = out->GetDateColumn("EventDate");
     CHECK(dc->GetValue(0) == wxDateTime(1, wxDateTime::Jan, 2025));
     }
+
+// =============================================================================
+// LeftJoinUniqueFirst: parity tests missing from the original suite
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Copy right ID when left has none (mirrors LeftJoinUniqueLast test 6)
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueFirst: copy right ID when left has none",
+          "[Join][LeftJoinUniqueFirst]")
+    {
+    Dataset left, right;
+
+    auto stKey = MakeST({ "K1", "K2" });
+    left.AddCategoricalColumn("Key", stKey);
+
+    right.GetIdColumn().SetName("RID");
+    right.AddCategoricalColumn("Key", stKey);
+    right.AddContinuousColumn("Val");
+
+    AddRow(left, std::nullopt, { 0 }, {});
+    AddRow(left, std::nullopt, { 1 }, {});
+    AddRow(right, wxString{ "r1" }, { 0 }, { 1.0 });
+    AddRow(right, wxString{ "r2" }, { 1 }, { 2.0 });
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueFirst(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "Key", "Key" } });
+
+    CHECK(out->GetIdColumn().GetName() == "RID");
+    CHECK(out->GetIdColumn().GetValue(0) == "r1");
+    CHECK(out->GetIdColumn().GetValue(1) == "r2");
+    }
+
+// -----------------------------------------------------------------------------
+// Both have IDs but not joined by them (mirrors LeftJoinUniqueLast test 7)
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueFirst: both have IDs; not joining by ID",
+          "[Join][LeftJoinUniqueFirst]")
+    {
+    Dataset left, right;
+
+    left.GetIdColumn().SetName("LID");
+    right.GetIdColumn().SetName("RID");
+
+    auto stKey = MakeST({ "K1", "K2" });
+    left.AddCategoricalColumn("Key", stKey);
+    right.AddCategoricalColumn("Key", stKey);
+    right.AddContinuousColumn("Val");
+
+    AddRow(left, wxString{ "L_A" }, { 0 }, {});
+    AddRow(left, wxString{ "L_B" }, { 1 }, {});
+    AddRow(right, wxString{ "R_A" }, { 0 }, { 11.0 });
+    AddRow(right, wxString{ "R_B" }, { 1 }, { 22.0 });
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueFirst(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "Key", "Key" } });
+
+    CHECK(out->GetIdColumn().GetName() == "LID");
+    CHECK(out->GetIdColumn().GetValue(0) == "L_A");
+    CHECK(out->GetIdColumn().GetValue(1) == "L_B");
+
+    auto v = out->GetContinuousColumn("Val");
+    REQUIRE(v != out->GetContinuousColumns().cend());
+    CHECK_THAT(v->GetValue(0), WithinAbs(11.0, 1e-12));
+    CHECK_THAT(v->GetValue(1), WithinAbs(22.0, 1e-12));
+    }
+
+// -----------------------------------------------------------------------------
+// Date column: unmatched left row stays missing
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueFirst: date join by ID (unmatched stays missing)",
+          "[Join][LeftJoinUniqueFirst][Date]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+    right.AddDateColumn("When");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {});
+    AddRow(left, wxString{ "C" }, {}, {}); // no match
+
+    AddRow(right, wxString{ "A" }, { DMY(2025, wxDateTime::Jan, 1) });
+    AddRow(right, wxString{ "B" }, { DMY(2025, wxDateTime::Feb, 2) });
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueFirst(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    REQUIRE(out->GetRowCount() == 3);
+    const auto dateIt = out->GetDateColumn("When");
+    REQUIRE(dateIt != out->GetDateColumns().cend());
+
+    CHECK(dateIt->GetValue(0) == DMY(2025, wxDateTime::Jan, 1));
+    CHECK(dateIt->GetValue(1) == DMY(2025, wxDateTime::Feb, 2));
+    CHECK(dateIt->IsMissingData(2));
+    }
+
+// =============================================================================
+// Composite-key (join on multiple columns simultaneously)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// LeftJoinUniqueLast: join by ID + categorical key together
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueLast: composite key (ID + categorical)",
+          "[Join][LeftJoinUnique][CompositeKey]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto st = MakeST({ "Eng", "Sales" });
+    left.AddCategoricalColumn("Dept", st);
+    right.AddCategoricalColumn("Dept", st);
+    right.AddContinuousColumn("RScore");
+
+    AddRow(left, wxString{ "A" }, { 0 }, {});     // A/Eng
+    AddRow(left, wxString{ "A" }, { 1 }, {});     // A/Sales
+    AddRow(left, wxString{ "B" }, { 0 }, {});     // B/Eng — no right match
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 }); // A/Eng   → row 0
+    AddRow(right, wxString{ "A" }, { 1 }, { 20.0 }); // A/Sales → row 1
+    AddRow(right, wxString{ "B" }, { 1 }, { 30.0 }); // B/Sales → no left match
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueLast(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right),
+        { { "ID", "ID" }, { "Dept", "Dept" } });
+
+    REQUIRE(out->GetRowCount() == 3);
+    auto rScore = out->GetContinuousColumn("RScore");
+    REQUIRE(rScore != out->GetContinuousColumns().cend());
+
+    CHECK_THAT(rScore->GetValue(0), WithinAbs(10.0, 1e-12));
+    CHECK_THAT(rScore->GetValue(1), WithinAbs(20.0, 1e-12));
+    CHECK(rScore->IsMissingData(2));
+    }
+
+// -----------------------------------------------------------------------------
+// LeftJoinUniqueFirst: composite key, first-wins on duplicate right rows
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueFirst: composite key (ID + categorical)",
+          "[Join][LeftJoinUniqueFirst][CompositeKey]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto st = MakeST({ "Eng", "Sales" });
+    left.AddCategoricalColumn("Dept", st);
+    right.AddCategoricalColumn("Dept", st);
+    right.AddContinuousColumn("RScore");
+
+    AddRow(left, wxString{ "A" }, { 0 }, {});     // A/Eng
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 }); // A/Eng first
+    AddRow(right, wxString{ "A" }, { 0 }, { 99.0 }); // A/Eng duplicate — ignored
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueFirst(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right),
+        { { "ID", "ID" }, { "Dept", "Dept" } });
+
+    REQUIRE(out->GetRowCount() == 1);
+    auto rScore = out->GetContinuousColumn("RScore");
+    REQUIRE(rScore != out->GetContinuousColumns().cend());
+    CHECK_THAT(rScore->GetValue(0), WithinAbs(10.0, 1e-12)); // first wins
+    }
+
+// -----------------------------------------------------------------------------
+// LeftJoin: composite key with one-to-many expansion
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoin: composite key (ID + categorical) with one-to-many",
+          "[Join][LeftJoin][CompositeKey]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto st = MakeST({ "Eng", "Sales" });
+    left.AddCategoricalColumn("Dept", st);
+    right.AddCategoricalColumn("Dept", st);
+    right.AddContinuousColumn("RScore");
+
+    AddRow(left, wxString{ "A" }, { 0 }, {});     // A/Eng  — matches 2 right rows
+    AddRow(left, wxString{ "A" }, { 1 }, {});     // A/Sales — matches 1 right row
+    AddRow(left, wxString{ "B" }, { 0 }, {});     // B/Eng  — no match
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 });
+    AddRow(right, wxString{ "A" }, { 0 }, { 11.0 }); // second A/Eng
+    AddRow(right, wxString{ "A" }, { 1 }, { 20.0 });
+    AddRow(right, wxString{ "B" }, { 1 }, { 30.0 }); // B/Sales — no left match
+
+    auto out = DatasetLeftJoin::LeftJoin(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right),
+        { { "ID", "ID" }, { "Dept", "Dept" } });
+
+    // A/Eng expands to 2, A/Sales 1, B/Eng 1 (unmatched, kept) = 4 rows
+    REQUIRE(out->GetRowCount() == 4);
+    auto rScore = out->GetContinuousColumn("RScore");
+    REQUIRE(rScore != out->GetContinuousColumns().cend());
+
+    CHECK_THAT(rScore->GetValue(0), WithinAbs(10.0, 1e-12));
+    CHECK_THAT(rScore->GetValue(1), WithinAbs(11.0, 1e-12));
+    CHECK_THAT(rScore->GetValue(2), WithinAbs(20.0, 1e-12));
+    CHECK(rScore->IsMissingData(3)); // B/Eng unmatched
+    }
+
+// -----------------------------------------------------------------------------
+// InnerJoin: composite key (ID + categorical) excludes non-matching rows
+// -----------------------------------------------------------------------------
+TEST_CASE("InnerJoin: composite key (ID + categorical)",
+          "[Join][InnerJoin][CompositeKey]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto st = MakeST({ "Eng", "Sales" });
+    left.AddCategoricalColumn("Dept", st);
+    right.AddCategoricalColumn("Dept", st);
+    left.AddContinuousColumn("LScore");
+    right.AddContinuousColumn("RScore");
+
+    AddRow(left, wxString{ "A" }, { 0 }, { 1.0 });  // A/Eng
+    AddRow(left, wxString{ "A" }, { 1 }, { 2.0 });  // A/Sales
+    AddRow(left, wxString{ "B" }, { 0 }, { 3.0 });  // B/Eng — no right match
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 }); // A/Eng   → matches row 0
+    AddRow(right, wxString{ "A" }, { 1 }, { 20.0 }); // A/Sales → matches row 1
+    AddRow(right, wxString{ "C" }, { 0 }, { 30.0 }); // C/Eng   → no left match
+
+    auto leftDs = std::make_shared<const Dataset>(left);
+    auto rightDs = std::make_shared<const Dataset>(right);
+    auto out = DatasetInnerJoin::InnerJoin(
+        leftDs, rightDs, { { "ID", "ID" }, { "Dept", "Dept" } });
+
+    // B/Eng and C/Eng excluded; only A/Eng and A/Sales match
+    REQUIRE(out->GetRowCount() == 2);
+
+    auto lScore = out->GetContinuousColumn("LScore");
+    auto rScore = out->GetContinuousColumn("RScore");
+    REQUIRE(lScore != out->GetContinuousColumns().cend());
+    REQUIRE(rScore != out->GetContinuousColumns().cend());
+
+    CHECK_THAT(lScore->GetValue(0), WithinAbs(1.0, 1e-12));
+    CHECK_THAT(rScore->GetValue(0), WithinAbs(10.0, 1e-12));
+    CHECK_THAT(lScore->GetValue(1), WithinAbs(2.0, 1e-12));
+    CHECK_THAT(rScore->GetValue(1), WithinAbs(20.0, 1e-12));
+    }
+
+// =============================================================================
+// Case-insensitive key matching
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// ID column: mixed-case values match regardless of case
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueLast: case-insensitive ID match", "[Join][LeftJoinUnique][CaseInsensitive]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+    right.AddContinuousColumn("RVal");
+
+    AddRow(left, wxString{ "Alice" }, {}, {});
+    AddRow(left, wxString{ "bob" }, {}, {});
+
+    AddRow(right, wxString{ "ALICE" }, {}, { 1.0 });
+    AddRow(right, wxString{ "BOB" }, {}, { 2.0 });
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueLast(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    auto r = out->GetContinuousColumn("RVal");
+    REQUIRE(r != out->GetContinuousColumns().cend());
+    CHECK_THAT(r->GetValue(0), WithinAbs(1.0, 1e-12)); // "Alice" matched "ALICE"
+    CHECK_THAT(r->GetValue(1), WithinAbs(2.0, 1e-12)); // "bob"   matched "BOB"
+    }
+
+// -----------------------------------------------------------------------------
+// Categorical column: label case differences still match
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueLast: case-insensitive categorical match",
+          "[Join][LeftJoinUnique][CaseInsensitive]")
+    {
+    Dataset left, right;
+
+    // Left and right use the same codes but different label casing
+    auto stLeft  = MakeST({ "Engineering", "Sales" });
+    auto stRight = MakeST({ "ENGINEERING", "SALES" });
+
+    left.AddCategoricalColumn("Dept", stLeft);
+    right.AddCategoricalColumn("Dept", stRight);
+    right.AddContinuousColumn("RVal");
+
+    AddRow(left, std::nullopt, { 0 }, {});  // code 0 → "Engineering"
+    AddRow(left, std::nullopt, { 1 }, {});  // code 1 → "Sales"
+
+    AddRow(right, std::nullopt, { 0 }, { 10.0 }); // code 0 → "ENGINEERING"
+    AddRow(right, std::nullopt, { 1 }, { 20.0 }); // code 1 → "SALES"
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueLast(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "Dept", "Dept" } });
+
+    auto r = out->GetContinuousColumn("RVal");
+    REQUIRE(r != out->GetContinuousColumns().cend());
+    CHECK_THAT(r->GetValue(0), WithinAbs(10.0, 1e-12)); // "Engineering" ~ "ENGINEERING"
+    CHECK_THAT(r->GetValue(1), WithinAbs(20.0, 1e-12)); // "Sales" ~ "SALES"
+    }
+
+// =============================================================================
+// Non-join categorical output columns (outCatColsMap path)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// LeftJoinUniqueLast: right categorical column (not a join key) copied to output
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueLast: non-join categorical column copied from right",
+          "[Join][LeftJoinUnique][Categorical]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto stStatus = MakeST({ "Active", "Inactive" });
+    right.AddCategoricalColumn("Status", stStatus); // non-join column
+    right.AddContinuousColumn("Score");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {});
+    AddRow(left, wxString{ "C" }, {}, {}); // unmatched
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 }); // Active
+    AddRow(right, wxString{ "B" }, { 1 }, { 20.0 }); // Inactive
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueLast(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    REQUIRE(out->GetRowCount() == 3);
+
+    const auto statusCol = out->GetCategoricalColumn("Status");
+    REQUIRE(statusCol != out->GetCategoricalColumns().cend());
+
+    CHECK(statusCol->GetValueAsLabel(0) == L"Active");
+    CHECK(statusCol->GetValueAsLabel(1) == L"Inactive");
+    CHECK(statusCol->IsMissingData(2)); // C had no match
+    }
+
+// -----------------------------------------------------------------------------
+// LeftJoin: non-join categorical column with one-to-many expansion
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoin: non-join categorical column copied from right",
+          "[Join][LeftJoin][Categorical]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto stStatus = MakeST({ "Active", "Inactive" });
+    right.AddCategoricalColumn("Status", stStatus);
+    right.AddContinuousColumn("Score");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {}); // unmatched
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 }); // Active
+    AddRow(right, wxString{ "A" }, { 1 }, { 20.0 }); // Inactive — second match for A
+
+    auto out = DatasetLeftJoin::LeftJoin(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    // A expands to 2 rows; B stays with 1 unmatched row = 3 total
+    REQUIRE(out->GetRowCount() == 3);
+
+    const auto statusCol = out->GetCategoricalColumn("Status");
+    REQUIRE(statusCol != out->GetCategoricalColumns().cend());
+
+    CHECK(statusCol->GetValueAsLabel(0) == L"Active");
+    CHECK(statusCol->GetValueAsLabel(1) == L"Inactive");
+    CHECK(statusCol->IsMissingData(2)); // B had no match
+    }
+
+// -----------------------------------------------------------------------------
+// InnerJoin: right categorical column (not a join key) copied to output
+// -----------------------------------------------------------------------------
+TEST_CASE("InnerJoin: non-join categorical column copied from right",
+          "[Join][InnerJoin][Categorical]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    auto stStatus = MakeST({ "Active", "Inactive" });
+    right.AddCategoricalColumn("Status", stStatus);
+    right.AddContinuousColumn("Score");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {});
+    AddRow(left, wxString{ "C" }, {}, {}); // no right match — excluded by inner join
+
+    AddRow(right, wxString{ "A" }, { 0 }, { 10.0 }); // Active
+    AddRow(right, wxString{ "B" }, { 1 }, { 20.0 }); // Inactive
+
+    auto leftDs = std::make_shared<const Dataset>(left);
+    auto rightDs = std::make_shared<const Dataset>(right);
+    auto out = DatasetInnerJoin::InnerJoin(leftDs, rightDs, { { "ID", "ID" } });
+
+    REQUIRE(out->GetRowCount() == 2); // C excluded
+
+    const auto statusCol = out->GetCategoricalColumn("Status");
+    REQUIRE(statusCol != out->GetCategoricalColumns().cend());
+
+    CHECK(statusCol->GetValueAsLabel(0) == L"Active");
+    CHECK(statusCol->GetValueAsLabel(1) == L"Inactive");
+    }
+
+// =============================================================================
+// LeftJoin: ID column parity tests
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Copy right ID when left has none (mirrors UniqueLast/UniqueFirst test 6)
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoin: copy right ID when left has none", "[Join][LeftJoin]")
+    {
+    Dataset left, right;
+
+    auto stKey = MakeST({ "K1", "K2" });
+    left.AddCategoricalColumn("Key", stKey);
+
+    right.GetIdColumn().SetName("RID");
+    right.AddCategoricalColumn("Key", stKey);
+    right.AddContinuousColumn("Val");
+
+    AddRow(left, std::nullopt, { 0 }, {});
+    AddRow(left, std::nullopt, { 1 }, {});
+    AddRow(right, wxString{ "r1" }, { 0 }, { 1.0 });
+    AddRow(right, wxString{ "r2" }, { 1 }, { 2.0 });
+
+    auto out = DatasetLeftJoin::LeftJoin(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "Key", "Key" } });
+
+    CHECK(out->GetIdColumn().GetName() == "RID");
+    CHECK(out->GetIdColumn().GetValue(0) == "r1");
+    CHECK(out->GetIdColumn().GetValue(1) == "r2");
+    }
+
+// -----------------------------------------------------------------------------
+// Both have IDs but not joined by them (mirrors UniqueLast/UniqueFirst test 7)
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoin: both have IDs; not joining by ID", "[Join][LeftJoin]")
+    {
+    Dataset left, right;
+
+    left.GetIdColumn().SetName("LID");
+    right.GetIdColumn().SetName("RID");
+
+    auto stKey = MakeST({ "K1", "K2" });
+    left.AddCategoricalColumn("Key", stKey);
+    right.AddCategoricalColumn("Key", stKey);
+    right.AddContinuousColumn("Val");
+
+    AddRow(left, wxString{ "L_A" }, { 0 }, {});
+    AddRow(left, wxString{ "L_B" }, { 1 }, {});
+    AddRow(right, wxString{ "R_A" }, { 0 }, { 11.0 });
+    AddRow(right, wxString{ "R_B" }, { 1 }, { 22.0 });
+
+    auto out = DatasetLeftJoin::LeftJoin(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "Key", "Key" } });
+
+    CHECK(out->GetIdColumn().GetName() == "LID");
+    CHECK(out->GetIdColumn().GetValue(0) == "L_A");
+    CHECK(out->GetIdColumn().GetValue(1) == "L_B");
+
+    auto v = out->GetContinuousColumn("Val");
+    REQUIRE(v != out->GetContinuousColumns().cend());
+    CHECK_THAT(v->GetValue(0), WithinAbs(11.0, 1e-12));
+    CHECK_THAT(v->GetValue(1), WithinAbs(22.0, 1e-12));
+    }
+
+// =============================================================================
+// Empty right dataset
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// LeftJoinUniqueLast: empty right keeps left rows; new columns all missing
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUniqueLast: empty right dataset", "[Join][LeftJoinUnique]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+    right.AddContinuousColumn("RVal");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {});
+    // right has no rows
+
+    auto out = DatasetLeftJoin::LeftJoinUniqueLast(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    REQUIRE(out->GetRowCount() == 2);
+    auto r = out->GetContinuousColumn("RVal");
+    REQUIRE(r != out->GetContinuousColumns().cend());
+    CHECK(r->IsMissingData(0));
+    CHECK(r->IsMissingData(1));
+    }
+
+// -----------------------------------------------------------------------------
+// LeftJoin: empty right keeps left rows; new columns all missing
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoin: empty right dataset", "[Join][LeftJoin]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+    right.AddContinuousColumn("RVal");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {});
+
+    auto out = DatasetLeftJoin::LeftJoin(
+        std::make_shared<const Dataset>(left),
+        std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    REQUIRE(out->GetRowCount() == 2);
+    auto r = out->GetContinuousColumn("RVal");
+    REQUIRE(r != out->GetContinuousColumns().cend());
+    CHECK(r->IsMissingData(0));
+    CHECK(r->IsMissingData(1));
+    }
+
+// -----------------------------------------------------------------------------
+// InnerJoin: empty right yields no output rows
+// -----------------------------------------------------------------------------
+TEST_CASE("InnerJoin: empty right dataset yields no output", "[Join][InnerJoin]")
+    {
+    Dataset left, right;
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+    right.AddContinuousColumn("RVal");
+
+    AddRow(left, wxString{ "A" }, {}, {});
+    AddRow(left, wxString{ "B" }, {}, {});
+
+    auto leftDs = std::make_shared<const Dataset>(left);
+    auto rightDs = std::make_shared<const Dataset>(right);
+    auto out = DatasetInnerJoin::InnerJoin(leftDs, rightDs, { { "ID", "ID" } });
+
+    CHECK(out->GetRowCount() == 0);
+    }

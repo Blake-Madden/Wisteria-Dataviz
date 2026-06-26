@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "join_inner.h"
+#include <unordered_map>
 
 namespace Wisteria::Data
     {
@@ -301,36 +302,54 @@ namespace Wisteria::Data
             outDateColsMap.emplace_back(rCol, mCol);
             }
 
-        // first pass: collect all matching (leftRow, rightRow) pairs
+        // build hash index of right dataset rows by join key
         //--------------------------
         const size_t originalRowCount = mergedData->GetRowCount();
+        std::unordered_map<std::wstring, std::vector<size_t>> rightKeyIndex;
+        rightKeyIndex.reserve(rightDataset->GetRowCount());
+        for (size_t rightRow = 0; rightRow < rightDataset->GetRowCount(); ++rightRow)
+            {
+            std::wstring rightKey;
+            if (byIdColumnsMap.first != nullptr)
+                {
+                rightKey = byIdColumnsMap.first->GetValue(rightRow).Lower().ToStdWstring();
+                }
+            for (const auto& [srcCol, outCol] : byCatColsMap)
+                {
+                if (!rightKey.empty())
+                    {
+                    rightKey += L'\x1F';
+                    }
+                rightKey += srcCol->GetValueAsLabel(rightRow).Lower().ToStdWstring();
+                }
+            rightKeyIndex[rightKey].push_back(rightRow);
+            }
+
+        // collect all matching (leftRow, rightRow) pairs using hash lookup
+        //--------------------------
         std::vector<std::pair<size_t, size_t>> matchPairs;
 
         for (size_t leftRow = 0; leftRow < originalRowCount; ++leftRow)
             {
-            for (size_t rightDataRow = 0; rightDataRow < rightDataset->GetRowCount();
-                 ++rightDataRow)
+            std::wstring leftKey;
+            if (byIdColumnsMap.second != nullptr)
                 {
-                // matching on ID columns
-                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr &&
-                    byIdColumnsMap.first->GetValue(rightDataRow)
-                            .CmpNoCase(byIdColumnsMap.second->GetValue(leftRow)) != 0)
+                leftKey = byIdColumnsMap.second->GetValue(leftRow).Lower().ToStdWstring();
+                }
+            for (const auto& [srcCol, outCol] : byCatColsMap)
+                {
+                if (!leftKey.empty())
                     {
-                    continue;
+                    leftKey += L'\x1F';
                     }
-                bool allKeysMatch{ true };
-                for (const auto& [srcCol, outCol] : byCatColsMap)
+                leftKey += outCol->GetValueAsLabel(leftRow).Lower().ToStdWstring();
+                }
+            if (const auto matchIter = rightKeyIndex.find(leftKey);
+                matchIter != rightKeyIndex.cend())
+                {
+                for (const auto rightRow : matchIter->second)
                     {
-                    if (srcCol->GetValueAsLabel(rightDataRow)
-                            .CmpNoCase(outCol->GetValueAsLabel(leftRow)) != 0)
-                        {
-                        allKeysMatch = false;
-                        break;
-                        }
-                    }
-                if (allKeysMatch)
-                    {
-                    matchPairs.emplace_back(leftRow, rightDataRow);
+                    matchPairs.emplace_back(leftRow, rightRow);
                     }
                 }
             }

@@ -7,15 +7,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "join_left.h"
+#include <unordered_map>
 
 namespace Wisteria::Data
     {
     //---------------------------------------------------
-    std::shared_ptr<Dataset>
-    DatasetLeftJoin::LeftJoinUniqueLast(const std::shared_ptr<const Dataset>& leftDataset,
-                                        const std::shared_ptr<const Dataset>& rightDataset,
-                                        const std::vector<std::pair<wxString, wxString>>& byColumns,
-                                        const wxString& suffix /*= L".x"*/)
+    DatasetLeftJoin::LeftJoinContext
+    DatasetLeftJoin::PrepareLeftJoin(const std::shared_ptr<const Dataset>& leftDataset,
+                                     const std::shared_ptr<const Dataset>& rightDataset,
+                                     const std::vector<std::pair<wxString, wxString>>& byColumns,
+                                     const wxString& suffix)
         {
         if (leftDataset == nullptr)
             {
@@ -35,25 +36,13 @@ namespace Wisteria::Data
             throw std::runtime_error(_(L"Suffix should not be empty when left joining.").ToUTF8());
             }
 
-        auto mergedData = std::make_shared<Dataset>(*leftDataset);
+        LeftJoinContext ctx;
+        ctx.mergedData = std::make_shared<Dataset>(*leftDataset);
 
-        // mapped 'by' columns between datasets (src -> output)
-        std::pair<const Column<wxString>*, const Column<wxString>*> byIdColumnsMap{ std::make_pair(
-            nullptr, nullptr) };
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnConstIterator>>
-            byCatColsMap;
-
-        // mapped input (right dataset) and output columns
-        std::pair<const Column<wxString>*, Column<wxString>*> outIdColumnsMap{ std::make_pair(
-            nullptr, nullptr) };
+        // intermediate name-to-name mappings (only needed during setup)
         std::vector<std::pair<wxString, wxString>> outCatColNamesMap;
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnIterator>>
-            outCatColsMap;
         std::vector<std::pair<wxString, wxString>> outContinuousColNamesMap;
-        std::vector<std::pair<ContinuousColumnConstIterator, ContinuousColumnIterator>>
-            outContinuousColsMap;
         std::vector<std::pair<wxString, wxString>> outDateColNamesMap;
-        std::vector<std::pair<DateColumnConstIterator, DateColumnIterator>> outDateColsMap;
 
         // verify that 'by' columns are in both datasets
         for (const auto& byColumn : byColumns)
@@ -63,7 +52,7 @@ namespace Wisteria::Data
                 {
                 throw std::runtime_error(_(L"Empty 'by' column when left joining.").ToUTF8());
                 }
-            if (!mergedData->ContainsColumn(byColumn.first))
+            if (!ctx.mergedData->ContainsColumn(byColumn.first))
                 {
                 throw std::runtime_error(
                     wxString::Format(
@@ -89,17 +78,17 @@ namespace Wisteria::Data
 
         // if right has an active ID column, left does not, and we are not joining by
         // it then add that (this would be an unlikely case)
-        if (rightDataset->HasValidIdData() && !mergedData->HasValidIdData() &&
+        if (rightDataset->HasValidIdData() && !ctx.mergedData->HasValidIdData() &&
             !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
             {
-            mergedData->GetIdColumn().SetName(rightDataset->GetIdColumn().GetName());
-            outIdColumnsMap =
-                std::make_pair(&rightDataset->GetIdColumn(), &mergedData->GetIdColumn());
+            ctx.mergedData->GetIdColumn().SetName(rightDataset->GetIdColumn().GetName());
+            ctx.outIdColumnsMap =
+                std::make_pair(&rightDataset->GetIdColumn(), &ctx.mergedData->GetIdColumn());
             }
         // If both datasets have ID columns and you are not joining by them,
         // then the one from the right will not be copied over since a dataset
         // only has one ID column. This is an odd situation, so just log a warning about it.
-        if (rightDataset->HasValidIdData() && mergedData->HasValidIdData() &&
+        if (rightDataset->HasValidIdData() && ctx.mergedData->HasValidIdData() &&
             !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
             {
             wxLogWarning(
@@ -107,11 +96,11 @@ namespace Wisteria::Data
                 rightDataset->GetIdColumn().GetName());
             }
 
-        const auto makeUniqueColumnName = [&](const wxString& colName)
+        const auto makeUniqueColumnName = [&ctx, &suffix](const wxString& colName)
         {
             wxString name = colName;
             int n{ 1 };
-            while (mergedData->ContainsColumn(name))
+            while (ctx.mergedData->ContainsColumn(name))
                 {
                 name = colName + suffix + (n == 1 ? wxString{} : wxString(std::to_wstring(n)));
                 ++n;
@@ -128,9 +117,9 @@ namespace Wisteria::Data
                 continue;
                 }
             const wxString mergeColName = makeUniqueColumnName(catCol.GetName());
-            mergedData->AddCategoricalColumn(mergeColName, catCol.GetStringTable());
-            auto newCol = mergedData->GetCategoricalColumn(mergeColName);
-            if (newCol != mergedData->GetCategoricalColumns().cend())
+            ctx.mergedData->AddCategoricalColumn(mergeColName, catCol.GetStringTable());
+            auto newCol = ctx.mergedData->GetCategoricalColumn(mergeColName);
+            if (newCol != ctx.mergedData->GetCategoricalColumns().cend())
                 {
                 newCol->FillWithMissingData();
                 }
@@ -140,9 +129,9 @@ namespace Wisteria::Data
         for (const auto& continuousCol : rightDataset->GetContinuousColumns())
             {
             const wxString mergeColName = makeUniqueColumnName(continuousCol.GetName());
-            mergedData->AddContinuousColumn(mergeColName);
-            auto newCol = mergedData->GetContinuousColumn(mergeColName);
-            if (newCol != mergedData->GetContinuousColumns().cend())
+            ctx.mergedData->AddContinuousColumn(mergeColName);
+            auto newCol = ctx.mergedData->GetContinuousColumn(mergeColName);
+            if (newCol != ctx.mergedData->GetContinuousColumns().cend())
                 {
                 newCol->FillWithMissingData();
                 }
@@ -152,9 +141,9 @@ namespace Wisteria::Data
         for (const auto& dateCol : rightDataset->GetDateColumns())
             {
             const wxString mergeColName = makeUniqueColumnName(dateCol.GetName());
-            mergedData->AddDateColumn(mergeColName);
-            auto newCol = mergedData->GetDateColumn(mergeColName);
-            if (newCol != mergedData->GetDateColumns().cend())
+            ctx.mergedData->AddDateColumn(mergeColName);
+            auto newCol = ctx.mergedData->GetDateColumn(mergeColName);
+            if (newCol != ctx.mergedData->GetDateColumns().cend())
                 {
                 newCol->FillWithMissingData();
                 }
@@ -166,12 +155,12 @@ namespace Wisteria::Data
         for (const auto& byColumn : byColumns)
             {
             // map ID columns
-            if (mergedData->GetIdColumn().GetName().CmpNoCase(byColumn.first) == 0)
+            if (ctx.mergedData->GetIdColumn().GetName().CmpNoCase(byColumn.first) == 0)
                 {
                 if (rightDataset->GetIdColumn().GetName().CmpNoCase(byColumn.second) == 0)
                     {
-                    byIdColumnsMap =
-                        std::make_pair(&rightDataset->GetIdColumn(), &mergedData->GetIdColumn());
+                    ctx.byIdColumnsMap = std::make_pair(&rightDataset->GetIdColumn(),
+                                                        &ctx.mergedData->GetIdColumn());
                     }
                 else
                     {
@@ -184,13 +173,13 @@ namespace Wisteria::Data
                     }
                 }
             // map categorical columns
-            else if (const auto mergeCatCol = mergedData->GetCategoricalColumn(byColumn.first);
-                     mergeCatCol != mergedData->GetCategoricalColumns().cend())
+            else if (const auto mergeCatCol = ctx.mergedData->GetCategoricalColumn(byColumn.first);
+                     mergeCatCol != ctx.mergedData->GetCategoricalColumns().cend())
                 {
                 if (const auto rightCatCol = rightDataset->GetCategoricalColumn(byColumn.second);
                     rightCatCol != rightDataset->GetCategoricalColumns().cend())
                     {
-                    byCatColsMap.emplace_back(rightCatCol, mergeCatCol);
+                    ctx.byCatColsMap.emplace_back(rightCatCol, mergeCatCol);
                     }
                 else
                     {
@@ -230,11 +219,11 @@ namespace Wisteria::Data
                         srcCol)
                         .ToUTF8());
                 }
-            const auto mCol = mergedData->GetCategoricalColumn(outCol);
+            const auto mCol = ctx.mergedData->GetCategoricalColumn(outCol);
             // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetCategoricalColumns().cend(),
+            wxASSERT_MSG(mCol != ctx.mergedData->GetCategoricalColumns().cend(),
                          L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetCategoricalColumns().cend())
+            if (mCol == ctx.mergedData->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(
                     wxString::Format(
@@ -242,7 +231,7 @@ namespace Wisteria::Data
                         outCol)
                         .ToUTF8());
                 }
-            outCatColsMap.emplace_back(rCol, mCol);
+            ctx.outCatColsMap.emplace_back(rCol, mCol);
             }
         for (const auto& [srcCol, outCol] : outContinuousColNamesMap)
             {
@@ -258,11 +247,11 @@ namespace Wisteria::Data
                         srcCol)
                         .ToUTF8());
                 }
-            const auto mCol = mergedData->GetContinuousColumn(outCol);
+            const auto mCol = ctx.mergedData->GetContinuousColumn(outCol);
             // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetContinuousColumns().cend(),
+            wxASSERT_MSG(mCol != ctx.mergedData->GetContinuousColumns().cend(),
                          L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetContinuousColumns().cend())
+            if (mCol == ctx.mergedData->GetContinuousColumns().cend())
                 {
                 throw std::runtime_error(
                     wxString::Format(
@@ -270,7 +259,7 @@ namespace Wisteria::Data
                         outCol)
                         .ToUTF8());
                 }
-            outContinuousColsMap.emplace_back(rCol, mCol);
+            ctx.outContinuousColsMap.emplace_back(rCol, mCol);
             }
         for (const auto& [srcCol, outCol] : outDateColNamesMap)
             {
@@ -286,11 +275,11 @@ namespace Wisteria::Data
                         srcCol)
                         .ToUTF8());
                 }
-            const auto mCol = mergedData->GetDateColumn(outCol);
+            const auto mCol = ctx.mergedData->GetDateColumn(outCol);
             // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetDateColumns().cend(),
+            wxASSERT_MSG(mCol != ctx.mergedData->GetDateColumns().cend(),
                          L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetDateColumns().cend())
+            if (mCol == ctx.mergedData->GetDateColumns().cend())
                 {
                 throw std::runtime_error(
                     wxString::Format(
@@ -298,53 +287,87 @@ namespace Wisteria::Data
                         outCol)
                         .ToUTF8());
                 }
-            outDateColsMap.emplace_back(rCol, mCol);
+            ctx.outDateColsMap.emplace_back(rCol, mCol);
             }
 
-        // merge the data
+        ctx.rightDataset = rightDataset;
+        return ctx;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Dataset>
+    DatasetLeftJoin::LeftJoinUniqueLast(const std::shared_ptr<const Dataset>& leftDataset,
+                                        const std::shared_ptr<const Dataset>& rightDataset,
+                                        const std::vector<std::pair<wxString, wxString>>& byColumns,
+                                        const wxString& suffix /*= L".x"*/)
+        {
+        auto ctx = PrepareLeftJoin(leftDataset, rightDataset, byColumns, suffix);
+        auto& [mergedData, byIdColumnsMap, byCatColsMap, outIdColumnsMap, outCatColsMap,
+               outContinuousColsMap, outDateColsMap, rightDs] = ctx;
+
+        // merge the data using hash-based lookup
         //--------------------------
-        wxString currentKeyInfo;
-        bool warningLogged{ false };
-        for (size_t rightDataRow = 0; rightDataRow < rightDataset->GetRowCount(); ++rightDataRow)
+        // build hash index of left/merged dataset rows by join key
+        std::unordered_map<std::wstring, std::vector<size_t>> leftKeyIndex;
+        leftKeyIndex.reserve(mergedData->GetRowCount());
+        for (size_t mergeRow = 0; mergeRow < mergedData->GetRowCount(); ++mergeRow)
             {
-            for (size_t mergeRow = 0; mergeRow < mergedData->GetRowCount(); ++mergeRow)
+            std::wstring leftKey;
+            if (byIdColumnsMap.second != nullptr)
                 {
-                currentKeyInfo.clear();
-                warningLogged = false;
-                // matching on ID columns
-                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr &&
-                    byIdColumnsMap.first->GetValue(rightDataRow)
-                            .CmpNoCase(byIdColumnsMap.second->GetValue(mergeRow)) != 0)
+                leftKey = byIdColumnsMap.second->GetValue(mergeRow).Lower().ToStdWstring();
+                }
+            for (const auto& [srcCol, outCol] : byCatColsMap)
+                {
+                if (!leftKey.empty())
                     {
-                    continue;
+                    leftKey += L'\x1F';
                     }
-                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr)
+                leftKey += outCol->GetValueAsLabel(mergeRow).Lower().ToStdWstring();
+                }
+            leftKeyIndex[leftKey].push_back(mergeRow);
+            }
+
+        for (size_t rightDataRow = 0; rightDataRow < rightDs->GetRowCount(); ++rightDataRow)
+            {
+            // build key from right dataset
+            std::wstring rightKey;
+            if (byIdColumnsMap.first != nullptr)
+                {
+                rightKey = byIdColumnsMap.first->GetValue(rightDataRow).Lower().ToStdWstring();
+                }
+            for (const auto& [srcCol, outCol] : byCatColsMap)
+                {
+                if (!rightKey.empty())
+                    {
+                    rightKey += L'\x1F';
+                    }
+                rightKey += srcCol->GetValueAsLabel(rightDataRow).Lower().ToStdWstring();
+                }
+            if (const auto matchIter = leftKeyIndex.find(rightKey);
+                matchIter != leftKeyIndex.cend())
+                {
+                // build key info string for warning messages
+                wxString currentKeyInfo;
+                if (byIdColumnsMap.first != nullptr)
                     {
                     currentKeyInfo.append(byIdColumnsMap.first->GetName())
                         .append(L": ")
                         .append(byIdColumnsMap.first->GetValue(rightDataRow));
                     }
-                bool allKeysMatch{ true };
-                // compare all categorical keys and bail if any that don't match
                 for (const auto& [srcCol, outCol] : byCatColsMap)
                     {
-                    const auto srcStr = srcCol->GetValueAsLabel(rightDataRow);
-                    if (srcStr.CmpNoCase(outCol->GetValueAsLabel(mergeRow)) != 0)
-                        {
-                        allKeysMatch = false;
-                        break;
-                        }
                     currentKeyInfo.append(L", ")
                         .append(srcCol->GetName())
                         .append(L": ")
-                        .append(srcStr);
+                        .append(srcCol->GetValueAsLabel(rightDataRow));
                     }
                 if (currentKeyInfo.starts_with(L", "))
                     {
                     currentKeyInfo.erase(0, 2);
                     }
-                // we have a match, so copy over data
-                if (allKeysMatch)
+                bool warningLogged{ false };
+                for (const auto mergeRow : matchIter->second)
                     {
                     if (outIdColumnsMap.first != nullptr && outIdColumnsMap.second != nullptr)
                         {
@@ -418,331 +441,72 @@ namespace Wisteria::Data
         const std::vector<std::pair<wxString, wxString>>& byColumns,
         const wxString& suffix /*= L".x"*/)
         {
-        if (leftDataset == nullptr)
-            {
-            throw std::runtime_error(_(L"Invalid left dataset when left joining.").ToUTF8());
-            }
-        if (rightDataset == nullptr)
-            {
-            throw std::runtime_error(_(L"Invalid right dataset when left joining.").ToUTF8());
-            }
-        if (byColumns.empty())
-            {
-            throw std::runtime_error(
-                _(L"No comparison columns were provided when left joining.").ToUTF8());
-            }
-        if (suffix.empty())
-            {
-            throw std::runtime_error(_(L"Suffix should not be empty when left joining.").ToUTF8());
-            }
+        auto ctx = PrepareLeftJoin(leftDataset, rightDataset, byColumns, suffix);
+        auto& [mergedData, byIdColumnsMap, byCatColsMap, outIdColumnsMap, outCatColsMap,
+               outContinuousColsMap, outDateColsMap, rightDs] = ctx;
 
-        auto mergedData = std::make_shared<Dataset>(*leftDataset);
-
-        // mapped 'by' columns between datasets (src -> output)
-        std::pair<const Column<wxString>*, const Column<wxString>*> byIdColumnsMap{ std::make_pair(
-            nullptr, nullptr) };
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnConstIterator>>
-            byCatColsMap;
-
-        // mapped input (right dataset) and output columns
-        std::pair<const Column<wxString>*, Column<wxString>*> outIdColumnsMap{ std::make_pair(
-            nullptr, nullptr) };
-        std::vector<std::pair<wxString, wxString>> outCatColNamesMap;
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnIterator>>
-            outCatColsMap;
-        std::vector<std::pair<wxString, wxString>> outContinuousColNamesMap;
-        std::vector<std::pair<ContinuousColumnConstIterator, ContinuousColumnIterator>>
-            outContinuousColsMap;
-        std::vector<std::pair<wxString, wxString>> outDateColNamesMap;
-        std::vector<std::pair<DateColumnConstIterator, DateColumnIterator>> outDateColsMap;
-
-        // verify that 'by' columns are in both datasets
-        for (const auto& byColumn : byColumns)
-            {
-            // general column checks
-            if (byColumn.first.empty() || byColumn.second.empty())
-                {
-                throw std::runtime_error(_(L"Empty 'by' column when left joining.").ToUTF8());
-                }
-            if (!mergedData->ContainsColumn(byColumn.first))
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': column not found in left dataset when left joining."),
-                        byColumn.first)
-                        .ToUTF8());
-                }
-            if (!rightDataset->ContainsColumn(byColumn.second))
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': column not found in right dataset when left joining."),
-                        byColumn.second)
-                        .ToUTF8());
-                }
-            }
-
-        // prepare the fused dataset with non-join columns from the right dataset
+        // merge the data using hash-based lookup
         //--------------------------
-        std::set<wxString, wxStringLessNoCase> rightColumnsToJoinBy;
-        std::ranges::for_each(byColumns,
-                              [&](const auto& val) { rightColumnsToJoinBy.insert(val.second); });
-
-        // if right has an active ID column, left does not, and we are not joining by
-        // it then add that (this would be an unlikely case)
-        if (rightDataset->HasValidIdData() && !mergedData->HasValidIdData() &&
-            !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
+        // build hash index of left/merged dataset rows by join key
+        std::unordered_map<std::wstring, std::vector<size_t>> leftKeyIndex;
+        leftKeyIndex.reserve(mergedData->GetRowCount());
+        for (size_t mergeRow = 0; mergeRow < mergedData->GetRowCount(); ++mergeRow)
             {
-            mergedData->GetIdColumn().SetName(rightDataset->GetIdColumn().GetName());
-            outIdColumnsMap =
-                std::make_pair(&rightDataset->GetIdColumn(), &mergedData->GetIdColumn());
-            }
-        // If both datasets have ID columns and you are not joining by them,
-        // then the one from the right will not be copied over since a dataset
-        // only has one ID column. This is an odd situation, so just log a warning about it.
-        if (rightDataset->HasValidIdData() && mergedData->HasValidIdData() &&
-            !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
-            {
-            wxLogWarning(
-                L"'%s': ID column from right dataset will not be copied while left joining.",
-                rightDataset->GetIdColumn().GetName());
-            }
-
-        const auto makeUniqueColumnName = [&](const wxString& colName)
-        {
-            wxString name = colName;
-            int n{ 1 };
-            while (mergedData->ContainsColumn(name))
+            std::wstring leftKey;
+            if (byIdColumnsMap.second != nullptr)
                 {
-                name = colName + suffix + (n == 1 ? wxString{} : wxString(std::to_wstring(n)));
-                ++n;
+                leftKey = byIdColumnsMap.second->GetValue(mergeRow).Lower().ToStdWstring();
                 }
-            return name;
-        };
-
-        // add categoricals
-        for (const auto& catCol : rightDataset->GetCategoricalColumns())
-            {
-            // if cat column is a join key, then we won't be adding that
-            if (rightColumnsToJoinBy.contains(catCol.GetName()))
+            for (const auto& [srcCol, outCol] : byCatColsMap)
                 {
-                continue;
-                }
-            const wxString mergeColName = makeUniqueColumnName(catCol.GetName());
-            mergedData->AddCategoricalColumn(mergeColName, catCol.GetStringTable());
-            auto newCol = mergedData->GetCategoricalColumn(mergeColName);
-            if (newCol != mergedData->GetCategoricalColumns().cend())
-                {
-                newCol->FillWithMissingData();
-                }
-            outCatColNamesMap.emplace_back(catCol.GetName(), mergeColName);
-            }
-        // add continuous
-        for (const auto& continuousCol : rightDataset->GetContinuousColumns())
-            {
-            const wxString mergeColName = makeUniqueColumnName(continuousCol.GetName());
-            mergedData->AddContinuousColumn(mergeColName);
-            auto newCol = mergedData->GetContinuousColumn(mergeColName);
-            if (newCol != mergedData->GetContinuousColumns().cend())
-                {
-                newCol->FillWithMissingData();
-                }
-            outContinuousColNamesMap.emplace_back(continuousCol.GetName(), mergeColName);
-            }
-        // add datetime
-        for (const auto& dateCol : rightDataset->GetDateColumns())
-            {
-            const wxString mergeColName = makeUniqueColumnName(dateCol.GetName());
-            mergedData->AddDateColumn(mergeColName);
-            auto newCol = mergedData->GetDateColumn(mergeColName);
-            if (newCol != mergedData->GetDateColumns().cend())
-                {
-                newCol->FillWithMissingData();
-                }
-            outDateColNamesMap.emplace_back(dateCol.GetName(), mergeColName);
-            }
-
-        // map the 'by' columns
-        //--------------------------
-        for (const auto& byColumn : byColumns)
-            {
-            // map ID columns
-            if (mergedData->GetIdColumn().GetName().CmpNoCase(byColumn.first) == 0)
-                {
-                if (rightDataset->GetIdColumn().GetName().CmpNoCase(byColumn.second) == 0)
+                if (!leftKey.empty())
                     {
-                    byIdColumnsMap =
-                        std::make_pair(&rightDataset->GetIdColumn(), &mergedData->GetIdColumn());
+                    leftKey += L'\x1F';
                     }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(
-                            _(L"Left joining by ID columns, but '%s' is not the ID column "
-                              "in the right dataset."),
-                            byColumn.second)
-                            .ToUTF8());
-                    }
+                leftKey += outCol->GetValueAsLabel(mergeRow).Lower().ToStdWstring();
                 }
-            // map categorical columns
-            else if (const auto mergeCatCol = mergedData->GetCategoricalColumn(byColumn.first);
-                     mergeCatCol != mergedData->GetCategoricalColumns().cend())
-                {
-                if (const auto rightCatCol = rightDataset->GetCategoricalColumn(byColumn.second);
-                    rightCatCol != rightDataset->GetCategoricalColumns().cend())
-                    {
-                    byCatColsMap.emplace_back(rightCatCol, mergeCatCol);
-                    }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(
-                            _(L"'%s': categorical column not found in right dataset when left "
-                              "joining. 'By' columns must be either ID or categorical columns."),
-                            byColumn.second)
-                            .ToUTF8());
-                    }
-                }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': categorical column not found in left dataset when left joining. "
-                          "'By' columns must be either ID or categorical columns."),
-                        byColumn.first)
-                        .ToUTF8());
-                }
+            leftKeyIndex[leftKey].push_back(mergeRow);
             }
 
-        // map the right (source) columns with the out columns
-        //--------------------------
-        for (const auto& [srcCol, outCol] : outCatColNamesMap)
+        for (size_t rightDataRow = 0; rightDataRow < rightDs->GetRowCount(); ++rightDataRow)
             {
-            const auto rCol = rightDataset->GetCategoricalColumn(srcCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(rCol != rightDataset->GetCategoricalColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (rCol == rightDataset->GetCategoricalColumns().cend())
+            // build key from right dataset
+            std::wstring rightKey;
+            if (byIdColumnsMap.first != nullptr)
                 {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding right dataset column when left joining."),
-                        srcCol)
-                        .ToUTF8());
+                rightKey = byIdColumnsMap.first->GetValue(rightDataRow).Lower().ToStdWstring();
                 }
-            const auto mCol = mergedData->GetCategoricalColumn(outCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetCategoricalColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetCategoricalColumns().cend())
+            for (const auto& [srcCol, outCol] : byCatColsMap)
                 {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding merge dataset column when left joining."),
-                        outCol)
-                        .ToUTF8());
-                }
-            outCatColsMap.emplace_back(rCol, mCol);
-            }
-        for (const auto& [srcCol, outCol] : outContinuousColNamesMap)
-            {
-            const auto rCol = rightDataset->GetContinuousColumn(srcCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(rCol != rightDataset->GetContinuousColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (rCol == rightDataset->GetContinuousColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding right dataset column when left joining."),
-                        srcCol)
-                        .ToUTF8());
-                }
-            const auto mCol = mergedData->GetContinuousColumn(outCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetContinuousColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetContinuousColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding merge dataset column when left joining."),
-                        outCol)
-                        .ToUTF8());
-                }
-            outContinuousColsMap.emplace_back(rCol, mCol);
-            }
-        for (const auto& [srcCol, outCol] : outDateColNamesMap)
-            {
-            const auto rCol = rightDataset->GetDateColumn(srcCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(rCol != rightDataset->GetDateColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (rCol == rightDataset->GetDateColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding right dataset column when left joining."),
-                        srcCol)
-                        .ToUTF8());
-                }
-            const auto mCol = mergedData->GetDateColumn(outCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetDateColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetDateColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding merge dataset column when left joining."),
-                        outCol)
-                        .ToUTF8());
-                }
-            outDateColsMap.emplace_back(rCol, mCol);
-            }
-
-        // merge the data
-        //--------------------------
-        wxString currentKeyInfo;
-        for (size_t rightDataRow = 0; rightDataRow < rightDataset->GetRowCount(); ++rightDataRow)
-            {
-            for (size_t mergeRow = 0; mergeRow < mergedData->GetRowCount(); ++mergeRow)
-                {
-                currentKeyInfo.clear();
-                // matching on ID columns
-                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr &&
-                    byIdColumnsMap.first->GetValue(rightDataRow)
-                            .CmpNoCase(byIdColumnsMap.second->GetValue(mergeRow)) != 0)
+                if (!rightKey.empty())
                     {
-                    continue;
+                    rightKey += L'\x1F';
                     }
-                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr)
+                rightKey += srcCol->GetValueAsLabel(rightDataRow).Lower().ToStdWstring();
+                }
+            if (const auto matchIter = leftKeyIndex.find(rightKey);
+                matchIter != leftKeyIndex.cend())
+                {
+                // build key info string for warning messages
+                wxString currentKeyInfo;
+                if (byIdColumnsMap.first != nullptr)
                     {
                     currentKeyInfo.append(byIdColumnsMap.first->GetName())
                         .append(L": ")
                         .append(byIdColumnsMap.first->GetValue(rightDataRow));
                     }
-                bool allKeysMatch{ true };
-                // compare all categorical keys and bail if any don't match
                 for (const auto& [srcCol, outCol] : byCatColsMap)
                     {
-                    const auto srcStr = srcCol->GetValueAsLabel(rightDataRow);
-                    if (srcStr.CmpNoCase(outCol->GetValueAsLabel(mergeRow)) != 0)
-                        {
-                        allKeysMatch = false;
-                        break;
-                        }
                     currentKeyInfo.append(L", ")
                         .append(srcCol->GetName())
                         .append(L": ")
-                        .append(srcStr);
+                        .append(srcCol->GetValueAsLabel(rightDataRow));
                     }
                 if (currentKeyInfo.starts_with(L", "))
                     {
                     currentKeyInfo.erase(0, 2);
                     }
-                // we have a match, so copy over data only if not already filled
-                if (allKeysMatch)
+                for (const auto mergeRow : matchIter->second)
                     {
                     // check if this merge row already has data from a prior match
                     bool alreadyFilled{ false };
@@ -827,319 +591,56 @@ namespace Wisteria::Data
                               const std::vector<std::pair<wxString, wxString>>& byColumns,
                               const wxString& suffix /*= L".x"*/)
         {
-        if (leftDataset == nullptr)
-            {
-            throw std::runtime_error(_(L"Invalid left dataset when left joining.").ToUTF8());
-            }
-        if (rightDataset == nullptr)
-            {
-            throw std::runtime_error(_(L"Invalid right dataset when left joining.").ToUTF8());
-            }
-        if (byColumns.empty())
-            {
-            throw std::runtime_error(
-                _(L"No comparison columns were provided when left joining.").ToUTF8());
-            }
-        if (suffix.empty())
-            {
-            throw std::runtime_error(_(L"Suffix should not be empty when left joining.").ToUTF8());
-            }
+        auto ctx = PrepareLeftJoin(leftDataset, rightDataset, byColumns, suffix);
+        auto& [mergedData, byIdColumnsMap, byCatColsMap, outIdColumnsMap, outCatColsMap,
+               outContinuousColsMap, outDateColsMap, rightDs] = ctx;
 
-        auto mergedData = std::make_shared<Dataset>(*leftDataset);
-
-        // mapped 'by' columns between datasets (src -> output)
-        std::pair<const Column<wxString>*, const Column<wxString>*> byIdColumnsMap{ std::make_pair(
-            nullptr, nullptr) };
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnConstIterator>>
-            byCatColsMap;
-
-        // mapped input (right dataset) and output columns
-        std::pair<const Column<wxString>*, Column<wxString>*> outIdColumnsMap{ std::make_pair(
-            nullptr, nullptr) };
-        std::vector<std::pair<wxString, wxString>> outCatColNamesMap;
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnIterator>>
-            outCatColsMap;
-        std::vector<std::pair<wxString, wxString>> outContinuousColNamesMap;
-        std::vector<std::pair<ContinuousColumnConstIterator, ContinuousColumnIterator>>
-            outContinuousColsMap;
-        std::vector<std::pair<wxString, wxString>> outDateColNamesMap;
-        std::vector<std::pair<DateColumnConstIterator, DateColumnIterator>> outDateColsMap;
-
-        // verify that 'by' columns are in both datasets
-        for (const auto& byColumn : byColumns)
-            {
-            // general column checks
-            if (byColumn.first.empty() || byColumn.second.empty())
-                {
-                throw std::runtime_error(_(L"Empty 'by' column when left joining.").ToUTF8());
-                }
-            if (!mergedData->ContainsColumn(byColumn.first))
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': column not found in left dataset when left joining."),
-                        byColumn.first)
-                        .ToUTF8());
-                }
-            if (!rightDataset->ContainsColumn(byColumn.second))
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': column not found in right dataset when left joining."),
-                        byColumn.second)
-                        .ToUTF8());
-                }
-            }
-
-        // prepare the fused dataset with non-join columns from the right dataset
-        //--------------------------
-        std::set<wxString, wxStringLessNoCase> rightColumnsToJoinBy;
-        std::ranges::for_each(byColumns,
-                              [&](const auto& val) { rightColumnsToJoinBy.insert(val.second); });
-
-        // if right has an active ID column, left does not, and we are not joining by
-        // it then add that (this would be an unlikely case)
-        if (rightDataset->HasValidIdData() && !mergedData->HasValidIdData() &&
-            !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
-            {
-            mergedData->GetIdColumn().SetName(rightDataset->GetIdColumn().GetName());
-            outIdColumnsMap =
-                std::make_pair(&rightDataset->GetIdColumn(), &mergedData->GetIdColumn());
-            }
-        // If both datasets have ID columns and you are not joining by them,
-        // then the one from the right will not be copied over since a dataset
-        // only has one ID column. This is an odd situation, so just log a warning about it.
-        if (rightDataset->HasValidIdData() && mergedData->HasValidIdData() &&
-            !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
-            {
-            wxLogWarning(
-                L"'%s': ID column from right dataset will not be copied while left joining.",
-                rightDataset->GetIdColumn().GetName());
-            }
-
-        const auto makeUniqueColumnName = [&](const wxString& colName)
-        {
-            wxString name = colName;
-            int n{ 1 };
-            while (mergedData->ContainsColumn(name))
-                {
-                name = colName + suffix + (n == 1 ? wxString{} : wxString(std::to_wstring(n)));
-                ++n;
-                }
-            return name;
-        };
-
-        // add categoricals
-        for (const auto& catCol : rightDataset->GetCategoricalColumns())
-            {
-            // if cat column is a join key, then we won't be adding that
-            if (rightColumnsToJoinBy.contains(catCol.GetName()))
-                {
-                continue;
-                }
-            const wxString mergeColName = makeUniqueColumnName(catCol.GetName());
-            mergedData->AddCategoricalColumn(mergeColName, catCol.GetStringTable());
-            auto newCol = mergedData->GetCategoricalColumn(mergeColName);
-            if (newCol != mergedData->GetCategoricalColumns().cend())
-                {
-                newCol->FillWithMissingData();
-                }
-            outCatColNamesMap.emplace_back(catCol.GetName(), mergeColName);
-            }
-        // add continuous
-        for (const auto& continuousCol : rightDataset->GetContinuousColumns())
-            {
-            const wxString mergeColName = makeUniqueColumnName(continuousCol.GetName());
-            mergedData->AddContinuousColumn(mergeColName);
-            auto newCol = mergedData->GetContinuousColumn(mergeColName);
-            if (newCol != mergedData->GetContinuousColumns().cend())
-                {
-                newCol->FillWithMissingData();
-                }
-            outContinuousColNamesMap.emplace_back(continuousCol.GetName(), mergeColName);
-            }
-        // add datetime
-        for (const auto& dateCol : rightDataset->GetDateColumns())
-            {
-            const wxString mergeColName = makeUniqueColumnName(dateCol.GetName());
-            mergedData->AddDateColumn(mergeColName);
-            auto newCol = mergedData->GetDateColumn(mergeColName);
-            if (newCol != mergedData->GetDateColumns().cend())
-                {
-                newCol->FillWithMissingData();
-                }
-            outDateColNamesMap.emplace_back(dateCol.GetName(), mergeColName);
-            }
-
-        // map the 'by' columns
-        //--------------------------
-        for (const auto& byColumn : byColumns)
-            {
-            // map ID columns
-            if (mergedData->GetIdColumn().GetName().CmpNoCase(byColumn.first) == 0)
-                {
-                if (rightDataset->GetIdColumn().GetName().CmpNoCase(byColumn.second) == 0)
-                    {
-                    byIdColumnsMap =
-                        std::make_pair(&rightDataset->GetIdColumn(), &mergedData->GetIdColumn());
-                    }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(
-                            _(L"Left joining by ID columns, but '%s' is not the ID column "
-                              "in the right dataset."),
-                            byColumn.second)
-                            .ToUTF8());
-                    }
-                }
-            // map categorical columns
-            else if (const auto mergeCatCol = mergedData->GetCategoricalColumn(byColumn.first);
-                     mergeCatCol != mergedData->GetCategoricalColumns().cend())
-                {
-                if (const auto rightCatCol = rightDataset->GetCategoricalColumn(byColumn.second);
-                    rightCatCol != rightDataset->GetCategoricalColumns().cend())
-                    {
-                    byCatColsMap.emplace_back(rightCatCol, mergeCatCol);
-                    }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(
-                            _(L"'%s': categorical column not found in right dataset when left "
-                              "joining. 'By' columns must be either ID or categorical columns."),
-                            byColumn.second)
-                            .ToUTF8());
-                    }
-                }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': categorical column not found in left dataset when left joining. "
-                          "'By' columns must be either ID or categorical columns."),
-                        byColumn.first)
-                        .ToUTF8());
-                }
-            }
-
-        // map the right (source) columns with the out columns
-        //--------------------------
-        for (const auto& [srcCol, outCol] : outCatColNamesMap)
-            {
-            const auto rCol = rightDataset->GetCategoricalColumn(srcCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(rCol != rightDataset->GetCategoricalColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (rCol == rightDataset->GetCategoricalColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding right dataset column when left joining."),
-                        srcCol)
-                        .ToUTF8());
-                }
-            const auto mCol = mergedData->GetCategoricalColumn(outCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetCategoricalColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetCategoricalColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding merge dataset column when left joining."),
-                        outCol)
-                        .ToUTF8());
-                }
-            outCatColsMap.emplace_back(rCol, mCol);
-            }
-        for (const auto& [srcCol, outCol] : outContinuousColNamesMap)
-            {
-            const auto rCol = rightDataset->GetContinuousColumn(srcCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(rCol != rightDataset->GetContinuousColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (rCol == rightDataset->GetContinuousColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding right dataset column when left joining."),
-                        srcCol)
-                        .ToUTF8());
-                }
-            const auto mCol = mergedData->GetContinuousColumn(outCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetContinuousColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetContinuousColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding merge dataset column when left joining."),
-                        outCol)
-                        .ToUTF8());
-                }
-            outContinuousColsMap.emplace_back(rCol, mCol);
-            }
-        for (const auto& [srcCol, outCol] : outDateColNamesMap)
-            {
-            const auto rCol = rightDataset->GetDateColumn(srcCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(rCol != rightDataset->GetDateColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (rCol == rightDataset->GetDateColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding right dataset column when left joining."),
-                        srcCol)
-                        .ToUTF8());
-                }
-            const auto mCol = mergedData->GetDateColumn(outCol);
-            // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(mCol != mergedData->GetDateColumns().cend(),
-                         L"Error getting mapped right dataset column!");
-            if (mCol == mergedData->GetDateColumns().cend())
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"'%s': internal error finding merge dataset column when left joining."),
-                        outCol)
-                        .ToUTF8());
-                }
-            outDateColsMap.emplace_back(rCol, mCol);
-            }
-
-        // first pass: collect matching right rows for each left row
+        // first pass: collect matching right rows for each left row using hash-based lookup
         //--------------------------
         const size_t originalRowCount = mergedData->GetRowCount();
         std::vector<std::vector<size_t>> matchesPerLeftRow(originalRowCount);
 
-        for (size_t rightDataRow = 0; rightDataRow < rightDataset->GetRowCount(); ++rightDataRow)
+        // build hash index of right dataset rows by join key
+        std::unordered_map<std::wstring, std::vector<size_t>> rightKeyIndex;
+        rightKeyIndex.reserve(rightDs->GetRowCount());
+        for (size_t rightDataRow = 0; rightDataRow < rightDs->GetRowCount(); ++rightDataRow)
             {
-            for (size_t leftRow = 0; leftRow < originalRowCount; ++leftRow)
+            std::wstring rightKey;
+            if (byIdColumnsMap.first != nullptr)
                 {
-                // matching on ID columns
-                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr &&
-                    byIdColumnsMap.first->GetValue(rightDataRow)
-                            .CmpNoCase(byIdColumnsMap.second->GetValue(leftRow)) != 0)
+                rightKey = byIdColumnsMap.first->GetValue(rightDataRow).Lower().ToStdWstring();
+                }
+            for (const auto& [srcCol, outCol] : byCatColsMap)
+                {
+                if (!rightKey.empty())
                     {
-                    continue;
+                    rightKey += L'\x1F';
                     }
-                bool allKeysMatch{ true };
-                for (const auto& [srcCol, outCol] : byCatColsMap)
+                rightKey += srcCol->GetValueAsLabel(rightDataRow).Lower().ToStdWstring();
+                }
+            rightKeyIndex[rightKey].push_back(rightDataRow);
+            }
+
+        // for each left row, find matching right rows via hash lookup
+        for (size_t leftRow = 0; leftRow < originalRowCount; ++leftRow)
+            {
+            std::wstring leftKey;
+            if (byIdColumnsMap.second != nullptr)
+                {
+                leftKey = byIdColumnsMap.second->GetValue(leftRow).Lower().ToStdWstring();
+                }
+            for (const auto& [srcCol, outCol] : byCatColsMap)
+                {
+                if (!leftKey.empty())
                     {
-                    if (srcCol->GetValueAsLabel(rightDataRow)
-                            .CmpNoCase(outCol->GetValueAsLabel(leftRow)) != 0)
-                        {
-                        allKeysMatch = false;
-                        break;
-                        }
+                    leftKey += L'\x1F';
                     }
-                if (allKeysMatch)
-                    {
-                    matchesPerLeftRow[leftRow].push_back(rightDataRow);
-                    }
+                leftKey += outCol->GetValueAsLabel(leftRow).Lower().ToStdWstring();
+                }
+            if (const auto matchIter = rightKeyIndex.find(leftKey);
+                matchIter != rightKeyIndex.cend())
+                {
+                matchesPerLeftRow[leftRow] = matchIter->second;
                 }
             }
 

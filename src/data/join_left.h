@@ -28,6 +28,43 @@ namespace Wisteria::Data
         DatasetLeftJoin& operator=(const DatasetLeftJoin&) = delete;
         /// @private
         virtual ~DatasetLeftJoin() = default;
+
+      private:
+        /// @brief Holds the column mappings and merged dataset produced by setup code
+        ///     shared across all left join variants.
+        struct LeftJoinContext
+            {
+            std::shared_ptr<Dataset> mergedData;
+            std::pair<const Column<wxString>*, const Column<wxString>*> byIdColumnsMap{
+                std::make_pair(nullptr, nullptr)
+            };
+            std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnConstIterator>>
+                byCatColsMap;
+            std::pair<const Column<wxString>*, Column<wxString>*> outIdColumnsMap{ std::make_pair(
+                nullptr, nullptr) };
+            std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnIterator>>
+                outCatColsMap;
+            std::vector<std::pair<ContinuousColumnConstIterator, ContinuousColumnIterator>>
+                outContinuousColsMap;
+            std::vector<std::pair<DateColumnConstIterator, DateColumnIterator>> outDateColsMap;
+            std::shared_ptr<const Dataset> rightDataset;
+            };
+
+        /// @brief Performs parameter validation, column setup, and mapping for a left join.
+        /// @param leftDataset The left dataset.
+        /// @param rightDataset The right dataset.
+        /// @param byColumns The column pairs to join on.
+        /// @param suffix Suffix for disambiguating duplicate column names.
+        /// @returns The context containing the merged dataset and all column mappings.
+        /// @throws std::runtime_error If invalid columns or dataset are provided.
+        [[nodiscard]]
+        static LeftJoinContext
+        PrepareLeftJoin(const std::shared_ptr<const Dataset>& leftDataset,
+                        const std::shared_ptr<const Dataset>& rightDataset,
+                        const std::vector<std::pair<wxString, wxString>>& byColumns,
+                        const wxString& suffix);
+
+      public:
         /** @brief Left joins one dataset with another.\n
                 If a key in the left dataset has one-to-many matching keys in the right
                 dataset, only the data from the last matching right row will be used.
