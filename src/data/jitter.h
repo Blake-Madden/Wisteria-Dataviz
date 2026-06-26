@@ -144,32 +144,14 @@ namespace Wisteria::Data
                 return false;
                 }
 
-            if (m_dominantAxis == AxisType::LeftYAxis || m_dominantAxis == AxisType::RightYAxis)
-                {
-                const auto plottedPointInfo = m_plottedPoints.insert(point.y);
-                // only jitter if there is already another point on the axis line
-                if (plottedPointInfo->second > 1)
-                    {
-                    // if an even number of points, jitter to the left
-                    point.x +=
-                        is_even(plottedPointInfo->second) ?
-                            -static_cast<wxCoord>(
-                                safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
-                                                   1, m_numberOfPointsOnEachSide)) :
-                            // or to the right if odd
-                            static_cast<wxCoord>(
-                                safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
-                                                   1, m_numberOfPointsOnEachSide));
-                    return true;
-                    }
-                return false;
-                }
-            const auto plottedPointInfo = m_plottedPoints.insert(point.x);
+            const bool isVerticalDominant =
+                (m_dominantAxis == AxisType::LeftYAxis || m_dominantAxis == AxisType::RightYAxis);
+            const auto plottedPointInfo =
+                m_plottedPoints.insert(isVerticalDominant ? point.y : point.x);
+            // only jitter if there is already another point on the axis line
             if (plottedPointInfo->second > 1)
                 {
-                point.y +=
+                const wxCoord offset =
                     is_even(plottedPointInfo->second) ?
                         -static_cast<wxCoord>(
                             safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
@@ -179,6 +161,14 @@ namespace Wisteria::Data
                             safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
                             std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2), 1,
                                                m_numberOfPointsOnEachSide));
+                if (isVerticalDominant)
+                    {
+                    point.x += offset;
+                    }
+                else
+                    {
+                    point.y += offset;
+                    }
                 return true;
                 }
             return false;
