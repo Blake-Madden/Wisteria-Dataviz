@@ -380,7 +380,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                     std::make_pair(pts[9].x, pts[9].y));
                             pts[7] = GraphItems::Polygon::PairToPoint(
                                 std::make_pair(bottomMidPointX, bottomMidPointY));
-                            pts[6] = isTopUpward ?
+                            pts[6] = isBottomUpward ?
                                          GraphItems::Polygon::PairToPoint(
                                              geometry::middle_point_horizontal_upward_spline(
                                                  GraphItems::Polygon::PointToPair(pts[5]),
@@ -389,7 +389,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                              geometry::middle_point_horizontal_downward_spline(
                                                  GraphItems::Polygon::PointToPair(pts[5]),
                                                  GraphItems::Polygon::PointToPair(pts[7])));
-                            pts[8] = isTopUpward ?
+                            pts[8] = isBottomUpward ?
                                          GraphItems::Polygon::PairToPoint(
                                              geometry::middle_point_horizontal_downward_spline(
                                                  GraphItems::Polygon::PointToPair(pts[7]),
