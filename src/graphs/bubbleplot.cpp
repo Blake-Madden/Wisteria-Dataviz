@@ -60,6 +60,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BubblePlot, Wisteria::Graphs::Scatte
     //----------------------------------------------------------------
     void BubblePlot::DrawPoints(const Series& series, wxDC& dc)
         {
+        if (GetDataset() == nullptr)
+            {
+            return;
+            }
+
         const auto groupColumn = GetGroupColumn();
         const auto xColumn = GetContinuousColumn(GetXColumnName());
         const auto yColumn = GetContinuousColumn(GetYColumnName());

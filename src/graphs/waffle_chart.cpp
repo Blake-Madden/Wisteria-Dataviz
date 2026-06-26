@@ -81,6 +81,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
 
         for (const auto& shape : shapes)
             {
+            if (currentRow >= numOfRows)
+                {
+                break;
+                }
             for (size_t i = 0; i < shape.GetRepeatCount(); ++i)
                 {
                 m_matrix[currentRow].push_back(shape);

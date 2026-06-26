@@ -297,9 +297,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
             double grandTotal{ 0 };
             for (size_t i = startPos; i <= endPos; ++i)
                 {
+                if (i >= GetBars().size())
+                    {
+                    break;
+                    }
                 grandTotal += GetBars()[i].GetLength();
                 }
             if (grandTotal == 0)
+                {
+                continue;
+                }
+            if (startPos >= GetBars().size() || endPos >= GetBars().size())
                 {
                 continue;
                 }

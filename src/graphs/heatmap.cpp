@@ -88,6 +88,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 }
             // if more columns than groups, then fix the column count
             m_groupColumnCount = std::min(m_groupColumnCount, groups.get_data().size());
+            if (groups.get_data().empty())
+                {
+                return;
+                }
             m_matrix.resize(groups.get_data().size());
             const auto maxItemByColumnCount = std::ranges::max_element(
                 groups.get_data(), [](const auto& item1, const auto& item2) noexcept

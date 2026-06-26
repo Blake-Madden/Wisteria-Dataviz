@@ -83,7 +83,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
     void WCurvePlot::ResetTimeLabels()
         {
         GetTopXAxis().ClearCustomLabels();
-        if (GetDataset()->GetRowCount() == 0)
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0)
             {
             return;
             }

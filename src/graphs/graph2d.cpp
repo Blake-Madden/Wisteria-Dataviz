@@ -309,6 +309,10 @@ namespace Wisteria::Graphs
             }
         for (const auto& object : m_embeddedObjects)
             {
+            if (object.GetObject() == nullptr)
+                {
+                continue;
+                }
             object.GetObject()->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox());
             }
         }
@@ -1183,6 +1187,10 @@ namespace Wisteria::Graphs
         // embed client object once the axes' physical coordinates have been recalculated
         for (auto& object : m_embeddedObjects)
             {
+            if (object.GetObject() == nullptr)
+                {
+                continue;
+                }
             wxCoord x{ 0 }, y{ 0 };
             if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().m_x, x) &&
                 GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().m_y, y))
@@ -1205,6 +1213,10 @@ namespace Wisteria::Graphs
             }
         for (const auto& object : m_embeddedObjects)
             {
+            if (object.GetObject() == nullptr)
+                {
+                continue;
+                }
             for (const auto& interestPoint : object.GetInterestPoints())
                 {
                 wxPoint anchorPt, interestPt;

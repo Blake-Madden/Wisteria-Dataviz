@@ -407,6 +407,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             double longestSubBarLength{ 0 };
             for (size_t i = barGroup.m_barPositions.first; i <= barGroup.m_barPositions.second; ++i)
                 {
+                if (i >= GetBars().size())
+                    {
+                    break;
+                    }
                 const auto& bar = GetBars().at(i);
                 // where the bar actually ends on the scaling axis
                 const auto barEnd =
@@ -2223,6 +2227,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
             for (size_t i = startPos; i <= endPos; ++i)
                 {
+                if (i >= barRenderInfo.m_barMiddleEndPositions.size())
+                    {
+                    break;
+                    }
                 const wxPoint bracketPos = barRenderInfo.m_barMiddleEndPositions[i];
                 if (GetBarOrientation() == Orientation::Horizontal)
                     {
@@ -2253,6 +2261,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             for (size_t i = std::min(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
                  i <= std::max(barGroup.m_barPositions.first, barGroup.m_barPositions.second); ++i)
                 {
+                if (i >= GetBars().size())
+                    {
+                    break;
+                    }
                 grandTotal += GetBars()[i].GetLength();
                 }
 

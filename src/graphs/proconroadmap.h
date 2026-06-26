@@ -191,6 +191,12 @@ namespace Wisteria::Graphs
             @param minimumCountForItem The minimum occurrence for an item to be included.\n
                 This is useful for excluding items not mentioned often in the survey.
                 The default is to include all items.
+            @note If the same label appears in both the positive and negative columns,
+                the net sentiment is shown (positive count minus negative count).
+                The item will appear on the side corresponding to its net value.
+                For example, if "Cost" appears 3 times as a pro and 5 times as a con,
+                it will appear on the negative side with a net count of 2.
+                If the counts cancel to zero, the item is excluded.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n

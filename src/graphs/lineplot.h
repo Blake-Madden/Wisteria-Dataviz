@@ -580,6 +580,10 @@ namespace Wisteria::Graphs
             wxASSERT_MSG(IsXDates(),
                          L"GetXMinMaxDates() should only be called if x-axis is date based!");
             auto xColumnDate = GetDateColumn(GetXColumnName());
+            if (xColumnDate->GetValues().empty())
+                {
+                return std::make_pair(wxInvalidDateTime, wxInvalidDateTime);
+                }
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
                 xColumnDate->GetValues().cbegin(), xColumnDate->GetValues().cend());
             return std::make_pair(*fullXDataMin, *fullXDataMax);
