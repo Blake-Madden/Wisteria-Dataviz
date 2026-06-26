@@ -75,7 +75,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 continue;
                 }
 
-            jitterPoints.insert(std::clamp<size_t>(datum, 0, 100));
+            jitterPoints.insert(static_cast<size_t>(std::clamp(datum, 0.0, 100.0)));
             }
         m_jitter.CalcSpread(jitterPoints);
         }
@@ -185,7 +185,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 {
                 continue;
                 }
-            const auto currentScore = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore =
+                static_cast<size_t>(std::clamp(scoresColumn->GetValue(i), 0.0, 100.0));
             // NOLINTBEGIN(misc-redundant-expression)
             const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
                                   is_within<size_t>(std::make_pair(30, 49), currentScore)  ? 3 :
@@ -249,7 +250,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 }
 
             // sensical scores fall within 0-100
-            const auto currentScore = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore =
+                static_cast<size_t>(std::clamp(scoresColumn->GetValue(i), 0.0, 100.0));
 
             // NOLINTBEGIN(misc-redundant-expression)
             const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :

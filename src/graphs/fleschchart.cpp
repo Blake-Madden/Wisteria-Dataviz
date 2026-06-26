@@ -183,7 +183,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                     continue;
                     }
 
-                jitterPoints.insert(std::clamp<size_t>(score, 0, 100));
+                jitterPoints.insert(static_cast<size_t>(std::clamp(score, 0.0, 100.0)));
                 }
             m_jitterScores.CalcSpread(jitterPoints);
             }
@@ -224,8 +224,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                         {
                         continue;
                         }
-                    const auto currentValue{ std::clamp<size_t>(
-                        syllablesPerWordColumn->GetValue(i) * 100, 120, 200) };
+                    const auto currentValue{ static_cast<size_t>(
+                        std::clamp(syllablesPerWordColumn->GetValue(i) * 100, 120.0, 200.0)) };
 
                     if (currentValue >= bucket1.m_start && currentValue <= bucket1.m_end)
                         {
@@ -370,10 +370,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 }
 
             const auto wordsPerSentence =
-                std::clamp<size_t>(wordsPerSentenceColumn->GetValue(i), 5, 40);
-            const auto score = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
-            const auto syllablesPerWord =
-                std::clamp<size_t>(syllablesPerWordColumn->GetValue(i) * 100, 120, 200);
+                static_cast<size_t>(std::clamp(wordsPerSentenceColumn->GetValue(i), 5.0, 40.0));
+            const auto score =
+                static_cast<size_t>(std::clamp(scoresColumn->GetValue(i), 0.0, 100.0));
+            const auto syllablesPerWord = static_cast<size_t>(
+                std::clamp(syllablesPerWordColumn->GetValue(i) * 100, 120.0, 200.0));
 
             wxCoord coord1{ 0 }, coord2{ 0 }, coord3{ 0 };
             wxASSERT(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));

@@ -247,7 +247,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 {
                 continue;
                 }
-            const auto currentScore = std::clamp<size_t>(scoresColumn->GetValue(i), 0, 100);
+            const auto currentScore =
+                static_cast<size_t>(std::clamp(scoresColumn->GetValue(i), 0.0, 100.0));
             // NOLINTBEGIN(misc-redundant-expression)
             auto leftRulerAxisPos = is_within<size_t>(std::make_pair(0, 24), currentScore)   ? 25 :
                                     is_within<size_t>(std::make_pair(25, 34), currentScore)  ? 35 :
