@@ -1202,7 +1202,19 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
 //-------------------------------------------
 void WisteriaView::OnAddConstant([[maybe_unused]] wxCommandEvent& event)
     {
-    m_constantsGrid->AppendRows();
+    const int newRow = m_constantsGrid->GetNumberRows();
+    m_constantsGrid->AppendRows(1);
+
+    // build the dataset name choices for the dropdown
+    wxArrayString dsChoices;
+    for (const auto& [dsName, dataset] : m_reportBuilder.GetDatasets())
+        {
+        if (!dsName.empty())
+            {
+            dsChoices.Add(dsName);
+            }
+        }
+    m_constantsGrid->SetCellEditor(newRow, 0, new wxGridCellChoiceEditor(dsChoices));
 
     GetDocument()->Modify(true);
     }
