@@ -88,67 +88,68 @@ namespace Wisteria::Graphs
                 GetLeftYAxis().GetPhysicalCoordinate(i + 1, yPt))
                 {
                 pts.emplace_back(xPt, yPt);
-                }
 
-            // the location marker:
-            auto pt = std::make_unique<GraphItems::Point2D>(
-                GraphItems::GraphItemInfo{}
-                    .Brush((GetRoadStops()[i].GetValue() >= 0 ? GetPositiveIcon().second :
-                                                                GetNegativeIcon().second))
-                    .DPIScaling(GetDPIScaleFactor())
-                    .Scaling(GetScaling())
-                    .AnchorPoint({ xPt, yPt }),
-                scale_within(std::abs(GetRoadStops()[i].GetValue()),
-                             std::make_pair(0.0, GetMagnitude()), POINT_SIZE_RANGE),
-                (GetRoadStops()[i].GetValue() >= 0 ? GetPositiveIcon().first :
-                                                     GetNegativeIcon().first));
+                // the location marker:
+                auto pt = std::make_unique<GraphItems::Point2D>(
+                    GraphItems::GraphItemInfo{}
+                        .Brush((GetRoadStops()[i].GetValue() >= 0 ? GetPositiveIcon().second :
+                                                                    GetNegativeIcon().second))
+                        .DPIScaling(GetDPIScaleFactor())
+                        .Scaling(GetScaling())
+                        .AnchorPoint({ xPt, yPt }),
+                    scale_within(std::abs(GetRoadStops()[i].GetValue()),
+                                 std::make_pair(0.0, GetMagnitude()), POINT_SIZE_RANGE),
+                    (GetRoadStops()[i].GetValue() >= 0 ? GetPositiveIcon().first :
+                                                         GetNegativeIcon().first));
 
-            const wxString markerText =
-                (m_markerLabelDisplay == MarkerLabelDisplay::NameAndValue) ?
-                    wxString::Format(L"%s (%s)", GetRoadStops()[i].GetName(),
-                                     wxNumberFormatter::ToString(
-                                         GetRoadStops()[i].GetValue(), 3,
-                                         wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
-                (m_markerLabelDisplay == MarkerLabelDisplay::NameAndAbsoluteValue) ?
-                    wxString::Format(L"%s (%s)", GetRoadStops()[i].GetName(),
-                                     wxNumberFormatter::ToString(
-                                         std::abs(GetRoadStops()[i].GetValue()), 3,
-                                         wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
-                    GetRoadStops()[i].GetName();
+                const wxString markerText =
+                    (m_markerLabelDisplay == MarkerLabelDisplay::NameAndValue) ?
+                        wxString::Format(L"%s (%s)", GetRoadStops()[i].GetName(),
+                                         wxNumberFormatter::ToString(
+                                             GetRoadStops()[i].GetValue(), 3,
+                                             wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                    (m_markerLabelDisplay == MarkerLabelDisplay::NameAndAbsoluteValue) ?
+                        wxString::Format(L"%s (%s)", GetRoadStops()[i].GetName(),
+                                         wxNumberFormatter::ToString(
+                                             std::abs(GetRoadStops()[i].GetValue()), 3,
+                                             wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                        GetRoadStops()[i].GetName();
 
-            auto markerLabel = std::make_unique<GraphItems::Label>(
-                GraphItems::GraphItemInfo{ markerText }
-                    .Scaling(GetScaling())
-                    .DPIScaling(GetDPIScaleFactor())
-                    .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                        GetPlotOrCanvasColor()))
-                    .Pen(wxNullPen));
-            markerLabel->ShowLabelWhenSelected(true);
-            if (GetLabelPlacement() == LabelPlacement::NextToParent)
-                {
-                markerLabel->SetAnchorPoint((GetRoadStops()[i].GetValue() >= 0 ?
-                                                 pt->GetBoundingBox(dc).GetBottomRight() :
-                                                 pt->GetBoundingBox(dc).GetBottomLeft()));
-                markerLabel->SetAnchoring((GetRoadStops()[i].GetValue() >= 0 ?
-                                               Anchoring::BottomLeftCorner :
-                                               Anchoring::BottomRightCorner));
+                auto markerLabel = std::make_unique<GraphItems::Label>(
+                    GraphItems::GraphItemInfo{ markerText }
+                        .Scaling(GetScaling())
+                        .DPIScaling(GetDPIScaleFactor())
+                        .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            GetPlotOrCanvasColor()))
+                        .Pen(wxNullPen));
+                markerLabel->ShowLabelWhenSelected(true);
+                if (GetLabelPlacement() == LabelPlacement::NextToParent)
+                    {
+                    markerLabel->SetAnchorPoint((GetRoadStops()[i].GetValue() >= 0 ?
+                                                     pt->GetBoundingBox(dc).GetBottomRight() :
+                                                     pt->GetBoundingBox(dc).GetBottomLeft()));
+                    markerLabel->SetAnchoring((GetRoadStops()[i].GetValue() >= 0 ?
+                                                   Anchoring::BottomLeftCorner :
+                                                   Anchoring::BottomRightCorner));
+                    }
+                else
+                    {
+                    markerLabel->SetAnchorPoint(
+                        (GetRoadStops()[i].GetValue() >= 0 ?
+                             wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                                     pt->GetBoundingBox(dc).GetBottomRight().y) :
+                             wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                                     pt->GetBoundingBox(dc).GetBottomLeft().y)));
+                    markerLabel->SetAnchoring((GetRoadStops()[i].GetValue() >= 0 ?
+                                                   Anchoring::BottomRightCorner :
+                                                   Anchoring::BottomLeftCorner));
+                    labelConnectionLines->AddLine(markerLabel->GetAnchorPoint(),
+                                                  pt->GetAnchorPoint());
+                    }
+                markerLabel->GetFont().MakeSmaller();
+                locations.push_back(std::move(pt));
+                locationLabels.push_back(std::move(markerLabel));
                 }
-            else
-                {
-                markerLabel->SetAnchorPoint(
-                    (GetRoadStops()[i].GetValue() >= 0 ?
-                         wxPoint(GetPlotAreaBoundingBox().GetRight(),
-                                 pt->GetBoundingBox(dc).GetBottomRight().y) :
-                         wxPoint(GetPlotAreaBoundingBox().GetLeft(),
-                                 pt->GetBoundingBox(dc).GetBottomLeft().y)));
-                markerLabel->SetAnchoring((GetRoadStops()[i].GetValue() >= 0 ?
-                                               Anchoring::BottomRightCorner :
-                                               Anchoring::BottomLeftCorner));
-                labelConnectionLines->AddLine(markerLabel->GetAnchorPoint(), pt->GetAnchorPoint());
-                }
-            markerLabel->GetFont().MakeSmaller();
-            locations.push_back(std::move(pt));
-            locationLabels.push_back(std::move(markerLabel));
             }
 
         // end of the road (top)
