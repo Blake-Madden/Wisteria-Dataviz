@@ -1641,6 +1641,8 @@ namespace string_util
             {
             return;
             }
+        const size_t replacementLen =
+            std::char_traits<typename T::traits_type::char_type>::length(replacementText);
         size_t start{ 0 };
         while (start != T::npos)
             {
@@ -1650,6 +1652,7 @@ namespace string_util
                 return;
                 }
             text.replace(start, textToReplaceLength, replacementText);
+            start += replacementLen;
             }
         }
 
@@ -1669,6 +1672,7 @@ namespace string_util
                 return;
                 }
             text.replace(start, textToReplace.length(), replacementText);
+            start += replacementText.length();
             }
         }
 
@@ -1817,7 +1821,10 @@ namespace string_util
         {
         if (nptr == nullptr)
             {
-            *endptr = nullptr;
+            if (endptr != nullptr)
+                {
+                *endptr = nullptr;
+                }
             return 0.0;
             }
         const auto* separator = string_util::strcspn_pointer<wchar_t>(nptr, L"-:");

@@ -101,9 +101,7 @@ namespace i18n_string_util
             true : (ch == 0xFE15) ? // presentation
             true : (ch == 0xFE57) ? // small
             true : (ch == 0x00A1) ? // inverted
-            true : (ch == 0xFF01) ? // fullwidth
-            true : (ch == 0xFE57) ? // small
-            true : (ch == 0xFE15);  // presentation
+            true : (ch == 0xFF01);  // fullwidth
         // clang-format on
         }
 
@@ -113,7 +111,7 @@ namespace i18n_string_util
     constexpr static bool is_question(const wchar_t ch) noexcept
         {
         // clang-format off
-        return (ch == L'?') ?       // !
+        return (ch == L'?') ?       // ?
             true : (ch == 0x061F) ? // Arabic
             true : (ch == 0xFF1F);  // fullwidth
         // clang-format on

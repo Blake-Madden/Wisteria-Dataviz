@@ -334,6 +334,33 @@ TEST_CASE("replace_all", "[stringutil][replace_all]")
         string_util::replace_all(str, std::wstring(L"ext"), std::wstring(L"EXT"));
         CHECK(std::wstring(L"Here is some tEXT to edit. Some more tEXT") == str);
         }
+    SECTION("Replacement Contains Search String")
+        {
+        // overload 1 (char ptr): replacement contains search string
+        std::wstring str1{ L"abc" };
+        string_util::replace_all(str1, L"a", 1, L"ab");
+        CHECK(std::wstring(L"abbc") == str1);
+
+        // overload 2 (T): replacement contains search string
+        std::wstring str2{ L"abc" };
+        string_util::replace_all(str2, std::wstring(L"a"), std::wstring(L"ab"));
+        CHECK(std::wstring(L"abbc") == str2);
+
+        // search string appears multiple times, replacement contains it
+        std::wstring str3{ L"aaa" };
+        string_util::replace_all(str3, L"a", 1, L"aa");
+        CHECK(std::wstring(L"aaaaaa") == str3);
+
+        // empty replacement (deletion) still works
+        std::wstring str4{ L"aXbXc" };
+        string_util::replace_all(str4, L"X", 1, L"");
+        CHECK(std::wstring(L"abc") == str4);
+
+        // empty replacement with overload 2
+        std::wstring str5{ L"aXbXc" };
+        string_util::replace_all(str5, std::wstring(L"X"), std::wstring(L""));
+        CHECK(std::wstring(L"abc") == str5);
+        }
     }
 
 TEST_CASE("Hex Strings", "[stringutil][hex]")
