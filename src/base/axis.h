@@ -2024,7 +2024,7 @@ namespace Wisteria::GraphItems
                 auto topPt = GetTopPoint();
                 topPt.y = GetContentTop().value_or(0);
 
-                auto bottomPt = GetTopPoint();
+                auto bottomPt = GetBottomPoint();
                 bottomPt.y = GetContentBottom().value_or(0);
                 SetPoints(topPt, bottomPt, dc);
                 }
