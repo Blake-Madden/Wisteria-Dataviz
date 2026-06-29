@@ -1158,23 +1158,23 @@ SECTION("Zeros")
 }
 ;
 
-TEST_CASE("RemoveAllWhitespace", "[stringutil][RemoveAllWhitespace]"){
+TEST_CASE("RemoveBreaks", "[stringutil][RemoveBreaks]"){
     SECTION("HasWhitespaces"){ std::wstring theWord = L"\nWords\rMore\n\rEnd.\n";
-theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+theWord = string_util::remove_breaks<std::wstring>(theWord);
 CHECK(theWord == L"WordsMoreEnd.");
 }
 
 SECTION("AllWhitespaces")
     {
     std::wstring theWord = L"\n\r\n\r\n";
-    theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+    theWord = string_util::remove_breaks<std::wstring>(theWord);
     CHECK(theWord.empty());
     }
 
 SECTION("HasNoWhitespaces")
     {
     std::wstring theWord = L"WordsMoreEnd.";
-    theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+    theWord = string_util::remove_breaks<std::wstring>(theWord);
     CHECK(theWord == L"WordsMoreEnd.");
     }
 }
@@ -1759,7 +1759,7 @@ TEST_CASE("Tokenize", "[stringutil][tokenize]")
         string_util::string_tokenize<std::wstring> tok(L"--", L"-", true);
 
         CHECK(tok.has_more_tokens()); // input exists
-        CHECK(tok.has_delimiters()); // yes, it's delimiters
+        CHECK(tok.has_delimiters());  // yes, it's delimiters
 
         CHECK(tok.get_next_token().empty()); // nothing to return
 

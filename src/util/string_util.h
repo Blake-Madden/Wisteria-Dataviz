@@ -1567,12 +1567,12 @@ namespace string_util
         std::size_t m_pos{ 0 };
         };
 
-    /// @brief Removes all whitespace from a string
+    /// @brief Removes line breaks (\\n, \\r) and tabs (\\t) from a string.
     /// @param text The text to review.
-    /// @returns The text with all whitespace removed.
+    /// @returns The text with line-break and tab characters removed.
     template<typename T>
     [[nodiscard]]
-    T remove_all_whitespace(const T& text)
+    T remove_breaks(const T& text)
         {
         T tempText = text;
         for (typename T::size_type i = 0; i < tempText.length(); /*in loop*/)
