@@ -7,13 +7,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "markdown_extract_text.h"
-#include <map>
 #include <set>
+#include <unordered_map>
 
 // LaTeX command -> Unicode character lookup table.
 // Only simple commands that map to a single Unicode character are included.
 // clang-format off
-static const std::map<std::wstring_view, wchar_t> LATEX_COMMAND_MAP
+static const std::unordered_map<std::wstring_view, wchar_t> LATEX_COMMAND_MAP
     {
     // Greek letters (lowercase)
     { L"alpha",    L'\x03B1' },  // α
