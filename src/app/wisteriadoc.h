@@ -42,7 +42,7 @@ class WisteriaDoc final : public wxDocument
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
     bool DoSaveDocument(const wxString& filename) override;
-    void SaveProject(const wxString& filePath) const;
+    bool SaveProject(const wxString& filePath) const;
 
     // page item save helpers
     [[nodiscard]]

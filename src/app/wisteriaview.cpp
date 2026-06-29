@@ -670,6 +670,11 @@ void WisteriaView::OnSidebarClick(const wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::OnPrintSetup([[maybe_unused]] wxCommandEvent& event)
     {
+    if (m_pages.empty())
+        {
+        return;
+        }
+
     wxPageSetupDialogData pageSetupData;
     wxPrintData printData = m_pages.front()->GetPrinterSettings();
 

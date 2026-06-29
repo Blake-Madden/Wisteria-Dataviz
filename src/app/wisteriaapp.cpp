@@ -424,7 +424,6 @@ void WisteriaApp::ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl)
         {
         return;
         }
-    wxTheApp->Yield();
     listCtrl->SetLabel(wxString::Format(
         // TRANSLATORS: %1$s is the application name;
         // %2$s is today's date in ISO format (YYYY-MM-DD)

@@ -18,9 +18,7 @@ bool WisteriaDoc::DoSaveDocument(const wxString& filename)
     {
     try
         {
-        SaveProject(filename);
-
-        return true;
+        return SaveProject(filename);
         }
     catch (const std::exception& exc)
         {
@@ -59,13 +57,13 @@ bool WisteriaDoc::OnOpenDocument(const wxString& filename)
     }
 
 //-------------------------------------------
-void WisteriaDoc::SaveProject(const wxString& filePath) const
+bool WisteriaDoc::SaveProject(const wxString& filePath) const
     {
     auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
     if (view == nullptr)
         {
         wxASSERT_MSG(view, L"Invalid view connected to document?!");
-        return;
+        return false;
         }
 
     const wxFileName projectDir(filePath);
@@ -338,11 +336,21 @@ void WisteriaDoc::SaveProject(const wxString& filePath) const
     wxString output = root->Print();
     output.Replace(L"\t", L" ");
     wxFile outFile(filePath, wxFile::write);
-    if (outFile.IsOpened())
+    if (!outFile.IsOpened())
         {
-        const auto utf8 = output.utf8_string();
-        outFile.Write(utf8.c_str(), utf8.length());
+        const auto msg = wxString::Format(_(L"Cannot open file for writing: %s"), filePath);
+        wxLogError(L"%s", msg);
+        wxMessageBox(msg, _(L"Save Error"), wxOK | wxICON_ERROR);
+        return false;
         }
+    const auto utf8 = output.utf8_string();
+    if (outFile.Write(utf8.c_str(), utf8.length()) == wxInvalidSize)
+        {
+        wxMessageBox(wxString::Format(_(L"Failed to write to file: %s"), filePath),
+                     _(L"Save Error"), wxOK | wxICON_ERROR);
+        return false;
+        }
+    return true;
     }
 
 //-------------------------------------------
