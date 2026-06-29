@@ -1,5 +1,5 @@
-/** @addtogroup Exporting
-    @brief Classes for formatting and exporting text.
+/** @addtogroup Importing
+    @brief Classes for importing and parsing text.
     @date 2005-2026
     @copyright Blake Madden
     @author Blake Madden

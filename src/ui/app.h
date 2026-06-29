@@ -75,7 +75,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         size_t GetDocumentCount() const
             {
-            return m_docManager->GetDocuments().GetCount();
+            return m_docManager != nullptr ? m_docManager->GetDocuments().GetCount() : 0;
             }
 
         /// @returns The application's main file extension.
@@ -177,7 +177,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString GetLogReport() const
             {
-            return m_logFile->Read();
+            return m_logFile != nullptr ? m_logFile->Read() : wxString{};
             }
 
         /// @return The file logging systems used by the application.

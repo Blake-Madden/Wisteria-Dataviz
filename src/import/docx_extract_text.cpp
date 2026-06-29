@@ -194,7 +194,7 @@ namespace lily_of_the_valley
                 else if (currentTag == L"w:ind")
                     {
                     const auto alignment = read_attribute_as_long(start + 1, L"w:left", false);
-                    if (alignment > 0.0)
+                    if (alignment > 0)
                         {
                         add_character(L'\t');
                         }

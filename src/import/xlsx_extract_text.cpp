@@ -923,6 +923,7 @@ namespace lily_of_the_valley
                 {
                 log_message(sheetName +
                             L": worksheet relationship ID not found in workbook.xml.rels");
+                continue;
                 }
 
             // targets in workbook.xml.rels are relative to xl/

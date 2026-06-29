@@ -191,30 +191,27 @@ namespace lily_of_the_valley
                 maxColumnPosition = std::max(datum.back().get_column_position(), maxColumnPosition);
                 }
             }
-            // Fill in blank cells at any missing column positions in each row.
+        // Fill in blank cells at any missing column positions in each row.
+        for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
             {
-            for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
+            for (size_t columnCounter = 0; columnCounter < maxColumnPosition; ++columnCounter)
                 {
-                for (size_t columnCounter = 0; columnCounter < maxColumnPosition; ++columnCounter)
+                const worksheet_cell currentCell(column_index_to_column_name(columnCounter + 1) +
+                                                 std::to_wstring(rowCounter + 1));
+                const auto cellPos =
+                    std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
+                // if cell was already in the row, then move on
+                if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
                     {
-                    const worksheet_cell currentCell(
-                        column_index_to_column_name(columnCounter + 1) +
-                        std::to_wstring(rowCounter + 1));
-                    const auto cellPos = std::lower_bound(data[rowCounter].begin(),
-                                                          data[rowCounter].end(), currentCell);
-                    // if cell was already in the row, then move on
-                    if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
-                        {
-                        continue;
-                        }
-                    if (cellPos != data[rowCounter].end())
-                        {
-                        data[rowCounter].insert(cellPos, currentCell);
-                        }
-                    else
-                        {
-                        data[rowCounter].push_back(currentCell);
-                        }
+                    continue;
+                    }
+                if (cellPos != data[rowCounter].end())
+                    {
+                    data[rowCounter].insert(cellPos, currentCell);
+                    }
+                else
+                    {
+                    data[rowCounter].push_back(currentCell);
                     }
                 }
             }

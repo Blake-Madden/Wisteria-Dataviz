@@ -76,16 +76,17 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
         // find a suitable parent window
         wxWindow* parentWindow = [this]()
         {
-            if (wxTheApp->GetTopWindow() != nullptr && wxTheApp->GetTopWindow()->IsShown())
+            auto* topWindow = wxTheApp->GetTopWindow();
+            if (topWindow != nullptr && topWindow->IsShown())
                 {
-                return wxTheApp->GetTopWindow();
+                return topWindow;
                 }
             if (GetCurrentDocument() != nullptr &&
                 GetCurrentDocument()->GetDocumentWindow() != nullptr)
                 {
                 return GetCurrentDocument()->GetDocumentWindow();
                 }
-            return wxTheApp->GetTopWindow();
+            return topWindow;
         }();
 
         RadioBoxDlg radioDlg(parentWindow, _(L"Select Project Type"), wxString{},
@@ -111,9 +112,24 @@ wxIMPLEMENT_CLASS(Wisteria::UI::BaseMainFrame, wxDocParentFrame);
 //----------------------------------------------------------
 void Wisteria::UI::BaseMainFrame::DisplayHelp(const wxString& topic /*= wxString{}*/) const
     {
-    const wxString helpPath =
-        !topic.empty() ? GetHelpDirectory() + wxFileName::GetPathSeparator() + topic :
-                         GetHelpDirectory() + wxFileName::GetPathSeparator() + L"index.html";
+    const wxString helpDir = GetHelpDirectory();
+    if (helpDir.empty())
+        {
+        wxLogWarning(L"Help directory not set. Cannot display help.");
+        wxMessageBox(_(L"The help directory has not been configured."), _(L"Help Not Available"),
+                     wxOK | wxICON_WARNING);
+        return;
+        }
+    const wxString helpPath = !topic.empty() ?
+                                  helpDir + wxFileName::GetPathSeparator() + topic :
+                                  helpDir + wxFileName::GetPathSeparator() + L"index.html";
+    if (!wxFileName::FileExists(helpPath) && !wxFileName::DirExists(helpPath))
+        {
+        wxLogWarning(L"Help file not found: %s", helpPath);
+        wxMessageBox(wxString::Format(_(L"Help file not found:\n%s"), helpPath),
+                     _(L"Help Not Available"), wxOK | wxICON_WARNING);
+        return;
+        }
     wxLaunchDefaultBrowser(wxFileName::FileNameToURL(helpPath));
     }
 
