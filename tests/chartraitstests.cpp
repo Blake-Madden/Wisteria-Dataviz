@@ -1,8 +1,8 @@
 // NOLINTBEGIN
 
 #include "../src/util/char_traits.h"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace string_util;
 
@@ -178,6 +178,136 @@ TEST_CASE("case_insensitive_wstring works in containers", "[ciwstr][container]")
         CHECK(values[0] == L"alpha");
         CHECK(values[1] == L"BRAVO");
         CHECK(values[2] == L"Charlie");
+        }
+    }
+
+TEST_CASE("case_insensitive_character_traits find", "[ciwstr][traits][find]")
+    {
+    using traits = case_insensitive_character_traits;
+
+    SECTION("find locates substring in the middle")
+        {
+        const wchar_t* haystack = L"Hello World";
+        const wchar_t* needle = L"World";
+        const auto* result = traits::find(haystack, 11, needle, 5);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 6);
+        }
+
+    SECTION("find locates substring at the start")
+        {
+        const wchar_t* haystack = L"Hello";
+        const wchar_t* needle = L"He";
+        const auto* result = traits::find(haystack, 5, needle, 2);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack);
+        }
+
+    SECTION("find locates substring at the end")
+        {
+        const wchar_t* haystack = L"Hello";
+        const wchar_t* needle = L"llo";
+        const auto* result = traits::find(haystack, 5, needle, 3);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 2);
+        }
+
+    SECTION("find returns nullptr when substring not present")
+        {
+        const wchar_t* haystack = L"Hello";
+        const wchar_t* needle = L"xyz";
+        const auto* result = traits::find(haystack, 5, needle, 3);
+        CHECK(result == nullptr);
+        }
+
+    SECTION("find handles needle longer than haystack")
+        {
+        const wchar_t* haystack = L"ab";
+        const wchar_t* needle = L"abcd";
+        const auto* result = traits::find(haystack, 2, needle, 4);
+        CHECK(result == nullptr);
+        }
+
+    SECTION("find with single character needle")
+        {
+        const wchar_t* haystack = L"aXbXc";
+        const auto* result = traits::find(haystack, 5, L"X", 1);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 1);
+        }
+
+    SECTION("partial match followed by mismatch does not skip valid position")
+        {
+        const wchar_t* haystack = L"aabd";
+        const wchar_t* needle = L"abc";
+        const auto* result = traits::find(haystack, 4, needle, 3);
+        CHECK(result == nullptr);
+        }
+
+    SECTION("repeated pattern does not skip valid position")
+        {
+        const wchar_t* haystack = L"aaba";
+        const wchar_t* needle = L"aba";
+        const auto* result = traits::find(haystack, 4, needle, 3);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 1);
+        }
+
+    SECTION("multiple partial matches before real match")
+        {
+        const wchar_t* haystack = L"aabaabc";
+        const wchar_t* needle = L"aabc";
+        const auto* result = traits::find(haystack, 7, needle, 4);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 3);
+        }
+
+    SECTION("match inside skipped range after multi-char partial match")
+        {
+        // partial match at i=0 advances j to 2 ("aa" matches then fails);
+        // without the j=1 reset the outer loop jumps i by 2, skipping position 1
+        // where the real match "aab" starts
+        const wchar_t* haystack = L"aaab";
+        const wchar_t* needle = L"aab";
+        const auto* result = traits::find(haystack, 4, needle, 3);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 1);
+        }
+
+    SECTION("case-insensitive match")
+        {
+        const wchar_t* haystack = L"Hello World";
+        const auto* result1 = traits::find(haystack, 11, L"world", 5);
+        REQUIRE(result1 != nullptr);
+        CHECK(result1 == haystack + 6);
+
+        const auto* result2 = traits::find(haystack, 11, L"WORLD", 5);
+        REQUIRE(result2 != nullptr);
+        CHECK(result2 == haystack + 6);
+        }
+
+    SECTION("case-insensitive miss")
+        {
+        const wchar_t* haystack = L"Hello";
+        const auto* result = traits::find(haystack, 5, L"XYZ", 3);
+        CHECK(result == nullptr);
+        }
+
+    SECTION("case-insensitive exact full-string match")
+        {
+        const wchar_t* haystack = L"abc";
+        const auto* result = traits::find(haystack, 3, L"ABC", 3);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack);
+        }
+
+    SECTION("case-insensitive match inside skipped range after partial match")
+        {
+        const wchar_t* haystack = L"AAAB";
+        const wchar_t* needle = L"aab";
+        const auto* result = traits::find(haystack, 4, needle, 3);
+        REQUIRE(result != nullptr);
+        CHECK(result == haystack + 1);
         }
     }
 

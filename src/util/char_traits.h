@@ -130,6 +130,7 @@ namespace string_util
                         {
                         return s1 + i;
                         }
+                    j = 1;
                     }
                 }
             return nullptr;
