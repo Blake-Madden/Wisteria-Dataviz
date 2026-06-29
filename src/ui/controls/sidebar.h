@@ -526,7 +526,11 @@ namespace Wisteria::UI
 
         /** @brief Sets the color for the parents.
             @param color The color to use.*/
-        void SetParentColour(const wxColour& color) noexcept { m_parentColor = color; }
+        void SetParentColour(const wxColour& color) noexcept
+            {
+            m_parentColor = color;
+            m_useCustomParentColour = true;
+            }
 
         /** @brief Sets the color for items that are being moused over.
             @param color The color to use.*/
@@ -812,6 +816,7 @@ namespace Wisteria::UI
 
         bool m_highlightedIsSelected{ false };
         bool m_previouslyHighlightedItemsIsSelected{ false };
+        bool m_useCustomParentColour{ false };
         };
     } // namespace Wisteria::UI
 

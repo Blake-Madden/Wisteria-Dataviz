@@ -26,15 +26,6 @@ namespace Wisteria::UI
         // text and any loaded icons.
         m_itemHeight = FromDIP(wxSize(16, 16)).GetHeight() + GetPaddingHeight();
         wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-        if (wxSystemSettings::GetAppearance().IsDark())
-            {
-            wxWindow::SetBackgroundColour(wxColour{ 46, 46, 46 });
-            SetParentColour(wxColour{ 31, 31, 31 });
-            }
-        else
-            {
-            wxWindow::SetBackgroundColour(wxColour{ 200, 211, 231 });
-            }
         wxScrollHelper::SetScrollbars(FromDIP(wxSize(30, 30)).GetWidth(),
                                       FromDIP(wxSize(30, 30)).GetHeight(), 0, 0);
         ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
@@ -493,7 +484,13 @@ namespace Wisteria::UI
         const wxDCTextColourChanger tc(dc, GetForegroundColour());
 
         // draw the borders and background for root-level folders
-        const auto drawFolderBackground = [this, &dc](const size_t folderIndex)
+        const auto currentParentColour =
+            m_useCustomParentColour ?
+                m_parentColor :
+                (wxSystemSettings::GetAppearance().IsDark() ? wxColour{ 31, 31, 31 } :
+                                                              m_parentColor);
+        const auto drawFolderBackground =
+            [this, &dc, &currentParentColour](const size_t folderIndex)
         {
             const wxRect buttonBorderRect = m_folders[folderIndex].m_Rect;
             if (GetSelectedFolder().has_value() && GetSelectedFolder().value() == folderIndex &&
@@ -543,12 +540,12 @@ namespace Wisteria::UI
                                     wxRect(buttonBorderRect.GetLeftTop().x,
                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
                                            GetItemHeight()),
-                                    m_parentColor);
+                                    currentParentColour);
                     }
                 else
                     {
-                    const wxDCBrushChanger bc(dc, m_parentColor);
-                    const wxDCPenChanger pc(dc, m_parentColor);
+                    const wxDCBrushChanger bc{ dc, currentParentColour };
+                    const wxDCPenChanger pc{ dc, currentParentColour };
                     dc.DrawRectangle(wxRect(buttonBorderRect.GetLeftTop().x,
                                             buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
                                             GetItemHeight()));
@@ -719,6 +716,15 @@ namespace Wisteria::UI
             }
 
         wxAutoBufferedPaintDC pdc(this);
+        wxWindow::SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+        if (wxSystemSettings::GetAppearance().IsDark())
+            {
+            wxWindow::SetBackgroundColour(wxColour{ 46, 46, 46 });
+            }
+        else
+            {
+            wxWindow::SetBackgroundColour(wxColour{ 200, 211, 231 });
+            }
         pdc.Clear();
         wxGCDC dc(pdc);
         PrepareDC(dc);
