@@ -12,7 +12,6 @@
 #ifndef LIST_DIALOG_H
 #define LIST_DIALOG_H
 
-#include "../../util/logfile.h"
 #include "../controls/listctrlex.h"
 #include "../controls/searchpanel.h"
 #include <wx/checklst.h>
@@ -48,12 +47,6 @@ namespace Wisteria::UI
         LD_CLOSE_BUTTON = 1 << 9,
         /// @brief A sort button.
         LD_SORT_BUTTON = 1 << 10,
-        /// @brief A clear button.
-        LD_CLEAR_BUTTON = 1 << 11,
-        /// @brief A refresh button.
-        LD_REFRESH_BUTTON = 1 << 12,
-        /// @brief A verbose logging toggle button.
-        LD_LOG_VERBOSE_BUTTON = 1 << 13,
         /// @brief Make the list control single selection.
         LD_SINGLE_SELECTION = 1 << 14
         };
@@ -161,30 +154,6 @@ namespace Wisteria::UI
                 }
             }
 
-        /// @brief Sets the log file reporter to read and write from
-        ///     (if this is meant to be a log report window).
-        /// @param log The log file reporter to connect this dialog to.
-        void SetActiveLog(LogFile* log);
-
-        /// @brief If an active log is connected, reads its content into this dialog.
-        /// @sa SetActiveLog().
-        void ReadLog()
-            {
-            wxCommandEvent event;
-            OnReadLog(event);
-            }
-
-        /// @brief If logging buttons are shown, toggles the verbose logging button.
-        /// @param enable @c true to enable logging.
-        void EnableVerboseLogging(const bool enable)
-            {
-            m_isLogVerbose = enable;
-            if (((m_buttonStyle & LD_LOG_VERBOSE_BUTTON) != 0) && m_editButtonBar != nullptr)
-                {
-                m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
-                }
-            }
-
       private:
         void BindEvents();
         /// Creates the controls and sizers
@@ -198,20 +167,6 @@ namespace Wisteria::UI
         void OnSort(wxRibbonButtonBarEvent& event);
         void OnFind(wxFindDialogEvent& event);
         void OnClose([[maybe_unused]] wxCloseEvent& event);
-        void OnReadLog([[maybe_unused]] wxCommandEvent& event);
-
-        void StopRealtimeUpdate() { m_realTimeTimer.Stop(); }
-
-        void RestartRealtimeUpdate()
-            {
-            if (m_logFile != nullptr && m_autoRefresh)
-                {
-                m_realTimeTimer.Start(REALTIME_UPDATE_INTERVAL);
-                }
-            }
-
-        void OnRealTimeTimer([[maybe_unused]] wxTimerEvent& event);
-        void OnRealTimeUpdate([[maybe_unused]] wxRibbonButtonBarEvent& event);
 
         bool m_useCheckBoxes{ true };
         long m_buttonStyle{ 0 };
@@ -224,7 +179,6 @@ namespace Wisteria::UI
         std::shared_ptr<ListCtrlExDataProvider> m_data{
             std::make_shared<ListCtrlExDataProvider>()
         };
-        LogFile* m_logFile{ nullptr };
         wxCheckBox* m_checkBox{ nullptr };
         wxRibbonBar* m_ribbon{ nullptr };
         wxArrayString m_values;
@@ -232,12 +186,6 @@ namespace Wisteria::UI
 
         constexpr static wxWindowID ID_EDIT_PANEL{ wxID_HIGHEST };
         constexpr static wxWindowID ID_EDIT_BUTTON_BAR{ wxID_HIGHEST + 1 };
-
-        constexpr static int REALTIME_UPDATE_INTERVAL{ 3000 }; // in milliseconds
-        wxTimer m_realTimeTimer;
-        bool m_autoRefresh{ true };
-        bool m_isLogVerbose{ false };
-        wxDateTime m_sourceFileLastModified;
         };
     } // namespace Wisteria::UI
 
