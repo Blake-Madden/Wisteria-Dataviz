@@ -1235,7 +1235,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         }
                     if (!leftPoints.empty() && !rightPoints.empty())
                         {
-                        // apply the smallest content area to the items in the column
+                        // Constrain each column to the intersection of all rows' content areas:
+                        // the common left edge is the rightmost of all lefts,
+                        // and the common right edge is the leftmost of all rights.
                         const auto leftPt = *std::ranges::max_element(std::as_const(leftPoints));
                         const auto rightPt = *std::ranges::min_element(std::as_const(rightPoints));
                         for (auto& fixedObjectsRowPos : GetFixedObjects())
@@ -1450,9 +1452,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         {
         wxASSERT(!GetFixedObjects().empty());
         wxASSERT(row < GetFixedObjects().size());
-        wxASSERT(column < GetFixedObjects().at(0).size());
+        wxASSERT(column < GetFixedObjects().at(row).size());
         if (GetFixedObjects().empty() || row >= GetFixedObjects().size() ||
-            column >= GetFixedObjects().at(0).size())
+            column >= GetFixedObjects().at(row).size())
             {
             return nullptr;
             }
@@ -1481,9 +1483,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         {
         wxASSERT(!GetFixedObjects().empty());
         wxASSERT(row < GetFixedObjects().size());
-        wxASSERT(column < GetFixedObjects().at(0).size());
+        wxASSERT(column < GetFixedObjects().at(row).size());
         if (GetFixedObjects().empty() || row >= GetFixedObjects().size() ||
-            column >= GetFixedObjects().at(0).size())
+            column >= GetFixedObjects().at(row).size())
             {
             return nullptr;
             }
@@ -2132,7 +2134,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             m_dragMode = DragMode::DraggingNone;
 
             wxASSERT_MSG(m_currentlyDraggedShape, "Drag image is null while mouse up, "
-                                                "although drag mode isn't set to none!");
+                                                  "although drag mode isn't set to none!");
             if (m_dragImage != nullptr)
                 {
                 m_dragImage->Hide();
@@ -2141,7 +2143,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
 
             wxASSERT_MSG(m_currentlyDraggedShape, "Item being dragged is null while mouse up, "
-                                                "although drag mode isn't set to none!");
+                                                  "although drag mode isn't set to none!");
             if (m_currentlyDraggedShape)
                 {
                 const wxPoint movePt(unscrolledPosition - m_dragStartPos);
@@ -2157,7 +2159,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         else if (event.Dragging() && m_dragMode != DragMode::DraggingNone)
             {
             wxASSERT_MSG(m_currentlyDraggedShape, "Item being dragged is null while mouse drag, "
-                                                "although drag mode isn't set to none!");
+                                                  "although drag mode isn't set to none!");
             if (m_dragMode == DragMode::DragStart && m_currentlyDraggedShape)
                 {
                 m_dragStartPos = unscrolledPosition;
