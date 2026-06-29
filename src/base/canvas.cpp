@@ -1993,9 +1993,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //-------------------------------------------
     void Canvas::OnMouseEvents(wxMouseEvent & event)
         {
-        static DragMode dragMode = DragMode::DraggingNone;
-        static wxPoint dragStartPos;
-        static std::shared_ptr<GraphItems::GraphItemBase> currentlyDraggedShape;
         wxPoint unscrolledPosition;
         CalcUnscrolledPosition(event.GetPosition().x, event.GetPosition().y, &unscrolledPosition.x,
                                &unscrolledPosition.y);
@@ -2006,7 +2003,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         if (event.LeftDown())
             {
-            wxASSERT_MSG(currentlyDraggedShape == nullptr,
+            wxASSERT_MSG(m_currentlyDraggedShape == nullptr,
                          L"Item being dragged should be null upon left mouse down!");
 
             GraphItems::GraphItemBase* hitObject = nullptr;
@@ -2018,8 +2015,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 hitObject = (*movableObjectsPos).get();
                 // We tentatively start dragging, but wait for
                 // mouse movement before dragging properly.
-                dragMode = DragMode::DragStart;
-                dragStartPos = unscrolledPosition;
+                m_dragMode = DragMode::DragStart;
+                m_dragStartPos = unscrolledPosition;
                 hitObject->SetSelected(!hitObject->IsSelected());
 
                 // unselect any selected items (if Control/Command isn't held down),
@@ -2057,14 +2054,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 m_dragImage = std::make_unique<wxDragImage>(hitObject->ToBitmap(gdc),
                                                             wxCursor(wxCURSOR_HAND));
                 hitObject->SetInDragState(true);
-                currentlyDraggedShape = (*movableObjectsPos);
+                m_currentlyDraggedShape = (*movableObjectsPos);
                 event.Skip();
                 return; // we have our selection, so bail before hit testing everything else
                 }
 
-            wxASSERT_MSG(currentlyDraggedShape == nullptr,
+            wxASSERT_MSG(m_currentlyDraggedShape == nullptr,
                          L"Item being dragged should be null upon left mouse down!");
-            currentlyDraggedShape = nullptr;
+            m_currentlyDraggedShape = nullptr;
 
             // ...or the fixed items connected to the canvas's grid
             for (auto& fixedObjectsRow : GetFixedObjects())
@@ -2129,12 +2126,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             Update();
             event.Skip();
             }
-        else if (event.LeftUp() && dragMode != DragMode::DraggingNone)
+        else if (event.LeftUp() && m_dragMode != DragMode::DraggingNone)
             {
             // finished dragging
-            dragMode = DragMode::DraggingNone;
+            m_dragMode = DragMode::DraggingNone;
 
-            wxASSERT_MSG(currentlyDraggedShape, "Drag image is null while mouse up, "
+            wxASSERT_MSG(m_currentlyDraggedShape, "Drag image is null while mouse up, "
                                                 "although drag mode isn't set to none!");
             if (m_dragImage != nullptr)
                 {
@@ -2143,35 +2140,35 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 m_dragImage = nullptr;
                 }
 
-            wxASSERT_MSG(currentlyDraggedShape, "Item being dragged is null while mouse up, "
+            wxASSERT_MSG(m_currentlyDraggedShape, "Item being dragged is null while mouse up, "
                                                 "although drag mode isn't set to none!");
-            if (currentlyDraggedShape)
+            if (m_currentlyDraggedShape)
                 {
-                const wxPoint movePt(unscrolledPosition - dragStartPos);
-                currentlyDraggedShape->Offset(movePt.x, movePt.y);
-                currentlyDraggedShape->SetInDragState(false);
+                const wxPoint movePt(unscrolledPosition - m_dragStartPos);
+                m_currentlyDraggedShape->Offset(movePt.x, movePt.y);
+                m_currentlyDraggedShape->SetInDragState(false);
                 wxRect boundingBox(
-                    currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
+                    m_currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
                 boundingBox.Offset(event.GetPosition() - unscrolledPosition);
-                currentlyDraggedShape = nullptr;
+                m_currentlyDraggedShape = nullptr;
                 Refresh(true, &boundingBox);
                 }
             }
-        else if (event.Dragging() && dragMode != DragMode::DraggingNone)
+        else if (event.Dragging() && m_dragMode != DragMode::DraggingNone)
             {
-            wxASSERT_MSG(currentlyDraggedShape, "Item being dragged is null while mouse drag, "
+            wxASSERT_MSG(m_currentlyDraggedShape, "Item being dragged is null while mouse drag, "
                                                 "although drag mode isn't set to none!");
-            if (dragMode == DragMode::DragStart && currentlyDraggedShape)
+            if (m_dragMode == DragMode::DragStart && m_currentlyDraggedShape)
                 {
-                dragStartPos = unscrolledPosition;
+                m_dragStartPos = unscrolledPosition;
 
                 // start the drag
-                dragMode = DragMode::Dragging;
+                m_dragMode = DragMode::Dragging;
 
                 // redraw the item being dragged
                 // (we refresh a few pixels around the object to prevent any shearing)
                 wxRect boundingBox(
-                    currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
+                    m_currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
                 boundingBox.Offset(event.GetPosition() - unscrolledPosition);
                 Refresh(true, &boundingBox);
                 Update();
@@ -2179,13 +2176,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 // the offset between the top-left of the shape image and
                 // the current shape position
                 const wxPoint beginDragHotSpot =
-                    dragStartPos - currentlyDraggedShape->GetBoundingBox(gdc).GetPosition();
+                    m_dragStartPos - m_currentlyDraggedShape->GetBoundingBox(gdc).GetPosition();
                 // now we do this inside the implementation: always assume
                 // coordinates relative to the capture window (client coordinates)
                 if (!m_dragImage->BeginDrag(beginDragHotSpot, this, false))
                     {
                     m_dragImage = nullptr;
-                    dragMode = DragMode::DraggingNone;
+                    m_dragMode = DragMode::DraggingNone;
                     }
                 else
                     {
@@ -2195,7 +2192,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     m_dragImage->Show();
                     }
                 }
-            else if (dragMode == DragMode::Dragging)
+            else if (m_dragMode == DragMode::Dragging)
                 {
                 // move and show the image again
                 m_dragImage->Move(event.GetPosition());

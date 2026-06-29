@@ -1056,6 +1056,9 @@ namespace Wisteria
         // (note that these objects must be share_ptrs because a state-based share_ptr must be
         //  used during drag events; this is OK because these are NOT destroyed during resizing,
         //  they persist during the lifetime of canvas [at least])
+        DragMode m_dragMode{ DragMode::DraggingNone };
+        wxPoint m_dragStartPos;
+        std::shared_ptr<GraphItems::GraphItemBase> m_currentlyDraggedShape;
         std::unique_ptr<wxDragImage> m_dragImage;
         std::vector<std::shared_ptr<GraphItems::GraphItemBase>> m_freeFloatingObjects;
 
