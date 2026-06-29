@@ -185,12 +185,14 @@ namespace Wisteria::UI
             this, columnInfo,
             { VLI{}
                   .Label(_(L"X (independent)"))
+                  .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_xVariable })
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Y (dependent)"))
+                  .SingleSelection(true)
                   .Required(true)
                   .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
                                                           std::vector<wxString>{ m_yVariable })
