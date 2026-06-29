@@ -23,6 +23,7 @@ void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
         return;
         }
 
+    const std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(m_handler, url, m_currentId++);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
