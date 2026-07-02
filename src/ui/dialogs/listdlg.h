@@ -59,9 +59,6 @@ namespace Wisteria::UI
             @param values The values to fill into the list.
             @param useCheckBoxes @c true to show checkboxes in the list control.
             @param parent The parent window.
-            @param bkColor The dialog's background color.
-            @param hoverColor The list control's hover color.
-            @param foreColor The dialog's foreground color.
             @param buttonStyle The ListDlgFlags style for which features to include.
             @param id The dialog's ID.
             @param caption The dialog's caption.
@@ -70,16 +67,12 @@ namespace Wisteria::UI
             @param size The dialog's size.
             @param style The dialog's style.*/
         ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
-                const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
                 const long buttonStyle = LD_NO_BUTTONS, wxWindowID id = wxID_ANY,
                 const wxString& caption = wxString{}, wxString label = wxString{},
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize{ 600, 250 },
                 long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         /** @brief Constructor that won't show the checkbox.
             @param parent The parent window.
-            @param bkColor The dialog's background color.
-            @param hoverColor The list control's hover color.
-            @param foreColor The dialog's foreground color.
             @param buttonStyle The ListDlgFlags style for which features to include.
             @param id The dialog's ID.
             @param caption The dialog's caption.
@@ -87,11 +80,9 @@ namespace Wisteria::UI
             @param pos The dialog's position.
             @param size The dialog's size.
             @param style The dialog's style.*/
-        ListDlg(wxWindow* parent, const wxColour& bkColor, const wxColour& hoverColor,
-                const wxColour& foreColor, const long buttonStyle = LD_NO_BUTTONS,
-                wxWindowID id = wxID_ANY, const wxString& caption = wxString{},
-                wxString label = wxString{}, const wxPoint& pos = wxDefaultPosition,
-                const wxSize& size = wxSize(600, 250),
+        ListDlg(wxWindow* parent, const long buttonStyle = LD_NO_BUTTONS, wxWindowID id = wxID_ANY,
+                const wxString& caption = wxString{}, wxString label = wxString{},
+                const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(600, 250),
                 long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         /// @private
         ListDlg(const ListDlg&) = delete;
@@ -171,7 +162,6 @@ namespace Wisteria::UI
         bool m_useCheckBoxes{ true };
         long m_buttonStyle{ 0 };
         wxString m_label;
-        wxColour m_hoverColor;
         bool m_dontShowAgain{ false };
         ListCtrlEx* m_list{ nullptr };
         wxCheckListBox* m_checkList{ nullptr };

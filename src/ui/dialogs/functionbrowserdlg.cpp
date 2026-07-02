@@ -382,7 +382,7 @@ namespace Wisteria::UI
                                                      FromDIP(wxSize{ 500, 150 }));
         if (m_functionDescriptionWindow == nullptr)
             {
-            wxLogError(_("Failed to create wxWebView. No backend available."));
+            wxLogError(L"Failed to create wxWebView. No backend available.");
             }
         else
             {

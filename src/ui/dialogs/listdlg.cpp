@@ -109,14 +109,13 @@ namespace Wisteria::UI
 
     //------------------------------------------------------
     ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
-                     const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
                      const long buttonStyle /*= LD_NO_BUTTONS*/, const wxWindowID id /*= wxID_ANY*/,
                      const wxString& caption /*= wxString{}*/, wxString label /*= wxString{}*/,
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      const long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
         : m_useCheckBoxes(useCheckBoxes), m_buttonStyle(buttonStyle), m_label(std::move(label)),
-          m_hoverColor(hoverColor), m_values(values)
+          m_values(values)
         {
         GetData()->SetValues(values);
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
@@ -124,31 +123,23 @@ namespace Wisteria::UI
         // NOLINTNEXTLINE(bugprone-parent-virtual-call)
         SetMinSize(FromDIP(wxSize{ 600, 250 }));
 
-        wxNonOwnedWindow::SetBackgroundColour(bkColor);
-        wxWindow::SetForegroundColour(foreColor);
-
         CreateControls();
         Centre();
         BindEvents();
         }
 
     //------------------------------------------------------
-    ListDlg::ListDlg(wxWindow* parent, const wxColour& bkColor, const wxColour& hoverColor,
-                     const wxColour& foreColor, const long buttonStyle /*= LD_NO_BUTTONS*/,
+    ListDlg::ListDlg(wxWindow* parent, const long buttonStyle /*= LD_NO_BUTTONS*/,
                      wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
                      wxString label /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      const long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
-        : m_useCheckBoxes(false), m_buttonStyle(buttonStyle), m_label(std::move(label)),
-          m_hoverColor(hoverColor)
+        : m_useCheckBoxes(false), m_buttonStyle(buttonStyle), m_label(std::move(label))
         {
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
         // NOLINTNEXTLINE(bugprone-parent-virtual-call)
         SetMinSize(FromDIP(wxSize{ 600, 250 }));
-
-        wxNonOwnedWindow::SetBackgroundColour(bkColor);
-        wxWindow::SetForegroundColour(foreColor);
 
         CreateControls();
         Centre();
