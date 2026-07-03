@@ -251,6 +251,14 @@ namespace Wisteria::UI
         /// @private
         void OnFind(const wxFindDialogEvent& event);
 
+        /// @brief Re-applies theming from the current system colours.
+        /// @details Useful for containers (e.g., one pairing this editor with
+        ///     a `wxStyledTextCtrlMiniMap`) that need to force a synchronous
+        ///     refresh of this editor before re-syncing a dependent control,
+        ///     rather than relying on this editor's own asynchronous
+        ///     `wxEVT_SYS_COLOUR_CHANGED` handler.
+        void UpdateSystemThemeColors();
+
         /// @brief The style to use for error annotations.
         constexpr static int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
 
@@ -297,6 +305,7 @@ namespace Wisteria::UI
         void OnCharAdded(wxStyledTextEvent& event);
         void OnAutoCompletionSelected(const wxStyledTextEvent& event);
         void OnKeyDownEvt(wxKeyEvent& event);
+        void OnSysColourChanged(wxSysColourChangedEvent& event);
 
         void ResetActiveFunctionMap() noexcept { m_activeFunctionsAndSignaturesMap = nullptr; }
 

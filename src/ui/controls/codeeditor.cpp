@@ -70,9 +70,6 @@ namespace Wisteria::UI
         AutoCompSetAutoHide(true);
         AutoCompSetMaxHeight(30);
         // annotations styles
-        StyleSetBackground(
-            ERROR_ANNOTATION_STYLE,
-            wxSystemSettings::SelectLightDark(wxColour(244, 220, 220), wxColour(100, 100, 100)));
         StyleSetSizeFractional(ERROR_ANNOTATION_STYLE,
                                (StyleGetSizeFractional(wxSTC_STYLE_DEFAULT) * 4) / 5);
         // turn on annotations
@@ -86,6 +83,7 @@ namespace Wisteria::UI
         Bind(wxEVT_STC_MARGINCLICK, &CodeEditor::OnMarginClick, this, wxID_ANY);
         Bind(wxEVT_STC_CHARADDED, &CodeEditor::OnCharAdded, this, wxID_ANY);
         Bind(wxEVT_STC_AUTOCOMP_SELECTION, &CodeEditor::OnAutoCompletionSelected, this, wxID_ANY);
+        Bind(wxEVT_SYS_COLOUR_CHANGED, &CodeEditor::OnSysColourChanged, this);
 
         SetLanguage(lang);
 
@@ -100,6 +98,17 @@ namespace Wisteria::UI
 
         StyleSetBackground(wxSTC_STYLE_DEFAULT, background);
         StyleSetForeground(wxSTC_STYLE_DEFAULT, foreground);
+
+        StyleSetBackground(
+            ERROR_ANNOTATION_STYLE,
+            wxSystemSettings::SelectLightDark(wxColour(244, 220, 220), wxColour(100, 100, 100)));
+        StyleSetForeground(ERROR_ANNOTATION_STYLE, foreground);
+
+        // line-number and fold margins (gutters)
+        StyleSetBackground(wxSTC_STYLE_LINENUMBER, background);
+        StyleSetForeground(wxSTC_STYLE_LINENUMBER, foreground);
+        SetFoldMarginColour(true, background);
+        SetFoldMarginHiColour(true, background);
 
         for (int i = wxSTC_LUA_DEFAULT; i <= wxSTC_LUA_LABEL; ++i)
             {
@@ -508,6 +517,20 @@ namespace Wisteria::UI
             return true;
             }
         return false;
+        }
+
+    //-------------------------------------------------------------
+    void CodeEditor::UpdateSystemThemeColors()
+        {
+        SetThemeColor(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_WINDOW));
+        Refresh();
+        }
+
+    //-------------------------------------------------------------
+    void CodeEditor::OnSysColourChanged(wxSysColourChangedEvent& event)
+        {
+        UpdateSystemThemeColors();
+        event.Skip();
         }
 
     //-------------------------------------------------------------

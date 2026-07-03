@@ -39,6 +39,7 @@ namespace Wisteria::UI
         Bind(wxEVT_LEAVE_WINDOW, &SideBar::OnMouseLeave, this);
         Bind(wxEVT_LEFT_DOWN, &SideBar::OnMouseClick, this);
         Bind(wxEVT_SIZE, &SideBar::OnResize, this);
+        Bind(wxEVT_SYS_COLOUR_CHANGED, &SideBar::OnSysColourChanged, this);
         }
 
     //---------------------------------------------------
@@ -89,6 +90,18 @@ namespace Wisteria::UI
     void SideBar::OnResize(wxSizeEvent& event)
         {
         RecalcSizes();
+        event.Skip();
+        }
+
+    //---------------------------------------------------
+    void SideBar::OnSysColourChanged(wxSysColourChangedEvent& event)
+        {
+        // colors are recalculated from current system settings in OnPaint(),
+        // but nothing forces that to happen until the next unrelated repaint;
+        // Update() forces that repaint to happen now, rather than waiting for
+        // the next idle cycle
+        Refresh();
+        Update();
         event.Skip();
         }
 

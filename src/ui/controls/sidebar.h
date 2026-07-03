@@ -719,6 +719,7 @@ namespace Wisteria::UI
         void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
         void OnChar(wxKeyEvent& event);
         void OnResize(wxSizeEvent& event);
+        void OnSysColourChanged(wxSysColourChangedEvent& event);
         void OnDraw(wxDC& dc) final;
 
         /** @brief Renders a glassy surface across a box.
