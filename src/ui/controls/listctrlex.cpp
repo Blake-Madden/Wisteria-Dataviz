@@ -2900,19 +2900,42 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             outputText.reserve(numberOfRows * numberOfColumns * 15);
             }
 
+        // theme-aware (light/dark) styling for the exported table, using the CSS
+        // `Canvas`/`CanvasText` system colors so it follows the browser/OS color scheme,
+        // muted borders instead of harsh black, and rounded corners
+        const wxString tableCss = L"\n        .list-table {"
+                                  "\n            display: inline-block; max-width: 100%;"
+                                  "\n            border: 1px solid rgba(128, 128, 128, 0.35);"
+                                  "\n            border-radius: 8px;"
+                                  "\n            overflow: hidden;"
+                                  "\n        }"
+                                  "\n        .list-table table {"
+                                  "\n            background-color: Canvas; color: CanvasText;"
+                                  "\n            border-collapse: collapse;"
+                                  "\n        }"
+                                  "\n        .list-table table td, .list-table table th {"
+                                  "\n            border: 1px solid rgba(128, 128, 128, 0.2);"
+                                  "\n        }";
+
         if (formatAsStandAloneFile)
             {
             outputText = wxString::Format(
                 L"<!DOCTYPE html>\n<html>\n<head>"
                 "\n    <meta http-equiv='content-type' content='text/html; charset=UTF-8' />"
+                "\n    <meta name='color-scheme' content='light dark' />"
+                "\n    <meta name='generator' content='%s' />"
                 "\n    <title>%s</title>"
+                "\n    <style>%s</style>"
                 "\n</head>\n<body>",
-                GetLabel());
+                wxTheApp->GetAppName(), GetLabel(), tableCss);
+            }
+        else
+            {
+            outputText = wxString::Format(L"<style>%s</style>", tableCss);
             }
 
         const wxString tableStart =
-            wxString::Format(L"\n<table border='1' style='font-family:%s; font-size:%dpt; "
-                             "border-collapse:collapse;'>",
+            wxString::Format(L"\n<table style='font-family:%s; font-size:%dpt;'>",
                              listFont.GetFaceName(), listFont.GetPointSize());
         const wxString tableEnd = L"\n</table>";
 
@@ -3090,15 +3113,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         (pageTable.m_rowStarts.size() > 1 &&
                          pageTableCounter == pageTable.m_rowStarts.size() - 1))
                         {
-                        outputText += L"\n<div>";
+                        outputText += L"\n<div class='list-table'>";
                         }
                     // padding between tables on the same page
                     else if (pageTable.m_rowStarts.size() > 1)
                         {
-                        outputText +=
-                            wxString::Format(L"\n<div style='padding-right:%dpx;'>",
-                                             static_cast<int>(safe_divide<double>(
-                                                 printOut.GetTablePadding(), GetDPIScaleFactor())));
+                        outputText += wxString::Format(
+                            L"\n<div class='list-table' style='padding-right:%dpx;'>",
+                            static_cast<int>(safe_divide<double>(printOut.GetTablePadding(),
+                                                                 GetDPIScaleFactor())));
                         }
                     // start next table (on the same page)
                     outputText += tableStart + colGroup + columnHeader;
@@ -3129,7 +3152,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             }
         else
             {
-            outputText += tableStart + columnHeader;
+            outputText += L"\n<div class='list-table'>" + tableStart + columnHeader;
             for (long i = firstRow; i <= lastRow; ++i)
                 {
                 if (rowSelection == ExportRowSelection::ExportSelected && !IsSelected(i))
@@ -3138,7 +3161,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     }
                 formatRow(i, -1);
                 }
-            outputText += tableEnd;
+            outputText += tableEnd + L"\n</div>";
             }
 
         if (formatAsStandAloneFile)
