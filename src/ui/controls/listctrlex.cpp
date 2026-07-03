@@ -2903,19 +2903,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         // theme-aware (light/dark) styling for the exported table, using the CSS
         // `Canvas`/`CanvasText` system colors so it follows the browser/OS color scheme,
         // muted borders instead of harsh black, and rounded corners
-        const wxString tableCss = L"\n        .list-table {"
-                                  "\n            display: inline-block; max-width: 100%;"
-                                  "\n            border: 1px solid rgba(128, 128, 128, 0.35);"
-                                  "\n            border-radius: 8px;"
-                                  "\n            overflow: hidden;"
-                                  "\n        }"
-                                  "\n        .list-table table {"
-                                  "\n            background-color: Canvas; color: CanvasText;"
-                                  "\n            border-collapse: collapse;"
-                                  "\n        }"
-                                  "\n        .list-table table td, .list-table table th {"
-                                  "\n            border: 1px solid rgba(128, 128, 128, 0.2);"
-                                  "\n        }";
+        const wxString tableCss = _DT(L"\n        .list-table {"
+                                      "\n            display: inline-block; max-width: 100%;"
+                                      "\n            border: 1px solid rgba(128, 128, 128, 0.35);"
+                                      "\n            border-radius: 8px;"
+                                      "\n            overflow: hidden;"
+                                      "\n        }"
+                                      "\n        .list-table table {"
+                                      "\n            background-color: Canvas; color: CanvasText;"
+                                      "\n            border-collapse: collapse;"
+                                      "\n        }"
+                                      "\n        .list-table table td, .list-table table th {"
+                                      "\n            border: 1px solid rgba(128, 128, 128, 0.2);"
+                                      "\n        }");
 
         if (formatAsStandAloneFile)
             {
