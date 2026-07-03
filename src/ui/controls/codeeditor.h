@@ -14,6 +14,7 @@
 
 #include "../../util/donttranslate.h"
 #include "../../util/string_util.h"
+#include <algorithm>
 #include <map>
 #include <set>
 #include <vector>
@@ -124,6 +125,38 @@ namespace Wisteria::UI
                 @c false to hide them.*/
         void IncludeFoldingMargin(const bool include) { SetMarginWidth(1, include ? 16 : 0); }
 
+        /** @brief Sets whether to include the breakpoint margin.
+            @param include Set to @c true to include the breakpoint margin,
+                @c false to hide them.*/
+        void IncludeBreakpointMargin(const bool include)
+            {
+            SetMarginWidth(BREAKPOINT_MARGIN, include ? FromDIP(16) : 0);
+            }
+
+        /** @brief Toggles a breakpoint on the given line.
+            @param line The (0-based) line to toggle a breakpoint on.*/
+        void ToggleBreakpoint(int line);
+
+        /** @param line The (0-based) line to check.
+            @returns @c true if the given line currently has a breakpoint.*/
+        [[nodiscard]]
+        bool HasBreakpoint(int line)
+            {
+            return (MarkerGet(line) & (1 << BREAKPOINT_MARKER_NUM)) != 0;
+            }
+
+        /// @returns The (0-based) lines currently holding a breakpoint, in ascending order.
+        [[nodiscard]]
+        std::vector<int> GetBreakpointLines();
+
+        /** @brief Highlights the given line as the current execution point
+                (yellow background), scrolling it into view.
+            @param line The (0-based) line to highlight.*/
+        void HighlightExecutionLine(int line);
+
+        /// @brief Clears the current execution-line highlight, if any.
+        void ClearExecutionHighlight();
+
         /// @returns The filepath where the script is currently being saved to.
         [[nodiscard]]
         const wxString& GetScriptFilePath() const noexcept
@@ -221,6 +254,13 @@ namespace Wisteria::UI
         /// @brief The style to use for error annotations.
         constexpr static int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
 
+        /// @brief The margin index used for the breakpoint gutter.
+        constexpr static int BREAKPOINT_MARGIN = 2;
+        /// @brief The marker number for the breakpoint dot.
+        constexpr static int BREAKPOINT_MARKER_NUM = 1;
+        /// @brief The marker number for the current execution-line highlight.
+        constexpr static int EXECUTION_MARKER_NUM = 2;
+
       private:
         struct wxStringCmpNoCase
             {
@@ -274,6 +314,10 @@ namespace Wisteria::UI
         wxString m_libraryAndClassNamesStr;
 
         const wxStringNoCaseMap* m_activeFunctionsAndSignaturesMap{ nullptr };
+
+        // marker HANDLES (from MarkerAdd), not line numbers; Scintilla relocates
+        // these as lines are inserted/deleted above them
+        std::set<int> m_breakpointMarkerHandles;
 
         int m_lexer{ wxSTC_LEX_LUA };
 

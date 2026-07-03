@@ -57,6 +57,11 @@ namespace Wisteria::UI
         SetMarginWidth(1, FromDIP(16));
         SetMarginSensitive(1, true);
         SetFoldFlags(wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED | wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED);
+        // breakpoint margin
+        SetMarginType(BREAKPOINT_MARGIN, wxSTC_MARGIN_SYMBOL);
+        SetMarginMask(BREAKPOINT_MARGIN, 1 << BREAKPOINT_MARKER_NUM);
+        SetMarginWidth(BREAKPOINT_MARGIN, FromDIP(16));
+        SetMarginSensitive(BREAKPOINT_MARGIN, true);
         // turn off tabs
         SetUseTabs(false);
         SetTabWidth(4);
@@ -144,6 +149,15 @@ namespace Wisteria::UI
         MarkerDefine(wxSTC_MARKNUM_FOLDEROPENMID, wxSTC_MARK_ARROWDOWN, foreground, background);
         MarkerDefine(wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_EMPTY, foreground, background);
         MarkerDefine(wxSTC_MARKNUM_FOLDERTAIL, wxSTC_MARK_EMPTY, foreground, background);
+
+        // breakpoint dot: fixed red regardless of theme
+        MarkerDefine(BREAKPOINT_MARKER_NUM, wxSTC_MARK_CIRCLE,
+                     Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                     Colors::ColorBrewer::GetColor(Colors::Color::Red));
+        // current execution line: yellow background
+        MarkerDefine(
+            EXECUTION_MARKER_NUM, wxSTC_MARK_BACKGROUND, wxNullColour,
+            wxSystemSettings::SelectLightDark(wxColour{ 255, 247, 153 }, wxColour{ 90, 76, 20 }));
 
         SetCaretForeground(foreground);
         }
@@ -275,6 +289,10 @@ namespace Wisteria::UI
         else if (event.ControlDown() && event.GetKeyCode() == L'O')
             {
             Open();
+            }
+        else if (event.GetKeyCode() == WXK_F9)
+            {
+            ToggleBreakpoint(GetCurrentLine());
             }
         else
             {
@@ -495,15 +513,93 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void CodeEditor::OnMarginClick(const wxStyledTextEvent& event)
         {
+        const int lineClick = LineFromPosition(event.GetPosition());
         if (event.GetMargin() == 1)
             {
-            const int lineClick = LineFromPosition(event.GetPosition());
             if ((GetFoldLevel(lineClick) & wxSTC_FOLDLEVELHEADERFLAG) > 0)
                 {
                 ToggleFold(lineClick);
                 }
             }
+        else if (event.GetMargin() == BREAKPOINT_MARGIN)
+            {
+            ToggleBreakpoint(lineClick);
+            }
         }
+
+    //-------------------------------------------------------------
+    void CodeEditor::ToggleBreakpoint(const int line)
+        {
+        if (line < 0 || line >= GetLineCount())
+            {
+            return;
+            }
+        if (HasBreakpoint(line))
+            {
+            // remove directly by line/marker number; no handle lookup needed,
+            // so this can't silently no-op if our handle bookkeeping is ever out of sync
+            MarkerDelete(line, BREAKPOINT_MARKER_NUM);
+            // prune whichever handle just went stale as a result
+            for (auto it = m_breakpointMarkerHandles.begin();
+                 it != m_breakpointMarkerHandles.end();)
+                {
+                if (MarkerLineFromHandle(*it) == -1)
+                    {
+                    it = m_breakpointMarkerHandles.erase(it);
+                    }
+                else
+                    {
+                    ++it;
+                    }
+                }
+            }
+        else
+            {
+            const int handle = MarkerAdd(line, BREAKPOINT_MARKER_NUM);
+            if (handle != -1)
+                {
+                m_breakpointMarkerHandles.insert(handle);
+                }
+            }
+        }
+
+    //-------------------------------------------------------------
+    std::vector<int> CodeEditor::GetBreakpointLines()
+        {
+        std::vector<int> lines;
+        for (auto it = m_breakpointMarkerHandles.begin(); it != m_breakpointMarkerHandles.end();)
+            {
+            const int line = MarkerLineFromHandle(*it);
+            // the line holding this breakpoint was fully deleted, so prune the stale handle
+            if (line == -1)
+                {
+                it = m_breakpointMarkerHandles.erase(it);
+                }
+            else
+                {
+                lines.push_back(line);
+                ++it;
+                }
+            }
+        std::sort(lines.begin(), lines.end());
+        return lines;
+        }
+
+    //-------------------------------------------------------------
+    void CodeEditor::HighlightExecutionLine(const int line)
+        {
+        ClearExecutionHighlight();
+        if (line < 0 || line >= GetLineCount())
+            {
+            return;
+            }
+        MarkerAdd(line, EXECUTION_MARKER_NUM);
+        EnsureVisible(line);
+        GotoLine(line);
+        }
+
+    //-------------------------------------------------------------
+    void CodeEditor::ClearExecutionHighlight() { MarkerDeleteAll(EXECUTION_MARKER_NUM); }
 
     //-------------------------------------------------------------
     void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
