@@ -147,86 +147,18 @@ namespace Wisteria::UI
                 m_functionList->Clear();
                 m_functionList->Append(funcNames);
                 }
-            if (m_functionList->GetCount() != 0U)
+            if (m_functionList->GetCount() != 0U && pos != m_functionCollection.cend())
                 {
-                if (pos != m_functionCollection.cend())
-                    {
-                    m_functionList->SetSelection(
-                        (pos->m_lastSelectedItem == -1) ? 0 : pos->m_lastSelectedItem);
-                    }
-                if (m_functionDescriptionWindow != nullptr)
-                    {
-                    const auto scheme =
-                        wxSystemSettings::GetAppearance().IsDark() ?
-                            lily_of_the_valley::html_extract_text::color_scheme::dark :
-                            lily_of_the_valley::html_extract_text::color_scheme::light;
-                    m_functionDescriptionWindow->SetPage(
-                        wxString::Format(
-                            L"%s<div class='signature'>%s</div>"
-                            "<div class='description'>%s</div></body>%s",
-                            lily_of_the_valley::html_extract_text::format_styled_html5_dtd(
-                                scheme,
-                                wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)
-                                    .GetAsString(wxC2S_HTML_SYNTAX)
-                                    .ToStdWstring(),
-                                wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
-                                    .GetAsString(wxC2S_HTML_SYNTAX)
-                                    .ToStdWstring()),
-                            m_currentFunctionsAndDescriptions[m_functionList->GetSelection()].first,
-                            m_currentFunctionsAndDescriptions[m_functionList->GetSelection()]
-                                .second,
-                            lily_of_the_valley::html_extract_text::format_html_close()),
-                        wxString{});
-                    }
+                m_functionList->SetSelection(
+                    (pos->m_lastSelectedItem == -1) ? 0 : pos->m_lastSelectedItem);
                 }
-            else
-                {
-                if (m_functionDescriptionWindow != nullptr)
-                    {
-                    const auto scheme =
-                        wxSystemSettings::GetAppearance().IsDark() ?
-                            lily_of_the_valley::html_extract_text::color_scheme::dark :
-                            lily_of_the_valley::html_extract_text::color_scheme::light;
-                    m_functionDescriptionWindow->SetPage(
-                        lily_of_the_valley::html_extract_text::format_styled_html5_dtd(
-                            scheme,
-                            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)
-                                .GetAsString(wxC2S_HTML_SYNTAX)
-                                .ToStdWstring(),
-                            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
-                                .GetAsString(wxC2S_HTML_SYNTAX)
-                                .ToStdWstring()) +
-                            L"</body>" + lily_of_the_valley::html_extract_text::format_html_close(),
-                        wxString{});
-                    }
-                }
+            UpdateDescriptionWindow();
             }
         else if (event.GetId() == ID_FUNCTION_LIST)
             {
-            if (m_functionList->GetSelection() < 0 ||
-                static_cast<size_t>(m_functionList->GetSelection()) >=
+            if (m_functionList->GetSelection() >= 0 &&
+                static_cast<size_t>(m_functionList->GetSelection()) <
                     m_currentFunctionsAndDescriptions.size())
-                {
-                if (m_functionDescriptionWindow != nullptr)
-                    {
-                    const auto scheme =
-                        wxSystemSettings::GetAppearance().IsDark() ?
-                            lily_of_the_valley::html_extract_text::color_scheme::dark :
-                            lily_of_the_valley::html_extract_text::color_scheme::light;
-                    m_functionDescriptionWindow->SetPage(
-                        lily_of_the_valley::html_extract_text::format_styled_html5_dtd(
-                            scheme,
-                            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)
-                                .GetAsString(wxC2S_HTML_SYNTAX)
-                                .ToStdWstring(),
-                            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
-                                .GetAsString(wxC2S_HTML_SYNTAX)
-                                .ToStdWstring()) +
-                            L"</body>" + lily_of_the_valley::html_extract_text::format_html_close(),
-                        wxString{});
-                    }
-                }
-            else
                 {
                 // keep track of the currently selected item in the function list
                 auto pos = m_functionCollection.find(
@@ -237,33 +169,60 @@ namespace Wisteria::UI
                     nh.value().m_lastSelectedItem = m_functionList->GetSelection();
                     m_functionCollection.insert(std::move(nh));
                     }
-                // update the description area
-                if (m_functionDescriptionWindow != nullptr)
-                    {
-                    const auto scheme =
-                        wxSystemSettings::GetAppearance().IsDark() ?
-                            lily_of_the_valley::html_extract_text::color_scheme::dark :
-                            lily_of_the_valley::html_extract_text::color_scheme::light;
-                    m_functionDescriptionWindow->SetPage(
-                        wxString::Format(
-                            L"%s<div class='signature'>%s</div>"
-                            "<div class='description'>%s</div></body>%s",
-                            lily_of_the_valley::html_extract_text::format_styled_html5_dtd(
-                                scheme,
-                                wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)
-                                    .GetAsString(wxC2S_HTML_SYNTAX)
-                                    .ToStdWstring(),
-                                wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
-                                    .GetAsString(wxC2S_HTML_SYNTAX)
-                                    .ToStdWstring()),
-                            m_currentFunctionsAndDescriptions[m_functionList->GetSelection()].first,
-                            m_currentFunctionsAndDescriptions[m_functionList->GetSelection()]
-                                .second,
-                            lily_of_the_valley::html_extract_text::format_html_close()),
-                        wxString{});
-                    }
                 }
+            UpdateDescriptionWindow();
             }
+        }
+
+    //------------------------------------------------
+    void FunctionBrowserCtrl::UpdateDescriptionWindow()
+        {
+        if (m_functionDescriptionWindow == nullptr)
+            {
+            return;
+            }
+        const wxString styledDtd = lily_of_the_valley::html_extract_text::format_styled_html5_dtd(
+            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)
+                .GetAsString(wxC2S_HTML_SYNTAX)
+                .ToStdWstring(),
+            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
+                .GetAsString(wxC2S_HTML_SYNTAX)
+                .ToStdWstring(),
+            wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)
+                .GetAsString(wxC2S_HTML_SYNTAX)
+                .ToStdWstring(),
+            wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW)
+                .GetAsString(wxC2S_HTML_SYNTAX)
+                .ToStdWstring(),
+            wxSystemSettings::GetColour(wxSYS_COLOUR_HOTLIGHT)
+                .GetAsString(wxC2S_HTML_SYNTAX)
+                .ToStdWstring());
+
+        const auto selection = m_functionList->GetSelection();
+        if (selection < 0 ||
+            static_cast<size_t>(selection) >= m_currentFunctionsAndDescriptions.size())
+            {
+            m_functionDescriptionWindow->SetPage(
+                styledDtd + L"</body>" + lily_of_the_valley::html_extract_text::format_html_close(),
+                wxString{});
+            }
+        else
+            {
+            m_functionDescriptionWindow->SetPage(
+                wxString::Format(L"%s<div class='signature'>%s</div>"
+                                 "<div class='description'>%s</div></body>%s",
+                                 styledDtd, m_currentFunctionsAndDescriptions[selection].first,
+                                 m_currentFunctionsAndDescriptions[selection].second,
+                                 lily_of_the_valley::html_extract_text::format_html_close()),
+                wxString{});
+            }
+        }
+
+    //------------------------------------------------
+    void FunctionBrowserCtrl::OnSysColourChanged(wxSysColourChangedEvent& event)
+        {
+        UpdateDescriptionWindow();
+        event.Skip();
         }
 
     //------------------------------------------------
@@ -395,6 +354,7 @@ namespace Wisteria::UI
         Bind(wxEVT_SIDEBAR_CLICK, &FunctionBrowserCtrl::OnListSelected, this);
         Bind(wxEVT_LISTBOX, &FunctionBrowserCtrl::OnListSelected, this);
         Bind(wxEVT_WEBVIEW_NAVIGATING, &FunctionBrowserCtrl::OnNavigating, this);
+        Bind(wxEVT_SYS_COLOUR_CHANGED, &FunctionBrowserCtrl::OnSysColourChanged, this);
         Bind(
             wxEVT_LISTBOX_DCLICK, [this]([[maybe_unused]] wxCommandEvent&) { InsertFunction(); },
             FunctionBrowserCtrl::ID_FUNCTION_LIST);

@@ -159,6 +159,10 @@ namespace Wisteria::UI
 
         void OnListSelected(wxCommandEvent& event);
         void OnNavigating(wxWebViewEvent& event);
+        void OnSysColourChanged(wxSysColourChangedEvent& event);
+        /// @brief Refreshes the HTML description window, using the currently
+        ///     selected function (if any) and the current system theme colors.
+        void UpdateDescriptionWindow();
 
         struct CategoryInfo
             {

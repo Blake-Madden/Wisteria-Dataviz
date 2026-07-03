@@ -672,31 +672,24 @@ namespace lily_of_the_valley
             return L"</html>";
             }
 
-        /// @brief Color scheme for HTML formatting.
-        enum class color_scheme
-            {
-            /// @brief Light mode.
-            light,
-            /// @brief Dark mode.
-            dark
-            };
-
         /// @brief Formats a CSS style block for description/documentation windows.
-        /// @param scheme The color scheme to use.
         /// @param bgColor The background color (in HTML syntax, e.g., "#FFFFFF").
         /// @param textColor The text color (in HTML syntax).
+        /// @param signatureBgColor The background color for the signature box
+        ///     (in HTML syntax). Should be a system color (e.g., the window's
+        ///     button face color) so that it follows the current theme.
+        /// @param signatureBorderColor The border color for the signature box
+        ///     (in HTML syntax). Should be a system color.
+        /// @param linkColor The color for hyperlinks (in HTML syntax).
+        ///     Should be a system color (e.g., the system's hotlight color).
         /// @returns A CSS style block suitable for embedding in an HTML head section.
         [[nodiscard]]
-        static std::wstring format_description_style(color_scheme scheme,
-                                                     const std::wstring& bgColor,
-                                                     const std::wstring& textColor)
+        static std::wstring format_description_style(const std::wstring& bgColor,
+                                                     const std::wstring& textColor,
+                                                     const std::wstring& signatureBgColor,
+                                                     const std::wstring& signatureBorderColor,
+                                                     const std::wstring& linkColor)
             {
-            const std::wstring signatureBg =
-                (scheme == color_scheme::dark) ? L"rgba(255,255,255,0.06)" : L"#F0F5FA";
-            const std::wstring signatureBorder =
-                (scheme == color_scheme::dark) ? L"rgba(255,255,255,0.1)" : L"#D0DAE5";
-            const std::wstring linkColor = (scheme == color_scheme::dark) ? L"#6BB3FF" : L"#0066CC";
-
             return L"<style>"
                    "body { background-color:" +
                    bgColor + L"; color:" + textColor +
@@ -705,10 +698,10 @@ namespace lily_of_the_valley
                    "Inter,Roboto,Orbitron,Oxygen,Ubuntu,sans-serif; "
                    "font-size:13px; line-height:1.5; padding:12px; margin:0; }"
                    ".signature { background-color:" +
-                   signatureBg +
+                   signatureBgColor +
                    L"; "
                    "border:1px solid " +
-                   signatureBorder +
+                   signatureBorderColor +
                    L"; "
                    "border-radius:6px; padding:10px 12px; margin-bottom:10px; }"
                    ".description { padding:4px 0; }"
@@ -722,17 +715,26 @@ namespace lily_of_the_valley
             }
 
         /// @brief Formats a complete HTML5 document head with description styling.
-        /// @param scheme The color scheme to use.
         /// @param bgColor The background color (in HTML syntax).
         /// @param textColor The text color (in HTML syntax).
+        /// @param signatureBgColor The background color for the signature box
+        ///     (in HTML syntax). Should be a system color.
+        /// @param signatureBorderColor The border color for the signature box
+        ///     (in HTML syntax). Should be a system color.
+        /// @param linkColor The color for hyperlinks (in HTML syntax).
+        ///     Should be a system color.
         /// @returns The HTML5 DTD, head section with styles, and opening body tag.
         [[nodiscard]]
-        static std::wstring format_styled_html5_dtd(color_scheme scheme,
-                                                    const std::wstring& bgColor,
-                                                    const std::wstring& textColor)
+        static std::wstring format_styled_html5_dtd(const std::wstring& bgColor,
+                                                    const std::wstring& textColor,
+                                                    const std::wstring& signatureBgColor,
+                                                    const std::wstring& signatureBorderColor,
+                                                    const std::wstring& linkColor)
             {
             return L"<!DOCTYPE html><html><head><meta charset='utf-8'>" +
-                   format_description_style(scheme, bgColor, textColor) + L"</head><body>";
+                   format_description_style(bgColor, textColor, signatureBgColor,
+                                            signatureBorderColor, linkColor) +
+                   L"</head><body>";
             }
 
         /** @returns The CSS style section from an HTML buffer.
