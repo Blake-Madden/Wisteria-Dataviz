@@ -36,18 +36,7 @@ namespace Wisteria::UI
             m_descriptionLabel =
                 new wxHtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize{ -1, FromDIP(125) },
                                  wxHW_SCROLLBAR_AUTO | wxBORDER_THEME | wxHW_NO_SELECTION);
-            if (std::cmp_less(m_selected, m_descriptions.GetCount()))
-                {
-                m_descriptionLabel->SetPage(
-                    wxString::Format(L"<html><body bgcolor=%s text=%s link=%s>",
-                                     wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)
-                                         .GetAsString(wxC2S_HTML_SYNTAX),
-                                     wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
-                                         .GetAsString(wxC2S_HTML_SYNTAX),
-                                     wxSystemSettings::GetColour(wxSYS_COLOUR_HOTLIGHT)
-                                         .GetAsString(wxC2S_HTML_SYNTAX)) +
-                    m_descriptions[m_selected] + L"</body></html>");
-                }
+            UpdateDescriptionLabel();
             mainSizer->Add(m_descriptionLabel,
                            wxSizerFlags{}.Expand().Border().Align(wxALIGN_LEFT));
             }
@@ -66,6 +55,12 @@ namespace Wisteria::UI
     void RadioBoxDlg::OnRadioBoxChange([[maybe_unused]] wxCommandEvent& event)
         {
         TransferDataFromWindow();
+        UpdateDescriptionLabel();
+        }
+
+    //----------------------------------------------------------
+    void RadioBoxDlg::UpdateDescriptionLabel()
+        {
         if ((m_descriptionLabel != nullptr) &&
             (std::cmp_less(m_selected, m_descriptions.GetCount())))
             {
@@ -79,5 +74,12 @@ namespace Wisteria::UI
                         .GetAsString(wxC2S_HTML_SYNTAX)) +
                 m_descriptions[m_selected] + L"</body></html>");
             }
+        }
+
+    //----------------------------------------------------------
+    void RadioBoxDlg::OnSysColourChanged(wxSysColourChangedEvent& event)
+        {
+        UpdateDescriptionLabel();
+        event.Skip();
         }
     } // namespace Wisteria::UI

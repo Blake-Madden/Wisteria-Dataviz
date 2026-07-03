@@ -59,6 +59,7 @@ namespace Wisteria::UI
             Centre();
 
             Bind(wxEVT_RADIOBOX, &RadioBoxDlg::OnRadioBoxChange, this);
+            Bind(wxEVT_SYS_COLOUR_CHANGED, &RadioBoxDlg::OnSysColourChanged, this);
             }
 
         /// @private
@@ -102,6 +103,10 @@ namespace Wisteria::UI
         /// Creates the controls and sizers.
         void CreateControls(bool showHelpButton);
         void OnRadioBoxChange([[maybe_unused]] wxCommandEvent& event);
+        void OnSysColourChanged(wxSysColourChangedEvent& event);
+        /// @brief Refreshes the description window's HTML using the currently
+        ///     selected option (if any) and the current system theme colors.
+        void UpdateDescriptionLabel();
 
         wxArrayString m_choices;
         wxArrayString m_descriptions;

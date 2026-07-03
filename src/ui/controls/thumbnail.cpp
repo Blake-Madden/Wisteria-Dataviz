@@ -135,6 +135,7 @@ namespace Wisteria::UI
         Bind(wxEVT_SIZE, &Thumbnail::OnResize, this);
         Bind(wxEVT_LEFT_DOWN, &Thumbnail::OnClick, this);
         Bind(wxEVT_PAINT, &Thumbnail::OnPaint, this);
+        Bind(wxEVT_SYS_COLOUR_CHANGED, &Thumbnail::OnSysColourChanged, this);
 
         wxWindow::Refresh();
         wxWindow::Update();
@@ -199,6 +200,8 @@ namespace Wisteria::UI
         wxAutoBufferedPaintDC dc(this);
         dc.SetBackground(GetParent()->GetBackgroundColour());
         dc.Clear();
+        dc.SetTextForeground(
+            Colors::ColorContrast::BlackOrWhiteContrast(GetParent()->GetBackgroundColour()));
         if (m_img.IsOk())
             {
             m_img.SetDPIScaleFactor(GetDPIScaleFactor());
@@ -228,6 +231,14 @@ namespace Wisteria::UI
                             safe_divide(GetSize().GetHeight(), 2) - safe_divide(textHeight, 2));
                 }
             }
+        }
+
+    //----------------------------------
+    void Thumbnail::OnSysColourChanged(wxSysColourChangedEvent& event)
+        {
+        Refresh();
+        Update();
+        event.Skip();
         }
 
     //----------------------------------

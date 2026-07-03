@@ -143,6 +143,7 @@ namespace Wisteria::UI
         void OnResize(wxSizeEvent& event);
         void OnClick([[maybe_unused]] wxMouseEvent& event);
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
+        void OnSysColourChanged(wxSysColourChangedEvent& event);
 
         Wisteria::GraphItems::Image m_img;
         ClickMode m_clickMode{ ClickMode::FullSizeViewable };
