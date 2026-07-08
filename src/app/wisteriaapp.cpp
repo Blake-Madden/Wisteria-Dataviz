@@ -251,6 +251,16 @@ void WisteriaApp::LoadInterface()
     GetMainFrame()->Bind(wxEVT_RIBBONBAR_PAGE_CHANGED,
                          [this](wxRibbonBarEvent& evt)
                          {
+                             // this event bubbles up from child document frames (whose parent
+                             // window is the main frame), so ignore anything not coming from the
+                             // main frame's own ribbon; otherwise, switching tabs on a project
+                             // window's ribbon would show/focus the main frame's log tab controls
+                             // and steal focus to the main frame
+                             if (evt.GetEventObject() != GetMainFrameEx()->GetRibbon())
+                                 {
+                                 evt.Skip();
+                                 return;
+                                 }
                              const bool showLog = GetMainFrameEx()->IsLogTabActive();
                              if (m_startPage != nullptr)
                                  {
