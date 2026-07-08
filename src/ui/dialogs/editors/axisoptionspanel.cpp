@@ -63,7 +63,8 @@ namespace Wisteria::UI
                                    wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                    label.GetText().empty() ? InsertItemDlg::EditMode::Insert :
                                                              InsertItemDlg::EditMode::Edit,
-                                   false /*includePageOptions*/);
+                                   static_cast<LabelDlgOptions>(LabelDlgIncludeLabelOptions |
+                                                                LabelDlgIncludeShapeOptions));
                                if (!label.GetText().empty())
                                    {
                                    dlg.LoadFromLabel(label);
@@ -89,7 +90,8 @@ namespace Wisteria::UI
                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                     label.GetText().empty() ? InsertItemDlg::EditMode::Insert :
                                                               InsertItemDlg::EditMode::Edit,
-                                    false /*includePageOptions*/);
+                                    static_cast<LabelDlgOptions>(LabelDlgIncludeLabelOptions |
+                                                                 LabelDlgIncludeShapeOptions));
                                 if (!label.GetText().empty())
                                     {
                                     dlg.LoadFromLabel(label);
@@ -115,7 +117,8 @@ namespace Wisteria::UI
                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                     label.GetText().empty() ? InsertItemDlg::EditMode::Insert :
                                                               InsertItemDlg::EditMode::Edit,
-                                    false /*includePageOptions*/);
+                                    static_cast<LabelDlgOptions>(LabelDlgIncludeLabelOptions |
+                                                                 LabelDlgIncludeShapeOptions));
                                 if (!label.GetText().empty())
                                     {
                                     dlg.LoadFromLabel(label);

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Top content row -->
+  <rect x="32" y="28" width="192" height="36" rx="6" fill="none" stroke="#808080" stroke-width="10" stroke-linejoin="round"/>
+  <!-- Bottom content row -->
+  <rect x="32" y="192" width="192" height="36" rx="6" fill="none" stroke="#808080" stroke-width="10" stroke-linejoin="round"/>
+  <!-- Spacer region boundary -->
+  <line x1="32" y1="92" x2="224" y2="92" stroke="#5B9BD5" stroke-width="4" stroke-dasharray="10,10" stroke-linecap="round"/>
+  <line x1="32" y1="164" x2="224" y2="164" stroke="#5B9BD5" stroke-width="4" stroke-dasharray="10,10" stroke-linecap="round"/>
+  <!-- Expand arrow -->
+  <line x1="128" y1="96" x2="128" y2="160" stroke="#5B9BD5" stroke-width="10" stroke-linecap="round"/>
+  <polyline points="108,116 128,96 148,116" fill="none" stroke="#5B9BD5" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="108,140 128,160 148,140" fill="none" stroke="#5B9BD5" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -632,6 +632,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Insert a shape"));
         objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"axis.svg"),
                                     _(L"Insert an axis"));
+        objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"spacer.svg"),
+                                    _(L"Insert a spacer"));
+        objectsButtonBar->AddButton(ID_NEW_EMPTY_SPACER, _(L"Empty Spacer"),
+                                    ReadSvgIcon(L"empty-spacer.svg"), _(L"Insert an empty spacer"));
         objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"copy.svg"),
                                     _(L"Copy the selected item"));
         objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"paste.svg"),
@@ -975,7 +979,12 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
         {
-        return L"label.svg";
+        const auto* label = dynamic_cast<const Wisteria::GraphItems::Label*>(item);
+        const auto spacerType =
+            (label != nullptr) ? GetSpacerType(*label) : Wisteria::SpacerType::NotSpacer;
+        return (spacerType == Wisteria::SpacerType::EmptySpacer) ? L"empty-spacer.svg" :
+               (spacerType == Wisteria::SpacerType::Spacer)      ? L"spacer.svg" :
+                                                                   L"label.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
         {
@@ -995,4 +1004,19 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         }
 
     return {};
+    }
+
+//-------------------------------------------
+Wisteria::SpacerType WisteriaApp::GetSpacerType(const Wisteria::GraphItems::Label& label)
+    {
+    // a divider label (visible, possibly with empty text but an outline pen) is not a spacer
+    if (!label.GetText().empty() || label.IsShown())
+        {
+        return Wisteria::SpacerType::NotSpacer;
+        }
+
+    return (label.GetCanvasHeightProportion().has_value() &&
+            compare_doubles(label.GetCanvasHeightProportion().value(), 0.0)) ?
+               Wisteria::SpacerType::EmptySpacer :
+               Wisteria::SpacerType::Spacer;
     }

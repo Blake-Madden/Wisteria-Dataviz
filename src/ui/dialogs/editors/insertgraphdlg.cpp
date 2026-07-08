@@ -704,7 +704,8 @@ namespace Wisteria::UI
                            wxDefaultPosition, wxDefaultSize,
                            wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                            label.GetText().empty() ? EditMode::Insert : EditMode::Edit,
-                           false /*includePageOptions*/);
+                           static_cast<LabelDlgOptions>(LabelDlgIncludeLabelOptions |
+                                                        LabelDlgIncludeShapeOptions));
         if (!label.GetText().empty())
             {
             dlg.LoadFromLabel(label);

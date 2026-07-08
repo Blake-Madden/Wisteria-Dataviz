@@ -20,9 +20,9 @@ namespace Wisteria::UI
     InsertLabelDlg::InsertLabelDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
                                    wxWindow* parent, const wxString& caption, const wxWindowID id,
                                    const wxPoint& pos, const wxSize& size, const long style,
-                                   EditMode editMode, const bool includePageOptions)
+                                   EditMode editMode, const LabelDlgOptions options)
         : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
-          m_includePageOptions(includePageOptions)
+          m_options(options)
         {
         SetFitRowToContent(true);
         CreateControls();
@@ -39,15 +39,29 @@ namespace Wisteria::UI
         {
         InsertItemDlg::CreateControls();
 
+        if ((m_options & LabelDlgIncludeLabelOptions) != 0)
+            {
+            CreateLabelPage();
+            }
+
+        if ((m_options & LabelDlgIncludeShapeOptions) != 0)
+            {
+            CreateShapesPage();
+            }
+
+        if ((m_options & LabelDlgIncludePageOptions) != 0)
+            {
+            CreatePageOptionsPage();
+            }
+        }
+
+    //-------------------------------------------
+    void InsertLabelDlg::CreateLabelPage()
+        {
         auto* labelPage = new wxPanel(GetSideBarBook());
         auto* labelSizer = new wxBoxSizer(wxVERTICAL);
         labelPage->SetSizer(labelSizer);
         GetSideBarBook()->AddPage(labelPage, _(L"Label"), ID_LABEL_SECTION, true);
-
-        auto* shapesPage = new wxPanel(GetSideBarBook());
-        auto* shapesSizer = new wxBoxSizer(wxVERTICAL);
-        shapesPage->SetSizer(shapesSizer);
-        GetSideBarBook()->AddPage(shapesPage, _(L"Shapes"), ID_SHAPES_SECTION, false);
 
         // text
         auto* textSizer = new wxBoxSizer(wxVERTICAL);
@@ -197,6 +211,30 @@ namespace Wisteria::UI
         headerBox->Add(headerGrid, wxSizerFlags{}.Expand().Border());
         labelSizer->Add(headerBox, wxSizerFlags{}.Expand().Border());
 
+        // header controls start disabled
+        OnEnableHeader(false);
+
+        // bind events
+        enableHeaderCheck->Bind(wxEVT_CHECKBOX,
+                                [this](wxCommandEvent& evt) { OnEnableHeader(evt.IsChecked()); });
+        enableBackgroundColorCheck->Bind(wxEVT_CHECKBOX,
+                                         [this](wxCommandEvent& evt)
+                                         {
+                                             if (m_bgColorPicker != nullptr)
+                                                 {
+                                                 m_bgColorPicker->Enable(evt.IsChecked());
+                                                 }
+                                         });
+        }
+
+    //-------------------------------------------
+    void InsertLabelDlg::CreateShapesPage()
+        {
+        auto* shapesPage = new wxPanel(GetSideBarBook());
+        auto* shapesSizer = new wxBoxSizer(wxVERTICAL);
+        shapesPage->SetSizer(shapesSizer);
+        GetSideBarBook()->AddPage(shapesPage, _(L"Shapes"), ID_SHAPES_SECTION, false);
+
         // left image
         auto* leftImgBox = new wxStaticBoxSizer(wxVERTICAL, shapesPage, _(L"Left Image"));
         auto* leftImgHBox = new wxBoxSizer(wxHORIZONTAL);
@@ -311,26 +349,6 @@ namespace Wisteria::UI
 
         topShapeBox->Add(offsetGrid, wxSizerFlags{}.Expand().Border());
         shapesSizer->Add(topShapeBox, wxSizerFlags{}.Expand().Border());
-
-        // header controls start disabled
-        OnEnableHeader(false);
-
-        // bind events
-        enableHeaderCheck->Bind(wxEVT_CHECKBOX,
-                                [this](wxCommandEvent& evt) { OnEnableHeader(evt.IsChecked()); });
-        enableBackgroundColorCheck->Bind(wxEVT_CHECKBOX,
-                                         [this](wxCommandEvent& evt)
-                                         {
-                                             if (m_bgColorPicker != nullptr)
-                                                 {
-                                                 m_bgColorPicker->Enable(evt.IsChecked());
-                                                 }
-                                         });
-
-        if (m_includePageOptions)
-            {
-            CreatePageOptionsPage();
-            }
         }
 
     //-------------------------------------------
@@ -359,7 +377,7 @@ namespace Wisteria::UI
         {
         LoadAccessibilityOptions(label);
 
-        if (m_includePageOptions)
+        if ((m_options & LabelDlgIncludePageOptions) != 0)
             {
             LoadPageOptions(label);
             }

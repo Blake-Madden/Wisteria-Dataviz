@@ -148,6 +148,15 @@ class WisteriaView final : public wxView
     void OnInsertLabel(wxCommandEvent& event);
     void EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
                    size_t labelRow, size_t labelCol) const;
+    void OnInsertSpacer(wxCommandEvent& event);
+    void OnInsertEmptySpacer(wxCommandEvent& event);
+
+    /// @returns A new spacer (or empty spacer) label.
+    /// @param canvas The canvas the label will be placed on.
+    /// @param type Which kind of spacer to build.
+    [[nodiscard]]
+    static std::shared_ptr<Wisteria::GraphItems::Label> BuildSpacerLabel(Wisteria::Canvas* canvas,
+                                                                         Wisteria::SpacerType type);
     void OnInsertImage(wxCommandEvent& event);
     void EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas, size_t imageRow,
                    size_t imageCol) const;

@@ -726,6 +726,17 @@ namespace Wisteria
         /// @brief Clicking on the thumbnail will prompt the user for an image file.
         BrowseForImageFile
         };
+
+    /// @brief Which kind of spacer (if any) a Label matches.
+    enum class SpacerType
+        {
+        /// @brief A regular label (has text, or is otherwise visible).
+        NotSpacer,
+        /// @brief An invisible label that still consumes canvas space.
+        Spacer,
+        /// @brief An invisible label that consumes no canvas space.
+        EmptySpacer
+        };
     } // namespace Wisteria
 
 /** @}*/

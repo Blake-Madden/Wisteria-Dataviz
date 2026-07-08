@@ -32,6 +32,7 @@ discrete.svg
 donut-subgrouped.svg
 donut.svg
 edit.svg
+empty-spacer.svg
 equals.svg
 file-open.svg
 file-save.svg
@@ -77,6 +78,7 @@ scatterplot.svg
 select-all.svg
 shape.svg
 sort.svg
+spacer.svg
 sparkline.svg
 stem-leaf.svg
 subset.svg

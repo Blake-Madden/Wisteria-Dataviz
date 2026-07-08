@@ -9,6 +9,7 @@
 #ifndef WISTERIA_APP_H
 #define WISTERIA_APP_H
 
+#include "../base/enums.h"
 #include "../base/version.h"
 #include "../ui/app.h"
 #include "../ui/controls/listctrlex.h"
@@ -28,7 +29,8 @@
 namespace Wisteria::GraphItems
     {
     class GraphItemBase;
-    }
+    class Label;
+    } // namespace Wisteria::GraphItems
 
 class WisteriaApp;
 
@@ -110,6 +112,14 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     ///     string if the type is not recognized.
     [[nodiscard]]
     static wxString GetItemIconName(const Wisteria::GraphItems::GraphItemBase* item);
+
+    /// @returns Which kind of spacer @p label matches, or Wisteria::SpacerType::NotSpacer
+    ///     if it's a regular label (e.g., has text, or is a visible empty-text
+    ///     label used for a divider; see ReportBuilder::LoadSpacer()/
+    ///     LoadEmptySpacer()).
+    /// @param label The label to inspect.
+    [[nodiscard]]
+    static Wisteria::SpacerType GetSpacerType(const Wisteria::GraphItems::Label& label);
 
     /// @brief Returns the serializable type name for a graph,
     ///     based on its RTTI type.
@@ -252,6 +262,8 @@ constexpr wxWindowID ID_OBJECTS_BUTTONBAR{ wxID_HIGHEST + 43 };
 constexpr wxWindowID ID_NEW_IMAGE{ wxID_HIGHEST + 44 };
 constexpr wxWindowID ID_NEW_SHAPE{ wxID_HIGHEST + 45 };
 constexpr wxWindowID ID_NEW_COMMON_AXIS{ wxID_HIGHEST + 55 };
+constexpr wxWindowID ID_NEW_SPACER{ wxID_HIGHEST + 69 };
+constexpr wxWindowID ID_NEW_EMPTY_SPACER{ wxID_HIGHEST + 70 };
 
 // Multi-series graphs
 constexpr wxWindowID ID_NEW_MULTI_SERIES_LINEPLOT{ wxID_HIGHEST + 46 };

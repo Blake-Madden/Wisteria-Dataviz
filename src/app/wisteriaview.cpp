@@ -286,6 +286,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertShape, this, ID_NEW_SHAPE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertCommonAxis, this,
                   ID_NEW_COMMON_AXIS);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertSpacer, this,
+                  ID_NEW_SPACER);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertEmptySpacer, this,
+                  ID_NEW_EMPTY_SPACER);
 
     // bind edit/delete item buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
@@ -2448,6 +2452,8 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_SPACER, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_EMPTY_SPACER, true);
         m_objectsButtonBar->EnableButton(wxID_COPY, true);
         m_objectsButtonBar->EnableButton(wxID_PASTE, true);
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, true);
@@ -7927,6 +7933,33 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
 void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
                              const size_t labelRow, const size_t labelCol) const
     {
+    const auto spacerType = WisteriaApp::GetSpacerType(label);
+    if (spacerType != Wisteria::SpacerType::NotSpacer)
+        {
+        const bool isEmptySpacer{ spacerType == Wisteria::SpacerType::EmptySpacer };
+
+        // reuse the label dialog purely for its "Placement" (cell-picker) page;
+        // a spacer takes no other properties, so the Label/Shapes pages are hidden
+        Wisteria::UI::InsertLabelDlg dlg(
+            canvas, nullptr, m_frame, isEmptySpacer ? _(L"Edit Empty Spacer") : _(L"Edit Spacer"),
+            wxID_ANY, wxDefaultPosition, wxDefaultSize,
+            wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+            Wisteria::UI::InsertItemDlg::EditMode::Edit, Wisteria::UI::LabelDlgIncludePageOptions);
+        SetDialogIcon(dlg, isEmptySpacer ? L"empty-spacer.svg" : L"spacer.svg");
+        dlg.SetSelectedCell(labelRow, labelCol);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        canvas->SetFixedObject(labelRow, labelCol, BuildSpacerLabel(canvas, spacerType));
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        return;
+        }
+
     Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame, _(L"Edit Label"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
@@ -7958,6 +7991,79 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertSpacer([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertLabelDlg dlg(
+        canvas, nullptr, m_frame, _(L"Insert Spacer"), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
+    SetDialogIcon(dlg, L"spacer.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    dlg.ApplyGridSize();
+
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                           BuildSpacerLabel(canvas, Wisteria::SpacerType::Spacer));
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertEmptySpacer([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertLabelDlg dlg(
+        canvas, nullptr, m_frame, _(L"Insert Empty Spacer"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
+    SetDialogIcon(dlg, L"empty-spacer.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    dlg.ApplyGridSize();
+
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                           BuildSpacerLabel(canvas, Wisteria::SpacerType::EmptySpacer));
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+std::shared_ptr<Wisteria::GraphItems::Label>
+WisteriaView::BuildSpacerLabel(Wisteria::Canvas* canvas, const Wisteria::SpacerType type)
+    {
+    return (type == Wisteria::SpacerType::EmptySpacer) ?
+               std::make_shared<Wisteria::GraphItems::Label>(Wisteria::GraphItems::GraphItemInfo{}
+                                                                 .DPIScaling(canvas->FromDIP(1))
+                                                                 .Scaling(0.0)
+                                                                 .FixedWidthOnCanvas(true)
+                                                                 .CanvasHeightProportion(0)
+                                                                 .Show(false)) :
+               std::make_shared<Wisteria::GraphItems::Label>(Wisteria::GraphItems::GraphItemInfo{}
+                                                                 .DPIScaling(canvas->FromDIP(1))
+                                                                 .Scaling(1.0)
+                                                                 .Show(false));
     }
 
 //-------------------------------------------

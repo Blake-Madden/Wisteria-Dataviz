@@ -23,6 +23,20 @@
 
 namespace Wisteria::UI
     {
+    /// @brief Flags controlling which sections are visible in InsertLabelDlg.
+    enum LabelDlgOptions : int
+        {
+        LabelDlgIncludeNone = 0,              ///< No options enabled.
+        LabelDlgIncludeLabelOptions = 1 << 0, ///< Show the "Label" page (text, font, alignment,
+                                              ///< header).
+        LabelDlgIncludeShapeOptions = 1 << 1, ///< Show the "Shapes" page (left/top image,
+                                              ///< top shapes).
+        LabelDlgIncludePageOptions = 1 << 2,  ///< Show the "Placement" page.
+        /// @brief All options enabled (the default).
+        LabelDlgIncludeAll =
+        LabelDlgIncludeLabelOptions | LabelDlgIncludeShapeOptions | LabelDlgIncludePageOptions
+        };
+
     /** @brief Dialog for inserting or editing a Label on a canvas cell.
         @details Extends InsertItemDlg with a "Label" page containing:
             - Multi-line text.
@@ -49,14 +63,18 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.
             @param editMode Whether the item is being inserted or edited.
-            @param includePageOptions Whether to show the "Placement" section.
-                Set to @c false when the label is not placed directly on the canvas
-                (e.g., a donut hole label inside a pie chart).*/
+            @param options Bitmask of LabelDlgOptions controlling which sections
+                are shown. Exclude LabelDlgIncludePageOptions when the label is
+                not placed directly on the canvas (e.g., a donut hole label
+                inside a pie chart); exclude LabelDlgIncludeLabelOptions and/or
+                LabelDlgIncludeShapeOptions when only the "Placement" page
+                should be shown (e.g., inserting a spacer).*/
         InsertLabelDlg(Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
                        const wxString& caption = _(L"Insert Label"), wxWindowID id = wxID_ANY,
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                       EditMode editMode = EditMode::Insert, bool includePageOptions = true);
+                       EditMode editMode = EditMode::Insert,
+                       LabelDlgOptions options = LabelDlgIncludeAll);
 
         /// @private
         InsertLabelDlg(const InsertLabelDlg&) = delete;
@@ -196,6 +214,8 @@ namespace Wisteria::UI
 
       private:
         void CreateControls() final;
+        void CreateLabelPage();
+        void CreateShapesPage();
         void OnEnableHeader(bool enable);
 
         void OnAddTopShape();
@@ -209,7 +229,7 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_LABEL_SECTION{ wxID_HIGHEST + 2 };
         constexpr static wxWindowID ID_SHAPES_SECTION{ wxID_HIGHEST + 3 };
 
-        bool m_includePageOptions{ true };
+        LabelDlgOptions m_options{ LabelDlgIncludeAll };
 
         // text
         wxTextCtrl* m_textCtrl{ nullptr };
