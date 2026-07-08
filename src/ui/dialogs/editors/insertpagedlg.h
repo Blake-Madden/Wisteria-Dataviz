@@ -15,6 +15,7 @@
 #include "../../base/canvas.h"
 #include "../../controls/thumbnail.h"
 #include "../dialogwithhelp.h"
+#include <utility>
 #include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
@@ -161,9 +162,21 @@ namespace Wisteria::UI
             return m_resetPageNumbering;
             }
 
+        /** @brief Applies the edits made to the preview grid (e.g., items removed) to @c canvas.
+            @param canvas The canvas to sync the edited grid to. This should be called
+                after resizing @c canvas's grid (via SetFixedObjectsGridSize()) to the
+                dialog's reported row/column counts.*/
+        void ApplyGridEdits(Canvas* canvas) const;
+
       private:
         void CreateControls();
         void SelectCell(size_t row, size_t column);
+        void ResizeFixedObjectsGrid();
+        void BindPreviewPanelMouseEvents();
+        void PaintPreview(wxPaintEvent& event);
+        void DrawPreview(wxGCDC& dc);
+        [[nodiscard]]
+        std::pair<size_t, size_t> CellFromPoint(const wxPoint& pt) const;
 
         Canvas* m_canvas{ nullptr };
         wxPanel* m_previewPanel{ nullptr };
@@ -178,6 +191,18 @@ namespace Wisteria::UI
         int m_columnCount{ 1 };
         size_t m_selectedRow{ 0 };
         size_t m_selectedColumn{ 0 };
+        // Local, editable copy of the canvas's fixed object grid. Edits made in the
+        // preview panel (e.g., deleting an item) are applied here first and only
+        // committed back to the canvas via ApplyGridEdits().
+        std::vector<std::vector<std::shared_ptr<Wisteria::GraphItems::GraphItemBase>>>
+            m_fixedObjectsGrid;
+        // drag-and-drop state for moving an item from one cell to another in the preview panel
+        bool m_isDraggingItem{ false };
+        size_t m_dragSourceRow{ 0 };
+        size_t m_dragSourceColumn{ 0 };
+        size_t m_dragTargetRow{ 0 };
+        size_t m_dragTargetColumn{ 0 };
+        wxPoint m_dragPosition;
         bool m_insertAfter{ true };
         int m_relativePageIndex{ wxNOT_FOUND };
         wxArrayString m_pageNames;

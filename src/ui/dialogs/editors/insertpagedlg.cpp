@@ -9,6 +9,7 @@
 #include "insertpagedlg.h"
 #include "../../app/wisteriaapp.h"
 #include <wx/dcbuffer.h>
+#include <wx/graphics.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -60,6 +61,325 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertPageDlg::ResizeFixedObjectsGrid()
+        {
+        m_fixedObjectsGrid.resize(static_cast<size_t>(m_rowCount));
+        for (auto& row : m_fixedObjectsGrid)
+            {
+            row.resize(static_cast<size_t>(m_columnCount), nullptr);
+            }
+        }
+
+    //-------------------------------------------
+    std::pair<size_t, size_t> InsertPageDlg::CellFromPoint(const wxPoint& pt) const
+        {
+        const auto clientRect = m_previewPanel->GetClientRect();
+        const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
+        const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
+        if (cellWidth <= 0 || cellHeight <= 0)
+            {
+            return { 0, 0 };
+            }
+        const auto col = safe_divide<size_t>(pt.x - clientRect.x, cellWidth);
+        const auto row = safe_divide<size_t>(pt.y - clientRect.y, cellHeight);
+        return { std::min(row, static_cast<size_t>(m_rowCount - 1)),
+                 std::min(col, static_cast<size_t>(m_columnCount - 1)) };
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::ApplyGridEdits(Canvas* canvas) const
+        {
+        if (canvas == nullptr)
+            {
+            return;
+            }
+        const auto [rows, columns] = canvas->GetFixedObjectsGridSize();
+        for (size_t row = 0; row < m_fixedObjectsGrid.size() && row < rows; ++row)
+            {
+            for (size_t col = 0; col < m_fixedObjectsGrid[row].size() && col < columns; ++col)
+                {
+                canvas->SetFixedObject(row, col, m_fixedObjectsGrid[row][col]);
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::PaintPreview([[maybe_unused]] wxPaintEvent& event)
+        {
+        wxAutoBufferedPaintDC pdc(m_previewPanel);
+        pdc.SetBackground(*wxWHITE_BRUSH);
+        pdc.Clear();
+
+#ifdef __WXMSW__
+        wxGraphicsContext* context{ nullptr };
+        auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+        if (renderer != nullptr)
+            {
+            context = renderer->CreateContext(pdc);
+            }
+
+        if (context != nullptr)
+            {
+            wxGCDC dc(context);
+            DrawPreview(dc);
+            }
+        else
+            {
+            wxGCDC dc(pdc);
+            DrawPreview(dc);
+            }
+#else
+        wxGCDC dc(pdc);
+        DrawPreview(dc);
+#endif
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::DrawPreview(wxGCDC& dc)
+        {
+        const auto clientRect = m_previewPanel->GetClientRect();
+        if (clientRect.IsEmpty())
+            {
+            return;
+            }
+
+        const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
+        const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
+
+        const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
+
+        for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
+            {
+            for (size_t col = 0; std::cmp_less(col, m_columnCount); ++col)
+                {
+                const auto cellLeft = static_cast<int>(col * cellWidth);
+                const auto cellTop = static_cast<int>(row * cellHeight);
+                const auto cellW = static_cast<int>((col + 1) * cellWidth) - cellLeft;
+                const auto cellH = static_cast<int>((row + 1) * cellHeight) - cellTop;
+
+                const auto item =
+                    (row < m_fixedObjectsGrid.size() && col < m_fixedObjectsGrid[row].size()) ?
+                        m_fixedObjectsGrid[row][col] :
+                        nullptr;
+                const bool isOccupied = (item != nullptr);
+
+                dc.SetPen(*wxBLACK_PEN);
+                dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
+
+                if (row == m_selectedRow && col == m_selectedColumn)
+                    {
+                    dc.SetPen(wxPen{ wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT), 2,
+                                     wxPENSTYLE_DOT });
+                    dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
+                    }
+                else
+                    {
+                    dc.SetPen(*wxBLACK_PEN);
+                    dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
+                    }
+                dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop, cellW, cellH);
+
+                if (isOccupied)
+                    {
+                    const auto svgName = WisteriaApp::GetItemIconName(item.get());
+                    if (!svgName.empty())
+                        {
+                        const auto iconSize =
+                            std::min(cellW, cellH) * math_constants::three_fourths;
+                        const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
+                        if (bmpBundle.IsOk())
+                            {
+                            const auto bmp = bmpBundle.GetBitmap(wxSize(iconSize, iconSize));
+                            const auto iconLeft =
+                                clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
+                            const auto iconTop =
+                                clientRect.y + cellTop + (cellH - bmp.GetHeight()) / 2;
+                            dc.DrawBitmap(bmp, iconLeft, iconTop, true);
+                            }
+                        }
+                    }
+                else
+                    {
+                    const auto emptyLabel = _(L"[Empty]");
+                    dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).Smaller());
+                    dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
+                    const auto textExtent = dc.GetTextExtent(emptyLabel);
+                    const auto textLeft =
+                        clientRect.x + cellLeft + (cellW - textExtent.GetWidth()) / 2;
+                    const auto textTop =
+                        clientRect.y + cellTop + (cellH - textExtent.GetHeight()) / 2;
+                    dc.DrawText(emptyLabel, textLeft, textTop);
+                    }
+                }
+            }
+
+        if (m_isDraggingItem)
+            {
+            const auto targetLeft = static_cast<int>(m_dragTargetColumn * cellWidth);
+            const auto targetTop = static_cast<int>(m_dragTargetRow * cellHeight);
+            const auto targetW =
+                static_cast<int>((m_dragTargetColumn + 1) * cellWidth) - targetLeft;
+            const auto targetH = static_cast<int>((m_dragTargetRow + 1) * cellHeight) - targetTop;
+            const wxColour dropColor{ 0, 150, 0 };
+
+            // highlight the drop target cell
+            dc.SetPen(wxPen{ dropColor, FromDIP(4), wxPENSTYLE_SHORT_DASH });
+            dc.SetBrush(wxBrush{ wxColour(0, 150, 0, 30) });
+            dc.DrawRectangle(clientRect.x + targetLeft, clientRect.y + targetTop, targetW, targetH);
+
+            // arrow pointing down at the drop target
+            const auto arrowCenterX = clientRect.x + targetLeft + (targetW / 2);
+            const auto arrowTop = clientRect.y + targetTop + (targetH / 4);
+            const auto arrowHalfWidth = FromDIP(20);
+            const auto arrowHeight = FromDIP(32);
+
+            auto* gc = dc.GetGraphicsContext();
+
+            wxGraphicsPath arrowPath = gc->CreatePath();
+            arrowPath.MoveToPoint(arrowCenterX - arrowHalfWidth, arrowTop);
+            arrowPath.AddLineToPoint(arrowCenterX + arrowHalfWidth, arrowTop);
+            arrowPath.AddLineToPoint(arrowCenterX, arrowTop + arrowHeight);
+            arrowPath.CloseSubpath();
+
+            const wxColour lightSheen{ 170, 235, 170 };
+            const wxColour deepShade{ 0, 90, 0 };
+            gc->SetBrush(gc->CreateLinearGradientBrush(arrowCenterX, arrowTop, arrowCenterX,
+                                                       arrowTop + arrowHeight, lightSheen,
+                                                       deepShade));
+            gc->SetPen(wxPen{ deepShade, FromDIP(1) });
+            gc->DrawPath(arrowPath);
+
+            // glossy highlight running parallel to the triangle's left edge, fading from
+            // white into the arrow's own gradient rather than sitting on top of it
+            const double sheenStartT{ 0.05 };
+            const double sheenEndT{ 0.7 };
+            const double sheenInset{ arrowHalfWidth * 0.4 };
+            const double outerTopX{ (arrowCenterX - arrowHalfWidth) +
+                                    arrowHalfWidth * sheenStartT };
+            const double outerTopY{ arrowTop + arrowHeight * sheenStartT };
+            const double outerBottomX{ (arrowCenterX - arrowHalfWidth) +
+                                       arrowHalfWidth * sheenEndT };
+            const double outerBottomY{ arrowTop + arrowHeight * sheenEndT };
+            const double innerTopX{ outerTopX + sheenInset };
+            const double innerBottomX{ outerBottomX + sheenInset };
+
+            wxGraphicsPath sheenPath = gc->CreatePath();
+            sheenPath.MoveToPoint(outerTopX, outerTopY);
+            sheenPath.AddLineToPoint(outerBottomX, outerBottomY);
+            sheenPath.AddLineToPoint(innerBottomX, outerBottomY);
+            sheenPath.AddLineToPoint(innerTopX, outerTopY);
+            sheenPath.CloseSubpath();
+
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                (outerTopX + outerBottomX) / 2.0, (outerTopY + outerBottomY) / 2.0,
+                (innerTopX + innerBottomX) / 2.0, (outerTopY + outerBottomY) / 2.0,
+                wxColour(255, 255, 255, 190), wxColour(255, 255, 255, 0)));
+            gc->DrawPath(sheenPath);
+
+            // ghost of the dragged item, following the mouse cursor
+            const auto& draggedItem = m_fixedObjectsGrid[m_dragSourceRow][m_dragSourceColumn];
+            if (draggedItem != nullptr)
+                {
+                const auto svgName = WisteriaApp::GetItemIconName(draggedItem.get());
+                if (!svgName.empty())
+                    {
+                    const auto iconSize =
+                        std::min(targetW, targetH) * math_constants::three_fourths;
+                    const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
+                    if (bmpBundle.IsOk())
+                        {
+                        const auto bmp = bmpBundle.GetBitmap(wxSize(iconSize, iconSize));
+                        dc.DrawBitmap(bmp, m_dragPosition.x - (bmp.GetWidth() / 2),
+                                      m_dragPosition.y - (bmp.GetHeight() / 2), true);
+                        }
+                    }
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::BindPreviewPanelMouseEvents()
+        {
+        // click handler (also arms a possible drag if the clicked cell is occupied)
+        m_previewPanel->Bind(wxEVT_LEFT_DOWN,
+                             [this](wxMouseEvent& evt)
+                             {
+                                 m_previewPanel->SetFocus();
+                                 const auto clientRect = m_previewPanel->GetClientRect();
+                                 if (clientRect.IsEmpty())
+                                     {
+                                     return;
+                                     }
+
+                                 const auto [row, col] = CellFromPoint(evt.GetPosition());
+                                 SelectCell(row, col);
+
+                                 if (row < m_fixedObjectsGrid.size() &&
+                                     col < m_fixedObjectsGrid[row].size() &&
+                                     m_fixedObjectsGrid[row][col] != nullptr)
+                                     {
+                                     m_dragSourceRow = row;
+                                     m_dragSourceColumn = col;
+                                     m_dragTargetRow = row;
+                                     m_dragTargetColumn = col;
+                                     m_dragPosition = evt.GetPosition();
+                                     m_previewPanel->CaptureMouse();
+                                     }
+                             });
+
+        // drag handler: updates the drop target and ghost position while the
+        // mouse moves with the button held down
+        m_previewPanel->Bind(wxEVT_MOTION,
+                             [this](wxMouseEvent& evt)
+                             {
+                                 if (!m_previewPanel->HasCapture())
+                                     {
+                                     return;
+                                     }
+                                 m_isDraggingItem = true;
+                                 m_dragPosition = evt.GetPosition();
+                                 const auto dropCell = CellFromPoint(evt.GetPosition());
+                                 m_dragTargetRow = dropCell.first;
+                                 m_dragTargetColumn = dropCell.second;
+                                 m_previewPanel->Refresh();
+                             });
+
+        // drop handler: moves (swaps) the dragged item into the target cell
+        m_previewPanel->Bind(
+            wxEVT_LEFT_UP,
+            [this]([[maybe_unused]]
+                   wxMouseEvent& evt)
+            {
+                if (m_previewPanel->HasCapture())
+                    {
+                    m_previewPanel->ReleaseMouse();
+                    }
+                if (m_isDraggingItem)
+                    {
+                    if ((m_dragTargetRow != m_dragSourceRow ||
+                         m_dragTargetColumn != m_dragSourceColumn) &&
+                        m_dragTargetRow < m_fixedObjectsGrid.size() &&
+                        m_dragTargetColumn < m_fixedObjectsGrid[m_dragTargetRow].size())
+                        {
+                        std::swap(m_fixedObjectsGrid[m_dragSourceRow][m_dragSourceColumn],
+                                  m_fixedObjectsGrid[m_dragTargetRow][m_dragTargetColumn]);
+                        SelectCell(m_dragTargetRow, m_dragTargetColumn);
+                        }
+                    m_isDraggingItem = false;
+                    m_previewPanel->Refresh();
+                    }
+            });
+
+        m_previewPanel->Bind(wxEVT_MOUSE_CAPTURE_LOST,
+                             [this]([[maybe_unused]] wxMouseCaptureLostEvent&)
+                             {
+                                 m_isDraggingItem = false;
+                                 m_previewPanel->Refresh();
+                             });
+        }
+
+    //-------------------------------------------
     void InsertPageDlg::CreateControls()
         {
         if (m_canvas != nullptr)
@@ -67,6 +387,17 @@ namespace Wisteria::UI
             const auto [currentRows, currentCols] = m_canvas->GetFixedObjectsGridSize();
             m_rowCount = currentRows;
             m_columnCount = currentCols;
+            }
+        ResizeFixedObjectsGrid();
+        if (m_canvas != nullptr)
+            {
+            for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
+                {
+                for (size_t col = 0; std::cmp_less(col, m_columnCount); ++col)
+                    {
+                    m_fixedObjectsGrid[row][col] = m_canvas->GetFixedObject(row, col);
+                    }
+                }
             }
 
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -248,118 +579,7 @@ namespace Wisteria::UI
 
         SetSizer(mainSizer);
 
-        const auto paintPreview = [this]([[maybe_unused]]
-                                         wxPaintEvent&)
-        {
-            wxAutoBufferedPaintDC dc(m_previewPanel);
-            dc.SetBackground(*wxWHITE_BRUSH);
-            dc.Clear();
-
-            const auto clientRect = m_previewPanel->GetClientRect();
-            if (clientRect.IsEmpty())
-                {
-                return;
-                }
-
-            const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
-            const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
-
-            const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
-
-            for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
-                {
-                for (size_t col = 0; std::cmp_less(col, m_columnCount); ++col)
-                    {
-                    const auto cellLeft = static_cast<int>(col * cellWidth);
-                    const auto cellTop = static_cast<int>(row * cellHeight);
-                    const auto cellW = static_cast<int>((col + 1) * cellWidth) - cellLeft;
-                    const auto cellH = static_cast<int>((row + 1) * cellHeight) - cellTop;
-
-                    const auto canvasGrid = (m_canvas != nullptr) ?
-                                                m_canvas->GetFixedObjectsGridSize() :
-                                                std::make_pair<size_t, size_t>(0, 0);
-                    const auto item =
-                        (m_canvas != nullptr && row < canvasGrid.first && col < canvasGrid.second) ?
-                            m_canvas->GetFixedObject(row, col) :
-                            nullptr;
-                    const bool isOccupied = (item != nullptr);
-
-                    dc.SetPen(*wxBLACK_PEN);
-                    dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
-
-                    if (row == m_selectedRow && col == m_selectedColumn)
-                        {
-                        dc.SetPen(wxPen{ wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT), 2,
-                                         wxPENSTYLE_DOT });
-                        dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
-                        }
-                    else
-                        {
-                        dc.SetPen(*wxBLACK_PEN);
-                        dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
-                        }
-                    dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop, cellW, cellH);
-
-                    if (isOccupied)
-                        {
-                        const auto svgName = WisteriaApp::GetItemIconName(item.get());
-                        if (!svgName.empty())
-                            {
-                            const auto iconSize =
-                                std::min(cellW, cellH) * math_constants::three_fourths;
-                            const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
-                            if (bmpBundle.IsOk())
-                                {
-                                const auto bmp = bmpBundle.GetBitmap(wxSize(iconSize, iconSize));
-                                const auto iconLeft =
-                                    clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
-                                const auto iconTop =
-                                    clientRect.y + cellTop + (cellH - bmp.GetHeight()) / 2;
-                                dc.DrawBitmap(bmp, iconLeft, iconTop, true);
-                                }
-                            }
-                        }
-                    else
-                        {
-                        const auto emptyLabel = _(L"[Empty]");
-                        dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).Smaller());
-                        dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
-                        const auto textExtent = dc.GetTextExtent(emptyLabel);
-                        const auto textLeft =
-                            clientRect.x + cellLeft + (cellW - textExtent.GetWidth()) / 2;
-                        const auto textTop =
-                            clientRect.y + cellTop + (cellH - textExtent.GetHeight()) / 2;
-                        dc.DrawText(emptyLabel, textLeft, textTop);
-                        }
-                    }
-                }
-        };
-
-        // click handler
-        m_previewPanel->Bind(
-            wxEVT_LEFT_DOWN,
-            [this](wxMouseEvent& evt)
-            {
-                m_previewPanel->SetFocus();
-                const auto clientRect = m_previewPanel->GetClientRect();
-                if (clientRect.IsEmpty())
-                    {
-                    return;
-                    }
-                const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
-                const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
-
-                if (cellWidth <= 0 || cellHeight <= 0)
-                    {
-                    return;
-                    }
-
-                const auto col = safe_divide<size_t>(evt.GetX() - clientRect.x, cellWidth);
-                const auto row = safe_divide<size_t>(evt.GetY() - clientRect.y, cellHeight);
-
-                SelectCell(std::min(row, static_cast<size_t>(m_rowCount - 1)),
-                           std::min(col, static_cast<size_t>(m_columnCount - 1)));
-            });
+        BindPreviewPanelMouseEvents();
 
         // keyboard handler (arrow keys navigate cells,
         // Tab/Shift+Tab pass through for normal focus traversal)
@@ -406,18 +626,18 @@ namespace Wisteria::UI
                     }
                 if (keyCode == WXK_DELETE || keyCode == WXK_NUMPAD_DELETE || keyCode == WXK_BACK)
                     {
-                    const auto [canvasRows, canvasColumns] = m_canvas->GetFixedObjectsGridSize();
-                    if (m_selectedRow < canvasRows && m_selectedColumn < canvasColumns &&
-                        m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn) != nullptr)
+                    if (m_selectedRow < m_fixedObjectsGrid.size() &&
+                        m_selectedColumn < m_fixedObjectsGrid[m_selectedRow].size() &&
+                        m_fixedObjectsGrid[m_selectedRow][m_selectedColumn] != nullptr)
                         {
-                        if (wxMessageBox(
-                                wxString::Format(
-                                    _(L"Are you sure you want to delete the selected %s?"),
-                                    m_canvas->GetFixedObject(m_selectedRow, m_selectedColumn)
-                                        ->GetClassName()),
-                                _(L"Delete Item"), wxYES_NO | wxICON_QUESTION, this) == wxYES)
+                        if (wxMessageBox(wxString::Format(
+                                             _(L"Are you sure you want to delete the selected %s?"),
+                                             m_fixedObjectsGrid[m_selectedRow][m_selectedColumn]
+                                                 ->GetClassName()),
+                                         _(L"Delete Item"), wxYES_NO | wxICON_QUESTION,
+                                         this) == wxYES)
                             {
-                            m_canvas->SetFixedObject(m_selectedRow, m_selectedColumn, nullptr);
+                            m_fixedObjectsGrid[m_selectedRow][m_selectedColumn] = nullptr;
                             m_previewPanel->Refresh();
                             }
                         }
@@ -444,7 +664,7 @@ namespace Wisteria::UI
                                  evt.Skip();
                              });
 
-        m_previewPanel->Bind(wxEVT_PAINT, paintPreview);
+        m_previewPanel->Bind(wxEVT_PAINT, &InsertPageDlg::PaintPreview, this);
         m_previewPanel->Bind(wxEVT_SIZE,
                              [this](wxSizeEvent& evt)
                              {
@@ -456,12 +676,14 @@ namespace Wisteria::UI
                        [this]([[maybe_unused]] wxSpinEvent&)
                        {
                            TransferDataFromWindow();
+                           ResizeFixedObjectsGrid();
                            m_previewPanel->Refresh();
                        });
         columnsSpin->Bind(wxEVT_SPINCTRL,
                           [this]([[maybe_unused]] wxSpinEvent&)
                           {
                               TransferDataFromWindow();
+                              ResizeFixedObjectsGrid();
                               m_previewPanel->Refresh();
                           });
         }

@@ -2244,6 +2244,7 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
+    dlg.ApplyGridEdits(canvas);
     canvas->FitToPageWhenPrinting(true);
     canvas->SetSizeFromPaperSize();
     canvas->MaintainAspectRatio(dlg.GetRows() > 1);
