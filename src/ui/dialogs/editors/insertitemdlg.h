@@ -283,6 +283,9 @@ namespace Wisteria::UI
         size_t m_columns{ 1 };
         size_t m_selectedRow{ 0 };
         size_t m_selectedColumn{ 0 };
+        // Fixed once from the grid's initial cell size so that resizing the dialog
+        // repositions (but does not rescale) the item icons drawn in the grid preview.
+        int m_iconPixelSize{ 0 };
 
         EditMode m_editMode{ EditMode::Insert };
 

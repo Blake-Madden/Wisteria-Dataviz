@@ -987,11 +987,8 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
             }
 
         const auto spacerType = GetSpacerType(*label);
-        if (spacerType == Wisteria::SpacerType::EmptySpacer)
-            {
-            return L"empty-spacer.svg";
-            }
-        if (spacerType == Wisteria::SpacerType::Spacer)
+        if (spacerType == Wisteria::SpacerType::EmptySpacer ||
+            spacerType == Wisteria::SpacerType::Spacer)
             {
             return L"spacer.svg";
             }

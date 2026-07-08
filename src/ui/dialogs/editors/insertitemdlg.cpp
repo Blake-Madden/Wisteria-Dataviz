@@ -124,6 +124,7 @@ namespace Wisteria::UI
                              [this]([[maybe_unused]] wxSpinEvent&)
                              {
                                  m_rows = static_cast<size_t>(m_rowsSpin->GetValue());
+                                 m_iconPixelSize = 0;
                                  if (m_gridPanel != nullptr)
                                      {
                                      m_gridPanel->Refresh();
@@ -133,6 +134,7 @@ namespace Wisteria::UI
                                 [this]([[maybe_unused]] wxSpinEvent&)
                                 {
                                     m_columns = static_cast<size_t>(m_columnsSpin->GetValue());
+                                    m_iconPixelSize = 0;
                                     if (m_gridPanel != nullptr)
                                         {
                                         m_gridPanel->Refresh();
@@ -174,6 +176,14 @@ namespace Wisteria::UI
                     const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columns);
                     const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rows);
 
+                    // fix the icon size to the grid's initial cell size so that
+                    // resizing the dialog repositions (but doesn't upscale) the icons
+                    if (m_iconPixelSize <= 0)
+                        {
+                        m_iconPixelSize =
+                            std::max(1, static_cast<int>(std::min(cellWidth, cellHeight) * 3 / 4));
+                        }
+
                     const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
 
                     for (size_t row = 0; row < m_rows; ++row)
@@ -214,13 +224,12 @@ namespace Wisteria::UI
                                 const auto svgName = WisteriaApp::GetItemIconName(item.get());
                                 if (!svgName.empty())
                                     {
-                                    const auto iconSize = std::min(cellW, cellH) * 3 / 4;
                                     const auto bmpBundle =
                                         wxGetApp().GetResourceManager().GetSVG(svgName);
                                     if (bmpBundle.IsOk())
                                         {
-                                        const auto bmp =
-                                            bmpBundle.GetBitmap(wxSize{ iconSize, iconSize });
+                                        const auto bmp = bmpBundle.GetBitmap(
+                                            wxSize{ m_iconPixelSize, m_iconPixelSize });
                                         const auto iconLeft =
                                             clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
                                         const auto iconTop =

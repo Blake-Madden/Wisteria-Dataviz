@@ -68,6 +68,8 @@ namespace Wisteria::UI
             {
             row.resize(static_cast<size_t>(m_columnCount), nullptr);
             }
+        // grid dimensions changed, so the cell size (and thus the fixed icon size) is stale
+        m_iconPixelSize = 0;
         }
 
     //-------------------------------------------
@@ -146,6 +148,14 @@ namespace Wisteria::UI
         const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
         const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
 
+        // fix the icon size to the grid's initial cell size so that resizing the
+        // dialog repositions (but doesn't upscale) the icons
+        if (m_iconPixelSize <= 0)
+            {
+            m_iconPixelSize = std::max(1, static_cast<int>(std::min(cellWidth, cellHeight) *
+                                                           math_constants::three_fourths));
+            }
+
         const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
 
         for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
@@ -184,12 +194,11 @@ namespace Wisteria::UI
                     const auto svgName = WisteriaApp::GetItemIconName(item.get());
                     if (!svgName.empty())
                         {
-                        const auto iconSize =
-                            std::min(cellW, cellH) * math_constants::three_fourths;
                         const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
                         if (bmpBundle.IsOk())
                             {
-                            const auto bmp = bmpBundle.GetBitmap(wxSize(iconSize, iconSize));
+                            const auto bmp =
+                                bmpBundle.GetBitmap(wxSize(m_iconPixelSize, m_iconPixelSize));
                             const auto iconLeft =
                                 clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
                             const auto iconTop =
@@ -284,12 +293,11 @@ namespace Wisteria::UI
                 const auto svgName = WisteriaApp::GetItemIconName(draggedItem.get());
                 if (!svgName.empty())
                     {
-                    const auto iconSize =
-                        std::min(targetW, targetH) * math_constants::three_fourths;
                     const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
                     if (bmpBundle.IsOk())
                         {
-                        const auto bmp = bmpBundle.GetBitmap(wxSize(iconSize, iconSize));
+                        const auto bmp =
+                            bmpBundle.GetBitmap(wxSize(m_iconPixelSize, m_iconPixelSize));
                         dc.DrawBitmap(bmp, m_dragPosition.x - (bmp.GetWidth() / 2),
                                       m_dragPosition.y - (bmp.GetHeight() / 2), true);
                         }

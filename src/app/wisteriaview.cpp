@@ -7968,7 +7968,7 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
             wxID_ANY, wxDefaultPosition, wxDefaultSize,
             wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
             Wisteria::UI::InsertItemDlg::EditMode::Edit, Wisteria::UI::LabelDlgIncludePageOptions);
-        SetDialogIcon(dlg, isEmptySpacer ? L"empty-spacer.svg" : L"spacer.svg");
+        SetDialogIcon(dlg, L"spacer.svg");
         dlg.SetSelectedCell(labelRow, labelCol);
 
         if (dlg.ShowModal() != wxID_OK)
