@@ -121,6 +121,12 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     [[nodiscard]]
     static Wisteria::SpacerType GetSpacerType(const Wisteria::GraphItems::Label& label);
 
+    /// @returns Which kind of divider line @p label matches, or
+    ///     Wisteria::DividerType::NotDivider if it's a regular label.
+    /// @param label The label to inspect.
+    [[nodiscard]]
+    static Wisteria::DividerType GetDividerType(const Wisteria::GraphItems::Label& label);
+
     /// @brief Returns the serializable type name for a graph,
     ///     based on its RTTI type.
     /// @param graph The graph type to look up.
@@ -264,6 +270,11 @@ constexpr wxWindowID ID_NEW_SHAPE{ wxID_HIGHEST + 45 };
 constexpr wxWindowID ID_NEW_COMMON_AXIS{ wxID_HIGHEST + 55 };
 constexpr wxWindowID ID_NEW_SPACER{ wxID_HIGHEST + 69 };
 constexpr wxWindowID ID_NEW_EMPTY_SPACER{ wxID_HIGHEST + 70 };
+constexpr wxWindowID ID_NEW_DIVIDER{ wxID_HIGHEST + 71 };
+constexpr wxWindowID ID_NEW_DIVIDER_HORIZONTAL_SINGLE{ wxID_HIGHEST + 72 };
+constexpr wxWindowID ID_NEW_DIVIDER_HORIZONTAL_DOUBLE{ wxID_HIGHEST + 73 };
+constexpr wxWindowID ID_NEW_DIVIDER_VERTICAL_SINGLE{ wxID_HIGHEST + 74 };
+constexpr wxWindowID ID_NEW_DIVIDER_VERTICAL_DOUBLE{ wxID_HIGHEST + 75 };
 
 // Multi-series graphs
 constexpr wxWindowID ID_NEW_MULTI_SERIES_LINEPLOT{ wxID_HIGHEST + 46 };

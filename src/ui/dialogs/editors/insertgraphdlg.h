@@ -44,7 +44,7 @@ namespace Wisteria::UI
         };
 
     /// @brief Flags controlling which sections are visible in InsertGraphDlg.
-    enum GraphDlgOptions : int
+    enum GraphDlgOptions
         {
         GraphDlgIncludeNone = 0,             ///< No options enabled.
         GraphDlgIncludeColorScheme = 1 << 0, ///< Show the color scheme controls.

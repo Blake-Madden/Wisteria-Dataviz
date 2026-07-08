@@ -31,7 +31,7 @@ namespace Wisteria::UI
     class AccessibilityOptionsPanel;
 
     /// @brief Flags controlling which parts of the "Placement" page are visible.
-    enum ItemDlgPageOptions : int
+    enum ItemDlgPageOptions
         {
         /// @brief Show the canvas placement grid.
         ItemDlgIncludeCanvasPlacement = 1 << 0,

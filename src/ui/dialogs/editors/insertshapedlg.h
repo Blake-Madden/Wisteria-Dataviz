@@ -22,7 +22,7 @@ namespace Wisteria::UI
     {
     /// @brief Flags controlling which sections are visible in InsertShapeDlg.
     /// @note The shape type combo is always shown.
-    enum ShapeDlgOptions : int
+    enum ShapeDlgOptions
         {
         ShapeDlgIncludeSize = 1 << 0,      ///< Show the size controls.
         ShapeDlgIncludePen = 1 << 1,       ///< Show the pen (outline) controls.

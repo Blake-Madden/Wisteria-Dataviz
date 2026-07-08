@@ -21,7 +21,7 @@
 namespace Wisteria::UI
     {
     /// @brief Flags controlling which sections are visible in InsertImageDlg.
-    enum ImageDlgOptions : int
+    enum ImageDlgOptions
         {
         ImageDlgIncludeNone = 0,              ///< No options enabled.
         ImageDlgIncludePageOptions = 1 << 0,  ///< Show the "Placement" section.

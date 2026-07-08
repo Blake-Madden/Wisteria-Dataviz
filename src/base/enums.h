@@ -737,6 +737,21 @@ namespace Wisteria
         /// @brief An invisible label that consumes no canvas space.
         EmptySpacer
         };
+
+    /// @brief Which kind of divider line (if any) a Label matches.
+    enum class DividerType
+        {
+        /// @brief A regular label (not a divider).
+        NotDivider,
+        /// @brief A single horizontal rule.
+        HorizontalSingleLine,
+        /// @brief A pair of horizontal rules.
+        HorizontalDoubleLine,
+        /// @brief A single vertical rule.
+        VerticalSingleLine,
+        /// @brief A pair of vertical rules.
+        VerticalDoubleLine
+        };
     } // namespace Wisteria
 
 /** @}*/

@@ -288,8 +288,14 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_NEW_COMMON_AXIS);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertSpacer, this,
                   ID_NEW_SPACER);
-    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertEmptySpacer, this,
-                  ID_NEW_EMPTY_SPACER);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnDividerDropdown, this,
+                  ID_NEW_DIVIDER);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDivider, this,
+                  ID_NEW_DIVIDER_HORIZONTAL_SINGLE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDivider, this,
+                  ID_NEW_DIVIDER_HORIZONTAL_DOUBLE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDivider, this, ID_NEW_DIVIDER_VERTICAL_SINGLE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDivider, this, ID_NEW_DIVIDER_VERTICAL_DOUBLE);
 
     // bind edit/delete item buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
@@ -2454,7 +2460,7 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, true);
         m_objectsButtonBar->EnableButton(ID_NEW_SPACER, true);
-        m_objectsButtonBar->EnableButton(ID_NEW_EMPTY_SPACER, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_DIVIDER, true);
         m_objectsButtonBar->EnableButton(wxID_COPY, true);
         m_objectsButtonBar->EnableButton(wxID_PASTE, true);
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, true);
@@ -2497,6 +2503,12 @@ void WisteriaView::OnGraphDropdown(wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnDividerDropdown(wxCommandEvent& event)
+    {
+    dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_dividerMenu);
+    }
+
+//-------------------------------------------
 void WisteriaView::BuildGraphMenus()
     {
     const auto iconSize = wxSize{ m_frame->FromDIP(16), m_frame->FromDIP(16) };
@@ -2516,6 +2528,16 @@ void WisteriaView::BuildGraphMenus()
 
     appendItem(m_saveMenu, ID_SAVE_PROJECT, _(L"Save"), L"file-save.svg");
     appendItem(m_saveMenu, ID_SAVE_PROJECT_AS, _(L"Save As..."), L"file-save.svg");
+
+    appendItem(m_dividerMenu, ID_NEW_DIVIDER_HORIZONTAL_SINGLE, _(L"Horizontal (Single Line)"),
+               L"divider-horizontal-single.svg");
+    appendItem(m_dividerMenu, ID_NEW_DIVIDER_HORIZONTAL_DOUBLE, _(L"Horizontal (Double Line)"),
+               L"divider-horizontal-double.svg");
+    m_dividerMenu.AppendSeparator();
+    appendItem(m_dividerMenu, ID_NEW_DIVIDER_VERTICAL_SINGLE, _(L"Vertical (Single Line)"),
+               L"divider-vertical-single.svg");
+    appendItem(m_dividerMenu, ID_NEW_DIVIDER_VERTICAL_DOUBLE, _(L"Vertical (Double Line)"),
+               L"divider-vertical-double.svg");
 
     // Basic graphs
     appendItem(m_basicGraphMenu, ID_NEW_BARCHART, _(L"Bar Chart..."), L"barchart.svg");
@@ -7961,6 +7983,35 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
         return;
         }
 
+    const auto dividerType = WisteriaApp::GetDividerType(label);
+    if (dividerType != Wisteria::DividerType::NotDivider)
+        {
+        auto newLabel = BuildDividerLabel(canvas, dividerType);
+
+        // reuse the label dialog purely for its "Placement" page; a divider's text/font/
+        // shapes aren't applicable, so the Label/Shapes pages are hidden
+        Wisteria::UI::InsertLabelDlg dlg(
+            canvas, nullptr, m_frame, _(L"Edit Divider"), wxID_ANY, wxDefaultPosition,
+            wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+            Wisteria::UI::InsertItemDlg::EditMode::Edit, Wisteria::UI::LabelDlgIncludePageOptions);
+        SetDialogIcon(dlg, WisteriaApp::GetItemIconName(&label));
+        dlg.SetSelectedCell(labelRow, labelCol);
+        dlg.LoadFromLabel(label);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        dlg.ApplyPageOptions(*newLabel);
+
+        canvas->SetFixedObject(labelRow, labelCol, newLabel);
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        return;
+        }
+
     Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame, _(L"Edit Label"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
@@ -8023,34 +8074,6 @@ void WisteriaView::OnInsertSpacer([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::OnInsertEmptySpacer([[maybe_unused]] wxCommandEvent& event)
-    {
-    auto* canvas = EnsureActivePage();
-    if (canvas == nullptr)
-        {
-        return;
-        }
-
-    Wisteria::UI::InsertLabelDlg dlg(
-        canvas, nullptr, m_frame, _(L"Insert Empty Spacer"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
-    SetDialogIcon(dlg, L"empty-spacer.svg");
-    if (dlg.ShowModal() != wxID_OK)
-        {
-        return;
-        }
-
-    dlg.ApplyGridSize();
-
-    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
-                           BuildSpacerLabel(canvas, Wisteria::SpacerType::EmptySpacer));
-    UpdateCanvas(canvas);
-
-    GetDocument()->Modify(true);
-    }
-
-//-------------------------------------------
 std::shared_ptr<Wisteria::GraphItems::Label>
 WisteriaView::BuildSpacerLabel(Wisteria::Canvas* canvas, const Wisteria::SpacerType type)
     {
@@ -8065,6 +8088,71 @@ WisteriaView::BuildSpacerLabel(Wisteria::Canvas* canvas, const Wisteria::SpacerT
                                                                  .DPIScaling(canvas->FromDIP(1))
                                                                  .Scaling(1.0)
                                                                  .Show(false));
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertDivider(wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    const auto type = (event.GetId() == ID_NEW_DIVIDER_HORIZONTAL_SINGLE) ?
+                          Wisteria::DividerType::HorizontalSingleLine :
+                      (event.GetId() == ID_NEW_DIVIDER_HORIZONTAL_DOUBLE) ?
+                          Wisteria::DividerType::HorizontalDoubleLine :
+                      (event.GetId() == ID_NEW_DIVIDER_VERTICAL_SINGLE) ?
+                          Wisteria::DividerType::VerticalSingleLine :
+                          Wisteria::DividerType::VerticalDoubleLine;
+    const wxString iconName =
+        (type == Wisteria::DividerType::HorizontalSingleLine) ? L"divider-horizontal-single.svg" :
+        (type == Wisteria::DividerType::HorizontalDoubleLine) ? L"divider-horizontal-double.svg" :
+        (type == Wisteria::DividerType::VerticalSingleLine)   ? L"divider-vertical-single.svg" :
+                                                                L"divider-vertical-double.svg";
+
+    auto label = BuildDividerLabel(canvas, type);
+
+    Wisteria::UI::InsertLabelDlg dlg(
+        canvas, nullptr, m_frame, _(L"Insert Divider"), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
+    SetDialogIcon(dlg, iconName);
+    dlg.LoadFromLabel(*label);
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    dlg.ApplyGridSize();
+    dlg.ApplyPageOptions(*label);
+
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), label);
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+std::shared_ptr<Wisteria::GraphItems::Label>
+WisteriaView::BuildDividerLabel(Wisteria::Canvas* canvas, const Wisteria::DividerType type)
+    {
+    const bool isVertical = (type == Wisteria::DividerType::VerticalSingleLine ||
+                             type == Wisteria::DividerType::VerticalDoubleLine);
+    const bool isDouble = (type == Wisteria::DividerType::HorizontalDoubleLine ||
+                           type == Wisteria::DividerType::VerticalDoubleLine);
+
+    return std::make_shared<Wisteria::GraphItems::Label>(
+        Wisteria::GraphItems::GraphItemInfo{}
+            .DPIScaling(canvas->FromDIP(1))
+            .Scaling(1.0)
+            .Pen(wxPen{ *wxBLACK, 2 })
+            .CanvasPadding(5, 5, 5, 5)
+            .Padding((isDouble && !isVertical) ? 4 : 0, 0, 0, (isDouble && isVertical) ? 4 : 0)
+            .FixedWidthOnCanvas(isVertical)
+            .FitCanvasHeightToContent(!isVertical)
+            .Outline(!isVertical, isVertical && isDouble, !isVertical && isDouble, isVertical));
     }
 
 //-------------------------------------------

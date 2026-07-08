@@ -24,7 +24,7 @@
 namespace Wisteria::UI
     {
     /// @brief Flags controlling which sections are visible in InsertLabelDlg.
-    enum LabelDlgOptions : int
+    enum LabelDlgOptions
         {
         LabelDlgIncludeNone = 0,              ///< No options enabled.
         LabelDlgIncludeLabelOptions = 1 << 0, ///< Show the "Label" page (text, font, alignment,

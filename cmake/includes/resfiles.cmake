@@ -29,10 +29,13 @@ delete.svg
 dichotomous-categorical.svg
 dichotomous-discrete.svg
 discrete.svg
+divider-horizontal-double.svg
+divider-horizontal-single.svg
+divider-vertical-double.svg
+divider-vertical-single.svg
 donut-subgrouped.svg
 donut.svg
 edit.svg
-empty-spacer.svg
 equals.svg
 file-open.svg
 file-save.svg

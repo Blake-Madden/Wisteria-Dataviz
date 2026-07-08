@@ -634,8 +634,9 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Insert an axis"));
         objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"spacer.svg"),
                                     _(L"Insert a spacer"));
-        objectsButtonBar->AddButton(ID_NEW_EMPTY_SPACER, _(L"Empty Spacer"),
-                                    ReadSvgIcon(L"empty-spacer.svg"), _(L"Insert an empty spacer"));
+        objectsButtonBar->AddDropdownButton(ID_NEW_DIVIDER, _(L"Divider"),
+                                            ReadSvgIcon(L"divider-horizontal-double.svg"),
+                                            _(L"Insert a divider line"));
         objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"copy.svg"),
                                     _(L"Copy the selected item"));
         objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"paste.svg"),
@@ -980,11 +981,35 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
         {
         const auto* label = dynamic_cast<const Wisteria::GraphItems::Label*>(item);
-        const auto spacerType =
-            (label != nullptr) ? GetSpacerType(*label) : Wisteria::SpacerType::NotSpacer;
-        return (spacerType == Wisteria::SpacerType::EmptySpacer) ? L"empty-spacer.svg" :
-               (spacerType == Wisteria::SpacerType::Spacer)      ? L"spacer.svg" :
-                                                                   L"label.svg";
+        if (label == nullptr)
+            {
+            return L"label.svg";
+            }
+
+        const auto spacerType = GetSpacerType(*label);
+        if (spacerType == Wisteria::SpacerType::EmptySpacer)
+            {
+            return L"empty-spacer.svg";
+            }
+        if (spacerType == Wisteria::SpacerType::Spacer)
+            {
+            return L"spacer.svg";
+            }
+
+        switch (GetDividerType(*label))
+            {
+        case Wisteria::DividerType::HorizontalSingleLine:
+            return L"divider-horizontal-single.svg";
+        case Wisteria::DividerType::HorizontalDoubleLine:
+            return L"divider-horizontal-double.svg";
+        case Wisteria::DividerType::VerticalSingleLine:
+            return L"divider-vertical-single.svg";
+        case Wisteria::DividerType::VerticalDoubleLine:
+            return L"divider-vertical-double.svg";
+        case Wisteria::DividerType::NotDivider:
+        default:
+            return L"label.svg";
+            }
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
         {
@@ -1019,4 +1044,30 @@ Wisteria::SpacerType WisteriaApp::GetSpacerType(const Wisteria::GraphItems::Labe
             compare_doubles(label.GetCanvasHeightProportion().value(), 0.0)) ?
                Wisteria::SpacerType::EmptySpacer :
                Wisteria::SpacerType::Spacer;
+    }
+
+//-------------------------------------------
+Wisteria::DividerType WisteriaApp::GetDividerType(const Wisteria::GraphItems::Label& label)
+    {
+    // a divider is a shown, textless label with an outline pen configured
+    if (!label.GetText().empty() || !label.IsShown() || !label.GetPen().IsOk())
+        {
+        return Wisteria::DividerType::NotDivider;
+        }
+
+    const auto& info = label.GetGraphItemInfo();
+    if (info.IsShowingTopOutline() || info.IsShowingBottomOutline())
+        {
+        return (info.IsShowingTopOutline() && info.IsShowingBottomOutline()) ?
+                   Wisteria::DividerType::HorizontalDoubleLine :
+                   Wisteria::DividerType::HorizontalSingleLine;
+        }
+    if (info.IsShowingLeftOutline() || info.IsShowingRightOutline())
+        {
+        return (info.IsShowingLeftOutline() && info.IsShowingRightOutline()) ?
+                   Wisteria::DividerType::VerticalDoubleLine :
+                   Wisteria::DividerType::VerticalSingleLine;
+        }
+
+    return Wisteria::DividerType::NotDivider;
     }

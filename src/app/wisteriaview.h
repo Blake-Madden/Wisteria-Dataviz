@@ -149,7 +149,6 @@ class WisteriaView final : public wxView
     void EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
                    size_t labelRow, size_t labelCol) const;
     void OnInsertSpacer(wxCommandEvent& event);
-    void OnInsertEmptySpacer(wxCommandEvent& event);
 
     /// @returns A new spacer (or empty spacer) label.
     /// @param canvas The canvas the label will be placed on.
@@ -157,6 +156,15 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     static std::shared_ptr<Wisteria::GraphItems::Label> BuildSpacerLabel(Wisteria::Canvas* canvas,
                                                                          Wisteria::SpacerType type);
+    void OnDividerDropdown(wxCommandEvent& event);
+    void OnInsertDivider(wxCommandEvent& event);
+
+    /// @returns A new divider line label.
+    /// @param canvas The canvas the label will be placed on.
+    /// @param type Which kind of divider to build.
+    [[nodiscard]]
+    static std::shared_ptr<Wisteria::GraphItems::Label>
+    BuildDividerLabel(Wisteria::Canvas* canvas, Wisteria::DividerType type);
     void OnInsertImage(wxCommandEvent& event);
     void EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas, size_t imageRow,
                    size_t imageCol) const;
@@ -309,6 +317,7 @@ class WisteriaView final : public wxView
     WindowContainer m_workWindows;
 
     wxMenu m_saveMenu;
+    wxMenu m_dividerMenu;
     wxMenu m_basicGraphMenu;
     wxMenu m_businessGraphMenu;
     wxMenu m_statisticalGraphMenu;
