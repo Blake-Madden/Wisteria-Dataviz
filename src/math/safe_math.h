@@ -118,11 +118,6 @@ inline bool compare_doubles(const double actual, const double expected,
         {
         return true;
         }
-    // opposite signs (and neither is zero) are never equal
-    if ((actual > 0 && expected < 0) || (actual < 0 && expected > 0))
-        {
-        return false;
-        }
     const double diff = std::fabs(actual - expected);
     const double maxMagnitude = std::max(std::fabs(actual), std::fabs(expected));
     const double absDelta = std::fabs(delta);

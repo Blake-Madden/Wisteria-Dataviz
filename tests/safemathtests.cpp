@@ -671,7 +671,8 @@ TEST_CASE("compare_doubles backward compatibility with normal numbers", "[compar
     SECTION("mixed positive and negative")
         {
         CHECK_FALSE(compare_doubles(-0.0001, 0.0001, 1e-4));
-        CHECK_FALSE(compare_doubles(0.00001, -0.00001, 1e-4));
+        CHECK_FALSE(compare_doubles(0.0001, -0.0001, 1e-4));
+        CHECK(compare_doubles(0.00001, -0.00001, 1e-4));
         }
     }
 

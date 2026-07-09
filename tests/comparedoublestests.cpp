@@ -98,6 +98,17 @@ TEST_CASE("Compare doubles", "[comparedoubles]")
         CHECK(has_fractional_part(1000.05));
         CHECK(has_fractional_part(-5.1));
         }
+    SECTION("Opposite signs within tolerance")
+        {
+        // values straddling zero but within the default 1e-6 tolerance
+        CHECK(compare_doubles(-1e-7, 1e-7));
+        CHECK(compare_doubles(1e-8, -1e-8));
+        // values straddling zero but within an explicit tolerance
+        CHECK(compare_doubles(-0.00001, 0.00001, 1e-4));
+        // values straddling zero but clearly outside tolerance
+        CHECK_FALSE(compare_doubles(-0.001, 0.001));
+        CHECK_FALSE(compare_doubles(-0.0001, 0.0001, 1e-4));
+        }
     }
 
 // NOLINTEND
