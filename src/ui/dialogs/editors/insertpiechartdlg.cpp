@@ -853,9 +853,7 @@ namespace Wisteria::UI
         InsertLabelDlg dlg(GetCanvas(), nullptr, this, _(L"Edit Donut Hole Label"), wxID_ANY,
                            wxDefaultPosition, wxDefaultSize,
                            wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                           EditMode::Edit,
-                           static_cast<LabelDlgOptions>(LabelDlgIncludeLabelOptions |
-                                                        LabelDlgIncludeShapeOptions));
+                           EditMode::Edit, LabelDlgIncludeLabelAndShapeOptions);
         dlg.LoadFromLabel(m_donutHoleLabel);
 
         if (dlg.ShowModal() == wxID_OK)

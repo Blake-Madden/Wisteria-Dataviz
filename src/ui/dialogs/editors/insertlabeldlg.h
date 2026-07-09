@@ -32,6 +32,9 @@ namespace Wisteria::UI
         LabelDlgIncludeShapeOptions = 1 << 1, ///< Show the "Shapes" page (left/top image,
                                               ///< top shapes).
         LabelDlgIncludePageOptions = 1 << 2,  ///< Show the "Placement" page.
+        /// @brief The "Label" and "Shapes" pages (excludes "Placement").
+        LabelDlgIncludeLabelAndShapeOptions =
+        LabelDlgIncludeLabelOptions | LabelDlgIncludeShapeOptions,
         /// @brief All options enabled (the default).
         LabelDlgIncludeAll =
         LabelDlgIncludeLabelOptions | LabelDlgIncludeShapeOptions | LabelDlgIncludePageOptions
