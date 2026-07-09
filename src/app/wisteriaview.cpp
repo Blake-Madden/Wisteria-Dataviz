@@ -1147,7 +1147,15 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             auto& allTxOpts = m_reportBuilder.GetDatasetTransformOptions();
             allTxOpts[newDsName].m_formulas.emplace_back(name, value);
             m_reportBuilder.SetDatasetTransformOptions(newDsName, allTxOpts[newDsName]);
-            m_reportBuilder.RecalcFormula(name, value, newDsName);
+            try
+                {
+                m_reportBuilder.RecalcFormula(name, value, newDsName);
+                }
+            catch (const std::exception& exc)
+                {
+                wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Formula Error"),
+                             wxOK | wxICON_ERROR, m_frame);
+                }
             }
         }
     // ...or other columns of a "regular" constant
@@ -1207,7 +1215,15 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             }
 
         m_reportBuilder.SetDatasetTransformOptions(newDsName, txIt->second);
-        m_reportBuilder.RecalcFormula(name, value, newDsName);
+        try
+            {
+            m_reportBuilder.RecalcFormula(name, value, newDsName);
+            }
+        catch (const std::exception& exc)
+            {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Formula Error"), wxOK | wxICON_ERROR,
+                         m_frame);
+            }
         }
 
     PopulateConstantsGrid();
