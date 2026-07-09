@@ -446,7 +446,7 @@ inline bool is_even(T value)
         {
         return false;
         }
-    return (static_cast<std::int64_t>(std::floor(std::abs(value))) % 2) == 0;
+    return std::fmod(std::floor(std::abs(value)), 2.0) == 0.0;
     }
 
 /// @brief Determines if a number is even.
@@ -593,17 +593,19 @@ namespace geometry
     [[nodiscard]]
     inline double get_polygon_width(const polygonT& polygon)
         {
-        double areaWidth{ 0.0 };
-        for (auto pt : polygon)
+        if (polygon.empty())
             {
-            auto startX{ pt.x };
-            while (is_inside_polygon(pt, polygon))
-                {
-                ++pt.x;
-                }
-            areaWidth = std::max<double>(pt.x - startX, areaWidth);
+            return 0.0;
             }
-        return areaWidth;
+        double minX = static_cast<double>(polygon[0].x);
+        double maxX = minX;
+        for (const auto& pt : polygon)
+            {
+            const auto x = static_cast<double>(pt.x);
+            minX = std::min(minX, x);
+            maxX = std::max(maxX, x);
+            }
+        return (maxX - minX) + 1.0;
         }
 
     /** @returns The area of a polygon using the shoelace formula.
@@ -1019,7 +1021,7 @@ namespace geometry
             //  the height maintaining the aspect ratio
             const auto adjustedSize =
                 std::make_pair(boundingSize.first, rescaled_height(size, boundingSize.first));
-            // the scale it down to the bounding box
+            // then scale it down to the bounding box
             return downscaled_size(adjustedSize, boundingSize);
             }
         // otherwise, original width and height are both larger,
@@ -1074,13 +1076,17 @@ namespace geometry
             // ratio
             const auto adjustedSize =
                 std::make_pair(boundingSize.first, rescaled_height(size, boundingSize.first));
-            // the scale it up to the bounding box
+            // the intermediate height may now exceed the bounding box, so downscale to fit;
+            // this is correct because downscaled_size will return adjustedSize as-is if it
+            // already fits, or shrink it proportionally if it overshoots
             return downscaled_size(adjustedSize, boundingSize);
             }
         // otherwise, original width and height are both smaller,
         // but height is more proportionally smaller, so scale up by that
         const auto adjustedSize =
             std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second);
+        // same reasoning as above: the intermediate width may overshoot the bounding box,
+        // so downscale to fit while maintaining aspect ratio
         return downscaled_size(adjustedSize, boundingSize);
         }
     } // namespace geometry

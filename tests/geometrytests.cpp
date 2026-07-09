@@ -221,18 +221,18 @@ TEST_CASE("geometry::get_polygon_width", "[polygon]")
 
         // Square 3x3
         std::vector<MyPoint> square{ { 1, 1 }, { 3, 1 }, { 3, 3 }, { 1, 3 } };
-        CHECK(geometry::get_polygon_width(square) == 3); // x from 1 to 3 → width = 3
+        CHECK(geometry::get_polygon_width(square) == 3); // x from 1 to 3, width = 3
 
         // L-shape polygon (concave)
         std::vector<MyPoint> lshape{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
-        // Width is determined by the farthest x that remains inside polygon
-        // For this L-shape, x from 0 to 4 → width = 5
+        // Width is just the bounding-box x-extent of the vertices (shape/concavity
+        // is not considered); for this L-shape, x from 0 to 4, width = 5
         CHECK(geometry::get_polygon_width(lshape) == 5);
 
         // Diamond with notch (concave rotated polygon)
         std::vector<MyPoint> diamond{ { 0, 3 },  { 2, 1 },   { 1, 0 },  { 2, -1 },
                                       { 0, -3 }, { -2, -1 }, { -1, 0 }, { -2, 1 } };
-        // Width is from -2 to 2 → 5
+        // Width is from -2 to 2, width = 5
         CHECK(geometry::get_polygon_width(diamond) == 5);
 
         // Single point polygon
@@ -242,6 +242,73 @@ TEST_CASE("geometry::get_polygon_width", "[polygon]")
         // Line polygon (horizontal)
         std::vector<MyPoint> horizontalLine{ { 0, 0 }, { 3, 0 } };
         CHECK(geometry::get_polygon_width(horizontalLine) == 4);
+        }
+    SECTION("Collinear points (degenerate polygon)")
+        {
+        // all points on a horizontal line
+        std::vector<MyPoint> horizontal{ { 0, 5 }, { 2, 5 }, { 4, 5 } };
+        CHECK(geometry::get_polygon_width(horizontal) == 5);
+
+        // all points on a vertical line (zero width)
+        std::vector<MyPoint> vertical{ { 3, 0 }, { 3, 2 }, { 3, 5 } };
+        CHECK(geometry::get_polygon_width(vertical) == 1);
+        }
+    SECTION("Negative coordinates")
+        {
+        std::vector<MyPoint> negative{ { -4, -3 }, { -1, -3 }, { -1, 0 }, { -4, 0 } };
+        CHECK(geometry::get_polygon_width(negative) == 4);
+
+        std::vector<MyPoint> mixed{ { -2, -1 }, { 3, -1 }, { 3, 2 }, { -2, 2 } };
+        CHECK(geometry::get_polygon_width(mixed) == 6);
+        }
+    SECTION("Triangle")
+        {
+        std::vector<MyPoint> triangle{ { 0, 0 }, { 6, 0 }, { 3, 4 } };
+        CHECK(geometry::get_polygon_width(triangle) == 7);
+        }
+    SECTION("Order independence")
+        {
+        // width only depends on the set of x values, not the order of the vertices
+        std::vector<MyPoint> ordered{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
+        std::vector<MyPoint> shuffled{ { 4, 3 }, { 0, 0 }, { 0, 3 }, { 4, 0 } };
+        CHECK(geometry::get_polygon_width(ordered) == geometry::get_polygon_width(shuffled));
+        CHECK(geometry::get_polygon_width(shuffled) == 5);
+        }
+    SECTION("Shape and vertex order do not affect width")
+        {
+        // same x values, wildly different y arrangement (and a self-intersecting
+        // "bowtie" order) still yield the same width, since only the x-extent matters
+        std::vector<MyPoint> straight{ { 0, 0 }, { 4, 0 }, { 4, 1 }, { 0, 1 } };
+        std::vector<MyPoint> bowtie{ { 0, 0 }, { 4, 1 }, { 4, 0 }, { 0, 1 } };
+        CHECK(geometry::get_polygon_width(straight) == geometry::get_polygon_width(bowtie));
+        CHECK(geometry::get_polygon_width(bowtie) == 5);
+        }
+    SECTION("All duplicate points")
+        {
+        std::vector<MyPoint> duplicate{ { 2, 2 }, { 2, 2 }, { 2, 2 } };
+        CHECK(geometry::get_polygon_width(duplicate) == 1);
+        }
+    }
+
+TEST_CASE("geometry::get_polygon_width floating point", "[polygon]")
+    {
+    struct FPoint
+        {
+        double x;
+        double y;
+        [[nodiscard]]
+        bool operator==(const FPoint that) const noexcept { return x == that.x && y == that.y; }
+        };
+
+    SECTION("Non-integer vertices")
+        {
+        std::vector<FPoint> polygon{ { 0.5, 0.5 }, { 3.5, 0.5 }, { 3.5, 2.5 }, { 0.5, 2.5 } };
+        CHECK_THAT(geometry::get_polygon_width(polygon), WithinAbs(4.0, 1e-6));
+        }
+    SECTION("Small fractional polygon")
+        {
+        std::vector<FPoint> polygon{ { 0.1, 0.1 }, { 0.9, 0.1 }, { 0.9, 0.9 }, { 0.1, 0.9 } };
+        CHECK_THAT(geometry::get_polygon_width(polygon), WithinAbs(1.8, 1e-6));
         }
     }
 

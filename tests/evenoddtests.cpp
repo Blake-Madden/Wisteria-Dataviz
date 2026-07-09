@@ -4,6 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/mathematics.h"
+#include <limits>
 
 using namespace Catch::Matchers;
 
@@ -82,6 +83,33 @@ TEST_CASE("Even", "[even]")
         {
         CHECK(is_even(-3.021787) == false);
         CHECK(is_even(-27514573.20248) == false);
+        }
+    SECTION("NaN and infinity")
+        {
+        constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+        constexpr double inf = std::numeric_limits<double>::infinity();
+
+        CHECK(is_even(nan) == false);
+        CHECK(is_even(inf) == false);
+        CHECK(is_even(-inf) == false);
+        }
+    SECTION("Large magnitude doubles")
+        {
+        // values far beyond the range of std::int64_t; the old implementation
+        // cast through int64_t and would overflow (UB) for values like these
+        CHECK(is_even(1e20) == true);
+        CHECK(is_even(std::numeric_limits<double>::max()) == true);
+        }
+    SECTION("Exact integer-valued doubles")
+        {
+        CHECK(is_even(4.0) == true);
+        CHECK(is_even(3.0) == false);
+        CHECK(is_even(-4.0) == true);
+        CHECK(is_even(-3.0) == false);
+        }
+    SECTION("Negative zero")
+        {
+        CHECK(is_even(-0.0) == true);
         }
     }
 
