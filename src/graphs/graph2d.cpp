@@ -231,6 +231,10 @@ namespace Wisteria::Graphs
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetCaption().GetFont().SetFractionalPointSize(
             GetTitle().GetFont().GetFractionalPointSize() * math_constants::three_quarters);
+
+        GetTitle().EnableMarkup(true);
+        GetSubtitle().EnableMarkup(true);
+        GetCaption().EnableMarkup(true);
         }
 
     //----------------------------------------------------------------

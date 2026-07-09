@@ -688,13 +688,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(0))
                 .ChildAlignment(RelativeAlignment::FlushLeft);
-            GetLeftYAxis().GetHeader().EnableMarkup(true);
             GetRightYAxis()
                 .GetHeader()
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(1))
                 .ChildAlignment(RelativeAlignment::FlushRight);
-            GetRightYAxis().GetHeader().EnableMarkup(true);
 
             GetLeftYAxis().GetFooter().SetText(wxString{});
             GetRightYAxis().GetFooter().SetText(wxString{});
@@ -706,13 +704,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(0))
                 .ChildAlignment(RelativeAlignment::FlushLeft);
-            GetLeftYAxis().GetFooter().EnableMarkup(true);
             GetRightYAxis()
                 .GetFooter()
                 .GetGraphItemInfo()
                 .Text(ExpandColumnHeader(1))
                 .ChildAlignment(RelativeAlignment::FlushRight);
-            GetRightYAxis().GetFooter().EnableMarkup(true);
 
             GetLeftYAxis().GetHeader().SetText(wxString{});
             GetRightYAxis().GetHeader().SetText(wxString{});

@@ -710,6 +710,11 @@ namespace Wisteria::GraphItems
             SetTextAlignment(TextAlignment::Centered);
             GetTitle().SetTextOrientation(
                 (IsVertical() ? Orientation::Vertical : Orientation::Horizontal));
+
+            GetTitle().EnableMarkup(true);
+            GetHeader().EnableMarkup(true);
+            GetFooter().EnableMarkup(true);
+
             GetFont().MakeSmaller();
             }
 
