@@ -66,6 +66,12 @@ set(LIB_SRC_FILES
     ../src/import/html_extract_text.cpp
     ../src/import/odt_odp_extract_text.cpp
     ../src/import/markdown_extract_text.cpp
+    ../src/import/pdf_decrypt.cpp
+    ../src/import/pdf_document.cpp
+    ../src/import/pdf_content_parser.cpp
+    ../src/import/pdf_extract_text.cpp
+    ../src/import/pdf_text_decoder.cpp
+    ../src/import/pdf_lexer.cpp
     ../src/import/postscript_extract_text.cpp
     ../src/import/spreadsheet_extract_text.cpp
     ../src/import/ods_extract_text.cpp

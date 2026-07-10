@@ -1,0 +1,134 @@
+/** @addtogroup Data
+    @brief Data management classes for graphs.
+    @date 2005-2026
+    @copyright Blake Madden
+    @author Blake Madden
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License.
+
+     SPDX-License-Identifier: BSD-3-Clause
+@{*/
+
+#ifndef WISTERIA_PDF_H
+#define WISTERIA_PDF_H
+
+#include "../import/pdf_extract_text.h"
+#include "../util/memorymappedfile.h"
+#include <string>
+#include <string_view>
+#include <wx/string.h>
+
+namespace Wisteria::Data
+    {
+    /// @brief Interface for reading the text from a PDF file.
+    /// @details This is a wrapper for lily_of_the_valley::pdf_extract_text that connects
+    ///     a wxWidgets zlib-based decompressor to it so that compressed (@c FlateDecode)
+    ///     stream sections can be extracted, along with a wxWidgets-based charset
+    ///     converter so that CJK text using Adobe's predefined legacy CMap encodings
+    ///     (e.g., @c ETenms-B5-H) can be decoded.
+    class PdfReader
+        {
+      public:
+        /// @brief Constructor; connects the wxWidgets zlib decompressor and
+        ///     charset converter to the parser.
+        PdfReader()
+            {
+            m_pdfTextExtractor.set_stream_decompressor(&PdfReader::Inflate);
+            m_pdfTextExtractor.set_charset_converter(&PdfReader::ConvertCharset);
+            }
+
+        /** @brief Reads the raw text from a PDF file.
+            @param filePath The path to the PDF file to read.
+            @returns The document's text.
+            @throws std::runtime_error If the file is invalid or encrypted,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        wxString ReadFile(const wxString& filePath);
+
+        /** @brief Loads a glyph name table (e.g., the Adobe Glyph List) from a file,
+                used to resolve simple fonts' `/Differences` custom encodings.
+            @details The file is expected in the same format as Adobe's AGL data files:
+                semicolon-delimited lines of `glyphname;XXXX[ XXXX...]`, where each `XXXX`
+                is a four-digit hexadecimal Unicode value; lines starting with `#`
+                (and blank lines) are ignored.
+            @param filePath The path to the glyph name table file.
+            @returns @c true if file is found and read successfully.
+            @sa https://github.com/adobe-type-tools/agl-aglfn */
+        bool LoadGlyphNameTableFromFile(const wxString& filePath);
+
+        /// @returns The title from the document's metadata.
+        /// @note Must be called after calling @c ReadFile().
+        [[nodiscard]]
+        wxString GetTitle() const
+            {
+            return m_pdfTextExtractor.get_title();
+            }
+
+        /// @returns The author from the document's metadata.
+        /// @note Must be called after calling @c ReadFile().
+        [[nodiscard]]
+        wxString GetAuthor() const
+            {
+            return m_pdfTextExtractor.get_author();
+            }
+
+        /// @returns The subject from the document's metadata.
+        /// @note Must be called after calling @c ReadFile().
+        [[nodiscard]]
+        wxString GetSubject() const
+            {
+            return m_pdfTextExtractor.get_subject();
+            }
+
+        /// @returns The keywords from the document's metadata.
+        /// @note Must be called after calling @c ReadFile().
+        [[nodiscard]]
+        wxString GetKeywords() const
+            {
+            return m_pdfTextExtractor.get_keywords();
+            }
+
+        /// @returns A report of any issues encountered while reading the file.
+        [[nodiscard]]
+        wxString GetLogReport() const
+            {
+            return m_pdfTextExtractor.get_log();
+            }
+
+        /** @brief Decompresses a zlib (DEFLATE) stream section
+                (using @c wxZlibInputStream).
+            @details This is the decompression functor that the constructor connects
+                to the underlying lily_of_the_valley::pdf_extract_text parser; it is
+                @c public so that it can also be connected to standalone instances
+                of that class.
+            @param compressedStream The compressed bytes of a stream section.
+            @returns The uncompressed bytes, or an empty string upon failure.*/
+        [[nodiscard]]
+        static std::string Inflate(std::string_view compressedStream);
+
+        /** @brief Converts legacy multibyte charset bytes (e.g., Big5, Shift-JIS)
+                to Unicode (using @c wxCSConv).
+            @details This is the charset conversion functor that the constructor
+                connects to the underlying lily_of_the_valley::pdf_extract_text
+                parser (used to decode CJK text that uses one of Adobe's predefined
+                legacy CMap encodings); it is @c public so that it can also be
+                connected to standalone instances of that class.
+            @param sourceBytes The raw bytes of a string in @c charsetName.
+            @param charsetName The name of the charset the bytes are encoded in
+                (e.g., "CP950").
+            @returns The equivalent Unicode text, or an empty string if the charset
+                isn't supported by the platform or the bytes are invalid for it.*/
+        [[nodiscard]]
+        static std::wstring ConvertCharset(std::string_view sourceBytes,
+                                           std::string_view charsetName);
+
+      private:
+        lily_of_the_valley::pdf_extract_text m_pdfTextExtractor;
+        };
+    } // namespace Wisteria::Data
+
+/** @}*/
+
+#endif // WISTERIA_PDF_H

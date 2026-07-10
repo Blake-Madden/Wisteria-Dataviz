@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 # Exclusion filter for the main Wisteria library
 # (excludes test files, demo, UI components not part of core library, and submodule extras)
-set(WISTERIA_LIB_EXCLUDE_FILTER "(testmainc|xml_format|rtf_extract|pdf_extract|postscript_extract|cpp_extract|\
+set(WISTERIA_LIB_EXCLUDE_FILTER "(testmainc|xml_format|rtf_extract|pdf_|postscript_extract|cpp_extract|\
 odt_odp_extract|doc_extract|docx_extract|ui/app[.]cpp|codeeditor[.]cpp|htmltablewin[.]cpp|\
 pdfreader[.]cpp|\
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
@@ -25,8 +25,8 @@ set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|demo[.]cpp|main[.]cpp|\
 htmltablewinprintout[.]cpp|htmltablewin[.]cpp|archivedlg[.]cpp|htmltablepanel[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
-(cpp|doc|docx|html|markdown|ods|odt|postscript|pdf|rtf|odt_odp)_extract_text[.]cpp|\
-pdfreader[.]cpp|\
+(cpp|doc|docx|html|markdown|ods|odt|postscript|rtf|odt_odp)_extract_text[.]cpp|\
+pdfreader[.]cpp|pdf_|\
 utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
 
 # Use the directory containing this file to find the project root

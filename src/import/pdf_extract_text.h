@@ -1,0 +1,307 @@
+/** @addtogroup Importing
+    @brief Classes for importing data.
+    @date 2005-2026
+    @copyright Blake Madden
+    @author Blake Madden
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License.
+
+     SPDX-License-Identifier: BSD-3-Clause
+@{*/
+
+#ifndef PDF_EXTRACT_TEXT_H
+#define PDF_EXTRACT_TEXT_H
+
+#include "extract_text.h"
+#include "pdf_decrypt.h"
+#include "pdf_document.h"
+#include "pdf_lexer.h"
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace lily_of_the_valley
+    {
+    /// @brief Text encoding and CMap decoding utilities.
+    class pdf_text_decoder
+        {
+      public:
+        /// @returns The Unicode equivalent of a WinAnsi (CP1252) byte.
+        [[nodiscard]]
+        static wchar_t cp1252_to_unicode(unsigned char byteValue);
+
+        /// @returns The Unicode equivalent of a MacRomanEncoding byte.
+        [[nodiscard]]
+        static wchar_t mac_roman_to_unicode(unsigned char byteValue);
+
+        /// @returns The Unicode equivalent of an (Adobe) StandardEncoding byte.
+        [[nodiscard]]
+        static wchar_t standard_to_unicode(unsigned char byteValue);
+
+        /// @brief Converts UTF-16BE code units to a wide string.
+        /// @details On 32-bit @c wchar_t platforms, surrogate pairs are combined into
+        ///     single code points. On 16-bit platforms (Windows), valid pairs are emitted
+        ///     as two units. Lone surrogates are dropped on both platforms.
+        [[nodiscard]]
+        static std::wstring utf16_units_to_wstring(const std::vector<char16_t>& units);
+
+        /// @brief Converts hex digits to UTF-16BE code units (as used in ToUnicode CMaps).
+        [[nodiscard]]
+        static std::vector<char16_t> hex_to_utf16_units(std::string_view hexDigits);
+
+        /// @brief Converts hex digits to an unsigned integer (capped at 8 digits).
+        [[nodiscard]]
+        static uint32_t hex_to_uint(std::string_view hexDigits);
+
+        /// @brief Decodes a metadata string's bytes (UTF-16BE if it has a BOM,
+        ///     WinAnsi/Latin-1 otherwise).
+        [[nodiscard]]
+        static std::wstring decode_metadata_string(std::string_view bytes);
+
+        /// @brief Parses a font's ToUnicode CMap (bfchar/bfrange sections) into a decoder.
+        static void parse_unicode_cmap(std::string_view cmap, pdf_font_decoder& decoder);
+
+        /// @brief Maps the name of one of Adobe's predefined CJK CMaps (a Type0
+        ///     font's /Encoding value, without the leading slash) to the legacy
+        ///     multibyte charset that strings shown with such a font are encoded in.
+        /// @param cmapName The CMap name (e.g., "ETenms-B5-H" or "90ms-RKSJ-V").
+        /// @returns The charset's name (e.g., "CP950"), as understood by a
+        ///     charset_convert_functor, or empty if @c cmapName is not a
+        ///     recognized predefined CJK CMap.
+        [[nodiscard]]
+        static std::string_view predefined_cmap_charset(std::string_view cmapName);
+
+        /// @returns @c true if @c cmapName (a Type0 font's /Encoding value, without
+        ///     the leading slash) is one of Adobe's predefined Unicode CMaps (e.g.,
+        ///     "UniJIS-UCS2-H"), meaning the font's character codes are UTF-16BE
+        ///     code units.
+        [[nodiscard]]
+        static bool is_unicode_cmap_name(std::string_view cmapName);
+
+        /// @brief Resolves a PDF glyph name (from a `/Differences` array) to Unicode.
+        /// @param glyphName The (ASCII) glyph name, without the leading slash.
+        /// @param glyphTable A glyph name table (e.g., the Adobe Glyph List) to consult first.
+        /// @returns The Unicode text for the glyph, falling back to the `uniXXXX`/`uXXXXXX`
+        ///     naming convention if not found in @c glyphTable. Empty if unresolvable.
+        [[nodiscard]]
+        static std::wstring glyph_name_to_unicode(std::string_view glyphName,
+                                                  const glyph_name_table& glyphTable);
+
+        /// @brief Parses a simple font's `/Differences` array (e.g.,
+        ///     `[ 39 /quotesingle 96 /grave ]`) into a decoder.
+        /// @param differencesArray The raw `/Differences` array value (including brackets).
+        /// @param glyphTable A glyph name table (e.g., the Adobe Glyph List) to resolve
+        ///     each glyph name with.
+        static void parse_differences_array(std::string_view differencesArray,
+                                            const glyph_name_table& glyphTable,
+                                            pdf_font_decoder& decoder);
+
+        /// @brief Determines how many bytes (starting at @c pos) make up the next
+        ///     character code, per the font's declared codespace ranges.
+        /// @details If @c fontDecoder has one or more codespace ranges, the leading
+        ///     bytes at @c pos are compared against each range's bounds (in declared
+        ///     order); the first range whose bounds contain those bytes determines
+        ///     the length. If none match (or no ranges were declared), this falls
+        ///     back to @c fontDecoder->m_bytes_per_code.
+        /// @returns The code length, in bytes (at least 1, and clipped to the
+        ///     remaining bytes in @c bytes).
+        [[nodiscard]]
+        static size_t determine_code_length(const std::string& bytes, size_t pos,
+                                            const pdf_font_decoder* fontDecoder);
+
+        /// @brief Decodes a content-stream string's bytes to Unicode using a font decoder.
+        [[nodiscard]]
+        static std::wstring decode_string_bytes(const std::string& bytes,
+                                                const pdf_font_decoder* fontDecoder);
+        };
+
+    /** @brief Class to extract text from a <b>PDF</b> stream.
+        @details Raw text is extracted from the document's page content streams,
+            preserving basic structural formatting. This will format line breaks,
+            paragraph breaks, and bulleted list items as a newline, followed by
+            a tab and the bullet character.
+
+            Text encoding is resolved through each font's embedded @c ToUnicode CMap
+            (when available); single-byte codes, otherwise, are mapped through
+            CP1252/Latin-1. CJK text shown with one of Adobe's predefined Unicode
+            CMap encodings (e.g., @c UniJIS-UCS2-H) is decoded directly; the
+            predefined legacy CJK CMap encodings (e.g., @c ETenms-B5-H) additionally
+            require connecting a charset converter via set_charset_converter().
+
+            Most PDF files compress their content streams (usually zlib/DEFLATE
+            compression [@c FlateDecode]). This class is decompression-library
+            agnostic; call set_stream_decompressor() to connect a function object that
+            performs the decompression. (Without a decompressor, only uncompressed
+            content can be extracted.)
+        @par Example:
+        @code
+        std::ifstream fs("C:\\users\\daphne\\physical-therapy-instructions.pdf",
+                         std::ios::in|std::ios::binary|std::ios::ate);
+        if (fs.is_open())
+            {
+            // read a PDF file into a char* buffer
+            size_t fileSize = fs.tellg();
+            std::vector<char> fileContents(fileSize);
+            fs.seek(0, std::ios::beg);
+            fs.read(fileContents.data(), fileSize);
+            // convert the PDF data into raw text
+            lily_of_the_valley::pdf_extract_text pdfExtract;
+            // optionally, connect a zlib decompressor so that
+            // compressed content streams can be read:
+            // pdfExtract.set_stream_decompressor(...);
+            pdfExtract(fileContents.data(), fileSize);
+            // the raw text from the file is now in a Unicode buffer
+            std::wstring fileText(pdfExtract.get_filtered_text(),
+                                  pdfExtract.get_filtered_text_length());
+            }
+        @endcode*/
+    class pdf_extract_text final : public extract_text
+        {
+      public:
+        /** @brief Connects a function object used to decompress @c FlateDecode
+                (i.e., zlib) stream sections.
+            @param decompressFunction The decompression functor to use.
+            @sa stream_decompress_functor.*/
+        void set_stream_decompressor(stream_decompress_functor decompressFunction)
+            {
+            m_decompress = std::move(decompressFunction);
+            }
+
+        /** @brief Connects a function object used to convert legacy multibyte
+                charset bytes (e.g., Big5, Shift-JIS) to Unicode.
+            @details This is used to decode Type0 fonts whose /Encoding is one of
+                Adobe's predefined CJK CMaps (e.g., /ETenms-B5-H); such fonts'
+                string bytes are text in the CMap's underlying charset, and they
+                typically have no ToUnicode CMap to decode them with instead.
+                (Without a converter, text shown with such fonts is dropped.)
+            @param convertFunction The charset conversion functor to use.
+            @sa charset_convert_functor.*/
+        void set_charset_converter(charset_convert_functor convertFunction)
+            {
+            m_charset_convert = std::move(convertFunction);
+            }
+
+        /** @brief Loads a glyph name table (e.g., the Adobe Glyph List) used to resolve
+                simple fonts' `/Differences` custom encodings.
+            @details The table is expected in the same format as Adobe's AGL data files:
+                semicolon-delimited lines of `glyphname;XXXX[ XXXX...]`, where each `XXXX`
+                is a four-digit hexadecimal Unicode value; lines starting with `#`
+                (and blank lines) are ignored.
+            @param text The glyph table's text content.
+            @sa https://github.com/adobe-type-tools/agl-aglfn */
+        void load_glyph_name_table(std::wstring_view text);
+
+        /** @brief Main interface for extracting plain text from a PDF buffer.
+            @param pdf_buffer The PDF stream to convert to plain text.
+            @param text_length The length of the PDF buffer.
+            @returns A pointer to the parsed text, or @c nullptr upon failure.\n
+                Call get_filtered_text_length() to get the length of the parsed text.
+            @throws pdf_header_not_found If an invalid document.
+            @throws pdf_encrypted If the document is encrypted
+                (and hence cannot be parsed).*/
+        const wchar_t* operator()(const char* pdf_buffer, size_t text_length);
+
+        /** @returns The title from the document's metadata.
+            @note Must be called after calling @c operator().*/
+        [[nodiscard]]
+        const std::wstring& get_title() const noexcept
+            {
+            return m_title;
+            }
+
+        /** @returns The author from the document's metadata.
+            @note Must be called after calling @c operator().*/
+        [[nodiscard]]
+        const std::wstring& get_author() const noexcept
+            {
+            return m_author;
+            }
+
+        /** @returns The subject from the document's metadata.
+            @note Must be called after calling @c operator().*/
+        [[nodiscard]]
+        const std::wstring& get_subject() const noexcept
+            {
+            return m_subject;
+            }
+
+        /** @returns The keywords from the document's metadata.
+            @note Must be called after calling @c operator().*/
+        [[nodiscard]]
+        const std::wstring& get_keywords() const noexcept
+            {
+            return m_keywords;
+            }
+
+        /// @brief Exception thrown when a PDF file is missing its header
+        ///     (more than likely an invalid PDF file).
+        class pdf_header_not_found : public std::exception
+            {
+            };
+
+        /// @brief Exception thrown when a PDF file is encrypted
+        ///     (encrypted documents are not supported).
+        class pdf_encrypted : public std::exception
+            {
+            };
+
+      private:
+        /// @brief Reads a string value (which may be an indirect reference to a
+        ///     string object) into Unicode text.
+        /// @param document The document (used to resolve indirect references and
+        ///     decrypt, if applicable).
+        /// @param owningObject The indirect object that directly contains @c value
+        ///     (used to derive its decryption key, if the document is encrypted).
+        /// @param value The (possibly indirect) string value to read.
+        [[nodiscard]]
+        static std::wstring read_string_value(const pdf_document& document,
+                                              const pdf_object& owningObject,
+                                              std::string_view value);
+
+        /// @brief Gathers the trailer dictionaries (both classic `trailer` sections and
+        ///     cross-reference stream dictionaries), which hold the /Root, /Info,
+        ///     and /Encrypt entries.
+        [[nodiscard]]
+        static std::vector<std::string_view> collect_trailers(std::string_view fileContent,
+                                                              const pdf_document& document);
+
+        /// @brief Recursively walks the page tree, collecting page objects in
+        ///     document order.
+        static void walk_page_tree(const pdf_document& document, long nodeNumber,
+                                   std::set<long>& visitedNodes, std::vector<long>& pageOrder,
+                                   int depth);
+
+        /// @brief Reads a (possibly `(literal)` or `<hex>`) string's raw bytes.
+        /// @returns The decoded raw bytes, or an empty string if @c value isn't a string.
+        [[nodiscard]]
+        static std::string read_raw_string(std::string_view value);
+
+        /// @brief Attempts to build a decryptor from the trailer's `/Encrypt` and `/ID`
+        ///     entries, assuming an empty user password.
+        /// @param document The document (used to resolve `/Encrypt`, if it's an
+        ///     indirect reference).
+        /// @param encryptValue The trailer's raw `/Encrypt` value.
+        /// @param idValue The trailer's raw `/ID` value (its array, not just one string).
+        /// @returns The decryptor, or @c nullptr if the document doesn't use a
+        ///     supported encryption scheme, or authentication failed.
+        [[nodiscard]]
+        static std::unique_ptr<pdf_decryptor> setup_decryption(const pdf_document& document,
+                                                               std::string_view encryptValue,
+                                                               std::string_view idValue);
+
+        stream_decompress_functor m_decompress;    ///< FlateDecode decompression functor.
+        charset_convert_functor m_charset_convert; ///< Legacy CJK charset conversion functor.
+        glyph_name_table m_glyph_name_table;       ///< Glyph names for `/Differences` resolution.
+        std::wstring m_title;                      ///< Document title from /Info metadata.
+        std::wstring m_author;                     ///< Document author from /Info metadata.
+        std::wstring m_subject;                    ///< Document subject from /Info metadata.
+        std::wstring m_keywords;                   ///< Document keywords from /Info metadata.
+        };
+
+    } // namespace lily_of_the_valley
+
+#endif // PDF_EXTRACT_TEXT_H

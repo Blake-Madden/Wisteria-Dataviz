@@ -1,0 +1,839 @@
+// NOLINTBEGIN
+// clang-format off
+
+#include <catch2/catch_test_macros.hpp>
+#include <cstring>
+#include <string>
+#include "../src/import/pdf_extract_text.h"
+
+using namespace lily_of_the_valley;
+
+TEST_CASE("PDF Import", "[pdf import]")
+    {
+    SECTION("Nulls")
+        {
+        pdf_extract_text ext;
+        CHECK(ext(nullptr, 72) == nullptr);
+        CHECK(ext("some text", 0) == nullptr);
+        }
+    SECTION("Missing Header")
+        {
+        pdf_extract_text ext;
+        CHECK_THROWS_AS(ext("some text", 9), pdf_extract_text::pdf_header_not_found);
+        }
+    SECTION("Encrypted")
+        {
+        const char* text = R"PDF(%PDF-1.4
+trailer
+<< /Encrypt 5 0 R /Root 1 0 R >>)PDF";
+        pdf_extract_text ext;
+        CHECK_THROWS_AS(ext(text, std::strlen(text)), pdf_extract_text::pdf_encrypted);
+        }
+    SECTION("No Pages")
+        {
+        const char* text = "%PDF-1.4\nnothing else in here";
+        pdf_extract_text ext;
+        CHECK(ext(text, std::strlen(text)) != nullptr);
+        CHECK(ext.get_filtered_text_length() == 0);
+        CHECK(!ext.get_log().empty());
+        }
+    SECTION("Simple")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Hello, world!) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello, world!") == 0);
+        }
+    SECTION("Nested Parentheses")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Strings may contain (nested) parentheses.) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"Strings may contain (nested) parentheses.") == 0);
+        }
+    SECTION("Escape Commands")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Tab\there\nand \(parens\) \\ \101) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Tab\there\nand (parens) \\ A") == 0);
+        }
+    SECTION("Escaped New Lines")
+        {
+        const char* text = "%PDF-1.4\n"
+            "1 0 obj\n<< /Type /Page /Contents 2 0 R >>\nendobj\n"
+            "2 0 obj\n<< >>\nstream\n"
+            "BT (These \\\ntwo strings \\\nare the same.) Tj ET\n"
+            "endstream\nendobj";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"These two strings are the same.") == 0);
+        }
+    SECTION("Hex String")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT <48656C6C6F> Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello") == 0);
+        }
+    SECTION("Td New Line")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+(First line) Tj
+0 -14 Td
+(Second line) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"First line\nSecond line") == 0);
+        }
+    SECTION("Td Paragraph Break")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (One) Tj 0 -40 Td (Two) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"One\n\nTwo") == 0);
+        }
+    SECTION("Tm New Line")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+1 0 0 1 72 700 Tm (Line A) Tj
+1 0 0 1 72 686 Tm (Line B) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Line A\nLine B") == 0);
+        }
+    SECTION("T-star New Line")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Line A) Tj T* (Line B) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Line A\nLine B") == 0);
+        }
+    SECTION("TJ Kerning And Word Gaps")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT [(Hel) -50 (lo) -300 (world)] TJ ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello world") == 0);
+        }
+    SECTION("Bullet List Items")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (\225 First item) Tj 0 -14 Td (\225 Second item) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"\t• First item\n\t• Second item") == 0);
+        }
+    SECTION("Bullet Glyph And Label In Separate Text Objects")
+        {
+        // mirrors how some PDF generators draw a checkbox/bullet glyph and its label using
+        // two separate BT...ET text objects on the same line, each with its own Td that lands
+        // on the same absolute y position (since BT resets the text line matrix to identity)
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 0 700 Td (\225) Tj ET
+BT 20 700 Td (Create a new folder.) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\t• Create a new folder.") == 0);
+        }
+    SECTION("Multiple Pages In Tree Order")
+        {
+        // the page tree's Kids order (4, then 3) is document order,
+        // even though object 3 appears first in the file
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 3 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /Contents 5 0 R >>
+endobj
+5 0 obj
+<< >>
+stream
+BT (First page) Tj ET
+endstream
+endobj
+6 0 obj
+<< >>
+stream
+BT (Second page) Tj ET
+endstream
+endobj
+trailer
+<< /Root 1 0 R >>)PDF";
+        pdf_extract_text ext;
+        // each page ends on its own line and pages are separated by a blank line,
+        // so that trailing content (e.g., a page footer) never runs directly into
+        // the next page's text
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"First page\n\nSecond page") == 0);
+        }
+    SECTION("Contents Array")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents [2 0 R 3 0 R] >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Part one) Tj ET
+endstream
+endobj
+3 0 obj
+<< >>
+stream
+BT 0 -14 Td (part two) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Part one\npart two") == 0);
+        }
+    SECTION("Metadata")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Body) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Title (My Title) /Author (Jane Doe) /Subject (Testing) /Keywords (pdf, tests) >>
+endobj
+trailer
+<< /Info 7 0 R >>)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Body") == 0);
+        CHECK(ext.get_title() == L"My Title");
+        CHECK(ext.get_author() == L"Jane Doe");
+        CHECK(ext.get_subject() == L"Testing");
+        CHECK(ext.get_keywords() == L"pdf, tests");
+        }
+    SECTION("Metadata UTF-16")
+        {
+        // a title stored as UTF-16BE (with a byte order mark)
+        const char* text = R"PDF(%PDF-1.4
+7 0 obj
+<< /Title (\376\377\000T\000e\000s\000t) >>
+endobj
+trailer
+<< /Info 7 0 R >>)PDF";
+        pdf_extract_text ext;
+        ext(text, std::strlen(text));
+        CHECK(ext.get_title() == L"Test");
+        }
+    SECTION("Bare Carriage Return In Literal String")
+        {
+        // a raw (unescaped) CR byte inside a literal string should be normalized to '\n',
+        // same as PDF viewers do
+        const std::string text = std::string(R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Body) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Title (Line1)PDF") +
+            "\r" + R"PDF(Line2) >>
+endobj
+trailer
+<< /Info 7 0 R >>)PDF";
+        pdf_extract_text ext;
+        ext(text.c_str(), text.length());
+        CHECK(ext.get_title() == L"Line1\nLine2");
+        }
+    SECTION("ToUnicode CMap")
+        {
+        // a composite (2-byte code) font with a ToUnicode CMap
+        // (bfchar entries for H and e; a bfrange covering l-o)
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <00480065006C006C006F> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+2 beginbfchar
+<0048> <0048>
+<0065> <0065>
+endbfchar
+1 beginbfrange
+<006C> <006F> <006C>
+endbfrange
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello") == 0);
+        }
+    SECTION("ToUnicode Ligature Expansion")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <00010065006C0064> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+3 beginbfchar
+<0001> <FB01>
+<0065> <0065>
+<006C> <006C>
+endbfchar
+1 beginbfrange
+<0064> <0064> <0064>
+endbfrange
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"field") == 0);
+        }
+    SECTION("ToUnicode CMap With Mixed-Width Codespace Ranges")
+        {
+        // a CMap that declares both a 1-byte codespace range (<00>-<80>) and a 2-byte
+        // one (<8100>-<FFFF>); the content stream mixes a 1-byte code (0x41) with a
+        // 2-byte code (0x8100) in the same string
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <418100> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+2 begincodespacerange
+<00> <80>
+<8100> <FFFF>
+endcodespacerange
+2 beginbfchar
+<41> <0041>
+<8100> <4E2D>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        const std::wstring expected{ L'A', static_cast<wchar_t>(0x4E2D) };
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), expected.c_str()) == 0);
+        }
+    SECTION("MacRoman Encoding")
+        {
+        // a simple font with no ToUnicode CMap, using /MacRomanEncoding; byte 0x80 is
+        // "Ä" (U+00C4) there, versus "€" (U+20AC) under the default WinAnsi/CP1252
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <80> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /Encoding /MacRomanEncoding >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Ä") == 0);
+        }
+    SECTION("Standard Encoding (via BaseEncoding)")
+        {
+        // a simple font with no ToUnicode CMap, using an /Encoding dictionary whose
+        // /BaseEncoding is /StandardEncoding; byte 0xA8 is "¤" there, versus
+        // "¨" under the default WinAnsi/CP1252 (where the upper range is Latin-1)
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <A8> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /Encoding << /BaseEncoding /StandardEncoding >> >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"¤") == 0);
+        }
+    SECTION("Differences Array With Glyph Name Table")
+        {
+        // a simple font with a /Differences array remapping code 65 ('A') to the
+        // Euro glyph and code 66 ('B') to a (multi-codepoint) Hebrew combining
+        // sequence; both are resolved via a loaded glyph name table, overriding
+        // what the base WinAnsi encoding would otherwise give those codes
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <4142> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1
+   /Encoding << /Differences [ 65 /Euro 66 /dalethatafpatah ] >> >>
+endobj)PDF";
+        pdf_extract_text ext;
+        ext.load_glyph_name_table(L"# comment line\n"
+                                  L"\n"
+                                  L"Euro;20AC\n"
+                                  L"# another comment\n"
+                                  L"dalethatafpatah;05D3 05B2\n");
+        const std::wstring expected{ static_cast<wchar_t>(0x20AC), static_cast<wchar_t>(0x05D3),
+                                     static_cast<wchar_t>(0x05B2) };
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), expected.c_str()) == 0);
+        }
+    SECTION("Differences Array Without Glyph Name Table Loaded")
+        {
+        // the same /Differences array as above, but without ever calling
+        // load_glyph_name_table(): the codes should fall back to the base
+        // (WinAnsi) encoding, i.e., plain "AB"
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <4142> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1
+   /Encoding << /Differences [ 65 /Euro 66 /dalethatafpatah ] >> >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"AB") == 0);
+        }
+    SECTION("Raw Surrogate Pair Without ToUnicode")
+        {
+        // a Type0/Identity-H font with no ToUnicode CMap, whose content stream
+        // encodes an emoji directly as CIDs equal to its UTF-16 surrogate pair
+        // (U+1F600 GRINNING FACE = D83D DE00)
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <D83DDE00> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H >>
+endobj)PDF";
+        pdf_extract_text ext;
+        const std::wstring result{ ext(text, std::strlen(text)) };
+        std::wstring expected;
+        if constexpr (sizeof(wchar_t) > 2)
+            {
+            expected += static_cast<wchar_t>(0x1F600);
+            }
+        else
+            {
+            expected += static_cast<wchar_t>(0xD83D);
+            expected += static_cast<wchar_t>(0xDE00);
+            }
+        CHECK(result == expected);
+        }
+    SECTION("Predefined CJK CMap Encoding With Charset Converter")
+        {
+        // a Type0 font using one of Adobe's predefined legacy CJK CMaps as its
+        // /Encoding (no ToUnicode CMap): the string bytes are Big5 text and should
+        // be handed, whole, to the connected charset converter along with the
+        // charset that /ETenms-B5-H implies
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <A4A4A4E5> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /ETenms-B5-H >>
+endobj)PDF";
+        pdf_extract_text ext;
+        // a stand-in "converter" that verifies what it was handed and returns
+        // the "converted" text (the real bytes are Big5 for U+4E2D U+6587)
+        ext.set_charset_converter(
+            [](std::string_view sourceBytes, std::string_view charsetName) -> std::wstring
+            {
+                CHECK(sourceBytes == "\xA4\xA4\xA4\xE5");
+                CHECK(charsetName == "CP950");
+                return L"Converted content";
+            });
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Converted content") == 0);
+        }
+    SECTION("Predefined CJK CMap Encoding Without Charset Converter")
+        {
+        // the same Big5-encoded document, but with no charset converter connected:
+        // the text can't be decoded, so it should be skipped (not emitted as
+        // garbage codes) and the skip should be logged
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <A4A4A4E5> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /ETenms-B5-H >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(ext(text, std::strlen(text)) != nullptr);
+        CHECK(ext.get_filtered_text_length() == 0);
+        CHECK(ext.get_log().find(L"charset converter") != std::wstring::npos);
+        }
+    SECTION("Predefined Unicode CMap Encoding")
+        {
+        // a Type0 font using one of Adobe's predefined Unicode CMaps as its
+        // /Encoding (no ToUnicode CMap): the string bytes are UTF-16BE and are
+        // decoded directly, with no charset converter needed
+        // (D55C AE00 is U+D55C U+AE00, Korean "hangul")
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <D55CAE00> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /UniKS-UCS2-H >>
+endobj)PDF";
+        pdf_extract_text ext;
+        const std::wstring expected{ static_cast<wchar_t>(0xD55C), static_cast<wchar_t>(0xAE00) };
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), expected.c_str()) == 0);
+        }
+    SECTION("Predefined CMap Name Classification")
+        {
+        // the legacy CJK CMap name -> charset mapping
+        CHECK(pdf_text_decoder::predefined_cmap_charset("90ms-RKSJ-H") == "CP932");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("90msp-RKSJ-V") == "CP932");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("Ext-RKSJ-H") == "CP932");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("EUC-H") == "EUC-JP");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("EUC-V") == "EUC-JP");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("ETenms-B5-H") == "CP950");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("ETen-B5-V") == "CP950");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("HKscs-B5-H") == "CP950");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("B5pc-H") == "CP950");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("GBK-EUC-H") == "CP936");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("GBKp-EUC-V") == "CP936");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("GBK2K-H") == "GB18030");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("GB-EUC-H") == "GB2312");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("GBpc-EUC-H") == "GB2312");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("KSCms-UHC-H") == "CP949");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("KSCms-UHC-HW-V") == "CP949");
+        CHECK(pdf_text_decoder::predefined_cmap_charset("KSC-EUC-H") == "EUC-KR");
+        // not predefined CJK CMaps
+        CHECK(pdf_text_decoder::predefined_cmap_charset("Identity-H").empty());
+        CHECK(pdf_text_decoder::predefined_cmap_charset("WinAnsiEncoding").empty());
+        CHECK(pdf_text_decoder::predefined_cmap_charset("UniJIS-UCS2-H").empty());
+        // the Unicode CMap names
+        CHECK(pdf_text_decoder::is_unicode_cmap_name("UniJIS-UCS2-H"));
+        CHECK(pdf_text_decoder::is_unicode_cmap_name("UniJIS-UCS2-HW-V"));
+        CHECK(pdf_text_decoder::is_unicode_cmap_name("UniGB-UTF16-H"));
+        CHECK(pdf_text_decoder::is_unicode_cmap_name("UniCNS-UCS2-V"));
+        CHECK(pdf_text_decoder::is_unicode_cmap_name("UniKS-UTF16-V"));
+        CHECK_FALSE(pdf_text_decoder::is_unicode_cmap_name("Identity-H"));
+        CHECK_FALSE(pdf_text_decoder::is_unicode_cmap_name("ETenms-B5-H"));
+        CHECK_FALSE(pdf_text_decoder::is_unicode_cmap_name("WinAnsiEncoding"));
+        }
+    SECTION("Decompressor Functor")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< /Filter /FlateDecode /Length 10 >>
+stream
+0123456789
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        // a stand-in "decompressor" that verifies what it was handed and
+        // returns the "uncompressed" content stream
+        ext.set_stream_decompressor(
+            [](std::string_view compressed) -> std::string
+            {
+                CHECK(compressed == "0123456789");
+                return "BT (Inflated content) Tj ET";
+            });
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Inflated content") == 0);
+        }
+    SECTION("Compressed Content Without Decompressor")
+        {
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< /Filter /FlateDecode /Length 10 >>
+stream
+0123456789
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(ext(text, std::strlen(text)) != nullptr);
+        CHECK(ext.get_filtered_text_length() == 0);
+        CHECK(ext.get_log().find(L"decompressor") != std::wstring::npos);
+        }
+    SECTION("ASCIIHex Filter")
+        {
+        // "BT (Hex) Tj ET", hex encoded
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< /Filter /ASCIIHexDecode >>
+stream
+42542028486578292054 6A204554>
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hex") == 0);
+        }
+    SECTION("LZW Filter")
+        {
+        // "BT (LZW works) Tj ET", LZW encoded (the PDF/TIFF flavor, with "early change"
+        // widening of the codes), including its conventional leading clear-table code
+        static constexpr unsigned char lzwData[]{
+            0x80, 0x10, 0x8A, 0x82, 0x01, 0x41, 0x30, 0xB4, 0x57, 0x10, 0x1D, 0xCD, 0xE7,
+            0x23, 0x59, 0xCC, 0x52, 0x20, 0x2A, 0x1A, 0x84, 0x04, 0x52, 0xA4, 0x04
+        };
+        std::string text{ "%PDF-1.4\n"
+                          "1 0 obj\n<< /Type /Page /Contents 2 0 R >>\nendobj\n"
+                          "2 0 obj\n<< /Filter /LZWDecode /Length 25 >>\nstream\n" };
+        text.append(reinterpret_cast<const char*>(lzwData), sizeof(lzwData));
+        text += "\nendstream\nendobj";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text.data(), text.length()), L"LZW works") == 0);
+        }
+    SECTION("MD5 Known Vectors")
+        {
+        // RFC 1321, Appendix A.5
+        CHECK(pdf_decryptor::md5_digest("") ==
+              std::string("\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\x09\x98\xec\xf8\x42\x7e", 16));
+        CHECK(pdf_decryptor::md5_digest("abc") ==
+              std::string("\x90\x01\x50\x98\x3c\xd2\x4f\xb0\xd6\x96\x3f\x7d\x28\xe1\x7f\x72", 16));
+        }
+    SECTION("RC4 Known Vector")
+        {
+        // a well-known RC4 test vector (key "Key", plaintext "Plaintext")
+        const std::string ciphertext{ pdf_decryptor::rc4_crypt("Key", "Plaintext") };
+        CHECK(ciphertext ==
+              std::string("\xBB\xF3\x16\xE8\xD9\x40\xAF\x0A\xD3", 9));
+        // RC4 is symmetric, so decrypting the ciphertext recovers the plaintext
+        CHECK(pdf_decryptor::rc4_crypt("Key", ciphertext) == "Plaintext");
+        }
+    SECTION("Encrypted PDF (RC4, Empty User Password)")
+        {
+        // RC4-128 (/V 2 /R 3) encrypted content stream for "BT (Secret) Tj ET",
+        // protected with an empty user password (only an owner password/restrictions
+        // are set). The encryption key, /O, /U, and the encrypted stream bytes below
+        // were computed offline (and round-tripped) against this decoder's exact
+        // key-derivation algorithm.
+        static constexpr unsigned char cipherData[]{
+            0xA0, 0x65, 0xCC, 0x8C, 0xAE, 0xF1, 0xF8, 0x70, 0xCE,
+            0x0E, 0x46, 0xAE, 0x22, 0x08, 0x7C, 0x02, 0xB9
+        };
+        std::string text{ "%PDF-1.4\n"
+                          "1 0 obj\n<< /Type /Page /Contents 2 0 R >>\nendobj\n"
+                          "2 0 obj\n<< /Length 17 >>\nstream\n" };
+        text.append(reinterpret_cast<const char*>(cipherData), sizeof(cipherData));
+        text += "\nendstream\nendobj\n"
+                "5 0 obj\n"
+                "<< /Filter /Standard /V 2 /R 3 /Length 128\n"
+                "   /O <0000000000000000000000000000000000000000000000000000000000000000>\n"
+                "   /U <3f2c1f7fec88c547dc5f5a6f2ee230ad00000000000000000000000000000000>\n"
+                "   /P -44 >>\n"
+                "endobj\n"
+                "trailer\n"
+                "<< /Encrypt 5 0 R /ID [<000102030405060708090a0b0c0d0e0f> "
+                "<000102030405060708090a0b0c0d0e0f>] >>";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text.data(), text.length()), L"Secret") == 0);
+        }
+    SECTION("Encrypted PDF With Wrong Key Length Fails Closed")
+        {
+        // same as above, but /O is altered by one byte, which changes the derived
+        // encryption key; authentication against /U should then fail and throw,
+        // rather than silently emitting garbage text
+        static constexpr unsigned char cipherData[]{
+            0xA0, 0x65, 0xCC, 0x8C, 0xAE, 0xF1, 0xF8, 0x70, 0xCE,
+            0x0E, 0x46, 0xAE, 0x22, 0x08, 0x7C, 0x02, 0xB9
+        };
+        std::string text{ "%PDF-1.4\n"
+                          "1 0 obj\n<< /Type /Page /Contents 2 0 R >>\nendobj\n"
+                          "2 0 obj\n<< /Length 17 >>\nstream\n" };
+        text.append(reinterpret_cast<const char*>(cipherData), sizeof(cipherData));
+        text += "\nendstream\nendobj\n"
+                "5 0 obj\n"
+                "<< /Filter /Standard /V 2 /R 3 /Length 128\n"
+                "   /O <0100000000000000000000000000000000000000000000000000000000000000>\n"
+                "   /U <3f2c1f7fec88c547dc5f5a6f2ee230ad00000000000000000000000000000000>\n"
+                "   /P -44 >>\n"
+                "endobj\n"
+                "trailer\n"
+                "<< /Encrypt 5 0 R /ID [<000102030405060708090a0b0c0d0e0f> "
+                "<000102030405060708090a0b0c0d0e0f>] >>";
+        pdf_extract_text ext;
+        CHECK_THROWS_AS(ext(text.data(), text.length()), pdf_extract_text::pdf_encrypted);
+        }
+    }
+
+// NOLINTEND
+// clang-format on

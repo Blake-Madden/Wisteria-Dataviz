@@ -19,6 +19,7 @@ SET(TEST_SRC_FILES
     mdparsetests.cpp
     odsimporttests.cpp
     odtparsetests.cpp
+    pdfimporttests.cpp
     postscriptimporttests.cpp
     pptxparsetests.cpp
     roundtest.cpp
