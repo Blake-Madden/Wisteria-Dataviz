@@ -273,7 +273,9 @@ namespace Wisteria
 
     //------------------------------------------------
     bool TextStream::ReadFile(wxString& filePath, wxString& textBuffer,
-                              const wxString& srcCharSet /*= wxString{}*/)
+                              const wxString& srcCharSet /*= wxString{}*/,
+                              ReadFileInteractivityMode interactivity
+                              /*= ReadFileInteractivityMode::PromptForPathIfMissing*/)
         {
         textBuffer.clear();
         // can't do anything with an empty path, even prompting the user
@@ -282,37 +284,41 @@ namespace Wisteria
             {
             return false;
             }
-        while (true)
+        while (!wxFile::Exists(filePath))
             {
-            // if the file doesn't exist, then keep prompting the user for it
-            // until an existing file is found or the quit
-            if (!wxFile::Exists(filePath))
+            if (interactivity == ReadFileInteractivityMode::NoInteractivity)
                 {
-                if (wxMessageBox(
-                        wxString::Format(_(L"%s: file not found.\nDo you wish to search for it?"),
-                                         filePath),
-                        _(L"File Not Found"), wxYES_NO | wxICON_WARNING) == wxNO)
-                    {
-                    return false;
-                    }
-                const wxFileName fn(filePath);
-                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-                wxFileDialog dialog(nullptr, _(L"Select File"), fn.GetPath(), fn.GetName(),
-                                    wxFileSelectorDefaultWildcardStr,
-                                    wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
-                // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-
-                if (dialog.ShowModal() != wxID_OK)
-                    {
-                    return false;
-                    }
-
-                filePath = dialog.GetPath();
+                wxLogError(_(L"%s: file not found."), filePath);
+                return false;
                 }
-            else
+            else if (interactivity == ReadFileInteractivityMode::ErrorMessage)
                 {
-                break;
+                wxMessageBox(wxString::Format(_(L"%s: file not found."), filePath),
+                             _(L"File Not Found"), wxOK | wxICON_EXCLAMATION);
+                return false;
                 }
+            // otherwise, keep prompting the user for it until
+            // an existing file is found or they quit
+            if (wxMessageBox(
+                    wxString::Format(_(L"%s: file not found.\nDo you wish to search for it?"),
+                                     filePath),
+                    _(L"File Not Found"), wxYES_NO | wxICON_WARNING) == wxNO)
+                {
+                return false;
+                }
+            const wxFileName fn(filePath);
+            // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+            wxFileDialog dialog(nullptr, _(L"Select File"), fn.GetPath(), fn.GetName(),
+                                wxFileSelectorDefaultWildcardStr,
+                                wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+            // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
+            if (dialog.ShowModal() != wxID_OK)
+                {
+                return false;
+                }
+
+            filePath = dialog.GetPath();
             }
         try
             {
@@ -329,7 +335,15 @@ namespace Wisteria
                     {
                     return true;
                     }
-                wxMessageBox(_(L"Unable to read file."), _(L"Error"), wxOK | wxICON_EXCLAMATION);
+                if (interactivity == ReadFileInteractivityMode::NoInteractivity)
+                    {
+                    wxLogError(_(L"%s: unable to read file."), filePath);
+                    }
+                else
+                    {
+                    wxMessageBox(_(L"Unable to read file."), _(L"Error"),
+                                 wxOK | wxICON_EXCLAMATION);
+                    }
                 return false;
                 }
             }
@@ -343,7 +357,15 @@ namespace Wisteria
             wxFile theFile;
             if (!theFile.Open(filePath, wxFile::read))
                 {
-                wxMessageBox(_(L"Unable to open file."), _(L"Error"), wxOK | wxICON_EXCLAMATION);
+                if (interactivity == ReadFileInteractivityMode::NoInteractivity)
+                    {
+                    wxLogError(_(L"%s: unable to open file."), filePath);
+                    }
+                else
+                    {
+                    wxMessageBox(_(L"Unable to open file."), _(L"Error"),
+                                 wxOK | wxICON_EXCLAMATION);
+                    }
                 return false;
                 }
             const auto fileLen = theFile.Length();
@@ -351,7 +373,15 @@ namespace Wisteria
             const size_t bytesRead = theFile.Read(fileText.data(), fileLen);
             if (bytesRead == 0)
                 {
-                wxMessageBox(_(L"Unable to read file."), _(L"Error"), wxOK | wxICON_EXCLAMATION);
+                if (interactivity == ReadFileInteractivityMode::NoInteractivity)
+                    {
+                    wxLogError(_(L"%s: unable to read file."), filePath);
+                    }
+                else
+                    {
+                    wxMessageBox(_(L"Unable to read file."), _(L"Error"),
+                                 wxOK | wxICON_EXCLAMATION);
+                    }
                 return false;
                 }
             textBuffer = CharStreamToUnicode(fileText.data(), bytesRead, srcCharSet);

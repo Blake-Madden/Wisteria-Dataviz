@@ -21,6 +21,21 @@ namespace Wisteria
     class TextStream
         {
       public:
+        /// @brief How TextStream::ReadFile() should behave if the requested file
+        ///     is missing or can't be read.
+        enum class ReadFileInteractivityMode
+            {
+            /// @brief If the file isn't found, prompt the client (via message boxes and
+            ///     a file selection dialog) to search for it. This is the legacy behavior.
+            PromptForPathIfMissing,
+            /// @brief If the file isn't found (or can't be read), immediately show an
+            ///     error message box; the client isn't prompted to search for it.
+            ErrorMessage,
+            /// @brief No message boxes or prompts are shown; failures are logged
+            ///     via @c wxLogError() instead.
+            NoInteractivity
+            };
+
         /** @brief Copies a broken UTF-8 stream (where it contains incorrect UTF-8 sequences,
                 like regular extended ASCII characters) into a Unicode buffer,
                 where the incorrect sequences are removed.
@@ -59,16 +74,21 @@ namespace Wisteria
             @details This supports UTF-8 and double-byte Unicode files. For HTML and XML files,
                 can also support reading the character set from the file's definition and
                 will use that.
-            @warning This function assumes that the file may not exist and will prompt
-                the client for the correct path if not found. Therefore, it should not be
-                used when possible client interaction is not expected.
+            @warning By default, this function assumes that the file may not exist and will
+                prompt the client for the correct path if not found. If client interaction
+                isn't expected (or possible), pass @c interactivity as
+                @c ReadFileInteractivityMode::NoInteractivity.
             @param[in,out] filePath The file path to read. This may be altered if the original
                 path didn't exist and the client is prompted to enter a new one.
             @param[out] textBuffer The buffer to write the file's content to.
             @param srcCharSet The (optional) character set to convert the file from.
+            @param interactivity Controls how to respond if @c filePath isn't found or can't
+                be read.
             @returns @c true if the file was read successfully.*/
         static bool ReadFile(wxString& filePath, wxString& textBuffer,
-                             const wxString& srcCharSet = wxString{});
+                             const wxString& srcCharSet = wxString{},
+                             ReadFileInteractivityMode interactivity =
+                                 ReadFileInteractivityMode::PromptForPathIfMissing);
         };
     } // namespace Wisteria
 
