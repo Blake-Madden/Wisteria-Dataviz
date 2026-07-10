@@ -727,7 +727,7 @@ namespace lily_of_the_valley
                 {
                 // image (DCTDecode et al.) streams are not supported
                 m_log(L"Unsupported stream filter in PDF file; "
-                       "content from this section will be skipped.");
+                      "content from this section will be skipped.");
                 return {};
                 }
 

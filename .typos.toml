@@ -41,6 +41,12 @@ mor = "mor"
 WORL = "WORL"
 thm = "thm"
 optin = "optin"
+Flate = "Flate"
+EDE = "EDE"
+rturned = "rturned"
+Paeth = "Paeth"
+parms = "parms"
+Parms = "Parms"
 
 [type.svg]
 extend-glob = ["*.svg"]

@@ -21,7 +21,7 @@ namespace lily_of_the_valley
     wchar_t pdf_text_decoder::cp1252_to_unicode(const unsigned char byteValue)
         {
         // 0x80-0x9F are the only values that differ from Latin-1
-        static constexpr std::array<wchar_t, 32> cp1252Table{
+        constexpr static std::array<wchar_t, 32> cp1252Table{
             0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160,
             0x2039, 0x0152, 0x008D, 0x017D, 0x008F, 0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022,
             0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178
@@ -39,7 +39,7 @@ namespace lily_of_the_valley
         // Unlike WinAnsi/CP1252, MacRoman diverges from Latin-1 across the entire
         // 0x80-0xFF range, so (unlike cp1252_to_unicode) the full range is tabulated.
         // A 0 entry means the code point is undefined in this encoding
-        static constexpr std::array<wchar_t, 128> macRomanTable{
+        constexpr static std::array<wchar_t, 128> macRomanTable{
             0x00C4, 0x00C5, 0x00C7, 0x00C9, 0x00D1, 0x00D6, 0x00DC, 0x00E1, 0x00E0, 0x00E2, 0x00E4,
             0x00E3, 0x00E5, 0x00E7, 0x00E9, 0x00E8, 0x00EA, 0x00EB, 0x00ED, 0x00EC, 0x00EE, 0x00EF,
             0x00F1, 0x00F3, 0x00F2, 0x00F4, 0x00F6, 0x00F5, 0x00FA, 0x00F9, 0x00FB, 0x00FC, 0x2020,
@@ -67,7 +67,7 @@ namespace lily_of_the_valley
         // Adobe StandardEncoding; like MacRoman, this diverges from Latin-1 across the
         // whole 0x80-0xFF range, so (unlike cp1252_to_unicode) it needs a full table.
         // A 0 entry means the code point is undefined in this encoding
-        static constexpr std::array<wchar_t, 128> standardTable{
+        constexpr static std::array<wchar_t, 128> standardTable{
             0x0080, 0x0081, 0x0082, 0x0083, 0x0084, 0x0085, 0x0086, 0x0087, 0x0088, 0x0089, 0x008A,
             0x008B, 0x008C, 0x008D, 0x008E, 0x008F, 0x0090, 0x0091, 0x0092, 0x0093, 0x0094, 0x0095,
             0x0096, 0x0097, 0x0098, 0x0099, 0x009A, 0x009B, 0x009C, 0x009D, 0x009E, 0x009F, 0x00A0,
@@ -293,12 +293,10 @@ namespace lily_of_the_valley
                     }
                 if (haveCode)
                     {
-                    const std::string_view glyphName{
-                        differencesArray.substr(nameStart, pos - nameStart)
-                    };
-                    const std::wstring unicodeValue{
-                        pdf_text_decoder::glyph_name_to_unicode(glyphName, glyphTable)
-                    };
+                    const std::string_view glyphName{ differencesArray.substr(nameStart,
+                                                                              pos - nameStart) };
+                    const std::wstring unicodeValue{ pdf_text_decoder::glyph_name_to_unicode(
+                        glyphName, glyphTable) };
                     if (!unicodeValue.empty())
                         {
                         decoder.m_code_map[static_cast<uint32_t>(currentCode)] = unicodeValue;
@@ -381,9 +379,9 @@ namespace lily_of_the_valley
                     break;
                     }
                 const size_t byteLength{ std::clamp<size_t>(lowDigits.length() / 2, 1, 4) };
-                decoder.m_codespace_ranges.push_back(
-                    { pdf_text_decoder::hex_to_uint(lowDigits),
-                      pdf_text_decoder::hex_to_uint(highDigits), byteLength });
+                decoder.m_codespace_ranges.push_back({ pdf_text_decoder::hex_to_uint(lowDigits),
+                                                       pdf_text_decoder::hex_to_uint(highDigits),
+                                                       byteLength });
                 }
             if (!decoder.m_codespace_ranges.empty())
                 {
@@ -512,8 +510,7 @@ namespace lily_of_the_valley
         // Traditional Chinese: the B5 family (B5pc-, ETen-B5, ETenms-B5, HKscs-B5)
         // is Big5. (CNS-EUC-H/V is EUC-TW, which is too rarely supported by
         // converters to map here.)
-        if (cmapName.find("-B5") != std::string_view::npos ||
-            cmapName.compare(0, 4, "B5pc") == 0)
+        if (cmapName.find("-B5") != std::string_view::npos || cmapName.compare(0, 4, "B5pc") == 0)
             {
             return "CP950";
             }
@@ -557,7 +554,7 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     size_t pdf_text_decoder::determine_code_length(const std::string& bytes, const size_t pos,
-                                                    const pdf_font_decoder* fontDecoder)
+                                                   const pdf_font_decoder* fontDecoder)
         {
         const size_t remaining{ bytes.length() - pos };
         if (fontDecoder == nullptr)
@@ -604,9 +601,7 @@ namespace lily_of_the_valley
         size_t i{ 0 };
         while (i < bytes.length())
             {
-            const size_t codeSize{
-                pdf_text_decoder::determine_code_length(bytes, i, fontDecoder)
-            };
+            const size_t codeSize{ pdf_text_decoder::determine_code_length(bytes, i, fontDecoder) };
             uint32_t code{ 0 };
             for (size_t byteIndex = 0; byteIndex < codeSize; ++byteIndex)
                 {
@@ -688,14 +683,14 @@ namespace lily_of_the_valley
                         (fontDecoder != nullptr) ? fontDecoder->m_base_encoding :
                                                    pdf_font_decoder::base_encoding_type::win_ansi
                     };
-                    result += (baseEncoding == pdf_font_decoder::base_encoding_type::mac_roman) ?
-                                  pdf_text_decoder::mac_roman_to_unicode(
-                                      static_cast<unsigned char>(code)) :
-                              (baseEncoding == pdf_font_decoder::base_encoding_type::standard) ?
-                                  pdf_text_decoder::standard_to_unicode(
-                                      static_cast<unsigned char>(code)) :
-                                  pdf_text_decoder::cp1252_to_unicode(
-                                      static_cast<unsigned char>(code));
+                    result +=
+                        (baseEncoding == pdf_font_decoder::base_encoding_type::mac_roman) ?
+                            pdf_text_decoder::mac_roman_to_unicode(
+                                static_cast<unsigned char>(code)) :
+                        (baseEncoding == pdf_font_decoder::base_encoding_type::standard) ?
+                            pdf_text_decoder::standard_to_unicode(
+                                static_cast<unsigned char>(code)) :
+                            pdf_text_decoder::cp1252_to_unicode(static_cast<unsigned char>(code));
                     }
                 }
             // else: a 3-byte or 4-byte code with no ToUnicode mapping; there's no

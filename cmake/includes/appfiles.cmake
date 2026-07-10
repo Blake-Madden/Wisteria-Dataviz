@@ -23,7 +23,7 @@ SET(APP_WISTERIA_SRC
     src/base/pdfreportprintout.cpp
     src/base/points.cpp
     src/base/polygon.cpp
-    src/base/report_builder_forumulas.cpp
+    src/base/report_builder_formulas.cpp
     src/base/reportbuilder.cpp
     src/base/reportbuildercolors.cpp
     src/base/reportprintout.cpp

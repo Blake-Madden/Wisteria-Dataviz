@@ -202,7 +202,6 @@ namespace Wisteria::GraphItems
             @brief Helper functions for collision detection and shape calculations.*/
         /// @{
 
-
         /** @brief Determines if a rectangle is inside a polygon.
             @details Tests if all four corners of a rectangle are within a polygon
                 (or on an edge or vertex) by shooting a ray along the x-axis.
