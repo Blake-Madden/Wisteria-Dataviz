@@ -8,9 +8,15 @@
 
 #include "pdfreader.h"
 #include "../util/textstream.h"
+#include "sha256.h"
+#include "sha384.h"
+#include "sha512.h"
+#include <algorithm>
+#include <cstdint>
 #include <stdexcept>
 #include <wx/intl.h>
 #include <wx/mstream.h>
+#include <wx/pdfrijndael.h>
 #include <wx/strconv.h>
 #include <wx/zstream.h>
 
@@ -78,6 +84,82 @@ namespace Wisteria::Data
             }
         const wxString convertedText{ sourceBytes.data(), charsetConverter, sourceBytes.length() };
         return { convertedText.wc_str(), convertedText.length() };
+        }
+
+    //------------------------------------------------------------------
+    std::string PdfReader::AesCbcCrypt(const std::string_view key,
+                                       const std::string_view initVector,
+                                       const std::string_view data,
+                                       const lily_of_the_valley::cipher_direction direction)
+        {
+        if (data.empty() || (data.length() % 16) != 0 || initVector.length() != 16 ||
+            (key.length() != 16 && key.length() != 32))
+            {
+            return {};
+            }
+
+        unsigned char initVectorBuffer[16];
+        std::copy(initVector.cbegin(), initVector.cend(), initVectorBuffer);
+
+        wxPdfRijndael rijndael;
+        const int initResult{ rijndael.init(
+            wxPdfRijndael::CBC,
+            (direction == lily_of_the_valley::cipher_direction::encrypt) ? wxPdfRijndael::Encrypt :
+                                                                           wxPdfRijndael::Decrypt,
+            reinterpret_cast<const unsigned char*>(key.data()),
+            (key.length() == 32) ? wxPdfRijndael::Key32Bytes : wxPdfRijndael::Key16Bytes,
+            initVectorBuffer) };
+        if (initResult != RIJNDAEL_SUCCESS)
+            {
+            return {};
+            }
+
+        std::string output(data.length(), '\0');
+        const auto* input{ reinterpret_cast<const unsigned char*>(data.data()) };
+        auto* outputBuffer{ reinterpret_cast<unsigned char*>(output.data()) };
+        const int resultBits{
+            (direction == lily_of_the_valley::cipher_direction::encrypt) ?
+                rijndael.blockEncrypt(input, static_cast<int>(data.length() * 8), outputBuffer) :
+                rijndael.blockDecrypt(input, static_cast<int>(data.length() * 8), outputBuffer)
+        };
+        if (resultBits < 0)
+            {
+            return {};
+            }
+        return output;
+        }
+
+    //------------------------------------------------------------------
+    std::string PdfReader::Sha2Hash(const std::string_view data, const int digestBits)
+        {
+        if (digestBits == 256)
+            {
+            wxpdfdoc::crypto::sha256_state state;
+            wxpdfdoc::crypto::sha_init(state);
+            wxpdfdoc::crypto::sha_process(state, data.data(), static_cast<uint32_t>(data.length()));
+            std::string digest{ 32, '\0' };
+            wxpdfdoc::crypto::sha_done(state, digest.data());
+            return digest;
+            }
+        else if (digestBits == 384)
+            {
+            wxpdfdoc::crypto::sha384_state state;
+            wxpdfdoc::crypto::sha_init(state);
+            wxpdfdoc::crypto::sha_process(state, data.data(), static_cast<uint32_t>(data.length()));
+            std::string digest{ 48, '\0' };
+            wxpdfdoc::crypto::sha_done(state, digest.data());
+            return digest;
+            }
+        else if (digestBits == 512)
+            {
+            wxpdfdoc::crypto::sha512_state state;
+            wxpdfdoc::crypto::sha_init(state);
+            wxpdfdoc::crypto::sha_process(state, data.data(), static_cast<uint32_t>(data.length()));
+            std::string digest{ 64, '\0' };
+            wxpdfdoc::crypto::sha_done(state, digest.data());
+            return digest;
+            }
+        return {};
         }
 
     //------------------------------------------------------------------

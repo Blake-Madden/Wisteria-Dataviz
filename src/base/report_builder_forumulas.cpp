@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        reportbuilder.cpp
+// Name:        report_builder_formulas.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license

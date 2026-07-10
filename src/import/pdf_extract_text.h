@@ -185,6 +185,27 @@ namespace lily_of_the_valley
             m_charset_convert = std::move(convertFunction);
             }
 
+        /** @brief Connects a function object used to perform AES-CBC
+                encryption/decryption.
+            @details Required to read AES-encrypted documents: `/CFM` `/AESV2`
+                (`/V` 4) or `/AESV3` (`/V` 5, revisions 5/6).
+            @param aesFunction The AES-CBC functor to use.
+            @sa aes_cbc_functor.*/
+        void set_aes_decryptor(aes_cbc_functor aesFunction)
+            {
+            m_aes_decrypt = std::move(aesFunction);
+            }
+
+        /** @brief Connects a function object used to compute SHA-2 (256/384/512)
+                message digests.
+            @details Required to read documents encrypted with revision 5 or 6
+                (`/V` 5, AES-256) security handlers, whose key derivation is
+                SHA-256-based (revision 6 additionally hardens this with a
+                SHA-256/384/512 + AES-128 loop).
+            @param hashFunction The SHA-2 functor to use.
+            @sa sha2_functor.*/
+        void set_hash_functor(sha2_functor hashFunction) { m_hash = std::move(hashFunction); }
+
         /** @brief Loads a glyph name table (e.g., the Adobe Glyph List) used to resolve
                 simple fonts' `/Differences` custom encodings.
             @details The table is expected in the same format as Adobe's AGL data files:
@@ -286,15 +307,22 @@ namespace lily_of_the_valley
         ///     indirect reference).
         /// @param encryptValue The trailer's raw `/Encrypt` value.
         /// @param idValue The trailer's raw `/ID` value (its array, not just one string).
+        /// @param aesFunction The AES-CBC functor connected via set_aes_decryptor()
+        ///     (may be empty).
+        /// @param hashFunction The SHA-2 functor connected via set_hash_functor()
+        ///     (may be empty).
         /// @returns The decryptor, or @c nullptr if the document doesn't use a
         ///     supported encryption scheme, or authentication failed.
         [[nodiscard]]
-        static std::unique_ptr<pdf_decryptor> setup_decryption(const pdf_document& document,
-                                                               std::string_view encryptValue,
-                                                               std::string_view idValue);
+        static std::unique_ptr<pdf_decryptor>
+        setup_decryption(const pdf_document& document, std::string_view encryptValue,
+                         std::string_view idValue, const aes_cbc_functor& aesFunction,
+                         const sha2_functor& hashFunction);
 
         stream_decompress_functor m_decompress;    ///< FlateDecode decompression functor.
         charset_convert_functor m_charset_convert; ///< Legacy CJK charset conversion functor.
+        aes_cbc_functor m_aes_decrypt;             ///< AES-CBC encryption/decryption functor.
+        sha2_functor m_hash;                       ///< SHA-2 hashing functor.
         glyph_name_table m_glyph_name_table;       ///< Glyph names for `/Differences` resolution.
         std::wstring m_title;                      ///< Document title from /Info metadata.
         std::wstring m_author;                     ///< Document author from /Info metadata.

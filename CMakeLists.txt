@@ -203,7 +203,8 @@ add_library(${WISTERIA_LIB} STATIC ${WISTERIA_SRC})
     target_include_directories(${WISTERIA_LIB} PUBLIC
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/include
         ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/include
-        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/brotli/include)
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/thirdparty/woff2/brotli/include
+        ${CMAKE_SOURCE_DIR}/src/wxpdfdoc/src/crypto)
 
 if(WIN32 OR APPLE)
     target_link_libraries(${WISTERIA_LIB} PUBLIC ${wxWidgets_LIBRARIES})

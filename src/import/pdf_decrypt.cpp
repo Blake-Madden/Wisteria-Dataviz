@@ -177,22 +177,135 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    // SHA-2 hardened hash (ISO 32000-2, Algorithm 2.A / 2.B), revisions 5/6
+    //------------------------------------------------------------------
+
+    //------------------------------------------------------------------
+    std::string pdf_decryptor::compute_hardened_hash(const std::string_view password,
+                                                     const std::string_view salt,
+                                                     const std::string_view userBytes,
+                                                     const int revision,
+                                                     const sha2_functor& hashFunction,
+                                                     const aes_cbc_functor& aesFunction)
+        {
+        if (!hashFunction)
+            {
+            return {};
+            }
+        std::string input{ password };
+        input += salt;
+        input += userBytes;
+        std::string hashKey{ hashFunction(input, 256) };
+
+        // revision 5 (Algorithm 2.A): a single, un-hardened SHA-256 round
+        if (revision != 6)
+            {
+            return hashKey;
+            }
+
+        // revision 6 (Algorithm 2.B): the "hardened hash" loop
+        if (!aesFunction)
+            {
+            return {};
+            }
+        int round{ 0 };
+        int lastByte{ 0 };
+        while (round < 64 || lastByte > (round - 32))
+            {
+            std::string combined{ password };
+            combined += hashKey;
+            combined += userBytes;
+            std::string repeatedBuffer;
+            repeatedBuffer.reserve(combined.length() * 64);
+            for (int repetition = 0; repetition < 64; ++repetition)
+                {
+                repeatedBuffer += combined;
+                }
+
+            const std::string encrypted{ aesFunction(hashKey.substr(0, 16), hashKey.substr(16, 16),
+                                                     repeatedBuffer, cipher_direction::encrypt) };
+            if (encrypted.length() < 16)
+                {
+                return {};
+                }
+            unsigned int byteSum{ 0 };
+            for (size_t byteIndex = 0; byteIndex < 16; ++byteIndex)
+                {
+                byteSum += static_cast<unsigned char>(encrypted[byteIndex]);
+                }
+            const unsigned int remainder{ byteSum % 3 };
+            hashKey = hashFunction(encrypted, (remainder == 0) ? 256 :
+                                              (remainder == 1) ? 384 :
+                                                                 512);
+            lastByte = static_cast<unsigned char>(encrypted.back());
+            ++round;
+            }
+        return hashKey.substr(0, 32);
+        }
+
+    //------------------------------------------------------------------
     // standard security handler (empty user password)
     //------------------------------------------------------------------
 
     //------------------------------------------------------------------
     std::unique_ptr<pdf_decryptor>
     pdf_decryptor::create(const std::string_view ownerKey, const std::string_view userKey,
+                          const std::string_view userEncryptionKey,
                           const std::string_view documentId, const int32_t permissions,
                           const int revision, const size_t keyLengthBytes,
-                          const bool encryptMetadata)
+                          const bool encryptMetadata, const std::string_view cryptFilterMethod,
+                          aes_cbc_functor aesFunction, sha2_functor hashFunction)
         {
-        // Only the classic (RC4) revisions are supported. R5/R6 (AES-256, /V 5) use an
-        // entirely different (SHA-256-based) key derivation that isn't implemented here.
-        if (revision < 2 || revision > 4)
+        if (revision < 2 || revision > 6)
             {
             return nullptr;
             }
+
+        // revisions 5/6 (/V 5, AES-256): entirely different, SHA-256-based key
+        // derivation and authentication (ISO 32000-2, Algorithm 2.A/2.B). Only the
+        // empty-user-password path is implemented, matching revisions 2-4 below.
+        if (revision == 5 || revision == 6)
+            {
+            if (userKey.length() < 48 || userEncryptionKey.length() < 32 || !aesFunction ||
+                !hashFunction)
+                {
+                return nullptr;
+                }
+            const std::string_view userHash{ userKey.substr(0, 32) };
+            const std::string_view userValidationSalt{ userKey.substr(32, 8) };
+            const std::string_view userKeySalt{ userKey.substr(40, 8) };
+
+            const std::string computedHash{ pdf_decryptor::compute_hardened_hash(
+                std::string_view{}, userValidationSalt, std::string_view{}, revision, hashFunction,
+                aesFunction) };
+            if (computedHash.length() < 32 || computedHash.compare(0, 32, userHash) != 0)
+                {
+                return nullptr;
+                }
+
+            const std::string intermediateKey{ pdf_decryptor::compute_hardened_hash(
+                std::string_view{}, userKeySalt, std::string_view{}, revision, hashFunction,
+                aesFunction) };
+            if (intermediateKey.length() < 32)
+                {
+                return nullptr;
+                }
+            const std::string fileKey{ aesFunction(intermediateKey.substr(0, 32),
+                                                   std::string(16, '\0'), userEncryptionKey,
+                                                   cipher_direction::decrypt) };
+            if (fileKey.length() < 32)
+                {
+                return nullptr;
+                }
+
+            std::unique_ptr<pdf_decryptor> decryptor{ new pdf_decryptor{} };
+            decryptor->m_encryption_key = fileKey.substr(0, 32);
+            decryptor->m_cipher = cipher_algorithm::aes;
+            decryptor->m_key_derivation = key_derivation_mode::file_key_direct;
+            decryptor->m_aes_decrypt = std::move(aesFunction);
+            return decryptor;
+            }
+
         // the standard 32-byte password padding string (ISO 32000-1, 7.6.3.3, Algorithm 2)
         constexpr static std::array<unsigned char, 32> PASSWORD_PADDING{
             0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41, 0x64, 0x00, 0x4E,
@@ -261,24 +374,40 @@ namespace lily_of_the_valley
             return nullptr;
             }
 
+        if (cryptFilterMethod == "/AESV2" && !aesFunction)
+            {
+            return nullptr;
+            }
+
         std::unique_ptr<pdf_decryptor> decryptor{ new pdf_decryptor{} };
         decryptor->m_encryption_key = std::move(encryptionKey);
+        if (cryptFilterMethod == "/AESV2")
+            {
+            decryptor->m_cipher = cipher_algorithm::aes;
+            decryptor->m_aes_decrypt = std::move(aesFunction);
+            }
         return decryptor;
         }
 
     //------------------------------------------------------------------
-    std::string pdf_decryptor::compute_object_key(const long objectNumber,
-                                                  const long generation) const
+    std::string pdf_decryptor::compute_object_key(const long objectNumber, const long generation,
+                                                  const cipher_algorithm algorithm) const
         {
-        // Algorithm 1: object key = first min(n + 5, 16) bytes of
-        // MD5(file encryption key + low-order 3 bytes of object number (LE) +
-        //     low-order 2 bytes of generation number (LE))
+        // Algorithm 1 (or its AES variant, Algorithm 1.A): object key = first
+        // min(n + 5, 16) bytes of MD5(file encryption key +
+        //     low-order 3 bytes of object number (LE) +
+        //     low-order 2 bytes of generation number (LE) +
+        //     ["sAlT", if AES])
         std::string keyInput{ m_encryption_key };
         keyInput += static_cast<char>(objectNumber & 0xFF);
         keyInput += static_cast<char>((objectNumber >> 8) & 0xFF);
         keyInput += static_cast<char>((objectNumber >> 16) & 0xFF);
         keyInput += static_cast<char>(generation & 0xFF);
         keyInput += static_cast<char>((generation >> 8) & 0xFF);
+        if (algorithm == cipher_algorithm::aes)
+            {
+            keyInput += "sAlT";
+            }
         const std::string hash{ pdf_decryptor::md5_digest(keyInput) };
         return hash.substr(0, std::min<size_t>(m_encryption_key.length() + 5, 16));
         }
@@ -291,6 +420,34 @@ namespace lily_of_the_valley
             {
             return {};
             }
-        return pdf_decryptor::rc4_crypt(compute_object_key(objectNumber, generation), bytes);
+
+        if (m_cipher == cipher_algorithm::aes)
+            {
+            if (!m_aes_decrypt || bytes.length() < 16)
+                {
+                return {};
+                }
+            const std::string key{ (m_key_derivation == key_derivation_mode::file_key_direct) ?
+                                       m_encryption_key :
+                                       compute_object_key(objectNumber, generation,
+                                                          cipher_algorithm::aes) };
+            const std::string_view initVector{ bytes.substr(0, 16) };
+            const std::string_view ciphertext{ bytes.substr(16) };
+            std::string plaintext{ m_aes_decrypt(key, initVector, ciphertext,
+                                                 cipher_direction::decrypt) };
+            // strip PKCS#7 padding (ISO 32000-1, 7.6.2: 1-16 bytes, each equal to the pad length)
+            if (!plaintext.empty())
+                {
+                const auto padLength{ static_cast<unsigned char>(plaintext.back()) };
+                if (padLength >= 1 && padLength <= 16 && padLength <= plaintext.length())
+                    {
+                    plaintext.resize(plaintext.length() - padLength);
+                    }
+                }
+            return plaintext;
+            }
+
+        return pdf_decryptor::rc4_crypt(
+            compute_object_key(objectNumber, generation, cipher_algorithm::rc4), bytes);
         }
     } // namespace lily_of_the_valley

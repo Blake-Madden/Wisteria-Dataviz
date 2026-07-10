@@ -93,7 +93,8 @@ add_executable(${TEST_APP} WIN32 MACOSX_BUNDLE ${WISTERIA_SRC} ${TEST_SRC_FILES}
 target_include_directories(${TEST_APP} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/thirdparty/woff2/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/thirdparty/woff2/brotli/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/thirdparty/woff2/brotli/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/src/crypto)
 
 message(STATUS "Finding Catch2...")
 find_cmake_project_directory("Catch2" CATCH_DIR)

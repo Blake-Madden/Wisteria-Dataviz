@@ -160,10 +160,10 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    std::unique_ptr<pdf_decryptor>
-    pdf_extract_text::setup_decryption(const pdf_document& document,
-                                       const std::string_view encryptValue,
-                                       const std::string_view idValue)
+    std::unique_ptr<pdf_decryptor> pdf_extract_text::setup_decryption(
+        const pdf_document& document, const std::string_view encryptValue,
+        const std::string_view idValue, const aes_cbc_functor& aesFunction,
+        const sha2_functor& hashFunction)
         {
         const std::string_view encryptDict{ pdf_lexer::trim(document.resolve_value(encryptValue)) };
         if (encryptDict.empty() || encryptDict.compare(0, 2, "<<") != 0)
@@ -189,20 +189,24 @@ namespace lily_of_the_valley
         std::ignore = pdf_lexer::to_int(
             pdf_lexer::trim(pdf_lexer::find_dictionary_value(encryptDict, "V")), version);
 
-        // only RC4-based encryption is supported. V4 is only usable when its crypt
-        // filter is RC4 (CFM /V2); AES (AESV2/AESV3) isn't implemented
+        // RC4 (CFM /V2) and AES (CFM /AESV2 or /AESV3) are supported. V4 resolves
+        // its crypt filter from /CF/StdCF/CFM; V5 always uses AES-256 (/AESV3).
+        std::string cryptFilterMethod;
         if (version == 4)
             {
             const std::string_view cfDict{ pdf_lexer::trim(
                 pdf_lexer::find_dictionary_value(encryptDict, "CF")) };
             const std::string_view stdCf{ pdf_lexer::trim(
                 pdf_lexer::find_dictionary_value(cfDict, "StdCF")) };
-            const std::string_view cfm{ pdf_lexer::trim(
-                pdf_lexer::find_dictionary_value(stdCf, "CFM")) };
-            if (cfm != "/V2")
+            cryptFilterMethod = pdf_lexer::trim(pdf_lexer::find_dictionary_value(stdCf, "CFM"));
+            if (cryptFilterMethod != "/V2" && cryptFilterMethod != "/AESV2")
                 {
                 return nullptr;
                 }
+            }
+        else if (version == 5)
+            {
+            cryptFilterMethod = "/AESV3";
             }
         else if (version != 1 && version != 2)
             {
@@ -230,6 +234,8 @@ namespace lily_of_the_valley
             pdf_lexer::find_dictionary_value(encryptDict, "O")) };
         const std::string userKey{ pdf_extract_text::read_raw_string(
             pdf_lexer::find_dictionary_value(encryptDict, "U")) };
+        const std::string userEncryptionKey{ pdf_extract_text::read_raw_string(
+            pdf_lexer::find_dictionary_value(encryptDict, "UE")) };
 
         // the document ID is the first element of the trailer's /ID array
         std::string documentId;
@@ -241,9 +247,10 @@ namespace lily_of_the_valley
             documentId = pdf_extract_text::read_raw_string(idArray.substr(pos));
             }
 
-        return pdf_decryptor::create(ownerKey, userKey, documentId,
+        return pdf_decryptor::create(ownerKey, userKey, userEncryptionKey, documentId,
                                      static_cast<int32_t>(permissions), static_cast<int>(revision),
-                                     static_cast<size_t>(keyLengthBits / 8), encryptMetadata);
+                                     static_cast<size_t>(keyLengthBits / 8), encryptMetadata,
+                                     cryptFilterMethod, aesFunction, hashFunction);
         }
 
     std::vector<std::string_view>
@@ -392,7 +399,8 @@ namespace lily_of_the_valley
         std::unique_ptr<pdf_decryptor> decryptor;
         if (!encryptValue.empty())
             {
-            decryptor = pdf_extract_text::setup_decryption(document, encryptValue, idValue);
+            decryptor = pdf_extract_text::setup_decryption(document, encryptValue, idValue,
+                                                           m_aes_decrypt, m_hash);
             if (decryptor == nullptr)
                 {
                 throw pdf_encrypted();

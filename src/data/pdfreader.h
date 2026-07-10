@@ -29,12 +29,14 @@ namespace Wisteria::Data
     class PdfReader
         {
       public:
-        /// @brief Constructor; connects the wxWidgets zlib decompressor and
-        ///     charset converter to the parser.
+        /// @brief Constructor; connects the wxWidgets zlib decompressor,
+        ///     charset converter, and AES/SHA-2 crypto functors to the parser.
         PdfReader()
             {
             m_pdfTextExtractor.set_stream_decompressor(&PdfReader::Inflate);
             m_pdfTextExtractor.set_charset_converter(&PdfReader::ConvertCharset);
+            m_pdfTextExtractor.set_aes_decryptor(&PdfReader::AesCbcCrypt);
+            m_pdfTextExtractor.set_hash_functor(&PdfReader::Sha2Hash);
             }
 
         /** @brief Reads the raw text from a PDF file.
@@ -123,6 +125,32 @@ namespace Wisteria::Data
         [[nodiscard]]
         static std::wstring ConvertCharset(std::string_view sourceBytes,
                                            std::string_view charsetName);
+
+        /** @brief Performs AES-CBC encryption/decryption (using @c wxPdfRijndael).
+            @details This is the AES functor that the constructor connects to the
+                underlying `lily_of_the_valley::pdf_extract_text` parser (used to
+                decrypt AES-encrypted PDFs).
+            @param key The AES key. Its length (16 or 32 bytes) selects AES-128
+                or AES-256.
+            @param initVector The 16-byte initialization vector.
+            @param data The bytes to transform (must be a multiple of 16 bytes long.)
+            @param direction Whether to encrypt or decrypt @c data.
+            @returns The transformed bytes, or an empty string upon failure.*/
+        [[nodiscard]]
+        static std::string AesCbcCrypt(std::string_view key, std::string_view initVector,
+                                       std::string_view data,
+                                       lily_of_the_valley::cipher_direction direction);
+
+        /** @brief Computes a SHA-2 message digest (using wxpdfdoc's @c crypto helpers).
+            @details This is the hashing functor that the constructor connects to
+                the underlying `lily_of_the_valley::pdf_extract_text` parser (used
+                for revision 5/6 encrypted PDFs' key derivation).
+            @param data The bytes to hash.
+            @param digestBits Which SHA-2 variant to use: 256, 384, or 512.
+            @returns The binary digest, or an empty string if @c digestBits isn't
+                256, 384, or 512.*/
+        [[nodiscard]]
+        static std::string Sha2Hash(std::string_view data, int digestBits);
 
       private:
         lily_of_the_valley::pdf_extract_text m_pdfTextExtractor;
