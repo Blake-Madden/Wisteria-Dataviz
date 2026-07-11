@@ -1121,9 +1121,15 @@ namespace lily_of_the_valley
         // meaningless as Unicode on their own. They're only interpretable relative to
         // the font's /CIDSystemInfo character collection (its "Registry-Ordering"
         // ["Adobe-Japan1"]). If the client loaded an external CID-to-Unicode table for
-        // that collection, use it to recover the font's text.
-        if (!decoder->m_has_unicode_map && m_cid_to_unicode_tables != nullptr &&
-            !m_cid_to_unicode_tables->empty())
+        // that collection, use it to recover the font's text. This only applies to
+        // genuinely CID-keyed codes (e.g., an Identity-H encoding). A font whose
+        // /Encoding named one of Adobe's legacy charset CMaps (RKSJ, B5, UHC, EUC)
+        // already has its string bytes resolved to a charset (decoder->m_charset) and
+        // decodes correctly via direct charset conversion, so it must be left alone
+        // here. Treating those charset bytes as CIDs looks up unrelated table entries
+        // and silently produces the wrong (but plausible-looking) CJK characters.
+        if (!decoder->m_has_unicode_map && decoder->m_charset.empty() &&
+            m_cid_to_unicode_tables != nullptr && !m_cid_to_unicode_tables->empty())
             {
             const std::string_view descendantFontsValue{ pdf_lexer::trim(
                 pdf_lexer::find_dictionary_value(fontDictionary, "DescendantFonts")) };

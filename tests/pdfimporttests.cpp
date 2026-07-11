@@ -803,6 +803,46 @@ endobj)PDF";
             });
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Converted content") == 0);
         }
+    SECTION("CID-to-Unicode Table Ignored For Legacy Charset Encoding")
+        {
+        // A Type0 font using one of Adobe's predefined legacy CJK CMaps as its
+        // /Encoding (e.g., /ETenms-B5-H) has string bytes that are charset text
+        // (Big5 here), not raw CIDs, even when its DescendantFont's CIDSystemInfo
+        // ordering matches a loaded CID-to-Unicode table. The charset converter
+        // must still be used; treating the Big5 byte pairs as CIDs and looking
+        // them up in the table would produce the wrong characters.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <A4A4A4E5> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /ETenms-B5-H /DescendantFonts [5 0 R] >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /CIDFontType0
+   /CIDSystemInfo << /Registry (Adobe) /Ordering (TestOrdering) /Supplement 1 >> >>
+endobj)PDF";
+        pdf_extract_text ext;
+        // if wrongly consulted, this table would map the byte pairs 0xA4A4 and
+        // 0xA4E5 (read as CIDs) to 'X' and 'Y'
+        ext.load_cid_to_unicode_table("Adobe-TestOrdering",
+                                      L"2 begincidchar\n<0058> 42148\n<0059> 42213\n"
+                                      L"endcidchar\n");
+        ext.set_charset_converter(
+            [](std::string_view sourceBytes, std::string_view charsetName) -> std::wstring
+            {
+                CHECK(sourceBytes == "\xA4\xA4\xA4\xE5");
+                CHECK(charsetName == "CP950");
+                return L"Converted content";
+            });
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Converted content") == 0);
+        }
     SECTION("Predefined CJK CMap Encoding Without Charset Converter")
         {
         // the same Big5-encoded document, but with no charset converter connected:
