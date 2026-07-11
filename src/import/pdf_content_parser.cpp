@@ -39,6 +39,9 @@ namespace lily_of_the_valley
         m_fontSize = 12;
         m_fontScale = 1;
         m_leading = 0;
+        m_charSpacing = 0;
+        m_wordSpacing = 0;
+        m_horizScale = 100;
         m_atLineStart = true;
         m_haveShownText = false;
         m_freshTextObject = true;
@@ -286,7 +289,9 @@ namespace lily_of_the_valley
                 // is a gap between words
                 // (strtod is used since Apple Clang's libc++ lacks floating-point from_chars)
                 const double adjustment{ std::strtod(token.data(), nullptr) };
-                if (adjustment < -150)
+                // the adjustment is in unscaled text space, but Tz stretches or
+                // compresses how much actual displayed width it corresponds to
+                if ((adjustment * (m_horizScale / 100)) < -150)
                     {
                     add_space();
                     }
@@ -503,6 +508,27 @@ namespace lily_of_the_valley
                     if (!numbers.empty())
                         {
                         m_leading = std::abs(numbers.back());
+                        }
+                    }
+                else if (keyword == "Tc")
+                    {
+                    if (!numbers.empty())
+                        {
+                        m_charSpacing = numbers.back();
+                        }
+                    }
+                else if (keyword == "Tw")
+                    {
+                    if (!numbers.empty())
+                        {
+                        m_wordSpacing = numbers.back();
+                        }
+                    }
+                else if (keyword == "Tz")
+                    {
+                    if (!numbers.empty())
+                        {
+                        m_horizScale = numbers.back();
                         }
                     }
                 else if (keyword == "Td" || keyword == "TD")

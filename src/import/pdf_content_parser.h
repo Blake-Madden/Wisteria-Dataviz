@@ -77,6 +77,8 @@ namespace lily_of_the_valley
         /// @brief Decodes and appends a shown string (the Tj, ', " operators).
         void show_string(const std::string& stringBytes, const pdf_font_decoder* currentFont);
         /// @brief Decodes and appends a TJ array (strings mixed with kerning values).
+        /// @details A kerning value's displayed width is scaled by the current
+        ///     horizontal scaling (Tz) before being checked against the word-gap threshold.
         void show_array(std::string_view arrayValue, const pdf_font_decoder* currentFont);
 
         /// @brief Loads the resources (fonts and form XObjects) available
@@ -112,6 +114,9 @@ namespace lily_of_the_valley
         double m_fontSize{ 12 };           ///< Current font size (from Tf operator).
         double m_fontScale{ 1 };           ///< Vertical scale factor from the text matrix.
         double m_leading{ 0 };             ///< Current leading (line spacing, from TL).
+        double m_charSpacing{ 0 };         ///< Current character spacing (from Tc).
+        double m_wordSpacing{ 0 };         ///< Current word spacing (from Tw).
+        double m_horizScale{ 100 };        ///< Current horizontal scaling percent (from Tz).
         bool m_haveY{ false };             ///< Whether m_currentY has been initialized.
         bool m_atLineStart{ true };        ///< True when no glyphs emitted since the last newline.
         bool m_haveShownText{ false };     ///< Whether any glyph has been shown on this page yet.

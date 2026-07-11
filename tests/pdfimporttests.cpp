@@ -249,6 +249,40 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello world") == 0);
         }
+    SECTION("TJ Word Gap Widened By Tz")
+        {
+        // a -100 adjustment alone wouldn't cross the -150 word-gap threshold, but
+        // doubling the horizontal scale doubles its displayed width to -200, so it should
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 200 Tz [(Hel) -100 (lo)] TJ ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hel lo") == 0);
+        }
+    SECTION("TJ Word Gap Narrowed By Tz")
+        {
+        // a -300 adjustment alone would cross the -150 word-gap threshold, but halving
+        // the horizontal scale halves its displayed width to -150, so it shouldn't
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 50 Tz [(Hel) -300 (lo)] TJ ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello") == 0);
+        }
     SECTION("Bullet List Items")
         {
         const char* text = R"PDF(%PDF-1.4
