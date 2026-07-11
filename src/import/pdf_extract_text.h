@@ -42,6 +42,16 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static wchar_t standard_to_unicode(unsigned char byteValue);
 
+        /// @returns The Unicode equivalent of an Adobe SymbolEncoding byte
+        ///     (the built-in encoding of the standard Symbol font).
+        [[nodiscard]]
+        static wchar_t symbol_to_unicode(unsigned char byteValue);
+
+        /// @returns The Unicode equivalent of an Adobe ZapfDingbatsEncoding byte
+        ///     (the built-in encoding of the standard ZapfDingbats font).
+        [[nodiscard]]
+        static wchar_t zapf_dingbats_to_unicode(unsigned char byteValue);
+
         /// @brief Converts UTF-16BE code units to a wide string.
         /// @details On 32-bit @c wchar_t platforms, surrogate pairs are combined into
         ///     single code points. On 16-bit platforms (Windows), valid pairs are emitted

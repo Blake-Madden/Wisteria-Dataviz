@@ -616,6 +616,72 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"field") == 0);
         }
+    SECTION("Symbol Font Without Encoding Decodes Through Symbol Table")
+        {
+        // A Symbol-named font with no /Encoding and no /ToUnicode is identified by
+        // BaseFont as a symbol font, but a symbol font's codes are its own private
+        // encoding, not Latin text. Falling back to WinAnsi turns byte 0x61/0x62
+        // ('a'/'b') into literal "ab" instead of the Greek letters (alpha, beta)
+        // that Adobe's Symbol encoding assigns to those codes.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf (ab) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Symbol >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x03B1\x03B2") == 0);
+        }
+    SECTION("ZapfDingbats Font Without Encoding Decodes Through Dingbats Table")
+        {
+        // Same issue as the Symbol font case above, but for ZapfDingbats: byte 0x21
+        // ('!') is Adobe's "a1" dingbat glyph (U+2701, upper blade scissors), not the
+        // literal exclamation point that the WinAnsi fallback produces.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf (!) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /ZapfDingbats >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x2701") == 0);
+        }
+    SECTION("Symbol Font Bullet Byte")
+        {
+        // Byte 0xB7 is Adobe SymbolEncoding's "bullet" glyph (U+2022), the same
+        // code point WinAnsi assigns to a completely different byte (0x95). A Symbol
+        // font's 0xB7 must resolve through the Symbol table, not be left to whatever
+        // WinAnsi happens to say about that byte.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf (\267) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Symbol >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x2022") == 0);
+        }
     SECTION("ToUnicode CMap With Mixed-Width Codespace Ranges")
         {
         // a CMap that declares both a 1-byte codespace range (<00>-<80>) and a 2-byte

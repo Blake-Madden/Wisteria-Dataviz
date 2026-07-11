@@ -84,9 +84,11 @@ namespace lily_of_the_valley
         ///     entry in @c m_code_map.
         enum class base_encoding_type
             {
-            win_ansi,  ///< WinAnsiEncoding (CP1252); the default when no /Encoding is given.
-            mac_roman, ///< MacRomanEncoding.
-            standard   ///< (Adobe) StandardEncoding.
+            win_ansi,     ///< WinAnsiEncoding (CP1252); the default when no /Encoding is given.
+            mac_roman,    ///< MacRomanEncoding.
+            standard,     ///< (Adobe) StandardEncoding.
+            symbol,       ///< SymbolEncoding (the standard Symbol font's built-in encoding).
+            zapf_dingbats ///< ZapfDingbatsEncoding (the ZapfDingbats's built-in encoding).
             };
 
         /// @brief A single entry from a ToUnicode CMap's `/codespacerange`, defining the
@@ -133,8 +135,6 @@ namespace lily_of_the_valley
         /// /UniJIS-UCS2-H), making the codes directly convertible to text even
         /// with no ToUnicode CMap.
         bool m_codes_are_utf16{ false };
-        /// Whether this is a (notorious) symbol font (e.g., Symbol, Wingdings, ZapfDingbats).
-        bool m_symbol_font{ false };
         /// Whether this font lays out text in vertical writing mode (its /Encoding
         /// is one of Adobe's predefined "-V" CMaps, such as /Identity-V or
         /// /UniJIS-UCS2-V).

@@ -1102,13 +1102,25 @@ namespace lily_of_the_valley
                 }
             }
 
-        const std::string_view baseFont{ pdf_lexer::trim(
-            pdf_lexer::find_dictionary_value(fontDictionary, "BaseFont")) };
-        if (baseFont.find("Symbol") != std::string_view::npos ||
-            baseFont.find("Dingbat") != std::string_view::npos ||
-            baseFont.find("Wingding") != std::string_view::npos)
+        // A Symbol or ZapfDingbats font's codes are that font's own private encoding,
+        // not Latin text, so its BaseFont name is used to pick the matching built-in
+        // encoding table when the font itself gives no /Encoding to override it. (An
+        // explicit /Encoding is respected as-is above, since a PDF may legitimately
+        // remap even one of these fonts' codes.) Wingdings is excluded: unlike Symbol
+        // and ZapfDingbats, its code-to-glyph mapping isn't a published Adobe
+        // encoding, so there's no table to look it up in.
+        if (encoding.empty())
             {
-            decoder->m_symbol_font = true;
+            const std::string_view baseFont{ pdf_lexer::trim(
+                pdf_lexer::find_dictionary_value(fontDictionary, "BaseFont")) };
+            if (baseFont.find("Symbol") != std::string_view::npos)
+                {
+                decoder->m_base_encoding = pdf_font_decoder::base_encoding_type::symbol;
+                }
+            else if (baseFont.find("Dingbat") != std::string_view::npos)
+                {
+                decoder->m_base_encoding = pdf_font_decoder::base_encoding_type::zapf_dingbats;
+                }
             }
         const pdf_object* cmapObject{ resolve_to_object(
             pdf_lexer::find_dictionary_value(fontDictionary, "ToUnicode")) };
