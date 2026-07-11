@@ -507,6 +507,11 @@ namespace lily_of_the_valley
             log_message(L"No pages found in PDF file.");
             }
 
+        if (m_normalize)
+            {
+            text = m_normalize(text);
+            }
+
         add_characters(text);
         trim();
         return get_filtered_text();

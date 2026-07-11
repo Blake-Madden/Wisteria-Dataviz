@@ -63,13 +63,15 @@ namespace Wisteria::Data
         {
       public:
         /// @brief Constructor; connects the wxWidgets zlib decompressor,
-        ///     charset converter, and AES/SHA-2 crypto functors to the parser.
+        ///     charset converter, AES/SHA-2 crypto functors, and Unicode
+        ///     normalizer to the parser.
         PdfReader()
             {
             m_pdfTextExtractor.set_stream_decompressor(&PdfReader::Inflate);
             m_pdfTextExtractor.set_charset_converter(&PdfReader::ConvertCharset);
             m_pdfTextExtractor.set_aes_decryptor(&PdfReader::AesCbcCrypt);
             m_pdfTextExtractor.set_hash_functor(&PdfReader::Sha2Hash);
+            m_pdfTextExtractor.set_normalizer(&PdfReader::NormalizeUnicode);
             }
 
         /** @brief Reads the raw text from a PDF file.
@@ -201,6 +203,13 @@ namespace Wisteria::Data
                 256, 384, or 512.*/
         [[nodiscard]]
         static std::string Sha2Hash(std::string_view data, int digestBits);
+
+        /** @brief Applies NFKC Unicode normalization (using wxpdfdoc's
+                @c unicode_normalize()) to extracted text.
+            @param text The text to normalize.
+            @returns The NFKC-normalized text, or @c text unchanged upon failure.*/
+        [[nodiscard]]
+        static std::wstring NormalizeUnicode(std::wstring_view text);
 
       private:
         lily_of_the_valley::pdf_extract_text m_pdfTextExtractor;

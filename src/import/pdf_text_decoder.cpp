@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <unordered_map>
 
 namespace lily_of_the_valley
     {
@@ -420,6 +421,200 @@ namespace lily_of_the_valley
                 {
                 // stray token in a malformed array; step over it
                 ++pos;
+                }
+            }
+        if (addedAny)
+            {
+            decoder.m_has_unicode_map = true;
+            }
+        }
+
+    //------------------------------------------------------------------
+    uint16_t pdf_text_decoder::truetype_read_uint16(const std::string_view data, const size_t pos)
+        {
+        if (pos + 2 > data.size())
+            {
+            return 0;
+            }
+        return static_cast<uint16_t>((static_cast<unsigned char>(data[pos]) << 8) |
+                                     static_cast<unsigned char>(data[pos + 1]));
+        }
+
+    //------------------------------------------------------------------
+    uint32_t pdf_text_decoder::truetype_read_uint32(const std::string_view data, const size_t pos)
+        {
+        if (pos + 4 > data.size())
+            {
+            return 0;
+            }
+        return (static_cast<uint32_t>(static_cast<unsigned char>(data[pos])) << 24) |
+               (static_cast<uint32_t>(static_cast<unsigned char>(data[pos + 1])) << 16) |
+               (static_cast<uint32_t>(static_cast<unsigned char>(data[pos + 2])) << 8) |
+               static_cast<uint32_t>(static_cast<unsigned char>(data[pos + 3]));
+        }
+
+    //------------------------------------------------------------------
+    void pdf_text_decoder::parse_embedded_truetype_cmap(const std::string_view fontProgram,
+                                                        pdf_font_decoder& decoder)
+        {
+        constexpr size_t SFNT_HEADER_SIZE{ 12 };
+        constexpr size_t TABLE_RECORD_SIZE{ 16 };
+        if (fontProgram.size() < SFNT_HEADER_SIZE)
+            {
+            return;
+            }
+        const uint16_t numTables{ pdf_text_decoder::truetype_read_uint16(fontProgram, 4) };
+
+        // locate the "cmap" table via the sfnt table directory
+        size_t cmapOffset{ 0 };
+        size_t cmapLength{ 0 };
+        bool foundCmap{ false };
+        for (uint16_t tableIndex = 0; tableIndex < numTables; ++tableIndex)
+            {
+            const size_t recordPos{ SFNT_HEADER_SIZE +
+                                    (static_cast<size_t>(tableIndex) * TABLE_RECORD_SIZE) };
+            if (recordPos + TABLE_RECORD_SIZE > fontProgram.size())
+                {
+                break;
+                }
+            if (fontProgram.compare(recordPos, 4, "cmap") == 0)
+                {
+                cmapOffset = pdf_text_decoder::truetype_read_uint32(fontProgram, recordPos + 8);
+                cmapLength = pdf_text_decoder::truetype_read_uint32(fontProgram, recordPos + 12);
+                foundCmap = true;
+                break;
+                }
+            }
+        if (!foundCmap || cmapOffset > fontProgram.size() ||
+            cmapLength > (fontProgram.size() - cmapOffset))
+            {
+            return;
+            }
+        const std::string_view cmapTable{ fontProgram.substr(cmapOffset, cmapLength) };
+
+        // find the (1, 0) [Mac Roman] and (3, 1) [Windows Unicode BMP] subtables
+        constexpr size_t CMAP_HEADER_SIZE{ 4 };
+        constexpr size_t ENCODING_RECORD_SIZE{ 8 };
+        const uint16_t subtableCount{ pdf_text_decoder::truetype_read_uint16(cmapTable, 2) };
+        size_t macSubtableOffset{ 0 };
+        size_t winSubtableOffset{ 0 };
+        bool foundMacSubtable{ false };
+        bool foundWinSubtable{ false };
+        for (uint16_t recordIndex = 0; recordIndex < subtableCount; ++recordIndex)
+            {
+            const size_t recordPos{ CMAP_HEADER_SIZE +
+                                    (static_cast<size_t>(recordIndex) * ENCODING_RECORD_SIZE) };
+            if (recordPos + ENCODING_RECORD_SIZE > cmapTable.size())
+                {
+                break;
+                }
+            const uint16_t platformID{ pdf_text_decoder::truetype_read_uint16(cmapTable,
+                                                                              recordPos) };
+            const uint16_t encodingID{ pdf_text_decoder::truetype_read_uint16(cmapTable,
+                                                                              recordPos + 2) };
+            const uint32_t subtableOffset{ pdf_text_decoder::truetype_read_uint32(cmapTable,
+                                                                                  recordPos + 4) };
+            if (platformID == 1 && encodingID == 0 && !foundMacSubtable)
+                {
+                macSubtableOffset = subtableOffset;
+                foundMacSubtable = true;
+                }
+            else if (platformID == 3 && encodingID == 1 && !foundWinSubtable)
+                {
+                winSubtableOffset = subtableOffset;
+                foundWinSubtable = true;
+                }
+            }
+        if (!foundMacSubtable || !foundWinSubtable)
+            {
+            return;
+            }
+
+        // format 0: a flat 256-byte array, code -> glyph index
+        constexpr size_t FORMAT0_HEADER_SIZE{ 6 };
+        constexpr size_t FORMAT0_ARRAY_SIZE{ 256 };
+        if (pdf_text_decoder::truetype_read_uint16(cmapTable, macSubtableOffset) != 0 ||
+            macSubtableOffset + FORMAT0_HEADER_SIZE + FORMAT0_ARRAY_SIZE > cmapTable.size())
+            {
+            return;
+            }
+        std::array<uint8_t, FORMAT0_ARRAY_SIZE> codeToGlyph{};
+        for (size_t code = 0; code < FORMAT0_ARRAY_SIZE; ++code)
+            {
+            codeToGlyph[code] =
+                static_cast<uint8_t>(cmapTable[macSubtableOffset + FORMAT0_HEADER_SIZE + code]);
+            }
+
+        // format 4: segmented Unicode BMP coverage; invert it into glyph -> Unicode.
+        // Segments that use idRangeOffset (indirection through a trailing glyph
+        // array, rather than a simple code+idDelta formula) are skipped, since
+        // that's uncommon and out of scope for this fallback.
+        if (pdf_text_decoder::truetype_read_uint16(cmapTable, winSubtableOffset) != 4)
+            {
+            return;
+            }
+        const size_t segCount{ pdf_text_decoder::truetype_read_uint16(cmapTable,
+                                                                      winSubtableOffset + 6) /
+                               static_cast<size_t>(2) };
+        const size_t endCodeArray{ winSubtableOffset + 14 };
+        const size_t startCodeArray{ endCodeArray + (segCount * 2) + 2 };
+        const size_t idDeltaArray{ startCodeArray + (segCount * 2) };
+        const size_t idRangeOffsetArray{ idDeltaArray + (segCount * 2) };
+        if (segCount == 0 || idRangeOffsetArray + (segCount * 2) > cmapTable.size())
+            {
+            return;
+            }
+        std::unordered_map<uint32_t, wchar_t> glyphToUnicode;
+        // a segment's code range is at most 0xFFFF wide; this bounds the total work
+        // a malicious/malformed font (with many wide, overlapping segments) can force
+        size_t codesProcessed{ 0 };
+        constexpr size_t MAX_CODES_PROCESSED{ 0x10000 };
+        for (size_t segment = 0; segment < segCount && codesProcessed < MAX_CODES_PROCESSED;
+             ++segment)
+            {
+            const uint16_t endCode{ pdf_text_decoder::truetype_read_uint16(
+                cmapTable, endCodeArray + (segment * 2)) };
+            const uint16_t startCode{ pdf_text_decoder::truetype_read_uint16(
+                cmapTable, startCodeArray + (segment * 2)) };
+            const auto idDelta{ static_cast<int16_t>(
+                pdf_text_decoder::truetype_read_uint16(cmapTable, idDeltaArray + (segment * 2))) };
+            const uint16_t idRangeOffset{ pdf_text_decoder::truetype_read_uint16(
+                cmapTable, idRangeOffsetArray + (segment * 2)) };
+            if (idRangeOffset != 0 || startCode > endCode)
+                {
+                continue;
+                }
+            for (uint32_t code = startCode; code <= endCode && codesProcessed < MAX_CODES_PROCESSED;
+                 ++code)
+                {
+                ++codesProcessed;
+                const auto glyphID{ static_cast<uint16_t>(static_cast<int32_t>(code) + idDelta) };
+                if (glyphID == 0)
+                    {
+                    continue;
+                    }
+                glyphToUnicode.try_emplace(glyphID, static_cast<wchar_t>(code));
+                }
+            if (endCode == 0xFFFF)
+                {
+                break;
+                }
+            }
+
+        // chain: code -> glyph index (format 0) -> Unicode (inverted format 4)
+        bool addedAny{ false };
+        for (uint32_t code = 0; code < FORMAT0_ARRAY_SIZE; ++code)
+            {
+            const uint8_t glyphID{ codeToGlyph[code] };
+            if (glyphID == 0)
+                {
+                continue;
+                }
+            const auto unicodePos = glyphToUnicode.find(glyphID);
+            if (unicodePos != glyphToUnicode.cend())
+                {
+                decoder.m_code_map[code] = std::wstring(1, unicodePos->second);
+                addedAny = true;
                 }
             }
         if (addedAny)

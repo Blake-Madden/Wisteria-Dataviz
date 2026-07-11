@@ -144,6 +144,19 @@ namespace lily_of_the_valley
                                             const glyph_name_table& glyphTable,
                                             pdf_font_decoder& decoder);
 
+        /// @brief Parses a simple TrueType font's embedded `cmap` table (its
+        ///     `/FontFile2` program) to recover a code -> Unicode mapping, used as a
+        ///     fallback when the font has no `/ToUnicode` CMap and no (resolvable)
+        ///     `/Differences` array.
+        /// @details Chains the cmap's (1, 0) [Mac Roman] format 0 subtable (code ->
+        ///     glyph index) with its (3, 1) [Windows Unicode BMP] format 4 subtable,
+        ///     inverted (glyph index -> Unicode), to recover each code's Unicode value.
+        ///     Other subtable formats and platform/encoding combinations are ignored.
+        /// @param fontProgram The raw, decoded bytes of the font's `/FontFile2` stream.
+        /// @param decoder The decoder to populate m_code_map for.
+        static void parse_embedded_truetype_cmap(std::string_view fontProgram,
+                                                 pdf_font_decoder& decoder);
+
         /// @brief Determines how many bytes (starting at @c pos) make up the next
         ///     character code, per the font's declared codespace ranges.
         /// @details If @c fontDecoder has one or more codespace ranges, the leading
@@ -161,7 +174,28 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::wstring decode_string_bytes(const std::string& bytes,
                                                 const pdf_font_decoder* fontDecoder);
+
+      private:
+        /// @brief Reads a big-endian @c uint16_t from TrueType binary data.
+        /// @returns The value, or 0 if @c pos is out of range for @c data.
+        [[nodiscard]]
+        static uint16_t truetype_read_uint16(std::string_view data, size_t pos);
+
+        /// @brief Reads a big-endian @c uint32_t from TrueType binary data.
+        /// @returns The value, or 0 if @c pos is out of range for @c data.
+        [[nodiscard]]
+        static uint32_t truetype_read_uint32(std::string_view data, size_t pos);
         };
+
+    /** @brief Functor for applying Unicode normalization to the final extracted text.
+        @details Compatibility composition (NFKC) is the intended use: it folds
+            ligatures, full-width/half-width forms, and other formatting-only
+            distinctions (which a font's ToUnicode CMap or glyph table may
+            introduce) into their canonical plain-text equivalents, so that
+            visually-equivalent text compares and searches consistently.
+        @param text The extracted text to normalize.
+        @returns The normalized text.*/
+    using unicode_normalize_functor = std::function<std::wstring(std::wstring_view text)>;
 
     /** @brief Class to extract text from a <b>PDF</b> stream.
         @details Raw text is extracted from the document's page content streams,
@@ -181,6 +215,10 @@ namespace lily_of_the_valley
             agnostic; call set_stream_decompressor() to connect a function object that
             performs the decompression. (Without a decompressor, only uncompressed
             content can be extracted.)
+
+            Extracted text is left as-is unless a normalizer is connected via
+            set_normalizer(). Connecting one is recommended, to fold compatibility
+            variants (ligatures, full-width forms, etc.) into canonical plain text.
         @par Example:
         @code
         std::ifstream fs("C:\\users\\daphne\\physical-therapy-instructions.pdf",
@@ -249,6 +287,18 @@ namespace lily_of_the_valley
             @param hashFunction The SHA-2 functor to use.
             @sa sha2_functor.*/
         void set_hash_functor(sha2_functor hashFunction) { m_hash = std::move(hashFunction); }
+
+        /** @brief Connects a function object used to apply Unicode normalization
+                (e.g., NFKC) to the final extracted text.
+            @details Optional; without a normalizer, extracted text keeps whatever
+                compatibility variants a font's encoding introduced (ligatures,
+                full-width forms, etc.) instead of folding them to canonical text.
+            @param normalizeFunction The normalization functor to use.
+            @sa unicode_normalize_functor.*/
+        void set_normalizer(unicode_normalize_functor normalizeFunction)
+            {
+            m_normalize = std::move(normalizeFunction);
+            }
 
         /** @brief Loads a glyph name table (e.g., the Adobe Glyph List) used to resolve
                 simple fonts' `/Differences` custom encodings.
@@ -381,6 +431,7 @@ namespace lily_of_the_valley
         charset_convert_functor m_charset_convert; ///< Legacy CJK charset conversion functor.
         aes_cbc_functor m_aes_decrypt;             ///< AES-CBC encryption/decryption functor.
         sha2_functor m_hash;                       ///< SHA-2 hashing functor.
+        unicode_normalize_functor m_normalize;     ///< Unicode normalization (e.g., NFKC) functor.
         glyph_name_table m_glyph_name_table;       ///< Glyph names for `/Differences` resolution.
         cid_to_unicode_registry m_cid_to_unicode_tables; ///< CID-to-Unicode tables, by ordering.
         std::wstring m_title;                            ///< Document title from /Info metadata.

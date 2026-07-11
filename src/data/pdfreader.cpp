@@ -11,9 +11,12 @@
 #include "sha256.h"
 #include "sha384.h"
 #include "sha512.h"
+#include "unicode_norm.h"
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <stdexcept>
+#include <vector>
 #include <wx/intl.h>
 #include <wx/mstream.h>
 #include <wx/pdfrijndael.h>
@@ -198,6 +201,63 @@ namespace Wisteria::Data
             return digest;
             }
         return {};
+        }
+
+    //------------------------------------------------------------------
+    std::wstring PdfReader::NormalizeUnicode(const std::wstring_view text)
+        {
+        if (text.empty())
+            {
+            return {};
+            }
+
+        // pg_wchar is a full 32-bit codepoint; combine any UTF-16 surrogate
+        // pairs so each entry is one codepoint.
+        std::vector<wxpdfdoc::crypto::pg_wchar> codepoints;
+        codepoints.reserve(text.length() + 1);
+        for (size_t i = 0; i < text.length(); ++i)
+            {
+            char32_t codepoint{ static_cast<char32_t>(text[i]) };
+            if constexpr (sizeof(wchar_t) == 2)
+                {
+                if (text[i] >= 0xD800 && text[i] <= 0xDBFF && (i + 1) < text.length() &&
+                    text[i + 1] >= 0xDC00 && text[i + 1] <= 0xDFFF)
+                    {
+                    codepoint = 0x10000 + ((static_cast<char32_t>(text[i]) - 0xD800) << 10) +
+                                (static_cast<char32_t>(text[i + 1]) - 0xDC00);
+                    ++i;
+                    }
+                }
+            codepoints.push_back(static_cast<wxpdfdoc::crypto::pg_wchar>(codepoint));
+            }
+        codepoints.push_back(0);
+
+        wxpdfdoc::crypto::pg_wchar* normalized{ wxpdfdoc::crypto::unicode_normalize(
+            wxpdfdoc::crypto::UNICODE_NFKC, codepoints.data()) };
+        if (normalized == nullptr)
+            {
+            return std::wstring{ text };
+            }
+
+        std::wstring result;
+        for (const wxpdfdoc::crypto::pg_wchar* codePoint{ normalized }; *codePoint != 0;
+             ++codePoint)
+            {
+            if constexpr (sizeof(wchar_t) == 2)
+                {
+                if (*codePoint > 0xFFFF)
+                    {
+                    const char32_t adjusted{ *codePoint - 0x10000 };
+                    result += static_cast<wchar_t>(0xD800 + (adjusted >> 10));
+                    result += static_cast<wchar_t>(0xDC00 + (adjusted & 0x3FF));
+                    continue;
+                    }
+                }
+            result += static_cast<wchar_t>(*codePoint);
+            }
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+        free(normalized);
+        return result;
         }
 
     //------------------------------------------------------------------

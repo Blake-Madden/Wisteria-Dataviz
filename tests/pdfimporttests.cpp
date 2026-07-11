@@ -2,6 +2,7 @@
 // clang-format off
 
 #include <catch2/catch_test_macros.hpp>
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include "../src/import/pdf_extract_text.h"
@@ -683,6 +684,100 @@ endobj
 endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\t\x2022") == 0);
+        }
+    SECTION("Embedded TrueType Cmap Fallback")
+        {
+        // A simple TrueType font with no /ToUnicode and no /Differences should fall
+        // back to its embedded /FontFile2 cmap table: codes 0x01/0x02 map to glyphs
+        // 10/11 via a (1, 0) format 0 subtable, and those glyphs map to 'H'/'i' via a
+        // (3, 1) format 4 subtable, so chaining the two should recover "Hi".
+        auto appendU16 = [](std::string& buf, const uint16_t value)
+            {
+            buf += static_cast<char>((value >> 8) & 0xFF);
+            buf += static_cast<char>(value & 0xFF);
+            };
+        auto appendU32 = [](std::string& buf, const uint32_t value)
+            {
+            buf += static_cast<char>((value >> 24) & 0xFF);
+            buf += static_cast<char>((value >> 16) & 0xFF);
+            buf += static_cast<char>((value >> 8) & 0xFF);
+            buf += static_cast<char>(value & 0xFF);
+            };
+
+        // format 0 subtable: code -> glyph index (a flat 256-byte array)
+        std::string format0;
+        appendU16(format0, 0);   // format
+        appendU16(format0, 262); // length (6-byte header + 256 glyph IDs)
+        appendU16(format0, 0);   // language
+        std::string glyphIds(256, '\0');
+        glyphIds[1] = static_cast<char>(10);
+        glyphIds[2] = static_cast<char>(11);
+        format0 += glyphIds;
+
+        // format 4 subtable: Unicode -> glyph index (2 real segments + terminator)
+        std::string format4;
+        appendU16(format4, 4);      // format
+        appendU16(format4, 40);    // length
+        appendU16(format4, 0);      // language
+        appendU16(format4, 6);      // segCountX2 (3 segments)
+        appendU16(format4, 4);      // searchRange
+        appendU16(format4, 1);      // entrySelector
+        appendU16(format4, 2);      // rangeShift
+        appendU16(format4, 0x0048); // endCode[0] ('H')
+        appendU16(format4, 0x0069); // endCode[1] ('i')
+        appendU16(format4, 0xFFFF); // endCode[2] (terminator)
+        appendU16(format4, 0);      // reservedPad
+        appendU16(format4, 0x0048); // startCode[0]
+        appendU16(format4, 0x0069); // startCode[1]
+        appendU16(format4, 0xFFFF); // startCode[2]
+        appendU16(format4, static_cast<uint16_t>(10 - 0x0048)); // idDelta[0]: 'H' -> glyph 10
+        appendU16(format4, static_cast<uint16_t>(11 - 0x0069)); // idDelta[1]: 'i' -> glyph 11
+        appendU16(format4, 1);      // idDelta[2] (terminator; maps to glyph 0)
+        appendU16(format4, 0);      // idRangeOffset[0]
+        appendU16(format4, 0);      // idRangeOffset[1]
+        appendU16(format4, 0);      // idRangeOffset[2]
+
+        // cmap table: header, 2 encoding records, then the two subtables
+        std::string cmapTable;
+        appendU16(cmapTable, 0); // version
+        appendU16(cmapTable, 2); // numTables
+        appendU16(cmapTable, 1);
+        appendU16(cmapTable, 0);
+        appendU32(cmapTable, 20); // (1, 0) Mac Roman -> format0 subtable, right after the records
+        appendU16(cmapTable, 3);
+        appendU16(cmapTable, 1);
+        appendU32(cmapTable, static_cast<uint32_t>(20 + format0.length())); // (3, 1) Windows Unicode
+        cmapTable += format0;
+        cmapTable += format4;
+
+        // sfnt wrapper: header plus a single "cmap" table record
+        std::string font;
+        appendU32(font, 0x00010000); // sfntVersion
+        appendU16(font, 1);          // numTables
+        appendU16(font, 0);
+        appendU16(font, 0);
+        appendU16(font, 0); // searchRange/entrySelector/rangeShift (unused)
+        font += "cmap";
+        appendU32(font, 0);                                  // checksum (unused)
+        appendU32(font, 12 + 16);                             // offset, right after this record
+        appendU32(font, static_cast<uint32_t>(cmapTable.length())); // length
+        font += cmapTable;
+
+        std::string text{
+            "%PDF-1.4\n"
+            "1 0 obj\n<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>\n"
+            "endobj\n"
+            "2 0 obj\n<< >>\nstream\nBT /F1 12 Tf <0102> Tj ET\nendstream\nendobj\n"
+            "3 0 obj\n<< /Type /Font /Subtype /TrueType /BaseFont /Fallback "
+            "/FontDescriptor 4 0 R >>\nendobj\n"
+            "4 0 obj\n<< /Type /FontDescriptor /FontFile2 5 0 R >>\nendobj\n"
+        };
+        text += "5 0 obj\n<< /Length " + std::to_string(font.length()) + " >>\nstream\n";
+        text += font;
+        text += "\nendstream\nendobj";
+
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text.data(), text.length()), L"Hi") == 0);
         }
     SECTION("ToUnicode CMap With Mixed-Width Codespace Ranges")
         {

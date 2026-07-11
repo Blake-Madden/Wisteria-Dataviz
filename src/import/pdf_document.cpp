@@ -1189,6 +1189,32 @@ namespace lily_of_the_valley
                     }
                 }
             }
+
+        // A simple TrueType font with no ToUnicode CMap and no (resolvable)
+        // /Differences has no way to interpret its codes as text via the PDF
+        // constructs above. As a last resort, fall back to the font's own embedded
+        // cmap table (its /FontFile2 program), which can recover a code -> Unicode
+        // mapping directly from the font.
+        if (!decoder->m_has_unicode_map && pdf_lexer::trim(pdf_lexer::find_dictionary_value(
+                                               fontDictionary, "Subtype")) == "/TrueType")
+            {
+            const pdf_object* descriptorObject{ resolve_to_object(
+                pdf_lexer::find_dictionary_value(fontDictionary, "FontDescriptor")) };
+            if (descriptorObject != nullptr && !descriptorObject->m_dictionary.empty())
+                {
+                const pdf_object* fontFileObject{ resolve_to_object(
+                    pdf_lexer::find_dictionary_value(descriptorObject->m_dictionary,
+                                                     "FontFile2")) };
+                if (fontFileObject != nullptr && !fontFileObject->m_stream_data.empty())
+                    {
+                    const std::string fontProgram{ decode_stream(*fontFileObject) };
+                    if (!fontProgram.empty())
+                        {
+                        pdf_text_decoder::parse_embedded_truetype_cmap(fontProgram, *decoder);
+                        }
+                    }
+                }
+            }
         return decoder;
         }
 
