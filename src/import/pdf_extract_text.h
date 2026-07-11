@@ -22,6 +22,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace lily_of_the_valley
@@ -157,6 +158,17 @@ namespace lily_of_the_valley
         static void parse_embedded_truetype_cmap(std::string_view fontProgram,
                                                  pdf_font_decoder& decoder);
 
+        /// @brief Parses a CID-keyed TrueType font's embedded `cmap` table to
+        ///     recover a CID -> Unicode mapping, used as a fallback when a
+        ///     `/Type0` font's descendant `/CIDFontType2` has no `/ToUnicode` CMap.
+        /// @param fontProgram The raw, decoded bytes of the font's `/FontFile2` stream.
+        /// @param cidToGidMapData The descendant font's decoded `/CIDToGIDMap`
+        ///     stream bytes, or empty for `/Identity` (the default).
+        /// @param decoder The decoder to populate m_code_map for.
+        static void parse_embedded_cid_truetype_cmap(std::string_view fontProgram,
+                                                     std::string_view cidToGidMapData,
+                                                     pdf_font_decoder& decoder);
+
         /// @brief Determines how many bytes (starting at @c pos) make up the next
         ///     character code, per the font's declared codespace ranges.
         /// @details If @c fontDecoder has one or more codespace ranges, the leading
@@ -185,6 +197,24 @@ namespace lily_of_the_valley
         /// @returns The value, or 0 if @c pos is out of range for @c data.
         [[nodiscard]]
         static uint32_t truetype_read_uint32(std::string_view data, size_t pos);
+
+        /// @brief Locates the "cmap" table in an sfnt font program.
+        /// @returns @c true (filling in @c cmapTableOut) if found.
+        [[nodiscard]]
+        static bool find_cmap_table(std::string_view fontProgram, std::string_view& cmapTableOut);
+
+        /// @returns @c true (filling in @c offsetOut) if @c cmapTable has a
+        ///     subtable for the given platform/encoding ID pair.
+        [[nodiscard]]
+        static bool find_cmap_subtable_offset(std::string_view cmapTable, uint16_t platformID,
+                                              uint16_t encodingID, size_t& offsetOut);
+
+        /// @brief Inverts a cmap format 4 (segmented Unicode BMP) subtable into
+        ///     glyph index -> Unicode.
+        /// @returns The inverted map, empty if not a valid format 4 subtable.
+        [[nodiscard]]
+        static std::unordered_map<uint32_t, wchar_t>
+        invert_format4_unicode_subtable(std::string_view cmapTable, size_t subtableOffset);
         };
 
     /** @brief Functor for applying Unicode normalization to the final extracted text.

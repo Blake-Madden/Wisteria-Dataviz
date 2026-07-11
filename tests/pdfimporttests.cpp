@@ -779,6 +779,90 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text.data(), text.length()), L"Hi") == 0);
         }
+    SECTION("Embedded TrueType Cmap Fallback For CID Font")
+        {
+        // A composite (/Type0) font whose descendant /CIDFontType2 has no
+        // /ToUnicode should fall back to its embedded /FontFile2 cmap table too.
+        // With no /CIDToGIDMap entry (defaulting to Identity), each CID in the
+        // content stream is already the glyph index, so glyph 10/11 are resolved
+        // to 'H'/'i' directly through the font's own (3, 1) Windows Unicode
+        // subtable, with no Mac Roman subtable needed.
+        auto appendU16 = [](std::string& buf, const uint16_t value)
+            {
+            buf += static_cast<char>((value >> 8) & 0xFF);
+            buf += static_cast<char>(value & 0xFF);
+            };
+        auto appendU32 = [](std::string& buf, const uint32_t value)
+            {
+            buf += static_cast<char>((value >> 24) & 0xFF);
+            buf += static_cast<char>((value >> 16) & 0xFF);
+            buf += static_cast<char>((value >> 8) & 0xFF);
+            buf += static_cast<char>(value & 0xFF);
+            };
+
+        // format 4 subtable: Unicode -> glyph index (2 real segments + terminator)
+        std::string format4;
+        appendU16(format4, 4);      // format
+        appendU16(format4, 40);    // length
+        appendU16(format4, 0);      // language
+        appendU16(format4, 6);      // segCountX2 (3 segments)
+        appendU16(format4, 4);      // searchRange
+        appendU16(format4, 1);      // entrySelector
+        appendU16(format4, 2);      // rangeShift
+        appendU16(format4, 0x0048); // endCode[0] ('H')
+        appendU16(format4, 0x0069); // endCode[1] ('i')
+        appendU16(format4, 0xFFFF); // endCode[2] (terminator)
+        appendU16(format4, 0);      // reservedPad
+        appendU16(format4, 0x0048); // startCode[0]
+        appendU16(format4, 0x0069); // startCode[1]
+        appendU16(format4, 0xFFFF); // startCode[2]
+        appendU16(format4, static_cast<uint16_t>(10 - 0x0048)); // idDelta[0]: 'H' -> glyph 10
+        appendU16(format4, static_cast<uint16_t>(11 - 0x0069)); // idDelta[1]: 'i' -> glyph 11
+        appendU16(format4, 1);      // idDelta[2] (terminator; maps to glyph 0)
+        appendU16(format4, 0);      // idRangeOffset[0]
+        appendU16(format4, 0);      // idRangeOffset[1]
+        appendU16(format4, 0);      // idRangeOffset[2]
+
+        // cmap table: header, 1 encoding record, then the subtable
+        std::string cmapTable;
+        appendU16(cmapTable, 0); // version
+        appendU16(cmapTable, 1); // numTables
+        appendU16(cmapTable, 3);
+        appendU16(cmapTable, 1);
+        appendU32(cmapTable, 12); // (3, 1) Windows Unicode -> format4 subtable, right after the record
+        cmapTable += format4;
+
+        // sfnt wrapper: header plus a single "cmap" table record
+        std::string font;
+        appendU32(font, 0x00010000); // sfntVersion
+        appendU16(font, 1);          // numTables
+        appendU16(font, 0);
+        appendU16(font, 0);
+        appendU16(font, 0); // searchRange/entrySelector/rangeShift (unused)
+        font += "cmap";
+        appendU32(font, 0);                                  // checksum (unused)
+        appendU32(font, 12 + 16);                             // offset, right after this record
+        appendU32(font, static_cast<uint32_t>(cmapTable.length())); // length
+        font += cmapTable;
+
+        std::string text{
+            "%PDF-1.4\n"
+            "1 0 obj\n<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>\n"
+            "endobj\n"
+            "2 0 obj\n<< >>\nstream\nBT /F1 12 Tf <000A000B> Tj ET\nendstream\nendobj\n"
+            "3 0 obj\n<< /Type /Font /Subtype /Type0 /BaseFont /Fallback /Encoding /Identity-H "
+            "/DescendantFonts [6 0 R] >>\nendobj\n"
+            "6 0 obj\n<< /Type /Font /Subtype /CIDFontType2 /BaseFont /Fallback "
+            "/FontDescriptor 4 0 R >>\nendobj\n"
+            "4 0 obj\n<< /Type /FontDescriptor /FontFile2 5 0 R >>\nendobj\n"
+        };
+        text += "5 0 obj\n<< /Length " + std::to_string(font.length()) + " >>\nstream\n";
+        text += font;
+        text += "\nendstream\nendobj";
+
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text.data(), text.length()), L"Hi") == 0);
+        }
     SECTION("ToUnicode CMap With Mixed-Width Codespace Ranges")
         {
         // a CMap that declares both a 1-byte codespace range (<00>-<80>) and a 2-byte

@@ -1137,20 +1137,10 @@ namespace lily_of_the_valley
                 pdf_text_decoder::parse_unicode_cmap(cmapData, *decoder);
                 }
             }
-        // A Type0 font with no ToUnicode CMap (common for CJK fonts) has CIDs that are
-        // meaningless as Unicode on their own. They're only interpretable relative to
-        // the font's /CIDSystemInfo character collection (its "Registry-Ordering"
-        // ["Adobe-Japan1"]). If the client loaded an external CID-to-Unicode table for
-        // that collection, use it to recover the font's text. This only applies to
-        // genuinely CID-keyed codes (e.g., an Identity-H encoding). A font whose
-        // /Encoding named one of Adobe's legacy charset CMaps (RKSJ, B5, UHC, EUC)
-        // already has its string bytes resolved to a charset (decoder->m_charset) and
-        // decodes correctly via direct charset conversion, so it must be left alone
-        // here. Treating those charset bytes as CIDs looks up unrelated table entries
-        // and silently produces the wrong (but plausible-looking) CJK characters.
-        if (!decoder->m_has_unicode_map && decoder->m_charset.empty() &&
-            m_cid_to_unicode_tables != nullptr && !m_cid_to_unicode_tables->empty())
-            {
+        // a /Type0 font's descendant is either a lone dictionary or the first
+        // (and only) entry of a /DescendantFonts array
+        const auto resolveDescendantFont = [this, &fontDictionary]() -> const pdf_object*
+        {
             const std::string_view descendantFontsValue{ pdf_lexer::trim(
                 pdf_lexer::find_dictionary_value(fontDictionary, "DescendantFonts")) };
             std::string_view descendantFontRef{ descendantFontsValue };
@@ -1159,7 +1149,18 @@ namespace lily_of_the_valley
                 size_t pos{ 1 };
                 descendantFontRef = pdf_lexer::read_value(descendantFontsValue, pos);
                 }
-            const pdf_object* descendantFont{ resolve_to_object(descendantFontRef) };
+            return resolve_to_object(descendantFontRef);
+        };
+
+        // A Type0 font with no ToUnicode CMap has CIDs that are only interpretable
+        // via an external CID-to-Unicode table for its /CIDSystemInfo character
+        // collection, if the client loaded one. Skipped for fonts already resolved
+        // via decoder->m_charset (a legacy CJK CMap encoding), since their codes
+        // aren't CIDs and would map to unrelated, wrong-looking table entries.
+        if (!decoder->m_has_unicode_map && decoder->m_charset.empty() &&
+            m_cid_to_unicode_tables != nullptr && !m_cid_to_unicode_tables->empty())
+            {
+            const pdf_object* descendantFont{ resolveDescendantFont() };
             if (descendantFont != nullptr && !descendantFont->m_dictionary.empty())
                 {
                 const std::string_view cidSystemInfo{ pdf_lexer::trim(
@@ -1186,6 +1187,47 @@ namespace lily_of_the_valley
                         decoder->m_code_map[cid] = unicodeText;
                         }
                     decoder->m_has_unicode_map = !decoder->m_code_map.empty();
+                    }
+                }
+            }
+
+        // A /Type0 font whose descendant is an embedded /CIDFontType2 (subsetted
+        // TrueType) with no ToUnicode CMap and no external CID-to-Unicode table
+        // still has one more source of truth: the embedded font's own cmap table.
+        if (!decoder->m_has_unicode_map && decoder->m_charset.empty())
+            {
+            const pdf_object* descendantFont{ resolveDescendantFont() };
+            if (descendantFont != nullptr && !descendantFont->m_dictionary.empty() &&
+                pdf_lexer::trim(pdf_lexer::find_dictionary_value(descendantFont->m_dictionary,
+                                                                 "Subtype")) == "/CIDFontType2")
+                {
+                const pdf_object* descriptorObject{ resolve_to_object(
+                    pdf_lexer::find_dictionary_value(descendantFont->m_dictionary,
+                                                     "FontDescriptor")) };
+                const pdf_object* fontFileObject{
+                    (descriptorObject != nullptr && !descriptorObject->m_dictionary.empty()) ?
+                        resolve_to_object(pdf_lexer::find_dictionary_value(
+                            descriptorObject->m_dictionary, "FontFile2")) :
+                        nullptr
+                };
+                if (fontFileObject != nullptr && !fontFileObject->m_stream_data.empty())
+                    {
+                    const std::string fontProgram{ decode_stream(*fontFileObject) };
+                    if (!fontProgram.empty())
+                        {
+                        // /CIDToGIDMap: absent/Identity, or a stream of 2-byte GIDs indexed by CID
+                        std::string cidToGidMapData;
+                        const pdf_object* cidToGidMapStream{ resolve_to_object(
+                            pdf_lexer::find_dictionary_value(descendantFont->m_dictionary,
+                                                             "CIDToGIDMap")) };
+                        if (cidToGidMapStream != nullptr &&
+                            !cidToGidMapStream->m_stream_data.empty())
+                            {
+                            cidToGidMapData = decode_stream(*cidToGidMapStream);
+                            }
+                        pdf_text_decoder::parse_embedded_cid_truetype_cmap(
+                            fontProgram, cidToGidMapData, *decoder);
+                        }
                     }
                 }
             }
