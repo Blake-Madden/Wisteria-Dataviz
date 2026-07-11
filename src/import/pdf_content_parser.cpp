@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <charconv>
 #include <cmath>
+#include <cstdlib>
 #include <cwctype>
 #include <tuple>
 #include <utility>
@@ -267,8 +268,8 @@ namespace lily_of_the_valley
                     }
                 // a large negative adjustment (in thousandths of an em)
                 // is a gap between words
-                double adjustment{ 0 };
-                std::from_chars(token.data(), token.data() + token.length(), adjustment);
+                // (strtod is used since Apple Clang's libc++ lacks floating-point from_chars)
+                const double adjustment{ std::strtod(token.data(), nullptr) };
                 if (adjustment < -150)
                     {
                     add_space();
@@ -444,8 +445,7 @@ namespace lily_of_the_valley
                     {
                     ++pos;
                     }
-                double numericValue{ 0 };
-                std::from_chars(content.data() + numberStart, content.data() + pos, numericValue);
+                const double numericValue{ std::strtod(content.data() + numberStart, nullptr) };
                 numbers.push_back(numericValue);
                 // operands are only cleared by operators
                 continue;
