@@ -1178,6 +1178,56 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(ext(text, std::strlen(text)) != nullptr);
         }
+    SECTION("Embedded CMap Stream With WMode But No Usecmap")
+        {
+        // an embedded CMap stream with no usecmap directive (so there's no predefined
+        // CMap's name to infer vertical-ness from), but which declares /WMode 1
+        // itself, the way a subsetted CID font's own vertical CMap would. The font's
+        // /ToUnicode CMap supplies the readable text; the /Encoding CMap's only job
+        // here is establishing the codespace and the writing mode. This is the same
+        // column-break layout as the predefined-CMap vertical writing mode test: a
+        // same-row move to a new column is a new line in vertical mode, not a
+        // same-line word gap.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf 1 0 0 1 400 700 Tm <0043006F006C00200041> Tj ET
+BT /F1 12 Tf 1 0 0 1 386 700 Tm <0043006F006C00200042> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding 4 0 R /ToUnicode 5 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+/CMapName /Custom-Subset-V def
+/WMode 1 def
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+endstream
+endobj
+5 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+1 beginbfrange
+<0020> <007A> <0020>
+endbfrange
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Col A\nCol B") == 0);
+        }
     SECTION("Decompressor Functor")
         {
         const char* text = R"PDF(%PDF-1.4

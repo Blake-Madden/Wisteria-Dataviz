@@ -735,6 +735,21 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    bool pdf_text_decoder::parse_wmode_from_cmap_stream(const std::string_view cmap)
+        {
+        // An embedded CMap stream may declare "/WMode 1 def" for vertical writing
+        // mode (PDF spec, 9.7.5.2, "CMap Dictionaries").
+        const size_t wmodePos{ cmap.find("/WMode") };
+        if (wmodePos == std::string_view::npos)
+            {
+            return false;
+            }
+        size_t pos{ wmodePos + 6 };
+        pdf_lexer::skip_whitespace(cmap, pos);
+        return pos < cmap.length() && cmap[pos] == '1';
+        }
+
+    //------------------------------------------------------------------
     std::string_view pdf_text_decoder::predefined_cmap_charset(const std::string_view cmapName)
         {
         // Adobe's predefined CJK CMaps (PDF spec, "Predefined CJK CMap names").

@@ -94,6 +94,15 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::string_view parse_usecmap_name(std::string_view cmap);
 
+        /// @brief Reads an embedded CMap stream's own `/WMode` directive, if any.
+        /// @param cmap The raw (decoded) content of an embedded CMap stream.
+        /// @returns @c true if the stream declares `/WMode 1` (vertical writing
+        ///     mode). A subsetted CID font's own CMap may declare this directly,
+        ///     independently of (or in addition to) chaining to a predefined CMap
+        ///     via usecmap.
+        [[nodiscard]]
+        static bool parse_wmode_from_cmap_stream(std::string_view cmap);
+
         /// @brief Maps the name of one of Adobe's predefined CJK CMaps (a Type0
         ///     font's /Encoding value, without the leading slash) to the legacy
         ///     multibyte charset that strings shown with such a font are encoded in.

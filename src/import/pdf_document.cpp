@@ -1065,6 +1065,11 @@ namespace lily_of_the_valley
                     {
                     applyPredefinedCmapName(usecmapName);
                     }
+                // The stream may also declare its writing mode directly via /WMode.
+                if (pdf_text_decoder::parse_wmode_from_cmap_stream(cmapStreamData))
+                    {
+                    decoder->m_vertical_writing_mode = true;
+                    }
                 }
             }
         // the base encoding is either the /Encoding name directly, or (for a simple
