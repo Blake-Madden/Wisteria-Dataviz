@@ -233,8 +233,23 @@ namespace lily_of_the_valley
         if (baseName.compare(0, 3, "uni") == 0 && baseName.length() >= 7 &&
             ((baseName.length() - 3) % 4) == 0)
             {
-            return pdf_text_decoder::utf16_units_to_wstring(
-                pdf_text_decoder::hex_to_utf16_units(baseName.substr(3)));
+            const std::string_view hexDigits{ baseName.substr(3) };
+            bool allHex{ true };
+            for (const char hexChar : hexDigits)
+                {
+                if (pdf_lexer::hex_digit_value(hexChar) < 0)
+                    {
+                    allHex = false;
+                    break;
+                    }
+                }
+            // reject names that merely start with "uni" (e.g., "unicorn"), rather than
+            // silently skipping their non-hex characters and returning a garbage code point
+            if (allHex)
+                {
+                return pdf_text_decoder::utf16_units_to_wstring(
+                    pdf_text_decoder::hex_to_utf16_units(hexDigits));
+                }
             }
         // "uXXXX" through "uXXXXXX": a single code point, possibly astral
         if (baseName.compare(0, 1, "u") == 0 && baseName.length() >= 5 && baseName.length() <= 7)
