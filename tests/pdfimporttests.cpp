@@ -665,7 +665,9 @@ endobj)PDF";
         // Byte 0xB7 is Adobe SymbolEncoding's "bullet" glyph (U+2022), the same
         // code point WinAnsi assigns to a completely different byte (0x95). A Symbol
         // font's 0xB7 must resolve through the Symbol table, not be left to whatever
-        // WinAnsi happens to say about that byte.
+        // WinAnsi happens to say about that byte. The decoded bullet lands at the
+        // start of a line, so the usual list-item formatting (a leading tab) applies,
+        // same as the WinAnsi bullet tests above.
         const char* text = R"PDF(%PDF-1.4
 1 0 obj
 << /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
@@ -680,7 +682,7 @@ endobj
 << /Type /Font /Subtype /Type1 /BaseFont /Symbol >>
 endobj)PDF";
         pdf_extract_text ext;
-        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x2022") == 0);
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\t\x2022") == 0);
         }
     SECTION("ToUnicode CMap With Mixed-Width Codespace Ranges")
         {
