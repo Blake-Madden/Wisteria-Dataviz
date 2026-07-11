@@ -61,18 +61,21 @@ namespace lily_of_the_valley
         ///     formatting bullet points that start a line as list items.
         void add_text(const std::wstring& decodedText);
         /// @brief Handles a relative text-position move (Td/TD operators).
-        /// @details A vertical move larger than 1.8x the line height is treated as
-        ///     a paragraph break rather than a simple line break.
+        /// @details The operands are offsets in the current text line matrix's
+        ///     local space, so they're transformed through it (via
+        ///     m_matrixA/B/C/D) into a page-space delta before being handled by
+        ///     the same logic as an absolute move (handle_absolute_move).
         void handle_relative_move(double moveX, double moveY);
         /// @brief Handles an absolute text-position move (Tm operator).
-        /// @details Uses the same 1.8x line-height threshold as Td/TD to
-        ///     distinguish line breaks from paragraph breaks.
+        /// @details A move larger than 0.25x the line height along the line-step
+        ///     axis (y for horizontal writing mode, x for vertical) starts a new
+        ///     line, or a new paragraph if larger than 1.8x.
         ///     If the move lands on the same line but far enough away, a space is
         ///     inserted so the two runs don't run together. This can happen with a
         ///     separate BT/Tm/Tj block placed well to the right, or diagonally for
         ///     rotated text.
-        /// @returns @c true if a newline was written (i.e., @c newY landed on a
-        ///     different line than the current position).
+        /// @returns @c true if a newline was written (i.e., @c newX/@c newY landed
+        ///     on a different line than the current position).
         bool handle_absolute_move(double newX, double newY);
         /// @brief Decodes and appends a shown string (the Tj, ', " operators).
         void show_string(const std::string& stringBytes, const pdf_font_decoder* currentFont);
@@ -113,13 +116,24 @@ namespace lily_of_the_valley
         double m_currentY{ 0 };            ///< Current vertical position in user-space.
         double m_fontSize{ 12 };           ///< Current font size (from Tf operator).
         double m_fontScale{ 1 };           ///< Vertical scale factor from the text matrix.
-        double m_leading{ 0 };             ///< Current leading (line spacing, from TL).
-        double m_charSpacing{ 0 };         ///< Current character spacing (from Tc).
-        double m_wordSpacing{ 0 };         ///< Current word spacing (from Tw).
-        double m_horizScale{ 100 };        ///< Current horizontal scaling percent (from Tz).
-        bool m_haveY{ false };             ///< Whether m_currentY has been initialized.
-        bool m_atLineStart{ true };        ///< True when no glyphs emitted since the last newline.
-        bool m_haveShownText{ false };     ///< Whether any glyph has been shown on this page yet.
+        /// The a, b, c, d components of the current text line matrix (from Tm; reset
+        /// to identity by BT). Used to transform a Td/TD's local-space operands into
+        /// a page-space delta when the matrix carries rotation or scale.
+        double m_matrixA{ 1 };
+        double m_matrixB{ 0 };
+        double m_matrixC{ 0 };
+        double m_matrixD{ 1 };
+        /// Whether the current font (from Tf) lays out text in vertical writing mode
+        /// (its /Encoding is one of Adobe's predefined "-V" CMaps), so a line step is
+        /// a horizontal move across columns rather than a vertical move down the page.
+        bool m_verticalWritingMode{ false };
+        double m_leading{ 0 };         ///< Current leading (line spacing, from TL).
+        double m_charSpacing{ 0 };     ///< Current character spacing (from Tc).
+        double m_wordSpacing{ 0 };     ///< Current word spacing (from Tw).
+        double m_horizScale{ 100 };    ///< Current horizontal scaling percent (from Tz).
+        bool m_haveY{ false };         ///< Whether m_currentY has been initialized.
+        bool m_atLineStart{ true };    ///< True when no glyphs emitted since the last newline.
+        bool m_haveShownText{ false }; ///< Whether any glyph has been shown on this page yet.
         /// True between a `BT` operator and the first `Td`/`TD`/`Tm` after it (i.e.,
         /// while the text line matrix is still at its just-reset identity value).
         bool m_freshTextObject{ true };

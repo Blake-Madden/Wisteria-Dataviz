@@ -717,6 +717,17 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    bool pdf_text_decoder::is_vertical_cmap_name(const std::string_view cmapName)
+        {
+        // Every one of Adobe's predefined CMap names (Identity-H/V and the CJK
+        // families) ends in "-H" or "-V" (optionally preceded by "-HW" for the
+        // fixed-pitch variants), naming the writing mode the CMap lays glyphs out
+        // in. A "-V" font advances glyphs down a column and steps to a new column
+        // horizontally, the reverse of the default horizontal layout.
+        return cmapName.size() >= 2 && cmapName.compare(cmapName.size() - 2, 2, "-V") == 0;
+        }
+
+    //------------------------------------------------------------------
     size_t pdf_text_decoder::determine_code_length(const std::string& bytes, const size_t pos,
                                                    const pdf_font_decoder* fontDecoder)
         {

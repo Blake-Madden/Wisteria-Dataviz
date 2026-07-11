@@ -101,6 +101,12 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static bool is_unicode_cmap_name(std::string_view cmapName);
 
+        /// @returns @c true if @c cmapName (a Type0 font's /Encoding value, without
+        ///     the leading slash) is one of Adobe's predefined vertical-writing-mode
+        ///     CMaps (e.g., "Identity-V" or "UniJIS-UCS2-V").
+        [[nodiscard]]
+        static bool is_vertical_cmap_name(std::string_view cmapName);
+
         /// @brief Resolves a PDF glyph name (from a `/Differences` array) to Unicode.
         /// @param glyphName The (ASCII) glyph name, without the leading slash.
         /// @param glyphTable A glyph name table (e.g., the Adobe Glyph List) to consult first.

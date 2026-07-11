@@ -219,6 +219,83 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Word") == 0);
         }
+    SECTION("Rotated Tm: Td Move Not Rotated")
+        {
+        // Tm establishes a 90-degree-rotated text line matrix (local +x maps to
+        // page -y, local +y maps to page +x). The following Td's operands are in
+        // that rotated text space, so a purely-horizontal local step (-14, 0)
+        // lands one line further down the page (a page-space y move), the same
+        // kind of step as the "Tm New Line" case above. handle_relative_move
+        // transforms the Td operands through the text matrix before treating
+        // them as a page-space delta, so this is recognized as a line break
+        // rather than glued together as a small, sub-threshold horizontal nudge.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+0 1 -1 0 400 300 Tm (First) Tj
+-14 0 Td (Second) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"First\nSecond") == 0);
+        }
+    SECTION("Vertical Writing Mode Column Break (Predefined Unicode CMap)")
+        {
+        // A Type0 font with a vertical predefined Unicode encoding
+        // (/UniJIS-UCS2-V, the vertical counterpart of /UniJIS-UCS2-H) lays out
+        // columns along the page's x-axis: a same-row move to a new column is
+        // the vertical-mode equivalent of a new line, not a same-line word gap.
+        // handle_absolute_move checks the line-step axis against the current
+        // font's writing mode, so this is recognized as two columns separated
+        // by a newline rather than two runs on the same line separated by a space.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf 1 0 0 1 400 700 Tm <0043006F006C00200041> Tj ET
+BT /F1 12 Tf 1 0 0 1 386 700 Tm <0043006F006C00200042> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /UniJIS-UCS2-V >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Col A\nCol B") == 0);
+        }
+    SECTION("Vertical Writing Mode Same-Column Continuation (Predefined Unicode CMap)")
+        {
+        // The mirror image of the column-break case: two runs of the same
+        // vertical-mode font stepping down the page (a y move) by less than a
+        // line height are continuing down the same column, not starting a new
+        // line. Since the line-step axis for a vertical-mode font is x, not y,
+        // this small y move is recognized as a continuation and joined into one
+        // word rather than split across two lines.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf 1 0 0 1 72 700 Tm <0057006F> Tj ET
+BT /F1 12 Tf 1 0 0 1 72 692 Tm <00720064> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /UniJIS-UCS2-V >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Word") == 0);
+        }
     SECTION("T-star New Line")
         {
         const char* text = R"PDF(%PDF-1.4

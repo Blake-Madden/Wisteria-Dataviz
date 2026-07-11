@@ -45,6 +45,11 @@ namespace lily_of_the_valley
         m_atLineStart = true;
         m_haveShownText = false;
         m_freshTextObject = true;
+        m_matrixA = 1;
+        m_matrixB = 0;
+        m_matrixC = 0;
+        m_matrixD = 1;
+        m_verticalWritingMode = false;
         parse_content(pageContent, resources, 0);
         // End the page on its own line so that whatever comes next (the next page's
         // text, or nothing) never runs directly into this page's last glyph.
@@ -169,45 +174,34 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void pdf_content_parser::handle_relative_move(const double moveX, const double moveY)
         {
-        if (std::abs(moveY) > 0.001)
+        // BT resets the text line matrix to identity, so a Td/TD right after it is
+        // setting an absolute position (like Tm), not stepping from the current
+        // position by a small amount. Route it through the same
+        // delta-from-last-position check as Tm, rather than treating its raw
+        // operands as the delta itself.
+        if (m_freshTextObject)
             {
-            // BT resets the text line matrix to identity, so a Td/TD right after it
-            // is setting an absolute position (like Tm), not stepping down by a small
-            // incremental line move. Route it through the same delta-from-last-position
-            // check as Tm, rather than treating its raw operand as the delta itself.
-            if (m_freshTextObject)
-                {
-                const bool wroteNewline{ handle_absolute_move(moveX, moveY * m_fontScale) };
-                // Landed on the same line as the previous (separate) text object (e.g., a
-                // bullet glyph followed by its label, drawn with two different fonts). The
-                // gap between them has no space character of its own, since it's expressed
-                // purely through Td's x-offset, so add one to keep the words from running
-                // together.
-                if (!wroteNewline)
-                    {
-                    add_space();
-                    }
-                }
-            else
-                {
-                add_newline(std::abs(moveY) > (1.8 * line_height()));
-                // establish (or continue tracking) the baseline so that a later Tm
-                // (handle_absolute_move) can correctly compute its delta, rather than
-                // treating itself as the page's first position and skipping a newline
-                m_currentX += moveX;
-                m_currentY += (moveY * m_fontScale);
-                m_haveY = true;
-                }
-            m_freshTextObject = false;
-            }
-        else
-            {
-            m_currentX += moveX;
-            if (moveX > line_height())
+            const bool wroteNewline{ handle_absolute_move(moveX, moveY * m_fontScale) };
+            // Landed on the same line as the previous (separate) text object (e.g., a
+            // bullet glyph followed by its label, drawn with two different fonts). The
+            // gap between them has no space character of its own, since it's expressed
+            // purely through Td's offset, so add one to keep the words from running
+            // together.
+            if (!wroteNewline)
                 {
                 add_space();
                 }
+            return;
             }
+        // Once a Tm or Td/TD has already run in this text object, later Td/TD
+        // operands are offsets in that matrix's local space, which may carry
+        // rotation or scale from an earlier Tm. They must be transformed through
+        // the matrix before they're meaningful as a page-space delta. A purely
+        // horizontal step in a rotated font's local space can land anywhere in
+        // page space, not just along the page's x-axis.
+        const double pageDeltaX{ (m_matrixA * moveX) + (m_matrixC * moveY) };
+        const double pageDeltaY{ (m_matrixB * moveX) + (m_matrixD * moveY) };
+        handle_absolute_move(m_currentX + pageDeltaX, m_currentY + pageDeltaY);
         }
 
     //------------------------------------------------------------------
@@ -225,12 +219,17 @@ namespace lily_of_the_valley
             m_currentY = newY;
             return false;
             }
+        const double deltaX{ newX - m_currentX };
         const double deltaY{ newY - m_currentY };
+        // In vertical writing mode, glyphs advance down a column and a new line is
+        // a step across columns along x, the reverse of horizontal mode's
+        // top-to-bottom line stepping along y.
+        const double lineAxisDelta{ m_verticalWritingMode ? deltaX : deltaY };
         const double scaledLineHeight{ line_height() * m_fontScale };
         bool wroteNewline{ false };
-        if (std::abs(deltaY) > (0.25 * scaledLineHeight))
+        if (std::abs(lineAxisDelta) > (0.25 * scaledLineHeight))
             {
-            add_newline(std::abs(deltaY) > (1.8 * scaledLineHeight));
+            add_newline(std::abs(lineAxisDelta) > (1.8 * scaledLineHeight));
             wroteNewline = true;
             }
         // Landed on (roughly) the same line, but far enough away that this is a
@@ -238,7 +237,7 @@ namespace lily_of_the_valley
         // horizontal, or diagonal for rotated text. This happens when text is drawn
         // as several independent BT/Tm blocks (one per label) instead of one Tj/TJ
         // run. Without this check, such runs would be glued directly together.
-        else if (std::hypot(newX - m_currentX, deltaY) > scaledLineHeight)
+        else if (std::hypot(deltaX, deltaY) > scaledLineHeight)
             {
             add_space();
             }
@@ -492,6 +491,10 @@ namespace lily_of_the_valley
                     // Resets the text line matrix to identity. The next Td/TD/Tm
                     // establishes a fresh position rather than stepping from the last one.
                     m_freshTextObject = true;
+                    m_matrixA = 1;
+                    m_matrixB = 0;
+                    m_matrixC = 0;
+                    m_matrixD = 1;
                     }
                 else if (keyword == "Tf")
                     {
@@ -502,6 +505,8 @@ namespace lily_of_the_valley
                     const auto fontPos = resources.m_fonts.find(lastName);
                     currentFont =
                         (fontPos != resources.m_fonts.cend()) ? fontPos->second.get() : nullptr;
+                    m_verticalWritingMode =
+                        (currentFont != nullptr && currentFont->m_vertical_writing_mode);
                     }
                 else if (keyword == "TL")
                     {
@@ -548,9 +553,13 @@ namespace lily_of_the_valley
                     {
                     if (numbers.size() >= 6)
                         {
+                        m_matrixA = numbers[numbers.size() - 6];
+                        m_matrixB = numbers[numbers.size() - 5];
+                        m_matrixC = numbers[numbers.size() - 4];
+                        m_matrixD = numbers[numbers.size() - 3];
                         // the matrix's vertical scale (fonts are often set at
                         // size 1 and then scaled up through the text matrix)
-                        const double verticalScale{ std::abs(numbers[numbers.size() - 3]) };
+                        const double verticalScale{ std::abs(m_matrixD) };
                         if (verticalScale > 0.001)
                             {
                             m_fontScale = verticalScale;

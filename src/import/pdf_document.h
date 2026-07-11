@@ -135,6 +135,10 @@ namespace lily_of_the_valley
         bool m_codes_are_utf16{ false };
         /// Whether this is a (notorious) symbol font (e.g., Symbol, Wingdings, ZapfDingbats).
         bool m_symbol_font{ false };
+        /// Whether this font lays out text in vertical writing mode (its /Encoding
+        /// is one of Adobe's predefined "-V" CMaps, such as /Identity-V or
+        /// /UniJIS-UCS2-V).
+        bool m_vertical_writing_mode{ false };
         };
 
     /** @brief Function object interface used to decompress a (zlib/DEFLATE

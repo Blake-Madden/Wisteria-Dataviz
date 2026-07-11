@@ -1011,6 +1011,7 @@ namespace lily_of_the_valley
         // (Identity, Unicode, or a legacy CJK charset) to the font's decoder
         const auto applyPredefinedCmapName = [this, &decoder](const std::string_view cmapName)
         {
+            decoder->m_vertical_writing_mode = pdf_text_decoder::is_vertical_cmap_name(cmapName);
             if (pdf_text_decoder::is_unicode_cmap_name(cmapName))
                 {
                 // string bytes are UTF-16BE
@@ -1040,6 +1041,8 @@ namespace lily_of_the_valley
         if (encoding.compare(0, 9, "/Identity") == 0)
             {
             decoder->m_bytes_per_code = 2;
+            decoder->m_vertical_writing_mode =
+                pdf_text_decoder::is_vertical_cmap_name(encoding.substr(1));
             }
         // a Type0 font's /Encoding may instead name one of Adobe's other predefined
         // CMaps, which determine how the font's string bytes are encoded
