@@ -44,10 +44,24 @@ namespace lily_of_the_valley
         /// @param pageObject The page object (must have a dictionary).
         void parse_page(const pdf_object& pageObject);
 
+        /// @brief Reverses any still-open RTL run (e.g., one left open at the end
+        ///     of a page's content). Safe to call when no run is open.
+        void flush_rtl_run();
+
       private:
         /// @returns @c true if @c character is a bullet-point glyph.
         [[nodiscard]]
         static bool is_bullet(wchar_t character);
+
+        /// @returns @c true if @c character is a strongly right-to-left letter
+        ///     (Hebrew or Arabic, including their presentation-form blocks).
+        [[nodiscard]]
+        static bool is_strong_rtl(wchar_t character);
+
+        /// @returns @c true if @c character is a Hebrew or Arabic combining
+        ///     mark (a diacritic that attaches to the character before it).
+        [[nodiscard]]
+        static bool is_combining_mark(wchar_t character);
 
         /// @returns The effective line height in text-space units.
         [[nodiscard]]
@@ -137,6 +151,14 @@ namespace lily_of_the_valley
         /// True between a `BT` operator and the first `Td`/`TD`/`Tm` after it (i.e.,
         /// while the text line matrix is still at its just-reset identity value).
         bool m_freshTextObject{ true };
+        /// Start of the currently open RTL run in m_text (std::wstring::npos if
+        /// no run is open). Spans from the first strongly-RTL character seen to
+        /// the most recent one, so that interior whitespace (e.g., between RTL
+        /// words) is reversed along with them, while trailing whitespace after
+        /// the run's last RTL character is left in place.
+        size_t m_rtlRunStart{ std::wstring::npos };
+        /// One-past the most recent strongly-RTL character in the open run.
+        size_t m_rtlRunEnd{ std::wstring::npos };
         };
     } // namespace lily_of_the_valley
 

@@ -493,6 +493,8 @@ namespace lily_of_the_valley
             if (pageObject != nullptr)
                 {
                 parser.parse_page(*pageObject);
+                // close out any RTL run left open by the page's last line
+                parser.flush_rtl_run();
                 }
             // Separate pages with a blank line. A form feed would be more precise,
             // but most text controls have no glyph for it and render it as garbage

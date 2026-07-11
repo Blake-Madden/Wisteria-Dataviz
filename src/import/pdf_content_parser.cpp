@@ -70,6 +70,67 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    bool pdf_content_parser::is_strong_rtl(const wchar_t character)
+        {
+        // Arabic-Indic and Extended Arabic-Indic digits aren't mirrored in RTL
+        // text, so (like Latin digits) they must close a run rather than join
+        // it; exclude them from the Arabic block below.
+        if ((character >= 0x0660 && character <= 0x0669) ||
+            (character >= 0x06F0 && character <= 0x06F9))
+            {
+            return false;
+            }
+        return (character >= 0x0590 && character <= 0x05FF) || // Hebrew
+               (character >= 0x0600 && character <= 0x06FF) || // Arabic
+               (character >= 0x0750 && character <= 0x077F) || // Arabic Supplement
+               (character >= 0xFB1D && character <= 0xFB4F) || // Hebrew Presentation Forms
+               (character >= 0xFB50 && character <= 0xFDFF) || // Arabic Presentation Forms-A
+               (character >= 0xFE70 && character <= 0xFEFF);   // Arabic Presentation Forms-B
+        }
+
+    //------------------------------------------------------------------
+    bool pdf_content_parser::is_combining_mark(const wchar_t character)
+        {
+        return (character >= 0x0591 && character <= 0x05BD) || // Hebrew points
+               character == 0x05BF || (character >= 0x05C1 && character <= 0x05C2) ||
+               (character >= 0x05C4 && character <= 0x05C5) || character == 0x05C7 ||
+               (character >= 0x0610 && character <= 0x061A) || // Arabic marks
+               (character >= 0x064B && character <= 0x065F) || // Arabic harakat
+               character == 0x0670 || (character >= 0x06D6 && character <= 0x06DC) ||
+               (character >= 0x06DF && character <= 0x06E4) ||
+               (character >= 0x06E7 && character <= 0x06E8) ||
+               (character >= 0x06EA && character <= 0x06ED);
+        }
+
+    //------------------------------------------------------------------
+    void pdf_content_parser::flush_rtl_run()
+        {
+        if (m_rtlRunStart == std::wstring::npos)
+            {
+            return;
+            }
+        // Reverse the run's cluster order (a base character plus any combining
+        // marks that follow it), not individual codepoints, so a diacritic
+        // doesn't get swapped ahead of the base letter it attaches to.
+        std::wstring reordered;
+        reordered.reserve(m_rtlRunEnd - m_rtlRunStart);
+        size_t clusterEnd{ m_rtlRunEnd };
+        while (clusterEnd > m_rtlRunStart)
+            {
+            size_t clusterStart{ clusterEnd - 1 };
+            while (clusterStart > m_rtlRunStart && is_combining_mark(m_text[clusterStart]))
+                {
+                --clusterStart;
+                }
+            reordered.append(m_text, clusterStart, clusterEnd - clusterStart);
+            clusterEnd = clusterStart;
+            }
+        m_text.replace(m_rtlRunStart, m_rtlRunEnd - m_rtlRunStart, reordered);
+        m_rtlRunStart = std::wstring::npos;
+        m_rtlRunEnd = std::wstring::npos;
+        }
+
+    //------------------------------------------------------------------
     double pdf_content_parser::line_height() const
         {
         return std::max({ m_leading, m_fontSize, 4.0 });
@@ -78,6 +139,8 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void pdf_content_parser::add_newline(const bool paragraphBreak)
         {
+        // a line break always closes an in-progress RTL run
+        flush_rtl_run();
         // remove trailing spaces from the line that is ending
         while (!m_text.empty() && (m_text.back() == L' ' || m_text.back() == L'\t'))
             {
@@ -147,26 +210,51 @@ namespace lily_of_the_valley
                     }
                 m_atLineStart = false;
                 }
-            // expand ligatures
+            // expand ligatures (Latin, so this always closes an open RTL run)
             switch (character)
                 {
             case 0xFB00:
+                flush_rtl_run();
                 m_text += L"ff";
                 break;
             case 0xFB01:
+                flush_rtl_run();
                 m_text += L"fi";
                 break;
             case 0xFB02:
+                flush_rtl_run();
                 m_text += L"fl";
                 break;
             case 0xFB03:
+                flush_rtl_run();
                 m_text += L"ffi";
                 break;
             case 0xFB04:
+                flush_rtl_run();
                 m_text += L"ffl";
                 break;
             default:
-                m_text += character;
+                if (is_strong_rtl(character))
+                    {
+                    if (m_rtlRunStart == std::wstring::npos)
+                        {
+                        m_rtlRunStart = m_text.length();
+                        }
+                    m_text += character;
+                    m_rtlRunEnd = m_text.length();
+                    }
+                // whitespace doesn't break an open run: if more RTL text
+                // follows, it (and this whitespace) join the run; otherwise
+                // it's left outside the run when the run is next flushed
+                else if (character == L' ' || character == L'\t')
+                    {
+                    m_text += character;
+                    }
+                else
+                    {
+                    flush_rtl_run();
+                    m_text += character;
+                    }
                 }
             }
         }

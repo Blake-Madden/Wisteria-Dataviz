@@ -1382,6 +1382,122 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x092D\x093E\x0930\x0924 \x0914\x0930") == 0);
         }
+    SECTION("Arabic RTL Run Reordering")
+        {
+        // This run's glyphs are stored in visual order, the reverse of Arabic
+        // reading order. Reversed, it spells "العربية" ("the Arabic") with
+        // valid glyph joining.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 36 Tf <0045003d000400520034001300b1> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+7 beginbfchar
+<0004> <FE91>
+<0013> <FEDF>
+<0034> <FECC>
+<003d> <FEF4>
+<0045> <FE94>
+<0052> <FEAE>
+<00b1> <0627>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"\x0627\xFEDF\xFECC\xFEAE\xFE91\xFEF4\xFE94") == 0);
+        }
+    SECTION("Hebrew RTL Run Reordering")
+        {
+        // This run's glyphs are stored in visual order, the reverse of Hebrew
+        // reading order. Reversed, it spells "שלום" ("Shalom").
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 36 Tf <0001000200030004> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+4 beginbfchar
+<0001> <05DD>
+<0002> <05D5>
+<0003> <05DC>
+<0004> <05E9>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x05E9\x05DC\x05D5\x05DD") == 0);
+        }
+    SECTION("Arabic-Indic Digits Are Not Reversed")
+        {
+        // This run's glyphs are stored in visual order. The Arabic letters (ب د)
+        // need reversing, but the Arabic-Indic digits (١٢٣, "123") must keep their
+        // own left-to-right order, since digits aren't mirrored in RTL text.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 36 Tf <00010002000300040005> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+5 beginbfchar
+<0001> <0661>
+<0002> <0662>
+<0003> <0663>
+<0004> <062F>
+<0005> <0628>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"\x0661\x0662\x0663\x0628\x062F") == 0);
+        }
     SECTION("Decompressor Functor")
         {
         const char* text = R"PDF(%PDF-1.4
