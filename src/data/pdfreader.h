@@ -20,12 +20,33 @@
 
 namespace Wisteria::Data
     {
-    /// @brief Interface for reading the text from a PDF file.
-    /// @details This is a wrapper for lily_of_the_valley::pdf_extract_text that connects
-    ///     a wxWidgets zlib-based decompressor to it so that compressed (@c FlateDecode)
-    ///     stream sections can be extracted, along with a wxWidgets-based charset
-    ///     converter so that CJK text using Adobe's predefined legacy CMap encodings
-    ///     (e.g., @c ETenms-B5-H) can be decoded.
+    /** @brief Interface for reading the text from a PDF file.
+        @details This connects the parsing logic to wxWidgets so that it can handle
+            compressed PDF content and text written in CJK (Chinese, Japanese, Korean) charsets.
+        @par Example:
+        @code
+            Wisteria::Data::PdfReader pdfReader;
+            // Optional: some PDFs use custom, non-standard fonts that need
+            // an extra lookup table to translate their text correctly.
+            // If you run into a PDF with garbled or missing text, try loading
+            // a glyph name table (e.g., the Adobe Glyph List) like this first.
+            pdfReader.LoadGlyphNameTableFromFile(
+                L"/Users/kdaly/Documents/Data/glyphlist.txt");
+
+            try
+                {
+                const wxString pdfText{ pdfReader.ReadFile(
+                    L"/Users/kdaly/Documents/Letters/Reconnecting with My Wife.pdf") };
+
+                wxLogMessage(L"Title: %s", pdfReader.GetTitle());
+                wxLogMessage(L"Author: %s", pdfReader.GetAuthor());
+                wxLogMessage(L"%s", pdfText);
+                }
+            catch (const std::runtime_error& readError)
+                {
+                wxLogError(wxString::FromUTF8(readError.what()));
+                }
+        @endcode*/
     class PdfReader
         {
       public:
@@ -49,8 +70,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         wxString ReadFile(const wxString& filePath);
 
-        /** @brief Loads a glyph name table (e.g., the Adobe Glyph List) from a file,
-                used to resolve simple fonts' `/Differences` custom encodings.
+        /** @brief Loads a lookup table that helps translate text from
+                PDFs that use custom, non-standard fonts. (This is optional.)
             @details The file is expected in the same format as Adobe's AGL data files:
                 semicolon-delimited lines of `glyphname;XXXX[ XXXX...]`, where each `XXXX`
                 is a four-digit hexadecimal Unicode value; lines starting with `#`
@@ -154,6 +175,7 @@ namespace Wisteria::Data
 
       private:
         lily_of_the_valley::pdf_extract_text m_pdfTextExtractor;
+        inline static bool m_loadedGlyphTable{ false };
         };
     } // namespace Wisteria::Data
 

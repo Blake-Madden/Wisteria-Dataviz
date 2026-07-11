@@ -25,6 +25,16 @@ namespace Wisteria::Data
     //------------------------------------------------------------------
     wxString PdfReader::ReadFile(const wxString& filePath)
         {
+        if (!m_loadedGlyphTable)
+            {
+            static bool warnedMissingGlyphTable{ false };
+            if (!warnedMissingGlyphTable)
+                {
+                wxLogMessage(L"Glyph table not loaded for PDF reader. "
+                             "Some fonts may not display correctly.");
+                warnedMissingGlyphTable = true;
+                }
+            }
         try
             {
             const MemoryMappedFile sourceFile(filePath, true, true);
@@ -66,6 +76,7 @@ namespace Wisteria::Data
             return false;
             }
         m_pdfTextExtractor.load_glyph_name_table(fileText.ToStdWstring());
+        m_loadedGlyphTable = true;
         return true;
         }
 
