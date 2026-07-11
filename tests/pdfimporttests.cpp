@@ -1247,6 +1247,46 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Before\nAfter") == 0);
         }
+    SECTION("Devanagari Text Via ToUnicode CMap")
+        {
+        // CIDs and ToUnicode mapping taken from a real Hindi (Type0/Identity-H,
+        // CIDFontType2) PDF; the CIDs are subsetted-font-specific glyph indices
+        // with no relation to Unicode, so ToUnicode is the only way to recover
+        // the text: "\x092D\x093E\x0930\x0924 \x0914\x0930" (Bharat aur, "India and").
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 15 Tf <00970221009A008F0003006B009A> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+6 beginbfchar
+<0003> <0020>
+<008F> <0924>
+<0097> <092D>
+<009A> <0930>
+<0221> <093E>
+<006B> <0914>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\x092D\x093E\x0930\x0924 \x0914\x0930") == 0);
+        }
     SECTION("Decompressor Functor")
         {
         const char* text = R"PDF(%PDF-1.4
