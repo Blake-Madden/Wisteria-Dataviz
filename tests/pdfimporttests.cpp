@@ -672,6 +672,77 @@ endobj)PDF";
             }
         CHECK(result == expected);
         }
+    SECTION("CID-to-Unicode Table Resolves Non-Unicode CID Ordering")
+        {
+        // A Type0/CIDFontType2 font with no ToUnicode CMap, whose CIDs are only
+        // meaningful relative to its CIDSystemInfo ordering (e.g., a real
+        // Adobe-Japan1 font). Loading an external CID-to-Unicode table for that
+        // ordering (in the same cidrange/cidchar format as Adobe's CMap resource
+        // files) should recover its text.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <00010002> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /DescendantFonts [5 0 R] >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /CIDFontType2
+   /CIDSystemInfo << /Registry (Adobe) /Ordering (TestOrdering) /Supplement 1 >> >>
+endobj)PDF";
+        pdf_extract_text ext;
+        ext.load_cid_to_unicode_table("Adobe-TestOrdering",
+                                      L"1 begincidrange\n<0041> <0042> 1\nendcidrange\n");
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"AB") == 0);
+        }
+    SECTION("CID-to-Unicode Table Ignored When ToUnicode Present")
+        {
+        // when a font has its own ToUnicode CMap, that takes priority over any
+        // loaded CID-to-Unicode table, even for a matching ordering
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <0001> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /DescendantFonts [5 0 R]
+   /ToUnicode 6 0 R >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /CIDFontType2
+   /CIDSystemInfo << /Registry (Adobe) /Ordering (TestOrdering) /Supplement 1 >> >>
+endobj
+6 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+1 beginbfchar
+<0001> <005A>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        ext.load_cid_to_unicode_table("Adobe-TestOrdering",
+                                      L"1 begincidrange\n<0041> <0041> 1\nendcidrange\n");
+        // the ToUnicode CMap maps CID 1 to 'Z' (0x005A); the CID table (which would
+        // have mapped it to 'A') should be ignored
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Z") == 0);
+        }
     SECTION("Predefined CJK CMap Encoding With Charset Converter")
         {
         // a Type0 font using one of Adobe's predefined legacy CJK CMaps as its

@@ -326,9 +326,10 @@ namespace lily_of_the_valley
     pdf_document::pdf_document(const std::string_view fileContent,
                                const stream_decompress_functor& decompressor,
                                std::function<void(const std::wstring&)> logFunction,
-                               const glyph_name_table* glyphTable)
+                               const glyph_name_table* glyphTable,
+                               const cid_to_unicode_registry* cidTables)
         : m_file(fileContent), m_decompress(decompressor), m_log(std::move(logFunction)),
-          m_glyph_name_table(glyphTable)
+          m_glyph_name_table(glyphTable), m_cid_to_unicode_tables(cidTables)
         {
         }
 
@@ -910,6 +911,52 @@ namespace lily_of_the_valley
             if (!cmapData.empty())
                 {
                 pdf_text_decoder::parse_unicode_cmap(cmapData, *decoder);
+                }
+            }
+        // A Type0 font with no ToUnicode CMap (common for CJK fonts) has CIDs that are
+        // meaningless as Unicode on their own. They're only interpretable relative to
+        // the font's /CIDSystemInfo character collection (its "Registry-Ordering"
+        // ["Adobe-Japan1"]). If the client loaded an external CID-to-Unicode table for
+        // that collection, use it to recover the font's text.
+        if (!decoder->m_has_unicode_map && m_cid_to_unicode_tables != nullptr &&
+            !m_cid_to_unicode_tables->empty())
+            {
+            const std::string_view descendantFontsValue{ pdf_lexer::trim(
+                pdf_lexer::find_dictionary_value(fontDictionary, "DescendantFonts")) };
+            std::string_view descendantFontRef{ descendantFontsValue };
+            if (!descendantFontsValue.empty() && descendantFontsValue.front() == '[')
+                {
+                size_t pos{ 1 };
+                descendantFontRef = pdf_lexer::read_value(descendantFontsValue, pos);
+                }
+            const pdf_object* descendantFont{ resolve_to_object(descendantFontRef) };
+            if (descendantFont != nullptr && !descendantFont->m_dictionary.empty())
+                {
+                const std::string_view cidSystemInfo{ pdf_lexer::trim(
+                    resolve_value(pdf_lexer::find_dictionary_value(descendantFont->m_dictionary,
+                                                                   "CIDSystemInfo"))) };
+                // reads a /Registry or /Ordering literal string value
+                const auto readName = [](const std::string_view value) -> std::string
+                {
+                    const std::string_view trimmed{ pdf_lexer::trim(value) };
+                    size_t pos{ 0 };
+                    return (!trimmed.empty() && trimmed.front() == '(') ?
+                               pdf_lexer::read_literal_string(trimmed, pos) :
+                               std::string{};
+                };
+                const std::string registryOrdering{
+                    readName(pdf_lexer::find_dictionary_value(cidSystemInfo, "Registry")) + "-" +
+                    readName(pdf_lexer::find_dictionary_value(cidSystemInfo, "Ordering"))
+                };
+                const auto tablePos = m_cid_to_unicode_tables->find(registryOrdering);
+                if (tablePos != m_cid_to_unicode_tables->cend())
+                    {
+                    for (const auto& [cid, unicodeText] : tablePos->second)
+                        {
+                        decoder->m_code_map[cid] = unicodeText;
+                        }
+                    decoder->m_has_unicode_map = !decoder->m_code_map.empty();
+                    }
                 }
             }
         return decoder;

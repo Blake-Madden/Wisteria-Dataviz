@@ -54,6 +54,16 @@ namespace lily_of_the_valley
     /// @sa pdf_extract_text::load_glyph_name_table().
     using glyph_name_table = std::unordered_map<std::wstring, std::wstring>;
 
+    /// @brief A CID -> Unicode mapping for one Adobe CID-keyed character collection
+    ///     (e.g., "Adobe-Japan1"), used to resolve a Type0/CID font that has no
+    ///     embedded ToUnicode CMap of its own.
+    /// @sa pdf_extract_text::load_cid_to_unicode_table().
+    using cid_to_unicode_table = std::unordered_map<uint32_t, std::wstring>;
+
+    /// @brief A set of cid_to_unicode_table objects, keyed by the character
+    ///     collection (`Registry-Ordering`, e.g. "Adobe-Japan1") each applies to.
+    using cid_to_unicode_registry = std::map<std::string, cid_to_unicode_table, std::less<>>;
+
     /** @brief Function object interface used to convert legacy multibyte charset
             bytes (e.g., Big5, Shift-JIS) to Unicode.
         @details The functor is passed a string's raw bytes and the name of the
@@ -148,9 +158,13 @@ namespace lily_of_the_valley
         /// @param glyphTable An optional glyph name table (e.g., the Adobe Glyph List) for
         ///     resolving simple fonts' `/Differences` custom encodings. May be @c nullptr
         ///     (or empty) if not loaded, in which case `/Differences` entries are ignored.
+        /// @param cidTables An optional registry of CID-to-Unicode tables for resolving
+        ///     Type0/CID fonts that have no embedded ToUnicode CMap. May be @c nullptr
+        ///     (or empty) if none were loaded, in which case such fonts' text is dropped.
         pdf_document(std::string_view fileContent, const stream_decompress_functor& decompressor,
                      std::function<void(const std::wstring&)> logFunction,
-                     const glyph_name_table* glyphTable = nullptr);
+                     const glyph_name_table* glyphTable = nullptr,
+                     const cid_to_unicode_registry* cidTables = nullptr);
 
         /// @brief Scans the file for indirect objects (`N G obj ... endobj`).
         void catalog_objects();
@@ -256,6 +270,7 @@ namespace lily_of_the_valley
         charset_convert_functor m_charset_convert;
         std::function<void(const std::wstring&)> m_log;
         const glyph_name_table* m_glyph_name_table{ nullptr };
+        const cid_to_unicode_registry* m_cid_to_unicode_tables{ nullptr };
         const pdf_decryptor* m_decryptor{ nullptr };
         std::map<long, pdf_object> m_objects;
         std::vector<long> m_object_scan_order;

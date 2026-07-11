@@ -35,6 +35,16 @@ namespace Wisteria::Data
                 warnedMissingGlyphTable = true;
                 }
             }
+        if (!m_loadedCidTable)
+            {
+            static bool warnedMissingCidTable{ false };
+            if (!warnedMissingCidTable)
+                {
+                wxLogMessage(L"CID-to-Unicode table not loaded for PDF reader. "
+                             "CJK text may not display correctly.");
+                warnedMissingCidTable = true;
+                }
+            }
         try
             {
             const MemoryMappedFile sourceFile(filePath, true, true);
@@ -77,6 +87,23 @@ namespace Wisteria::Data
             }
         m_pdfTextExtractor.load_glyph_name_table(fileText.ToStdWstring());
         m_loadedGlyphTable = true;
+        return true;
+        }
+
+    //------------------------------------------------------------------
+    bool PdfReader::LoadCidToUnicodeTableFromFile(const wxString& registryOrdering,
+                                                  const wxString& filePath)
+        {
+        wxString resolvedPath{ filePath };
+        wxString fileText;
+        if (!Wisteria::TextStream::ReadFile(
+                resolvedPath, fileText, wxString{},
+                Wisteria::TextStream::ReadFileInteractivityMode::NoInteractivity))
+            {
+            return false;
+            }
+        m_pdfTextExtractor.load_cid_to_unicode_table(registryOrdering.ToStdString(),
+                                                     fileText.ToStdWstring());
         return true;
         }
 

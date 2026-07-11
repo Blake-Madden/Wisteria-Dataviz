@@ -32,6 +32,18 @@ namespace Wisteria::Data
             // a glyph name table (e.g., the Adobe Glyph List) like this first.
             pdfReader.LoadGlyphNameTableFromFile(
                 L"/Users/kdaly/Documents/Data/glyphlist.txt");
+            // Optional: needed only for CJK PDFs whose text still comes out
+            // empty or garbled after trying without this. Load one of these
+            // for each language you need to support:
+            //     "Adobe-Japan1" -> UniJIS-UTF16-H  (Japanese)
+            //     "Adobe-GB1"    -> UniGB-UTF16-H   (Simplified Chinese)
+            //     "Adobe-CNS1"   -> UniCNS-UTF16-H  (Traditional Chinese)
+            //     "Adobe-Korea1" -> UniKS-UTF16-H   (Korean, older ordering)
+            //     "Adobe-KR"     -> UniAKR-UTF16-H  (Korean, current ordering)
+            pdfReader.LoadCidToUnicodeTableFromFile(
+                L"Adobe-Japan1", L"/Users/kdaly/Documents/Data/UniJIS-UTF16-H");
+            pdfReader.LoadCidToUnicodeTableFromFile(
+                L"Adobe-CNS1", L"/Users/kdaly/Documents/Data/UniCNS-UTF16-H");
 
             try
                 {
@@ -80,6 +92,23 @@ namespace Wisteria::Data
             @returns @c true if file is found and read successfully.
             @sa https://github.com/adobe-type-tools/agl-aglfn */
         bool LoadGlyphNameTableFromFile(const wxString& filePath);
+
+        /** @brief Loads a lookup table that helps translate text from PDFs
+                whose CJK text has no built-in Unicode mapping of its own.
+                (This is optional.)
+            @details Call this once for each language/character set you need to
+                support. A PDF only needs this if its text still comes out empty or
+                garbled after trying without it.
+            @param registryOrdering The character collection the table is for, e.g.
+                "Adobe-Japan1" for Japanese, "Adobe-GB1" for Simplified Chinese,
+                "Adobe-CNS1" for Traditional Chinese, or "Adobe-Korea1"/"Adobe-KR"
+                for Korean.
+            @param filePath The path to the lookup table file for that collection
+                (e.g., "UniJIS-UTF16-H" for "Adobe-Japan1").
+            @returns @c true if file is found and read successfully.
+            @sa https://github.com/adobe-type-tools/cmap-resources */
+        bool LoadCidToUnicodeTableFromFile(const wxString& registryOrdering,
+                                           const wxString& filePath);
 
         /// @returns The title from the document's metadata.
         /// @note Must be called after calling @c ReadFile().
@@ -176,6 +205,7 @@ namespace Wisteria::Data
       private:
         lily_of_the_valley::pdf_extract_text m_pdfTextExtractor;
         inline static bool m_loadedGlyphTable{ false };
+        inline static bool m_loadedCidTable{ false };
         };
     } // namespace Wisteria::Data
 

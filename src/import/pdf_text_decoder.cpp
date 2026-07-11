@@ -504,6 +504,126 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    void pdf_text_decoder::parse_cid_to_unicode_cmap(const std::string_view cmap,
+                                                     cid_to_unicode_table& table)
+        {
+        // reads the next <hex> token, returning its digits
+        const auto readHexToken = [](const std::string_view source, size_t& pos,
+                                     std::string_view& digitsOut) -> bool
+        {
+            pdf_lexer::skip_whitespace(source, pos);
+            if (pos >= source.length() || source[pos] != '<')
+                {
+                return false;
+                }
+            ++pos;
+            const size_t digitStart{ pos };
+            while (pos < source.length() && source[pos] != '>')
+                {
+                ++pos;
+                }
+            digitsOut = source.substr(digitStart, pos - digitStart);
+            if (pos < source.length())
+                {
+                ++pos;
+                }
+            return true;
+        };
+        // reads the next (base 10) integer token
+        const auto readDecimalToken = [](const std::string_view source, size_t& pos,
+                                         uint32_t& valueOut) -> bool
+        {
+            pdf_lexer::skip_whitespace(source, pos);
+            if (pos >= source.length() || !pdf_lexer::is_digit(source[pos]))
+                {
+                return false;
+                }
+            valueOut = 0;
+            while (pos < source.length() && pdf_lexer::is_digit(source[pos]))
+                {
+                valueOut = (valueOut * 10) + static_cast<uint32_t>(source[pos] - '0');
+                ++pos;
+                }
+            return true;
+        };
+
+        // cidchar sections: <src> cid
+        size_t searchPos{ 0 };
+        while ((searchPos = cmap.find("begincidchar", searchPos)) != std::string_view::npos)
+            {
+            size_t pos{ searchPos + 12 };
+            while (pos < cmap.length())
+                {
+                pdf_lexer::skip_whitespace(cmap, pos);
+                if (cmap.compare(pos, 10, "endcidchar") == 0 || pos >= cmap.length())
+                    {
+                    break;
+                    }
+                std::string_view srcDigits;
+                uint32_t cid{ 0 };
+                if (!readHexToken(cmap, pos, srcDigits) || !readDecimalToken(cmap, pos, cid))
+                    {
+                    break;
+                    }
+                const std::wstring unicodeText{ pdf_text_decoder::utf16_units_to_wstring(
+                    pdf_text_decoder::hex_to_utf16_units(srcDigits)) };
+                if (!unicodeText.empty())
+                    {
+                    table[cid] = unicodeText;
+                    }
+                }
+            searchPos += 12;
+            }
+
+        // cidrange sections: <lo> <hi> cidStart
+        searchPos = 0;
+        while ((searchPos = cmap.find("begincidrange", searchPos)) != std::string_view::npos)
+            {
+            size_t pos{ searchPos + 13 };
+            while (pos < cmap.length())
+                {
+                pdf_lexer::skip_whitespace(cmap, pos);
+                if (cmap.compare(pos, 11, "endcidrange") == 0 || pos >= cmap.length())
+                    {
+                    break;
+                    }
+                std::string_view lowDigits, highDigits;
+                uint32_t cidStart{ 0 };
+                if (!readHexToken(cmap, pos, lowDigits) || !readHexToken(cmap, pos, highDigits) ||
+                    !readDecimalToken(cmap, pos, cidStart))
+                    {
+                    break;
+                    }
+                const uint32_t lowCode{ pdf_text_decoder::hex_to_uint(lowDigits) };
+                const uint32_t highCode{ pdf_text_decoder::hex_to_uint(highDigits) };
+                if (highCode < lowCode || (highCode - lowCode) > 65535)
+                    {
+                    break;
+                    }
+                // Walk the source range's UTF-16 units alongside the destination CIDs,
+                // incrementing just the low code unit at each step. This also keeps a
+                // surrogate-pair source range within its low-surrogate block, matching
+                // how parse_unicode_cmap()'s bfrange handling steps its destination units.
+                std::vector<char16_t> srcUnits{ pdf_text_decoder::hex_to_utf16_units(lowDigits) };
+                if (!srcUnits.empty())
+                    {
+                    for (uint32_t code = lowCode, cid = cidStart; code <= highCode; ++code, ++cid)
+                        {
+                        const std::wstring unicodeText{ pdf_text_decoder::utf16_units_to_wstring(
+                            srcUnits) };
+                        if (!unicodeText.empty())
+                            {
+                            table[cid] = unicodeText;
+                            }
+                        srcUnits.back() = static_cast<char16_t>(srcUnits.back() + 1);
+                        }
+                    }
+                }
+            searchPos += 13;
+            }
+        }
+
+    //------------------------------------------------------------------
     std::string_view pdf_text_decoder::parse_usecmap_name(const std::string_view cmap)
         {
         // An embedded CMap stream may chain to one of Adobe's predefined CMaps via

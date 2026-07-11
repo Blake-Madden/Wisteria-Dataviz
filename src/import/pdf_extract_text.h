@@ -65,6 +65,17 @@ namespace lily_of_the_valley
         /// @brief Parses a font's ToUnicode CMap (bfchar/bfrange sections) into a decoder.
         static void parse_unicode_cmap(std::string_view cmap, pdf_font_decoder& decoder);
 
+        /// @brief Parses one of Adobe's CID CMap resource files (cidchar/cidrange
+        ///     sections) into a CID-to-Unicode table.
+        /// @details These files map Unicode code points to CIDs, the direction needed
+        ///     to encode text with such a font. The goal here is the opposite: recovering
+        ///     Unicode text from a font's CIDs, for fonts with no ToUnicode CMap of their
+        ///     own. Each entry is inverted as it's parsed to support that.
+        /// @param cmap The CMap resource file's raw text content.
+        /// @param table The table to populate.
+        /// @sa https://github.com/adobe-type-tools/cmap-resources
+        static void parse_cid_to_unicode_cmap(std::string_view cmap, cid_to_unicode_table& table);
+
         /// @brief Extracts the CMap name referenced by an embedded CMap stream's
         ///     `/<Name> usecmap` directive, if any.
         /// @param cmap The raw (decoded) content of an embedded CMap stream.
@@ -224,6 +235,20 @@ namespace lily_of_the_valley
             @sa https://github.com/adobe-type-tools/agl-aglfn */
         void load_glyph_name_table(std::wstring_view text);
 
+        /** @brief Loads a CID-to-Unicode table for a specific Adobe CID-keyed
+                character collection (e.g., "Adobe-Japan1"), used to resolve Type0/CID
+                fonts (common for CJK text) that have no embedded ToUnicode CMap of
+                their own. (This is optional.) Call this once for each character
+                collection you need to support.
+            @details The table is expected in the same format as one of Adobe's CMap
+                resource files (e.g., @c UniJIS-UTF16-H, for "Adobe-Japan1").
+            @param registryOrdering The character collection this table applies to, as
+                `Registry-Ordering` (e.g., "Adobe-Japan1"), matching a font's
+                `/CIDSystemInfo` dictionary.
+            @param text The CMap resource file's text content.
+            @sa https://github.com/adobe-type-tools/cmap-resources */
+        void load_cid_to_unicode_table(std::string_view registryOrdering, std::wstring_view text);
+
         /** @brief Main interface for extracting plain text from a PDF buffer.
             @param pdf_buffer The PDF stream to convert to plain text.
             @param text_length The length of the PDF buffer.
@@ -332,10 +357,11 @@ namespace lily_of_the_valley
         aes_cbc_functor m_aes_decrypt;             ///< AES-CBC encryption/decryption functor.
         sha2_functor m_hash;                       ///< SHA-2 hashing functor.
         glyph_name_table m_glyph_name_table;       ///< Glyph names for `/Differences` resolution.
-        std::wstring m_title;                      ///< Document title from /Info metadata.
-        std::wstring m_author;                     ///< Document author from /Info metadata.
-        std::wstring m_subject;                    ///< Document subject from /Info metadata.
-        std::wstring m_keywords;                   ///< Document keywords from /Info metadata.
+        cid_to_unicode_registry m_cid_to_unicode_tables; ///< CID-to-Unicode tables, by ordering.
+        std::wstring m_title;                            ///< Document title from /Info metadata.
+        std::wstring m_author;                           ///< Document author from /Info metadata.
+        std::wstring m_subject;                          ///< Document subject from /Info metadata.
+        std::wstring m_keywords;                         ///< Document keywords from /Info metadata.
         };
 
     } // namespace lily_of_the_valley

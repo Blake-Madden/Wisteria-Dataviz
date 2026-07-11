@@ -19,6 +19,30 @@
 namespace lily_of_the_valley
     {
     //------------------------------------------------------------------
+    void pdf_extract_text::load_cid_to_unicode_table(const std::string_view registryOrdering,
+                                                     const std::wstring_view text)
+        {
+        if (registryOrdering.empty())
+            {
+            return;
+            }
+        cid_to_unicode_table table;
+        if (!text.empty())
+            {
+            // the CMap resource file is plain ASCII, so narrowing each character
+            // to a char (rather than relying on an implicit conversion) is lossless
+            std::string cmapText;
+            cmapText.reserve(text.length());
+            for (const wchar_t character : text)
+                {
+                cmapText += static_cast<char>(character);
+                }
+            pdf_text_decoder::parse_cid_to_unicode_cmap(cmapText, table);
+            }
+        m_cid_to_unicode_tables[std::string{ registryOrdering }] = std::move(table);
+        }
+
+    //------------------------------------------------------------------
     void pdf_extract_text::load_glyph_name_table(const std::wstring_view text)
         {
         m_glyph_name_table.clear();
@@ -355,8 +379,9 @@ namespace lily_of_the_valley
 
         allocate_text_buffer(text_length);
 
-        pdf_document document{ fileContent, m_decompress, [this](const std::wstring& message)
-                               { log_message(message); }, &m_glyph_name_table };
+        pdf_document document{ fileContent, m_decompress,
+                               [this](const std::wstring& message) { log_message(message); },
+                               &m_glyph_name_table, &m_cid_to_unicode_tables };
         document.set_charset_converter(m_charset_convert);
         document.catalog_objects();
 
