@@ -51,3 +51,6 @@ Parms = "Parms"
 [type.svg]
 extend-glob = ["*.svg"]
 check-file = false
+
+[files]
+extend-exclude = ["src/import/Uni*-UTF16-H", "src/import/glyphlist.txt"]
