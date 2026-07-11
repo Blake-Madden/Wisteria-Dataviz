@@ -690,6 +690,116 @@ endobj)PDF";
         CHECK_FALSE(pdf_text_decoder::is_unicode_cmap_name("ETenms-B5-H"));
         CHECK_FALSE(pdf_text_decoder::is_unicode_cmap_name("WinAnsiEncoding"));
         }
+    SECTION("Usecmap Name Parsing")
+        {
+        CHECK(pdf_text_decoder::parse_usecmap_name(
+                  "/CMapName /Custom-UCS2-H def\n/UniKS-UCS2-H usecmap\n") == "UniKS-UCS2-H");
+        // extra whitespace between the name and the keyword is allowed
+        CHECK(pdf_text_decoder::parse_usecmap_name("/ETenms-B5-H   \t\nusecmap") == "ETenms-B5-H");
+        // no usecmap directive at all
+        CHECK(pdf_text_decoder::parse_usecmap_name("/CMapName /Custom-H def").empty());
+        // "usecmap" not preceded by a /Name token
+        CHECK(pdf_text_decoder::parse_usecmap_name("usecmap").empty());
+        CHECK(pdf_text_decoder::parse_usecmap_name("123 usecmap").empty());
+        CHECK(pdf_text_decoder::parse_usecmap_name("").empty());
+        }
+    SECTION("Embedded CMap Stream With Usecmap (Predefined Unicode)")
+        {
+        // a Type0 font whose /Encoding is an indirect reference to a font-embedded
+        // CMap stream (as used by subsetted CID fonts), rather than a predefined
+        // CMap name directly. The stream itself chains to a predefined Unicode CMap
+        // via "usecmap", so the font's string bytes should be decoded as UTF-16BE
+        // (D55C AE00 is U+D55C U+AE00, Korean "hangul"), just like if /Encoding had
+        // named /UniKS-UCS2-H directly.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <D55CAE00> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+/CMapName /Custom-Subset-H def
+/UniKS-UCS2-H usecmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        const std::wstring expected{ static_cast<wchar_t>(0xD55C), static_cast<wchar_t>(0xAE00) };
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), expected.c_str()) == 0);
+        }
+    SECTION("Embedded CMap Stream With Usecmap (Predefined Legacy Charset)")
+        {
+        // same as the "Predefined CJK CMap Encoding With Charset Converter" case,
+        // but /Encoding is an indirect reference to an embedded CMap stream that
+        // chains to /ETenms-B5-H via usecmap, rather than naming it directly
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf <A4A4A4E5> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+/ETenms-B5-H usecmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        ext.set_charset_converter(
+            [](std::string_view sourceBytes, std::string_view charsetName) -> std::wstring
+            {
+                CHECK(sourceBytes == "\xA4\xA4\xA4\xE5");
+                CHECK(charsetName == "CP950");
+                return L"Converted content";
+            });
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Converted content") == 0);
+        }
+    SECTION("Embedded CMap Stream Without Usecmap")
+        {
+        // an embedded CMap stream with no usecmap directive (e.g., one that defines
+        // its own cidrange table directly): there's no predefined CMap to chain to,
+        // so the font falls back to the default (WinAnsi) single-byte decoding
+        // rather than crashing or throwing
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf (A) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+/CMapName /Custom-Subset-H def
+1 begincidrange
+<00> <FF> 0
+endcidrange
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(ext(text, std::strlen(text)) != nullptr);
+        }
     SECTION("Decompressor Functor")
         {
         const char* text = R"PDF(%PDF-1.4

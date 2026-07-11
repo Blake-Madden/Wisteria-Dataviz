@@ -65,6 +65,14 @@ namespace lily_of_the_valley
         /// @brief Parses a font's ToUnicode CMap (bfchar/bfrange sections) into a decoder.
         static void parse_unicode_cmap(std::string_view cmap, pdf_font_decoder& decoder);
 
+        /// @brief Extracts the CMap name referenced by an embedded CMap stream's
+        ///     `/<Name> usecmap` directive, if any.
+        /// @param cmap The raw (decoded) content of an embedded CMap stream.
+        /// @returns The referenced CMap's name, without the leading slash, or empty
+        ///     if the stream has no `usecmap` directive.
+        [[nodiscard]]
+        static std::string_view parse_usecmap_name(std::string_view cmap);
+
         /// @brief Maps the name of one of Adobe's predefined CJK CMaps (a Type0
         ///     font's /Encoding value, without the leading slash) to the legacy
         ///     multibyte charset that strings shown with such a font are encoded in.

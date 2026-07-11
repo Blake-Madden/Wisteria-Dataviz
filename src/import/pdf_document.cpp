@@ -802,6 +802,34 @@ namespace lily_of_the_valley
             {
             decoder->m_bytes_per_code = 2;
             }
+        // applies the semantics of one of Adobe's predefined CMap names
+        // (Identity, Unicode, or a legacy CJK charset) to the font's decoder
+        const auto applyPredefinedCmapName = [this, &decoder](const std::string_view cmapName)
+        {
+            if (pdf_text_decoder::is_unicode_cmap_name(cmapName))
+                {
+                // string bytes are UTF-16BE
+                decoder->m_codes_are_utf16 = true;
+                decoder->m_bytes_per_code = 2;
+                return;
+                }
+            // string bytes are text in a legacy CJK charset (Big5, Shift-JIS,
+            // etc.), which the connected charset converter (if any) can decode
+            const std::string_view charsetName{ pdf_text_decoder::predefined_cmap_charset(
+                cmapName) };
+            if (!charsetName.empty())
+                {
+                decoder->m_charset = charsetName;
+                decoder->m_charset_converter = m_charset_convert;
+                if (!m_charset_convert)
+                    {
+                    m_log(L"Text encoded as " +
+                          std::wstring(charsetName.cbegin(), charsetName.cend()) +
+                          L" in PDF file skipped (no charset converter was connected).");
+                    }
+                }
+        };
+
         const std::string_view encoding{ pdf_lexer::trim(
             pdf_lexer::find_dictionary_value(fontDictionary, "Encoding")) };
         if (encoding.compare(0, 9, "/Identity") == 0)
@@ -812,29 +840,22 @@ namespace lily_of_the_valley
         // CMaps, which determine how the font's string bytes are encoded
         else if (encoding.compare(0, 1, "/") == 0)
             {
-            const std::string_view encodingName{ encoding.substr(1) };
-            if (pdf_text_decoder::is_unicode_cmap_name(encodingName))
+            applyPredefinedCmapName(encoding.substr(1));
+            }
+        // ...or it may be an indirect reference to a font-embedded CMap stream (common
+        // for subsetted CID fonts). Such a stream may itself chain to one of Adobe's
+        // predefined CMaps via a "usecmap" directive, whose semantics we can then reuse.
+        else if (!encoding.empty() && encoding.compare(0, 2, "<<") != 0)
+            {
+            const pdf_object* cmapStreamObject{ resolve_to_object(encoding) };
+            if (cmapStreamObject != nullptr && !cmapStreamObject->m_stream_data.empty())
                 {
-                // string bytes are UTF-16BE
-                decoder->m_codes_are_utf16 = true;
-                decoder->m_bytes_per_code = 2;
-                }
-            else
-                {
-                // string bytes are text in a legacy CJK charset (Big5, Shift-JIS,
-                // etc.), which the connected charset converter (if any) can decode
-                const std::string_view charsetName{ pdf_text_decoder::predefined_cmap_charset(
-                    encodingName) };
-                if (!charsetName.empty())
+                const std::string cmapStreamData{ decode_stream(*cmapStreamObject) };
+                const std::string_view usecmapName{ pdf_text_decoder::parse_usecmap_name(
+                    cmapStreamData) };
+                if (!usecmapName.empty())
                     {
-                    decoder->m_charset = charsetName;
-                    decoder->m_charset_converter = m_charset_convert;
-                    if (!m_charset_convert)
-                        {
-                        m_log(L"Text encoded as " +
-                              std::wstring(charsetName.cbegin(), charsetName.cend()) +
-                              L" in PDF file skipped (no charset converter was connected).");
-                        }
+                    applyPredefinedCmapName(usecmapName);
                     }
                 }
             }

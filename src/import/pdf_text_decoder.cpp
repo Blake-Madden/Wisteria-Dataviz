@@ -504,6 +504,35 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    std::string_view pdf_text_decoder::parse_usecmap_name(const std::string_view cmap)
+        {
+        // An embedded CMap stream may chain to one of Adobe's predefined CMaps via
+        // "/<Name> usecmap" (PDF spec, 9.7.5.3, "Use of a CMap"). When present, the
+        // referenced CMap's semantics (Identity/Unicode/legacy charset) apply here too.
+        const size_t useCmapPos{ cmap.find("usecmap") };
+        if (useCmapPos == std::string_view::npos)
+            {
+            return {};
+            }
+        size_t pos{ useCmapPos };
+        while (pos > 0 && pdf_lexer::is_whitespace(cmap[pos - 1]))
+            {
+            --pos;
+            }
+        const size_t nameEnd{ pos };
+        while (pos > 0 && !pdf_lexer::is_whitespace(cmap[pos - 1]) &&
+               !pdf_lexer::is_delimiter(cmap[pos - 1]))
+            {
+            --pos;
+            }
+        if (pos == 0 || cmap[pos - 1] != '/')
+            {
+            return {};
+            }
+        return cmap.substr(pos, nameEnd - pos);
+        }
+
+    //------------------------------------------------------------------
     std::string_view pdf_text_decoder::predefined_cmap_charset(const std::string_view cmapName)
         {
         // Adobe's predefined CJK CMaps (PDF spec, "Predefined CJK CMap names").
