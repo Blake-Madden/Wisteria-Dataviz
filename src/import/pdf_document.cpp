@@ -479,6 +479,210 @@ namespace lily_of_the_valley
                 m_object_scan_order.push_back(objectNumber);
                 }
             }
+        exclude_free_objects();
+        }
+
+    //------------------------------------------------------------------
+    void pdf_document::exclude_free_objects()
+        {
+        // object number -> free status; a later xref record for the same
+        // object number overwrites an earlier one, just as catalog_objects()
+        // lets a later object body win over an earlier one
+        std::map<long, bool> freeStatus;
+
+        // classic cross-reference tables: an "xref" keyword followed by one or
+        // more subsections, each a "firstObjectNumber count" header followed by
+        // `count` entries of the form "offset generation n_or_f"
+        size_t pos{ 0 };
+        while ((pos = m_file.find("xref", pos)) != std::string_view::npos)
+            {
+            const size_t keywordPos{ pos };
+            pos += 4;
+            // skip "startxref" (the pointer to the last xref section's file
+            // offset, not a table itself) and any non-standalone match
+            if ((keywordPos >= 5 && m_file.compare(keywordPos - 5, 5, "start") == 0) ||
+                (keywordPos > 0 && !pdf_lexer::is_token_end(m_file[keywordPos - 1])) ||
+                (pos < m_file.length() && !pdf_lexer::is_token_end(m_file[pos])))
+                {
+                continue;
+                }
+            while (true)
+                {
+                const size_t beforeHeader{ pos };
+                long firstObjectNumber{ 0 }, entryCount{ 0 };
+                if (!pdf_lexer::read_int(m_file, pos, firstObjectNumber) ||
+                    !pdf_lexer::read_int(m_file, pos, entryCount) || entryCount < 0)
+                    {
+                    // not a subsection header; the table has ended
+                    // (a "trailer" keyword or another "xref" section follows)
+                    pos = beforeHeader;
+                    break;
+                    }
+                for (long i = 0; i < entryCount; ++i)
+                    {
+                    // the offset and generation fields aren't needed here (object
+                    // bodies are located independently by the "obj" scan above),
+                    // just validated and skipped over to reach the status flag
+                    [[maybe_unused]]
+                    long entryOffset{ 0 };
+                    [[maybe_unused]]
+                    long entryGeneration{ 0 };
+                    if (!pdf_lexer::read_int(m_file, pos, entryOffset) ||
+                        !pdf_lexer::read_int(m_file, pos, entryGeneration))
+                        {
+                        break;
+                        }
+                    pdf_lexer::skip_whitespace(m_file, pos);
+                    if (pos >= m_file.length())
+                        {
+                        break;
+                        }
+                    const char statusChar{ m_file[pos] };
+                    if (statusChar != 'f' && statusChar != 'n')
+                        {
+                        break;
+                        }
+                    freeStatus[firstObjectNumber + i] = (statusChar == 'f');
+                    ++pos;
+                    }
+                }
+            }
+
+        // cross-reference streams (/Type /XRef, PDF 1.5+); these were already
+        // cataloged as ordinary objects above, since they're just another
+        // "N G obj ... endobj" body with a dictionary and a stream
+        for (const long objectNumber : m_object_scan_order)
+            {
+            const pdf_object* xrefObject{ find_object(objectNumber) };
+            if (xrefObject == nullptr || xrefObject->m_dictionary.empty() ||
+                xrefObject->m_stream_data.empty() ||
+                pdf_lexer::trim(
+                    pdf_lexer::find_dictionary_value(xrefObject->m_dictionary, "Type")) != "/XRef")
+                {
+                continue;
+                }
+            apply_xref_stream_free_entries(*xrefObject, freeStatus);
+            }
+
+        for (const auto& [objectNumber, isFree] : freeStatus)
+            {
+            if (isFree)
+                {
+                m_objects.erase(objectNumber);
+                m_object_scan_order.erase(std::remove(m_object_scan_order.begin(),
+                                                      m_object_scan_order.end(), objectNumber),
+                                          m_object_scan_order.end());
+                }
+            }
+        }
+
+    //------------------------------------------------------------------
+    void pdf_document::apply_xref_stream_free_entries(const pdf_object& xrefObject,
+                                                      std::map<long, bool>& freeStatus) const
+        {
+        // /W is an array of 3 field widths (in bytes): [type, field2, field3]
+        std::array<long, 3> widths{ 0, 0, 0 };
+        const std::string_view widthValue{ pdf_lexer::trim(
+            resolve_value(pdf_lexer::find_dictionary_value(xrefObject.m_dictionary, "W"))) };
+        if (widthValue.empty() || widthValue.front() != '[')
+            {
+            return;
+            }
+        size_t widthPos{ 1 };
+        for (long& width : widths)
+            {
+            pdf_lexer::skip_whitespace(widthValue, widthPos);
+            if (!pdf_lexer::read_int(widthValue, widthPos, width) || width < 0 || width > 8)
+                {
+                return;
+                }
+            }
+        const size_t entryWidth{ static_cast<size_t>(widths[0] + widths[1] + widths[2]) };
+        if (entryWidth == 0)
+            {
+            return;
+            }
+
+        // /Index is pairs of (firstObjectNumber, count) subsections;
+        // defaults to a single [0, /Size] subsection when absent
+        std::vector<std::pair<long, long>> subsections;
+        const std::string_view indexValue{ pdf_lexer::trim(
+            resolve_value(pdf_lexer::find_dictionary_value(xrefObject.m_dictionary, "Index"))) };
+        if (!indexValue.empty() && indexValue.front() == '[')
+            {
+            size_t indexPos{ 1 };
+            while (true)
+                {
+                pdf_lexer::skip_whitespace(indexValue, indexPos);
+                if (indexPos >= indexValue.length() || indexValue[indexPos] == ']')
+                    {
+                    break;
+                    }
+                long first{ 0 }, count{ 0 };
+                if (!pdf_lexer::read_int(indexValue, indexPos, first) ||
+                    !pdf_lexer::read_int(indexValue, indexPos, count) || count < 0)
+                    {
+                    break;
+                    }
+                subsections.emplace_back(first, count);
+                }
+            }
+        else
+            {
+            long size{ 0 };
+            if (pdf_lexer::to_int(pdf_lexer::trim(resolve_value(pdf_lexer::find_dictionary_value(
+                                      xrefObject.m_dictionary, "Size"))),
+                                  size) &&
+                size > 0)
+                {
+                subsections.emplace_back(0, size);
+                }
+            }
+        if (subsections.empty())
+            {
+            return;
+            }
+
+        const std::string decoded{ decode_stream(xrefObject) };
+        if (decoded.empty())
+            {
+            return;
+            }
+
+        size_t streamPos{ 0 };
+        for (const auto& [firstObjectNumber, count] : subsections)
+            {
+            for (long i = 0; i < count; ++i)
+                {
+                if ((streamPos + entryWidth) > decoded.length())
+                    {
+                    return;
+                    }
+                // field 1 (the entry type) defaults to 1 (in use) when its
+                // width is 0, per the spec. Widened to 64 bits while
+                // accumulating since widths[0] can be up to 8 bytes.
+                uint64_t type{ 1 };
+                if (widths[0] > 0)
+                    {
+                    type = 0;
+                    for (long byteIndex = 0; byteIndex < widths[0]; ++byteIndex)
+                        {
+                        type =
+                            (type << 8) | static_cast<unsigned char>(
+                                              decoded[streamPos + static_cast<size_t>(byteIndex)]);
+                        }
+                    }
+                streamPos += entryWidth;
+                // type 0 = free, type 1 = in use (uncompressed). Type 2 (in use,
+                // packed in an object stream) needs no entry here: it's neither
+                // free nor governed by this table, it's handled separately when
+                // expand_object_streams() unpacks its containing /ObjStm.
+                if (type == 0 || type == 1)
+                    {
+                    freeStatus[firstObjectNumber + i] = (type == 0);
+                    }
+                }
+            }
         }
 
     //------------------------------------------------------------------

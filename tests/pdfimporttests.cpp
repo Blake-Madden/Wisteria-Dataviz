@@ -355,6 +355,35 @@ trailer
         // the next page's text
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"First page\n\nSecond page") == 0);
         }
+    SECTION("Freed Object Excluded From Fallback Page Scan")
+        {
+        // object 1 was deleted in an incremental update: its body is still
+        // physically present in the file (incremental updates never rewrite
+        // earlier bytes), but the xref table marks it "f" (free). With no
+        // /Root to walk a page tree from, the fallback scan (which just
+        // looks for /Type /Page objects) should honor that and skip it.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT (Deleted page text) Tj ET
+endstream
+endobj
+xref
+0 3
+0000000000 65535 f
+0000000009 00000 f
+0000000058 00000 f
+trailer
+<< /Size 3 >>)PDF";
+        pdf_extract_text ext;
+        CHECK(ext(text, std::strlen(text)) != nullptr);
+        CHECK(ext.get_filtered_text_length() == 0);
+        CHECK(!ext.get_log().empty());
+        }
     SECTION("Contents Array")
         {
         const char* text = R"PDF(%PDF-1.4

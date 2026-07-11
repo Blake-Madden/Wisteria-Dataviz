@@ -167,6 +167,12 @@ namespace lily_of_the_valley
                      const cid_to_unicode_registry* cidTables = nullptr);
 
         /// @brief Scans the file for indirect objects (`N G obj ... endobj`).
+        /// @details Also reads the file's cross-reference table(s) (classic
+        ///     `xref` tables and `/Type /XRef` streams) and drops any object
+        ///     whose most recent revision marks it free. Without this, an
+        ///     object deleted by an incremental update would still be found
+        ///     and used, since its (now-stale) body remains physically
+        ///     present earlier in the file.
         void catalog_objects();
 
         /// @brief Expands compressed object streams (`/Type /ObjStm`, PDF 1.5+),
@@ -264,6 +270,27 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::string apply_png_predictor(const std::string& data, size_t columns,
                                                size_t colors, size_t bitsPerComponent);
+
+        /// @brief Reads the file's cross-reference table(s) and drops any
+        ///     object from @c m_objects whose most recent revision marks it free.
+        /// @details Called at the end of catalog_objects(). Reads classic
+        ///     `xref` tables directly out of @c m_file, then cross-reference
+        ///     streams (already cataloged as ordinary objects by that point)
+        ///     via apply_xref_stream_free_entries(). A later xref record for
+        ///     a given object number overwrites an earlier one, the same
+        ///     "later occurrence wins" rule catalog_objects() already applies
+        ///     to object bodies.
+        void exclude_free_objects();
+
+        /// @brief Reads the free/in-use status of each entry in a
+        ///     cross-reference stream (`/Type /XRef`) and records it in
+        ///     @c freeStatus.
+        /// @param xrefObject The cross-reference stream object.
+        /// @param freeStatus Map of object number to free status, updated
+        ///     in place (entries for object numbers not covered by this
+        ///     stream's `/Index` are left untouched).
+        void apply_xref_stream_free_entries(const pdf_object& xrefObject,
+                                            std::map<long, bool>& freeStatus) const;
 
         std::string_view m_file;
         stream_decompress_functor m_decompress;
