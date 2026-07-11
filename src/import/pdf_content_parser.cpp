@@ -633,21 +633,87 @@ namespace lily_of_the_valley
                     }
                 else if (keyword == "BI")
                     {
-                    // inline image; skip to the "EI" keyword
-                    while ((pos = content.find("EI", pos)) != std::string_view::npos)
+                    // Prefer the dictionary's /L (or /Length) entry, if given, to
+                    // jump straight to the real "EI" instead of scanning for one,
+                    // since the binary data can contain its own decoy "EI" bytes.
+                    long declaredLength{ -1 };
+                    bool foundId{ false };
+                    size_t idPos{ pos };
+                    size_t dictPos{ pos };
+                    while (dictPos < content.length())
                         {
-                        if (pos > 0 && pdf_lexer::is_whitespace(content[pos - 1]) &&
-                            ((pos + 2) >= content.length() ||
-                             pdf_lexer::is_token_end(content[pos + 2])))
+                        pdf_lexer::skip_whitespace(content, dictPos);
+                        if (content.compare(dictPos, 2, "ID") == 0 &&
+                            ((dictPos + 2) >= content.length() ||
+                             pdf_lexer::is_token_end(content[dictPos + 2])))
                             {
-                            pos += 2;
+                            idPos = dictPos;
+                            foundId = true;
                             break;
                             }
-                        pos += 2;
+                        if (dictPos >= content.length() || content[dictPos] != '/')
+                            {
+                            break;
+                            }
+                        const std::string_view key{ pdf_lexer::read_value(content, dictPos) };
+                        const std::string_view value{ pdf_lexer::read_value(content, dictPos) };
+                        if (key == "/L" || key == "/Length")
+                            {
+                            long lengthValue{ 0 };
+                            if (pdf_lexer::to_int(value, lengthValue) && lengthValue >= 0)
+                                {
+                                declaredLength = lengthValue;
+                                }
+                            }
                         }
-                    if (pos == std::string_view::npos)
+                    if (foundId && declaredLength >= 0)
                         {
-                        break;
+                        size_t dataStart{ idPos + 2 };
+                        if (dataStart < content.length() &&
+                            pdf_lexer::is_whitespace(content[dataStart]))
+                            {
+                            ++dataStart;
+                            }
+                        const size_t dataEnd{ dataStart + static_cast<size_t>(declaredLength) };
+                        size_t eiPos{ dataEnd };
+                        if (dataEnd <= content.length())
+                            {
+                            pdf_lexer::skip_whitespace(content, eiPos);
+                            }
+                        if (dataEnd <= content.length() && content.compare(eiPos, 2, "EI") == 0 &&
+                            ((eiPos + 2) >= content.length() ||
+                             pdf_lexer::is_token_end(content[eiPos + 2])))
+                            {
+                            pos = eiPos + 2;
+                            }
+                        else
+                            {
+                            declaredLength = -1;
+                            }
+                        }
+                    else
+                        {
+                        declaredLength = -1;
+                        }
+                    // no (usable) /L was declared; fall back to scanning for a
+                    // whitespace-delimited "EI"
+                    if (declaredLength < 0)
+                        {
+                        while ((pos = content.find("EI", pos)) != std::string_view::npos)
+                            {
+                            if (pos > 0 && pdf_lexer::is_whitespace(content[pos - 1]) &&
+                                ((pos + 2) >= content.length() ||
+                                 pdf_lexer::is_token_end(content[pos + 2])))
+                                {
+                                pos += 2;
+                                break;
+                                }
+                            pos += 2;
+                            }
+                        if (pos == std::string_view::npos)
+                            {
+                            break;
+                            }
                         }
                     }
                 // any operator consumes the pending operands

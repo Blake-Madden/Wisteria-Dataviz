@@ -1228,6 +1228,25 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Col A\nCol B") == 0);
         }
+    SECTION("Inline Image With False EI Match In Binary Data")
+        {
+        // an inline image with a declared /L length of 8 bytes, whose data contains
+        // a decoy " EI " that a naive scan would mistake for the image's end.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 0 700 Td (Before) Tj ET
+BI /L 8 ID AB EI (C EI
+BT 0 680 Td (After) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Before\nAfter") == 0);
+        }
     SECTION("Decompressor Functor")
         {
         const char* text = R"PDF(%PDF-1.4
