@@ -160,6 +160,65 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Line A\nLine B") == 0);
         }
+    SECTION("Tm Separate Text Objects On Same Line")
+        {
+        // Each label is its own independent BT/Tm/Tj/ET block (one DrawText() call
+        // per word), rather than a single Tj/TJ run, e.g. "OVER ADD DIFF" captions
+        // below three squares in a demo image. Without X-tracking on Tm, these
+        // silently ran together as "OVERADDDIFF".
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 400 Tm (OVER) Tj ET
+BT 1 0 0 1 210 400 Tm (ADD) Tj ET
+BT 1 0 0 1 340 400 Tm (DIFF) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"OVER ADD DIFF") == 0);
+        }
+    SECTION("Tm Diagonal Gap (Rotated Text Runs)")
+        {
+        // Two independently-drawn rotated text labels (each its own DrawText()
+        // call) land on the same nominal baseline but far apart, e.g. two
+        // "Rotated text" labels in a demo image, previously concatenated as
+        // "Rotated textRotated text".
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 0.978 -0.208 0.208 0.978 320 720 Tm (Rotated text) Tj ET
+BT 0.978 0.208 -0.208 0.978 460 720 Tm (Rotated text) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Rotated text Rotated text") == 0);
+        }
+    SECTION("Tm Small Gap Not Treated As Word Break")
+        {
+        // A small position nudge between two Tm blocks (e.g., precise kerning
+        // between two halves of one word) should not be treated as a word gap.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 400 Tm (Wo) Tj ET
+BT 1 0 0 1 80 400 Tm (rd) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Word") == 0);
+        }
     SECTION("T-star New Line")
         {
         const char* text = R"PDF(%PDF-1.4

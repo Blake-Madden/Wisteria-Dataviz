@@ -174,7 +174,7 @@ namespace lily_of_the_valley
             // check as Tm, rather than treating its raw operand as the delta itself.
             if (m_freshTextObject)
                 {
-                const bool wroteNewline{ handle_absolute_move(moveY * m_fontScale) };
+                const bool wroteNewline{ handle_absolute_move(moveX, moveY * m_fontScale) };
                 // Landed on the same line as the previous (separate) text object (e.g., a
                 // bullet glyph followed by its label, drawn with two different fonts). The
                 // gap between them has no space character of its own, since it's expressed
@@ -191,19 +191,24 @@ namespace lily_of_the_valley
                 // establish (or continue tracking) the baseline so that a later Tm
                 // (handle_absolute_move) can correctly compute its delta, rather than
                 // treating itself as the page's first position and skipping a newline
+                m_currentX += moveX;
                 m_currentY += (moveY * m_fontScale);
                 m_haveY = true;
                 }
             m_freshTextObject = false;
             }
-        else if (moveX > line_height())
+        else
             {
-            add_space();
+            m_currentX += moveX;
+            if (moveX > line_height())
+                {
+                add_space();
+                }
             }
         }
 
     //------------------------------------------------------------------
-    bool pdf_content_parser::handle_absolute_move(const double newY)
+    bool pdf_content_parser::handle_absolute_move(const double newX, const double newY)
         {
         m_freshTextObject = false;
         // If nothing has been shown on this page yet, this move is establishing the
@@ -213,6 +218,7 @@ namespace lily_of_the_valley
         m_haveY = true;
         if (isFirstPositionOnPage)
             {
+            m_currentX = newX;
             m_currentY = newY;
             return false;
             }
@@ -224,6 +230,16 @@ namespace lily_of_the_valley
             add_newline(std::abs(deltaY) > (1.8 * scaledLineHeight));
             wroteNewline = true;
             }
+        // Landed on (roughly) the same line, but far enough away that this is a
+        // separate run, not a continuation of the previous glyph. The gap can be
+        // horizontal, or diagonal for rotated text. This happens when text is drawn
+        // as several independent BT/Tm blocks (one per label) instead of one Tj/TJ
+        // run. Without this check, such runs would be glued directly together.
+        else if (std::hypot(newX - m_currentX, deltaY) > scaledLineHeight)
+            {
+            add_space();
+            }
+        m_currentX = newX;
         m_currentY = newY;
         return wroteNewline;
         }
@@ -513,7 +529,8 @@ namespace lily_of_the_valley
                             {
                             m_fontScale = verticalScale;
                             }
-                        handle_absolute_move(numbers[numbers.size() - 1]);
+                        handle_absolute_move(numbers[numbers.size() - 2],
+                                             numbers[numbers.size() - 1]);
                         }
                     }
                 else if (keyword == "T*")

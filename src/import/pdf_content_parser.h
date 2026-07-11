@@ -67,9 +67,13 @@ namespace lily_of_the_valley
         /// @brief Handles an absolute text-position move (Tm operator).
         /// @details Uses the same 1.8x line-height threshold as Td/TD to
         ///     distinguish line breaks from paragraph breaks.
+        ///     If the move lands on the same line but far enough away, a space is
+        ///     inserted so the two runs don't run together. This can happen with a
+        ///     separate BT/Tm/Tj block placed well to the right, or diagonally for
+        ///     rotated text.
         /// @returns @c true if a newline was written (i.e., @c newY landed on a
         ///     different line than the current position).
-        bool handle_absolute_move(double newY);
+        bool handle_absolute_move(double newX, double newY);
         /// @brief Decodes and appends a shown string (the Tj, ', " operators).
         void show_string(const std::string& stringBytes, const pdf_font_decoder* currentFont);
         /// @brief Decodes and appends a TJ array (strings mixed with kerning values).
@@ -103,6 +107,7 @@ namespace lily_of_the_valley
         pdf_document& m_document;          ///< Document being parsed.
         std::wstring& m_text;              ///< Output buffer (owned by the caller).
         std::set<long> m_visited_xobjects; ///< XObjects already recursed into (cycle guard).
+        double m_currentX{ 0 };            ///< Current horizontal position in user-space.
         double m_currentY{ 0 };            ///< Current vertical position in user-space.
         double m_fontSize{ 12 };           ///< Current font size (from Tf operator).
         double m_fontScale{ 1 };           ///< Vertical scale factor from the text matrix.
