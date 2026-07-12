@@ -92,8 +92,10 @@ namespace Wisteria::Data
                 (and blank lines) are ignored.
             @param filePath The path to the glyph name table file.
             @returns @c true if file is found and read successfully.
+            @note The table is shared (process-wide) across every @c PdfReader
+                instance, so this only needs to be called once.
             @sa https://github.com/adobe-type-tools/agl-aglfn */
-        bool LoadGlyphNameTableFromFile(const wxString& filePath);
+        static bool LoadGlyphNameTableFromFile(const wxString& filePath);
 
         /** @brief Loads a lookup table that helps translate text from PDFs
                 whose CJK text has no built-in Unicode mapping of its own.
@@ -108,9 +110,11 @@ namespace Wisteria::Data
             @param filePath The path to the lookup table file for that collection
                 (e.g., "UniJIS-UTF16-H" for "Adobe-Japan1").
             @returns @c true if file is found and read successfully.
+            @note Tables are shared (process-wide) across every @c PdfReader
+                instance, so each collection only needs to be loaded once.
             @sa https://github.com/adobe-type-tools/cmap-resources */
-        bool LoadCidToUnicodeTableFromFile(const wxString& registryOrdering,
-                                           const wxString& filePath);
+        static bool LoadCidToUnicodeTableFromFile(const wxString& registryOrdering,
+                                                  const wxString& filePath);
 
         /// @returns The title from the document's metadata.
         /// @note Must be called after calling @c ReadFile().

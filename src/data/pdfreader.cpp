@@ -33,7 +33,7 @@ namespace Wisteria::Data
             static bool warnedMissingGlyphTable{ false };
             if (!warnedMissingGlyphTable)
                 {
-                wxLogMessage(L"Glyph table not loaded for PDF reader. "
+                wxLogDebug(L"Glyph table not loaded for PDF reader. "
                              "Some fonts may not display correctly.");
                 warnedMissingGlyphTable = true;
                 }
@@ -43,7 +43,7 @@ namespace Wisteria::Data
             static bool warnedMissingCidTable{ false };
             if (!warnedMissingCidTable)
                 {
-                wxLogMessage(L"CID-to-Unicode table not loaded for PDF reader. "
+                wxLogDebug(L"CID-to-Unicode table not loaded for PDF reader. "
                              "CJK text may not display correctly.");
                 warnedMissingCidTable = true;
                 }
@@ -88,7 +88,7 @@ namespace Wisteria::Data
             {
             return false;
             }
-        m_pdfTextExtractor.load_glyph_name_table(fileText.ToStdWstring());
+        lily_of_the_valley::pdf_extract_text::load_glyph_name_table(fileText.ToStdWstring());
         m_loadedGlyphTable = true;
         return true;
         }
@@ -105,8 +105,9 @@ namespace Wisteria::Data
             {
             return false;
             }
-        m_pdfTextExtractor.load_cid_to_unicode_table(registryOrdering.ToStdString(),
-                                                     fileText.ToStdWstring());
+        lily_of_the_valley::pdf_extract_text::load_cid_to_unicode_table(
+            registryOrdering.ToStdString(), fileText.ToStdWstring());
+        m_loadedCidTable = true;
         return true;
         }
 

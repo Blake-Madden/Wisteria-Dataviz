@@ -973,9 +973,13 @@ endobj)PDF";
         }
     SECTION("Differences Array Without Glyph Name Table Loaded")
         {
-        // the same /Differences array as above, but without ever calling
-        // load_glyph_name_table(): the codes should fall back to the base
-        // (WinAnsi) encoding, i.e., plain "AB"
+        // the same /Differences array as above, but with an empty glyph name
+        // table: the codes should fall back to the base (WinAnsi) encoding,
+        // i.e., plain "AB"
+        // (the table is shared process-wide across every instance, so it must be
+        // explicitly cleared here to undo the "Differences Array With Glyph Name
+        // Table" section above)
+        pdf_extract_text::load_glyph_name_table(L"");
         const char* text = R"PDF(%PDF-1.4
 1 0 obj
 << /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>

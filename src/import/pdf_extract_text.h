@@ -335,10 +335,13 @@ namespace lily_of_the_valley
             @details The table is expected in the same format as Adobe's AGL data files:
                 semicolon-delimited lines of `glyphname;XXXX[ XXXX...]`, where each `XXXX`
                 is a four-digit hexadecimal Unicode value; lines starting with `#`
-                (and blank lines) are ignored.
+                (and blank lines) are ignored.\n
+                The table is shared (process-wide) across every instance of this class,
+                so this only needs to be called once; every instance will see it, including
+                ones already constructed.
             @param text The glyph table's text content.
             @sa https://github.com/adobe-type-tools/agl-aglfn */
-        void load_glyph_name_table(std::wstring_view text);
+        static void load_glyph_name_table(std::wstring_view text);
 
         /** @brief Loads a CID-to-Unicode table for a specific Adobe CID-keyed
                 character collection (e.g., "Adobe-Japan1"), used to resolve Type0/CID
@@ -346,13 +349,17 @@ namespace lily_of_the_valley
                 their own. (This is optional.) Call this once for each character
                 collection you need to support.
             @details The table is expected in the same format as one of Adobe's CMap
-                resource files (e.g., @c UniJIS-UTF16-H, for "Adobe-Japan1").
+                resource files (e.g., @c UniJIS-UTF16-H, for "Adobe-Japan1").\n
+                Tables are shared (process-wide) across every instance of this class,
+                so each collection only needs to be loaded once; every instance will
+                see it, including ones already constructed.
             @param registryOrdering The character collection this table applies to, as
                 `Registry-Ordering` (e.g., "Adobe-Japan1"), matching a font's
                 `/CIDSystemInfo` dictionary.
             @param text The CMap resource file's text content.
             @sa https://github.com/adobe-type-tools/cmap-resources */
-        void load_cid_to_unicode_table(std::string_view registryOrdering, std::wstring_view text);
+        static void load_cid_to_unicode_table(std::string_view registryOrdering,
+                                              std::wstring_view text);
 
         /** @brief Main interface for extracting plain text from a PDF buffer.
             @param pdf_buffer The PDF stream to convert to plain text.
@@ -462,12 +469,20 @@ namespace lily_of_the_valley
         aes_cbc_functor m_aes_decrypt;             ///< AES-CBC encryption/decryption functor.
         sha2_functor m_hash;                       ///< SHA-2 hashing functor.
         unicode_normalize_functor m_normalize;     ///< Unicode normalization (e.g., NFKC) functor.
-        glyph_name_table m_glyph_name_table;       ///< Glyph names for `/Differences` resolution.
-        cid_to_unicode_registry m_cid_to_unicode_tables; ///< CID-to-Unicode tables, by ordering.
-        std::wstring m_title;                            ///< Document title from /Info metadata.
-        std::wstring m_author;                           ///< Document author from /Info metadata.
-        std::wstring m_subject;                          ///< Document subject from /Info metadata.
-        std::wstring m_keywords;                         ///< Document keywords from /Info metadata.
+        /// @brief Glyph names for `/Differences` resolution.
+        /// @details Shared (process-wide) across every instance; loaded once via
+        ///     load_glyph_name_table() and only read from (never mutated) while
+        ///     parsing a document.
+        inline static glyph_name_table m_glyph_name_table;
+        /// @brief CID-to-Unicode tables, by ordering.
+        /// @details Shared (process-wide) across every instance; loaded once via
+        ///     load_cid_to_unicode_table() and only read from (never mutated) while
+        ///     parsing a document.
+        inline static cid_to_unicode_registry m_cid_to_unicode_tables;
+        std::wstring m_title;    ///< Document title from /Info metadata.
+        std::wstring m_author;   ///< Document author from /Info metadata.
+        std::wstring m_subject;  ///< Document subject from /Info metadata.
+        std::wstring m_keywords; ///< Document keywords from /Info metadata.
         };
 
     } // namespace lily_of_the_valley
