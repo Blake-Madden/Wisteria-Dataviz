@@ -28,6 +28,28 @@ namespace Wisteria::Data
     //------------------------------------------------------------------
     wxString PdfReader::ReadFile(const wxString& filePath)
         {
+        try
+            {
+            const MemoryMappedFile sourceFile(filePath, true, true);
+            return ReadBuffer(std::string_view{ static_cast<const char*>(sourceFile.GetStream()),
+                                                sourceFile.GetMapSize() },
+                              filePath);
+            }
+        catch (const std::runtime_error&)
+            {
+            throw;
+            }
+        catch (...)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': error reading PDF file."), filePath).ToUTF8());
+            }
+        }
+
+    //------------------------------------------------------------------
+    wxString PdfReader::ReadBuffer(const std::string_view pdfData,
+                                   const wxString& sourceDescription)
+        {
         if (!m_loadedGlyphTable)
             {
             static bool warnedMissingGlyphTable{ false };
@@ -50,9 +72,7 @@ namespace Wisteria::Data
             }
         try
             {
-            const MemoryMappedFile sourceFile(filePath, true, true);
-            const wchar_t* extractedText{ m_pdfTextExtractor(
-                static_cast<const char*>(sourceFile.GetStream()), sourceFile.GetMapSize()) };
+            const wchar_t* extractedText{ m_pdfTextExtractor(pdfData.data(), pdfData.length()) };
             if (extractedText == nullptr)
                 {
                 return {};
@@ -62,18 +82,19 @@ namespace Wisteria::Data
         catch (const lily_of_the_valley::pdf_extract_text::pdf_encrypted&)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': PDF file is encrypted and cannot be read."), filePath)
+                wxString::Format(_(L"'%s': PDF file is encrypted and cannot be read."),
+                                 sourceDescription)
                     .ToUTF8());
             }
         catch (const lily_of_the_valley::pdf_extract_text::pdf_header_not_found&)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': invalid PDF file."), filePath).ToUTF8());
+                wxString::Format(_(L"'%s': invalid PDF file."), sourceDescription).ToUTF8());
             }
         catch (...)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': error reading PDF file."), filePath).ToUTF8());
+                wxString::Format(_(L"'%s': error reading PDF file."), sourceDescription).ToUTF8());
             }
         }
 

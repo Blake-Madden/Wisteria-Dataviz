@@ -84,6 +84,19 @@ namespace Wisteria::Data
         [[nodiscard]]
         wxString ReadFile(const wxString& filePath);
 
+        /** @brief Reads the raw text from an in-memory PDF buffer.
+            @param pdfData The raw bytes of the PDF file.
+            @param sourceDescription An optional label (e.g., the file path the bytes
+                came from) used only to identify the source in error messages.
+            @returns The document's text.
+            @throws std::runtime_error If the file is invalid or encrypted,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        wxString ReadBuffer(std::string_view pdfData,
+                            const wxString& sourceDescription = wxString{});
+
         /** @brief Loads a lookup table that helps translate text from
                 PDFs that use custom, non-standard fonts. (This is optional.)
             @details The file is expected in the same format as Adobe's AGL data files:
@@ -117,7 +130,7 @@ namespace Wisteria::Data
                                                   const wxString& filePath);
 
         /// @returns The title from the document's metadata.
-        /// @note Must be called after calling @c ReadFile().
+        /// @note Must be called after calling @c ReadFile() or @c ReadBuffer().
         [[nodiscard]]
         wxString GetTitle() const
             {
@@ -125,7 +138,7 @@ namespace Wisteria::Data
             }
 
         /// @returns The author from the document's metadata.
-        /// @note Must be called after calling @c ReadFile().
+        /// @note Must be called after calling @c ReadFile() or @c ReadBuffer().
         [[nodiscard]]
         wxString GetAuthor() const
             {
@@ -133,7 +146,7 @@ namespace Wisteria::Data
             }
 
         /// @returns The subject from the document's metadata.
-        /// @note Must be called after calling @c ReadFile().
+        /// @note Must be called after calling @c ReadFile() or @c ReadBuffer().
         [[nodiscard]]
         wxString GetSubject() const
             {
@@ -141,7 +154,7 @@ namespace Wisteria::Data
             }
 
         /// @returns The keywords from the document's metadata.
-        /// @note Must be called after calling @c ReadFile().
+        /// @note Must be called after calling @c ReadFile() or @c ReadBuffer().
         [[nodiscard]]
         wxString GetKeywords() const
             {
