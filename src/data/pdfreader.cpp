@@ -34,7 +34,7 @@ namespace Wisteria::Data
             if (!warnedMissingGlyphTable)
                 {
                 wxLogDebug(L"Glyph table not loaded for PDF reader. "
-                             "Some fonts may not display correctly.");
+                           "Some fonts may not display correctly.");
                 warnedMissingGlyphTable = true;
                 }
             }
@@ -44,7 +44,7 @@ namespace Wisteria::Data
             if (!warnedMissingCidTable)
                 {
                 wxLogDebug(L"CID-to-Unicode table not loaded for PDF reader. "
-                             "CJK text may not display correctly.");
+                           "CJK text may not display correctly.");
                 warnedMissingCidTable = true;
                 }
             }
