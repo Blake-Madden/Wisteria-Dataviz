@@ -333,19 +333,8 @@ namespace lily_of_the_valley
             {
             return;
             }
-        size_t pos{ 1 };
-        while (pos < kidsValue.length())
+        for (const std::string_view kidValue : pdf_lexer::read_array_elements(kidsValue))
             {
-            pdf_lexer::skip_whitespace(kidsValue, pos);
-            if (pos >= kidsValue.length() || kidsValue[pos] == ']')
-                {
-                break;
-                }
-            const std::string_view kidValue{ pdf_lexer::read_value(kidsValue, pos) };
-            if (kidValue.empty())
-                {
-                break;
-                }
             long kidNumber{ 0 };
             if (pdf_lexer::get_reference(kidValue, kidNumber))
                 {

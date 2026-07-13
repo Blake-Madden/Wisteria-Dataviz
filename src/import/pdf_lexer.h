@@ -23,19 +23,19 @@ namespace lily_of_the_valley
     class pdf_lexer
         {
       public:
-        /// @returns @c true if @c character is PDF whitespace.
+        /// @returns @c true if @p character is PDF whitespace.
         [[nodiscard]]
         static bool is_whitespace(char character);
 
-        /// @returns @c true if @c character is a PDF delimiter.
+        /// @returns @c true if @p character is a PDF delimiter.
         [[nodiscard]]
         static bool is_delimiter(char character);
 
-        /// @returns @c true if @c character ends a token (whitespace or delimiter).
+        /// @returns @c true if @p character ends a token (whitespace or delimiter).
         [[nodiscard]]
         static bool is_token_end(char character);
 
-        /// @returns @c true if @c character is an ASCII digit.
+        /// @returns @c true if @p character is an ASCII digit.
         [[nodiscard]]
         static bool is_digit(char character);
 
@@ -43,14 +43,14 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static int hex_digit_value(char character);
 
-        /// @brief Moves @c pos past any whitespace and comments.
+        /// @brief Moves @p pos past any whitespace and comments.
         static void skip_whitespace(std::string_view source, size_t& pos);
 
-        /// @returns @c value with leading and trailing whitespace removed.
+        /// @returns @p value with leading and trailing whitespace removed.
         [[nodiscard]]
         static std::string_view trim(std::string_view value);
 
-        /// @brief Reads a (base 10) integer at @c pos, moving @c pos past it.
+        /// @brief Reads a (base 10) integer at @p pos, moving @p pos past it.
         /// @returns @c true if an integer was read.
         static bool read_int(std::string_view source, size_t& pos, long& valueOut);
 
@@ -59,21 +59,21 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static bool to_int(std::string_view token, long& valueOut);
 
-        /// @brief Reads a literal `(...)` string at @c pos
+        /// @brief Reads a literal `(...)` string at @p pos
         ///     (which must be at the opening parenthesis).
         /// @returns The string's (raw, still possibly font-encoded) bytes.
         [[nodiscard]]
         static std::string read_literal_string(std::string_view source, size_t& pos);
 
-        /// @brief Reads a hexadecimal `<...>` string at @c pos
+        /// @brief Reads a hexadecimal `<...>` string at @p pos
         ///     (which must be at the opening angle bracket).
         /// @returns The string's (raw, still possibly font-encoded) bytes.
         [[nodiscard]]
         static std::string read_hex_string(std::string_view source, size_t& pos);
 
         /// @brief Reads one complete PDF value (dictionary, array, string, name, number,
-        ///     indirect reference, or keyword) at @c pos.
-        /// @details The @c depth parameter guards against infinite recursion from
+        ///     indirect reference, or keyword) at @p pos.
+        /// @details The @p depth parameter guards against infinite recursion from
         ///     malformed documents (e.g., a dictionary that contains itself).
         /// @returns A view of the raw value.
         [[nodiscard]]
@@ -92,8 +92,13 @@ namespace lily_of_the_valley
         static std::vector<std::pair<std::string_view, std::string_view>>
         get_dictionary_entries(std::string_view dictionary);
 
+        /// @returns Each element's raw value from an array (the view must include the
+        ///     enclosing `[ ]`), in order. Empty if @p arrayValue isn't an array.
+        [[nodiscard]]
+        static std::vector<std::string_view> read_array_elements(std::string_view arrayValue);
+
         /// @brief Determines whether a (trimmed) value is an indirect reference (`N G R`).
-        /// @returns @c true (filling in @c objectNumberOut) if it is.
+        /// @returns @c true (filling in @p objectNumberOut) if it is.
         [[nodiscard]]
         static bool get_reference(std::string_view value, long& objectNumberOut);
         };

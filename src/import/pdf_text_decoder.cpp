@@ -702,32 +702,32 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    bool pdf_text_decoder::read_hex_token(const std::string_view source, size_t& pos,
+                                          std::string_view& digitsOut)
+        {
+        pdf_lexer::skip_whitespace(source, pos);
+        if (pos >= source.length() || source[pos] != '<')
+            {
+            return false;
+            }
+        ++pos;
+        const size_t digitStart{ pos };
+        while (pos < source.length() && source[pos] != '>')
+            {
+            ++pos;
+            }
+        digitsOut = source.substr(digitStart, pos - digitStart);
+        if (pos < source.length())
+            {
+            ++pos;
+            }
+        return true;
+        }
+
+    //------------------------------------------------------------------
     void pdf_text_decoder::parse_unicode_cmap(const std::string_view cmap,
                                               pdf_font_decoder& decoder)
         {
-        // local helper: read the next <hex> token, returning its digits
-        const auto readHexToken = [](const std::string_view source, size_t& pos,
-                                     std::string_view& digitsOut) -> bool
-        {
-            pdf_lexer::skip_whitespace(source, pos);
-            if (pos >= source.length() || source[pos] != '<')
-                {
-                return false;
-                }
-            ++pos;
-            const size_t digitStart{ pos };
-            while (pos < source.length() && source[pos] != '>')
-                {
-                ++pos;
-                }
-            digitsOut = source.substr(digitStart, pos - digitStart);
-            if (pos < source.length())
-                {
-                ++pos;
-                }
-            return true;
-        };
-
         // determine the code width(s) from the codespace range(s); a CMap may declare
         // more than one range, each with its own byte length (e.g., 1-byte codes for
         // ASCII mixed with 2-byte, 3-byte, or 4-byte codes for other glyphs)
@@ -743,8 +743,8 @@ namespace lily_of_the_valley
                     break;
                     }
                 std::string_view lowDigits, highDigits;
-                if (!readHexToken(cmap, pos, lowDigits) || !readHexToken(cmap, pos, highDigits) ||
-                    lowDigits.empty())
+                if (!read_hex_token(cmap, pos, lowDigits) ||
+                    !read_hex_token(cmap, pos, highDigits) || lowDigits.empty())
                     {
                     break;
                     }
@@ -773,7 +773,7 @@ namespace lily_of_the_valley
                     break;
                     }
                 std::string_view srcDigits, dstDigits;
-                if (!readHexToken(cmap, pos, srcDigits) || !readHexToken(cmap, pos, dstDigits))
+                if (!read_hex_token(cmap, pos, srcDigits) || !read_hex_token(cmap, pos, dstDigits))
                     {
                     break;
                     }
@@ -800,7 +800,7 @@ namespace lily_of_the_valley
                     break;
                     }
                 std::string_view lowDigits, highDigits;
-                if (!readHexToken(cmap, pos, lowDigits) || !readHexToken(cmap, pos, highDigits))
+                if (!read_hex_token(cmap, pos, lowDigits) || !read_hex_token(cmap, pos, highDigits))
                     {
                     break;
                     }
@@ -817,7 +817,7 @@ namespace lily_of_the_valley
                     for (uint32_t code = lowCode; code <= highCode; ++code)
                         {
                         std::string_view dstDigits;
-                        if (!readHexToken(cmap, pos, dstDigits))
+                        if (!read_hex_token(cmap, pos, dstDigits))
                             {
                             break;
                             }
@@ -837,7 +837,7 @@ namespace lily_of_the_valley
                 else
                     {
                     std::string_view dstDigits;
-                    if (!readHexToken(cmap, pos, dstDigits))
+                    if (!read_hex_token(cmap, pos, dstDigits))
                         {
                         break;
                         }
@@ -862,28 +862,6 @@ namespace lily_of_the_valley
     void pdf_text_decoder::parse_cid_to_unicode_cmap(const std::string_view cmap,
                                                      cid_to_unicode_table& table)
         {
-        // reads the next <hex> token, returning its digits
-        const auto readHexToken = [](const std::string_view source, size_t& pos,
-                                     std::string_view& digitsOut) -> bool
-        {
-            pdf_lexer::skip_whitespace(source, pos);
-            if (pos >= source.length() || source[pos] != '<')
-                {
-                return false;
-                }
-            ++pos;
-            const size_t digitStart{ pos };
-            while (pos < source.length() && source[pos] != '>')
-                {
-                ++pos;
-                }
-            digitsOut = source.substr(digitStart, pos - digitStart);
-            if (pos < source.length())
-                {
-                ++pos;
-                }
-            return true;
-        };
         // reads the next (base 10) integer token
         const auto readDecimalToken = [](const std::string_view source, size_t& pos,
                                          uint32_t& valueOut) -> bool
@@ -916,7 +894,7 @@ namespace lily_of_the_valley
                     }
                 std::string_view srcDigits;
                 uint32_t cid{ 0 };
-                if (!readHexToken(cmap, pos, srcDigits) || !readDecimalToken(cmap, pos, cid))
+                if (!read_hex_token(cmap, pos, srcDigits) || !readDecimalToken(cmap, pos, cid))
                     {
                     break;
                     }
@@ -944,7 +922,8 @@ namespace lily_of_the_valley
                     }
                 std::string_view lowDigits, highDigits;
                 uint32_t cidStart{ 0 };
-                if (!readHexToken(cmap, pos, lowDigits) || !readHexToken(cmap, pos, highDigits) ||
+                if (!read_hex_token(cmap, pos, lowDigits) ||
+                    !read_hex_token(cmap, pos, highDigits) ||
                     !readDecimalToken(cmap, pos, cidStart))
                     {
                     break;

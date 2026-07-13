@@ -39,8 +39,6 @@ namespace lily_of_the_valley
         m_fontSize = 12;
         m_fontScale = 1;
         m_leading = 0;
-        m_charSpacing = 0;
-        m_wordSpacing = 0;
         m_horizScale = 100;
         m_atLineStart = true;
         m_haveShownText = false;
@@ -475,19 +473,8 @@ namespace lily_of_the_valley
         };
         if (!contentsValue.empty() && contentsValue.front() == '[')
             {
-            size_t pos{ 1 };
-            while (pos < contentsValue.length())
+            for (const std::string_view element : pdf_lexer::read_array_elements(contentsValue))
                 {
-                pdf_lexer::skip_whitespace(contentsValue, pos);
-                if (pos >= contentsValue.length() || contentsValue[pos] == ']')
-                    {
-                    break;
-                    }
-                const std::string_view element{ pdf_lexer::read_value(contentsValue, pos) };
-                if (element.empty())
-                    {
-                    break;
-                    }
                 appendStream(element);
                 }
             }
@@ -601,20 +588,6 @@ namespace lily_of_the_valley
                     if (!numbers.empty())
                         {
                         m_leading = std::abs(numbers.back());
-                        }
-                    }
-                else if (keyword == "Tc")
-                    {
-                    if (!numbers.empty())
-                        {
-                        m_charSpacing = numbers.back();
-                        }
-                    }
-                else if (keyword == "Tw")
-                    {
-                    if (!numbers.empty())
-                        {
-                        m_wordSpacing = numbers.back();
                         }
                     }
                 else if (keyword == "Tz")

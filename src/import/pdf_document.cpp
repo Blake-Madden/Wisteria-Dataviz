@@ -833,22 +833,7 @@ namespace lily_of_the_valley
             resolve_value(pdf_lexer::find_dictionary_value(streamObject.m_dictionary, "Filter"))) };
         if (!filterValue.empty() && filterValue.front() == '[')
             {
-            size_t pos{ 1 };
-            while (pos < filterValue.length())
-                {
-                pdf_lexer::skip_whitespace(filterValue, pos);
-                if (pos >= filterValue.length() || filterValue[pos] == ']')
-                    {
-                    break;
-                    }
-                const std::string_view element{ pdf_lexer::trim(
-                    pdf_lexer::read_value(filterValue, pos)) };
-                if (element.empty())
-                    {
-                    break;
-                    }
-                filters.push_back(element);
-                }
+            filters = pdf_lexer::read_array_elements(filterValue);
             }
         else if (!filterValue.empty())
             {
@@ -868,22 +853,7 @@ namespace lily_of_the_valley
             }
         if (!parmsValue.empty() && parmsValue.front() == '[')
             {
-            size_t pos{ 1 };
-            while (pos < parmsValue.length())
-                {
-                pdf_lexer::skip_whitespace(parmsValue, pos);
-                if (pos >= parmsValue.length() || parmsValue[pos] == ']')
-                    {
-                    break;
-                    }
-                const std::string_view element{ pdf_lexer::trim(
-                    pdf_lexer::read_value(parmsValue, pos)) };
-                if (element.empty())
-                    {
-                    break;
-                    }
-                filterParms.push_back(element);
-                }
+            filterParms = pdf_lexer::read_array_elements(parmsValue);
             }
         else if (!parmsValue.empty())
             {

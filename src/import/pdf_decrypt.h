@@ -39,7 +39,7 @@ namespace lily_of_the_valley
     /// @param key The AES key; its length (16 or 32 bytes) selects AES-128 or AES-256.
     /// @param initVector The 16-byte initialization vector.
     /// @param data The bytes to transform (must be a multiple of 16 bytes long).
-    /// @param direction Whether to encrypt or decrypt @c data.
+    /// @param direction Whether to encrypt or decrypt @p data.
     /// @returns The transformed bytes.
     using aes_cbc_functor =
         std::function<std::string(std::string_view key, std::string_view initVector,
@@ -86,10 +86,10 @@ namespace lily_of_the_valley
         ///     `"/V2"`, `"/AESV2"`, `"/AESV3"`), or empty if there is no crypt filter
         ///     (revisions 2/3).
         /// @param aesFunction Functor for AES-CBC encryption/decryption; required
-        ///     when @c cryptFilterMethod is `"/AESV2"`/`"/AESV3"` or @c revision is 5/6.
-        /// @param hashFunction Functor for SHA-2 hashing; required when @c revision
+        ///     when @p cryptFilterMethod is `"/AESV2"`/`"/AESV3"` or @p revision is 5/6.
+        /// @param hashFunction Functor for SHA-2 hashing; required when @p revision
         ///     is 5 or 6.
-        /// @returns The decryptor, or @c nullptr if @c revision isn't supported,
+        /// @returns The decryptor, or @c nullptr if @p revision isn't supported,
         ///     a required functor is missing, or authentication (with an empty
         ///     password) failed.
         [[nodiscard]]
@@ -144,9 +144,9 @@ namespace lily_of_the_valley
                                        cipher_algorithm algorithm) const;
 
         /// @brief Computes ISO 32000-2's Algorithm 2.A (revision 5) or 2.B (revision 6,
-        ///     the "hardened hash") over @c password + @c salt [+ @c userBytes].
-        /// @returns The 32-byte hash, or an empty string if @c hashFunction or
-        ///     (for revision 6) @c aesFunction is empty.
+        ///     the "hardened hash") over @p password + @p salt [+ @p userBytes].
+        /// @returns The 32-byte hash, or an empty string if @p hashFunction or
+        ///     (for revision 6) @p aesFunction is empty.
         [[nodiscard]]
         static std::string compute_hardened_hash(std::string_view password, std::string_view salt,
                                                  std::string_view userBytes, int revision,

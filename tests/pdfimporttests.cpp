@@ -1626,6 +1626,31 @@ endobj)PDF";
         CHECK(ext.get_filtered_text_length() == 0);
         CHECK(ext.get_log().find(L"decompressor") != std::wstring::npos);
         }
+    SECTION("Filter As Single-Element Array")
+        {
+        // /Filter may be an array of names (one per filter in the chain) rather than a
+        // single bare name, even when there's only one filter in the chain; the
+        // array-parsing branch of decode_stream should behave the same as the bare-name
+        // form exercised by the "Decompressor Functor" case above
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< /Filter [/FlateDecode] /Length 10 >>
+stream
+0123456789
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        ext.set_stream_decompressor(
+            [](std::string_view compressed) -> std::string
+            {
+                CHECK(compressed == "0123456789");
+                return "BT (Inflated content) Tj ET";
+            });
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Inflated content") == 0);
+        }
     SECTION("ASCIIHex Filter")
         {
         // "BT (Hex) Tj ET", hex encoded
@@ -1657,6 +1682,54 @@ endobj)PDF";
         text += "\nendstream\nendobj";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text.data(), text.length()), L"LZW works") == 0);
+        }
+    SECTION("ASCII85 Filter")
+        {
+        // "BT (A85 works) Tj ET", ASCII85 encoded (with the conventional trailing "~>" EOD marker)
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< /Filter /ASCII85Decode >>
+stream
+6<#'U5r^_EGAhM;F"&52C*5rE~>
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"A85 works") == 0);
+        }
+    SECTION("PNG Predictor (DecodeParms)")
+        {
+        // a stand-in "decompressor" hands back raw (still predictor-encoded) scanlines: 4 rows
+        // of a leading PNG filter-type tag (1, "Sub") plus 3 data bytes, reconstructing to the
+        // content stream "BT (P) Tj ET" one row at a time (row N's data byte i is the
+        // *within-row* running difference from byte i-1, per the PNG "Sub" filter; it doesn't
+        // reference the previous row at all, unlike "Up"/"Average"/"Paeth")
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< /Filter /FlateDecode
+   /DecodeParms << /Predictor 12 /Columns 3 /Colors 1 /BitsPerComponent 8 >> /Length 10 >>
+stream
+0123456789
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        ext.set_stream_decompressor(
+            [](std::string_view compressed) -> std::string
+            {
+                CHECK(compressed == "0123456789");
+                return std::string(
+                    "\x01\x42\x12\xCC"
+                    "\x01\x28\x28\xD9"
+                    "\x01\x20\x34\x16"
+                    "\x01\x20\x25\x0F",
+                    16);
+            });
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"P") == 0);
         }
     SECTION("MD5 Known Vectors")
         {

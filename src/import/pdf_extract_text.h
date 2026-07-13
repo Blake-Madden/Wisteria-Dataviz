@@ -74,6 +74,9 @@ namespace lily_of_the_valley
         static std::wstring decode_metadata_string(std::string_view bytes);
 
         /// @brief Parses a font's ToUnicode CMap (bfchar/bfrange sections) into a decoder.
+        /// @param cmap The CMap resource stream's raw (decoded) text content.
+        /// @param[out] decoder The decoder to populate m_code_map (and the
+        ///     codespace-range-derived m_bytes_per_code) for.
         static void parse_unicode_cmap(std::string_view cmap, pdf_font_decoder& decoder);
 
         /// @brief Parses one of Adobe's CID CMap resource files (cidchar/cidrange
@@ -83,7 +86,7 @@ namespace lily_of_the_valley
         ///     Unicode text from a font's CIDs, for fonts with no ToUnicode CMap of their
         ///     own. Each entry is inverted as it's parsed to support that.
         /// @param cmap The CMap resource file's raw text content.
-        /// @param table The table to populate.
+        /// @param[out] table The table to populate.
         /// @sa https://github.com/adobe-type-tools/cmap-resources
         static void parse_cid_to_unicode_cmap(std::string_view cmap, cid_to_unicode_table& table);
 
@@ -109,19 +112,19 @@ namespace lily_of_the_valley
         ///     multibyte charset that strings shown with such a font are encoded in.
         /// @param cmapName The CMap name (e.g., "ETenms-B5-H" or "90ms-RKSJ-V").
         /// @returns The charset's name (e.g., "CP950"), as understood by a
-        ///     charset_convert_functor, or empty if @c cmapName is not a
+        ///     charset_convert_functor, or empty if @p cmapName is not a
         ///     recognized predefined CJK CMap.
         [[nodiscard]]
         static std::string_view predefined_cmap_charset(std::string_view cmapName);
 
-        /// @returns @c true if @c cmapName (a Type0 font's /Encoding value, without
+        /// @returns @c true if @p cmapName (a Type0 font's /Encoding value, without
         ///     the leading slash) is one of Adobe's predefined Unicode CMaps (e.g.,
         ///     "UniJIS-UCS2-H"), meaning the font's character codes are UTF-16BE
         ///     code units.
         [[nodiscard]]
         static bool is_unicode_cmap_name(std::string_view cmapName);
 
-        /// @returns @c true if @c cmapName (a Type0 font's /Encoding value, without
+        /// @returns @c true if @p cmapName (a Type0 font's /Encoding value, without
         ///     the leading slash) is one of Adobe's predefined vertical-writing-mode
         ///     CMaps (e.g., "Identity-V" or "UniJIS-UCS2-V").
         [[nodiscard]]
@@ -131,7 +134,7 @@ namespace lily_of_the_valley
         /// @param glyphName The (ASCII) glyph name, without the leading slash.
         /// @param glyphTable A glyph name table (e.g., the Adobe Glyph List) to consult first.
         /// @returns The Unicode text for the glyph, falling back to the `uniXXXX`/`uXXXXXX`
-        ///     naming convention if not found in @c glyphTable. Empty if unresolvable.
+        ///     naming convention if not found in @p glyphTable. Empty if unresolvable.
         [[nodiscard]]
         static std::wstring glyph_name_to_unicode(std::string_view glyphName,
                                                   const glyph_name_table& glyphTable);
@@ -141,6 +144,7 @@ namespace lily_of_the_valley
         /// @param differencesArray The raw `/Differences` array value (including brackets).
         /// @param glyphTable A glyph name table (e.g., the Adobe Glyph List) to resolve
         ///     each glyph name with.
+        /// @param[out] decoder The decoder to populate m_code_map for.
         static void parse_differences_array(std::string_view differencesArray,
                                             const glyph_name_table& glyphTable,
                                             pdf_font_decoder& decoder);
@@ -154,7 +158,7 @@ namespace lily_of_the_valley
         ///     inverted (glyph index -> Unicode), to recover each code's Unicode value.
         ///     Other subtable formats and platform/encoding combinations are ignored.
         /// @param fontProgram The raw, decoded bytes of the font's `/FontFile2` stream.
-        /// @param decoder The decoder to populate m_code_map for.
+        /// @param[out] decoder The decoder to populate m_code_map for.
         static void parse_embedded_truetype_cmap(std::string_view fontProgram,
                                                  pdf_font_decoder& decoder);
 
@@ -164,20 +168,20 @@ namespace lily_of_the_valley
         /// @param fontProgram The raw, decoded bytes of the font's `/FontFile2` stream.
         /// @param cidToGidMapData The descendant font's decoded `/CIDToGIDMap`
         ///     stream bytes, or empty for `/Identity` (the default).
-        /// @param decoder The decoder to populate m_code_map for.
+        /// @param[out] decoder The decoder to populate m_code_map for.
         static void parse_embedded_cid_truetype_cmap(std::string_view fontProgram,
                                                      std::string_view cidToGidMapData,
                                                      pdf_font_decoder& decoder);
 
-        /// @brief Determines how many bytes (starting at @c pos) make up the next
+        /// @brief Determines how many bytes (starting at @p pos) make up the next
         ///     character code, per the font's declared codespace ranges.
-        /// @details If @c fontDecoder has one or more codespace ranges, the leading
-        ///     bytes at @c pos are compared against each range's bounds (in declared
+        /// @details If @p fontDecoder has one or more codespace ranges, the leading
+        ///     bytes at @p pos are compared against each range's bounds (in declared
         ///     order); the first range whose bounds contain those bytes determines
         ///     the length. If none match (or no ranges were declared), this falls
         ///     back to @c fontDecoder->m_bytes_per_code.
         /// @returns The code length, in bytes (at least 1, and clipped to the
-        ///     remaining bytes in @c bytes).
+        ///     remaining bytes in @p bytes).
         [[nodiscard]]
         static size_t determine_code_length(const std::string& bytes, size_t pos,
                                             const pdf_font_decoder* fontDecoder);
@@ -189,21 +193,31 @@ namespace lily_of_the_valley
 
       private:
         /// @brief Reads a big-endian @c uint16_t from TrueType binary data.
-        /// @returns The value, or 0 if @c pos is out of range for @c data.
+        /// @returns The value, or 0 if @p pos is out of range for @p data.
         [[nodiscard]]
         static uint16_t truetype_read_uint16(std::string_view data, size_t pos);
 
         /// @brief Reads a big-endian @c uint32_t from TrueType binary data.
-        /// @returns The value, or 0 if @c pos is out of range for @c data.
+        /// @returns The value, or 0 if @p pos is out of range for @p data.
         [[nodiscard]]
         static uint32_t truetype_read_uint32(std::string_view data, size_t pos);
 
+        /// @brief Reads the next `<...>` hex token from a CMap resource's text.
+        /// @param source The CMap resource's raw text.
+        /// @param[in,out] pos The position to start reading from, advanced past
+        ///     the token (including its closing '>') on success.
+        /// @param[out] digitsOut The hex digits between the angle brackets.
+        /// @returns @c true if a token starting with '<' was found at @p pos.
+        [[nodiscard]]
+        static bool read_hex_token(std::string_view source, size_t& pos,
+                                   std::string_view& digitsOut);
+
         /// @brief Locates the "cmap" table in an sfnt font program.
-        /// @returns @c true (filling in @c cmapTableOut) if found.
+        /// @returns @c true (filling in @p cmapTableOut) if found.
         [[nodiscard]]
         static bool find_cmap_table(std::string_view fontProgram, std::string_view& cmapTableOut);
 
-        /// @returns @c true (filling in @c offsetOut) if @c cmapTable has a
+        /// @returns @c true (filling in @p offsetOut) if @p cmapTable has a
         ///     subtable for the given platform/encoding ID pair.
         [[nodiscard]]
         static bool find_cmap_subtable_offset(std::string_view cmapTable, uint16_t platformID,
@@ -420,7 +434,7 @@ namespace lily_of_the_valley
         ///     string object) into Unicode text.
         /// @param document The document (used to resolve indirect references and
         ///     decrypt, if applicable).
-        /// @param owningObject The indirect object that directly contains @c value
+        /// @param owningObject The indirect object that directly contains @p value
         ///     (used to derive its decryption key, if the document is encrypted).
         /// @param value The (possibly indirect) string value to read.
         [[nodiscard]]
@@ -437,12 +451,21 @@ namespace lily_of_the_valley
 
         /// @brief Recursively walks the page tree, collecting page objects in
         ///     document order.
+        /// @param document The document whose page tree is walked.
+        /// @param nodeNumber The object number of the `/Pages` or `/Page` node to visit.
+        /// @param[in,out] visitedNodes Node numbers already visited, checked (and
+        ///     updated) to guard against infinite recursion from circular
+        ///     `/Kids`/`/Parent` references in malformed files.
+        /// @param[out] pageOrder Page object numbers, appended to in document order
+        ///     as `/Page` nodes are reached.
+        /// @param depth The current recursion depth (guards against runaway
+        ///     recursion in malformed files, independently of @p visitedNodes).
         static void walk_page_tree(const pdf_document& document, long nodeNumber,
                                    std::set<long>& visitedNodes, std::vector<long>& pageOrder,
                                    int depth);
 
         /// @brief Reads a (possibly `(literal)` or `<hex>`) string's raw bytes.
-        /// @returns The decoded raw bytes, or an empty string if @c value isn't a string.
+        /// @returns The decoded raw bytes, or an empty string if @p value isn't a string.
         [[nodiscard]]
         static std::string read_raw_string(std::string_view value);
 

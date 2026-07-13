@@ -35,9 +35,9 @@ namespace lily_of_the_valley
     class pdf_content_parser
         {
       public:
-        /// @brief Constructs a parser that appends extracted text to @c text.
+        /// @brief Constructs a parser that appends extracted text to @p text.
         /// @param document The document whose objects and streams are accessed.
-        /// @param text The output buffer to append decoded text to.
+        /// @param[in,out] text The output buffer to append decoded text to.
         pdf_content_parser(pdf_document& document, std::wstring& text);
 
         /// @brief Extracts the text from one page.
@@ -49,16 +49,16 @@ namespace lily_of_the_valley
         void flush_rtl_run();
 
       private:
-        /// @returns @c true if @c character is a bullet-point glyph.
+        /// @returns @c true if @p character is a bullet-point glyph.
         [[nodiscard]]
         static bool is_bullet(wchar_t character);
 
-        /// @returns @c true if @c character is a strongly right-to-left letter
+        /// @returns @c true if @p character is a strongly right-to-left letter
         ///     (Hebrew or Arabic, including their presentation-form blocks).
         [[nodiscard]]
         static bool is_strong_rtl(wchar_t character);
 
-        /// @returns @c true if @c character is a Hebrew or Arabic combining
+        /// @returns @c true if @p character is a Hebrew or Arabic combining
         ///     mark (a diacritic that attaches to the character before it).
         [[nodiscard]]
         static bool is_combining_mark(wchar_t character);
@@ -88,7 +88,7 @@ namespace lily_of_the_valley
         ///     inserted so the two runs don't run together. This can happen with a
         ///     separate BT/Tm/Tj block placed well to the right, or diagonally for
         ///     rotated text.
-        /// @returns @c true if a newline was written (i.e., @c newX/@c newY landed
+        /// @returns @c true if a newline was written (i.e., @p newX/@p newY landed
         ///     on a different line than the current position).
         bool handle_absolute_move(double newX, double newY);
         /// @brief Decodes and appends a shown string (the Tj, ', " operators).
@@ -142,8 +142,6 @@ namespace lily_of_the_valley
         /// a horizontal move across columns rather than a vertical move down the page.
         bool m_verticalWritingMode{ false };
         double m_leading{ 0 };         ///< Current leading (line spacing, from TL).
-        double m_charSpacing{ 0 };     ///< Current character spacing (from Tc).
-        double m_wordSpacing{ 0 };     ///< Current word spacing (from Tw).
         double m_horizScale{ 100 };    ///< Current horizontal scaling percent (from Tz).
         bool m_haveY{ false };         ///< Whether m_currentY has been initialized.
         bool m_atLineStart{ true };    ///< True when no glyphs emitted since the last newline.

@@ -229,10 +229,10 @@ namespace lily_of_the_valley
 
         /// @brief Decrypts a string or stream's raw bytes, if this document is
         ///     encrypted.
-        /// @param owningObject The indirect object that directly contains @c bytes.
+        /// @param owningObject The indirect object that directly contains @p bytes.
         /// @param bytes The (possibly encrypted) raw bytes.
-        /// @returns @c bytes decrypted, or unchanged if this document isn't
-        ///     encrypted, or if @c owningObject was unpacked from a compressed
+        /// @returns @p bytes decrypted, or unchanged if this document isn't
+        ///     encrypted, or if @p owningObject was unpacked from a compressed
         ///     object stream (in which case it's already plaintext, having been
         ///     decrypted as part of that stream as a whole).
         [[nodiscard]]
@@ -288,9 +288,9 @@ namespace lily_of_the_valley
 
         /// @brief Reads the free/in-use status of each entry in a
         ///     cross-reference stream (`/Type /XRef`) and records it in
-        ///     @c freeStatus.
+        ///     @p freeStatus.
         /// @param xrefObject The cross-reference stream object.
-        /// @param freeStatus Map of object number to free status, updated
+        /// @param[in,out] freeStatus Map of object number to free status, updated
         ///     in place (entries for object numbers not covered by this
         ///     stream's `/Index` are left untouched).
         void apply_xref_stream_free_entries(const pdf_object& xrefObject,

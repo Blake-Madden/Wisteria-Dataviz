@@ -491,6 +491,32 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    std::vector<std::string_view> pdf_lexer::read_array_elements(const std::string_view arrayValue)
+        {
+        std::vector<std::string_view> elements;
+        if (arrayValue.empty() || arrayValue.front() != '[')
+            {
+            return elements;
+            }
+        size_t pos{ 1 };
+        while (pos < arrayValue.length())
+            {
+            pdf_lexer::skip_whitespace(arrayValue, pos);
+            if (pos >= arrayValue.length() || arrayValue[pos] == ']')
+                {
+                break;
+                }
+            const std::string_view element{ pdf_lexer::read_value(arrayValue, pos) };
+            if (element.empty())
+                {
+                break;
+                }
+            elements.push_back(element);
+            }
+        return elements;
+        }
+
+    //------------------------------------------------------------------
     bool pdf_lexer::get_reference(std::string_view value, long& objectNumberOut)
         {
         value = pdf_lexer::trim(value);
