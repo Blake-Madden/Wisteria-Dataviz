@@ -220,6 +220,55 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Word") == 0);
         }
+    SECTION("Table Of Contents Dot Leader With Right-Aligned Page Number")
+        {
+        // A TOC-style line: a heading, a run of dot leaders, and a page number,
+        // each drawn as its own separately-positioned Tj (so the page number
+        // lines up in a right-hand column), the same shape as the earlier
+        // "Tm Separate Text Objects" tests but with three runs instead of two.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Grants) Tj ET
+BT 1 0 0 1 140 700 Tm (. . . . . . . . . . . . . . . . . . . . .) Tj ET
+BT 1 0 0 1 500 700 Tm (12) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"Grants . . . . . . . . . . . . . . . . . . . . . 12") == 0);
+        }
+    SECTION("Fill Rectangle Between Table Rows Doesn't Interfere With Text")
+        {
+        // A zebra-striped table draws a background rectangle ("re f") for
+        // alternating rows in between the rows' own text objects. Those
+        // operators carry only numeric operands and should be ignored, the
+        // same as any other operator this parser doesn't care about.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Row One Name) Tj ET
+BT 1 0 0 1 250 700 Tm (Row one description.) Tj ET
+0.9 0.9 0.9 rg
+72 684 400 14 re f
+0 0 0 rg
+BT 1 0 0 1 72 686 Tm (Row Two Name) Tj ET
+BT 1 0 0 1 250 686 Tm (Row two description.) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"Row One Name Row one description.\nRow Two Name "
+                          L"Row two description.") == 0);
+        }
     SECTION("Rotated Tm: Td Move Not Rotated")
         {
         // Tm establishes a 90-degree-rotated text line matrix (local +x maps to
@@ -396,6 +445,49 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\t• Create a new folder.") == 0);
         }
+    SECTION("Checkbox Glyph Treated As Bullet")
+        {
+        // A checkbox glyph (U+25A1, used by some checklist-style PDFs as a
+        // to-do item marker) decoded through a ToUnicode CMap, followed by its
+        // label in a separate text object on the same line, the same layout as
+        // the bullet-glyph test above. It should get the same leading-tab list
+        // formatting as a real bullet glyph.
+        // The label switches to a plain single-byte font (F2); otherwise it
+        // would keep decoding through F1's 2-byte Identity-H encoding, since Tf
+        // isn't scoped to BT/ET.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R /F2 5 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf 0 700 Td <0001> Tj ET
+BT /F2 12 Tf 20 700 Td (Buy milk) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+1 beginbfchar
+<0001> <25A1>
+endbfchar
+endcmap
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\t\x2022 Buy milk") == 0);
+        }
     SECTION("Multiple Pages In Tree Order")
         {
         // the page tree's Kids order (4, then 3) is document order,
@@ -462,6 +554,57 @@ trailer
         CHECK(ext.get_filtered_text_length() == 0);
         CHECK(!ext.get_log().empty());
         }
+    SECTION("Optional Content Group Marked OFF Is Excluded")
+        {
+        // /LA resolves to an OCG that's on by default: its text stays.
+        // /LB resolves to an OCG listed in /OCProperties /D /OFF: its text (and a
+        // /Span BDC nested inside it, which must stay suppressed until LB's own EMC,
+        // not the nested one) is excluded, same as a viewer would hide it.
+        //
+        // The 5 lines are Tm'd 14 units apart (700, 686, 672, 658, 644), one line
+        // height each. With the two hidden lines (672, 658) skipped entirely, "After
+        // layers" lands 42 units below the last visible line ("Visible layer text"
+        // at 686): a 3-line gap, past the paragraph-break threshold, so a viewer's
+        // eye would read that as a blank line, same as the extracted text.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /OCProperties << /OCGs [6 0 R 7 0 R] /D << /OFF [7 0 R] >> >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Contents 4 0 R
+   /Resources << /Properties << /LA 6 0 R /LB 7 0 R >> >> >>
+endobj
+4 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Before layers) Tj ET
+/OC /LA BDC
+BT 1 0 0 1 72 686 Tm (Visible layer text) Tj ET
+EMC
+/OC /LB BDC
+BT 1 0 0 1 72 672 Tm (Hidden layer text) Tj ET
+/Span BDC
+BT 1 0 0 1 72 658 Tm (Nested hidden text) Tj ET
+EMC
+EMC
+BT 1 0 0 1 72 644 Tm (After layers) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /OCG /Name (Layer A) >>
+endobj
+7 0 obj
+<< /Type /OCG /Name (Layer B) >>
+endobj
+trailer
+<< /Root 1 0 R >>)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"Before layers\nVisible layer text\n\nAfter layers") == 0);
+        }
     SECTION("Contents Array")
         {
         const char* text = R"PDF(%PDF-1.4
@@ -482,6 +625,37 @@ endstream
 endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Part one\npart two") == 0);
+        }
+    SECTION("Link Annotation Text Not Extracted")
+        {
+        // A hyperlink is usually its own text run in the content stream (different
+        // color/font from the surrounding sentence), with plain text before and
+        // after it on the same line, e.g. "look it up on <link> for details."
+        // The /Link annotation just overlays a clickable /Rect with its own /URI
+        // action and tooltip /Contents string; neither is part of the page's
+        // visible text. This also exercises the same-line, separate-run gluing
+        // (see "Tm Separate Text Objects On Same Line") to confirm the annotation
+        // doesn't interfere with the surrounding runs joining correctly.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Annots [3 0 R] >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Visit our site at) Tj ET
+BT 1 0 0 1 200 700 Tm (https://example.com/) Tj ET
+BT 1 0 0 1 400 700 Tm (for details.) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Annot /Subtype /Link /Rect [200 698 380 712]
+   /Contents (Click here to visit the site)
+   /A << /Type /Action /S /URI /URI (https://example.com/) >> >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"Visit our site at https://example.com/ for details.") == 0);
         }
     SECTION("Metadata")
         {

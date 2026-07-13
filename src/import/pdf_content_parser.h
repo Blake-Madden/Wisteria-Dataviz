@@ -29,6 +29,9 @@ namespace lily_of_the_valley
         std::map<std::string, std::shared_ptr<pdf_font_decoder>, std::less<>> m_fonts;
         /// Resource name -> object number of a form XObject.
         std::map<std::string, long, std::less<>> m_xobjects;
+        /// Resource name (from /Properties) -> whether that optional-content
+        /// group is visible in the document's default configuration.
+        std::map<std::string, bool, std::less<>> m_ocg_visible;
         };
 
     /// @brief Parses page content streams, appending the extracted text to a buffer.
@@ -38,7 +41,11 @@ namespace lily_of_the_valley
         /// @brief Constructs a parser that appends extracted text to @p text.
         /// @param document The document whose objects and streams are accessed.
         /// @param[in,out] text The output buffer to append decoded text to.
-        pdf_content_parser(pdf_document& document, std::wstring& text);
+        /// @param hiddenOCGs Object numbers of OCGs that are off in the document's
+        ///     default optional-content configuration; marked content belonging to
+        ///     one of these is excluded, the same as a viewer would hide it.
+        pdf_content_parser(pdf_document& document, std::wstring& text,
+                           const std::set<long>& hiddenOCGs);
 
         /// @brief Extracts the text from one page.
         /// @param pageObject The page object (must have a dictionary).
@@ -123,13 +130,17 @@ namespace lily_of_the_valley
         void parse_content(std::string_view content, const pdf_page_resources& resources,
                            int depth);
 
-        pdf_document& m_document;          ///< Document being parsed.
-        std::wstring& m_text;              ///< Output buffer (owned by the caller).
-        std::set<long> m_visited_xobjects; ///< XObjects already recursed into (cycle guard).
-        double m_currentX{ 0 };            ///< Current horizontal position in user-space.
-        double m_currentY{ 0 };            ///< Current vertical position in user-space.
-        double m_fontSize{ 12 };           ///< Current font size (from Tf operator).
-        double m_fontScale{ 1 };           ///< Vertical scale factor from the text matrix.
+        pdf_document& m_document;            ///< Document being parsed.
+        std::wstring& m_text;                ///< Output buffer (owned by the caller).
+        const std::set<long>& m_hidden_ocgs; ///< Object numbers of OCGs that are off by default.
+        std::set<long> m_visited_xobjects;   ///< XObjects already recursed into (cycle guard).
+        /// Marked-content nesting stack (pushed by BDC/BMC, popped by EMC); each
+        /// entry is whether that level (or an ancestor) is an OCG that's hidden.
+        std::vector<bool> m_markedContentHidden;
+        double m_currentX{ 0 };  ///< Current horizontal position in user-space.
+        double m_currentY{ 0 };  ///< Current vertical position in user-space.
+        double m_fontSize{ 12 }; ///< Current font size (from Tf operator).
+        double m_fontScale{ 1 }; ///< Vertical scale factor from the text matrix.
         /// The a, b, c, d components of the current text line matrix (from Tm; reset
         /// to identity by BT). Used to transform a Td/TD's local-space operands into
         /// a page-space delta when the matrix carries rotation or scale.

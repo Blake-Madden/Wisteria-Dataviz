@@ -345,6 +345,52 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    std::set<long> pdf_extract_text::compute_hidden_ocgs(const pdf_document& document,
+                                                         const pdf_object& catalogObject)
+        {
+        const std::string_view ocProperties{ pdf_lexer::trim(document.resolve_value(
+            pdf_lexer::find_dictionary_value(catalogObject.m_dictionary, "OCProperties"))) };
+        const std::string_view defaultConfig{ pdf_lexer::trim(
+            document.resolve_value(pdf_lexer::find_dictionary_value(ocProperties, "D"))) };
+        if (defaultConfig.compare(0, 2, "<<") != 0)
+            {
+            return {};
+            }
+
+        const auto readOCGReferences = [&document](const std::string_view arrayValue)
+        {
+            std::set<long> objectNumbers;
+            for (const std::string_view element : pdf_lexer::read_array_elements(
+                     pdf_lexer::trim(document.resolve_value(arrayValue))))
+                {
+                long objectNumber{ 0 };
+                if (pdf_lexer::get_reference(element, objectNumber))
+                    {
+                    objectNumbers.insert(objectNumber);
+                    }
+                }
+            return objectNumbers;
+        };
+
+        // "/BaseState /OFF" means every OCG starts hidden except those explicitly
+        // listed in "/ON"; otherwise, only the ones listed in "/OFF" are hidden
+        const std::string_view baseState{ pdf_lexer::trim(
+            pdf_lexer::find_dictionary_value(defaultConfig, "BaseState")) };
+        if (baseState == "/OFF")
+            {
+            std::set<long> hiddenGroups{ readOCGReferences(
+                pdf_lexer::find_dictionary_value(ocProperties, "OCGs")) };
+            for (const long onGroup :
+                 readOCGReferences(pdf_lexer::find_dictionary_value(defaultConfig, "ON")))
+                {
+                hiddenGroups.erase(onGroup);
+                }
+            return hiddenGroups;
+            }
+        return readOCGReferences(pdf_lexer::find_dictionary_value(defaultConfig, "OFF"));
+        }
+
+    //------------------------------------------------------------------
     const wchar_t* pdf_extract_text::operator()(const char* pdf_buffer, const size_t text_length)
         {
         clear_log();
@@ -444,6 +490,7 @@ namespace lily_of_the_valley
 
         // put the pages into document order by walking the page tree from the catalog
         std::vector<long> pageOrder;
+        std::set<long> hiddenOCGs;
         const pdf_object* rootObject{ document.resolve_to_object(rootValue) };
         if (rootObject != nullptr && !rootObject->m_dictionary.empty())
             {
@@ -456,6 +503,7 @@ namespace lily_of_the_valley
                 pdf_extract_text::walk_page_tree(document, pagesRootNumber, visitedNodes, pageOrder,
                                                  0);
                 }
+            hiddenOCGs = pdf_extract_text::compute_hidden_ocgs(document, *rootObject);
             }
         // ...or fall back to the order that the page objects appear in the file
         if (pageOrder.empty())
@@ -475,7 +523,7 @@ namespace lily_of_the_valley
         // extract the text from each page
         std::wstring text;
         text.reserve(text_length / 4);
-        pdf_content_parser parser{ document, text };
+        pdf_content_parser parser{ document, text, hiddenOCGs };
         for (size_t i = 0; i < pageOrder.size(); ++i)
             {
             const pdf_object* pageObject{ document.find_object(pageOrder[i]) };

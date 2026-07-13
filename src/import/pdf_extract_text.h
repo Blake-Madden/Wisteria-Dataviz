@@ -464,6 +464,16 @@ namespace lily_of_the_valley
                                    std::set<long>& visitedNodes, std::vector<long>& pageOrder,
                                    int depth);
 
+        /// @brief Determines which OCGs (layers) are off in the catalog's
+        ///     `/OCProperties` default configuration (`/D`), so that marked content
+        ///     belonging to them can be excluded from the extracted text.
+        /// @param document The document (used to resolve indirect references).
+        /// @param catalogObject The document's catalog object.
+        /// @returns The object numbers of OCGs that are hidden by default.
+        [[nodiscard]]
+        static std::set<long> compute_hidden_ocgs(const pdf_document& document,
+                                                  const pdf_object& catalogObject);
+
         /// @brief Reads a (possibly `(literal)` or `<hex>`) string's raw bytes.
         /// @returns The decoded raw bytes, or an empty string if @p value isn't a string.
         [[nodiscard]]
