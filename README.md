@@ -5,7 +5,7 @@ Wisteria Dataviz
 
 | Platforms     | Result        |
 | ------------- | ------------- |
-| Linux  | [![Linux Build & Unit Tests](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix%20build.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix%20build.yml) |
+| Linux  | [![Linux Build & Unit Tests](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix-build.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix-build.yml) |
 | macOS  | [![macOS Build & Unit Tests](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/macos-build.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/macos-build.yml) |
 | Windows  | [![Windows Build & Unit Tests](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/msbuild.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/msbuild.yml ) |
 
