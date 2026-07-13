@@ -15,6 +15,7 @@ SET(TEST_SRC_FILES
     labeltests.cpp
     listctrlextests.cpp
     memmaptests.cpp
+    pdfreadertests.cpp
     pivottests.cpp
     polygontests.cpp
     sidebartests.cpp

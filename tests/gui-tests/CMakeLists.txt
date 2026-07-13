@@ -161,6 +161,14 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME}
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_SOURCE_DIR}/test_files $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/test_files)
 
+message(STATUS "Copying PDF glyph/CID lookup tables...")
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/../../src/import/glyphlist.txt
+                   ${CMAKE_CURRENT_SOURCE_DIR}/../../src/import/UniJIS-UTF16-H
+                   $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/test_files)
+
 # load the test cases into the runner
 include(CTest)
 include(Catch)

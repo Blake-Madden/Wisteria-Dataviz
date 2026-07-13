@@ -1183,6 +1183,27 @@ wxString RemoveFontStyleSection(const wxString& value)
     return str;
     }
 
+// dark/light-mode-aware CSS block that FormatToHtml() prepends to exported tables
+[[nodiscard]]
+wxString GetHtmlTableStyleBlock()
+    {
+    return L"<style>\n        .list-table {"
+           "\n            display: inline-block; max-width: 100%;"
+           "\n            border: 1px solid light-dark(rgba(128, 128, 128, 0.35), "
+           "rgba(255, 255, 255, 0.35));"
+           "\n            border-radius: 8px;"
+           "\n            overflow: hidden;"
+           "\n        }"
+           "\n        .list-table table {"
+           "\n            background-color: Canvas; color: CanvasText;"
+           "\n            border-collapse: collapse;"
+           "\n        }"
+           "\n        .list-table table td, .list-table table th {"
+           "\n            border: 1px solid light-dark(rgba(128, 128, 128, 0.2), "
+           "rgba(255, 255, 255, 0.3));"
+           "\n        }</style>";
+    }
+
 TEST_CASE("ListCtrlEx Format", "[listctrlex]")
     {
     auto m_dataProvider = std::make_shared<ListCtrlExNumericDataProvider>();
@@ -1229,28 +1250,29 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         m_list->Select(6);
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportSelected);
         CHECK(RemoveFontStyleSection(outputText) ==
-              wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td></tr></thead>\n"
-                       "    <tr><td>Text</td></tr>\n"
-                       "    <tr><td>teXt2</td></tr>\n"
-                       "    <tr><td>7</td></tr>\n"
-                       "</table>"));
+              GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "    <tr><td>Text</td></tr>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>7</td></tr>\n"
+                                                  "</table>\n</div>"));
         }
     SECTION("Format to html no header")
         {
         wxString outputText;
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0,
                              -1, false);
-        CHECK(RemoveFontStyleSection(outputText) == wxString("<table border='1' style=''>\n"
-                                                             "    <tr><td>Text</td></tr>\n"
-                                                             "    <tr><td>tExt2</td></tr>\n"
-                                                             "    <tr><td>text</td></tr>\n"
-                                                             "    <tr><td>teXt2</td></tr>\n"
-                                                             "    <tr><td>text</td></tr>\n"
-                                                             "    <tr><td>72</td></tr>\n"
-                                                             "    <tr><td>7</td></tr>\n"
-                                                             "</table>"));
+        CHECK(RemoveFontStyleSection(outputText) ==
+              GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <tr><td>Text</td></tr>\n"
+                                                  "    <tr><td>tExt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>72</td></tr>\n"
+                                                  "    <tr><td>7</td></tr>\n"
+                                                  "</table>\n</div>"));
         }
     SECTION("Format to html custom row range")
         {
@@ -1258,13 +1280,13 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5,
                              0, -1, true);
         CHECK(RemoveFontStyleSection(outputText) ==
-              wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td></tr></thead>\n"
-                       "    <tr><td>teXt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>72</td></tr>\n"
-                       "</table>"));
+              GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>72</td></tr>\n"
+                                                  "</table>\n</div>"));
         }
     SECTION("Format to html custom row range bad")
         {
@@ -1279,31 +1301,31 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99,
                              0, -1, true);
         CHECK(RemoveFontStyleSection(outputText) ==
-              wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td></tr></thead>\n"
-                       "    <tr><td>Text</td></tr>\n"
-                       "    <tr><td>tExt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>teXt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>72</td></tr>\n"
-                       "    <tr><td>7</td></tr>\n"
-                       "</table>"));
+              GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "    <tr><td>Text</td></tr>\n"
+                                                  "    <tr><td>tExt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>72</td></tr>\n"
+                                                  "    <tr><td>7</td></tr>\n"
+                                                  "</table>\n</div>"));
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, -10,
                              -1, 0, -1, true);
         CHECK(RemoveFontStyleSection(outputText) ==
-              wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td></tr></thead>\n"
-                       "    <tr><td>Text</td></tr>\n"
-                       "    <tr><td>tExt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>teXt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>72</td></tr>\n"
-                       "    <tr><td>7</td></tr>\n"
-                       "</table>"));
+              GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "    <tr><td>Text</td></tr>\n"
+                                                  "    <tr><td>tExt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>72</td></tr>\n"
+                                                  "    <tr><td>7</td></tr>\n"
+                                                  "</table>\n</div>"));
         }
     SECTION("Format to html custom column range")
         {
@@ -1336,45 +1358,49 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         // get both columns
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              0, -1, true);
-        CHECK(wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td><td>NAME2</td></tr></thead>\n"
-                       "    <tr><td>Text</td><td>2Text</td></tr>\n"
-                       "    <tr><td>tExt2</td><td>2tExt2</td></tr>\n"
-                       "    <tr><td>text</td><td>2text</td></tr>\n"
-                       "    <tr><td>teXt2</td><td>2teXt2</td></tr>\n"
-                       "    <tr><td>text</td><td>2text</td></tr>\n"
-                       "    <tr><td>72</td><td>272</td></tr>\n"
-                       "    <tr><td>7</td><td>27</td></tr>\n"
-                       "</table>") == RemoveFontStyleSection(outputText));
+        CHECK(GetHtmlTableStyleBlock() +
+                  wxString("\n<div class='list-table'>\n<table style=''>\n"
+                           "    <thead><tr style='background:#337BC4; "
+                           "color:white;'><td>NAME</td><td>NAME2</td></tr></thead>\n"
+                           "    <tr><td>Text</td><td>2Text</td></tr>\n"
+                           "    <tr><td>tExt2</td><td>2tExt2</td></tr>\n"
+                           "    <tr><td>text</td><td>2text</td></tr>\n"
+                           "    <tr><td>teXt2</td><td>2teXt2</td></tr>\n"
+                           "    <tr><td>text</td><td>2text</td></tr>\n"
+                           "    <tr><td>72</td><td>272</td></tr>\n"
+                           "    <tr><td>7</td><td>27</td></tr>\n"
+                           "</table>\n</div>") ==
+              RemoveFontStyleSection(outputText));
         // just get the first column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              0, 0, true);
-        CHECK(wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td></tr></thead>\n"
-                       "    <tr><td>Text</td></tr>\n"
-                       "    <tr><td>tExt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>teXt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>72</td></tr>\n"
-                       "    <tr><td>7</td></tr>\n"
-                       "</table>") == RemoveFontStyleSection(outputText));
+        CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "    <tr><td>Text</td></tr>\n"
+                                                  "    <tr><td>tExt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>72</td></tr>\n"
+                                                  "    <tr><td>7</td></tr>\n"
+                                                  "</table>\n</div>") ==
+              RemoveFontStyleSection(outputText));
         // get last column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              1, 1, true);
-        CHECK(wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME2</td></tr></thead>\n"
-                       "    <tr><td>2Text</td></tr>\n"
-                       "    <tr><td>2tExt2</td></tr>\n"
-                       "    <tr><td>2text</td></tr>\n"
-                       "    <tr><td>2teXt2</td></tr>\n"
-                       "    <tr><td>2text</td></tr>\n"
-                       "    <tr><td>272</td></tr>\n"
-                       "    <tr><td>27</td></tr>\n"
-                       "</table>") == RemoveFontStyleSection(outputText));
+        CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME2</td></tr></thead>\n"
+                                                  "    <tr><td>2Text</td></tr>\n"
+                                                  "    <tr><td>2tExt2</td></tr>\n"
+                                                  "    <tr><td>2text</td></tr>\n"
+                                                  "    <tr><td>2teXt2</td></tr>\n"
+                                                  "    <tr><td>2text</td></tr>\n"
+                                                  "    <tr><td>272</td></tr>\n"
+                                                  "    <tr><td>27</td></tr>\n"
+                                                  "</table>\n</div>") ==
+              RemoveFontStyleSection(outputText));
         }
     SECTION("Format to html custom column range bad")
         {
@@ -1411,17 +1437,18 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         // bogus negative start should be reset to first column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              -10, 0, true);
-        CHECK(wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME</td></tr></thead>\n"
-                       "    <tr><td>Text</td></tr>\n"
-                       "    <tr><td>tExt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>teXt2</td></tr>\n"
-                       "    <tr><td>text</td></tr>\n"
-                       "    <tr><td>72</td></tr>\n"
-                       "    <tr><td>7</td></tr>\n"
-                       "</table>") == RemoveFontStyleSection(outputText));
+        CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "    <tr><td>Text</td></tr>\n"
+                                                  "    <tr><td>tExt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>teXt2</td></tr>\n"
+                                                  "    <tr><td>text</td></tr>\n"
+                                                  "    <tr><td>72</td></tr>\n"
+                                                  "    <tr><td>7</td></tr>\n"
+                                                  "</table>\n</div>") ==
+              RemoveFontStyleSection(outputText));
         // bogus (too large) is nonsense
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              99, 1, true);
@@ -1429,31 +1456,33 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         // bogus negative end should be reset to last column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              1, -10, true);
-        CHECK(wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME2</td></tr></thead>\n"
-                       "    <tr><td>2Text</td></tr>\n"
-                       "    <tr><td>2tExt2</td></tr>\n"
-                       "    <tr><td>2text</td></tr>\n"
-                       "    <tr><td>2teXt2</td></tr>\n"
-                       "    <tr><td>2text</td></tr>\n"
-                       "    <tr><td>272</td></tr>\n"
-                       "    <tr><td>27</td></tr>\n"
-                       "</table>") == RemoveFontStyleSection(outputText));
+        CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME2</td></tr></thead>\n"
+                                                  "    <tr><td>2Text</td></tr>\n"
+                                                  "    <tr><td>2tExt2</td></tr>\n"
+                                                  "    <tr><td>2text</td></tr>\n"
+                                                  "    <tr><td>2teXt2</td></tr>\n"
+                                                  "    <tr><td>2text</td></tr>\n"
+                                                  "    <tr><td>272</td></tr>\n"
+                                                  "    <tr><td>27</td></tr>\n"
+                                                  "</table>\n</div>") ==
+              RemoveFontStyleSection(outputText));
         // bogus (too big) end should be reset to last column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1,
                              1, 10, true);
-        CHECK(wxString("<table border='1' style=''>\n"
-                       "    <thead><tr style='background:#337BC4; "
-                       "color:white;'><td>NAME2</td></tr></thead>\n"
-                       "    <tr><td>2Text</td></tr>\n"
-                       "    <tr><td>2tExt2</td></tr>\n"
-                       "    <tr><td>2text</td></tr>\n"
-                       "    <tr><td>2teXt2</td></tr>\n"
-                       "    <tr><td>2text</td></tr>\n"
-                       "    <tr><td>272</td></tr>\n"
-                       "    <tr><td>27</td></tr>\n"
-                       "</table>") == RemoveFontStyleSection(outputText));
+        CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
+                                                  "    <thead><tr style='background:#337BC4; "
+                                                  "color:white;'><td>NAME2</td></tr></thead>\n"
+                                                  "    <tr><td>2Text</td></tr>\n"
+                                                  "    <tr><td>2tExt2</td></tr>\n"
+                                                  "    <tr><td>2text</td></tr>\n"
+                                                  "    <tr><td>2teXt2</td></tr>\n"
+                                                  "    <tr><td>2text</td></tr>\n"
+                                                  "    <tr><td>272</td></tr>\n"
+                                                  "    <tr><td>27</td></tr>\n"
+                                                  "</table>\n</div>") ==
+              RemoveFontStyleSection(outputText));
         }
     SECTION("Format to text only selected rows")
         {
