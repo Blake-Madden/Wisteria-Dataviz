@@ -213,6 +213,23 @@ namespace Wisteria::Graphs
             m_columnHeaders = colHeaders;
             }
 
+        /// @brief Sets how the labels on the first column are shown (default is to hide them).
+        /// @details Usually the first column represents the initial cohort of observations.
+        ///     Showing the label(s) on it is not as useful as the result groups they flow into,
+        ///     or at least should be displayed differently
+        /// @param display How to show the labels.
+        void SetInitialColumnLabels(const BinLabelDisplay display) noexcept
+            {
+            m_initialColumnLabelDisplay = display;
+            }
+
+        /// @returns @c How labels are being drawn on the first column.
+        [[nodiscard]]
+        BinLabelDisplay GetInitialColumnLabels() const noexcept
+            {
+            return m_initialColumnLabelDisplay;
+            }
+
         /// @}
 
         /// @private
@@ -258,13 +275,15 @@ namespace Wisteria::Graphs
                 }
 
             [[nodiscard]]
-            bool operator<(const SankeyGroup& that) const
+            bool
+            operator<(const SankeyGroup& that) const
                 {
                 return m_label.CmpNoCase(that.m_label) < 0;
                 }
 
             [[nodiscard]]
-            bool operator==(const SankeyGroup& that) const
+            bool
+            operator==(const SankeyGroup& that) const
                 {
                 return m_label.CmpNoCase(that.m_label) == 0;
                 }
@@ -298,11 +317,24 @@ namespace Wisteria::Graphs
 
         FlowShape m_flowShape{ FlowShape::Curvy };
         BinLabelDisplay m_groupLabelDisplay{ BinLabelDisplay::BinName };
+        BinLabelDisplay m_initialColumnLabelDisplay{ BinLabelDisplay::NoDisplay };
         GraphColumnHeader m_columnDisplay{ GraphColumnHeader::NoDisplay };
         std::vector<wxString> m_columnHeaders;
 
-        // after setting the data, homogenizes the columns and their groups
+        /// @brief After setting the data, homogenizes the columns and their groups.
         void AdjustColumns();
+        /// @brief Sets the initial positions and sizes of a column's group boxes.
+        void CalcColumn(const size_t colIndex, const double xStart, const double xEnd,
+                        const double yRangeStart, const double yRangeEnd,
+                        const double spacePadding);
+        /// @brief Adjusts spacing between groups so that the columns line up vertically.
+        void AlignColumns();
+        /// @brief Draws the group boxes for each column.
+        void DrawColumns(size_t& colorIndex);
+        /// @brief Draws the flow ribbons connecting a column's groups to the next column's groups.
+        void DrawStreams(const size_t colIndex, const double xStart, const double xEnd);
+        /// @brief Draws the group labels alongside a column.
+        void DrawLabels(const size_t colIndex, Wisteria::Side labelSide, BinLabelDisplay labelDisplay, wxDC& dc);
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
 
