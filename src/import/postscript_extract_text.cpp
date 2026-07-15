@@ -29,7 +29,8 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         {
         throw postscript_header_not_found();
         }
-    const double version = std::strtod(header + 11, nullptr);
+    const double version =
+        to_double({ header + 11, static_cast<size_t>(endSentinel - (header + 11)) });
     if (version >= 3)
         {
         throw postscript_version_not_supported();

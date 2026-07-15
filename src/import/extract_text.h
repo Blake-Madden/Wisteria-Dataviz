@@ -75,6 +75,66 @@ namespace lily_of_the_valley
             {
             m_log_message_separator = separator;
             }
+
+        /// @brief Converts a token to a floating-point number.
+        /// @details Parsing is locale-independent (a PDF or PostScript decimal
+        ///     separator is always '.'), and stops at the first character that
+        ///     isn't part of a number (so a view into a larger buffer is fine).
+        /// @param token The token to parse.
+        /// @param defaultValue The value to return when @p token doesn't start
+        ///     with a number.
+        /// @returns The parsed number, or @p defaultValue.
+        [[nodiscard]]
+        static double to_double(std::string_view token, const double defaultValue = 0.0)
+            {
+            if (token.empty())
+                {
+                return defaultValue;
+                }
+            const bool negative{ token.front() == '-' };
+            if (token.front() == '+' || token.front() == '-')
+                {
+                token.remove_prefix(1);
+                }
+            // Accumulate every digit into one integer-valued mantissa, then divide by
+            // a single exact power of ten, so the fractional part isn't built up from
+            // inexact 0.1/0.01/... increments.
+            double value{ 0 };
+            // -1 while in the integer part
+            int fractionalDigits{ -1 };
+            bool haveDigits{ false };
+            for (const char curChar : token)
+                {
+                if (curChar == '.' && fractionalDigits < 0)
+                    {
+                    fractionalDigits = 0;
+                    }
+                else if (curChar >= '0' && curChar <= '9')
+                    {
+                    value = (value * 10) + (curChar - '0');
+                    if (fractionalDigits >= 0)
+                        {
+                        ++fractionalDigits;
+                        }
+                    haveDigits = true;
+                    }
+                else
+                    {
+                    break;
+                    }
+                }
+            if (!haveDigits)
+                {
+                return defaultValue;
+                }
+            double divisor{ 1 };
+            for (int place = 0; place < fractionalDigits; ++place)
+                {
+                divisor *= 10;
+                }
+            value = safe_divide(value, divisor);
+            return negative ? -value : value;
+            }
 #ifndef __UNITTEST
       protected:
 #endif

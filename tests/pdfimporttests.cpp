@@ -9,6 +9,46 @@
 
 using namespace lily_of_the_valley;
 
+TEST_CASE("Extract Text to_double", "[pdf import]")
+    {
+    SECTION("Integers")
+        {
+        CHECK(extract_text::to_double("42") == 42.0);
+        CHECK(extract_text::to_double("0") == 0.0);
+        CHECK(extract_text::to_double("-14") == -14.0);
+        CHECK(extract_text::to_double("+7") == 7.0);
+        }
+    SECTION("Fractions")
+        {
+        CHECK(extract_text::to_double("1.5") == 1.5);
+        CHECK(extract_text::to_double("-2.25") == -2.25);
+        CHECK(extract_text::to_double("+0.75") == 0.75);
+        CHECK(extract_text::to_double(".5") == 0.5);
+        CHECK(extract_text::to_double("3.") == 3.0);
+        }
+    SECTION("Stops At First Non-Numeric Character")
+        {
+        // Tokens are views into a larger content buffer, so parsing must end at
+        // the value's boundary (e.g. the space between matrix operands).
+        CHECK(extract_text::to_double("1 0 0 1") == 1.0);
+        CHECK(extract_text::to_double("-0.5 700 Tm") == -0.5);
+        }
+    SECTION("Comma Is Not A Decimal Separator")
+        {
+        // A PDF's decimal separator is always '.', so a comma terminates the
+        // number rather than acting as a decimal point. std::strtod would return
+        // 1.5 here under a comma-decimal locale (e.g. de_DE); this must not.
+        CHECK(extract_text::to_double("1,5") == 1.0);
+        }
+    SECTION("Non-Numeric Returns Default")
+        {
+        CHECK(extract_text::to_double("") == 0.0);
+        CHECK(extract_text::to_double("", 99.0) == 99.0);
+        CHECK(extract_text::to_double("abc", -1.0) == -1.0);
+        CHECK(extract_text::to_double("+", 5.0) == 5.0);
+        }
+    }
+
 TEST_CASE("PDF Import", "[pdf import]")
     {
     SECTION("Nulls")

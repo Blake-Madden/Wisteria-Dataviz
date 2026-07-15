@@ -2280,7 +2280,7 @@ namespace Wisteria
                     It appends the provided `text` to the `buffer` (preceded by `separator`),
                     while converting newlines, carriage returns,
                     and tabs to spaces to ensure screen readers read the text clearly.
-                @param buffer The string buffer to append to.
+                @param[in,out] buffer The string buffer to append to.
                 @param text The text to append to the buffer. If empty, nothing is appended.
                 @param separator The separator to insert before the text (e.g., ", " or ": ").*/
             static void AddAccessibilityAttribute(wxString& buffer, const wxString& text,

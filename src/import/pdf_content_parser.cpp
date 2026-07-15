@@ -374,8 +374,7 @@ namespace lily_of_the_valley
                     }
                 // a large negative adjustment (in thousandths of an em)
                 // is a gap between words
-                // (strtod is used since Apple Clang's libc++ lacks floating-point from_chars)
-                const double adjustment{ std::strtod(token.data(), nullptr) };
+                const double adjustment{ extract_text::to_double(token) };
                 // the adjustment is in unscaled text space, but Tz stretches or
                 // compresses how much actual displayed width it corresponds to
                 if ((adjustment * (m_horizScale / 100)) < -150)
@@ -557,7 +556,8 @@ namespace lily_of_the_valley
                     {
                     ++pos;
                     }
-                const double numericValue{ std::strtod(content.data() + numberStart, nullptr) };
+                const double numericValue{ extract_text::to_double(
+                    content.substr(numberStart, pos - numberStart)) };
                 numbers.push_back(numericValue);
                 // operands are only cleared by operators
                 continue;
