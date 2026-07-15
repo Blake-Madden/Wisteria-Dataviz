@@ -680,15 +680,30 @@ namespace Wisteria
         const auto rangeNode = axisNode->GetProperty(_DT(L"range"));
         if (rangeNode->IsOk())
             {
-            auto [rangeStart, rangeEnd] = axis.GetRange();
-            rangeStart = rangeNode->GetProperty(_DT(L"start"))->AsDouble(rangeStart);
-            rangeEnd = rangeNode->GetProperty(_DT(L"end"))->AsDouble(rangeEnd);
+            // Use stored range and interval info only if they span beyond the calculated range.
+            // If the newly calculated range covers more of a range than the hard coded one in
+            // the config file, then we need to use that instead.
+            const auto [calculatedRangeStart, calculatedRangeEnd] = axis.GetRange();
+            auto rangeStart =
+                std::min(rangeNode->GetProperty(_DT(L"start"))->AsDouble(calculatedRangeStart),
+                         calculatedRangeStart);
+            auto rangeEnd =
+                std::max(rangeNode->GetProperty(_DT(L"end"))->AsDouble(calculatedRangeEnd),
+                         calculatedRangeEnd);
+            const bool axisAdjusted = compare_doubles_greater(rangeStart, calculatedRangeStart) ||
+                                      compare_doubles_less(rangeEnd, calculatedRangeEnd);
 
-            auto precision =
+            const auto interval =
+                axisAdjusted ?
+                    axis.GetInterval() :
+                    rangeNode->GetProperty(_DT(L"interval"))->AsDouble(axis.GetInterval());
+            const auto displayInterval = axisAdjusted ?
+                                             axis.GetDisplayInterval() :
+                                             rangeNode->GetProperty(_DT(L"display-interval"))
+                                                 ->AsDouble(axis.GetDisplayInterval());
+            // using the hard coded precision is fine either way
+            const auto precision =
                 rangeNode->GetProperty(_DT(L"precision"))->AsDouble(axis.GetPrecision());
-            auto interval = rangeNode->GetProperty(_DT(L"interval"))->AsDouble(axis.GetInterval());
-            auto displayInterval = rangeNode->GetProperty(_DT(L"display-interval"))
-                                       ->AsDouble(axis.GetDisplayInterval());
 
             if (rangeStart > rangeEnd)
                 {
