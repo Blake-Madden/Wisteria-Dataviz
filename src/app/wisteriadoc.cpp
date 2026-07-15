@@ -1484,30 +1484,11 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
         tmpl += L", \"double-sided-labels\": true";
         }
 
-    // range
-    const auto [rangeStart, rangeEnd] = axis->GetRange();
-    if (!compare_doubles(rangeStart, 0.0) || !compare_doubles(rangeEnd, 0.0))
-        {
-        tmpl += wxString::Format(L", \"range\": {\"start\": %g, \"end\": %g", rangeStart, rangeEnd);
-        if (axis->GetPrecision() != 0)
-            {
-            tmpl +=
-                wxString::Format(L", \"precision\": %d", static_cast<int>(axis->GetPrecision()));
-            }
-        if (!compare_doubles(axis->GetInterval(), 0.0))
-            {
-            tmpl += wxString::Format(L", \"interval\": %g", axis->GetInterval());
-            }
-        if (axis->GetDisplayInterval() != 1)
-            {
-            tmpl += wxString::Format(L", \"display-interval\": %zu", axis->GetDisplayInterval());
-            }
-        tmpl += L"}";
-        }
+    // note: a common axis's range is always recomputed from its child graphs,
+    // so it is intentionally not persisted here
 
-    // precision (outside of range)
-    if (axis->GetPrecision() != 0 &&
-        (compare_doubles(rangeStart, 0.0) && compare_doubles(rangeEnd, 0.0)))
+    // precision
+    if (axis->GetPrecision() != 0)
         {
         tmpl += wxString::Format(L", \"precision\": %d", static_cast<int>(axis->GetPrecision()));
         }
