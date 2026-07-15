@@ -693,6 +693,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             // if bar with label not found, then add an empty one
             if (foundPos == GetBars().cend())
                 {
+                wxLogWarning(_(L"'%s': bar label from custom sort order not found in data; "
+                               "an empty bar will be added for it."),
+                             label);
                 const auto maxAxisPos =
                     !GetBars().empty() ?
                         std::ranges::max_element(
@@ -724,6 +727,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
                 if (foundPos == labels.cend())
                     {
+                    wxLogWarning(_(L"'%s': bar label not found in custom sort order; "
+                                   "it will be placed after the sorted bars."),
+                                 bar.GetAxisLabel().GetText());
                     otherLabelBars.push_back(bar.GetAxisLabel().GetText());
                     }
                 }

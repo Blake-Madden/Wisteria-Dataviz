@@ -2523,7 +2523,11 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         // only persist the range if the user explicitly customized it;
         // an auto-calculated range should not be written to JSON
         const bool hasRange = axis->GetPropertyTemplate(L"range.user-defined") == L"true";
-        const bool hasCustomLabels = !axis->GetCustomLabels().empty();
+        // only persist custom labels if they are a user override; dataset-derived
+        // labels (e.g., set internally by BarChart::SortBars()) are rebuilt on
+        // load and would go stale if persisted
+        const bool hasCustomLabels =
+            axis->AreCustomLabelsUserOverride() && !axis->GetCustomLabels().empty();
         const bool hasBrackets = !axis->GetBrackets().empty();
         const bool hasLabelDisplay =
             axis->GetLabelDisplay() != Wisteria::AxisLabelDisplay::DisplayCustomLabelsOrValues;
