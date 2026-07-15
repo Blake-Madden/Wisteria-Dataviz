@@ -712,6 +712,7 @@ namespace Wisteria
             else
                 {
                 axis.SetRange(rangeStart, rangeEnd, precision, interval, displayInterval);
+                axis.SetPropertyTemplate(L"range.user-defined", L"true");
                 }
             }
 

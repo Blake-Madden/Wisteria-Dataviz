@@ -2520,7 +2520,9 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         // check if axis has any non-default properties worth writing
         const bool hasTitle = !axis->GetTitle().GetText().empty();
         const auto [rStart, rEnd] = axis->GetRange();
-        const bool hasRange = !compare_doubles(rStart, 0.0) || !compare_doubles(rEnd, 0.0);
+        // only persist the range if the user explicitly customized it;
+        // an auto-calculated range should not be written to JSON
+        const bool hasRange = axis->GetPropertyTemplate(L"range.user-defined") == L"true";
         const bool hasCustomLabels = !axis->GetCustomLabels().empty();
         const bool hasBrackets = !axis->GetBrackets().empty();
         const bool hasLabelDisplay =
