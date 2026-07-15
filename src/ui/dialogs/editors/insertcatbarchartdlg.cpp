@@ -273,6 +273,7 @@ namespace Wisteria::UI
         sortComparisons.Add(_(L"Bar label"));
         m_sortComparisonChoice = new wxChoice(sortBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
                                               wxDefaultSize, sortComparisons);
+        m_sortComparisonChoice->SetSelection(0);
         sortComparisonSizer->Add(m_sortComparisonChoice, wxSizerFlags{}.CenterVertical());
         sortBox->Add(sortComparisonSizer, wxSizerFlags{}.Border(wxLEFT, FromDIP(20)));
 
