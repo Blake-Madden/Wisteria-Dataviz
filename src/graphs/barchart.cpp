@@ -2216,10 +2216,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::DrawBarGroups(BarRenderInfo & barRenderInfo)
         {
+        if (barRenderInfo.m_barMiddleEndPositions.empty())
+            {
+            return;
+            }
         std::optional<wxCoord> maxBracketStartPos{ 0.0 };
         for (auto& barGroup : m_barGroups)
             {
             barGroup.m_maxBarPos.reset();
+            if (barGroup.m_barPositions.first >= barRenderInfo.m_barMiddleEndPositions.size())
+                {
+                barGroup.m_barPositions.first = barRenderInfo.m_barMiddleEndPositions.size() - 1;
+                }
+            if (barGroup.m_barPositions.second >= barRenderInfo.m_barMiddleEndPositions.size())
+                {
+                barGroup.m_barPositions.second = barRenderInfo.m_barMiddleEndPositions.size() - 1;
+                }
             const auto startPos =
                 std::min(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
             const auto endPos =
