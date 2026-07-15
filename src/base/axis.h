@@ -1692,6 +1692,7 @@ namespace Wisteria::GraphItems
             {
             m_brackets.clear();
             m_bracketsSimplified = false;
+            m_bracketsAreDynamic = true;
             }
 
         /// @returns The axis's brackets.
@@ -1699,6 +1700,20 @@ namespace Wisteria::GraphItems
         std::vector<AxisBracket>& GetBrackets() noexcept
             {
             return m_brackets;
+            }
+
+        /** @brief Marks whether the brackets are dynamically recomputed.
+            @param dynamic @c true if the brackets are recalculated elsewhere
+                (e.g., from a dataset or other settings) and shouldn't be persisted.*/
+        void SetBracketsAreDynamic(const bool dynamic) noexcept { m_bracketsAreDynamic = dynamic; }
+
+        /// @returns @c true if the brackets are recomputed elsewhere (and so
+        ///     shouldn't be persisted), @c false if this list is the fixed,
+        ///     explicitly-authored set of brackets.
+        [[nodiscard]]
+        bool AreBracketsDynamic() const noexcept
+            {
+            return m_bracketsAreDynamic;
             }
 
         /** @brief Sets all axis brackets to be translucent.
@@ -2321,6 +2336,10 @@ namespace Wisteria::GraphItems
         Label m_invalidLabel;
 
         std::vector<AxisBracket> m_brackets;
+        // true when the brackets are recomputed elsewhere (e.g., by a graph
+        // recalculating them from a dataset each layout pass) rather than
+        // being a fixed, explicitly-authored list
+        bool m_bracketsAreDynamic{ true };
 
         std::vector<AxisPoint> m_axisLabels;
         std::map<double, Label, double_less> m_customAxisLabels;

@@ -1050,6 +1050,7 @@ namespace Wisteria::UI
             startPos, endPos, labelPos, labelText,
             wxPen(colorPicker->GetColour(), widthSpin->GetValue()), bracketStyle);
         axis.AddBracket(std::move(bracket));
+        axis.SetBracketsAreDynamic(false);
         RefreshBracketList();
         }
 
@@ -1387,6 +1388,8 @@ namespace Wisteria::UI
             {
             axis.AddBrackets(dsIt->second, labelCol, valueCol);
             }
+
+        axis.SetBracketsAreDynamic(false);
 
         // store property templates so the bracket source round-trips through save/load
         axis.SetPropertyTemplate(L"brackets.dataset", datasetNames[dsSel]);

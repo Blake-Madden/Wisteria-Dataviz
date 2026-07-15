@@ -1542,9 +1542,9 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
         tmpl += L"]";
         }
 
-    // brackets
+    // brackets: only persist a fixed bracket list, not one recomputed elsewhere
     const auto& brackets = axis->GetBrackets();
-    if (!brackets.empty())
+    if (!axis->AreBracketsDynamic() && !brackets.empty())
         {
         const auto bracketDsName = axis->GetPropertyTemplate(L"brackets.dataset");
         if (!bracketDsName.empty())
@@ -2528,7 +2528,8 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         // load and would go stale if persisted
         const bool hasCustomLabels =
             axis->AreCustomLabelsUserOverride() && !axis->GetCustomLabels().empty();
-        const bool hasBrackets = !axis->GetBrackets().empty();
+        // only persist a fixed bracket list, not one recomputed elsewhere
+        const bool hasBrackets = !axis->AreBracketsDynamic() && !axis->GetBrackets().empty();
         const bool hasLabelDisplay =
             axis->GetLabelDisplay() != Wisteria::AxisLabelDisplay::DisplayCustomLabelsOrValues;
         const bool hasPenOverride = !axis->GetAxisLinePen().IsOk() ||

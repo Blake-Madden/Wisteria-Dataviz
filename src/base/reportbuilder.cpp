@@ -777,6 +777,7 @@ namespace Wisteria
                             foundBracketStyle.value_or(BracketLineStyle::CurlyBraces)));
                         }
                     }
+                axis.SetBracketsAreDynamic(false);
                 }
             // or build a series of brackets from a dataset
             else
@@ -833,6 +834,7 @@ namespace Wisteria
                                 bracket.SetBracketLineStyle(foundBracketStyle.value());
                                 }
                             }
+                        axis.SetBracketsAreDynamic(false);
                         }
                     else
                         {

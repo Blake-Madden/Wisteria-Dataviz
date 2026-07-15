@@ -8746,6 +8746,7 @@ void WisteriaView::OnInsertCommonAxis([[maybe_unused]] wxCommandEvent& event)
             {
             commonAxis->AddBracket(bracket);
             }
+        commonAxis->SetBracketsAreDynamic(edited.AreBracketsDynamic());
         // preserve bracket property templates for round-tripping
         const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
         if (!bracketDs.empty())
@@ -8880,6 +8881,7 @@ void WisteriaView::EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Ca
             {
             commonAxis->AddBracket(bracket);
             }
+        commonAxis->SetBracketsAreDynamic(edited.AreBracketsDynamic());
         // preserve bracket property templates for round-tripping
         const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
         if (!bracketDs.empty())
