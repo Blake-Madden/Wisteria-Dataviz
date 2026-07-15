@@ -144,7 +144,7 @@ namespace Wisteria::Graphs
                 end at the beginning and end of a fiscal year.
             @param FYType The fiscal year type, which sets the fiscal year date range
                 based on pre-defined types.\n
-                This parameter is only relevant if @c interval is related to fiscal years.
+                This parameter is only relevant if @p interval is related to fiscal years.
             @param taskColumnName The column containing the task names.
             @param startDateColumnName The column containing the starting dates.
             @param endDateColumnName The column containing the ending date column.

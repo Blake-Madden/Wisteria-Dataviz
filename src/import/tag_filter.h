@@ -39,7 +39,7 @@ namespace lily_of_the_valley
 
         /// @brief Determines if a block of text is an opening tag.
         /// @param text The block of text to review.
-        /// @returns @c true if @c text is the start of a filtered section.
+        /// @returns @c true if @p text is the start of a filtered section.
         [[nodiscard]]
         bool operator==(const wchar_t* text) const noexcept
             {
@@ -80,7 +80,7 @@ namespace lily_of_the_valley
         /** @brief Filters blocks of text from a text stream based on pairs of tags
                 which denote the blocks to ignore.
             @param text The text stream to filter.
-            @param length The length of @c text.
+            @param length The length of @p text.
             @returns The text stream, with any sections within the filter tags removed.
             @sa add_filter_tag().*/
         [[nodiscard]]

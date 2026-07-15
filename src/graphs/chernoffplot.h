@@ -654,8 +654,8 @@ namespace Wisteria::Graphs
         /// @param lipstickColor The lipstick color (female only).
         /// @param eyeColor The eye/iris color.
         /// @param hairColor The hair color.
-        /// @param hairStyleFemale The hair style to use when @c gender is @c Female.
-        /// @param hairStyleMale The hair style to use when @c gender is @c Male.
+        /// @param hairStyleFemale The hair style to use when @p gender is @c Female.
+        /// @param hairStyleMale The hair style to use when @p gender is @c Male.
         /// @param gender The gender for face styling.
         /// @param parts Which parts of the face to draw.
         static void DrawFace(wxGraphicsContext* gc, const wxRect& rect,

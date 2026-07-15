@@ -65,7 +65,7 @@ namespace lily_of_the_valley
                 {
                 }
 
-            /// @returns @c true if @c that cell's column comes before this cell's column.
+            /// @returns @c true if @p that cell's column comes before this cell's column.
             /// @param that The other cell to compare against.\n
             ///     If they are in the same column, then their rows are compared.
             [[nodiscard]]
@@ -78,7 +78,7 @@ namespace lily_of_the_valley
                            (m_row_position < that.m_row_position);
                 }
 
-            /// @returns @c true if @c that cell is at the same column and row as this.
+            /// @returns @c true if @p that cell is at the same column and row as this.
             /// @param that The other cell to compare against.
             [[nodiscard]]
             bool operator==(const worksheet_cell& that) const noexcept
@@ -87,7 +87,7 @@ namespace lily_of_the_valley
                        (m_row_position == that.m_row_position);
                 }
 
-            /// @returns @c true if @c that cell is at a different place from this one.
+            /// @returns @c true if @p that cell is at a different place from this one.
             /// @param that The other cell to compare against.
             [[nodiscard]]
             bool operator!=(const worksheet_cell& that) const noexcept
@@ -96,7 +96,7 @@ namespace lily_of_the_valley
                        (m_row_position != that.m_row_position);
                 }
 
-            /// @brief Sets the @c column and @c row indices for the cell.
+            /// @brief Sets the @p column and @p row indices for the cell.
             /// @param column The column index.
             /// @param row The row index.
             void set_column_and_row(const size_t column, const size_t row) noexcept
@@ -105,7 +105,7 @@ namespace lily_of_the_valley
                 m_row_position = row;
                 }
 
-            /// @brief Sets the @c name of the cell, which will internally be
+            /// @brief Sets the @p name of the cell, which will internally be
             ///     stored as column and row indices.
             /// @param name The name for the cell.
             void set_name(const std::wstring& name)

@@ -295,9 +295,9 @@ namespace lily_of_the_valley
                 return (m_current_position - m_start);
                 }
 
-            /** @brief Reads from the stream into a @c buffer.
+            /** @brief Reads from the stream into a @p buffer.
                 @param[out] buffer The buffer to be written to.
-                @param size The number of bytes in the @c buffer.
+                @param size The number of bytes in the @p buffer.
                 @returns The number of bytes read.
                 @note This will move the current position in the stream.*/
             size_t read(void* buffer, const size_t size) noexcept
@@ -428,7 +428,7 @@ namespace lily_of_the_valley
         /// @param cfbObj The stream entry to load.
         void load_stream(file_system_entry* cfbObj);
 
-        /// @returns @c true if a @c paragraph ends with a newline.
+        /// @returns @c true if a @p paragraph ends with a newline.
         [[nodiscard]]
         static bool paragraph_ends_with_crlf(const std::wstring& paragraph)
             {
@@ -515,7 +515,7 @@ namespace lily_of_the_valley
         // endian conversions, referred to in MS specification.
         //-----------------------------------------------------
 
-        /// @returns A 32-bit unsigned int from @c buffer at given @c offset.
+        /// @returns A 32-bit unsigned int from @p buffer at given @p offset.
         [[nodiscard]]
         static /*DWORD*/ uint32_t read_uint(const char* buffer, const size_t offset) noexcept
             {
@@ -529,7 +529,7 @@ namespace lily_of_the_valley
                    (static_cast<uint32_t>(static_cast<unsigned char>(buffer[offset + 3])) << 24L);
             }
 
-        /// @returns A 32-bit signed int from @c buffer at given @c offset.
+        /// @returns A 32-bit signed int from @p buffer at given @p offset.
         [[nodiscard]]
         static /*INT*/ int32_t read_int(const char* buffer, const size_t offset) noexcept
             {
@@ -543,7 +543,7 @@ namespace lily_of_the_valley
                    (static_cast<int32_t>(static_cast<unsigned char>(buffer[offset + 3])) << 24L);
             }
 
-        /// @returns A 16-bit unsigned integer from @c buffer at given @c offset.
+        /// @returns A 16-bit unsigned integer from @p buffer at given @p offset.
         [[nodiscard]]
         static /*SHORT*/ uint16_t read_short(const char* buffer, const int offset) noexcept
             {
@@ -555,7 +555,7 @@ namespace lily_of_the_valley
                    (static_cast<uint16_t>(static_cast<unsigned char>(buffer[offset + 1])) << 8);
             }
 
-        /// @returns A 16-bit unsigned integer from @c buffer at given @c offset.
+        /// @returns A 16-bit unsigned integer from @p buffer at given @p offset.
         [[nodiscard]]
         static /*SHORT*/ uint16_t read_short(const unsigned char* buffer, const int offset) noexcept
             {

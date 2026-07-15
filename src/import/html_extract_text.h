@@ -646,7 +646,7 @@ namespace lily_of_the_valley
                                                    bool accept_self_terminating_elements);
         /** @returns The current element that a stream is on. (This assumes that you have
                 already skipped the leading < symbol.)
-            @note The returned string view will wrap @c text and will share the same lifetime.
+            @note The returned string view will wrap @p text and will share the same lifetime.
             @param text The HTML stream to analyze.
             @param accept_self_terminating_elements Whether to analyze element such as "<br />".\n
                 @c true is recommended for most cases.*/

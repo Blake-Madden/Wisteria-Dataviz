@@ -191,7 +191,7 @@ namespace Wisteria::Graphs
             /// @param groupColumnName The grouping column to use. This is used for
             ///     data validation later.
             /// @param groupId The group ID for this line. Data points from @c data will
-            ///     only be used for this line if their group ID is @c groupId.
+            ///     only be used for this line if their group ID is @p groupId.
             /// @param groupName The display name of the group.\n
             ///     This is useful for a client to find a line by name and then customize it.
             void SetGroupInfo(const std::optional<wxString>& groupColumnName,
@@ -415,7 +415,7 @@ namespace Wisteria::Graphs
             @param labels The lines to showcase.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") lines/points are.
-            @note If @c labels is empty, this call is a no-op and the current
+            @note If @p labels is empty, this call is a no-op and the current
                 showcasing state is preserved.
             @warning This will only take effect if called after SetData().\
                 Also, for LinePlot, this will only take effect if grouping is enabled.
@@ -508,7 +508,7 @@ namespace Wisteria::Graphs
             return xColumns;
             }
 
-        /// @brief Returns true if the value at @c index in the x column is valid (i.e., not NaN).
+        /// @brief Returns true if the value at @p index in the x column is valid (i.e., not NaN).
         /// @param index The row in the x column to review.
         /// @param xColumns The X column iterators (must be initialized via GetXColumns()).
         /// @returns @c true if the given row in the x column is valid.
@@ -538,7 +538,7 @@ namespace Wisteria::Graphs
             return false;
             }
 
-        /// @brief Returns the value at @c index of the x column.
+        /// @brief Returns the value at @p index of the x column.
         /// @param index The row in the x column to retrieve.
         /// @param xColumns The X column iterators (must be initialized via GetXColumns()).
         /// @returns The value of the given row in the x column.\n

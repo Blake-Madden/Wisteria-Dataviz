@@ -862,7 +862,7 @@ namespace Wisteria::Graphs
                 be trimmed to "1997" and "1998" as their group header now indicated "Graduated."
             @param groups The groups to look for in the first row.
             @warning This is destructive to the first row, as it will remove the
-                prefix from any label that matches anything from @c groups.\n
+                prefix from any label that matches anything from @p groups.\n
                 Also, it is assumed that the labels in the first row are already
                 ordered and grouped together.*/
         void InsertGroupHeader(const std::vector<wxString>& groups);
@@ -947,9 +947,9 @@ namespace Wisteria::Graphs
             @param useAdjacentColors @c true to use the color of the cell adjacent to this column.
                 @c false will apply a light gray to the column.\n
                 @c true is recommended if using alternate row colors.\n
-                Note that this will override the @c bkColor if this is @c true.
+                Note that this will override the @p bkColor if this is @c true.
             @param bkColor A color to fill the column with.\n
-                Note that this is ignored if @c useAdjacentColors is @c true.
+                Note that this is ignored if @p useAdjacentColors is @c true.
             @param borders An optional override of the default borders for the
                 cells in this column.
             @note This should be called after all data has been set because the
@@ -1521,9 +1521,9 @@ namespace Wisteria::Graphs
             @param cellValue The value (as a displayed string) to look for in the table,
                 which will have a citation number added after it.
             @param footnote The respective footnote to add to the caption.
-            @note Up to twenty footnotes are supported. Also, if the provided @c cellValue
+            @note Up to twenty footnotes are supported. Also, if the provided @p cellValue
                 is not found in the table, then the footnote will not be added.\n
-                Also, if @c footnote is empty, then @c cellValue will have a number
+                Also, if @p footnote is empty, then @p cellValue will have a number
                 shown after it, but no respective footnote entry will appear in the caption.
             @warning Adding a footnote will overwrite the existing caption.*/
         void AddFootnote(const wxString& cellValue, const wxString& footnote);
@@ -1584,7 +1584,7 @@ namespace Wisteria::Graphs
             @param[in,out] drawArea The initial and updated drawing area for the table.
             @param dc The DC to measure text labels with.
             @returns The size of the table proper (i.e., the cells, but not outer annotations).\n
-                Note that the size of @c drawArea may be larger if the table includes
+                Note that the size of @p drawArea may be larger if the table includes
                 annotations along the gutters.*/
         [[nodiscard]]
         wxSize CalculateTableSize(std::vector<wxCoord>& columnWidths,

@@ -38,7 +38,7 @@ namespace lily_of_the_valley
                 (as an index into the text block) into a map.
                 This is useful if the caller needs to further review a preview line-by-line.
             @param skipRows The number of rows to skip before reading the text.
-            @warning Setting @c storeRowInfo to @c true will impact the preview's performance.*/
+            @warning Setting @p storeRowInfo to @c true will impact the preview's performance.*/
         [[nodiscard]]
         size_t operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
                           const bool ignoreBlankLines, const bool storeRowInfo, size_t skipRows = 0)
@@ -145,8 +145,8 @@ namespace lily_of_the_valley
             }
 
         /// @returns The definition information of the lines.
-        /// @warning If the parameter @c storeRowInfo in the preview call was @c false, then this
-        ///     will be empty.
+        /// @warning If @p storeRowInfo was set to @c false in the call to @c operator(),
+        ///     then this will be empty.
         [[nodiscard]]
         const std::map<const wchar_t*, const wchar_t*>& get_line_info() const noexcept
             {

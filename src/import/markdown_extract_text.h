@@ -30,7 +30,7 @@ namespace lily_of_the_valley
         /** @returns @c true if text marks the start of a Markdown metadata section.
             @param md_text The start of the Markdown text.
             @note YAML sections are supported.
-            @warning @c md_text must be the start of the Markdown document.*/
+            @warning @p md_text must be the start of the Markdown document.*/
         [[nodiscard]]
         static bool has_metadata_section(const std::wstring_view md_text) noexcept
             {

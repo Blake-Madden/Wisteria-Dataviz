@@ -422,7 +422,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             longestGroupBarWithSubBars =
                 std::max(longestGroupBarWithSubBars, longestSubBarLength + groupBarLength);
             }
-        // If a group of bars with a supergroup bar (with connection braces) are larger
+        // If a group of bars with a supergroup bar (with connection braces) is larger
         // than the tallest regular bar, then we need to adjust the intervals.
         if (originalLongestBar < (longestGroupBarWithSubBars + GetScalingAxis().GetInterval()))
             {

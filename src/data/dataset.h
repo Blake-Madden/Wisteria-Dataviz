@@ -217,9 +217,9 @@ namespace Wisteria::Data
 
         /** @brief Fills the data with a vector of values.
             @param values A @c std::vector of values to fill the data with.
-            @note If @c values is smaller than the number of rows, then it will
+            @note If @p values is smaller than the number of rows, then it will
                 be copied into the column and the trailing values in the column
-                will remain unchanged. If @c values is larger than the column, then throws.
+                will remain unchanged. If @p values is larger than the column, then throws.
             @throws std::runtime_error If the vector is larger than the column,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
@@ -390,7 +390,7 @@ namespace Wisteria::Data
                 column (e.g., county residency) for student data.\n
                 This is similar to what @c forcats::fct_lump_min() does in R.
             @param minVal The minimum number of times a string must appear in the column to
-                remain in the string table. If its frequency is less than @c minVal, then
+                remain in the string table. If its frequency is less than @p minVal, then
                 the value will be lumped into an "other" label.
             @param otherLabel The label to use for the new category where low-frequency
                 values are lumped into.*/
@@ -1542,7 +1542,7 @@ namespace Wisteria::Data
         /// @{
 
         /** @brief Gets the min and max string values from the specified categorical column,
-                (optionally) where the group ID is @c groupId.
+                (optionally) where the group ID is @p groupId.
             @param column The name of the categorical column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
@@ -1561,7 +1561,7 @@ namespace Wisteria::Data
                              const std::optional<wxString>& groupColumn = std::nullopt,
                              std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-empty strings) of the specified
-                categorical column, (optionally) where the group ID is @c groupId.
+                categorical column, (optionally) where the group ID is @p groupId.
             @param column The name of the categorical column.
             @param groupColumn The (optional) group column to filter with.\n
                 If there is no grouping being used, then the full categorical column is reviewed.
@@ -1578,7 +1578,7 @@ namespace Wisteria::Data
                                           std::optional<GroupIdType> groupId = std::nullopt) const;
 
         /** @brief Gets the min and max values from the specified continuous column,
-                (optionally) where the group ID is @c groupId.
+                (optionally) where the group ID is @p groupId.
             @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
@@ -1595,7 +1595,7 @@ namespace Wisteria::Data
                             const std::optional<wxString>& groupColumn = std::nullopt,
                             std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Gets the median from the specified continuous column,
-                (optionally) where the group ID is @c groupId.
+                (optionally) where the group ID is @p groupId.
             @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
@@ -1611,7 +1611,7 @@ namespace Wisteria::Data
                                    const std::optional<wxString>& groupColumn = std::nullopt,
                                    std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Gets the total from the specified continuous column,
-                (optionally) where the group ID is @c groupId.
+                (optionally) where the group ID is @p groupId.
             @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
@@ -1627,7 +1627,7 @@ namespace Wisteria::Data
                                   const std::optional<wxString>& groupColumn = std::nullopt,
                                   std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column,
-                (optionally) where the group ID is @c groupId.
+                (optionally) where the group ID is @p groupId.
             @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.\n
                 If there is no grouping being used, then the full continuous column is reviewed.
@@ -1657,7 +1657,7 @@ namespace Wisteria::Data
         /** @brief Renames a column using regular expressions.
             @param colNamePattern The column regex pattern to search for and rename.
             @param newColNamePattern The new name for the column.\n
-                Can be a regex such as "\2" that references @c colNamePattern.
+                Can be a regex such as "\2" that references @p colNamePattern.
             @code
              // this will rename "Four Year Graduation Rate Numerator - Class of 2021"
              // to "GRAD YEAR 2021"
@@ -1670,7 +1670,7 @@ namespace Wisteria::Data
         void RenameColumnRE(const wxString& colNamePattern, const wxString& newColNamePattern);
 
         /// @brief Select (i.e., keep) all columns whose names match the
-        ///     regular expression @c colNamePattern.
+        ///     regular expression @p colNamePattern.
         /// @details All other columns will be removed.
         /// @param colNamePattern The column pattern to match.
         /// @throws std::runtime_error If the regex pattern is invalid, throws an exception.
@@ -1688,7 +1688,7 @@ namespace Wisteria::Data
                 See `ColumnWithStringTable::CollapseMin()` for further details.
             @param colName The categorical column to edit.
             @param minVal The minimum number of times a string must appear in the column to
-                remain in the string table. If its frequency is less than @c minVal, then
+                remain in the string table. If its frequency is less than @p minVal, then
                 the value will be lumped into an "other" label.
             @param otherLabel The label to use for the new category where
                 low-frequency values are lumped into.*/

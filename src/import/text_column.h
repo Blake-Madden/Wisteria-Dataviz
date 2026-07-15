@@ -77,7 +77,7 @@ namespace lily_of_the_valley
 
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns @c true if @c character is a delimiter.*/
+            @returns @c true if @p character is a delimiter.*/
         [[nodiscard]]
         virtual bool is_delimiter(wchar_t character) const noexcept = 0;
 
@@ -149,7 +149,7 @@ namespace lily_of_the_valley
 
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns @c true if @c character is a delimiter.*/
+            @returns @c true if @p character is a delimiter.*/
         [[nodiscard]]
         inline bool is_delimiter(const wchar_t character) const noexcept final
             {
@@ -176,7 +176,7 @@ namespace lily_of_the_valley
 
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns @c true if @c character is a delimiter.*/
+            @returns @c true if @p character is a delimiter.*/
         [[nodiscard]]
         inline bool is_delimiter(const wchar_t character) const noexcept final
             {
@@ -203,7 +203,7 @@ namespace lily_of_the_valley
 
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns @c true if @c character is a delimiter.*/
+            @returns @c true if @p character is a delimiter.*/
         [[nodiscard]]
         inline bool is_delimiter(const wchar_t character) const noexcept final
             {

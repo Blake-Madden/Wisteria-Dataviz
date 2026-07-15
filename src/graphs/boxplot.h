@@ -215,9 +215,9 @@ namespace Wisteria::Graphs
                 @param data The data to assign to the box.
                 @param continuousColumnName The data column.
                 @param groupColumnName  An optional categorical column to group the points by.
-                @param groupId The group ID for this box. Data points from @c data will only be used
-                    for his box if their group ID is @c groupId.
-                    Has no effect if @c useGrouping is @c false.
+                @param groupId The group ID for this box. Data points from @p data will only be used
+                    for his box if their group ID is @p groupId.
+                    Has no effect if @p groupColumnName is `std::nullopt`.
                 @param schemeIndex The index into the icon/color/brush schemes.
                 @throws std::runtime_error If any columns can't be found by name, throws an
                     exception.\n The exception's @c what() message is UTF-8 encoded,

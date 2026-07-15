@@ -1014,7 +1014,7 @@ namespace Wisteria::Graphs
 
         /** @brief Adds an object (e.g., a polygon) to the plot to be rendered.
             @param object The object to add to the plot.
-            @note The canvas of @c object is set to the plot's, but its scaling
+            @note The canvas of @p object is set to the plot's, but its scaling
                 is preserved as objects may be using the parent's scaling or a different
                 one, depending on how it was constructed.*/
         void AddObject(std::unique_ptr<GraphItems::GraphItemBase> object)
@@ -1209,7 +1209,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /** @returns @c true if @c pt is inside the canvas.
+        /** @returns @c true if @p pt is inside the canvas.
             @param pt The point to see that is in the canvas.
             @param dc The rendering DC.*/
         [[nodiscard]]

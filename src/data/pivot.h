@@ -75,20 +75,20 @@ namespace Wisteria::Data
             @param namesFromColumn The categorical column that will have each label
                 converted into a new column.
             @param valuesFromColumns Continuous columns that will be copied into the new
-                columns created by the labels from @c namesFromColumn.\n
+                columns created by the labels from @p namesFromColumn.\n
                 If multiple value columns are provided, then an extra column will be created
                 for each label column from every value column.\n
                 If no columns are provided, then frequency counts of each unique combination
                 of ID labels will be used as the value.
             @param namesSep If multiple value columns are provided, then this separator will
-                join the label from @c namesFromColumn and the value column name.
+                join the label from @p namesFromColumn and the value column name.
             @param namesPrefix A string to prepend to newly created pivot columns.
-            @param fillValue If any observation is missing a label from @c namesFromColumn
+            @param fillValue If any observation is missing a label from @p namesFromColumn
                 that other observations have, then an empty cell will be added for that
                 column. This value will be used for fill this cell, with missing data (i.e., NaN)
                 being the default.
             @note If multiple source rows share the same identifier and the same label from
-                @c namesFromColumn, their values are summed together. This mirrors the
+                @p namesFromColumn, their values are summed together. This mirrors the
                 `aggfunc = sum` behavior in similar pivot-wide implementations.
             @returns The pivoted dataset.*/
         [[nodiscard]]
@@ -113,20 +113,20 @@ namespace Wisteria::Data
                 These columns can be of any type, including the ID column.\n
                 Note that the output will be sorted based on the ordering of these columns.
             @param fromColumns The continuous column(s) to pivot into longer format.
-            @param namesTo The target column(s) to move the names from the @c fromColumns into.\n
+            @param namesTo The target column(s) to move the names from the @p fromColumns into.\n
                 Basically, this will be a grouping column that uses the original
                 column names as its groups.
-            @param valuesTo The column to move the values from the @c fromColumns into.\n
-                This will essentially be the values from the @c fromColumns stacked on
+            @param valuesTo The column to move the values from the @p fromColumns into.\n
+                This will essentially be the values from the @p fromColumns stacked on
                 top of each other.
                 The original column name for each value will appear next to it in the
-                @c namesTo column.
+                @p namesTo column.
             @param namesPattern If needing to split the names of the columns into
                 multiple target columns, this regular expression can be used.
                 It should contain capture groups, where each group
                 will be the name of a new target column.\n
                 Leave blank (the default) to use the full name(s) of the
-                @c fromColumns as the labels.
+                @p fromColumns as the labels.
             @returns The pivoted dataset.*/
         [[nodiscard]]
         static std::shared_ptr<Dataset>

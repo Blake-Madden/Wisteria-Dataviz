@@ -71,7 +71,7 @@ namespace lily_of_the_valley
         /// @brief Adds the text to the buffer, but strips markup (e.g., Doxygen tags) from the
         ///     stream first.
         /// @param cpp_text The text to read from.
-        /// @param text_length The length of @c cpp_text.
+        /// @param text_length The length of @p cpp_text.
         /// @todo add rest of the tags that should be skipped.
         void add_characters_strip_markup(const wchar_t* cpp_text, const size_t text_length);
 

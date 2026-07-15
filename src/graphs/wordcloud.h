@@ -53,8 +53,7 @@ namespace Wisteria::Graphs
                 in the cloud.\n The default is `1`.
             @param maxFreq The maximum frequency that a word can appear and still be included
                 in the cloud.\n This is useful for filtering high-frequency words.\n
-                By default, all words above
-           @c minFreq are included.
+                By default, all words above @p minFreq are included.
             @param maxWords The maximum number of words to show
                 (going from the highest-to-lowest frequently occurring words).\n
                 This is performed after the words not meeting the min and max frequency criteria

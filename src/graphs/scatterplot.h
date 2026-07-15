@@ -376,7 +376,7 @@ namespace Wisteria::Graphs
 
         void CalculateRegression(Series& series);
 
-        /// @brief Builds a series, applying the scheme color/shape/line style at @c schemeIndex
+        /// @brief Builds a series, applying the scheme color/shape/line style at @p schemeIndex
         ///     and calculating its regression.
         [[nodiscard]]
         Series BuildSeries(size_t schemeIndex, const std::optional<wxString>& groupColumnName,

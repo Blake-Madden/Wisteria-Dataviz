@@ -118,7 +118,7 @@ namespace Wisteria::Data
             @param patternsColumnName The name of the column with the regular expression in it.
             @param negationPatternsColumnName The (optional) name of the column with a negating
                 regular expression in it. This is used to negate any match found with the
-                @c patternsColumnName column.
+                @p patternsColumnName column.
             @note Any invalid regular expressions loaded from the file will be logged using
                 @c wxLogWarning().
             @throws std::runtime_error If the file can't be read or named columns aren't found,

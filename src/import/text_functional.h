@@ -51,7 +51,7 @@ namespace lily_of_the_valley
                 spaces and quotes around it.
             @returns Position into the string buffer where the first non-space/quote is.
             @param value The string to trim.
-            @param length The length of @c value.\n
+            @param length The length of @p value.\n
                 Call get_trimmed_string_length() to see how much to read from there to
                 see where the last non-space is at the end.*/
         [[nodiscard]]

@@ -186,7 +186,7 @@ namespace Wisteria::Data
                 parser (used to decode CJK text that uses one of Adobe's predefined
                 legacy CMap encodings); it is @c public so that it can also be
                 connected to standalone instances of that class.
-            @param sourceBytes The raw bytes of a string in @c charsetName.
+            @param sourceBytes The raw bytes of a string in @p charsetName.
             @param charsetName The name of the charset the bytes are encoded in
                 (e.g., "CP950").
             @returns The equivalent Unicode text, or an empty string if the charset
@@ -203,7 +203,7 @@ namespace Wisteria::Data
                 or AES-256.
             @param initVector The 16-byte initialization vector.
             @param data The bytes to transform (must be a multiple of 16 bytes long.)
-            @param direction Whether to encrypt or decrypt @c data.
+            @param direction Whether to encrypt or decrypt @p data.
             @returns The transformed bytes, or an empty string upon failure.*/
         [[nodiscard]]
         static std::string AesCbcCrypt(std::string_view key, std::string_view initVector,
@@ -216,7 +216,7 @@ namespace Wisteria::Data
                 for revision 5/6 encrypted PDFs' key derivation).
             @param data The bytes to hash.
             @param digestBits Which SHA-2 variant to use: 256, 384, or 512.
-            @returns The binary digest, or an empty string if @c digestBits isn't
+            @returns The binary digest, or an empty string if @p digestBits isn't
                 256, 384, or 512.*/
         [[nodiscard]]
         static std::string Sha2Hash(std::string_view data, int digestBits);
@@ -224,7 +224,7 @@ namespace Wisteria::Data
         /** @brief Applies NFKC Unicode normalization (using wxpdfdoc's
                 @c unicode_normalize()) to extracted text.
             @param text The text to normalize.
-            @returns The NFKC-normalized text, or @c text unchanged upon failure.*/
+            @returns The NFKC-normalized text, or @p text unchanged upon failure.*/
         [[nodiscard]]
         static std::wstring NormalizeUnicode(std::wstring_view text);
 

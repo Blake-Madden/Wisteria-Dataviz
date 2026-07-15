@@ -146,8 +146,8 @@ namespace Wisteria::Data
             @param column The column to filter on.
             @param startRowLabel The start label to begin the subset.
             @param endRowLabel The label in the column that marks the end of the subset.
-            @param includeSentinelLabels @c true to include @c startRowLabel and
-                @c endRowLabel
+            @param includeSentinelLabels @c true to include @p startRowLabel and
+                @p endRowLabel
             @returns The subset dataset.
             @throws std::runtime_error If the column can't be found,
                 throws an exception.\n

@@ -80,7 +80,7 @@ namespace Wisteria::Data
             @param byColumns Pairs of columns to join by between the two datasets. Columns can be
                 the ID columns from the datasets, as well as categorical columns.
             @param suffix In the case of a (non-joining) column from the right dataset already
-                having a column with the same name in the left file, @c suffix will be added to
+                having a column with the same name in the left file, @p suffix will be added to
                 the column when being copied to make it unique.
             @returns The joined dataset.
             @note Unlike a standard left join (see LeftJoin()), this function will not add
@@ -113,7 +113,7 @@ namespace Wisteria::Data
             @param byColumns Pairs of columns to join by between the two datasets. Columns can be
                 the ID columns from the datasets, as well as categorical columns.
             @param suffix In the case of a (non-joining) column from the right dataset already
-                having a column with the same name in the left file, @c suffix will be added to
+                having a column with the same name in the left file, @p suffix will be added to
                 the column when being copied to make it unique.
             @returns The joined dataset.
             @note Unlike a standard left join (see LeftJoin()), this function will not add
@@ -145,7 +145,7 @@ namespace Wisteria::Data
             @param byColumns Pairs of columns to join by between the two datasets. Columns can be
                 the ID columns from the datasets, as well as categorical columns.
             @param suffix In the case of a (non-joining) column from the right dataset already
-                having a column with the same name in the left file, @c suffix will be added to
+                having a column with the same name in the left file, @p suffix will be added to
                 the column when being copied to make it unique.
             @returns The joined dataset.
             @note For example, if a key in the left dataset matches three rows in the

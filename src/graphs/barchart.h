@@ -954,7 +954,7 @@ namespace Wisteria::Graphs
                 that are being ghosted.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
-            @note If @c labels is empty, this call is a no-op and the current
+            @note If @p labels is empty, this call is a no-op and the current
                 showcasing/ghosting state is preserved.
             @sa SetGhostOpacity().*/
         void ShowcaseBars(const std::vector<wxString>& labels, bool hideLabelsOnGhostedBars = true);
@@ -965,7 +965,7 @@ namespace Wisteria::Graphs
                 that are being ghosted.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
-            @note If @c positions is empty, this call is a no-op and the current
+            @note If @p positions is empty, this call is a no-op and the current
                 showcasing/ghosting state is preserved.
             @sa SetGhostOpacity().*/
         void ShowcaseBars(const std::vector<double>& positions,

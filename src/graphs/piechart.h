@@ -59,7 +59,7 @@ namespace Wisteria::GraphItems
             @param pieProportion The proportion of the pie area that this slice's ring consumes.
             @param labelDisplay What to display in the label.
             @param abbreviate Text replacer object that can attempt to abbreviate the label
-                to make it fit. Note that this will only be used if @c labelDisplay is
+                to make it fit. Note that this will only be used if @p labelDisplay is
                 set to BinLabelDisplay::BinName.
             @returns The label, which will already be anchored to the middle of the slice.*/
         [[nodiscard]]
@@ -473,7 +473,7 @@ namespace Wisteria::Graphs
                 This inner ring will be shown as subgroups within each slice
                 along the (parent) outer ring.\n
                 This can either be a categorical column, or a continuous column (with the same
-                specifications as @c groupColumn1Name).
+                specifications as @p groupColumn1Name).
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name,
@@ -794,7 +794,7 @@ namespace Wisteria::Graphs
         /** @brief Ghosts or unghosts the slices of the outer (or only) pie.
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
             @param slicesToGhost Which slices to ghost or unghost.\n
-                Slice labels not in this list will have the opposite of @c ghost applied to them.
+                Slice labels not in this list will have the opposite of @p ghost applied to them.
             @note This should be called after SetData().*/
         void GhostOuterPieSlices(bool ghost, const std::vector<wxString>& slicesToGhost);
 
@@ -812,14 +812,14 @@ namespace Wisteria::Graphs
         /** @brief Shows or hides the outside labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @param labelsToShow Which labels to either show or hide.\n
-                Slice labels not in this list will have the opposite of @c show applied to them.
+                Slice labels not in this list will have the opposite of @p show applied to them.
             @note This should be called after SetData().*/
         void ShowOuterPieLabels(bool show, const std::vector<wxString>& labelsToShow);
 
         /** @brief Shows or hides the mid-point labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the default outer pie's mid-point
+                Also, if @p show is @c true, then the default outer pie's mid-point
                 display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
                 then the label will not be shown.
             @sa SetOuterPieMidPointLabelDisplay().*/
@@ -827,9 +827,9 @@ namespace Wisteria::Graphs
         /** @brief Shows or hides the mid-point labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @param labelsToShow Which labels to either show or hide.\n
-                Slice labels not in this list will have the opposite of @c show applied to them.
+                Slice labels not in this list will have the opposite of @p show applied to them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the default outer pie's mid-point
+                Also, if @p show is @c true, then the default outer pie's mid-point
                 display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
                 then the label will not be shown.
             @sa SetOuterPieMidPointLabelDisplay().*/
@@ -1014,7 +1014,7 @@ namespace Wisteria::Graphs
                 attention to the ones that are not ghosted.
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
             @param slicesToGhost Which slices to ghost or unghost.\n
-                Slice labels not in this list will have the opposite of @c ghost applied to them.
+                Slice labels not in this list will have the opposite of @p ghost applied to them.
             @note This should be called after SetData().\n
                 Also, inner slices should only be ghosted if its parent slice is ghosted also;
                 otherwise, its opaque parent slice will show through it.*/
@@ -1036,7 +1036,7 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @param show @c true to show the labels, @c false to hide them.
             @param labelsToShow Which labels to either show or hide.\n
-                Slice labels not in this list will have the opposite of @c show applied to them.
+                Slice labels not in this list will have the opposite of @p show applied to them.
             @note This should be called after SetData().*/
         void ShowInnerPieLabels(bool show, const std::vector<wxString>& labelsToShow);
 
@@ -1044,7 +1044,7 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the default inner pie's mid-point
+                Also, if @p show is @c true, then the default inner pie's mid-point
                 display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
                 then the label will not be shown.
             @sa SetInnerPieMidPointLabelDisplay().*/
@@ -1053,9 +1053,9 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @param show @c true to show the labels, @c false to hide them.
             @param labelsToShow Which labels to either show or hide.\n
-                Slice labels not in this list will have the opposite of @c show applied to them.
+                Slice labels not in this list will have the opposite of @p show applied to them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the default inner pie's mid-point
+                Also, if @p show is @c true, then the default inner pie's mid-point
                 display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
                 then the label will not be shown.
             @sa SetInnerPieMidPointLabelDisplay().*/

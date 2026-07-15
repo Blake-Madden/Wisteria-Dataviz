@@ -42,7 +42,7 @@ namespace Wisteria::Data
                 Columns can be the ID columns from the datasets, as well as
                 categorical columns.
             @param suffix In the case of a (non-joining) column from the right dataset
-                already having a column with the same name in the left file, @c suffix
+                already having a column with the same name in the left file, @p suffix
                 will be added to the column when being copied to make it unique.
             @returns The joined dataset, containing only rows with matching keys.
             @note For example, if a key in the left dataset matches three rows in the
