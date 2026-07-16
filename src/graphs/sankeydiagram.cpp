@@ -490,7 +490,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
                 GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisTopPosition, pts[3]))
                 {
-                const wxString boxLabel = [&, this]()
+                const wxString boxLabel = [&]()
                 {
                     return (labelDisplay == BinLabelDisplay::BinName) ?
                                group.m_label :
