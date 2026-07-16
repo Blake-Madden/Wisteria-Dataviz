@@ -335,6 +335,112 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"First\nSecond") == 0);
         }
+    SECTION("cm Translation Between Text Runs")
+        {
+        // A cm operator translates the current transformation matrix between two
+        // text objects. Both objects use the same Tm coordinates, but the second
+        // one is really one line height lower on the page: the CTM's translation
+        // has to be applied to Tm's operands before comparing positions, or the
+        // two lines glue together as "Chart titleAxis label".
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Chart title) Tj ET
+1 0 0 1 0 -14 cm
+BT 1 0 0 1 72 700 Tm (Axis label) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Chart title\nAxis label") == 0);
+        }
+    SECTION("q/Q Save And Restore CTM")
+        {
+        // A group of content is drawn inside a q ... Q bracket with its own cm
+        // translation (the way generators stamp a block at an offset). "Beta" is
+        // really 300 units below "Alpha" (a paragraph-sized gap), and after the Q
+        // restores the CTM, "Gamma" is back in the untranslated space, 286 units
+        // above "Beta". If the Q doesn't restore the CTM, "Gamma" appears to land
+        // 14 units below "Beta" and reads as the next line of the stamped block
+        // instead of a separate paragraph.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Alpha) Tj ET
+q
+1 0 0 1 0 -300 cm
+BT 1 0 0 1 72 700 Tm (Beta) Tj ET
+Q
+BT 1 0 0 1 72 686 Tm (Gamma) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Alpha\n\nBeta\n\nGamma") == 0);
+        }
+    SECTION("Form XObject Matrix Applied To Its Content")
+        {
+        // A footer stamped through a form XObject whose /Matrix translates its
+        // content down one line height. The form's own content stream uses the
+        // same Tm coordinates as the body text; the /Matrix concatenates onto the
+        // CTM (like an implicit cm) when the form is executed by Do, placing the
+        // footer on its own line rather than gluing it to the body text.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /XObject << /X1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT 1 0 0 1 72 700 Tm (Body text) Tj ET
+/X1 Do
+endstream
+endobj
+3 0 obj
+<< /Type /XObject /Subtype /Form /Matrix [1 0 0 1 0 -14] >>
+stream
+BT 1 0 0 1 72 700 Tm (Stamped footer) Tj ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Body text\nStamped footer") == 0);
+        }
+    SECTION("q/Q Restore Font")
+        {
+        // The font is part of the graphics state that q saves and Q restores.
+        // The middle text object switches to a Symbol font inside a q ... Q
+        // bracket, so byte 0x61 decodes as Greek alpha there; the text object
+        // after the Q sets no font of its own and must decode through the
+        // restored F1 (WinAnsi 'a'), not linger on the Symbol font.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf (a) Tj ET
+q
+BT /F2 12 Tf (a) Tj ET
+Q
+BT (a) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Symbol >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"a\x03B1\x0061") == 0);
+        }
     SECTION("Vertical Writing Mode Column Break (Predefined Unicode CMap)")
         {
         // A Type0 font with a vertical predefined Unicode encoding

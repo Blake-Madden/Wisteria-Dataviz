@@ -48,6 +48,7 @@ namespace lily_of_the_valley
         m_matrixB = 0;
         m_matrixC = 0;
         m_matrixD = 1;
+        m_ctm = pdf_matrix{};
         m_verticalWritingMode = false;
         parse_content(pageContent, resources, 0);
         // End the page on its own line so that whatever comes next (the next page's
@@ -269,7 +270,14 @@ namespace lily_of_the_valley
         // operands as the delta itself.
         if (m_freshTextObject)
             {
-            const bool wroteNewline{ handle_absolute_move(moveX, moveY * m_fontScale) };
+            // The text line matrix is at its just-reset identity value, so these
+            // operands are raw text space; the m_fontScale factor compensates for
+            // generators that keep working in a previous Tm's scaled units. The
+            // CTM still applies, so route the result through it to reach page space.
+            double pageX{ moveX };
+            double pageY{ moveY * m_fontScale };
+            m_ctm.transform_point(pageX, pageY);
+            const bool wroteNewline{ handle_absolute_move(pageX, pageY) };
             // Landed on the same line as the previous (separate) text object (e.g., a
             // bullet glyph followed by its label, drawn with two different fonts). The
             // gap between them has no space character of its own, since it's expressed
@@ -283,12 +291,14 @@ namespace lily_of_the_valley
             }
         // Once a Tm or Td/TD has already run in this text object, later Td/TD
         // operands are offsets in that matrix's local space, which may carry
-        // rotation or scale from an earlier Tm. They must be transformed through
-        // the matrix before they're meaningful as a page-space delta. A purely
-        // horizontal step in a rotated font's local space can land anywhere in
-        // page space, not just along the page's x-axis.
-        const double pageDeltaX{ (m_matrixA * moveX) + (m_matrixC * moveY) };
-        const double pageDeltaY{ (m_matrixB * moveX) + (m_matrixD * moveY) };
+        // Rotation or scale from an earlier Tm (and the page-level CTM). They must
+        // be transformed through the combined text-line-matrix-and-CTM before
+        // they're meaningful as a page-space delta. A purely horizontal step in a
+        // rotated font's local space can land anywhere in page space, not just
+        // along the page's x-axis.
+        double pageDeltaX{ moveX };
+        double pageDeltaY{ moveY };
+        combined_linear().transform_vector(pageDeltaX, pageDeltaY);
         handle_absolute_move(m_currentX + pageDeltaX, m_currentY + pageDeltaY);
         }
 
@@ -500,6 +510,22 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    pdf_matrix pdf_content_parser::read_matrix_value(const std::string_view matrixValue)
+        {
+        const std::vector<std::string_view> elements{ pdf_lexer::read_array_elements(
+            pdf_lexer::trim(matrixValue)) };
+        if (elements.size() < 6)
+            {
+            return pdf_matrix{};
+            }
+        return pdf_matrix{
+            extract_text::to_double(elements[0]), extract_text::to_double(elements[1]),
+            extract_text::to_double(elements[2]), extract_text::to_double(elements[3]),
+            extract_text::to_double(elements[4]), extract_text::to_double(elements[5])
+        };
+        }
+
+    //------------------------------------------------------------------
     void pdf_content_parser::parse_content(const std::string_view content,
                                            const pdf_page_resources& resources, const int depth)
         {
@@ -515,6 +541,10 @@ namespace lily_of_the_valley
         bool havePendingString{ false };
         std::string_view pendingArray;
         const pdf_font_decoder* currentFont{ nullptr };
+        // The graphics-state stack for q/Q. Kept local so a form XObject's own
+        // (possibly unbalanced) q/Q can't leak into the stream that invoked it,
+        // and so the saved currentFont (a local) can be restored by Q.
+        std::vector<graphics_state_snapshot> savedStates;
         while (pos < content.length())
             {
             pdf_lexer::skip_whitespace(content, pos);
@@ -683,6 +713,41 @@ namespace lily_of_the_valley
                             }
                         }
                     }
+                else if (keyword == "q")
+                    {
+                    // Runs regardless of OCG visibility so the CTM and the save/restore
+                    // balance stay correct across hidden content.
+                    savedStates.push_back(graphics_state_snapshot{
+                        m_ctm, m_fontSize, m_fontScale, m_leading, m_horizScale,
+                        m_verticalWritingMode, currentFont });
+                    }
+                else if (keyword == "Q")
+                    {
+                    if (!savedStates.empty())
+                        {
+                        const graphics_state_snapshot& saved{ savedStates.back() };
+                        m_ctm = saved.m_ctm;
+                        m_fontSize = saved.m_fontSize;
+                        m_fontScale = saved.m_fontScale;
+                        m_leading = saved.m_leading;
+                        m_horizScale = saved.m_horizScale;
+                        m_verticalWritingMode = saved.m_verticalWritingMode;
+                        currentFont = saved.m_font;
+                        savedStates.pop_back();
+                        }
+                    }
+                else if (keyword == "cm")
+                    {
+                    if (numbers.size() >= 6)
+                        {
+                        const pdf_matrix operand{
+                            numbers[numbers.size() - 6], numbers[numbers.size() - 5],
+                            numbers[numbers.size() - 4], numbers[numbers.size() - 3],
+                            numbers[numbers.size() - 2], numbers[numbers.size() - 1]
+                        };
+                        m_ctm = operand.multiplied_by(m_ctm);
+                        }
+                    }
                 else if (!m_markedContentHidden.empty() && m_markedContentHidden.back())
                     {
                     // inside a hidden optional-content group; every other operator
@@ -745,15 +810,21 @@ namespace lily_of_the_valley
                         m_matrixB = numbers[numbers.size() - 5];
                         m_matrixC = numbers[numbers.size() - 4];
                         m_matrixD = numbers[numbers.size() - 3];
-                        // the matrix's vertical scale (fonts are often set at
-                        // size 1 and then scaled up through the text matrix)
-                        const double verticalScale{ std::abs(m_matrixD) };
+                        // The vertical scale of the combined text-line-matrix-and-CTM
+                        // (fonts are often set at size 1 and then scaled up through
+                        // the text matrix and/or a page-level cm). hypot of the
+                        // matrix's c and d keeps this sane for rotated text, where
+                        // |d| alone would collapse toward zero.
+                        const pdf_matrix combined{ combined_linear() };
+                        const double verticalScale{ std::hypot(combined.m_c, combined.m_d) };
                         if (verticalScale > 0.001)
                             {
                             m_fontScale = verticalScale;
                             }
-                        handle_absolute_move(numbers[numbers.size() - 2],
-                                             numbers[numbers.size() - 1]);
+                        double pageX{ numbers[numbers.size() - 2] };
+                        double pageY{ numbers[numbers.size() - 1] };
+                        m_ctm.transform_point(pageX, pageY);
+                        handle_absolute_move(pageX, pageY);
                         }
                     }
                 else if (keyword == "T*")
@@ -761,7 +832,14 @@ namespace lily_of_the_valley
                     add_newline(false);
                     if (m_haveY)
                         {
-                        m_currentY -= line_height();
+                        // A line step is (0, -leading) in text space; transform it
+                        // through the combined matrix so it lands correctly under
+                        // scale/rotation from a Tm or a page-level cm.
+                        double stepX{ 0 };
+                        double stepY{ -line_height() };
+                        combined_linear().transform_vector(stepX, stepY);
+                        m_currentX += stepX;
+                        m_currentY += stepY;
                         }
                     m_freshTextObject = false;
                     }
@@ -777,7 +855,12 @@ namespace lily_of_the_valley
                     add_newline(false);
                     if (m_haveY)
                         {
-                        m_currentY -= line_height();
+                        // a line step of (0, -leading) in text space (see T*)
+                        double stepX{ 0 };
+                        double stepY{ -line_height() };
+                        combined_linear().transform_vector(stepX, stepY);
+                        m_currentX += stepX;
+                        m_currentY += stepY;
                         }
                     if (havePendingString)
                         {
@@ -810,10 +893,19 @@ namespace lily_of_the_valley
                                     pdf_lexer::find_dictionary_value(xobject->m_dictionary,
                                                                      "Resources")
                                 };
+                                // The form's /Matrix concatenates onto the CTM like a
+                                // cm, positioning the form's content on the page.
+                                // Bracket the recursion with a save/restore so the
+                                // form's matrix (and any cm it runs) doesn't leak out.
+                                const pdf_matrix savedCtm{ m_ctm };
+                                m_ctm = read_matrix_value(pdf_lexer::find_dictionary_value(
+                                                              xobject->m_dictionary, "Matrix"))
+                                            .multiplied_by(m_ctm);
                                 parse_content(formContent,
                                               formResources.empty() ? resources :
                                                                       load_resources(formResources),
                                               depth + 1);
+                                m_ctm = savedCtm;
                                 }
                             }
                         m_visited_xobjects.erase(xobjectPos->second);

@@ -22,6 +22,47 @@
 
 namespace lily_of_the_valley
     {
+    /// @brief A PDF affine transformation matrix [a b c d e f], mapping a point
+    ///     (x, y) to (a*x + c*y + e, b*x + d*y + f).
+    struct pdf_matrix
+        {
+        double m_a{ 1 };
+        double m_b{ 0 };
+        double m_c{ 0 };
+        double m_d{ 1 };
+        double m_e{ 0 };
+        double m_f{ 0 };
+
+        /// @returns This matrix concatenated onto @p rhs (i.e., this * rhs), the
+        ///     composition order the `cm` operator and a form's `/Matrix` use.
+        [[nodiscard]]
+        pdf_matrix multiplied_by(const pdf_matrix& rhs) const noexcept
+            {
+            return pdf_matrix{ (m_a * rhs.m_a) + (m_b * rhs.m_c),
+                               (m_a * rhs.m_b) + (m_b * rhs.m_d),
+                               (m_c * rhs.m_a) + (m_d * rhs.m_c),
+                               (m_c * rhs.m_b) + (m_d * rhs.m_d),
+                               (m_e * rhs.m_a) + (m_f * rhs.m_c) + rhs.m_e,
+                               (m_e * rhs.m_b) + (m_f * rhs.m_d) + rhs.m_f };
+            }
+
+        /// @brief Transforms a point through the matrix (applies translation).
+        void transform_point(double& xCoord, double& yCoord) const noexcept
+            {
+            const double origX{ xCoord };
+            xCoord = (m_a * origX) + (m_c * yCoord) + m_e;
+            yCoord = (m_b * origX) + (m_d * yCoord) + m_f;
+            }
+
+        /// @brief Transforms a delta through the matrix's linear part (no translation).
+        void transform_vector(double& xDelta, double& yDelta) const noexcept
+            {
+            const double origX{ xDelta };
+            xDelta = (m_a * origX) + (m_c * yDelta);
+            yDelta = (m_b * origX) + (m_d * yDelta);
+            }
+        };
+
     /// @brief The resources (fonts, form XObjects) available to a content stream.
     struct pdf_page_resources
         {
@@ -130,6 +171,36 @@ namespace lily_of_the_valley
         void parse_content(std::string_view content, const pdf_page_resources& resources,
                            int depth);
 
+        /// @returns The linear (a, b, c, d) part of the current text line matrix
+        ///     (m_matrixA/B/C/D) concatenated with the CTM (m_ctm), as a
+        ///     translation-free matrix. Text-space deltas and scales are
+        ///     transformed through this to reach page space.
+        [[nodiscard]]
+        pdf_matrix combined_linear() const noexcept
+            {
+            const pdf_matrix textLineMatrix{ m_matrixA, m_matrixB, m_matrixC, m_matrixD, 0, 0 };
+            return textLineMatrix.multiplied_by(
+                pdf_matrix{ m_ctm.m_a, m_ctm.m_b, m_ctm.m_c, m_ctm.m_d, 0, 0 });
+            }
+
+        /// @brief Reads a 6-number matrix array value (e.g., a form XObject's
+        ///     `/Matrix`).
+        /// @returns The matrix, or identity if @p matrixValue is absent or malformed.
+        [[nodiscard]]
+        static pdf_matrix read_matrix_value(std::string_view matrixValue);
+
+        /// @brief A snapshot of the graphics state that `q` saves and `Q` restores.
+        struct graphics_state_snapshot
+            {
+            pdf_matrix m_ctm;
+            double m_fontSize{ 12 };
+            double m_fontScale{ 1 };
+            double m_leading{ 0 };
+            double m_horizScale{ 100 };
+            bool m_verticalWritingMode{ false };
+            const pdf_font_decoder* m_font{ nullptr };
+            };
+
         pdf_document& m_document;            ///< Document being parsed.
         std::wstring& m_text;                ///< Output buffer (owned by the caller).
         const std::set<long>& m_hidden_ocgs; ///< Object numbers of OCGs that are off by default.
@@ -148,6 +219,11 @@ namespace lily_of_the_valley
         double m_matrixB{ 0 };
         double m_matrixC{ 0 };
         double m_matrixD{ 1 };
+        /// Current transformation matrix, built up from `cm` operators and form
+        /// XObject `/Matrix` entries and saved/restored by `q`/`Q`. Text-space
+        /// coordinates are mapped through this into page space before any
+        /// line-break decision. Survives BT/ET (unlike the text line matrix).
+        pdf_matrix m_ctm;
         /// Whether the current font (from Tf) lays out text in vertical writing mode
         /// (its /Encoding is one of Adobe's predefined "-V" CMaps), so a line step is
         /// a horizontal move across columns rather than a vertical move down the page.
