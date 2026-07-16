@@ -1697,11 +1697,25 @@ void WisteriaDoc::SaveDatasetImportOptions(
         dsNode->Add(L"id-column", info.GetIdColumn());
         }
 
-    // continuous columns
+    // columns the user explicitly excluded from importing
+    wxArrayString excludedCols;
+    for (const auto& col : colInfo)
+        {
+        if (col.m_excluded)
+            {
+            excludedCols.Add(originalColName(col.m_name));
+            }
+        }
+    if (!excludedCols.empty())
+        {
+        dsNode->Add(L"excluded-columns", excludedCols);
+        }
+
+    // continuous columns (only ones with a user-overridden type)
     wxArrayString contCols;
     for (const auto& col : colInfo)
         {
-        if (!col.m_excluded && col.m_type == CIT::Numeric)
+        if (!col.m_excluded && col.m_userOverridden && col.m_type == CIT::Numeric)
             {
             contCols.Add(originalColName(col.m_name));
             }
@@ -1715,7 +1729,7 @@ void WisteriaDoc::SaveDatasetImportOptions(
     auto catArray = dsNode->GetProperty(L"categorical-columns");
     for (const auto& col : colInfo)
         {
-        if (col.m_excluded)
+        if (col.m_excluded || !col.m_userOverridden)
             {
             continue;
             }
@@ -1741,7 +1755,7 @@ void WisteriaDoc::SaveDatasetImportOptions(
     auto dateArray = dsNode->GetProperty(L"date-columns");
     for (const auto& col : colInfo)
         {
-        if (!col.m_excluded && col.m_type == CIT::Date)
+        if (!col.m_excluded && col.m_userOverridden && col.m_type == CIT::Date)
             {
             auto dateObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
             const auto origDateName = originalColName(col.m_name);
@@ -1781,20 +1795,6 @@ void WisteriaDoc::SaveDatasetImportOptions(
                 }
             dateArray->ArrayAdd(dateObj);
             }
-        }
-
-    // columns-order (preserves original spreadsheet column ordering)
-    wxArrayString colOrder;
-    for (const auto& col : colInfo)
-        {
-        if (!col.m_excluded)
-            {
-            colOrder.Add(originalColName(col.m_name));
-            }
-        }
-    if (!colOrder.empty())
-        {
-        dsNode->Add(L"columns-order", colOrder);
         }
     }
 

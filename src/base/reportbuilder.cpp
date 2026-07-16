@@ -1735,7 +1735,13 @@ namespace Wisteria
                     //------------------------
                     // ID column
                     const wxString idColumn = datasetNode->GetProperty(L"id-column")->AsString();
+                    // columns the user explicitly excluded from importing
+                    const std::vector<wxString> excludedColumns =
+                        datasetNode->GetProperty(L"excluded-columns")->AsStrings();
                     // date columns
+                    // (only columns whose type the user explicitly overrode are listed here;
+                    //  everything else is deduced fresh from the file below, so changes to
+                    //  the source file's columns don't break reimporting)
                     std::vector<Data::ImportInfo::DateImportInfo> dateInfo;
                     const auto dateProperty = datasetNode->GetProperty(L"date-columns");
                     if (dateProperty->IsOk())
@@ -1854,103 +1860,90 @@ namespace Wisteria
                             std::variant<wxString, size_t>(
                                 static_cast<size_t>(worksheetNode->AsDouble())) :
                             std::variant<wxString, size_t>(worksheetNode->AsString());
-                    // if no columns are defined, then deduce them ourselves
-                    Data::Dataset::ColumnPreviewInfo columnPreviewInfo;
-                    if (!datasetNode->HasProperty(L"id-column") &&
-                        !datasetNode->HasProperty(L"date-columns") &&
-                        !datasetNode->HasProperty(L"continuous-columns") &&
-                        !datasetNode->HasProperty(L"categorical-columns"))
-                        {
-                        columnPreviewInfo = Data::Dataset::ReadColumnInfo(path, importDefines,
-                                                                          std::nullopt, worksheet);
-                        importDefines = Data::Dataset::ImportInfoFromPreview(columnPreviewInfo);
-                        fillImportDefines();
-                        }
-                    else
-                        {
-                        importDefines
-                            .ContinuousMDRecodeValue(
-                                datasetNode->GetProperty(L"continuous-md-recode-value")
-                                    ->AsDouble(std::numeric_limits<double>::quiet_NaN()))
-                            .IdColumn(idColumn)
-                            .DateColumns(dateInfo)
-                            .ContinuousColumns(continuousVars)
-                            .CategoricalColumns(catInfo);
+                    // Always deduce the columns fresh from the file (in file order), then
+                    // layer any persisted user overrides (type changes, exclusions) on top
+                    // by name. Overrides for columns no longer in the file are simply
+                    // dropped rather than failing the import.
+                    Data::Dataset::ColumnPreviewInfo columnPreviewInfo =
+                        Data::Dataset::ReadColumnInfo(path, importDefines, std::nullopt, worksheet);
 
-                        // build ColumnPreviewInfo from explicit column definitions
-                        // (mark as user-overridden since the user specified
-                        //  these types in the JSON)
-                        if (!idColumn.empty())
+                    const auto findColumn =
+                        [&columnPreviewInfo](const wxString& name) -> Data::Dataset::ColumnPreview*
+                    {
+                        const auto colIt =
+                            std::ranges::find_if(columnPreviewInfo, [&name](const auto& col)
+                                                 { return col.m_name.CmpNoCase(name) == 0; });
+                        return (colIt != columnPreviewInfo.end()) ? &(*colIt) : nullptr;
+                    };
+
+                    for (const auto& name : excludedColumns)
+                        {
+                        if (auto* col = findColumn(name); col != nullptr)
                             {
-                            columnPreviewInfo.emplace_back(idColumn,
-                                                           Data::Dataset::ColumnImportType::String,
-                                                           wxString{}, false, true);
+                            col->m_excluded = true;
                             }
-                        for (const auto& di : dateInfo)
+                        }
+                    for (const auto& di : dateInfo)
+                        {
+                        if (auto* col = findColumn(di.m_columnName); col != nullptr)
                             {
-                            columnPreviewInfo.emplace_back(di.m_columnName,
-                                                           Data::Dataset::ColumnImportType::Date,
-                                                           wxString{}, false, true);
+                            col->m_type = Data::Dataset::ColumnImportType::Date;
+                            col->m_userOverridden = true;
                             }
-                        for (const auto& cv : continuousVars)
+                        }
+                    for (const auto& cv : continuousVars)
+                        {
+                        if (auto* col = findColumn(cv); col != nullptr)
                             {
-                            columnPreviewInfo.emplace_back(cv,
-                                                           Data::Dataset::ColumnImportType::Numeric,
-                                                           wxString{}, false, true);
+                            col->m_type = Data::Dataset::ColumnImportType::Numeric;
+                            col->m_userOverridden = true;
                             }
-                        for (const auto& ci : catInfo)
+                        }
+                    for (const auto& ci : catInfo)
+                        {
+                        if (auto* col = findColumn(ci.m_columnName); col != nullptr)
                             {
-                            columnPreviewInfo.emplace_back(
-                                ci.m_columnName,
-                                (ci.m_importMethod ==
-                                         Data::CategoricalImportMethod::ReadAsIntegers ?
-                                     Data::Dataset::ColumnImportType::Discrete :
-                                     Data::Dataset::ColumnImportType::String),
-                                wxString{}, false, true);
+                            col->m_type = (ci.m_importMethod ==
+                                           Data::CategoricalImportMethod::ReadAsIntegers) ?
+                                              Data::Dataset::ColumnImportType::Discrete :
+                                              Data::Dataset::ColumnImportType::String;
+                            col->m_userOverridden = true;
                             }
                         }
 
-                    // reorder ColumnPreviewInfo to match original data file order
-                    auto colOrder = datasetNode->GetProperty(L"columns-order")->AsStrings();
-                    // if no explicit order, read from the file itself
-                    if (colOrder.empty())
+                    // build the ImportInfo from the deduced (and now overridden) columns;
+                    // this fills in the continuous/categorical/date column lists for
+                    // everything that wasn't explicitly overridden above
+                    Data::Dataset::ColumnPreviewInfo includedColumns;
+                    includedColumns.reserve(columnPreviewInfo.size());
+                    std::ranges::copy_if(columnPreviewInfo, std::back_inserter(includedColumns),
+                                         [](const auto& col) { return !col.m_excluded; });
+                    importDefines = Data::Dataset::ImportInfoFromPreview(includedColumns);
+                    fillImportDefines();
+                    importDefines.ContinuousMDRecodeValue(
+                        datasetNode->GetProperty(L"continuous-md-recode-value")
+                            ->AsDouble(std::numeric_limits<double>::quiet_NaN()));
+                    // only honor the ID column if it's still present (and included) in the file
+                    if (const auto* idCol = findColumn(idColumn);
+                        !idColumn.empty() && idCol != nullptr && !idCol->m_excluded)
                         {
-                        Data::ImportInfo headerInfo;
-                        headerInfo.SkipRows(importDefines.GetSkipRows());
-                        const auto fileColumnInfo =
-                            Data::Dataset::ReadColumnInfo(path, headerInfo, 1, worksheet);
-                        colOrder.reserve(fileColumnInfo.size());
-                        for (const auto& fc : fileColumnInfo)
-                            {
-                            colOrder.push_back(fc.m_name);
-                            }
+                        importDefines.IdColumn(idColumn);
                         }
-                    if (!colOrder.empty())
+
+                    // re-apply the precise parser/format for explicitly-overridden date columns
+                    if (!dateInfo.empty())
                         {
-                        Data::Dataset::ColumnPreviewInfo reordered;
-                        for (const auto& name : colOrder)
+                        std::vector<Data::ImportInfo::DateImportInfo> mergedDateInfo;
+                        mergedDateInfo.reserve(importDefines.GetDateColumns().size());
+                        for (const auto& di : importDefines.GetDateColumns())
                             {
-                            const auto it =
-                                std::find_if(columnPreviewInfo.cbegin(), columnPreviewInfo.cend(),
-                                             [&name](const auto& cp) { return cp.m_name == name; });
-                            if (it != columnPreviewInfo.cend())
-                                {
-                                reordered.push_back(*it);
-                                }
+                            const auto overrideIt = std::ranges::find_if(
+                                dateInfo, [&di](const auto& override_)
+                                { return override_.m_columnName.CmpNoCase(di.m_columnName) == 0; });
+                            mergedDateInfo.push_back(overrideIt != dateInfo.cend() ? *overrideIt :
+                                                                                     di);
                             }
-                        // append any columns not in the order list
-                        // (shouldn't happen, but be safe)
-                        for (const auto& cp : columnPreviewInfo)
-                            {
-                            const auto it = std::find_if(reordered.cbegin(), reordered.cend(),
-                                                         [&cp](const auto& r)
-                                                         { return r.m_name == cp.m_name; });
-                            if (it == reordered.cend())
-                                {
-                                reordered.push_back(cp);
-                                }
-                            }
-                        columnPreviewInfo = std::move(reordered);
+                        importDefines.DateColumns(mergedDateInfo);
                         }
 
                     // import using the user-provided parser or deduce from the file extension
