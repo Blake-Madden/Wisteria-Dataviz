@@ -59,6 +59,7 @@ class MainFrame final : public Wisteria::UI::BaseMainFrame
     void ActivateLogTab();
 
     /// @brief Enables or disables log auto-refresh, syncing the ribbon button and timer.
+    /// @param enable @c true to enable auto-refresh.
     void SetLogAutoRefresh(bool enable);
 
     friend class WisteriaApp;
@@ -103,6 +104,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         }
 
     /// @brief Reads the log file into the given list control.
+    /// @param listCtrl The list control to populate with the log's contents.
     void ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl);
 
     /// @brief Returns the SVG icon filename for a canvas item,

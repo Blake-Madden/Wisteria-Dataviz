@@ -26,13 +26,20 @@ namespace lily_of_the_valley
     ///     (x, y) to (a*x + c*y + e, b*x + d*y + f).
     struct pdf_matrix
         {
+        /// @brief The matrix's `a` component.
         double m_a{ 1 };
+        /// @brief The matrix's `b` component.
         double m_b{ 0 };
+        /// @brief The matrix's `c` component.
         double m_c{ 0 };
+        /// @brief The matrix's `d` component.
         double m_d{ 1 };
+        /// @brief The matrix's `e` component.
         double m_e{ 0 };
+        /// @brief The matrix's `f` component.
         double m_f{ 0 };
 
+        /// @param rhs The matrix to concatenate this matrix onto.
         /// @returns This matrix concatenated onto @p rhs (i.e., this * rhs), the
         ///     composition order the `cm` operator and a form's `/Matrix` use.
         [[nodiscard]]
@@ -47,6 +54,8 @@ namespace lily_of_the_valley
             }
 
         /// @brief Transforms a point through the matrix (applies translation).
+        /// @param[in,out] xCoord The point's x-coordinate to transform.
+        /// @param[in,out] yCoord The point's y-coordinate to transform.
         void transform_point(double& xCoord, double& yCoord) const noexcept
             {
             const double origX{ xCoord };
@@ -55,6 +64,8 @@ namespace lily_of_the_valley
             }
 
         /// @brief Transforms a delta through the matrix's linear part (no translation).
+        /// @param[in,out] xDelta The delta's x-component to transform.
+        /// @param[in,out] yDelta The delta's y-component to transform.
         void transform_vector(double& xDelta, double& yDelta) const noexcept
             {
             const double origX{ xDelta };

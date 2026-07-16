@@ -1229,6 +1229,9 @@ namespace string_util
     class less_basic_string_compare
         {
       public:
+        /// @returns @c true if @c left is less than @c right.
+        /// @param left The left value to compare.
+        /// @param right The right value to compare.
         [[nodiscard]]
         bool operator()(const T& left, const T& right) const
             {
@@ -1241,6 +1244,9 @@ namespace string_util
     class less_basic_string_i_compare
         {
       public:
+        /// @returns @c true if @c left is less than @c right, case-insensitively.
+        /// @param left The left value to compare.
+        /// @param right The right value to compare.
         [[nodiscard]]
         bool operator()(const T& left, const T& right) const noexcept
             {
@@ -1253,6 +1259,10 @@ namespace string_util
     class less_string_natural_order_i_compare
         {
       public:
+        /// @returns @c true if @c left is less than @c right, using a
+        ///     natural-order, case-insensitive comparison.
+        /// @param left The left value to compare.
+        /// @param right The right value to compare.
         [[nodiscard]]
         bool operator()(const T* left, const T* right) const
             {

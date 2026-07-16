@@ -118,6 +118,7 @@ class AppSettings
         }
 
     /// @brief Enables or disables Log tab auto-refresh.
+    /// @param refresh @c true to enable auto-refresh.
     void SetLogAutoRefresh(const bool refresh) noexcept { m_logAutoRefresh = refresh; }
 
     /// @returns @c true if verbose logging is enabled.
@@ -128,6 +129,7 @@ class AppSettings
         }
 
     /// @brief Enables or disables verbose logging.
+    /// @param verbose @c true to enable verbose logging.
     void SetLogVerbose(const bool verbose) noexcept { m_logVerbose = verbose; }
 
     // SVG export options

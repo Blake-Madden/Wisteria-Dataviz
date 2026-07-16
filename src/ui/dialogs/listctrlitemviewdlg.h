@@ -23,12 +23,17 @@ namespace Wisteria::UI
     /// @brief A single row item consisting of a column name and value pair.
     struct RowTableItem
         {
+        /** @brief Constructor.
+            @param column The column name.
+            @param value The value displayed under @c column.*/
         RowTableItem(wxString column, wxString value)
             : m_column(std::move(column)), m_value(std::move(value))
             {
             }
 
+        /// @brief The column name.
         wxString m_column;
+        /// @brief The value displayed under @c m_column.
         wxString m_value;
         };
 

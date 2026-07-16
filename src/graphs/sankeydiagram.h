@@ -275,15 +275,13 @@ namespace Wisteria::Graphs
                 }
 
             [[nodiscard]]
-            bool
-            operator<(const SankeyGroup& that) const
+            bool operator<(const SankeyGroup& that) const
                 {
                 return m_label.CmpNoCase(that.m_label) < 0;
                 }
 
             [[nodiscard]]
-            bool
-            operator==(const SankeyGroup& that) const
+            bool operator==(const SankeyGroup& that) const
                 {
                 return m_label.CmpNoCase(that.m_label) == 0;
                 }
@@ -334,7 +332,8 @@ namespace Wisteria::Graphs
         /// @brief Draws the flow ribbons connecting a column's groups to the next column's groups.
         void DrawStreams(const size_t colIndex, const double xStart, const double xEnd);
         /// @brief Draws the group labels alongside a column.
-        void DrawLabels(const size_t colIndex, Wisteria::Side labelSide, BinLabelDisplay labelDisplay, wxDC& dc);
+        void DrawLabels(const size_t colIndex, Wisteria::Side labelSide,
+                        BinLabelDisplay labelDisplay, wxDC& dc);
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
 

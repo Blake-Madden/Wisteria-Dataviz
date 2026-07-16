@@ -746,6 +746,13 @@ namespace Wisteria::GraphItems
             @param scaling The scaling to use.*/
         void SetScaling(double scaling) final;
 
+        /** @brief Converts an axis position into a human-readable string,
+                using a custom label if one is set for that position, or formatting
+                the value as a date or number (respecting the axis's number display type)
+                otherwise.
+            @param pos The axis position to convert.
+            @returns The readable string representation of the axis position.*/
+        [[nodiscard]]
         wxString GetReadableAxisValue(double pos) const;
 
         /// @brief Which parts of the axis should be reset when Reset() is called.

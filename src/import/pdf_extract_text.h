@@ -31,23 +31,28 @@ namespace lily_of_the_valley
     class pdf_text_decoder
         {
       public:
+        /// @param byteValue The WinAnsi (CP1252)-encoded byte.
         /// @returns The Unicode equivalent of a WinAnsi (CP1252) byte.
         [[nodiscard]]
         static wchar_t cp1252_to_unicode(unsigned char byteValue);
 
+        /// @param byteValue The MacRomanEncoding-encoded byte.
         /// @returns The Unicode equivalent of a MacRomanEncoding byte.
         [[nodiscard]]
         static wchar_t mac_roman_to_unicode(unsigned char byteValue);
 
+        /// @param byteValue The (Adobe) StandardEncoding-encoded byte.
         /// @returns The Unicode equivalent of an (Adobe) StandardEncoding byte.
         [[nodiscard]]
         static wchar_t standard_to_unicode(unsigned char byteValue);
 
+        /// @param byteValue The Adobe SymbolEncoding-encoded byte.
         /// @returns The Unicode equivalent of an Adobe SymbolEncoding byte
         ///     (the built-in encoding of the standard Symbol font).
         [[nodiscard]]
         static wchar_t symbol_to_unicode(unsigned char byteValue);
 
+        /// @param byteValue The Adobe ZapfDingbatsEncoding-encoded byte.
         /// @returns The Unicode equivalent of an Adobe ZapfDingbatsEncoding byte
         ///     (the built-in encoding of the standard ZapfDingbats font).
         [[nodiscard]]
@@ -57,19 +62,27 @@ namespace lily_of_the_valley
         /// @details On 32-bit @c wchar_t platforms, surrogate pairs are combined into
         ///     single code points. On 16-bit platforms (Windows), valid pairs are emitted
         ///     as two units. Lone surrogates are dropped on both platforms.
+        /// @param units The UTF-16BE code units to convert.
+        /// @returns The converted wide string.
         [[nodiscard]]
         static std::wstring utf16_units_to_wstring(const std::vector<char16_t>& units);
 
         /// @brief Converts hex digits to UTF-16BE code units (as used in ToUnicode CMaps).
+        /// @param hexDigits The hex digits to convert.
+        /// @returns The converted UTF-16BE code units.
         [[nodiscard]]
         static std::vector<char16_t> hex_to_utf16_units(std::string_view hexDigits);
 
         /// @brief Converts hex digits to an unsigned integer (capped at 8 digits).
+        /// @param hexDigits The hex digits to convert.
+        /// @returns The converted unsigned integer.
         [[nodiscard]]
         static uint32_t hex_to_uint(std::string_view hexDigits);
 
         /// @brief Decodes a metadata string's bytes (UTF-16BE if it has a BOM,
         ///     WinAnsi/Latin-1 otherwise).
+        /// @param bytes The metadata string's raw bytes.
+        /// @returns The decoded wide string.
         [[nodiscard]]
         static std::wstring decode_metadata_string(std::string_view bytes);
 
@@ -117,15 +130,15 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::string_view predefined_cmap_charset(std::string_view cmapName);
 
-        /// @returns @c true if @p cmapName (a Type0 font's /Encoding value, without
-        ///     the leading slash) is one of Adobe's predefined Unicode CMaps (e.g.,
+        /// @param cmapName A Type0 font's /Encoding value, without the leading slash.
+        /// @returns @c true if @p cmapName is one of Adobe's predefined Unicode CMaps (e.g.,
         ///     "UniJIS-UCS2-H"), meaning the font's character codes are UTF-16BE
         ///     code units.
         [[nodiscard]]
         static bool is_unicode_cmap_name(std::string_view cmapName);
 
-        /// @returns @c true if @p cmapName (a Type0 font's /Encoding value, without
-        ///     the leading slash) is one of Adobe's predefined vertical-writing-mode
+        /// @param cmapName A Type0 font's /Encoding value, without the leading slash.
+        /// @returns @c true if @p cmapName is one of Adobe's predefined vertical-writing-mode
         ///     CMaps (e.g., "Identity-V" or "UniJIS-UCS2-V").
         [[nodiscard]]
         static bool is_vertical_cmap_name(std::string_view cmapName);
@@ -180,6 +193,9 @@ namespace lily_of_the_valley
         ///     order); the first range whose bounds contain those bytes determines
         ///     the length. If none match (or no ranges were declared), this falls
         ///     back to @c fontDecoder->m_bytes_per_code.
+        /// @param bytes The content-stream string's raw bytes.
+        /// @param pos The position (in @p bytes) of the next character code.
+        /// @param fontDecoder The font decoder whose codespace ranges to consult.
         /// @returns The code length, in bytes (at least 1, and clipped to the
         ///     remaining bytes in @p bytes).
         [[nodiscard]]
@@ -187,6 +203,9 @@ namespace lily_of_the_valley
                                             const pdf_font_decoder* fontDecoder);
 
         /// @brief Decodes a content-stream string's bytes to Unicode using a font decoder.
+        /// @param bytes The content-stream string's raw bytes.
+        /// @param fontDecoder The font decoder to use for decoding @p bytes.
+        /// @returns The decoded Unicode text.
         [[nodiscard]]
         static std::wstring decode_string_bytes(const std::string& bytes,
                                                 const pdf_font_decoder* fontDecoder);

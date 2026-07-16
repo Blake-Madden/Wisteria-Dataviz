@@ -99,8 +99,11 @@ namespace lily_of_the_valley
         ///     string to determine how many bytes make up the next code.
         struct codespace_range
             {
+            /// @brief The low bound of the codespace range.
             uint32_t m_low{ 0 };
+            /// @brief The high bound of the codespace range.
             uint32_t m_high{ 0 };
+            /// @brief The byte length of codes in this range.
             size_t m_byte_length{ 1 };
             };
 
@@ -183,10 +186,12 @@ namespace lily_of_the_valley
         ///     cataloging the objects packed inside of them.
         void expand_object_streams();
 
+        /// @param objectNumber The object number to look up.
         /// @returns The object with the given number, or @c nullptr if not found.
         [[nodiscard]]
         const pdf_object* find_object(long objectNumber) const;
 
+        /// @param value The (possibly indirect reference) value to resolve.
         /// @returns The object that a (possibly indirect reference) value points to,
         ///     or @c nullptr if the value is not a reference or is a dangling one.
         [[nodiscard]]
@@ -196,11 +201,13 @@ namespace lily_of_the_valley
         /// @details Real PDFs chain indirect references at most 2-3 levels deep;
         ///     the limit of 8 is a safeguard against circular references in
         ///     malformed files.
+        /// @param value The (possibly indirect reference) value to resolve.
         /// @returns The direct value (a referenced object's dictionary or value).
         [[nodiscard]]
         std::string_view resolve_value(std::string_view value) const;
 
         /// @brief Runs a stream object's payload through its filter chain.
+        /// @param streamObject The stream object to decode.
         /// @returns The decoded stream content (empty upon failure).
         [[nodiscard]]
         std::string decode_stream(const pdf_object& streamObject) const;
@@ -239,11 +246,13 @@ namespace lily_of_the_valley
         std::string decrypt(const pdf_object& owningObject, std::string_view bytes) const;
 
         /// @brief Builds (or fetches from cache) the decoder for a font object.
+        /// @param objectNumber The number of the font's indirect object.
         /// @returns The font decoder, or a default-constructed one if not found.
         [[nodiscard]]
         std::shared_ptr<pdf_font_decoder> load_font(long objectNumber);
 
         /// @brief Builds the decoder for a font from its dictionary.
+        /// @param fontDictionary The font's raw dictionary value.
         /// @returns A new font decoder populated from the dictionary entries.
         [[nodiscard]]
         std::shared_ptr<pdf_font_decoder>

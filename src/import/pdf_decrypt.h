@@ -109,11 +109,15 @@ namespace lily_of_the_valley
         std::string decrypt(long objectNumber, long generation, std::string_view bytes) const;
 
         /// @brief Calculates the binary MD5 message digest of a byte sequence.
+        /// @param data The byte sequence to digest.
         /// @returns The 16-byte digest.
         [[nodiscard]]
         static std::string md5_digest(std::string_view data);
 
         /// @brief Encrypts or decrypts (a symmetric operation) a byte sequence with RC4.
+        /// @param key The RC4 key.
+        /// @param data The byte sequence to encrypt or decrypt.
+        /// @returns The resulting byte sequence.
         [[nodiscard]]
         static std::string rc4_crypt(std::string_view key, std::string_view data);
 
