@@ -58,7 +58,10 @@ class WisteriaDoc final : public wxDocument
     [[nodiscard]]
     wxString BuildHeaderInfoJsonStr(const Wisteria::GraphItems::HeaderInfo& header) const;
     [[nodiscard]]
-    wxString SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label) const;
+    wxString SaveLabelPropertiesToStr(
+        const Wisteria::GraphItems::Label& label,
+        double defaultFontPointSize =
+            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFractionalPointSize()) const;
 
     [[nodiscard]]
     wxSimpleJSON::Ptr_t SaveLabel(const Wisteria::GraphItems::Label* label,

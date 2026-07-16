@@ -727,7 +727,8 @@ wxString WisteriaDoc::BuildHeaderInfoJsonStr(const Wisteria::GraphItems::HeaderI
     }
 
 //-------------------------------------------
-wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label) const
+wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label& label,
+                                               const double defaultFontPointSize) const
     {
     wxString json = L"{";
 
@@ -771,8 +772,8 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
         }
 
     // font-size (only if non-default)
-    if (label.GetFont().IsOk() && !compare_doubles(label.GetFont().GetFractionalPointSize(),
-                                                   defaultGuiFont.GetFractionalPointSize()))
+    if (label.GetFont().IsOk() &&
+        !compare_doubles(label.GetFont().GetFractionalPointSize(), defaultFontPointSize))
         {
         if (json.Last() != L'{')
             {
@@ -2352,18 +2353,25 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         titleStr = SaveLabelPropertiesToStr(graph->GetTitle());
         }
 
+    // subtitle and caption default to a smaller font than the title
+    // (see Graph2D's constructor), so compare against that when
+    // deciding whether their font size was customized
+    const auto defaultSmallFontPointSize =
+        wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFractionalPointSize() *
+        math_constants::three_quarters;
+
     // subtitle
     wxString subtitleStr;
     if (!graph->GetSubtitle().GetText().empty())
         {
-        subtitleStr = SaveLabelPropertiesToStr(graph->GetSubtitle());
+        subtitleStr = SaveLabelPropertiesToStr(graph->GetSubtitle(), defaultSmallFontPointSize);
         }
 
     // caption
     wxString captionStr;
     if (!graph->GetCaption().GetText().empty())
         {
-        captionStr = SaveLabelPropertiesToStr(graph->GetCaption());
+        captionStr = SaveLabelPropertiesToStr(graph->GetCaption(), defaultSmallFontPointSize);
         }
 
     // background-color
