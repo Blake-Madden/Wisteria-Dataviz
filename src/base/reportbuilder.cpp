@@ -633,6 +633,10 @@ namespace Wisteria
             if (titleLabel != nullptr)
                 {
                 axis.GetTitle() = *titleLabel;
+                // mark as a user override so the serializer knows to round-trip it,
+                // even if the title is explicitly blank (overriding the default
+                // variable name)
+                axis.SetPropertyTemplate(L"title.user-defined", L"true");
                 }
             }
         const auto tickmarksProperty = axisNode->GetProperty(L"tickmarks");

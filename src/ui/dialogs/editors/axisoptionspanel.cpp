@@ -71,6 +71,10 @@ namespace Wisteria::UI
                                if (dlg.ShowModal() == wxID_OK)
                                    {
                                    dlg.ApplyToLabel(axis.GetTitle());
+                                   // remember that the user explicitly set this
+                                   // (possibly to blank), so it round-trips through JSON
+                                   // instead of reverting to the dataset's variable name
+                                   axis.SetPropertyTemplate(L"title.user-defined", L"true");
                                    }
                            });
         titleGrid->Add(editTitleBtn);
