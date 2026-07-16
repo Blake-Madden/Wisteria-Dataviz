@@ -847,7 +847,7 @@ namespace Wisteria::GraphItems
             @param startDate The start date of the range.
             @param endDate The end date of the range.
             @param displayInterval The date interval to display along the axis.
-            @param fyType If @c displayInterval is fiscal-year based, then this is the type of
+            @param fyType If @p displayInterval is fiscal-year based, then this is the type of
                 fiscal year to use; otherwise, it will be ignored.
             @note The date interval and fiscal year type specified can affect the
                 starting and ending points of the dates. For example, using FY quarters will cause
@@ -900,7 +900,7 @@ namespace Wisteria::GraphItems
             @param value The position on the axis. Note that this value's position will be spaced
                 evenly between the surrounding points, even if they are not equidistant in value.
             @param label The label to display on the axis at this position.\n
-                If empty, then the label will be @c value formatted into a string with the current
+                If empty, then the label will be @p value formatted into a string with the current
                 precision.
             @note If a value is already at this position, then this function is ignored.
             @warning Call `GetAxisPoints().clear()` prior to calling this to clear any current
@@ -1572,8 +1572,8 @@ namespace Wisteria::GraphItems
             @param that The other axis to copy settings from.*/
         void CopySettings(const Axis& that);
 
-        /// @brief If colors in the axes are the same as @c bkColor, then set them
-        ///     to black or white, contrasting against @c bkColor.
+        /// @brief If colors in the axes are the same as @p bkColor, then set them
+        ///     to black or white, contrasting against @p bkColor.
         /// @param bkColor The background color to contrast against.
         /// @note This will not do anything for the text elements of the axis if it
         ///     has a font background color overriding any underlying canvas color.
@@ -1679,7 +1679,7 @@ namespace Wisteria::GraphItems
             @param data The dataset to read the columns from.
             @param labelColumn The column containing the bracket labels.
             @param valueColumn The column containing the category values.
-            @param labelPositions Maps category labels (from @c valueColumn)
+            @param labelPositions Maps category labels (from @p valueColumn)
                 to their actual axis positions.*/
         void AddBrackets(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
                          const wxString& labelColumn, const wxString& valueColumn,

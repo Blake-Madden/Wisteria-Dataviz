@@ -290,13 +290,13 @@ namespace Wisteria::UI
         /** @brief Sets the number of rows and columns.
             @param rowCount The number of rows.
             @param columnCount The number of columns.
-            @warning If @c rowCount is less than the current number of rows or
-                @c columnCount is less than the number of columns, then the data will be shrunk.*/
+            @warning If @p rowCount is less than the current number of rows or
+                @p columnCount is less than the number of columns, then the data will be shrunk.*/
         virtual void SetSize(size_t rowCount, size_t columnCount) = 0;
         /** @brief Sets the number of rows.
             @param rowCount The number of rows.
             @note The number of columns will be preserved.
-            @warning If @c rowCount is less than the current number of rows
+            @warning If @p rowCount is less than the current number of rows
                 then the data will be shrunk.*/
         virtual void SetSize(size_t rowCount) = 0;
         /// @returns The number of rows.
@@ -449,7 +449,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         int Compare(const ListCtrlExDataProviderBase::DoubleWithLabel& cell1,
                     const ListCtrlExDataProviderBase::DoubleWithLabel& cell2) const;
-        /// @returns The label associated with the given @c id.
+        /// @returns The label associated with the given @p id.
         /// @param id The ID to lookup.
         [[nodiscard]]
         const wxString& GetLabel(long id) const;
@@ -845,8 +845,8 @@ namespace Wisteria::UI
         /** @brief Sets the number of rows and columns.
             @param rowCount The number of rows.
             @param columnCount The number of columns.
-            @warning If @c rowCount is less than the current number of rows or
-                @c columnCount is less than the number of columns, then the data will be shrunk.*/
+            @warning If @p rowCount is less than the current number of rows or
+                @p columnCount is less than the number of columns, then the data will be shrunk.*/
         void SetSize(const size_t rowCount, const size_t columnCount) final
             {
             m_virtualData.resize(rowCount);
@@ -859,7 +859,7 @@ namespace Wisteria::UI
         /** @brief Sets the number of rows.
             @param rowCount The number of rows.
             @note The number of columns will be preserved.
-            @warning If @c rowCount is less than the current number of rows
+            @warning If @p rowCount is less than the current number of rows
                 then the data will be shrunk.*/
         void SetSize(const size_t rowCount) final
             {
@@ -1243,7 +1243,7 @@ namespace Wisteria::UI
             @param row The row of the cell.
             @param column The column of the cell.
             @param value The numeric value for the cell.
-            @param format The format to display @c value in.*/
+            @param format The format to display @p value in.*/
         void SetItemValue(const size_t row, const size_t column, const double value,
                           const Wisteria::NumberFormatInfo format = NumberFormatInfo{
                               Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting })
@@ -1303,8 +1303,8 @@ namespace Wisteria::UI
         /** @brief Sets the number of rows and columns.
             @param rowCount The number of rows.
             @param columnCount The number of columns.
-            @warning If @c rowCount is less than the current number of rows or
-                @c columnCount is less than the number of columns, then the data will be shrunk.*/
+            @warning If @p rowCount is less than the current number of rows or
+                @p columnCount is less than the number of columns, then the data will be shrunk.*/
         void SetSize(const size_t rowCount, const size_t columnCount) final
             {
             m_virtualData.resize(rowCount);
@@ -1317,7 +1317,7 @@ namespace Wisteria::UI
         /** @brief Sets the number of rows.
             @param rowCount The number of rows.
             @note The number of columns will be preserved.
-            @warning If @c rowCount is less than the current number of rows,
+            @warning If @p rowCount is less than the current number of rows,
                 then the data will be shrunk.*/
         void SetSize(const size_t rowCount) final
             {

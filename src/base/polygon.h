@@ -221,20 +221,20 @@ namespace Wisteria::GraphItems
         /** @brief Determines if a rectangle entirely fits another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
-            @returns @c true if @c innerRect is inside @c outerRect.*/
+            @returns @c true if @p innerRect is inside @p outerRect.*/
         [[nodiscard]]
         static bool IsRectInsideRect(const wxRect& innerRect, const wxRect& outerRect);
         /** @brief Determines how much of a rectangle fits into another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
-            @returns A pair containing the percent of the width and height of @c innerRect
-                that fits inside @c outerRect.\n
+            @returns A pair containing the percent of the width and height of @p innerRect
+                that fits inside @p outerRect.\n
                 For example, if 3/4 of the smaller rect's width is inside the larger rect
                 and 1/2 of its height fits, then this will return @c 0.75 and @c 0.5.*/
         [[nodiscard]]
         static std::pair<double, double> GetPercentInsideRect(const wxRect& innerRect,
                                                               const wxRect& outerRect);
-        /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
+        /** @brief Draws a line from @p pt1 to @p pt2 with an arrowhead pointing at pt2.
             @details The line is drawn with the current pen and the arrowhead is filled
                 with the current brush. Adapted from code by Adrian McCarthy.
             @param dc The device context to draw on.
@@ -273,7 +273,7 @@ namespace Wisteria::GraphItems
         /** @brief Determines the four corners of a rectangle.
             @param rect The rectangle to analyze.
             @param[out] points The (4) points to store the rectangle's points into.
-            @warning Make sure that @c points has 4 items in it.
+            @warning Make sure that @p points has 4 items in it.
             @deprecated Prefer the version that takes a `std::array`.*/
         [[deprecated("Prefer the version that takes a std::array")]]
         static void GetRectPoints(const wxRect& rect, wxPoint* points);
@@ -370,7 +370,7 @@ namespace Wisteria::GraphItems
                             [[maybe_unused]] double parentScaling) final;
         /** @returns A rectangle from four points.
             @param points The four points to construct the rectangle.
-            @warning It is assumed that there are four elements in @c points.*/
+            @warning It is assumed that there are four elements in @p points.*/
         [[nodiscard]]
         static wxRect GetRectFromPoints(const wxPoint* points);
         void UpdatePointPositions();

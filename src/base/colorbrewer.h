@@ -271,7 +271,7 @@ namespace Wisteria::Colors
                 establish the color spectrum across a range of values.
             @param value The value (should be within the original range) to convert.
             @returns The color that represents the value on our color scale.
-                Will return an empty color if @c value is NaN;
+                Will return an empty color if @p value is NaN;
                 be sure to call `IsOk()` on the returned color.
             @warning The value passed here should be within the range of data previously
                 passed to BrewColors(); otherwise, it will re-adjust the color/value mapping
@@ -340,13 +340,13 @@ namespace Wisteria::Colors
             wxASSERT_MSG(m_baseColor.IsOk(), L"Invalid base color passed to ColorContrast.");
             }
 
-        /// @returns A variation of @c color that is adjusted to contrast against the base color
+        /// @returns A variation of @p color that is adjusted to contrast against the base color
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
         [[nodiscard]]
         wxColour Contrast(const wxColour& color) const;
 
-        /// @returns A variation of @c color with a different opacity.
+        /// @returns A variation of @p color with a different opacity.
         /// @param color The base color to apply an opacity to.
         /// @param opacity The opacity to use for the new color.
         [[nodiscard]]
@@ -453,7 +453,7 @@ namespace Wisteria::Colors
         /// @brief Returns either black or white, depending on which better contrasts
         ///     against the specified color.
         /// @param color The color to contrast against to see if white or black should go on it.
-        /// @returns Black or white; whichever contrasts better against @c color.
+        /// @returns Black or white; whichever contrasts better against @p color.
         [[nodiscard]]
         static wxColour BlackOrWhiteContrast(const wxColour& color)
             {
@@ -481,9 +481,9 @@ namespace Wisteria::Colors
         /// @brief Shades or tints a color if close to another color (e.g., a background color).
         /// @param mainColor The color to adjust (if necessary).
         /// @param secondaryColor The base color to compare against.
-        /// @returns If @c mainColor is close to @c secondaryColor,
-        ///     then returns a shaded or tinted version of @c mainColor; otherwise,
-        ///     returns the original @c mainColor.
+        /// @returns If @p mainColor is close to @p secondaryColor,
+        ///     then returns a shaded or tinted version of @p mainColor; otherwise,
+        ///     returns the original @p mainColor.
         [[nodiscard]]
         static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
                                            const wxColour& secondaryColor)

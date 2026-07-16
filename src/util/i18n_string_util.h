@@ -176,7 +176,7 @@ namespace i18n_string_util
         return (chr >= 0x0030 && chr <= 0x0039) ? (chr + 2358) : chr;
         }
 
-    /// @brief Removes printf commands in @c str (in-place).
+    /// @brief Removes printf commands in @p str (in-place).
     /// @param str The string to have printf commands removed from.
     inline void remove_printf_commands(std::wstring& str)
         {
@@ -198,7 +198,7 @@ namespace i18n_string_util
             }
         }
 
-    /// @brief Removes hex color values (e.g., "#FF00AA") in @c str (in-place).
+    /// @brief Removes hex color values (e.g., "#FF00AA") in @p str (in-place).
     /// @param str The string to have color values removed from.
     inline void remove_hex_color_values(std::wstring& str)
         {
@@ -214,7 +214,7 @@ namespace i18n_string_util
             }
         }
 
-    /// @brief Removes escaped Unicode values in @c str.
+    /// @brief Removes escaped Unicode values in @p str.
     ///     (e.g., "\u266f" will be replaced with spaces).
     /// @param[out] str The string being escaped.
     void remove_escaped_unicode_values(std::wstring& str);

@@ -61,7 +61,7 @@ namespace Wisteria::UI
 
         /** @brief Sets the help topic for the dialog.
             @param helpProjectDirectory The folder/base URL where the topics are stored.
-            @param topicPath The path (after @c helpProjectDirectory) to the topic.*/
+            @param topicPath The path (after @p helpProjectDirectory) to the topic.*/
         void SetHelpTopic(const wxString& helpProjectDirectory, const wxString& topicPath)
             {
             m_helpProjectFolder = helpProjectDirectory;

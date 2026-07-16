@@ -25,7 +25,7 @@ class Screenshot
         @param endIdToHighlight The (optional) end control to draw a red line around.
         @param cutoffId An (optional) ID it cutoff vertically at.
             (This will be the last control at the bottom of the screenshot, or top one
-             if above @c startIdToHighlight.)
+             if above @p startIdToHighlight.)
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshot(const wxString& filePath,
                                const wxWindowID startIdToHighlight = wxID_ANY,
@@ -62,8 +62,8 @@ class Screenshot
         @param filePath The path to save the screenshot to.
         @param windowId The ID of the text window. The window will be searched for from the
             top-level window by looking for this ID.
-        @param clipContents If @c true and @c highlightPoints is non-empty, crops the image
-            below the last highlighted section. If @c false or @c highlightPoints is empty,
+        @param clipContents If @c true and @p highlightPoints is non-empty, crops the image
+            below the last highlighted section. If @c false or @p highlightPoints is empty,
             only dead space below the last line of text is clipped (the default behavior).
         @param highlightPoints The pairs of character positions to draw a red highlight
             around in the screenshot.

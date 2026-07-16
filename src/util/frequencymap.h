@@ -228,7 +228,7 @@ class frequency_map
         @param value2 The value associated with the key.
         @returns An iterator to the inserted or updated item.
         @note If the key is already in the map, then that key's count is incremented;
-            however, @c value2 will be ignored.*/
+            however, @p value2 will be ignored.*/
     template<typename U>
     const_iterator insert(U&& value1, const T2& value2)
         {

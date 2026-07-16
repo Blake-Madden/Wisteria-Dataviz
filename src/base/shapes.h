@@ -553,7 +553,7 @@ namespace Wisteria::GraphItems
             }
 
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
-        /// @note @c percentFromLeft can be negative if using it for Bezier control points
+        /// @note @p percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside the rect.
         [[nodiscard]]
         double GetXPosFromLeft(const wxRect& rect, const double percentFromLeft) const
@@ -562,7 +562,7 @@ namespace Wisteria::GraphItems
             }
 
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
-        /// @note @c percentFromLeft can be negative if using it for Bezier control points
+        /// @note @p percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside the rect.
         [[nodiscard]]
         double GetXPosFromLeft(const wxRect2DDouble& rect, const double percentFromLeft) const

@@ -92,7 +92,7 @@ namespace string_util
         }
 
     /// @param ch The character to review.
-    /// @returns @c true if @c ch is a trademark, service mark, or registration symbol.
+    /// @returns @c true if @p ch is a trademark, service mark, or registration symbol.
     [[nodiscard]]
     constexpr bool is_trademark_or_registration(const wchar_t ch) noexcept
         {
@@ -115,7 +115,7 @@ namespace string_util
         return ch >= L'0' && ch <= L'9';
         }
 
-    /// @returns @c true if @c ch is a subscript number.
+    /// @returns @c true if @p ch is a subscript number.
     /// @param ch The character to review.
     [[nodiscard]]
     constexpr bool is_subscript_number(const wchar_t ch) noexcept
@@ -123,7 +123,7 @@ namespace string_util
         return (ch >= 0x2080 && ch <= 0x2089);
         }
 
-    /// @returns @c true if @c ch is a subscript.
+    /// @returns @c true if @p ch is a subscript.
     /// @param ch The character to review.
     [[nodiscard]]
     constexpr bool is_subscript(const wchar_t ch) noexcept
@@ -195,7 +195,7 @@ namespace string_util
         }
 
     /// @param ch The character to review.
-    /// @returns @c true if @c ch is a fraction symbol.
+    /// @returns @c true if @p ch is a fraction symbol.
     [[nodiscard]]
     constexpr bool is_fraction(const wchar_t ch) noexcept
         {
@@ -204,7 +204,7 @@ namespace string_util
 
     /// @param ch The character to review.
     /// @note This includes lowercased Roman numeral letters.
-    /// @returns @c true if @c ch is a superscript number.
+    /// @returns @c true if @p ch is a superscript number.
     [[nodiscard]]
     constexpr bool is_superscript_number(const wchar_t ch) noexcept
         {
@@ -229,7 +229,7 @@ namespace string_util
         // clang-format on
         }
 
-    /// @returns @c true if @c ch is a lowercased superscript letter.
+    /// @returns @c true if @p ch is a lowercased superscript letter.
     /// @param ch The character to review.
     [[nodiscard]]
     constexpr bool is_superscript_lowercase(const wchar_t ch) noexcept
@@ -269,7 +269,7 @@ namespace string_util
         // clang-format on
         }
 
-    /// @returns @c true if @c ch is a superscript.
+    /// @returns @c true if @p ch is a superscript.
     /// @param ch The character to review.
     [[nodiscard]]
     constexpr bool is_superscript(const wchar_t ch) noexcept
@@ -352,7 +352,7 @@ namespace string_util
 
     /** @brief Determines whether a character is a hexadecimal digit (0-9,A-F,a-f).
         @param ch The letter to be analyzed.
-        @returns @c true if @c ch is a hex digit.*/
+        @returns @c true if @p ch is a hex digit.*/
     [[nodiscard]]
     inline constexpr bool is_hex_digit(const wchar_t ch) noexcept
         {
@@ -361,7 +361,7 @@ namespace string_util
                  (ch >= 0x41 /*'A'*/ && ch <= 0x46 /*'F'*/)));
         }
 
-    /** @brief Attempts to convert a string @c buffer to a double.
+    /** @brief Attempts to convert a string @p buffer to a double.
         @details Same as wcstod(), except it handles thousands separators as well.
         @param buffer The string buffer to read a number from.
         @returns A tuple containing the converted numeric value and the end position.
@@ -423,10 +423,10 @@ namespace string_util
         return { value, end };
         }
 
-    /** Returns the number of characters in the string pointed to by @c str, not including the
-            terminating '\0' character, but at most @c maxlen.\n
-            In doing this, this looks only at the first @c maxlen characters in @c str and
-            never beyond @c str+ @c maxlen.\n
+    /** Returns the number of characters in the string pointed to by @p str, not including the
+            terminating '\0' character, but at most @p maxlen.\n
+            In doing this, this looks only at the first @p maxlen characters in @p str and
+            never beyond @p str+ @p maxlen.\n
             This function should be used for input that may not be null terminated.
         @param str The string to review.
         @param maxlen The maximum length of the string to scan.
@@ -487,7 +487,7 @@ namespace string_util
             limiting the search to a specified number of characters.
         @param string The string to review.
         @param strSearch The string to search for.
-        @param charCount The number of characters to search for within @c string.
+        @param charCount The number of characters to search for within @p string.
         @returns A pointer to the found string, or @c nullptr otherwise.*/
     template<typename T>
     [[nodiscard]]
@@ -1103,7 +1103,7 @@ namespace string_util
             and returns a pointer if found.
         @param stringToSearch The string to search in.
         @param searchSequence The sequence of characters to search for.
-            If any character in this sequence is found in @c stringToSearch,
+            If any character in this sequence is found in @p stringToSearch,
             then its position will be returned.
         @returns A pointer to where the character was found, or @c nullptr if not found.*/
     template<typename T>
@@ -1133,7 +1133,7 @@ namespace string_util
     /// @brief Searches for a string in a larger string as a whole word.
     /// @param haystack The string to search inside.
     /// @param needle The string to search for.
-    /// @param start_index The starting position within @c haystack to start the search.
+    /// @param start_index The starting position within @p haystack to start the search.
     /// @returns The position of the found word, or @c npos if not found.
     template<typename T>
     [[nodiscard]]
@@ -1286,8 +1286,8 @@ namespace string_util
             general text classifier. Its purpose is to cheaply exclude obviously non-textual
             regions when extracting candidate strings from binary document formats.
         @param buffer The buffer to review (should be either char or unsigned char).
-        @param buffSize The byte count of @c buffer.
-        @returns @c true if @c buffer is likely some form of 7-bit or 8-bit ASCII text;
+        @param buffSize The byte count of @p buffer.
+        @returns @c true if @p buffer is likely some form of 7-bit or 8-bit ASCII text;
                  @c false if it is likely UTF-16 or other binary data.
         @note The larger the buffer, the more accurate the heuristic becomes.
     */
@@ -1324,7 +1324,7 @@ namespace string_util
         return (buffSize > 128) ? (spaceCount > 0) : true;
         }
 
-    /// @brief Trims left side of @c str (in-place).
+    /// @brief Trims left side of @p str (in-place).
     /// @param[in,out] str The string to trim.
     /// @note This assumes the string type uses wchar_t as its datatype.
     template<typename string_typeT>
@@ -1334,7 +1334,7 @@ namespace string_util
                                             { return std::iswspace(ch) == 0; }));
         }
 
-    /// @brief Trims right side of @c str (in-place).
+    /// @brief Trims right side of @p str (in-place).
     /// @param[in,out] str The string to trim.
     /// @note This assumes the string type uses @c wchar_t as its datatype.
     template<typename string_typeT>
@@ -1346,7 +1346,7 @@ namespace string_util
                   str.end());
         }
 
-    /// @brief Trims left and right sides of @c str (in-place).
+    /// @brief Trims left and right sides of @p str (in-place).
     /// @param[in,out] str The string to trim.
     /// @note This assumes the string type uses @c wchar_t as its datatype.
     template<typename string_typeT>
@@ -1384,7 +1384,7 @@ namespace string_util
         return str.substr(std::distance(str.cbegin(), left), std::distance(left, right) + 1);
         }
 
-    /// @brief Trims punctuation from left side of @c str (in-place).
+    /// @brief Trims punctuation from left side of @p str (in-place).
     /// @param[in,out] str The string to trim.
     /// @note This assumes the string type uses @c wchar_t as its datatype.
     template<typename string_typeT>
@@ -1394,7 +1394,7 @@ namespace string_util
                                             [](wchar_t ch) { return std::iswpunct(ch) == 0; }));
         }
 
-    /// @brief Trims punctuation from right side of @c str (in-place).
+    /// @brief Trims punctuation from right side of @p str (in-place).
     /// @param[in,out] str The string to trim.
     /// @note This assumes the string type uses @c wchar_t as its datatype.
     template<typename string_typeT>
@@ -1406,7 +1406,7 @@ namespace string_util
                   str.end());
         }
 
-    /// @brief Trims punctuation from left and right sides of @c str (in-place).
+    /// @brief Trims punctuation from left and right sides of @p str (in-place).
     /// @param[in,out] str The string to trim.
     /// @note This assumes the string type uses @c wchar_t as its datatype.
     template<typename string_typeT>
@@ -1610,7 +1610,7 @@ namespace string_util
     /** @brief Replace all instances of a character in a string.
         @param text The text to replace items in.
         @param charToReplace The character to replace.
-        @param replacementChar The character to replace @c charToReplace with.*/
+        @param replacementChar The character to replace @p charToReplace with.*/
     template<typename T>
     void replace_all(T& text, const typename T::traits_type::char_type charToReplace,
                      const typename T::traits_type::char_type replacementChar)
@@ -1630,8 +1630,8 @@ namespace string_util
     /** @brief Replace all instances of a substring in a string.
         @param text The text to replace items in.
         @param textToReplace The text to replace.
-        @param textToReplaceLength The length of @c textToReplace.
-        @param replacementText The text to replace @c textToReplace with.*/
+        @param textToReplaceLength The length of @p textToReplace.
+        @param replacementText The text to replace @p textToReplace with.*/
     template<typename T>
     void replace_all(T& text, const typename T::traits_type::char_type* textToReplace,
                      const size_t textToReplaceLength,
@@ -1659,7 +1659,7 @@ namespace string_util
     /** @brief Replace all instances of a substring in a string.
         @param text The text to replace items in.
         @param textToReplace The text to replace.
-        @param replacementText The text to replace @c textToReplace with.*/
+        @param replacementText The text to replace @p textToReplace with.*/
     template<typename T>
     void replace_all(T& text, const T& textToReplace, const T& replacementText)
         {
@@ -1679,8 +1679,8 @@ namespace string_util
     /** @brief Replace all instances of a substring in a string (searching by whole word).
         @param text The text to replace items in.
         @param textToReplace The text to replace.
-        @param replacementText The text to replace @c textToReplace with.
-        @param index Where to start the search within @c text.*/
+        @param replacementText The text to replace @p textToReplace with.
+        @param index Where to start the search within @p text.*/
     template<typename T>
     void replace_all_whole_word(T& text, const T& textToReplace, const T& replacementText,
                                 const size_t index = 0)
@@ -1813,7 +1813,7 @@ namespace string_util
         @details For example, a string like "5-8" will return 6.5. Hyphens and colons are seen as
        range separators.
         @param nptr The string to parse.
-        @param[out] endptr Where the parsing of @c nptr stopped.
+        @param[out] endptr Where the parsing of @p nptr stopped.
         @returns The double value that was parsed.*/
     template<typename Tchar_type>
     [[nodiscard]]

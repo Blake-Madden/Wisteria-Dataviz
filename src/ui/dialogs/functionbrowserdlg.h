@@ -239,7 +239,7 @@ namespace Wisteria::UI
             @param pos The dialog's position.
             @param size The dialog's size.
             @param style The dialog's window style.
-            @note @c editor must be a `wxStyledTextCtrl`-derived window.*/
+            @note @p editor must be a `wxStyledTextCtrl`-derived window.*/
         FunctionBrowserDlg(wxWindow* parent, wxWindow* editor, wxWindowID id = wxID_ANY,
                            const wxString& caption = _(L"Function Browser"),
                            const wxString& firstWindowCaption = _(L"Categories:"),

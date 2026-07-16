@@ -36,7 +36,7 @@ namespace Wisteria
 
         /** @brief Adds a replacement item to the catalog.
             @param regExToReplace A regular expression to search for in text.
-            @param replacement The text to replace any matches for @c regExToReplace.
+            @param replacement The text to replace any matches for @p regExToReplace.
             @warning For regular expressions, it is recommended to wrap words being
                 replaced inside word-boundary anchors (@c \\b) to avoid unexpected results.*/
         void AddReplacement(const std::shared_ptr<wxRegEx>& regExToReplace,

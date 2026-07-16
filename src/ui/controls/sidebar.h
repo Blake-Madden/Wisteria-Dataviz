@@ -366,7 +366,7 @@ namespace Wisteria::UI
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send an @c EVT_SIDEBAR_CLICK event.
             @param collapseIfExpanded @c true to collapse the folder if already expanded.\n
-                If collapsing the folder, then @c sendEvent will be overridden
+                If collapsing the folder, then @p sendEvent will be overridden
                 (i.e., the selection event will not be fired).
             @returns @c true if the folder was selected.*/
         bool SelectFolder(const size_t item, const bool setFocus = true,
@@ -495,7 +495,7 @@ namespace Wisteria::UI
         /** Searches for a sub item by ID, but only within a specified parent item
             @param parentId The parent item's ID to search within.
             @param subItem Information about the subitem to search for. While try to find
-                the best match based on @c subItem's ID, label, and icon.
+                the best match based on @p subItem's ID, label, and icon.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
         [[nodiscard]]

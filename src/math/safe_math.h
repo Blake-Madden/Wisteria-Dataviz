@@ -223,7 +223,7 @@ class double_less
     /** @brief Compares two doubles.
         @param left The left value.
         @param right The right value.
-        @returns @c true if @c left is less than @c right.*/
+        @returns @c true if @p left is less than @p right.*/
     [[nodiscard]]
     inline bool operator()(const double& left, const double& right) const noexcept
         {
@@ -247,7 +247,7 @@ constexpr bool int_to_bool(const T intVal) noexcept
 
 /// @brief Converts a boolean to integer (e.g., @c true = 1, @c false = 0).
 /// @param boolVal The boolean value to review.
-/// @returns @c 1 if @c boolVal is @c true, 0 if @c false.
+/// @returns @c 1 if @p boolVal is @c true, 0 if @c false.
 [[nodiscard]]
 constexpr int bool_to_int(const bool boolVal) noexcept
     {

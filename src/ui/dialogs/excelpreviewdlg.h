@@ -30,7 +30,7 @@ namespace Wisteria::UI
 
         /// @brief Constructor.
         /// @param wrk The worksheet to preview.
-        /// @param excelFile The Excel extractor that @c wrk belongs to.
+        /// @param excelFile The Excel extractor that @p wrk belongs to.
         ExcelTable(lily_of_the_valley::xlsx_extract_text::worksheet* wrk,
                    lily_of_the_valley::xlsx_extract_text* excelFile)
             : m_wrk(wrk), m_excelFile(excelFile)
@@ -87,7 +87,7 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param parent The parent window.
             @param wrk The worksheet to preview.
-            @param excelFile The Excel extractor that @c wrk belongs to.
+            @param excelFile The Excel extractor that @p wrk belongs to.
             @param id The dialog's ID.
             @param caption The dialog's caption.
             @param pos The dialog's pos.

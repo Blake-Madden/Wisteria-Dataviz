@@ -61,7 +61,7 @@ class FilePathResolverBase
 
     /** @brief Resolves a string to see if it is a file path.
         @param path The string to resolve to a file path.
-        @param pathsToSearch A list of local paths to look in if @c path is a relative local path.
+        @param pathsToSearch A list of local paths to look in if @p path is a relative local path.
         @returns The resolved path.*/
     wxString
     ResolvePath(const wxString& path,
@@ -284,7 +284,7 @@ bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrF
 /// @todo: currently fails to copy over empty folders
 bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory);
 
-/** @brief Creates a new file based on @c filePath, embedding a numeric
+/** @brief Creates a new file based on @p filePath, embedding a numeric
             sequence in it (making it unique).
             This is useful for saving a file and not overwriting one that
             already exists with the same name.

@@ -616,8 +616,8 @@ namespace statistics
         @param shape1 First shape parameter.
         @param shape2 Second shape parameter.
         @returns The regularized value (normalized to the range [0, 1]).\n
-            If @c shape1 or @c b are negative, returns NaN.
-        @note @c shape1 and @c b should be non-negative.
+            If @p shape1 or @c b are negative, returns NaN.
+        @note @p shape1 and @c b should be non-negative.
         @par Citations:
             Press, William H., et al. *Numerical Recipes: The Art of Scientific Computing*. 3rd ed.,
             Cambridge University Press, 2007, sec. 6.4.*/

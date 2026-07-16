@@ -51,7 +51,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             ::SendMessage(m_control->GetHWND(), EM_FORMATRANGE, FALSE, NULL);
             }
 
-        /// @returns @c true if @c pageNum (one-index) is a valid page number.
+        /// @returns @c true if @p pageNum (one-index) is a valid page number.
         /// @param pageNum The page number to verify.
         [[nodiscard]]
         bool HasPage(int pageNum) final

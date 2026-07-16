@@ -162,9 +162,9 @@ namespace Wisteria::UI
             return m_resetPageNumbering;
             }
 
-        /** @brief Applies the edits made to the preview grid (e.g., items removed) to @c canvas.
+        /** @brief Applies the edits made to the preview grid (e.g., items removed) to @p canvas.
             @param canvas The canvas to sync the edited grid to. This should be called
-                after resizing @c canvas's grid (via SetFixedObjectsGridSize()) to the
+                after resizing @p canvas's grid (via SetFixedObjectsGridSize()) to the
                 dialog's reported row/column counts.*/
         void ApplyGridEdits(Canvas* canvas) const;
 

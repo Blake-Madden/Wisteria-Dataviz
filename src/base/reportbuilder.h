@@ -541,8 +541,8 @@ namespace Wisteria
         /// @brief Generates a dataset name that does not collide with any
         ///     existing dataset in the report.
         /// @param baseName The preferred name.
-        /// @returns @c baseName if it is not already taken, otherwise
-        ///     @c baseName appended with a numeric suffix (e.g., "(2)").
+        /// @returns @p baseName if it is not already taken, otherwise
+        ///     @p baseName appended with a numeric suffix (e.g., "(2)").
         [[nodiscard]]
         wxString GenerateUniqueDatasetName(const wxString& baseName) const
             {
@@ -1127,7 +1127,7 @@ namespace Wisteria
         std::optional<double> FindAxisPosition(const GraphItems::Axis& axis,
                                                const wxSimpleJSON::Ptr_t& positionNode) const;
 
-        /// @brief If @c path is fully specified, then returns @c path.
+        /// @brief If @p path is fully specified, then returns @p path.
         ///     Otherwise, tries to return the path relative to the project file.
         [[nodiscard]]
         wxString NormalizeFilePath(const wxString& path) const;

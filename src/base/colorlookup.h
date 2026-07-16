@@ -24,9 +24,9 @@ namespace Wisteria::Colors
       public:
         /** @brief Returns a human-readable name for a color, suitable for
                 accessibility descriptions (e.g., screen reader text).
-            @details First tries to match @c color against the named colors in
+            @details First tries to match @p color against the named colors in
                 the Wisteria color catalog (via @c ReportBuilder::GetColorMap()).
-                If that fails, falls back to wxWidgets' standard color name lookup
+                If that fails, falls back to wxWidgets's standard color name lookup
                 (@c wxC2S_NAME) and finally the HTML hex representation
                 (e.g., @c "#FFC0CB").
             @param color The color to describe.

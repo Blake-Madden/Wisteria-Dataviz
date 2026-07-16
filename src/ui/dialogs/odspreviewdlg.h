@@ -30,7 +30,7 @@ namespace Wisteria::UI
 
         /// @brief Constructor.
         /// @param wrk The worksheet to preview.
-        /// @param odsFile The ODS extractor that @c wrk belongs to.
+        /// @param odsFile The ODS extractor that @p wrk belongs to.
         OdsTable(lily_of_the_valley::ods_extract_text::worksheet* wrk,
                  lily_of_the_valley::ods_extract_text* odsFile)
             : m_wrk(wrk), m_odsFile(odsFile)
@@ -87,7 +87,7 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param parent The parent window.
             @param wrk The worksheet to preview.
-            @param odsFile The ODS extractor that @c wrk belongs to.
+            @param odsFile The ODS extractor that @p wrk belongs to.
             @param id The dialog's ID.
             @param caption The dialog's caption.
             @param pos The dialog's pos.

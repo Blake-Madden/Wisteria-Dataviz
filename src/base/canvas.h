@@ -177,7 +177,7 @@ namespace Wisteria
             @param parent The parent window that will manage the canvas.
             @param itemId The ID of this canvas.
             @param pos The position.
-            @param size The initial size of the canvas; will change size relative to @c parent.
+            @param size The initial size of the canvas; will change size relative to @p parent.
             @param flags Window flags passed to wxScrolledWindow.*/
         explicit Canvas(wxWindow* parent, int itemId = wxID_ANY,
                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -209,7 +209,7 @@ namespace Wisteria
 
         /// @private
         void OnDraw(wxDC& dc) final;
-        /// @brief Draws @c item on @c dc, wrapping in a @c wxSVGAccessibleGroup when
+        /// @brief Draws @p item on @p dc, wrapping in a @c wxSVGAccessibleGroup when
         ///     the DC is a @c wxSVGFileDC and the item has accessibility attributes set.
         /// @param dc The device context to draw on.
         /// @param item The graph item to draw.
@@ -346,7 +346,7 @@ namespace Wisteria
         /// @brief Overlays a translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
         /// @param sz The suggested size of the watermark (in DIPs).\n
-        ///     The image's aspect ratio will be maintained, one of the dimensions from @c sz
+        ///     The image's aspect ratio will be maintained, one of the dimensions from @p sz
         ///     may be adjusted to be smaller.
         void SetWatermarkLogo(const wxBitmapBundle& watermark, const wxSize sz) noexcept
             {
@@ -495,7 +495,7 @@ namespace Wisteria
             @param rows The number of rows to use.
             @param columns The number of columns to use.
             @note Contents currently in the grid will be preserved,
-                unless @c rows or @c columns is smaller than the current size.\n
+                unless @p rows or @p columns is smaller than the current size.\n
                 Call ClearFixedObjects() if you need to clear the current contents.*/
         void SetFixedObjectsGridSize(size_t rows, size_t columns);
         /// @returns The size of the fixed object grid (number of rows x columns).
@@ -511,7 +511,7 @@ namespace Wisteria
             @param object The object being added to the location.*/
         void SetFixedObject(size_t row, size_t column,
                             const std::shared_ptr<GraphItems::GraphItemBase>& object);
-        /// @returns The fixed object at @c row and @c column.
+        /// @returns The fixed object at @p row and @p column.
         /// @param row The row of the object.
         /// @param column The column of the object.
         [[nodiscard]]
@@ -935,7 +935,7 @@ namespace Wisteria
         void ContrastTitleLabel(GraphItems::Label& title) const;
 
         /// @returns The top-level floating (i.e., not anchored) object on the
-        ///     canvas located at @c pt.
+        ///     canvas located at @p pt.
         /// @param pt The point to look at.
         /// @param dc The rendering DC.
         [[nodiscard]]

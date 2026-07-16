@@ -606,7 +606,7 @@ namespace Wisteria::GraphItems
         void DrawLegendIcons(wxDC& dc) const;
         /// @returns The size that the left image will be if the provided height is given.
         /// @note This will maintain the image's aspect ratio and the calculated height
-        ///     may be smaller than @c textHeight.
+        ///     may be smaller than @p textHeight.
         /// @param textHeight The current height of the label.
         [[nodiscard]]
         wxSize CalcLeftImageSize(wxCoord textHeight) const;

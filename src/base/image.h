@@ -167,7 +167,7 @@ namespace Wisteria::GraphItems
             @param[in,out] ext The file extension to review
                 (can be either the extension or full file path).
                 If a full filepath is used, then this will be returned as just the extension.
-            @note SVG files will return @c wxBITMAP_TYPE_ANY, so check @c ext to further
+            @note SVG files will return @c wxBITMAP_TYPE_ANY, so check @p ext to further
                 review the file type.*/
         [[nodiscard]]
         static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
@@ -193,7 +193,7 @@ namespace Wisteria::GraphItems
             @param filePath The filepath of the image to load.
             @note Memory mapping is used when loading, which can help memory usage with
                 large files.
-            @returns The image loaded from @c filePath.*/
+            @returns The image loaded from @p filePath.*/
         [[nodiscard]]
         static wxImage LoadFile(const wxString& filePath);
         /// @}
@@ -390,7 +390,7 @@ namespace Wisteria::GraphItems
             @note Adapted from https://www.codeproject.com/articles/471994/oilpainteffect,
                 by author Santhosh G_. Santhosh G_'s code was based on
                 http://supercomputingblog.com/graphics/oil-painting-algorithm/, which is also the
-                source for the explanations for @c radius and @c intensity.\n
+                source for the explanations for @p radius and @p intensity.\n
                 This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage OilPainting(const wxImage& image, uint8_t radius = 10, float intensity = 40);

@@ -116,7 +116,7 @@ class WindowContainer
         return (static_cast<size_t>(position) >= GetWindowCount()) ? nullptr : m_windows[position];
         }
 
-    /// @returns The window with @c id, or null if not found.
+    /// @returns The window with @p id, or null if not found.
     /// @param id The window ID to search for.
     [[nodiscard]]
     wxWindow* FindWindowById(const wxWindowID id)
@@ -131,8 +131,8 @@ class WindowContainer
         return nullptr;
         }
 
-    /// @returns The window with @c id that is also the same class type as
-    ///     @c classInfo, or null if not found.
+    /// @returns The window with @p id that is also the same class type as
+    ///     @p classInfo, or null if not found.
     /// @param id The window ID to search for.
     /// @param classInfo The class information that the window should match.
     [[nodiscard]]
@@ -167,7 +167,7 @@ class WindowContainer
         return nullptr;
         }
 
-    /// @returns The first window with the same class type as @c classInfo, or null if not found.
+    /// @returns The first window with the same class type as @p classInfo, or null if not found.
     /// @param classInfo The class information that the window should match.
     [[nodiscard]]
     wxWindow* FindWindowByType(const wxClassInfo* classInfo)
@@ -184,7 +184,7 @@ class WindowContainer
         return nullptr;
         }
 
-    /// @returns The last window with the same class type as @c classInfo, or null if not found.
+    /// @returns The last window with the same class type as @p classInfo, or null if not found.
     /// @param classInfo The class information that the window should match.
     [[nodiscard]]
     wxWindow* RFindWindowByType(const wxClassInfo* classInfo)
@@ -201,7 +201,7 @@ class WindowContainer
         return nullptr;
         }
 
-    /// @returns The position of the window with @c id, or @c wxNOT_FOUND if not found.
+    /// @returns The position of the window with @p id, or @c wxNOT_FOUND if not found.
     /// @param id The id to search for.
     [[nodiscard]]
     int FindWindowPositionById(const wxWindowID id)
@@ -216,8 +216,8 @@ class WindowContainer
         return wxNOT_FOUND;
         }
 
-    /// @returns The position of the window with @c id that is also the same class type as
-    ///     @c classInfo, or @c wxNOT_FOUND if not found.
+    /// @returns The position of the window with @p id that is also the same class type as
+    ///     @p classInfo, or @c wxNOT_FOUND if not found.
     /// @param id The window ID to search for.
     /// @param classInfo The class information that the window should match.
     [[nodiscard]]

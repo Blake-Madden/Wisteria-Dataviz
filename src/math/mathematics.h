@@ -95,7 +95,7 @@ constexpr bool is_within(const T value, const T first, const T second) noexcept
     return (value >= first && value <= second);
     }
 
-/// @returns @c true if @c value is within a given the @c range.
+/// @returns @c true if @p value is within a given the @p range.
 /// @param range The comparison range.
 /// @param value The value to review.
 template<typename T>
@@ -118,7 +118,7 @@ class within
 
     within() = delete;
 
-    /** @returns @c true if @c value is within the valid range of values.
+    /** @returns @c true if @p value is within the valid range of values.
         @param value The value to review.*/
     [[nodiscard]]
     inline bool operator()(T value) const noexcept
@@ -234,7 +234,7 @@ inline double scale_within(double unscaledValue, const std::pair<double, double>
            newDataRange.first;
     }
 
-/** @returns The next base-10 interval from the given @c value using a specified number of digits.
+/** @returns The next base-10 interval from the given @p value using a specified number of digits.
     @param value The value to step from.
     @param intervalSize The size of the interval to step to.\n
      For example, with a value of 2.1, the following steps would yield these results:
@@ -250,7 +250,7 @@ inline constexpr double next_interval(const double value, const uint8_t interval
                (std::ceil(value / std::pow(10, intervalSize - 1)) * std::pow(10, intervalSize - 1));
     }
 
-/** @returns The previous base-10 interval from the given @c value using
+/** @returns The previous base-10 interval from the given @p value using
         a specified number of digits.
     @param value The value to step from.
     @param intervalSize The size of the interval to step to.\n
@@ -267,7 +267,7 @@ inline constexpr double previous_interval(const double value, const uint8_t inte
                                   std::pow(10, intervalSize - 1));
     }
 
-/** @returns Intelligent intervals for @c start and @c end to fall within.
+/** @returns Intelligent intervals for @p start and @p end to fall within.
     @param start The start of the interval.
     @param end The end of the interval.\n
      For example:\n
@@ -416,7 +416,7 @@ template<typename T>
 class floor_value
     {
   public:
-    /// @returns The floored value of @c value.
+    /// @returns The floored value of @p value.
     /// @param value The value to floor.
     [[nodiscard]]
     inline T operator()(const T& value) const noexcept
@@ -437,7 +437,7 @@ inline constexpr bool is_even(T value) noexcept
 /// @brief Specialized version of is_even() for (double) floating point value
 ///     types that need to be "floored" first.
 /// @param value The number to review.
-/// @returns Whether @c value is even.
+/// @returns Whether @p value is even.
 template<std::floating_point T>
 [[nodiscard]]
 inline bool is_even(T value)
@@ -455,7 +455,7 @@ template<typename T>
 class even
     {
   public:
-    /// @returns Whether @c val is even.
+    /// @returns Whether @p val is even.
     /// @param val The value to analyze.
     [[nodiscard]]
     bool operator()(T val) const
@@ -914,7 +914,7 @@ namespace geometry
     /** @returns The angle (in degrees) of a line segment.
         @param pt1 The first point of the line segment.
         @param pt2 The second point of the line segment.
-        @note The angle is going from @c pt1 to @c pt2.*/
+        @note The angle is going from @p pt1 to @p pt2.*/
     [[nodiscard]]
     inline double segment_angle_degrees(const std::pair<double, double>& pt1,
                                         const std::pair<double, double>& pt2) noexcept
@@ -980,9 +980,9 @@ namespace geometry
         @returns The rescaled size (with aspect ratio maintained).
         @param size The initial size to be downscaled.
         @param boundingSize The bounding box to fit the size into.
-        @note The assumption here is that @c size is either wider or taller (or both) than
-            @c boundingSize and that it is being scaled down to fit inside @c boundingSize.
-            If it is already small enough to fit in @c boundingSize,
+        @note The assumption here is that @p size is either wider or taller (or both) than
+            @p boundingSize and that it is being scaled down to fit inside @p boundingSize.
+            If it is already small enough to fit in @p boundingSize,
                 then the original size is returned.*/
     [[nodiscard]]
     inline std::pair<double, double>
@@ -1035,9 +1035,9 @@ namespace geometry
         @returns The rescaled size (with aspect ratio maintained).
         @param size The initial size to be upscaled.
         @param boundingSize The bounding box to fit the size into.
-        @note The assumption here is that @c size is either narrower or shorter (or both) than
-            @c boundingSize and that it is being upscaled to fit inside @c boundingSize.
-            If it is already larger enough to consume one of the dimensions of @c boundingSize,
+        @note The assumption here is that @p size is either narrower or shorter (or both) than
+            @p boundingSize and that it is being upscaled to fit inside @p boundingSize.
+            If it is already larger enough to consume one of the dimensions of @p boundingSize,
             then the original size is returned.*/
     [[nodiscard]]
     inline std::pair<double, double>

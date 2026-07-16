@@ -76,13 +76,13 @@ namespace Wisteria
                 will use that.
             @warning By default, this function assumes that the file may not exist and will
                 prompt the client for the correct path if not found. If client interaction
-                isn't expected (or possible), pass @c interactivity as
+                isn't expected (or possible), pass @p interactivity as
                 @c ReadFileInteractivityMode::NoInteractivity.
             @param[in,out] filePath The file path to read. This may be altered if the original
                 path didn't exist and the client is prompted to enter a new one.
             @param[out] textBuffer The buffer to write the file's content to.
             @param srcCharSet The (optional) character set to convert the file from.
-            @param interactivity Controls how to respond if @c filePath isn't found or can't
+            @param interactivity Controls how to respond if @p filePath isn't found or can't
                 be read.
             @returns @c true if the file was read successfully.*/
         static bool ReadFile(wxString& filePath, wxString& textBuffer,
