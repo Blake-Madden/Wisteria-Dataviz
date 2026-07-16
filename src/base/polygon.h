@@ -87,18 +87,6 @@ namespace Wisteria::GraphItems
 
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
-            @param points The points of the polygon.
-            @param N The number of points.
-            @deprecated Prefer the CTOR that takes a `std::array`/`vector`.*/
-        [[deprecated("Prefer the CTOR that takes a std::array/vector")]]
-        Polygon(GraphItemInfo itemInfo, const wxPoint* points, const int N)
-            : GraphItemBase(std::move(itemInfo))
-            {
-            SetPoints(points, N);
-            }
-
-        /** @brief Constructor.
-            @param itemInfo Base information for the plot object.
             @param polygon An array of points (e.g., `std::array<wxPoint, 5>`).*/
         template<typename polygonT>
         Polygon(GraphItemInfo itemInfo, const polygonT& polygon)
@@ -272,13 +260,6 @@ namespace Wisteria::GraphItems
 
         /** @brief Determines the four corners of a rectangle.
             @param rect The rectangle to analyze.
-            @param[out] points The (4) points to store the rectangle's points into.
-            @warning Make sure that @p points has 4 items in it.
-            @deprecated Prefer the version that takes a `std::array`.*/
-        [[deprecated("Prefer the version that takes a std::array")]]
-        static void GetRectPoints(const wxRect& rect, wxPoint* points);
-        /** @brief Determines the four corners of a rectangle.
-            @param rect The rectangle to analyze.
             @param[out] points An array of points to store the rectangle's points into.*/
         static void GetRectPoints(const wxRect& rect, std::array<wxPoint, 4>& points);
         /** @brief Determines the four corners of a rectangle, but also sets a fifth point
@@ -287,13 +268,6 @@ namespace Wisteria::GraphItems
             @param rect The rectangle to analyze.
             @param[out] points An array of points to store the rectangle's points into.*/
         static void GetRectPoints(const wxRect& rect, std::array<wxPoint, 5>& points);
-        /** @brief Determines the bounding box that a polygon requires to fit inside.
-            @param polygon The polygon's points.
-            @param N The number of points in the polygon.
-            @returns The rectangle that the polygon would need to fit in.
-            @deprecated Prefer the version that takes a `std::vector`.*/
-        [[nodiscard]] [[deprecated("Prefer the version that takes a std::vector")]]
-        static wxRect GetPolygonBoundingBox(const wxPoint* polygon, size_t N);
 
         /** @brief Determines the bounding box that a polygon requires to fit inside.
             @param polygon The polygon's points.

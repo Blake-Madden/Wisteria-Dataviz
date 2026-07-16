@@ -50,26 +50,6 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Polygon::GetPolygonBoundingBox(const wxPoint* polygon, const size_t N)
-        {
-        wxASSERT(N > 0 && polygon);
-        if (N == 0 || polygon == nullptr)
-            {
-            return {};
-            }
-
-        wxCoord minX(polygon[0].x), maxX(polygon[0].x), minY(polygon[0].y), maxY(polygon[0].y);
-        for (size_t i = 1; i < N; ++i)
-            {
-            minX = std::min(polygon[i].x, minX);
-            maxX = std::max(polygon[i].x, maxX);
-            minY = std::min(polygon[i].y, minY);
-            maxY = std::max(polygon[i].y, maxY);
-            }
-        return { wxPoint{ minX, minY }, wxPoint{ maxX, maxY } };
-        }
-
-    //-------------------------------------------
     void Polygon::UpdatePointPositions()
         {
         m_scaledPoints = GetPoints();
@@ -87,19 +67,6 @@ namespace Wisteria::GraphItems
     bool Polygon::HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const
         {
         return geometry::is_inside_polygon(pt, m_scaledPoints);
-        }
-
-    //-------------------------------------------
-    void Polygon::GetRectPoints(const wxRect& rect, wxPoint* points)
-        {
-        if (points == nullptr)
-            {
-            return;
-            }
-        points[0] = rect.GetTopLeft();
-        points[1] = rect.GetTopRight();
-        points[2] = rect.GetBottomRight();
-        points[3] = rect.GetBottomLeft();
         }
 
     //-------------------------------------------
