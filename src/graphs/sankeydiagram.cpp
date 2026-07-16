@@ -129,9 +129,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         struct StringPairLessNoCase
             {
             [[nodiscard]]
-            bool
-            operator()(const std::pair<wxString, wxString>& lhv,
-                       const std::pair<wxString, wxString>& rhv) const
+            bool operator()(const std::pair<wxString, wxString>& lhv,
+                            const std::pair<wxString, wxString>& rhv) const
                 {
                 const int sortGroupCmp{ lhv.first.CmpNoCase(rhv.first) };
                 return (sortGroupCmp != 0) ? (sortGroupCmp < 0) :
@@ -333,12 +332,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         }
 
     //----------------------------------------------------------------
-    void SankeyDiagram::DrawColumns(size_t & colorIndex)
+    void SankeyDiagram::DrawColumns(size_t& colorIndex)
         {
         std::array<wxPoint, 4> pts{};
 
         for (const auto& col : m_sankeyColumns)
             {
+            // each column restarts its color cycle from the beginning of the scheme
+            colorIndex = 0;
             for (const auto& group : col)
                 {
                 if (group.m_isShown &&
@@ -370,16 +371,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             {
             return;
             }
-        // which color are we on?
-        auto currentColorIndex = [&, this]()
-        {
-            size_t prevColumnColorIndices{ 0 };
-            for (size_t i = 0; i < colIndex; ++i)
-                {
-                prevColumnColorIndices += m_sankeyColumns[i].size();
-                }
-            return prevColumnColorIndices;
-        }();
+        // each column restarts its color cycle from the beginning of the scheme
+        size_t currentColorIndex{ 0 };
         for (auto& group : m_sankeyColumns[colIndex])
             {
             auto currentColor{ GetBrushScheme()->GetBrush(currentColorIndex++).GetColour() };
@@ -484,10 +477,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
 
         // if a column only has a single (shown) group, then that group obviously
         // consumes 100% of the column, so showing its percentage would be redundant
-        const bool columnHasMultipleGroups{ std::ranges::count_if(m_sankeyColumns[colIndex],
-                                                                  [](const auto& group) {
-                                                                      return group.m_isShown;
-                                                                  }) > 1 };
+        const bool columnHasMultipleGroups{ std::ranges::count_if(
+                                                m_sankeyColumns[colIndex], [](const auto& group)
+                                                { return group.m_isShown; }) > 1 };
 
         std::vector<std::unique_ptr<GraphItems::Label>> labels;
         for (auto& group : m_sankeyColumns[colIndex])
