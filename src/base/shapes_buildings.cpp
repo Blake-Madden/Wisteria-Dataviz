@@ -216,19 +216,13 @@ namespace Wisteria::GraphItems
                            ladderRect.y + ladderRect.GetHeight());
 
             int currentY{ ladderRect.GetTop() };
-            // clang-format off
-            wxCLANG_WARNING_SUPPRESS(unused-but-set-variable);
-            // clang-format on
-            int currentLine{ 0 };
+
             while (currentY < ladderRect.GetBottom())
                 {
                 gc->StrokeLine(ladderRect.GetLeft(), currentY, ladderRect.GetRight(), currentY);
                 currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
-                ++currentLine;
                 }
-            // clang-format off
-            wxCLANG_WARNING_RESTORE(unused-but-set-variable);
-            // clang-format on
+
             // top of silo
             wxGraphicsPath siloLidPath = gc->CreatePath();
 
