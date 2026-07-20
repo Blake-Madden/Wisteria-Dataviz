@@ -193,6 +193,22 @@ void WisteriaApp::LoadInterface()
         GetMainFrame()->SetLogo(appSvg);
         }
 
+    GetMainFrame()->Bind(wxEVT_CLOSE_WINDOW,
+                         [this](wxCloseEvent& event)
+                         {
+                             // If project windows are still open, then the user is just dismissing
+                             // this frame (e.g., the log or script workbench embedded here),
+                             // not the whole app.
+                             if (event.CanVeto() && wxGetApp().GetDocumentCount() > 0)
+                                 {
+                                 GetMainFrame()->Hide();
+                                 event.Veto();
+                                 return;
+                                 }
+
+                             event.Skip();
+                         });
+
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
         [this]([[maybe_unused]]
