@@ -304,10 +304,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             GraphItems::GraphItemInfo{
                 _(L"HOW TO USE THIS CHART\n"
                   "       Take a pencil or ruler and connect your\n"
-                  "\U0000201CWords per Sentence\U0000201D figure (left) with your\n"
-                  "\U0000201CSyllables per 100 Words\U0000201D figure (right).  The\n"
+                  "“Words per Sentence” figure (left) with your\n"
+                  "“Syllables per 100 Words” figure (right).  The\n"
                   "intersection of the pencil or ruler with the\n"
-                  "center line shows your \U0000201CReading Ease\U0000201D score.") }
+                  "center line shows your “Reading Ease” score.") }
                 .Pen(legendColor)
                 .FontBackgroundColor(legendBkColor)
                 .FontColor(legendColor)

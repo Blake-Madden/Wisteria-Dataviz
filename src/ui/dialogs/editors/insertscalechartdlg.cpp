@@ -303,8 +303,8 @@ namespace Wisteria::UI
         auto* addBlockBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, _(L"Add"));
         auto* editBlockBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, _(L"Edit"));
         auto* removeBlockBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, _(L"Remove"));
-        auto* moveUpBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, wxString(L"\u25B2"));
-        auto* moveDownBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, wxString(L"\u25BC"));
+        auto* moveUpBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, wxString(L"▲"));
+        auto* moveDownBtn = new wxButton(blocksBox->GetStaticBox(), wxID_ANY, wxString(L"▼"));
         blockBtnSizer->Add(addBlockBtn,
                            wxSizerFlags{}.Border(wxRIGHT, wxSizerFlags::GetDefaultBorder()));
         blockBtnSizer->Add(editBlockBtn,

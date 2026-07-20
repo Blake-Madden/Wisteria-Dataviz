@@ -191,7 +191,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 30, 30, 30,
                 IsUsingEnglishLabels() ?
                     wxString{ DONTTRANSLATE(L"children and youth\nliterature (for ages 8-16)") } :
-                    wxString{ DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher") },
+                    wxString{ DONTTRANSLATE(L"Kinder- und Jugendbücher") },
                 wxColour{ 138, 163, 249 }));
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 40, 40, 40,
