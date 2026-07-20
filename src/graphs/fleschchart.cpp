@@ -301,13 +301,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
 
         // add instruction label
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo{
-                _(L"HOW TO USE THIS CHART\n"
-                  "       Take a pencil or ruler and connect your\n"
-                  "“Words per Sentence” figure (left) with your\n"
-                  "“Syllables per 100 Words” figure (right).  The\n"
-                  "intersection of the pencil or ruler with the\n"
-                  "center line shows your “Reading Ease” score.") }
+            GraphItems::GraphItemInfo{ _(L"HOW TO USE THIS CHART\n"
+                                         "       Take a pencil or ruler and connect your\n"
+                                         "“Words per Sentence” figure (left) with your\n"
+                                         "“Syllables per 100 Words” figure (right).  The\n"
+                                         "intersection of the pencil or ruler with the\n"
+                                         "center line shows your “Reading Ease” score.") }
                 .Pen(legendColor)
                 .FontBackgroundColor(legendBkColor)
                 .FontColor(legendColor)

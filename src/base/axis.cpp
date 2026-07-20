@@ -4213,7 +4213,9 @@ namespace Wisteria::GraphItems
             return false;
             }
 
+        // quneiform-suppress-begin
         const wxRegEx re(LR"(^[A-Z]{0,2}([0-9]{2})[0-9]{2}[\-\x2013]([0-9]{2})?[0-9]{2}$)");
+        // quneiform-suppress-end
         wxString century;
         for (const auto& bracket : GetBrackets())
             {
