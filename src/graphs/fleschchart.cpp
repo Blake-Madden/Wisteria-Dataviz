@@ -325,6 +325,31 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             .MakeSmaller();
         legend->SetBoxCorners(BoxCorners::Straight);
         legend->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+        legend->SetDPIScaleFactor(GetDPIScaleFactor());
+
+        // fit the instructions in the top left corner without overlapping the rulers
+        const auto naturalBoundingBox = legend->GetBoundingBox(dc);
+        wxCoord instructionsRight{ naturalBoundingBox.GetRight() };
+        for (const auto& customAxis : GetCustomAxes())
+            {
+            const auto headerBoundingBox = customAxis.GetHeader().GetBoundingBox(dc);
+            if (naturalBoundingBox.Intersects(headerBoundingBox))
+                {
+                instructionsRight = std::min(instructionsRight, headerBoundingBox.GetLeft());
+                }
+            }
+        // never let the box collapse to something unreasonably small
+        instructionsRight = std::max<wxCoord>(instructionsRight, legend->GetAnchorPoint().x +
+                                                                     ScaleToScreenAndCanvas(150));
+
+        if (instructionsRight < naturalBoundingBox.GetRight())
+            {
+            legend->SetBoundingBox(wxRect(legend->GetAnchorPoint(),
+                                          wxPoint(instructionsRight - ScaleToScreenAndCanvas(5),
+                                                  naturalBoundingBox.GetBottom())),
+                                   dc, GetScaling());
+            }
+
         AddObject(std::move(legend));
 
         // make "Standard" bracket white or black
