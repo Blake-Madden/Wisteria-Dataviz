@@ -578,12 +578,13 @@ namespace Wisteria::UI
             {
                 // draw the folder (i.e., parent label)
                 {
+                // priority must mirror drawFolderBackground() (selected beats highlighted)
                 const wxDCTextColourChanger tcc(
-                    dc, (m_highlightedFolder.has_value() && m_highlightedFolder.value() == i) ?
-                            m_highlightFontColor :
-                        (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
+                    dc, (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
                          !m_folders[i].m_isExpanded) ?
                             m_selectedFontColor :
+                        (m_highlightedFolder.has_value() && m_highlightedFolder.value() == i) ?
+                            m_highlightFontColor :
                             GetForegroundColour());
                 drawFolderBackground(i);
                 if (IsValidImageId(m_folders[i].m_iconIndex))
@@ -686,18 +687,17 @@ namespace Wisteria::UI
                             }
                         }
 
-                        // draw the subitem labels
+                        // Draw the subitem labels.
+                        // (Selected beats highlighted; otherwise, a selected-and-hovered
+                        //  subitem ends up with a background/font pairing that was computed for
+                        //  different colors.)
                         {
                         const wxDCTextColourChanger tcc(
-                            dc,
-                            (m_folders[i].m_highlightedItem.has_value() &&
-                             m_folders[i].m_highlightedItem.value() == j) ?
-                                m_highlightFontColor :
-                            (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
-                             m_folders[i].m_selectedItem.has_value() &&
-                             m_folders[i].m_selectedItem.value() == j) ?
-                                m_selectedFontColor :
-                                GetForegroundColour());
+                            dc, subitemIsSelected ? m_selectedFontColor :
+                                (m_folders[i].m_highlightedItem.has_value() &&
+                                 m_folders[i].m_highlightedItem.value() == j) ?
+                                                    m_highlightFontColor :
+                                                    GetForegroundColour());
                         if (IsValidImageId(m_folders[i].m_subItems[j].m_iconIndex))
                             {
                             wxBitmap bmp =
@@ -731,7 +731,6 @@ namespace Wisteria::UI
             ClearHighlightedItems();
             }
 
-        wxAutoBufferedPaintDC pdc(this);
         wxWindow::SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
         if (wxSystemSettings::GetAppearance().IsDark())
             {
@@ -741,6 +740,8 @@ namespace Wisteria::UI
             {
             wxWindow::SetBackgroundColour(wxColour{ 200, 211, 231 });
             }
+
+        wxAutoBufferedPaintDC pdc(this);
         pdc.Clear();
         wxGCDC dc(pdc);
         PrepareDC(dc);
