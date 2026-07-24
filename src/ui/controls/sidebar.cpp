@@ -431,14 +431,11 @@ namespace Wisteria::UI
         m_highlightedIsSelected = false;
         m_highlightedRect.reset();
         m_highlightedFolder.reset();
-        // at most one folder can have a highlighted subitem at a time,
-        // so just reset that one instead of scanning the entire list
-        if (m_folderWithHighlightedSubitem.first.has_value() &&
-            m_folderWithHighlightedSubitem.first.value() < m_folders.size())
-            {
-            m_folders[m_folderWithHighlightedSubitem.first.value()].m_highlightedItem.reset();
-            }
         m_folderWithHighlightedSubitem = std::make_pair(std::nullopt, std::nullopt);
+        for (auto& item : m_folders)
+            {
+            item.m_highlightedItem.reset();
+            }
         }
 
     //---------------------------------------------------
@@ -824,12 +821,6 @@ namespace Wisteria::UI
                         }
                     m_folders[i].m_highlightedItem.reset();
                     }
-                }
-
-            // found the hovered subitem, no need to keep scanning the rest of the list
-            if (m_folders[i].m_highlightedItem.has_value())
-                {
-                break;
                 }
             }
 
