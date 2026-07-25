@@ -2919,11 +2919,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 joined += parts[i];
                 }
 
-            return wxString::Format(
-                // TRANSLATORS: question text ("%s"), summarized responses ("%s"),
-                // response count ("%zu"), and pluralized "response"/"responses" ("%s")
-                _(L"%s: %s (%zu %s)"), question, joined, responses,
-                wxPLURAL(L"response", L"responses", responses));
+            return wxString::Format(_DT(L"%s: %s (%zu %s)"), question, joined, responses,
+                                    wxPLURAL(L"response", L"responses", responses));
         };
 
         switch (GetSurveyType())
@@ -2945,9 +2942,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             for (const auto& question : m_threePointCategorizedQuestions)
                 {
                 label += L". " + wxString::Format(
-                                     // TRANSLATORS: question text ("%s"), response count ("%zu"),
-                                     // and pluralized "response"/"responses" ("%s")
-                                     _(L"%s (%zu %s)"), question.m_question, question.m_responses,
+                                     _DT(L"%s (%zu %s)"), question.m_question, question.m_responses,
                                      wxPLURAL(L"response", L"responses", question.m_responses));
                 for (const auto& category : question.m_threePointCategories)
                     {
@@ -2979,9 +2974,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             for (const auto& question : m_fivePointCategorizedQuestions)
                 {
                 label += L". " + wxString::Format(
-                                     // TRANSLATORS: question text ("%s"), response count ("%zu"),
-                                     // and pluralized "response"/"responses" ("%s")
-                                     _(L"%s (%zu %s)"), question.m_question, question.m_responses,
+                                     _DT(L"%s (%zu %s)"), question.m_question, question.m_responses,
                                      wxPLURAL(L"response", L"responses", question.m_responses));
                 for (const auto& category : question.m_fivePointCategories)
                     {
@@ -3017,9 +3010,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             for (const auto& question : m_sevenPointCategorizedQuestions)
                 {
                 label += L". " + wxString::Format(
-                                     // TRANSLATORS: question text ("%s"), response count ("%zu"),
-                                     // and pluralized "response"/"responses" ("%s")
-                                     _(L"%s (%zu %s)"), question.m_question, question.m_responses,
+                                     _DT(L"%s (%zu %s)"), question.m_question, question.m_responses,
                                      wxPLURAL(L"response", L"responses", question.m_responses));
                 for (const auto& category : question.m_sevenPointCategories)
                     {

@@ -2380,8 +2380,9 @@ std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
     // (looked-up, but not yet formatted) template on the literal "%zu" to get the
     // prefix/suffix for whatever language is active.
     const wxString templateStr{ _(L"Page %zu") };
-    // cppcheck-suppress printfSingleNumber
+    // quneiform-suppress-begin
     const auto placeholderPos = templateStr.Find(L"%zu");
+    // quneiform-suppress-end
     if (placeholderPos == wxNOT_FOUND)
         {
         return std::nullopt;
