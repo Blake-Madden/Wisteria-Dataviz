@@ -875,7 +875,7 @@ namespace Wisteria::UI
         {
         // If nothing was highlighted, then don't bother repainting since there's
         // nothing to remove highlighting from.
-        if (!m_highlightedRect || m_previouslyHighlightedItemsIsSelected || m_highlightedIsSelected)
+        if (!m_highlightedRect || m_highlightedIsSelected)
             {
             return;
             }
