@@ -111,6 +111,7 @@ class WisteriaView final : public wxView
     void OnInsertPage(wxCommandEvent& event);
     void OnEditPage(wxCommandEvent& event);
     void OnDeletePage(wxCommandEvent& event);
+    void OnRearrangePages(wxCommandEvent& event);
     void OnConstantEdited(wxGridEvent& event);
     void OnAddConstant(wxCommandEvent& event);
     void OnDeleteConstant(wxCommandEvent& event);
@@ -236,6 +237,8 @@ class WisteriaView final : public wxView
     void ApplyGlobalPrintSettings(Wisteria::Canvas* canvas);
     Wisteria::Canvas* AddPageToProject(size_t rows, size_t columns, const wxString& name,
                                        std::optional<size_t> position = std::nullopt);
+    void RemovePageFromProject(Wisteria::Canvas* canvas);
+    static std::optional<size_t> ParseDefaultPageNumber(const wxString& name);
     static void ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     static void AdjustGridColumnsForIcons(wxGrid* grid);
     void PopulateConstantsGrid();

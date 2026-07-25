@@ -51,6 +51,7 @@
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
 #include <array>
+#include <wx/rearrangectrl.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
 
@@ -230,6 +231,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditPage, this, ID_EDIT_PAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeletePage, this, ID_DELETE_PAGE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnRearrangePages, this,
+                  ID_REARRANGE_PAGES);
 
     // bind graph category dropdown buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
@@ -2342,14 +2345,203 @@ void WisteriaView::OnDeletePage([[maybe_unused]] wxCommandEvent& event)
                                 selectedFolder.value() :
                                 m_sideBar->GetFolderCount() - 1);
 
+    RemovePageFromProject(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::RemovePageFromProject(Wisteria::Canvas* canvas)
+    {
     auto foundPage = std::ranges::find(m_pages, canvas);
     if (foundPage == m_pages.end())
         {
-        wxFAIL_MSG(L"Canvas not found when deleting page?!");
+        wxFAIL_MSG(L"Canvas not found when removing page?!");
         return;
         }
     m_pages.erase(foundPage);
     m_workWindows.RemoveWindowById(canvas->GetId());
+    }
+
+//-------------------------------------------
+std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
+    {
+    // "Page %zu" is localizable, so don't hardcode "Page "; translators reposition
+    // placeholders but leave the conversion specifier itself intact, so split the
+    // (looked-up, but not yet formatted) template on the literal "%zu" to get the
+    // prefix/suffix for whatever language is active.
+    const wxString templateStr{ _(L"Page %zu") };
+    const auto placeholderPos = templateStr.Find(L"%zu");
+    if (placeholderPos == wxNOT_FOUND)
+        {
+        return std::nullopt;
+        }
+
+    const wxString prefix = templateStr.Left(static_cast<size_t>(placeholderPos));
+    const wxString suffix = templateStr.Mid(static_cast<size_t>(placeholderPos) + 3);
+
+    if (!name.StartsWith(prefix) || !name.EndsWith(suffix) ||
+        name.length() < prefix.length() + suffix.length())
+        {
+        return std::nullopt;
+        }
+
+    const wxString middle =
+        name.Mid(prefix.length(), name.length() - prefix.length() - suffix.length());
+    if (middle.empty() ||
+        !std::ranges::all_of(middle, [](const auto chr) { return wxIsdigit(chr); }))
+        {
+        return std::nullopt;
+        }
+
+    unsigned long value{ 0 };
+    if (!middle.ToULong(&value))
+        {
+        return std::nullopt;
+        }
+    return static_cast<size_t>(value);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnRearrangePages([[maybe_unused]] wxCommandEvent& event)
+    {
+    struct PageFolderInfo
+        {
+        wxString m_label;
+        wxWindowID m_id{ wxID_ANY };
+        Wisteria::Canvas* m_canvas{ nullptr };
+        };
+
+    std::vector<PageFolderInfo> currentPages;
+    for (size_t i = 2; i < m_sideBar->GetFolderCount(); ++i)
+        {
+        currentPages.push_back(
+            { m_sideBar->GetFolderText(i), m_sideBar->GetFolder(i).GetId(), m_pages[i - 2] });
+        }
+
+    wxArrayString pageNames;
+    wxArrayInt order;
+    bool hasAutoNamedPages{ false };
+    for (size_t i = 0; i < currentPages.size(); ++i)
+        {
+        pageNames.Add(currentPages[i].m_label);
+        order.Add(static_cast<int>(i));
+        if (ParseDefaultPageNumber(currentPages[i].m_label).has_value())
+            {
+            hasAutoNamedPages = true;
+            }
+        }
+
+    wxRearrangeDialog dlg(m_frame, wxString{}, _(L"Reorder Pages"), order, pageNames);
+
+    wxCheckBox* resyncCheck{ nullptr };
+    if (hasAutoNamedPages)
+        {
+        auto* extra = new wxPanel(&dlg);
+        auto* extraSizer = new wxBoxSizer(wxVERTICAL);
+        resyncCheck = new wxCheckBox(extra, wxID_ANY, _(L"Resequence page numbering"));
+        resyncCheck->SetValue(true);
+        extraSizer->Add(resyncCheck, wxSizerFlags{}.Border());
+        extra->SetSizerAndFit(extraSizer);
+        dlg.AddExtraControls(extra);
+        }
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const wxArrayInt newOrder = dlg.GetOrder();
+    std::vector<size_t> keptIndices;
+    std::vector<size_t> removedIndices;
+    for (const auto entry : newOrder)
+        {
+        if (entry >= 0)
+            {
+            keptIndices.push_back(static_cast<size_t>(entry));
+            }
+        else
+            {
+            removedIndices.push_back(static_cast<size_t>(~entry));
+            }
+        }
+
+    if (!removedIndices.empty())
+        {
+        const wxString msg = wxString::Format(
+            wxPLURAL(L"Are you sure you want to remove the %zu unchecked page from the project?",
+                     L"Are you sure you want to remove the %zu unchecked pages from the project?",
+                     removedIndices.size()),
+            removedIndices.size());
+        if (wxMessageBox(msg, _(L"Remove Pages"), wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)
+            {
+            return;
+            }
+        }
+
+    wxWindowUpdateLocker winLock{ m_frame };
+
+    auto* activeCanvas = GetActiveCanvas();
+
+    // reset to a stable selection before folders start shifting around
+    m_sideBar->SelectFolder(0, false, false, false);
+
+    // keep removed canvases until the select below hides them
+    std::vector<Wisteria::Canvas*> newPages;
+    std::vector<std::pair<wxString, wxWindowID>> newFolders;
+    for (size_t newPos = 0; newPos < keptIndices.size(); ++newPos)
+        {
+        const auto& info = currentPages[keptIndices[newPos]];
+        wxString label = info.m_label;
+        if (resyncCheck != nullptr && resyncCheck->GetValue() &&
+            ParseDefaultPageNumber(label).has_value())
+            {
+            label = wxString::Format(_(L"Page %zu"), newPos + 1);
+            }
+        newPages.push_back(info.m_canvas);
+        newFolders.emplace_back(label, info.m_id);
+
+        if (label != info.m_label)
+            {
+            info.m_canvas->SetLabel(label);
+            info.m_canvas->SetNameTemplate(label);
+            }
+        }
+
+    m_pages = newPages;
+
+    while (m_sideBar->GetFolderCount() > 2)
+        {
+        m_sideBar->DeleteFolder(m_sideBar->GetFolderCount() - 1);
+        }
+    for (const auto& [label, folderId] : newFolders)
+        {
+        m_sideBar->InsertItem(m_sideBar->GetFolderCount(), label, folderId, PAGE_ICON_INDEX);
+        }
+
+    // select (with event, so the matching canvas/grid is actually shown) either the page
+    // that was active before the rearrange (if it's still around) or fall back to the Data section
+    const auto activePos =
+        (activeCanvas != nullptr) ? std::ranges::find(m_pages, activeCanvas) : m_pages.end();
+    if (activePos != m_pages.end())
+        {
+        m_sideBar->SelectFolder(static_cast<size_t>(std::distance(m_pages.begin(), activePos)) + 2);
+        }
+    else if (m_sideBar->GetFolderCount() > 0)
+        {
+        m_sideBar->SelectFolder(0);
+        }
+
+    // now safe to drop removed canvases from tracking (the select above already hid them)
+    for (const auto removedIdx : removedIndices)
+        {
+        m_workWindows.RemoveWindowById(currentPages[removedIdx].m_canvas->GetId());
+        }
+
+    m_sideBar->SaveState();
+
+    m_workArea->Layout();
+    m_sideBar->Refresh();
 
     GetDocument()->Modify(true);
     }
@@ -2454,6 +2646,7 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_pagesButtonBar->EnableButton(ID_DELETE_PAGE, enabled);
         m_pagesButtonBar->EnableButton(ID_EDIT_ITEM, enabled);
         m_pagesButtonBar->EnableButton(ID_DELETE_ITEM, enabled);
+        m_pagesButtonBar->EnableButton(ID_REARRANGE_PAGES, m_pages.size() >= 2);
         }
 
     // graphs - always enabled; page selection is handled at insertion time

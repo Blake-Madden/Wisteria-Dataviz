@@ -24,16 +24,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                                                Settings::GetDefaultColorScheme()));
         SetShapeScheme(shapes != nullptr ? shapes :
                                            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
-                                               Wisteria::Icons::Schemes::StandardShapes()));
+                                               Wisteria::Icons::Schemes::StandardShapes{}));
 
         if (GetCanvas() != nullptr)
             {
             GetCanvas()->SetLabel(_(L"Flesch Readability Chart"));
             GetCanvas()->SetName(_(L"Flesch Readability Chart"));
             }
-        GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo{ _(L"How Easy?") }.Pen(wxNullPen));
+        GetTitle() =
+            GraphItems::Label{ GraphItems::GraphItemInfo{ _(L"How Easy?") }.Pen(wxNullPen) };
 
-        // Set up the x-axis
+        // set up the x-axis
         GetBottomXAxis().SetRange(0, 4, 0, 1, 1);
         GetBottomXAxis().ShowOuterLabels(false);
         GetBottomXAxis().GetGridlinePen() = wxNullPen;

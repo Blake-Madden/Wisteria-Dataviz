@@ -248,6 +248,7 @@ constexpr wxWindowID ID_NEW_WIN_LOSS_SPARKLINE{ wxID_HIGHEST + 32 };
 constexpr wxWindowID ID_EDIT_PAGE{ wxID_HIGHEST + 34 };
 constexpr wxWindowID ID_DELETE_PAGE{ wxID_HIGHEST + 49 };
 constexpr wxWindowID ID_PAGES_BUTTONBAR{ wxID_HIGHEST + 35 };
+constexpr wxWindowID ID_REARRANGE_PAGES{ wxID_HIGHEST + 76 };
 
 // Data transformations
 constexpr wxWindowID ID_EDIT_DATASET{ wxID_HIGHEST + 50 };

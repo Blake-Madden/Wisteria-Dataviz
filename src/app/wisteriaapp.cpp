@@ -635,6 +635,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   _(L"Edit the current page"));
         pagesButtonBar->AddButton(ID_DELETE_PAGE, _(L"Delete"), ReadSvgIcon(L"page-delete.svg"),
                                   _(L"Delete the current page"));
+        pagesButtonBar->AddButton(ID_REARRANGE_PAGES, _(L"Reorder"), ReadSvgIcon(L"sort.svg"),
+                                  _(L"Reorder or remove the project's pages"));
 
         // Objects panel (labels, images, shapes)
         auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
