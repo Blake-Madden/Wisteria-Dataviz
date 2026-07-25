@@ -47,6 +47,7 @@
 #include "commonaxisbuilder.h"
 #include "fillableshape.h"
 #include <map>
+#include <utility>
 #include <vector>
 #include <wx/numformatter.h>
 
@@ -69,6 +70,30 @@ namespace Wisteria
         static const std::map<std::wstring_view, Wisteria::Colors::Color>& GetColorMap() noexcept
             {
             return m_colorMap;
+            }
+
+        /// @brief A queued, catastrophic error message that occurred while
+        ///     loading the configuration file.
+        struct PendingErrorMessage
+            {
+            /// @brief The message box title.
+            wxString m_title;
+            /// @brief The message box body text.
+            wxString m_message;
+            };
+
+        /// @brief Unloads the queue of catastrophic error messages accumulated during
+        ///     the last call to @c LoadConfigurationFile().
+        /// @details These are queued (rather than shown immediately via
+        ///     @c wxMessageBox) because loading happens without any interactive
+        ///     UI of its own. The caller may still have its own window
+        ///     (e.g., a progress overlay) on screen. Callers should display
+        ///     these once their own loading UI has been dismissed.
+        /// @returns The queued error messages. Calling this empties the queue.
+        [[nodiscard]]
+        std::vector<PendingErrorMessage> UnloadPendingErrorMessages()
+            {
+            return std::exchange(m_pendingErrorMessages, {});
             }
 
         /// @brief Import options associated with a dataset.
@@ -1309,6 +1334,8 @@ namespace Wisteria
         double m_dpiScaleFactor{ 1.0 };
 
         std::vector<Wisteria::TableLink> m_tableLinks;
+
+        std::vector<PendingErrorMessage> m_pendingErrorMessages;
 
         wxString m_configFilePath;
         };

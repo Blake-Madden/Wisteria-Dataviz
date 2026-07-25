@@ -56,7 +56,7 @@ namespace Wisteria::Data
                 }
             catch (const std::runtime_error& readError)
                 {
-                wxLogError(wxString::FromUTF8(readError.what()));
+                wxLogError(L"%s", wxString::FromUTF8(readError.what()));
                 }
         @endcode*/
     class PdfReader

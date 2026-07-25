@@ -37,8 +37,9 @@ namespace Wisteria
         const auto json = wxSimpleJSON::LoadFile(m_configFilePath);
         if (!json->IsOk())
             {
-            wxLogError(json->GetLastError(), _(L"Configuration File Parsing Error"),
-                       wxOK | wxICON_WARNING | wxCENTRE);
+            wxLogError(L"%s", json->GetLastError());
+            m_pendingErrorMessages.push_back(
+                { _(L"Configuration File Parsing Error"), json->GetLastError() });
             return reportPages;
             }
 
@@ -64,8 +65,9 @@ namespace Wisteria
             }
         catch (const std::exception& err)
             {
-            wxLogError(wxString::FromUTF8(err.what()), _(L"Datasets Section Error"),
-                       wxOK | wxICON_WARNING | wxCENTRE);
+            const wxString msg{ wxString::FromUTF8(err.what()) };
+            wxLogError(L"%s", msg);
+            m_pendingErrorMessages.push_back({ _(L"Datasets Section Error"), msg });
             return reportPages;
             }
 
@@ -75,8 +77,9 @@ namespace Wisteria
             }
         catch (const std::exception& err)
             {
-            wxLogError(wxString::FromUTF8(err.what()), _(L"Constants Section Error"),
-                       wxOK | wxICON_WARNING | wxCENTRE);
+            const wxString msg{ wxString::FromUTF8(err.what()) };
+            wxLogError(L"%s", msg);
+            m_pendingErrorMessages.push_back({ _(L"Constants Section Error"), msg });
             return reportPages;
             }
 
@@ -410,10 +413,7 @@ namespace Wisteria
                                         // show error, but OK to keep going
                                         catch (const std::exception& err)
                                             {
-                                            wxLogError(
-                                                wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                                                _(L"Canvas Item Error"),
-                                                wxOK | wxICON_WARNING | wxCENTRE);
+                                            wxLogError(L"%s", wxString::FromUTF8(err.what()));
                                             }
                                         }
                                     ++currentColumn;
@@ -3257,7 +3257,7 @@ namespace Wisteria
                     }
                 catch (const std::exception& err)
                     {
-                    wxLogWarning(wxString::FromUTF8(err.what()));
+                    wxLogWarning(L"%s", wxString::FromUTF8(err.what()));
                     }
                 }
             }
@@ -3302,7 +3302,7 @@ namespace Wisteria
                     }
                 catch (const std::exception& err)
                     {
-                    wxLogWarning(wxString::FromUTF8(err.what()));
+                    wxLogWarning(L"%s", wxString::FromUTF8(err.what()));
                     }
                 }
             }

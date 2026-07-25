@@ -466,7 +466,6 @@ void WisteriaView::ShowSideBar(const bool show)
 //-------------------------------------------
 void WisteriaView::LoadProject()
     {
-    wxBusyInfo busy{ wxBusyInfoFlags{}.Text(_(L"Loading project...")) };
     const wxString filename = GetDocument()->GetFilename();
 
     // set up sidebar image list from the app's persistent list
@@ -480,14 +479,24 @@ void WisteriaView::LoadProject()
 
     if (!filename.empty())
         {
-        // load the JSON configuration file
-        m_pages = m_reportBuilder.LoadConfigurationFile(filename, m_workArea);
-        for (auto* page : m_pages)
             {
-            ApplyGlobalPrintSettings(page);
-            page->FitToPageWhenPrinting(true);
-            page->SetSizeFromPaperSize();
-            page->MaintainAspectRatio(page->GetFixedObjectsGridSize().first > 1);
+            wxBusyInfo busy{ wxBusyInfoFlags{}.Text(_(L"Loading project...")) };
+            // load the JSON configuration file
+            m_pages = m_reportBuilder.LoadConfigurationFile(filename, m_workArea);
+            for (auto* page : m_pages)
+                {
+                ApplyGlobalPrintSettings(page);
+                page->FitToPageWhenPrinting(true);
+                page->SetSizeFromPaperSize();
+                page->MaintainAspectRatio(page->GetFixedObjectsGridSize().first > 1);
+                }
+            }
+        // busy indicator is dismissed by now; safe to show any catastrophic
+        // load errors without them being hidden behind it
+        for (const auto& errMsg : m_reportBuilder.UnloadPendingErrorMessages())
+            {
+            wxMessageBox(errMsg.m_message, errMsg.m_title, wxOK | wxICON_WARNING | wxCENTRE,
+                         m_workArea);
             }
         }
 
