@@ -47,6 +47,7 @@ rturned = "rturned"
 Paeth = "Paeth"
 parms = "parms"
 Parms = "Parms"
+localY = "localY"
 
 [type.svg]
 extend-glob = ["*.svg"]
