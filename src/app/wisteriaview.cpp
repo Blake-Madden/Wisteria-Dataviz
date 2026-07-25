@@ -2380,6 +2380,7 @@ std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
     // (looked-up, but not yet formatted) template on the literal "%zu" to get the
     // prefix/suffix for whatever language is active.
     const wxString templateStr{ _(L"Page %zu") };
+    // cppcheck-suppress printfSingleNumber
     const auto placeholderPos = templateStr.Find(L"%zu");
     if (placeholderPos == wxNOT_FOUND)
         {
@@ -2398,7 +2399,8 @@ std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
     const wxString middle =
         name.Mid(prefix.length(), name.length() - prefix.length() - suffix.length());
     if (middle.empty() ||
-        !std::ranges::all_of(middle, [](const auto chr) { return wxIsdigit(chr); }))
+        !std::ranges::all_of(middle, [](const auto chr)
+                             { return std::iswdigit(static_cast<wchar_t>(chr)) != 0; }))
         {
         return std::nullopt;
         }
@@ -2478,8 +2480,8 @@ void WisteriaView::OnRearrangePages([[maybe_unused]] wxCommandEvent& event)
     if (!removedIndices.empty())
         {
         const wxString msg = wxString::Format(
-            wxPLURAL(L"Are you sure you want to remove the %zu unchecked page from the project?",
-                     L"Are you sure you want to remove the %zu unchecked pages from the project?",
+            wxPLURAL(L"Are you sure you want to remove %zu unchecked page from the project?",
+                     L"Are you sure you want to remove %zu unchecked pages from the project?",
                      removedIndices.size()),
             removedIndices.size());
         if (wxMessageBox(msg, _(L"Remove Pages"), wxYES_NO | wxICON_QUESTION, m_frame) != wxYES)

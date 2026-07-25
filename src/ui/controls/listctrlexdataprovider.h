@@ -425,7 +425,7 @@ namespace Wisteria::UI
         IDLabelMap m_labelsMap;
         LabelIDMap m_labelsInUse;
         long m_currentLabelId{ 0 };
-        static inline const wxString m_emptyCell{};
+        inline static const wxString m_emptyCell{};
         };
 
     /// @brief Comparison base class for double/string data provider.
@@ -458,7 +458,7 @@ namespace Wisteria::UI
         /// @private
         const ListCtrlLabelManager::IDLabelMap& m_labelsMap;
         /// @private
-        static inline const wxString m_emptyCell{};
+        inline static const wxString m_emptyCell{};
         };
 
     /// @brief Comparison (multi-directional) for double/string data provider.

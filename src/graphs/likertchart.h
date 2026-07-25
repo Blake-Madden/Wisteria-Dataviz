@@ -1339,7 +1339,7 @@ namespace Wisteria::Graphs
         wxString m_leftArrow{ _DT(L"«") };
         wxString m_rightArrow{ _DT(L"»") };
 
-        static inline const wxString m_nullString{};
+        inline static const wxString m_nullString{};
 
         LikertSurveyQuestionFormat m_surveyType{ LikertSurveyQuestionFormat::ThreePoint };
 
