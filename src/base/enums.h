@@ -580,7 +580,14 @@ namespace Wisteria
         /// @brief A chocolate chip cookie with a slightly irregular edge, toasted spots,
         ///     chocolate chips, and a few crumbs off to the side.
         ///     Slice colors will be overridden with cookie colors.
-        ChocolateChipCookie
+        ChocolateChipCookie,
+        /// @brief A pink-glazed donut with colorful sprinkles.
+        ///     Slice colors will be overridden with a golden fried-dough color, which
+        ///     will peek through around the glaze's unevenly spread edge.
+        /// @details If a donut hole is included, both the outer edge and the inner edge
+        ///     (around the hole) are unevenly glazed. Otherwise, only the outer edge is
+        ///     unevenly glazed, with the glaze covering most of the top of the pie.
+        GlazedDonut
         };
 
     /// @brief Effects that could be applied to an image.

@@ -1293,6 +1293,24 @@ namespace Wisteria::Graphs
         void AddChocolateChips(const DrawAreas& drawAreas);
         void AddCookieCrumbs(const DrawAreas& drawAreas);
 
+        // glazed donut styling
+        /// @returns A golden fried-dough color for donut slice fill.
+        [[nodiscard]]
+        static wxColour GetDonutDoughColor()
+            {
+            return wxColour{ 224, 172, 104 };
+            }
+
+        /// @returns A bubblegum-pink icing color.
+        [[nodiscard]]
+        static wxColour GetDonutIcingColor()
+            {
+            return wxColour{ 232, 110, 165 };
+            }
+
+        void AddDonutGlaze(const DrawAreas& drawAreas);
+        void AddDonutSprinkles(const DrawAreas& drawAreas);
+
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
 
             @details Given a bounding rectangle, treats the rectangle as the axis-aligned

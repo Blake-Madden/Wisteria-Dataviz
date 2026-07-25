@@ -641,7 +641,8 @@ namespace Wisteria
                 { L"coffee-ring", PieStyle::CoffeeRing },
                 { L"venus", PieStyle::Venus },
                 { L"mars", PieStyle::Mars },
-                { L"chocolate-chip-cookie", PieStyle::ChocolateChipCookie }
+                { L"chocolate-chip-cookie", PieStyle::ChocolateChipCookie },
+                { L"glazed-donut", PieStyle::GlazedDonut }
             };
 
             const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());
@@ -1586,7 +1587,8 @@ namespace Wisteria
                 { PieStyle::CoffeeRing, L"coffee-ring" },
                 { PieStyle::Venus, L"venus" },
                 { PieStyle::Mars, L"mars" },
-                { PieStyle::ChocolateChipCookie, L"chocolate-chip-cookie" }
+                { PieStyle::ChocolateChipCookie, L"chocolate-chip-cookie" },
+                { PieStyle::GlazedDonut, L"glazed-donut" }
             };
 
             const auto foundValue = values.find(value);

@@ -1332,6 +1332,11 @@ namespace Wisteria::Graphs
             AddChocolateChips(drawAreas);
             AddCookieCrumbs(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::GlazedDonut)
+            {
+            AddDonutGlaze(drawAreas);
+            AddDonutSprinkles(drawAreas);
+            }
         }
 
     //----------------------------------------------------------------
@@ -2345,6 +2350,184 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void PieChart::AddDonutGlaze(const DrawAreas& drawAreas)
+        {
+        // resolution around the circle
+        constexpr int SAMPLE_COUNT{ 150 };
+        constexpr uint32_t GLAZE_SEED{ 0x9106AE };
+
+        const wxColour glazeColor{ GetDonutIcingColor() };
+        const wxColour glazeRimColor{ 190, 70, 130, 150 };
+
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+
+        const bool hasHole = IsIncludingDonutHole();
+        const double holeRadius = hasHole ? pieRadius * GetDonutHoleProportion() : 0.0;
+
+        // leave a ring of fried dough peeking out around the outer edge, with a
+        // gently uneven wobble so the glaze reads as hand-spread rather than
+        // a perfect circle
+        const double outerEdgeMargin = pieRadius * 0.07;
+        const double outerIrregularity = outerEdgeMargin * 0.9;
+
+        // the same uneven treatment around the hole (if there is one)
+        const double innerEdgeMargin = pieRadius * 0.05;
+        const double innerIrregularity = innerEdgeMargin * 0.9;
+
+        const double outerBoundaryRadius = pieRadius - outerEdgeMargin;
+        const double innerBoundaryRadius = holeRadius + innerEdgeMargin;
+
+        // blend two noise waves so the edge looks organically uneven rather
+        // than one uniform wobble
+        const auto combinedNoise = [](double angleDegrees, uint32_t seed)
+        {
+            return (RingIrregularity(angleDegrees, seed) * 0.6) +
+                   (RingIrregularity(angleDegrees * 2.3 + 40.0, seed ^ 0x51A2U) * 0.4);
+        };
+
+        const auto buildBoundaryPoints =
+            [&](double baseRadius, double irregularity, uint32_t seed, double minRadius)
+        {
+            std::vector<wxPoint> points;
+            points.reserve(SAMPLE_COUNT + 1);
+            for (int sampleIndex = 0; sampleIndex <= SAMPLE_COUNT; ++sampleIndex)
+                {
+                const auto angleDegrees = safe_divide<double>(360.0 * sampleIndex, SAMPLE_COUNT);
+                const double noise = combinedNoise(angleDegrees, seed);
+                const double radius = std::max(minRadius, baseRadius + noise * irregularity);
+
+                const wxRect boundaryRect(wxRound(center.x - radius), wxRound(center.y - radius),
+                                          wxRound(radius * 2), wxRound(radius * 2));
+                points.push_back(GetEllipsePointFromRect(boundaryRect, angleDegrees));
+                }
+            return points;
+        };
+
+        const auto outerBoundary =
+            buildBoundaryPoints(outerBoundaryRadius, outerIrregularity, GLAZE_SEED, 1.0);
+
+        std::vector<wxPoint> glazePolygon;
+        if (hasHole)
+            {
+            // never let the inner edge dip back into (or past) the hole itself
+            const double innerMinRadius = holeRadius + ScaleToScreenAndCanvas(2);
+            const auto innerBoundary = buildBoundaryPoints(innerBoundaryRadius, innerIrregularity,
+                                                           GLAZE_SEED ^ 0x5EED1EU, innerMinRadius);
+            glazePolygon.reserve(outerBoundary.size() + innerBoundary.size());
+            glazePolygon.insert(glazePolygon.end(), outerBoundary.begin(), outerBoundary.end());
+            glazePolygon.insert(glazePolygon.end(), innerBoundary.rbegin(), innerBoundary.rend());
+            }
+        else
+            {
+            glazePolygon = outerBoundary;
+            }
+
+        AddObject(std::make_unique<GraphItems::Polygon>(
+            GraphItems::GraphItemInfo{}
+                .Brush(wxBrush{ glazeColor })
+                .Pen(wxPen(glazeRimColor, ScaleToScreenAndCanvas(1)))
+                .Scaling(GetScaling())
+                .DPIScaling(GetDPIScaleFactor())
+                .Selectable(false),
+            glazePolygon));
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddDonutSprinkles(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+
+        const bool hasHole = IsIncludingDonutHole();
+        const double holeRadius = hasHole ? pieRadius * GetDonutHoleProportion() : 0.0;
+
+        constexpr int SPRINKLE_COUNT{ 120 };
+
+        const double sprinkleLength = ScaleToScreenAndCanvas(18);
+        const double sprinkleWidth = ScaleToScreenAndCanvas(5);
+
+        const std::array<wxColour, 7> sprinkleColors{
+            wxColour{ 235, 60, 60 },   // red
+            wxColour{ 250, 200, 40 },  // yellow
+            wxColour{ 70, 150, 235 },  // blue
+            wxColour{ 90, 190, 100 },  // green
+            wxColour{ 240, 120, 190 }, // pink
+            wxColour{ 250, 150, 50 },  // orange
+            wxColour{ 250, 250, 245 }  // white
+        };
+
+        // keep the sprinkles within the solid part of the glaze, away from the
+        // dough that peeks through at the uneven edges
+        const double minDistance =
+            (holeRadius > 0.0 ? holeRadius + pieRadius * 0.09 : 0.0) + sprinkleLength * 0.6;
+        const double maxDistance = pieRadius * 0.88;
+
+        auto& rng = GraphItems::ShapeRenderer::GetRNG();
+        std::uniform_real_distribution<double> angleDist{ 0.0, 360.0 };
+        std::uniform_real_distribution<double> unitDist{ 0.0, 1.0 };
+        std::uniform_real_distribution<double> sizeVariationDist{ 0.8, 1.2 };
+        std::uniform_int_distribution<size_t> colorDist{ 0, sprinkleColors.size() - 1 };
+
+        for (int sprinkleIndex = 0; sprinkleIndex < SPRINKLE_COUNT; ++sprinkleIndex)
+            {
+            const double angleDegrees = angleDist(rng);
+            const double distance =
+                minDistance + unitDist(rng) * std::max(0.0, maxDistance - minDistance);
+
+            const wxPoint sprinkleCenter(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angleDegrees)) * distance),
+                wxRound(center.y +
+                        std::sin(geometry::degrees_to_radians(angleDegrees)) * distance));
+
+            // each sprinkle gets its own random tumble, independent of its position
+            const double rotationRadians = geometry::degrees_to_radians(angleDist(rng));
+
+            const double sizeVariation = sizeVariationDist(rng);
+            const double halfLength = (sprinkleLength * sizeVariation) / 2.0;
+            const double halfWidth = (sprinkleWidth * sizeVariation) / 2.0;
+
+            // a small rounded rod
+            const std::array<std::pair<double, double>, 6> localPoints{
+                std::make_pair(-halfLength, -halfWidth * 0.4),
+                std::make_pair(-halfLength * 0.5, -halfWidth),
+                std::make_pair(halfLength * 0.5, -halfWidth),
+                std::make_pair(halfLength, halfWidth * 0.4),
+                std::make_pair(halfLength * 0.5, halfWidth),
+                std::make_pair(-halfLength * 0.5, halfWidth)
+            };
+
+            std::vector<wxPoint> sprinklePoints;
+            sprinklePoints.reserve(localPoints.size());
+            for (const auto& [localX, localY] : localPoints)
+                {
+                const double rotatedX =
+                    localX * std::cos(rotationRadians) - localY * std::sin(rotationRadians);
+                const double rotatedY =
+                    localX * std::sin(rotationRadians) + localY * std::cos(rotationRadians);
+                sprinklePoints.emplace_back(wxRound(sprinkleCenter.x + rotatedX),
+                                            wxRound(sprinkleCenter.y + rotatedY));
+                }
+
+            const wxColour& sprinkleColor = sprinkleColors[colorDist(rng)];
+
+            AddObject(std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo{}
+                    .Brush(wxBrush{ sprinkleColor })
+                    .Pen(wxPen(Colors::ColorContrast::Shade(sprinkleColor),
+                               ScaleToScreenAndCanvas(0.5)))
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                sprinklePoints));
+            }
+        }
+
+    //----------------------------------------------------------------
     void PieChart::AddClockTicks(const DrawAreas& drawAreas)
         {
         const double diameter =
@@ -3324,6 +3507,18 @@ namespace Wisteria::Graphs
                 { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
             return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
+        const auto donutColors = [this]()
+        {
+            if (GetInnerPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale(
+                { GetDonutDoughColor(), Colors::ColorContrast::Shade(GetDonutDoughColor()) });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+        }();
 
         for (auto& innerPie : GetInnerPie())
             {
@@ -3385,6 +3580,11 @@ namespace Wisteria::Graphs
                 {
                 sliceBrushToUse.SetColour(cookieColors[sliceCounter]);
                 sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
+                }
+            else if (GetPieStyle() == PieStyle::GlazedDonut)
+                {
+                sliceBrushToUse.SetColour(donutColors[sliceCounter]);
+                sliceOutlinePen.SetColour(wxColour{ 235, 210, 175 });
                 }
 
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
@@ -3524,6 +3724,18 @@ namespace Wisteria::Graphs
                 { GetCookieFillColor(), Colors::ColorContrast::Shade(GetCookieFillColor()) });
             return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
+        const auto donutColors = [this]()
+        {
+            if (GetOuterPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale(
+                { GetDonutDoughColor(), Colors::ColorContrast::Shade(GetDonutDoughColor()) });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+        }();
 
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
@@ -3566,6 +3778,11 @@ namespace Wisteria::Graphs
                 {
                 sliceBrush.SetColour(cookieColors[i]);
                 sliceOutlinePen.SetColour(wxColour{ 180, 140, 80 });
+                }
+            else if (GetPieStyle() == PieStyle::GlazedDonut)
+                {
+                sliceBrush.SetColour(donutColors[i]);
+                sliceOutlinePen.SetColour(wxColour{ 235, 210, 175 });
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
                 GraphItems::GraphItemInfo{ GetOuterPie().at(i).GetGroupLabel() }
@@ -4566,6 +4783,10 @@ namespace Wisteria::Graphs
             case PieStyle::ChocolateChipCookie:
                 label = isDonut ? _(L"A donut chart in the style of a chocolate chip cookie") :
                                   _(L"A pie chart in the style of a chocolate chip cookie");
+                break;
+            case PieStyle::GlazedDonut:
+                label = isDonut ? _(L"A donut chart in the style of a glazed donut") :
+                                  _(L"A pie chart in the style of a glazed donut");
                 break;
             default:
                 break;

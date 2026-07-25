@@ -1,6 +1,12 @@
 # Releases
 
-## 1.2.0 Release
+## 1.2.1
+
+- Major improvements to stand-alone application
+- Added styling option to pie charts to make them look like:
+    - Glazed donuts
+
+## 1.2.0
 
 - Alpha release of stand-alone application (`WisteriaDV` target)
 - New graph type: Chernoff Faces Plot
@@ -18,7 +24,7 @@
 - Added new dataset join operations (inner join and new left joins)
 - Added SVG accessibility support
 
-## 1.1.0 Release
+## 1.1.0
 
 - New graph type: Scatter Plot
 - New graph type: Bubble Plot
@@ -44,7 +50,7 @@
 - Improved layout of watermarks and tilted labels
 - Improved the appearance of pie chart's coffee stain style
 
-## 1.0.7 Release
+## 1.0.7
 
 - Added styling options to pie charts to make them look like:
     - Clock faces
@@ -56,11 +62,11 @@
 - Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
 - Fixed **Save** option not working in canvas context menu
 
-## 1.0.6 Release
+## 1.0.6
 
 - Improved image scaling when loaded via JSON file
 
-## 1.0.5 Release
+## 1.0.5
 
 - New graph type: Waffle Chart
 - Added new shapes:
@@ -71,7 +77,7 @@
   - `ADD`
   - `MEDIAN`
 
-## 1.0.4 Release
+## 1.0.4
 
 - Added support for tied games to Win/Loss Sparkline
 - Made legend for Win/Loss Sparkline more dynamic
@@ -81,7 +87,7 @@
 - Expanded JSON syntax manual
 - JSON syntax manual will now be automatically build via *CMake* (if *Quarto* is installed)
 
-## 1.0.3 Release
+## 1.0.3
 
 - New graph type: Win/Loss Sparkline
 - Expanded W-Curve plot to handle 12 levels
@@ -94,7 +100,7 @@
 - Exposed more functionality to JSON syntax
 - Expanded and improved the documentation
 
-## 1.0.2 Release
+## 1.0.2
 
 - New graph type: Multi-series Line Plot
   (this allows for plotting multiple data series on a line plot)
@@ -114,7 +120,7 @@
 - Added `Tint()` function
 - Optimizations for bar sorting (bar charts)
 
-## 1.0.1 Release
+## 1.0.1
 
 **NOTE**: wxWidgets 3.3.1 is required now
 
@@ -160,13 +166,13 @@
 - Added `Wisteria::GetLibraryVersionInfo()`
 - Fixed doxygen not being included in `ALL` *CMake* build
 
-## 1.0 Release
+## 1.0
 
 - Added JSON syntax for building multi-page reports
 - Added numerous vector-based shapes to use as stipples and icons
 - Various improvements
 
-## 0.9.1 Release
+## 0.9.1
 
 **WARNING**: icon classes and schemes have been moved into @c Wisteria::Icons and @c Wisteria::Icons::Schemes
   namespaces, respectively
@@ -187,6 +193,6 @@
   resulting in a banner appearance
 - Improved layout of legends appearing above or below a graph
 
-## 0.9 Release
+## 0.9
 
 Initial public release.

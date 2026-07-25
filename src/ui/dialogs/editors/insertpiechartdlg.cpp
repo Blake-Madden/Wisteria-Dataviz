@@ -136,6 +136,7 @@ namespace Wisteria::UI
             styleChoice->Append(_(L"Venus"));
             styleChoice->Append(_(L"Mars"));
             styleChoice->Append(_(L"Chocolate chip cookie"));
+            styleChoice->Append(_(L"Glazed donut"));
             styleSizer->Add(styleChoice);
             }
         leftColumnSizer->Add(styleSizer, wxSizerFlags{}.Border());
