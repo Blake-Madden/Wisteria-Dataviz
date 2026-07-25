@@ -973,7 +973,8 @@ namespace Wisteria::Graphs
                 {
                 return GetImageScheme()->GetImage(0);
                 }
-            return m_emptyImage;
+            static const wxBitmapBundle emptyImage{};
+            return emptyImage;
             }
 
         /// @returns The color used to outline images used for bars/boxes.
@@ -1261,7 +1262,6 @@ namespace Wisteria::Graphs
         uint8_t m_bgImageOpacity{ wxALPHA_OPAQUE };
 
         std::shared_ptr<Wisteria::Images::Schemes::ImageScheme> m_imageScheme{ nullptr };
-        wxBitmapBundle m_emptyImage;
         wxColour m_imageOutlineColor{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         Wisteria::Canvas* m_parentCanvas{ nullptr };

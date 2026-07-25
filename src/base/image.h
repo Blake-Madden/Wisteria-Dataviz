@@ -600,7 +600,8 @@ namespace Wisteria::Images::Schemes
         [[nodiscard]]
         const wxBitmapBundle& GetImage(const size_t index) const noexcept
             {
-            return (m_images.empty() ? m_emptyImage : m_images.at(index % m_images.size()));
+            static const wxBitmapBundle emptyImage{};
+            return (m_images.empty() ? emptyImage : m_images.at(index % m_images.size()));
             }
 
         /** @brief Adds an image to the scheme.
@@ -612,7 +613,6 @@ namespace Wisteria::Images::Schemes
 
       private:
         std::vector<wxBitmapBundle> m_images;
-        wxBitmapBundle m_emptyImage;
         };
     } // namespace Wisteria::Images::Schemes
 

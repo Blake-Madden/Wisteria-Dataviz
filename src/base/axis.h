@@ -706,7 +706,6 @@ namespace Wisteria::GraphItems
               // so don't enable auto stack for them
               m_enableAutoStacking((type == AxisType::BottomXAxis || type == AxisType::TopXAxis))
             {
-            m_invalidLabel.SetOk(false);
             SetTextAlignment(TextAlignment::Centered);
             GetTitle().SetTextOrientation(
                 (IsVertical() ? Orientation::Vertical : Orientation::Horizontal));
@@ -736,7 +735,6 @@ namespace Wisteria::GraphItems
             m_title.SetDPIScaleFactor(scaling);
             m_header.SetDPIScaleFactor(scaling);
             m_footer.SetDPIScaleFactor(scaling);
-            m_invalidLabel.SetDPIScaleFactor(scaling);
             m_widestLabel.SetDPIScaleFactor(scaling);
             m_tallestLabel.SetDPIScaleFactor(scaling);
             }
@@ -2339,8 +2337,6 @@ namespace Wisteria::GraphItems
         void CalcLabelPositions() noexcept;
         /// @brief Calculates where to place the tickmarks.
         void CalcTickMarkPositions();
-
-        Label m_invalidLabel;
 
         std::vector<AxisBracket> m_brackets;
         // true when the brackets are recomputed elsewhere (e.g., by a graph

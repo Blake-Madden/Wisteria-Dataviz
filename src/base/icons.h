@@ -253,7 +253,8 @@ namespace Wisteria::Icons
             [[nodiscard]]
             const wxBitmapBundle& GetImage(const size_t index) const noexcept
                 {
-                return (m_iconImages.empty() ? m_emptyImage :
+                static const wxBitmapBundle emptyImage{};
+                return (m_iconImages.empty() ? emptyImage :
                                                m_iconImages.at(index % m_iconImages.size()));
                 }
 
@@ -263,7 +264,6 @@ namespace Wisteria::Icons
           private:
             std::vector<IconShape> m_shapes;
             std::vector<wxBitmapBundle> m_iconImages;
-            wxBitmapBundle m_emptyImage;
             };
 
         /// @brief Standard shapes scheme.

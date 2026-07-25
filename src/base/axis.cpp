@@ -3561,9 +3561,9 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     const Label& Axis::GetCustomLabel(const double value) const
         {
+        static const Label invalidLabel{ GraphItemInfo{}.Ok(false).DPIScaling(1.0) };
         const auto custLabelIter = m_customAxisLabels.find(value);
-        return (custLabelIter != m_customAxisLabels.cend()) ? custLabelIter->second :
-                                                              m_invalidLabel;
+        return (custLabelIter != m_customAxisLabels.cend()) ? custLabelIter->second : invalidLabel;
         }
 
     //--------------------------------------

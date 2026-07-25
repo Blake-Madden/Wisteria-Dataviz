@@ -10,9 +10,6 @@
 
 namespace Wisteria::UI
     {
-    const wxString ListCtrlLabelManager::m_emptyCell = wxString{};
-    const wxString DoubleWithTextCompare::m_emptyCell = wxString{};
-
     //------------------------------------------------
     int
     DoubleWithTextCompare::Compare(const ListCtrlExDataProviderBase::DoubleWithLabel& cell1,
