@@ -68,6 +68,9 @@ namespace Wisteria::Graphs
             const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
             const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,
             bool includeSzigriszt = true, bool includeFlesch = true);
+
+      private:
+        void SetAutoAccessibilityAttributes() final;
         };
     } // namespace Wisteria::Graphs
 

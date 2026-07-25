@@ -474,4 +474,86 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             }
         AddObject(std::move(points));
         }
+
+    //----------------------------------------------------------------
+    void FleschChart::SetAutoAccessibilityAttributes()
+        {
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_scoresColumn.empty() ||
+            GetCustomAxes().size() < 2)
+            {
+            return;
+            }
+
+        wxString label = _(L"A Flesch reading ease chart");
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        const auto& scoreRuler = GetCustomAxes()[1];
+
+        const auto scoresColumn = GetContinuousColumn(m_scoresColumn);
+        std::vector<double> validScores;
+        for (const auto& val : scoresColumn->GetValues())
+            {
+            if (std::isfinite(val))
+                {
+                validScores.push_back(std::clamp<double>(val, 0, 100));
+                }
+            }
+
+        if (!validScores.empty())
+            {
+            // resolve which score-ruler bracket label covers a given score
+            const auto getSectionLabel = [&scoreRuler](double score)
+            {
+                for (const auto& bracket : scoreRuler.GetBrackets())
+                    {
+                    const auto lowPos =
+                        std::min(bracket.GetStartPosition(), bracket.GetEndPosition());
+                    const auto highPos =
+                        std::max(bracket.GetStartPosition(), bracket.GetEndPosition());
+                    if (score >= lowPos && score <= highPos)
+                        {
+                        return bracket.GetLabel().GetText();
+                        }
+                    }
+                return wxString{};
+            };
+
+            label += L". ";
+            if (validScores.size() == 1)
+                {
+                /* TRANSLATORS: Flesch chart accessibility: single score.
+                   1st %s is the score value, 2nd %s is the section label. */
+                label +=
+                    wxString::Format(_(L"Score: %s, classified as %s"),
+                                     wxNumberFormatter::ToString(
+                                         validScores[0], 1, wxNumberFormatter::Style::Style_None),
+                                     getSectionLabel(validScores[0]));
+                }
+            else
+                {
+                const auto minScore = *std::min_element(validScores.cbegin(), validScores.cend());
+                const auto maxScore = *std::max_element(validScores.cbegin(), validScores.cend());
+                /* TRANSLATORS: Flesch chart accessibility: multiple scores.
+                   %zu is the count; 1st %s is lowest value, 2nd %s is its section,
+                   3rd %s is highest value, 4th %s is its section. */
+                label += wxString::Format(
+                    _(L"%zu scores; lowest score (%s) falls in %s; highest score (%s) falls in %s"),
+                    validScores.size(),
+                    wxNumberFormatter::ToString(minScore, 1, wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(minScore),
+                    wxNumberFormatter::ToString(maxScore, 1, wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(maxScore));
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

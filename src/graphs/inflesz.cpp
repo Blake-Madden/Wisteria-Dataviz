@@ -193,4 +193,143 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszScale, Wisteria::Graphs::Scal
 
         GetCaption().GetGraphItemInfo().Padding(2, 0, 2, 5).Text(caption);
         }
+
+    //----------------------------------------------------------------
+    void InfleszScale::SetAutoAccessibilityAttributes()
+        {
+        wxString label{ _(L"An INFLESZ scale chart") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // collect finite scores (clamped to the scaling-axis range, matching the plot)
+        struct ScoreEntry
+            {
+            double m_value{ 0 };
+            wxString m_idLabel;
+            };
+
+        std::vector<ScoreEntry> scores;
+        if (GetDataset() != nullptr && !GetScoresColumnName().empty())
+            {
+            try
+                {
+                const auto scoresColumn = GetContinuousColumn(GetScoresColumnName());
+                const auto [yStart, yEnd] = GetScalingAxis().GetRange();
+                for (size_t rowIdx = 0; rowIdx < GetDataset()->GetRowCount(); ++rowIdx)
+                    {
+                    const double rawVal = scoresColumn->GetValue(rowIdx);
+                    if (!std::isfinite(rawVal))
+                        {
+                        continue;
+                        }
+                    scores.push_back({ std::clamp<double>(rawVal, yStart, yEnd),
+                                       GetDataset()->GetIdColumn().GetValue(rowIdx) });
+                    }
+                }
+            catch (const std::exception&)
+                {
+                // scores column not available; carry on without score details
+                }
+            }
+
+        // overall summary of where the score(s) fall numerically
+        if (scores.size() == 1)
+            {
+            const wxString valueStr{ wxNumberFormatter::ToString(
+                scores.front().m_value, GetMainScalePrecision(),
+                wxNumberFormatter::Style::Style_NoTrailingZeroes) };
+            label += L". ";
+            if (!scores.front().m_idLabel.empty())
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: INFLESZ chart accessibility: a single score with its
+                       ID label. 1st %s is the ID label, 2nd %s is the score value. */
+                    _(L"Score for %s: %s"), scores.front().m_idLabel, valueStr);
+                }
+            else
+                {
+                label += wxString::Format(
+                    /* TRANSLATORS: INFLESZ chart accessibility: a single score with no ID.
+                       %s is the score value. */
+                    _(L"Score: %s"), valueStr);
+                }
+            }
+        else if (scores.size() > 1)
+            {
+            const auto [minIt, maxIt] = std::minmax_element(scores.cbegin(), scores.cend(),
+                                                            [](const auto& lhv, const auto& rhv)
+                                                            { return lhv.m_value < rhv.m_value; });
+            label += L". ";
+            label += wxString::Format(
+                /* TRANSLATORS: INFLESZ chart accessibility: multiple scores summary.
+                   %zu is the score count, 1st %s is the lowest value, 2nd %s is the
+                   highest value. */
+                _(L"%zu scores ranging from %s to %s"), scores.size(),
+                wxNumberFormatter::ToString(minIt->m_value, GetMainScalePrecision(),
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                wxNumberFormatter::ToString(maxIt->m_value, GetMainScalePrecision(),
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
+            }
+
+        // Only the INFLESZ scale (the first scale with blocks) is used to classify the
+        // score. The Szigriszt and Flesch scales are included on the chart for visual
+        // comparison only and are not read here.
+        const auto infleszBar = std::ranges::find_if(GetBars(), [](const auto& theBar)
+                                                     { return !theBar.GetBlocks().empty(); });
+
+        if (infleszBar != GetBars().cend())
+            {
+            const auto findBlockForScore = [](const Bar& theBar, const double scoreVal)
+            {
+                double blockStart{ theBar.GetCustomScalingAxisStartPosition().value_or(0) };
+                for (const auto& theBlock : theBar.GetBlocks())
+                    {
+                    const double blockEnd{ blockStart + theBlock.GetLength() };
+                    if (is_within(scoreVal, blockStart, blockEnd))
+                        {
+                        return theBlock.GetDecal().GetText();
+                        }
+                    blockStart = blockEnd;
+                    }
+                return wxString{};
+            };
+
+            if (scores.size() == 1)
+                {
+                const wxString blockName{ findBlockForScore(*infleszBar, scores.front().m_value) };
+                if (!blockName.empty())
+                    {
+                    label += L". ";
+                    /* TRANSLATORS: INFLESZ chart accessibility: which INFLESZ section
+                       the single score lands in. %s is the section's label. */
+                    label += wxString::Format(_(L"Classified as %s"), blockName);
+                    }
+                }
+            else if (scores.size() > 1)
+                {
+                const auto [minIt, maxIt] = std::minmax_element(
+                    scores.cbegin(), scores.cend(),
+                    [](const auto& lhv, const auto& rhv) { return lhv.m_value < rhv.m_value; });
+                const wxString lowBlock{ findBlockForScore(*infleszBar, minIt->m_value) };
+                const wxString highBlock{ findBlockForScore(*infleszBar, maxIt->m_value) };
+                if (!lowBlock.empty() && !highBlock.empty())
+                    {
+                    label += L". ";
+                    /* TRANSLATORS: INFLESZ chart accessibility: which INFLESZ sections
+                       the lowest and highest scores land in. 1st %s is the lowest
+                       score's section, 2nd %s is the highest score's section. */
+                    label += wxString::Format(_(L"lowest score classified as %s, "
+                                                "highest score classified as %s"),
+                                              lowBlock, highBlock);
+                    }
+                }
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

@@ -2862,4 +2862,180 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             bracket.GetLabel().GetFont().MakeSmaller();
             }
         }
+
+    //----------------------------------------------------------------
+    void LikertChart::SetAutoAccessibilityAttributes()
+        {
+        if (m_threePointQuestions.empty() && m_threePointCategorizedQuestions.empty() &&
+            m_fivePointQuestions.empty() && m_fivePointCategorizedQuestions.empty() &&
+            m_sevenPointQuestions.empty() && m_sevenPointCategorizedQuestions.empty())
+            {
+            return;
+            }
+
+        wxString label{ _(L"A Likert chart") };
+        AddAccessibilityAttribute(label, GetTitle().GetText(), L": ");
+        AddAccessibilityAttribute(label, GetSubtitle().GetText(), L", ");
+
+        // builds a sentence describing one question's (or one category's) response breakdown
+        const auto describeQuestion =
+            [this](const wxString& question, const size_t responses,
+                   const std::initializer_list<std::pair<wxString, double>>& negatives,
+                   const double neutralRate,
+                   const std::initializer_list<std::pair<wxString, double>>& positives,
+                   const double naRate)
+        {
+            std::vector<wxString> parts;
+            const auto addPart = [&parts](const wxString& lbl, const double rate)
+            {
+                if (rate > 0)
+                    {
+                    parts.push_back(wxString::Format(
+                        // TRANSLATORS: percentage ("%s") and response category name ("%s")
+                        _(L"%s%% %s"),
+                        wxNumberFormatter::ToString(
+                            rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                        lbl));
+                    }
+            };
+            for (const auto& [lbl, rate] : negatives)
+                {
+                addPart(lbl, rate);
+                }
+            addPart(GetNeutralLabel(), neutralRate);
+            for (const auto& [lbl, rate] : positives)
+                {
+                addPart(lbl, rate);
+                }
+            addPart(GetNoResponseHeader(), naRate);
+
+            wxString joined;
+            for (size_t i = 0; i < parts.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    joined += L", ";
+                    }
+                joined += parts[i];
+                }
+
+            return wxString::Format(_(L"%s: %s (%zu %s)"), question, joined, responses,
+                                    wxPLURAL(L"response", L"responses", responses));
+        };
+
+        switch (GetSurveyType())
+            {
+        case LikertSurveyQuestionFormat::TwoPoint:
+        case LikertSurveyQuestionFormat::ThreePoint:
+            for (const auto& question : m_threePointQuestions)
+                {
+                label +=
+                    L". " + describeQuestion(question.m_question, question.m_responses,
+                                             { { GetNegativeLabel(1), question.m_negativeRate } },
+                                             question.m_neutralRate,
+                                             { { GetPositiveLabel(1), question.m_positiveRate } },
+                                             question.m_naRate);
+                }
+            break;
+        case LikertSurveyQuestionFormat::TwoPointCategorized:
+        case LikertSurveyQuestionFormat::ThreePointCategorized:
+            for (const auto& question : m_threePointCategorizedQuestions)
+                {
+                label += L". " + wxString::Format(
+                                     _(L"%s (%zu %s)"), question.m_question, question.m_responses,
+                                     wxPLURAL(L"response", L"responses", question.m_responses));
+                for (const auto& category : question.m_threePointCategories)
+                    {
+                    label += L"; " +
+                             describeQuestion(category.m_question, category.m_responses,
+                                              { { GetNegativeLabel(1), category.m_negativeRate } },
+                                              category.m_neutralRate,
+                                              { { GetPositiveLabel(1), category.m_positiveRate } },
+                                              category.m_naRate);
+                    }
+                }
+            break;
+        case LikertSurveyQuestionFormat::FourPoint:
+        case LikertSurveyQuestionFormat::FivePoint:
+            for (const auto& question : m_fivePointQuestions)
+                {
+                label +=
+                    L". " + describeQuestion(question.m_question, question.m_responses,
+                                             { { GetNegativeLabel(1), question.m_negative1Rate },
+                                               { GetNegativeLabel(2), question.m_negative2Rate } },
+                                             question.m_neutralRate,
+                                             { { GetPositiveLabel(1), question.m_positive1Rate },
+                                               { GetPositiveLabel(2), question.m_positive2Rate } },
+                                             question.m_naRate);
+                }
+            break;
+        case LikertSurveyQuestionFormat::FourPointCategorized:
+        case LikertSurveyQuestionFormat::FivePointCategorized:
+            for (const auto& question : m_fivePointCategorizedQuestions)
+                {
+                label += L". " + wxString::Format(
+                                     _(L"%s (%zu %s)"), question.m_question, question.m_responses,
+                                     wxPLURAL(L"response", L"responses", question.m_responses));
+                for (const auto& category : question.m_fivePointCategories)
+                    {
+                    label += L"; " +
+                             describeQuestion(category.m_question, category.m_responses,
+                                              { { GetNegativeLabel(1), category.m_negative1Rate },
+                                                { GetNegativeLabel(2), category.m_negative2Rate } },
+                                              category.m_neutralRate,
+                                              { { GetPositiveLabel(1), category.m_positive1Rate },
+                                                { GetPositiveLabel(2), category.m_positive2Rate } },
+                                              category.m_naRate);
+                    }
+                }
+            break;
+        case LikertSurveyQuestionFormat::SixPoint:
+        case LikertSurveyQuestionFormat::SevenPoint:
+            for (const auto& question : m_sevenPointQuestions)
+                {
+                label +=
+                    L". " + describeQuestion(question.m_question, question.m_responses,
+                                             { { GetNegativeLabel(1), question.m_negative1Rate },
+                                               { GetNegativeLabel(2), question.m_negative2Rate },
+                                               { GetNegativeLabel(3), question.m_negative3Rate } },
+                                             question.m_neutralRate,
+                                             { { GetPositiveLabel(1), question.m_positive1Rate },
+                                               { GetPositiveLabel(2), question.m_positive2Rate },
+                                               { GetPositiveLabel(3), question.m_positive3Rate } },
+                                             question.m_naRate);
+                }
+            break;
+        case LikertSurveyQuestionFormat::SixPointCategorized:
+        case LikertSurveyQuestionFormat::SevenPointCategorized:
+            for (const auto& question : m_sevenPointCategorizedQuestions)
+                {
+                label += L". " + wxString::Format(
+                                     _(L"%s (%zu %s)"), question.m_question, question.m_responses,
+                                     wxPLURAL(L"response", L"responses", question.m_responses));
+                for (const auto& category : question.m_sevenPointCategories)
+                    {
+                    label += L"; " +
+                             describeQuestion(category.m_question, category.m_responses,
+                                              { { GetNegativeLabel(1), category.m_negative1Rate },
+                                                { GetNegativeLabel(2), category.m_negative2Rate },
+                                                { GetNegativeLabel(3), category.m_negative3Rate } },
+                                              category.m_neutralRate,
+                                              { { GetPositiveLabel(1), category.m_positive1Rate },
+                                                { GetPositiveLabel(2), category.m_positive2Rate },
+                                                { GetPositiveLabel(3), category.m_positive3Rate } },
+                                              category.m_naRate);
+                    }
+                }
+            break;
+            }
+
+        AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
+        AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
+        AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
+        if (!label.EndsWith(L"."))
+            {
+            label += L".";
+            }
+        GetAutoAccessibilityAttributes() = wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(label);
+        }
     } // namespace Wisteria::Graphs

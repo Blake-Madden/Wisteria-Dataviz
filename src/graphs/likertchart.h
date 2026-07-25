@@ -1200,6 +1200,9 @@ namespace Wisteria::Graphs
         /// @private
         void RecalcSizes(wxDC& dc) final;
 
+        /// @private
+        void SetAutoAccessibilityAttributes() final;
+
         /// @brief Adds a question and its respective responses.
         /// @param question The survey question.
         /// @param responses The responses.
