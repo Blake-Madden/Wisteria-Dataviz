@@ -21,7 +21,6 @@
 /wxWidgets_lib
 /docs/syntax-manual/.gitignore
 /docs/syntax-manual/site_libs
-/src/base/version.h
 
 # Compiler helper files
 CMakeSettings.json
