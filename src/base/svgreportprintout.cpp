@@ -329,20 +329,22 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    const h = parseInt(pages[0].getAttribute('data-height'));\n"
                 "    const gap = %d;\n"
                 "    const sideGap = 25;\n"
+                // must match the toolbarHeight used for the #pageset translate() below
+                "    const topOffset = %d;\n"
                 "    if (isDuplex) {\n"
                 "      pages.forEach((p, i) => {\n"
                 "        const x = (i %% 2) * (w + sideGap);\n"
                 "        const y = Math.floor(i / 2) * (h + gap);\n"
                 "        p.setAttribute('transform', `translate(${x}, ${y})`);\n"
                 "      });\n"
-                "      const duplexHeight = Math.ceil(pages.length / 2) * (h + gap);\n"
+                "      const duplexHeight = topOffset + Math.ceil(pages.length / 2) * (h + gap);\n"
                 "      svg.setAttribute('viewBox', `0 0 ${2 * w + sideGap} ${duplexHeight}`);\n"
                 "      svg.setAttribute('height', duplexHeight);\n"
                 "    } else {\n"
                 "      pages.forEach((p, i) => {\n"
                 "        p.setAttribute('transform', `translate(0, ${i * (h + gap)})`);\n"
                 "      });\n"
-                "      const stackedHeight = pages.length * (h + gap);\n"
+                "      const stackedHeight = topOffset + pages.length * (h + gap);\n"
                 "      svg.setAttribute('viewBox', `0 0 ${w} ${stackedHeight}`);\n"
                 "      svg.setAttribute('height', stackedHeight);\n"
                 "    }\n"
@@ -351,7 +353,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "  window.addEventListener('load', applyLayout);\n",
                 (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? L"true" :
                                                                                       L"false"),
-                _(L"Stacked"), _(L"Duplex"), PAGE_GAP);
+                _(L"Stacked"), _(L"Duplex"), PAGE_GAP, toolbarHeight);
             }
 
         if (options.m_includeDarkModeToggle)
