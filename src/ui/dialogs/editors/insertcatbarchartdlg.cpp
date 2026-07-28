@@ -391,7 +391,9 @@ namespace Wisteria::UI
 
             grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Text:")),
                       wxSizerFlags{}.CenterVertical());
-            auto* textCtrl = new wxTextCtrl(&dlg, wxID_ANY, inOutText);
+            auto* textCtrl = new wxTextCtrl(&dlg, wxID_ANY, inOutText, wxDefaultPosition,
+                                            wxDefaultSize, wxTE_RICH2);
+            textCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
             grid->Add(textCtrl, wxSizerFlags{}.Expand());
 
             sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
@@ -649,7 +651,9 @@ namespace Wisteria::UI
 
                 grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
                           wxSizerFlags{}.CenterVertical());
-                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY);
+                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                                 wxDefaultSize, wxTE_RICH2);
+                decalCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
                 grid->Add(decalCtrl, wxSizerFlags{}.Expand());
 
                 sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
@@ -734,7 +738,9 @@ namespace Wisteria::UI
 
                 grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
                           wxSizerFlags{}.CenterVertical());
-                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY, group.m_decal);
+                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY, group.m_decal, wxDefaultPosition,
+                                                 wxDefaultSize, wxTE_RICH2);
+                decalCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
                 grid->Add(decalCtrl, wxSizerFlags{}.Expand());
 
                 sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());

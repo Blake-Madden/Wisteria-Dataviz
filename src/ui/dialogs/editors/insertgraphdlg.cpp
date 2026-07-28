@@ -646,8 +646,10 @@ namespace Wisteria::UI
 
         m_legendTitleLabel = new wxStaticText(m_legendPage, wxID_ANY, _(L"Custom title:"));
         grid->Add(m_legendTitleLabel, wxSizerFlags{}.CenterVertical());
-        m_legendTitleCtrl = new wxTextCtrl(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                           wxDefaultSize, 0, wxGenericValidator(&m_legendTitle));
+        m_legendTitleCtrl =
+            new wxTextCtrl(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+                           wxTE_RICH2, wxGenericValidator(&m_legendTitle));
+        m_legendTitleCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
         grid->Add(m_legendTitleCtrl, wxSizerFlags{}.Expand());
 
         headerCheck->Bind(wxEVT_CHECKBOX,
@@ -1473,25 +1475,22 @@ namespace Wisteria::UI
         labelBox->Add(editLabelBtn, wxSizerFlags{}.Border());
         topSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
 
-        // anchoring
-        auto* anchoringBox = new wxStaticBoxSizer(wxHORIZONTAL, &dlg, _(L"Anchoring"));
-        anchoringBox->Add(new wxStaticText(anchoringBox->GetStaticBox(), wxID_ANY, _(L"Mode:")),
-                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-        auto* anchoringChoice = new wxChoice(anchoringBox->GetStaticBox(), wxID_ANY);
+        // anchor point
+        auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
+        auto* anchorGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        anchorGrid->AddGrowableCol(1, 1);
+
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"Anchoring:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* anchoringChoice = new wxChoice(anchorBox->GetStaticBox(), wxID_ANY);
         anchoringChoice->Append(_(L"Center"));
         anchoringChoice->Append(_(L"Top-left corner"));
         anchoringChoice->Append(_(L"Top-right corner"));
         anchoringChoice->Append(_(L"Bottom-left corner"));
         anchoringChoice->Append(_(L"Bottom-right corner"));
         anchoringChoice->SetSelection(0);
-        anchoringBox->Add(anchoringChoice, wxSizerFlags{}.Border());
-        topSizer->Add(anchoringBox, wxSizerFlags{}.Expand().Border());
-
-        // anchor point
-        auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
-        auto* anchorGrid = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        anchorGrid->AddGrowableCol(1, 1);
+        anchorGrid->Add(anchoringChoice);
 
         anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"x-axis:")),
                         wxSizerFlags{}.CenterVertical());
@@ -1712,11 +1711,15 @@ namespace Wisteria::UI
         labelBox->Add(editLabelBtn, wxSizerFlags{}.Border());
         topSizer->Add(labelBox, wxSizerFlags{}.Expand().Border());
 
-        // anchoring
-        auto* anchoringBox = new wxStaticBoxSizer(wxHORIZONTAL, &dlg, _(L"Anchoring"));
-        anchoringBox->Add(new wxStaticText(anchoringBox->GetStaticBox(), wxID_ANY, _(L"Mode:")),
-                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-        auto* anchoringChoice = new wxChoice(anchoringBox->GetStaticBox(), wxID_ANY);
+        // anchor point
+        auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
+        auto* anchorGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        anchorGrid->AddGrowableCol(1, 1);
+
+        anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"Anchoring:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* anchoringChoice = new wxChoice(anchorBox->GetStaticBox(), wxID_ANY);
         anchoringChoice->Append(_(L"Center"));
         anchoringChoice->Append(_(L"Top-left corner"));
         anchoringChoice->Append(_(L"Top-right corner"));
@@ -1745,14 +1748,7 @@ namespace Wisteria::UI
                 }
             anchoringChoice->SetSelection(anchorSel);
             }
-        anchoringBox->Add(anchoringChoice, wxSizerFlags{}.Border());
-        topSizer->Add(anchoringBox, wxSizerFlags{}.Expand().Border());
-
-        // anchor point
-        auto* anchorBox = new wxStaticBoxSizer(wxVERTICAL, &dlg, _(L"Anchor Point"));
-        auto* anchorGrid = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        anchorGrid->AddGrowableCol(1, 1);
+        anchorGrid->Add(anchoringChoice);
 
         anchorGrid->Add(new wxStaticText(anchorBox->GetStaticBox(), wxID_ANY, _(L"x-axis:")),
                         wxSizerFlags{}.CenterVertical());

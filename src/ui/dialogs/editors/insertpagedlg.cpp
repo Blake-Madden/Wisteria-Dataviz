@@ -418,8 +418,10 @@ namespace Wisteria::UI
         // name
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Name:")),
                        wxSizerFlags{}.CenterVertical());
-        auto* nameCtrl = new wxTextCtrl(this, wxID_ANY, m_pageName, wxDefaultPosition,
-                                        wxDefaultSize, 0, wxGenericValidator{ &m_pageName });
+        auto* nameCtrl =
+            new wxTextCtrl(this, wxID_ANY, m_pageName, wxDefaultPosition, wxDefaultSize, wxTE_RICH2,
+                           wxGenericValidator{ &m_pageName });
+        nameCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
         if (m_editMode == EditMode::Insert)

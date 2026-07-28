@@ -268,8 +268,10 @@ namespace Wisteria::UI
 
             labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Text:")),
                            wxSizerFlags{}.CenterVertical());
-            m_labelTextCtrl = new wxTextCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{},
-                                             wxDefaultPosition, wxSize{ FromDIP(200), -1 });
+            m_labelTextCtrl =
+                new wxTextCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                               wxSize{ FromDIP(200), -1 }, wxTE_RICH2);
+            m_labelTextCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
             labelGrid->Add(m_labelTextCtrl, wxSizerFlags{}.Expand());
 
             labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Color:")),

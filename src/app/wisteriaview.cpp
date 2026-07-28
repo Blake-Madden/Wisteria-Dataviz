@@ -2458,6 +2458,7 @@ void WisteriaView::OnRearrangePages([[maybe_unused]] wxCommandEvent& event)
         dlg.AddExtraControls(extra);
         }
 
+    dlg.Center();
     if (dlg.ShowModal() != wxID_OK)
         {
         return;

@@ -91,9 +91,10 @@ namespace Wisteria::UI
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Title:")),
                          wxSizerFlags{}.CenterVertical());
-        auto* titleCtrl =
-            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           FromDIP(wxSize{ 350, -1 }), 0, wxGenericValidator{ &m_options.m_title });
+        auto* titleCtrl = new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{},
+                                         wxDefaultPosition, FromDIP(wxSize{ 350, -1 }), wxTE_RICH2,
+                                         wxGenericValidator{ &m_options.m_title });
+        titleCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
         docInfoGrid->Add(titleCtrl, wxSizerFlags{}.Expand());
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Author:")),
@@ -107,14 +108,16 @@ namespace Wisteria::UI
                          wxSizerFlags{}.CenterVertical());
         auto* subjectCtrl =
             new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_subject });
+                           wxDefaultSize, wxTE_RICH2, wxGenericValidator{ &m_options.m_subject });
+        subjectCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
         docInfoGrid->Add(subjectCtrl, wxSizerFlags{}.Expand());
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Keywords:")),
                          wxSizerFlags{}.CenterVertical());
         auto* keywordsCtrl =
             new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_keywords });
+                           wxDefaultSize, wxTE_RICH2, wxGenericValidator{ &m_options.m_keywords });
+        keywordsCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
         docInfoGrid->Add(keywordsCtrl, wxSizerFlags{}.Expand());
 
         docInfoBox->Add(docInfoGrid, wxSizerFlags{}.Expand().Border());
