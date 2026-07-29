@@ -9,8 +9,24 @@
 #include "screenshot.h"
 #include "../math/mathematics.h"
 #include <array>
+#include <wx/buffer.h>
 #include <wx/listctrl.h>
+#include <wx/mstream.h>
 #include <wx/ribbon/buttonbar.h>
+#include <wx/tokenzr.h>
+#include <wx/webview.h>
+#if defined(__WXMSW__) && wxUSE_WEBVIEW_EDGE
+    #include <wx/msw/private.h>
+    #include <wx/msw/private/comptr.h>
+    #ifdef __VISUALC__
+        #include <wrl/event.h>
+using namespace Microsoft::WRL;
+    #else
+        #include <wx/msw/wrl/event.h>
+    #endif
+    #include <WebView2.h>
+    #include <objbase.h> // CreateStreamOnHGlobal()
+#endif
 
 // NOLINTBEGIN(cppcoreguidelines-pro-type-static-cast-downcast)
 //---------------------------------------------------
@@ -534,6 +550,369 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     }
 
 //---------------------------------------------------
+bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindowID windowId,
+                                         const bool clipContents,
+                                         const std::vector<std::pair<long, long>>& highlightPoints)
+    {
+    wxWindow* windowToCapture = GetActiveDialogOrFrame();
+    if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
+        {
+        windowToCapture = wxTopLevelWindows.GetLast()->GetData();
+        }
+    if (windowToCapture == nullptr)
+        {
+        return false;
+        }
+    if (windowToCapture->GetId() != windowId || !windowToCapture->IsKindOf(CLASSINFO(wxWebView)))
+        {
+        wxWindow* foundWindow = windowToCapture->FindWindow(windowId);
+        if (foundWindow != nullptr && foundWindow->IsKindOf(CLASSINFO(wxWebView)))
+            {
+            windowToCapture = foundWindow;
+            }
+        else
+            {
+            return false;
+            }
+        }
+
+    auto* webView = dynamic_cast<wxWebView*>(windowToCapture);
+    if (webView == nullptr)
+        {
+        return false;
+        }
+
+    PrepareWindowForScreenshot(windowToCapture);
+
+    // The web view reports its layout in CSS pixels, but the DC we're drawing into
+    // is in device pixels. Everything pulled out of a script below needs this to
+    // land in the right place.
+    const double dpiScale{ windowToCapture->GetDPIScaleFactor() };
+
+    // The length of the same text-node walk that buildRangeScript() below does, used to
+    // resolve an "end" of -1 (meaning "through the end of the content"). Note this is
+    // *not* the same as wxWebView::GetPageText().length(), which is a differently
+    // normalized (and thus differently indexed) rendering of the page's text.
+    long totalTextLength{ 0 };
+    wxString lengthOutput;
+    if (webView->RunScript(L"(function() {" + GetWebViewTextWalkerScript() + LR"JS(
+                               var len = 0, node;
+                               while ((node = walker.nextNode())) { len += node.length; }
+                               return len.toString();
+                               )JS" +
+                               L"})();",
+                           &lengthOutput))
+        {
+        lengthOutput.ToLong(&totalTextLength);
+        }
+
+    // Builds a script that walks the page's text nodes and leaves a Range (named "range",
+    // with "started" set to true if it was resolved) spanning the given character positions;
+    // The caller appends the action to perform with that range.
+    const auto buildRangeScript = [totalTextLength](const long start, const long end)
+    {
+        return GetWebViewTextWalkerScript() + wxString::Format(LR"JS(
+                   var start = %ld, end = %ld;
+                   var pos = 0, node, range = document.createRange(), started = false;
+                   while ((node = walker.nextNode()))
+                       {
+                       var nodeStart = pos, nodeEnd = pos + node.length;
+                       if (!started && end >= nodeStart && start < nodeEnd)
+                           {
+                           range.setStart(node, Math.max(0, start - nodeStart));
+                           started = true;
+                           }
+                       if (started && end <= nodeEnd)
+                           {
+                           range.setEnd(node, Math.max(0, end - nodeStart));
+                           break;
+                           }
+                       pos = nodeEnd;
+                       }
+                   )JS",
+                                                               start,
+                                                               (end == -1 ? totalTextLength : end));
+    };
+
+    if (!highlightPoints.empty())
+        {
+        const wxString scrollScript =
+            L"(function() {" +
+            buildRangeScript(highlightPoints[0].first, highlightPoints[0].first) + LR"JS(
+            if (!started) { return '0'; }
+            var r = range.getBoundingClientRect();
+            window.scrollTo(0, Math.max(0, r.top + window.pageYOffset - 40));
+            return '1';
+            })();
+            )JS";
+        webView->RunScript(scrollScript);
+        // give UI time to scroll and refresh
+        ::wxSleep(2);
+        }
+
+    wxBitmap bitmap{ CaptureWebViewContent(webView) };
+
+    wxMemoryDC memDC;
+    memDC.SelectObject(bitmap);
+
+    wxCoord lastHighlightBottom{ -1 };
+
+    for (const auto& highlightPoint : highlightPoints)
+        {
+        // a single bounding box for the whole range, mirroring the one-box-per-highlight
+        // behavior of SaveScreenshotOfTextWindow (rather than one box per line/element
+        // fragment, which is what Range::getClientRects() would give us)
+        const wxString rectScript = L"(function() {" +
+                                    buildRangeScript(highlightPoint.first, highlightPoint.second) +
+                                    LR"JS(
+            if (!started) { return ''; }
+            var r = range.getBoundingClientRect();
+            return r.left + ',' + r.top + ',' + r.right + ',' + r.bottom;
+            })();
+            )JS";
+
+        wxString scriptOutput;
+        if (webView->RunScript(rectScript, &scriptOutput) && !scriptOutput.empty())
+            {
+            wxStringTokenizer coordTkz(scriptOutput, L",", wxTOKEN_STRTOK);
+            std::array<double, 4> coords{ 0, 0, 0, 0 };
+            size_t coordIndex{ 0 };
+            while (coordTkz.HasMoreTokens() && coordIndex < coords.size())
+                {
+                if (!coordTkz.GetNextToken().ToDouble(&coords[coordIndex]))
+                    {
+                    break;
+                    }
+                ++coordIndex;
+                }
+            if (coordIndex == coords.size())
+                {
+                const wxPoint startPoint{ static_cast<int>(coords[0] * dpiScale),
+                                          static_cast<int>(coords[1] * dpiScale) };
+                const wxPoint endPoint{ static_cast<int>(coords[2] * dpiScale),
+                                        static_cast<int>(coords[3] * dpiScale) };
+                memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
+                memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
+                memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
+                memDC.DrawLine(endPoint.x, endPoint.y, startPoint.x, endPoint.y);
+                memDC.DrawLine(startPoint.x, endPoint.y, startPoint.x, startPoint.y);
+
+                lastHighlightBottom = std::max(lastHighlightBottom, endPoint.y);
+                }
+            }
+        }
+
+    memDC.SelectObject(wxNullBitmap);
+
+    // always clip dead space at the bottom
+    wxString contentBottomOutput;
+    long contentBottom{ 0 };
+    if (webView->RunScript(L"Math.round(document.documentElement.scrollHeight - "
+                           "window.pageYOffset).toString();",
+                           &contentBottomOutput) &&
+        contentBottomOutput.ToLong(&contentBottom) && contentBottom > 0)
+        {
+        const int contentBottomDevicePx{ static_cast<int>(contentBottom * dpiScale) };
+        if (contentBottomDevicePx < bitmap.GetHeight())
+            {
+            bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), contentBottomDevicePx });
+            }
+        }
+
+    // if clipping to highlights, additionally crop below the last highlighted section
+    if (clipContents && !highlightPoints.empty() && lastHighlightBottom != -1 &&
+        lastHighlightBottom < bitmap.GetHeight())
+        {
+        bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), lastHighlightBottom });
+        }
+
+    // draw a gray border around the image since we are saving the client area
+    AddBorderToImage(bitmap);
+
+    wxFileName fn(filePath);
+    fn.SetExt(L"bmp");
+    wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+    return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
+    }
+
+//---------------------------------------------------
+wxBitmap Screenshot::CaptureWebViewContent(wxWebView* webView)
+    {
+    wxClientDC dc(webView);
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
+
+    bool contentCaptured{ false };
+#if defined(__WXMSW__) && wxUSE_WEBVIEW_EDGE
+    // A web view's content is composited outside of what a plain bit-block transfer
+    // (what Blit() below falls back to) can see. Asking the browser to render itself
+    // to an image directly is the only reliable way to pick that content up.
+    wxCOMPtr<IStream> captureStream;
+    if (auto* coreWebView2 = static_cast<ICoreWebView2*>(webView->GetNativeBackend());
+        coreWebView2 != nullptr &&
+        SUCCEEDED(::CreateStreamOnHGlobal(nullptr, TRUE, &captureStream)))
+        {
+        int captureResult{ -1 };
+        const HRESULT hr = coreWebView2->CapturePreview(
+            COREWEBVIEW2_CAPTURE_PREVIEW_IMAGE_FORMAT_PNG, captureStream,
+            Callback<ICoreWebView2CapturePreviewCompletedHandler>(
+                [&captureResult](HRESULT errorCode) -> HRESULT
+                {
+                    captureResult = SUCCEEDED(errorCode) ? 1 : 0;
+                    return S_OK;
+                })
+                .Get());
+        if (SUCCEEDED(hr))
+            {
+            // wait for the capture to complete, same as wxWebView::RunScript() does
+            // for its own async calls
+            while (captureResult == -1)
+                {
+                wxYield();
+                }
+            }
+        if (captureResult == 1)
+            {
+            ULARGE_INTEGER streamSize{};
+            LARGE_INTEGER zero{};
+            if (SUCCEEDED(captureStream->Seek(zero, STREAM_SEEK_END, &streamSize)) &&
+                SUCCEEDED(captureStream->Seek(zero, STREAM_SEEK_SET, nullptr)))
+                {
+                wxMemoryBuffer pngData(streamSize.QuadPart);
+                ULONG bytesRead{ 0 };
+                if (SUCCEEDED(captureStream->Read(pngData.GetWriteBuf(streamSize.QuadPart),
+                                                  static_cast<ULONG>(streamSize.QuadPart),
+                                                  &bytesRead)))
+                    {
+                    wxImage capturedImage;
+                    wxMemoryInputStream pngInput(pngData.GetData(), bytesRead);
+                    if (capturedImage.LoadFile(pngInput, wxBITMAP_TYPE_PNG) && capturedImage.IsOk())
+                        {
+                        bitmap = wxBitmap(capturedImage);
+                        contentCaptured = true;
+                        }
+                    }
+                }
+            }
+        }
+#endif
+
+    if (!contentCaptured)
+        {
+        wxMemoryDC memDC;
+        memDC.SelectObject(bitmap);
+        memDC.Clear();
+        memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
+        memDC.SelectObject(wxNullBitmap);
+        }
+
+    return bitmap;
+    }
+
+//---------------------------------------------------
+void Screenshot::FindVisibleWebViews(wxWindow* parent, std::vector<wxWebView*>& webViews)
+    {
+    for (auto* child : parent->GetChildren())
+        {
+        if (child->IsKindOf(CLASSINFO(wxWebView)) && child->IsShownOnScreen())
+            {
+            webViews.push_back(dynamic_cast<wxWebView*>(child));
+            }
+        else
+            {
+            FindVisibleWebViews(child, webViews);
+            }
+        }
+    }
+
+//---------------------------------------------------
+void Screenshot::CompositeWebViewsIntoDC(wxWindow* windowToCapture, wxDC& dc)
+    {
+    if (windowToCapture == nullptr)
+        {
+        return;
+        }
+
+    std::vector<wxWebView*> webViews;
+    FindVisibleWebViews(windowToCapture, webViews);
+
+    for (auto* webView : webViews)
+        {
+        // step back from the web view to the captured window, tallying the offset of
+        // each child relative to its parent (using screen positions would be off, since
+        // the main dialog's decorations aren't factored into the client area being captured)
+        wxPoint offset{ 0, 0 };
+        const wxWindow* current = webView;
+        while (current != nullptr && current != windowToCapture)
+            {
+            offset += current->GetPosition();
+            current = current->GetParent();
+            }
+
+        dc.DrawBitmap(CaptureWebViewContent(webView), offset);
+        }
+    }
+
+//---------------------------------------------------
+wxString Screenshot::GetWebViewTextWalkerScript()
+    {
+    return LR"JS(
+        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT,
+            { acceptNode: function(node)
+                {
+                var p = node.parentElement;
+                return (p && (p.tagName === 'SCRIPT' || p.tagName === 'STYLE')) ?
+                    NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+                } });
+        )JS";
+    }
+
+//---------------------------------------------------
+bool Screenshot::FindWebViewTextRange(wxWebView* webView, const wxString& searchText,
+                                      const long searchFrom, long& foundStart, long& foundEnd)
+    {
+    if (webView == nullptr || searchText.empty())
+        {
+        return false;
+        }
+
+    // escape for embedding in a single-quoted JS string literal
+    wxString escapedSearchText{ searchText };
+    escapedSearchText.Replace(L"\\", L"\\\\", true);
+    escapedSearchText.Replace(L"'", L"\\'", true);
+    escapedSearchText.Replace(L"\n", L"\\n", true);
+    escapedSearchText.Replace(L"\r", L"\\r", true);
+
+    const wxString script = L"(function() {" + GetWebViewTextWalkerScript() +
+                            wxString::Format(LR"JS(
+                                var text = '', node;
+                                while ((node = walker.nextNode())) { text += node.textContent; }
+                                var needle = '%s';
+                                var idx = text.indexOf(needle, %ld);
+                                return (idx === -1) ? '' : (idx + ',' + (idx + needle.length));
+                                )JS",
+                                             escapedSearchText, searchFrom) +
+                            L"})();";
+
+    wxString scriptOutput;
+    if (!webView->RunScript(script, &scriptOutput) || scriptOutput.empty())
+        {
+        return false;
+        }
+
+    wxStringTokenizer tkz{ scriptOutput, L",", wxTOKEN_STRTOK };
+    long start{ -1 }, end{ -1 };
+    if (!tkz.HasMoreTokens() || !tkz.GetNextToken().ToLong(&start) || !tkz.HasMoreTokens() ||
+        !tkz.GetNextToken().ToLong(&end))
+        {
+        return false;
+        }
+
+    foundStart = start;
+    foundEnd = end;
+    return true;
+    }
+
+//---------------------------------------------------
 bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath,
                                                         const wxWindowID propertyGridId /*= wxID_ANY*/,
                                                         const wxString& startIdToHighlight /*= wxString{}*/,
@@ -663,6 +1042,9 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
+    // a plain blit leaves any web view's area blank, since its content is composited
+    // outside of what that can see
+    CompositeWebViewsIntoDC(windowToCapture, memDC);
 
     wxCoord endPointY{ 0 };
 
@@ -796,6 +1178,9 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
     memDC.SelectObject(bitmap);
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
+    // a plain blit leaves any web view's area blank, since its content is composited
+    // outside of what that can see
+    CompositeWebViewsIntoDC(windowToCapture, memDC);
 
     if (startIdToOverwrite != wxID_ANY || endIdToOverwrite != wxID_ANY)
         {

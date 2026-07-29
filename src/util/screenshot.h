@@ -15,6 +15,8 @@
 #include <wx/propgrid/propgrid.h>
 #include <wx/wx.h>
 
+class wxWebView;
+
 /// @brief Class for creating and editing screenshots.
 class Screenshot
     {
@@ -72,6 +74,32 @@ class Screenshot
     SaveScreenshotOfTextWindow(const wxString& filePath, const wxWindowID windowId,
                                const bool clipContents,
                                const std::vector<std::pair<long, long>>& highlightPoints);
+
+    /** @brief Saves a screenshot of a @c wxWebView.
+        @param filePath The path to save the screenshot to.
+        @param windowId The ID of the web view. The window will be searched for from the
+            top-level window by looking for this ID.
+        @param clipContents If @c true and @p highlightPoints is non-empty, crops the image
+            below the last highlighted section. If @c false or @p highlightPoints is empty,
+            only dead space below the last line of content is clipped (the default behavior).
+        @param highlightPoints The pairs of character positions (into the web view's page
+            text) to draw a red highlight around in the screenshot.
+        @returns @c true if image is saved successfully.*/
+    static bool SaveScreenshotOfWebView(const wxString& filePath, const wxWindowID windowId,
+                                        const bool clipContents,
+                                        const std::vector<std::pair<long, long>>& highlightPoints);
+
+    /** @brief Finds the next occurrence of @p searchText in a web view, in the same
+            character-position space that @c SaveScreenshotOfWebView's @c highlightPoints
+            expects (i.e., not the same space as @c wxWebView::GetPageText()).
+        @param webView The web view to search in.
+        @param searchText The text to search for.
+        @param searchFrom The character position to start searching from.
+        @param[out] foundStart The start of the match, if found.
+        @param[out] foundEnd The end of the match, if found.
+        @returns @c true if found.*/
+    static bool FindWebViewTextRange(wxWebView* webView, const wxString& searchText,
+                                     long searchFrom, long& foundStart, long& foundEnd);
 
     /** @brief Saves a screenshot of the @c wxListCtrl.
         @param filePath The path to save the screenshot to.
@@ -158,6 +186,28 @@ class Screenshot
     /// @param windowToCapture The window to prepare for the screenshot.
     static void PrepareWindowForScreenshot(wxWindow* windowToCapture);
     static void AddBorderToImage(wxBitmap& bmp);
+    /// @brief A script that walks a web view's body text nodes (skipping SCRIPT/STYLE
+    ///     content), leaving a @c TreeWalker in the "walker" variable for the caller to
+    ///     iterate via `walker.nextNode()`.
+    /// @details @c FindWebViewTextRange() and @c SaveScreenshotOfWebView() both walk this
+    ///     the same way, so a character position found by one means the same thing to
+    ///     the other.
+    static wxString GetWebViewTextWalkerScript();
+
+    /// @brief Captures a web view's rendered content into a bitmap, sized to its client area.
+    /// @details A web view's content is composited outside of what a plain device-context
+    ///     blit can see, so this asks the browser to render itself to an image directly
+    ///     (MSW/Edge only); other platforms/backends fall back to a plain DC blit.
+    /// @param webView The web view to capture.
+    /// @returns The captured bitmap.
+    static wxBitmap CaptureWebViewContent(wxWebView* webView);
+
+    /// @brief Recursively collects the visible @c wxWebView descendants of @p parent.
+    static void FindVisibleWebViews(wxWindow* parent, std::vector<wxWebView*>& webViews);
+
+    /// @brief Finds any visible web view descendants of @p windowToCapture and draws their
+    ///     captured content into @p dc, since a plain window blit leaves web view areas blank.
+    static void CompositeWebViewsIntoDC(wxWindow* windowToCapture, wxDC& dc);
 
     static wxPen GetScreenshotHighlightPen(const int width)
         {
