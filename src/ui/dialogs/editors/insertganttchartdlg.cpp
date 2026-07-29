@@ -533,8 +533,10 @@ namespace Wisteria::UI
             grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Text:")),
                       wxSizerFlags{}.CenterVertical());
             auto* textCtrl = new wxTextCtrl(&dlg, wxID_ANY, inOutText, wxDefaultPosition,
-                                            wxDefaultSize, wxTE_RICH2);
+                                            wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
             textCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
             grid->Add(textCtrl, wxSizerFlags{}.Expand());
 
             sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());

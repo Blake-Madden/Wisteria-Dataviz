@@ -1083,9 +1083,12 @@ namespace Wisteria::UI
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
-        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY, bracket.GetLabel().GetText(),
-                                         wxDefaultPosition, wxDefaultSize, wxTE_RICH2);
+        auto* labelCtrl =
+            new wxTextCtrl(&dlg, wxID_ANY, bracket.GetLabel().GetText(), wxDefaultPosition,
+                           wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
         labelCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")), wxSizerFlags{}.CenterVertical());

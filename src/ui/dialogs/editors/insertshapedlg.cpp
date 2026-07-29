@@ -270,8 +270,10 @@ namespace Wisteria::UI
                            wxSizerFlags{}.CenterVertical());
             m_labelTextCtrl =
                 new wxTextCtrl(labelBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                               wxSize{ FromDIP(200), -1 }, wxTE_RICH2);
+                               wxSize{ FromDIP(200), -1 }, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
             m_labelTextCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
             labelGrid->Add(m_labelTextCtrl, wxSizerFlags{}.Expand());
 
             labelGrid->Add(new wxStaticText(labelBox->GetStaticBox(), wxID_ANY, _(L"Color:")),

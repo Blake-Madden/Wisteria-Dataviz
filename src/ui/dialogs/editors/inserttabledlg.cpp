@@ -839,8 +839,10 @@ namespace Wisteria::UI
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Footnote:")),
                        wxSizerFlags{}.CenterVertical());
         auto* footnoteCtrl = new wxTextCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
-                                            wxDefaultSize, wxTE_RICH2);
+                                            wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
         footnoteCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         gridSizer->Add(footnoteCtrl, wxSizerFlags{}.Expand());
 
         auto* topSizer = new wxBoxSizer(wxVERTICAL);
@@ -892,9 +894,11 @@ namespace Wisteria::UI
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Footnote:")),
                        wxSizerFlags{}.CenterVertical());
-        auto* footnoteCtrl =
-            new wxTextCtrl(&dlg, wxID_ANY, footnote, wxDefaultPosition, wxDefaultSize, wxTE_RICH2);
+        auto* footnoteCtrl = new wxTextCtrl(&dlg, wxID_ANY, footnote, wxDefaultPosition,
+                                            wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
         footnoteCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         gridSizer->Add(footnoteCtrl, wxSizerFlags{}.Expand());
 
         auto* topSizer = new wxBoxSizer(wxVERTICAL);
@@ -941,8 +945,10 @@ namespace Wisteria::UI
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Name:")),
                        wxSizerFlags{}.CenterVertical());
         auto* nameCtrl = new wxTextCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
-                                        wxDefaultSize, wxTE_RICH2);
+                                        wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
         nameCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Type:")),
@@ -1060,8 +1066,10 @@ namespace Wisteria::UI
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Name:")),
                        wxSizerFlags{}.CenterVertical());
         auto* nameCtrl = new wxTextCtrl(&dlg, wxID_ANY, entry.m_name, wxDefaultPosition,
-                                        wxDefaultSize, wxTE_RICH2);
+                                        wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
         nameCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Type:")),

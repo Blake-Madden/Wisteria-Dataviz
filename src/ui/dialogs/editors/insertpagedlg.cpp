@@ -419,9 +419,11 @@ namespace Wisteria::UI
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Name:")),
                        wxSizerFlags{}.CenterVertical());
         auto* nameCtrl =
-            new wxTextCtrl(this, wxID_ANY, m_pageName, wxDefaultPosition, wxDefaultSize, wxTE_RICH2,
-                           wxGenericValidator{ &m_pageName });
+            new wxTextCtrl(this, wxID_ANY, m_pageName, wxDefaultPosition, wxDefaultSize,
+                           wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator{ &m_pageName });
+#if wxUSE_SPELLCHECK
         nameCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
 
         if (m_editMode == EditMode::Insert)

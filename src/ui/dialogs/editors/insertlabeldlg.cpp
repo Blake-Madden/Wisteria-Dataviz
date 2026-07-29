@@ -70,7 +70,9 @@ namespace Wisteria::UI
         m_textCtrl =
             new wxTextCtrl(labelPage, wxID_ANY, wxString{}, wxDefaultPosition,
                            wxSize{ FromDIP(300), FromDIP(100) }, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
         m_textCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         textSizer->Add(m_textCtrl, wxSizerFlags{ 1 }.Expand());
         labelSizer->Add(textSizer, wxSizerFlags{}.Expand().Border());
 

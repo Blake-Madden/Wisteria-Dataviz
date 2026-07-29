@@ -104,10 +104,12 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         timeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Time interval label:")),
                        wxSizerFlags{}.CenterVertical());
-        auto* timeLabel =
-            new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-                           wxTE_RICH2, wxTextValidator(wxFILTER_NONE, &m_timeIntervalLabel));
+        auto* timeLabel = new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2,
+                                         wxTextValidator(wxFILTER_NONE, &m_timeIntervalLabel));
+#if wxUSE_SPELLCHECK
         timeLabel->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         timeSizer->Add(timeLabel);
         optionsSizer->Add(timeSizer, wxSizerFlags{}.Border());
 

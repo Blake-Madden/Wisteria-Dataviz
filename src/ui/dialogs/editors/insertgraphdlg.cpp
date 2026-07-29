@@ -648,8 +648,10 @@ namespace Wisteria::UI
         grid->Add(m_legendTitleLabel, wxSizerFlags{}.CenterVertical());
         m_legendTitleCtrl =
             new wxTextCtrl(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-                           wxTE_RICH2, wxGenericValidator(&m_legendTitle));
+                           wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator(&m_legendTitle));
+#if wxUSE_SPELLCHECK
         m_legendTitleCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         grid->Add(m_legendTitleCtrl, wxSizerFlags{}.Expand());
 
         headerCheck->Bind(wxEVT_CHECKBOX,

@@ -91,10 +91,13 @@ namespace Wisteria::UI
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Title:")),
                          wxSizerFlags{}.CenterVertical());
-        auto* titleCtrl = new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{},
-                                         wxDefaultPosition, FromDIP(wxSize{ 350, -1 }), wxTE_RICH2,
-                                         wxGenericValidator{ &m_options.m_title });
+        auto* titleCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           FromDIP(wxSize{ 350, -1 }), wxTE_MULTILINE | wxTE_RICH2,
+                           wxGenericValidator{ &m_options.m_title });
+#if wxUSE_SPELLCHECK
         titleCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         docInfoGrid->Add(titleCtrl, wxSizerFlags{}.Expand());
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Author:")),
@@ -106,18 +109,22 @@ namespace Wisteria::UI
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Subject:")),
                          wxSizerFlags{}.CenterVertical());
-        auto* subjectCtrl =
-            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, wxTE_RICH2, wxGenericValidator{ &m_options.m_subject });
+        auto* subjectCtrl = new wxTextCtrl(
+            docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+            wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator{ &m_options.m_subject });
+#if wxUSE_SPELLCHECK
         subjectCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         docInfoGrid->Add(subjectCtrl, wxSizerFlags{}.Expand());
 
         docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Keywords:")),
                          wxSizerFlags{}.CenterVertical());
-        auto* keywordsCtrl =
-            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, wxTE_RICH2, wxGenericValidator{ &m_options.m_keywords });
+        auto* keywordsCtrl = new wxTextCtrl(
+            docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+            wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator{ &m_options.m_keywords });
+#if wxUSE_SPELLCHECK
         keywordsCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
         docInfoGrid->Add(keywordsCtrl, wxSizerFlags{}.Expand());
 
         docInfoBox->Add(docInfoGrid, wxSizerFlags{}.Expand().Border());
