@@ -675,9 +675,7 @@ namespace Wisteria::UI
                     cFilter.m_columnName = column;
                     cFilter.m_comparisonType = cmp;
 
-                    // parse comma-separated values, using the column type
-                    // to determine how to interpret each value
-                    const wxString valuesStr = row.m_valuesCtrl->GetValue().Strip(wxString::both);
+                    wxString valuesStr = row.m_valuesCtrl->GetValue().Strip(wxString::both);
                     if (valuesStr.empty())
                         {
                         continue;
@@ -688,39 +686,30 @@ namespace Wisteria::UI
                     const bool isDate =
                         dataset->GetDateColumn(column) != dataset->GetDateColumns().cend();
 
-                    wxStringTokenizer tokenizer(valuesStr, L",");
-                    while (tokenizer.HasMoreTokens())
+                    // expand constant placeholders (e.g., {{MaxFall}})
+                    if (m_reportBuilder != nullptr)
                         {
-                        wxString token = tokenizer.GetNextToken().Strip(wxString::both);
-                        if (token.empty())
+                        valuesStr = m_reportBuilder->ExpandConstants(valuesStr);
+                        }
+                    if (isContinuous)
+                        {
+                        double numVal{ 0 };
+                        if (valuesStr.ToDouble(&numVal))
                             {
-                            continue;
+                            cFilter.m_values.push_back(numVal);
                             }
-                        // expand constant placeholders (e.g., {{MaxFall}})
-                        if (m_reportBuilder != nullptr)
+                        }
+                    else if (isDate)
+                        {
+                        wxDateTime dt;
+                        if (dt.ParseDateTime(valuesStr) || dt.ParseDate(valuesStr))
                             {
-                            token = m_reportBuilder->ExpandConstants(token);
+                            cFilter.m_values.push_back(dt);
                             }
-                        if (isContinuous)
-                            {
-                            double numVal{ 0 };
-                            if (token.ToDouble(&numVal))
-                                {
-                                cFilter.m_values.push_back(numVal);
-                                }
-                            }
-                        else if (isDate)
-                            {
-                            wxDateTime dt;
-                            if (dt.ParseDateTime(token) || dt.ParseDate(token))
-                                {
-                                cFilter.m_values.push_back(dt);
-                                }
-                            }
-                        else
-                            {
-                            cFilter.m_values.push_back(Data::DatasetValueType(wxString(token)));
-                            }
+                        }
+                    else
+                        {
+                        cFilter.m_values.push_back(Data::DatasetValueType(valuesStr));
                         }
 
                     if (cFilter.m_values.empty())
@@ -846,15 +835,7 @@ namespace Wisteria::UI
                 const wxString valuesStr = row.m_valuesCtrl->GetValue().Strip(wxString::both);
                 if (!valuesStr.empty())
                     {
-                    wxStringTokenizer tokenizer(valuesStr, L",");
-                    while (tokenizer.HasMoreTokens())
-                        {
-                        const wxString token = tokenizer.GetNextToken().Strip(wxString::both);
-                        if (!token.empty())
-                            {
-                            criterion.m_values.push_back(token);
-                            }
-                        }
+                    criterion.m_values.push_back(valuesStr);
                     }
 
                 if (!criterion.m_column.empty() && !criterion.m_values.empty())
