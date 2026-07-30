@@ -430,7 +430,7 @@ namespace Wisteria::UI
         // default start to row 1 (skip header) for new tables
         if (m_alternateRowColorTemplate.empty())
             {
-            auto startNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
+            auto startNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, false);
             startNode->Add(L"origin", static_cast<double>(1));
             node->Add(L"start", startNode);
             }

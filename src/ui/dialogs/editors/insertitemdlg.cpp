@@ -410,7 +410,7 @@ namespace Wisteria::UI
             leftColumnSizer->Add(propsSizer, wxSizerFlags{}.Border());
 
             // canvas margins (top, right, bottom, left)
-            auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas margins"));
+            auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas Margins"));
             auto* marginGrid = new wxFlexGridSizer(
                 4, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
 
