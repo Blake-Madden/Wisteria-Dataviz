@@ -691,13 +691,17 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
                                           static_cast<int>(coords[1] * dpiScale) };
                 const wxPoint endPoint{ static_cast<int>(coords[2] * dpiScale),
                                         static_cast<int>(coords[3] * dpiScale) };
-                memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
+                const int highlightPenWidth{ std::max(
+                    1, static_cast<int>(windowToCapture->GetDPIScaleFactor())) };
+                memDC.SetPen(GetScreenshotHighlightPen(highlightPenWidth));
                 memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
                 memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
                 memDC.DrawLine(endPoint.x, endPoint.y, startPoint.x, endPoint.y);
                 memDC.DrawLine(startPoint.x, endPoint.y, startPoint.x, startPoint.y);
 
-                lastHighlightBottom = std::max(lastHighlightBottom, endPoint.y);
+                // the pen straddles the drawn coordinate, so the bottom border
+                // extends past endPoint.y by roughly half its width
+                lastHighlightBottom = std::max(lastHighlightBottom, endPoint.y + highlightPenWidth);
                 }
             }
         }
@@ -763,8 +767,7 @@ wxBitmap Screenshot::CaptureWebViewContent(wxWebView* webView)
                 .Get());
         if (SUCCEEDED(hr))
             {
-            // wait for the capture to complete, same as wxWebView::RunScript() does
-            // for its own async calls
+            // wait for the capture to complete
             while (captureResult == -1)
                 {
                 wxYield();
