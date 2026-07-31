@@ -299,6 +299,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
         const auto legendBkColor =
             Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(legendColor);
+        const auto legendOutlineColor{ Colors::ColorBrewer::GetColor(Colors::Color::Gray, 200) };
 
         // add instruction label
         auto legend = std::make_unique<GraphItems::Label>(
@@ -308,7 +309,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                                          "“Syllables per 100 Words” figure (right).  The\n"
                                          "intersection of the pencil or ruler with the\n"
                                          "center line shows your “Reading Ease” score.") }
-                .Pen(legendColor)
+                .Pen(legendOutlineColor)
                 .FontBackgroundColor(legendBkColor)
                 .FontColor(legendColor)
                 .Scaling(GetScaling())
@@ -324,7 +325,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             .GetFont()
             .MakeBold()
             .MakeSmaller();
-        legend->SetBoxCorners(BoxCorners::Straight);
+        legend->SetBoxCorners(BoxCorners::Rounded);
         legend->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         legend->SetDPIScaleFactor(GetDPIScaleFactor());
 
@@ -333,7 +334,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         wxCoord instructionsRight{ naturalBoundingBox.GetRight() };
         for (const auto& customAxis : GetCustomAxes())
             {
-            const auto headerBoundingBox = customAxis.GetHeader().GetBoundingBox(dc);
+            // see where the rulers and instruction label may intersect
+            GraphItems::Label header{ customAxis.GetHeader() };
+            header.SetScaling(customAxis.GetScaling());
+            header.SetDPIScaleFactor(GetDPIScaleFactor());
+            const auto headerSize = header.GetBoundingBox(dc).GetSize();
+            const wxRect headerBoundingBox{
+                wxPoint{ static_cast<wxCoord>(customAxis.GetPhysicalCustomXPosition()) -
+                             (headerSize.GetWidth() / 2),
+                         static_cast<wxCoord>(customAxis.GetPhysicalCustomYPosition()) -
+                             headerSize.GetHeight() },
+                headerSize
+            };
             if (naturalBoundingBox.Intersects(headerBoundingBox))
                 {
                 instructionsRight = std::min(instructionsRight, headerBoundingBox.GetLeft());
@@ -345,10 +357,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
 
         if (instructionsRight < naturalBoundingBox.GetRight())
             {
-            legend->SetBoundingBox(wxRect(legend->GetAnchorPoint(),
-                                          wxPoint(instructionsRight - ScaleToScreenAndCanvas(5),
-                                                  naturalBoundingBox.GetBottom())),
-                                   dc, GetScaling());
+            const wxCoord narrowWidth((instructionsRight - ScaleToScreenAndCanvas(5)) -
+                                      legend->GetAnchorPoint().x);
+            // Narrowing the box will scale its (unwrapped) text down proportionally.
+            // Shrink the box's height by that same factor so that it doesn't leave
+            // excess empty space beneath the smaller text.
+            const auto shrinkFactor =
+                safe_divide<double>(narrowWidth, naturalBoundingBox.GetWidth());
+            legend->SetBoundingBox(
+                wxRect(legend->GetAnchorPoint(),
+                       wxSize(narrowWidth, naturalBoundingBox.GetHeight() * shrinkFactor)),
+                dc, GetScaling());
             }
 
         AddObject(std::move(legend));
