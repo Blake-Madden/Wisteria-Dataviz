@@ -206,90 +206,94 @@ namespace lily_of_the_valley
         {
       public:
         /// @brief Adds a title to an HTML block.
-        /// @param[in,out] HtmlText The HTML to set the title within.
-        /// @param Title The title to use.
-        static void set_title(std::wstring& HtmlText, const std::wstring& Title)
+        /// @param[in,out] htmlText The HTML to set the title within.
+        /// @param title The title to use.
+        /// @note @c string_typeT must be a @c std::wstring-compatible string type.
+        template<typename string_typeT>
+        static void set_title(string_typeT& htmlText, const std::wstring& title)
             {
-            auto titleStart = HtmlText.find(L"<title>");
-            if (titleStart == std::wstring::npos)
+            auto titleStart = htmlText.find(L"<title>");
+            if (titleStart == string_typeT::npos)
                 {
-                auto headStart = HtmlText.find(L"<head>");
+                auto headStart = htmlText.find(L"<head>");
                 // add <head> section if needed
-                if (headStart == std::wstring::npos)
+                if (headStart == string_typeT::npos)
                     {
-                    auto htmlStart = HtmlText.find(L"<html");
-                    if (htmlStart == std::wstring::npos)
+                    auto htmlStart = htmlText.find(L"<html");
+                    if (htmlStart == string_typeT::npos)
                         {
                         return;
                         } // give up if this is bogus HTML
                     // find the end of the <html> tag
-                    htmlStart = HtmlText.find(L'>', htmlStart);
+                    htmlStart = htmlText.find(L'>', htmlStart);
                     // give up if this is bogus HTML
-                    if (htmlStart == std::wstring::npos)
+                    if (htmlStart == string_typeT::npos)
                         {
                         return;
                         }
                     headStart = htmlStart + 1;
-                    HtmlText.insert(headStart, L"\n<head></head>\n");
+                    htmlText.insert(headStart, L"\n<head></head>\n");
                     // skip newline in front of <head>
                     ++headStart;
                     }
-                HtmlText.insert(headStart + 6, L"\n<title></title>");
+                htmlText.insert(headStart + 6, L"\n<title></title>");
                 // skip over '<head>\n'
                 titleStart = headStart + 7;
                 }
             // skip over <title>
             titleStart += 7;
-            const auto titleEnd = HtmlText.find(L"</title>", titleStart);
-            if (titleEnd == std::wstring::npos)
+            const auto titleEnd = htmlText.find(L"</title>", titleStart);
+            if (titleEnd == string_typeT::npos)
                 {
                 return;
                 }
-            HtmlText.replace(titleStart, (titleEnd - titleStart), Title);
+            htmlText.replace(titleStart, (titleEnd - titleStart), title.c_str());
             }
 
         /// @brief Specifies the encoding of an HTML block.
-        /// @param[in,out] HtmlText The HTML to set edit.
+        /// @param[in,out] htmlText The HTML to set edit.
         /// @param encoding The encoding to use.
-        static void set_encoding(std::wstring& HtmlText, const std::wstring& encoding = L"UTF-8")
+        /// @note @c string_typeT must be a @c std::wstring-compatible string type.
+        template<typename string_typeT>
+        static void set_encoding(string_typeT& htmlText, const std::wstring& encoding = L"UTF-8")
             {
-            auto headStart = HtmlText.find(L"<head");
+            auto headStart = htmlText.find(L"<head");
             // add <head> section if needed
-            if (headStart == std::wstring::npos)
+            if (headStart == string_typeT::npos)
                 {
-                auto htmlStart = HtmlText.find(L"<html");
+                auto htmlStart = htmlText.find(L"<html");
                 // give up if this is bogus HTML
-                if (htmlStart == std::wstring::npos)
+                if (htmlStart == string_typeT::npos)
                     {
                     return;
                     }
                 // find the end of the <html> tag
-                htmlStart = HtmlText.find(L'>', htmlStart);
+                htmlStart = htmlText.find(L'>', htmlStart);
                 // give up if this is bogus HTML
-                if (htmlStart == std::wstring::npos)
+                if (htmlStart == string_typeT::npos)
                     {
                     return;
                     }
                 headStart = htmlStart + 1;
-                HtmlText.insert(headStart, L"\n<head></head>\n");
+                htmlText.insert(headStart, L"\n<head></head>\n");
                 // skip newline in front of <head>
                 ++headStart;
                 }
             headStart += 5;
-            headStart = HtmlText.find(L'>', headStart);
-            if (headStart == std::wstring::npos)
+            headStart = htmlText.find(L'>', headStart);
+            if (headStart == string_typeT::npos)
                 {
                 return;
                 }
             ++headStart;
 
-            const size_t metaStart = HtmlText.find(L"<meta", headStart);
-            if (metaStart == std::wstring::npos)
+            const size_t metaStart = htmlText.find(L"<meta", headStart);
+            if (metaStart == string_typeT::npos)
                 {
                 const std::wstring encodingDef =
                     L"<meta http-equiv=\"content-type\" content=\"text/html; charset=" + encoding +
                     L"\" />";
-                HtmlText.insert(headStart, encodingDef);
+                htmlText.insert(headStart, encodingDef.c_str());
                 }
             /// @todo if meta section is actually found then update it
             }
@@ -298,21 +302,23 @@ namespace lily_of_the_valley
                 that are in the same file.
             @details This is mostly used for HTML windows that have application-related
                 bookmarks in them that need to be removed prior to printing or saving them.
-            @param[in,out] HtmlText The text to strip hyperlinks from.
+            @param[in,out] htmlText The text to strip hyperlinks from.
             @param preserveInPageBookmarks Whether to preserve hyperlinks to bookmarks that
-                happen to be in the current block of text.*/
-        static void strip_hyperlinks(std::wstring& HtmlText,
+                happen to be in the current block of text.
+            @note @c string_typeT must be a @c std::wstring-compatible string type.*/
+        template<typename string_typeT>
+        static void strip_hyperlinks(string_typeT& htmlText,
                                      const bool preserveInPageBookmarks = true)
             {
             std::set<std::wstring> bookmarksInCurrentPage;
-            std::pair<const wchar_t*, std::wstring> foundBookMark{ HtmlText.c_str(),
+            std::pair<const wchar_t*, std::wstring> foundBookMark{ htmlText.c_str(),
                                                                    std::wstring() };
             assert(foundBookMark.first);
             if (foundBookMark.first == nullptr)
                 {
                 return;
                 }
-            const wchar_t* const htmlEnd = foundBookMark.first + HtmlText.length();
+            const wchar_t* const htmlEnd = foundBookMark.first + htmlText.length();
             while (preserveInPageBookmarks && (foundBookMark.first != nullptr))
                 {
                 foundBookMark = html_extract_text::find_bookmark(foundBookMark.first, htmlEnd);
@@ -328,20 +334,20 @@ namespace lily_of_the_valley
                 }
 
             size_t start{ 0 };
-            while (start != std::wstring::npos)
+            while (start != string_typeT::npos)
                 {
-                start = HtmlText.find(L"<a href=", start);
-                if (start == std::wstring::npos)
+                start = htmlText.find(L"<a href=", start);
+                if (start == string_typeT::npos)
                     {
                     break;
                     }
-                const auto endOfTag = HtmlText.find(L'>', start);
-                if (endOfTag == std::wstring::npos)
+                const auto endOfTag = htmlText.find(L'>', start);
+                if (endOfTag == string_typeT::npos)
                     {
                     break;
                     }
                 const auto startOfLink = start + 8;
-                std::wstring link = HtmlText.substr(startOfLink, (endOfTag - startOfLink));
+                string_typeT link = htmlText.substr(startOfLink, (endOfTag - startOfLink));
                 if (!link.empty() && link[0] == '\"')
                     {
                     link.erase(0, 1);
@@ -355,15 +361,15 @@ namespace lily_of_the_valley
                     {
                     link.erase(0, 1);
                     // if the bookmark isn't found in this file then remove the link to it
-                    if (!bookmarksInCurrentPage.contains(link))
+                    if (!bookmarksInCurrentPage.contains(std::wstring{ link.c_str() }))
                         {
-                        HtmlText.erase(start, (endOfTag - start) + 1);
-                        const size_t endOfAnchor = HtmlText.find(L"</a>", start);
-                        if (endOfAnchor == std::wstring::npos)
+                        htmlText.erase(start, (endOfTag - start) + 1);
+                        const size_t endOfAnchor = htmlText.find(L"</a>", start);
+                        if (endOfAnchor == string_typeT::npos)
                             {
                             continue;
                             }
-                        HtmlText.erase(endOfAnchor, 4);
+                        htmlText.erase(endOfAnchor, 4);
                         }
                     // bookmark was found and we didn't delete this link, so move over it instead
                     else
@@ -374,65 +380,68 @@ namespace lily_of_the_valley
                 // not an internal bookmark, so just remove it
                 else
                     {
-                    HtmlText.erase(start, (endOfTag - start) + 1);
-                    const auto endOfAnchor = HtmlText.find(L"</a>", start);
-                    if (endOfAnchor == std::wstring::npos)
+                    htmlText.erase(start, (endOfTag - start) + 1);
+                    const auto endOfAnchor = htmlText.find(L"</a>", start);
+                    if (endOfAnchor == string_typeT::npos)
                         {
                         continue;
                         }
-                    HtmlText.erase(endOfAnchor, 4);
+                    htmlText.erase(endOfAnchor, 4);
                     }
                 }
             }
 
         /// @brief Removes any image tags from an HTML block.
-        /// @param[in,out] HtmlText The HTML to strip.
+        /// @param[in,out] htmlText The HTML to strip.
         /// @param removePadding @c true to remove padding (i.e., `&nbsp;`) around the images.
-        /// @todo use wstring_view.
-        static void strip_images(std::wstring& HtmlText, const bool removePadding = true)
+        /// @note @c string_typeT must be a @c std::wstring-compatible string type.
+        template<typename string_typeT>
+        static void strip_images(string_typeT& htmlText, const bool removePadding = true)
             {
-            size_t start = 0;
-            while (start != std::wstring::npos)
+            size_t start{ 0 };
+            while (start != string_typeT::npos)
                 {
-                start = HtmlText.find(L"<img ", start);
-                if (start == std::wstring::npos)
+                start = htmlText.find(L"<img ", start);
+                if (start == string_typeT::npos)
                     {
                     break;
                     }
-                const size_t endOfTag = HtmlText.find(L'>', start);
-                if (endOfTag == std::wstring::npos)
+                const size_t endOfTag = htmlText.find(L'>', start);
+                if (endOfTag == string_typeT::npos)
                     {
                     break;
                     }
                 // remove padding that was around the image
-                if (removePadding && start > 6 && HtmlText.substr(start - 6, 6) == L"&nbsp;")
+                if (removePadding && start > 6 && htmlText.substr(start - 6, 6) == L"&nbsp;")
                     {
                     start -= 6;
                     }
-                HtmlText.erase(start, (endOfTag - start) + 1);
+                htmlText.erase(start, (endOfTag - start) + 1);
                 // remove padding that was around the image
-                if (removePadding && (HtmlText.length() - start) >= 6 &&
-                    HtmlText.substr(start, 6) == L"&nbsp;")
+                if (removePadding && (htmlText.length() - start) >= 6 &&
+                    htmlText.substr(start, 6) == L"&nbsp;")
                     {
-                    HtmlText.erase(start, 6);
+                    htmlText.erase(start, 6);
                     }
                 }
             }
 
         /// @brief Removes any attributes in the `<body>` element.
-        /// @param[in,out] HtmlText The HTML to strip.
-        static void strip_body_attributes(std::wstring& HtmlText)
+        /// @param[in,out] htmlText The HTML to strip.
+        /// @note @c string_typeT must be a @c std::wstring-compatible string type.
+        template<typename string_typeT>
+        static void strip_body_attributes(string_typeT& htmlText)
             {
-            auto start = HtmlText.find(L"<body ");
-            if (start != std::wstring::npos)
+            auto start = htmlText.find(L"<body ");
+            if (start != string_typeT::npos)
                 {
-                const auto endOfTag = HtmlText.find(L'>', start);
-                if (endOfTag == std::wstring::npos)
+                const auto endOfTag = htmlText.find(L'>', start);
+                if (endOfTag == string_typeT::npos)
                     {
                     return;
                     }
                 start += 5;
-                HtmlText.erase(start, endOfTag - start);
+                htmlText.erase(start, endOfTag - start);
                 }
             }
         };
