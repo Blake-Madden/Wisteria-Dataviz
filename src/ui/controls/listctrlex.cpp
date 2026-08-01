@@ -2964,8 +2964,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             wxListItem item;
             item.SetMask(wxLIST_MASK_TEXT);
-            // format column headers
-            columnHeader += L"\n    <thead><tr style='background:#337BC4; color:white;'>";
+            const wxColour headerTextColor =
+                Colors::ColorContrast::BlackOrWhiteContrast(m_exportHeaderBackgroundColour);
+            columnHeader +=
+                wxString::Format(L"\n    <thead><tr style='background:%s; color:%s;'>",
+                                 m_exportHeaderBackgroundColour.GetAsString(wxC2S_HTML_SYNTAX),
+                                 headerTextColor.GetAsString(wxC2S_HTML_SYNTAX));
             for (long i = firstColumn; i <= lastColumn; ++i)
                 {
                 GetColumn(i, item);

@@ -963,6 +963,25 @@ namespace Wisteria::UI
             return m_waterMark;
             }
 
+        /// @brief Sets the background color of the header row when list controls are
+        ///     exported (e.g., via FormatToHtml()).
+        /// @details This is shared across all list controls.
+        /// @param color The header row's background color.\n
+        ///     The header text color will automatically be set to either black or
+        ///     white, whichever contrasts best against this color.
+        static void SetExportHeaderBackgroundColour(const wxColour& color)
+            {
+            m_exportHeaderBackgroundColour = color;
+            }
+
+        /// @returns The background color used for the header row when list controls
+        ///     are exported.
+        [[nodiscard]]
+        static const wxColour& GetExportHeaderBackgroundColour() noexcept
+            {
+            return m_exportHeaderBackgroundColour;
+            }
+
         /// @brief Formats the list control's contents to HTML.
         /// @param[out] outputText The text buffer to write to.
         /// @param usePrinterSettings Whether to format the output the same as if being printed.\n
@@ -1186,6 +1205,8 @@ namespace Wisteria::UI
         wxString m_rightPrinterFooter;
 
         Wisteria::Canvas::Watermark m_waterMark;
+
+        inline static wxColour m_exportHeaderBackgroundColour{ 0x33, 0x7B, 0xC4 };
 
         std::shared_ptr<ListCtrlExDataProviderBase> m_virtualData{ nullptr };
         wxMenu* m_menu{ nullptr };
