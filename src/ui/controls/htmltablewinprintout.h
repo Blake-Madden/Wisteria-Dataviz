@@ -24,9 +24,9 @@ class HtmlTablePrintout final : public wxPrintout
 
     void AddTable(const wxString& table)
         {
-        std::wstring strippedTable{ table.wc_str() };
+        wxString strippedTable{ table };
         lily_of_the_valley::html_format::strip_hyperlinks(strippedTable, false);
-        m_htmlTables.emplace_back(strippedTable);
+        m_htmlTables.emplace_back(std::move(strippedTable));
         }
 
     [[nodiscard]]

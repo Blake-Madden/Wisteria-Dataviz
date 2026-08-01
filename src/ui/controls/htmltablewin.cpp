@@ -270,7 +270,7 @@ namespace Wisteria::UI
         wxFileName{ path.GetFullPath() }.SetPermissions(wxS_DEFAULT);
         wxFile file{ path.GetFullPath(), wxFile::write };
         wxASSERT(GetParser());
-        std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
+        wxString htmlText{ *(GetParser()->GetSource()) };
         lily_of_the_valley::html_format::strip_body_attributes(htmlText);
         lily_of_the_valley::html_format::strip_hyperlinks(htmlText);
         lily_of_the_valley::html_format::set_title(htmlText, GetLabel().ToStdWstring());
@@ -292,7 +292,7 @@ namespace Wisteria::UI
             {
             wxTheClipboard->Clear();
             auto* obj = new wxDataObjectComposite();
-            std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
+            wxString htmlText{ *(GetParser()->GetSource()) };
             lily_of_the_valley::html_format::strip_hyperlinks(htmlText);
             lily_of_the_valley::html_format::strip_images(htmlText);
             lily_of_the_valley::html_format::set_title(htmlText, GetLabel().ToStdWstring());
