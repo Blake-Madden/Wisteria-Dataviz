@@ -728,10 +728,20 @@ namespace lily_of_the_valley
     void pdf_text_decoder::parse_unicode_cmap(const std::string_view cmap,
                                               pdf_font_decoder& decoder)
         {
-        // determine the code width(s) from the codespace range(s); a CMap may declare
+        // Determine the code width(s) from the codespace range(s); a CMap may declare
         // more than one range, each with its own byte length (e.g., 1-byte codes for
-        // ASCII mixed with 2-byte, 3-byte, or 4-byte codes for other glyphs)
-        size_t searchPos{ cmap.find("begincodespacerange") };
+        // ASCII mixed with 2-byte, 3-byte, or 4-byte codes for other glyphs).
+        //
+        // Only a composite (/Type0) font's codes can be wider than a single byte. A
+        // simple font's codes are always single bytes, so its ranges are ignored.
+        // Many producers write a blanket "<0000> <FFFF>" codespace into every
+        // ToUnicode CMap they emit, including those of simple fonts whose bfchar
+        // entries are all single-byte codes. Honoring that would pair up the bytes of
+        // ordinary text ("An", "al", "ys", "is") into codes with no mapping, which
+        // then fall through to being emitted as raw code points. Those land mostly in
+        // the CJK ideograph blocks, so the text comes out as CJK-looking gibberish.
+        size_t searchPos{ decoder.m_is_composite_font ? cmap.find("begincodespacerange") :
+                                                        std::string_view::npos };
         if (searchPos != std::string_view::npos)
             {
             size_t pos{ searchPos + 19 };

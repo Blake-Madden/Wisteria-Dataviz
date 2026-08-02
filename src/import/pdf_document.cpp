@@ -975,6 +975,7 @@ namespace lily_of_the_valley
         if (pdf_lexer::trim(pdf_lexer::find_dictionary_value(fontDictionary, "Subtype")) ==
             "/Type0")
             {
+            decoder->m_is_composite_font = true;
             decoder->m_bytes_per_code = 2;
             }
         // applies the semantics of one of Adobe's predefined CMap names

@@ -110,11 +110,12 @@ namespace lily_of_the_valley
         /// Character code -> Unicode mapping (from the font's ToUnicode CMap and/or
         /// its /Differences array).
         std::map<uint32_t, std::wstring> m_code_map;
-        /// The codespace ranges declared by the font's ToUnicode CMap (if any); used to
-        /// determine the byte length of each code when it varies across the string
-        /// (e.g., a mix of 1-byte and 2-byte codes). Empty if the CMap declared none
-        /// (or there is no ToUnicode CMap), in which case @c m_bytes_per_code is used
-        /// as a fixed width for the whole string.
+        /// The codespace ranges declared by a composite font's ToUnicode CMap (if any);
+        /// used to determine the byte length of each code when it varies across the
+        /// string (e.g., a mix of 1-byte and 2-byte codes). Empty if the CMap declared
+        /// none (or there is no ToUnicode CMap), and also always empty for a simple
+        /// font, whose codes are single bytes. @c m_bytes_per_code is used as a fixed
+        /// width for the whole string in those cases.
         std::vector<codespace_range> m_codespace_ranges;
         /// The width (in bytes) of the font's character codes, used as a fallback
         /// when @c m_codespace_ranges is empty or a code doesn't match any range in it.
@@ -142,6 +143,11 @@ namespace lily_of_the_valley
         /// is one of Adobe's predefined "-V" CMaps, such as /Identity-V or
         /// /UniJIS-UCS2-V).
         bool m_vertical_writing_mode{ false };
+        /// Whether this is a composite (/Type0) font, whose character codes may be
+        /// more than one byte wide. A simple font (/Type1, /TrueType, or /Type3)
+        /// always uses single-byte codes, regardless of what its ToUnicode CMap
+        /// declares in its /codespacerange.
+        bool m_is_composite_font{ false };
         };
 
     /** @brief Function object interface used to decompress a (zlib/DEFLATE

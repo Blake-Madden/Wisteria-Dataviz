@@ -1220,6 +1220,48 @@ endobj)PDF";
         const std::wstring expected{ L'A', static_cast<wchar_t>(0x4E2D) };
         CHECK(std::wcscmp(ext(text, std::strlen(text)), expected.c_str()) == 0);
         }
+    SECTION("Simple Font Ignores Two-Byte Codespace Range")
+        {
+        // A simple (/TrueType) font whose ToUnicode CMap declares a blanket
+        // "<0000> <FFFF>" codespace, even though every one of its bfchar entries is a
+        // single-byte code. Many producers emit this. A simple font's codes are always
+        // single bytes, so the range must not be honored; pairing the bytes up instead
+        // would decode "Analysis" as the CJK ideographs U+416E, U+616C, U+7973, U+6973.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 12 Tf (Analysis) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding /ToUnicode 4 0 R >>
+endobj
+4 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+7 beginbfchar
+<41> <0041>
+<6E> <006E>
+<61> <0061>
+<6C> <006C>
+<79> <0079>
+<73> <0073>
+<69> <0069>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Analysis") == 0);
+        }
     SECTION("MacRoman Encoding")
         {
         // a simple font with no ToUnicode CMap, using /MacRomanEncoding; byte 0x80 is
