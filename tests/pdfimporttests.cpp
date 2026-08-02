@@ -501,11 +501,69 @@ endobj
 2 0 obj
 << >>
 stream
-BT (Line A) Tj T* (Line B) Tj ET
+BT 12 TL (Line A) Tj T* (Line B) Tj ET
 endstream
 endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Line A\nLine B") == 0);
+        }
+    SECTION("T-star Without A Leading Stays On The Line")
+        {
+        // T* steps by the leading (TL), so a content stream that never sets one steps
+        // by nothing and lands back at the start of the line it is already on.
+        // Generators use it that way to resume a run after an intervening one. Here
+        // that intervening run is the separator between a list item's bullet and its
+        // label, which the file draws as its own marked-content span.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+10.5 0 0 10.5 70.5 544.8889 Tm
+(\267) Tj
+/Span <</ActualText <FEFF0007>>> BDC
+0.832 0 Td
+( ) Tj
+EMC
+T*
+(The CIRO leads by supporting and coordinating.) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"\t\x2022 The CIRO leads by supporting and coordinating.") == 0);
+        }
+    SECTION("T-star With A Leading Breaks The Line Between Runs")
+        {
+        // the same shape as the list item above, but with a leading set, so the step
+        // covers a full line and the second run belongs on a line of its own
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+1.19 TL
+10.5 0 0 10.5 70.5 544.8889 Tm
+(First line of the paragraph) Tj
+0.832 0 Td
+( ) Tj
+T*
+(Second line of the paragraph) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"First line of the paragraph\nSecond line of the paragraph") == 0);
         }
     SECTION("TJ Kerning And Word Gaps")
         {

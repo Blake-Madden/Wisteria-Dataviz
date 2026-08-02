@@ -178,6 +178,13 @@ namespace lily_of_the_valley
         /// @returns @c true if a newline was written (i.e., @p newX/@p newY landed
         ///     on a different line than the current position).
         bool handle_absolute_move(double newX, double newY);
+        /// @brief Handles a move to the next line (the T*, ', and " operators).
+        /// @details These operators step by (0, -leading) in text space. With no
+        ///     leading set, that step is nothing and the pen returns to the start
+        ///     of the line it is already on. The step is handled as an ordinary
+        ///     move, so the same thresholds decide whether it reads as a line
+        ///     break, a gap between runs, or neither.
+        void handle_line_step();
         /// @brief Decodes and appends a shown string (the Tj, ', " operators).
         void show_string(const std::string& stringBytes, const pdf_font_decoder* currentFont);
         /// @brief Decodes and appends a TJ array (strings mixed with kerning values).

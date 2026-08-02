@@ -369,6 +369,17 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    void pdf_content_parser::handle_line_step()
+        {
+        // transformed through the combined matrix to carry any scale or rotation
+        // from a Tm or a page-level cm
+        double stepX{ 0 };
+        double stepY{ -m_leading };
+        combined_linear().transform_vector(stepX, stepY);
+        handle_absolute_move(m_currentX + stepX, m_currentY + stepY);
+        }
+
+    //------------------------------------------------------------------
     void pdf_content_parser::show_string(const std::string& stringBytes,
                                          const pdf_font_decoder* currentFont)
         {
@@ -877,19 +888,7 @@ namespace lily_of_the_valley
                     }
                 else if (keyword == "T*")
                     {
-                    add_newline(false);
-                    if (m_haveY)
-                        {
-                        // A line step is (0, -leading) in text space; transform it
-                        // through the combined matrix so it lands correctly under
-                        // scale/rotation from a Tm or a page-level cm.
-                        double stepX{ 0 };
-                        double stepY{ -line_height() };
-                        combined_linear().transform_vector(stepX, stepY);
-                        m_currentX += stepX;
-                        m_currentY += stepY;
-                        }
-                    m_freshTextObject = false;
+                    handle_line_step();
                     }
                 else if (keyword == "Tj")
                     {
@@ -900,16 +899,7 @@ namespace lily_of_the_valley
                     }
                 else if (keyword == "'" || keyword == "\"")
                     {
-                    add_newline(false);
-                    if (m_haveY)
-                        {
-                        // a line step of (0, -leading) in text space (see T*)
-                        double stepX{ 0 };
-                        double stepY{ -line_height() };
-                        combined_linear().transform_vector(stepX, stepY);
-                        m_currentX += stepX;
-                        m_currentY += stepY;
-                        }
+                    handle_line_step();
                     if (havePendingString)
                         {
                         show_string(pendingString, currentFont);
