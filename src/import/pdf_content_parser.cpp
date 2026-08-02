@@ -44,6 +44,7 @@ namespace lily_of_the_valley
         m_atLineStart = true;
         m_haveShownText = false;
         m_freshTextObject = true;
+        m_shownSinceMove = 0;
         m_matrixA = 1;
         m_matrixB = 0;
         m_matrixC = 0;
@@ -132,9 +133,20 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    double pdf_content_parser::line_height() const
+    double pdf_content_parser::line_height() const { return std::max(m_leading, m_fontSize); }
+
+    //------------------------------------------------------------------
+    double pdf_content_parser::scaled_line_height() const
         {
-        return std::max({ m_leading, m_fontSize, 4.0 });
+        return std::max(line_height() * m_fontScale, 4.0);
+        }
+
+    //------------------------------------------------------------------
+    double pdf_content_parser::shown_run_width() const
+        {
+        constexpr double nominalCharacterWidth{ 0.5 };
+        return static_cast<double>(m_shownSinceMove) * nominalCharacterWidth * m_fontSize *
+               m_fontScale;
         }
 
     //------------------------------------------------------------------
@@ -157,6 +169,7 @@ namespace lily_of_the_valley
             m_text += L'\n';
             }
         m_atLineStart = true;
+        m_shownSinceMove = 0;
         }
 
     //------------------------------------------------------------------
@@ -171,6 +184,9 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void pdf_content_parser::add_text(const std::wstring& decodedText)
         {
+        // the pen advances over every code in the run, including the ones
+        // dropped below, so this is counted before any of them are filtered out
+        m_shownSinceMove += decodedText.length();
         for (const wchar_t curChar : decodedText)
             {
             wchar_t character{ curChar };
@@ -323,7 +339,7 @@ namespace lily_of_the_valley
         // a step across columns along x, the reverse of horizontal mode's
         // top-to-bottom line stepping along y.
         const double lineAxisDelta{ m_verticalWritingMode ? deltaX : deltaY };
-        const double scaledLineHeight{ line_height() * m_fontScale };
+        const double scaledLineHeight{ scaled_line_height() };
         bool wroteNewline{ false };
         if (std::abs(lineAxisDelta) > (0.25 * scaledLineHeight))
             {
@@ -335,10 +351,17 @@ namespace lily_of_the_valley
         // horizontal, or diagonal for rotated text. This happens when text is drawn
         // as several independent BT/Tm blocks (one per label) instead of one Tj/TJ
         // run. Without this check, such runs would be glued directly together.
-        else if (std::hypot(deltaX, deltaY) > scaledLineHeight)
+        //
+        // The text drawn since the last move has to be discounted first. A move
+        // that resumes where the previous run ended covers that whole width, and
+        // reads as a gap otherwise. Justified paragraphs step that way to place the
+        // hyphen at the line's right edge, and to resume after a run set in a second
+        // font, each of which would take a space in the middle of a word.
+        else if (std::hypot(deltaX, deltaY) > (scaledLineHeight + shown_run_width()))
             {
             add_space();
             }
+        m_shownSinceMove = 0;
         m_currentX = newX;
         m_currentY = newY;
         return wroteNewline;
@@ -355,6 +378,25 @@ namespace lily_of_the_valley
     void pdf_content_parser::show_array(const std::string_view arrayValue,
                                         const pdf_font_decoder* currentFont)
         {
+        // A large positive adjustment steps the pen back over the text already
+        // drawn, far enough to swallow the width of the space that follows it.
+        // Generators emit that to close up a space they don't want shown,
+        // usually one stranded next to a ligature. The space isn't visible on
+        // the page, so it shouldn't be extracted either.
+        bool cancelLeadingSpace{ false };
+        const auto showRun = [&](const std::string& runBytes)
+        {
+            std::wstring decoded{ pdf_text_decoder::decode_string_bytes(runBytes, currentFont) };
+            if (cancelLeadingSpace)
+                {
+                const size_t firstShown{ decoded.find_first_not_of(L" \t") };
+                decoded.erase(0,
+                              (firstShown == std::wstring::npos) ? decoded.length() : firstShown);
+                cancelLeadingSpace = false;
+                }
+            add_text(decoded);
+        };
+
         size_t pos{ 0 };
         if (pos < arrayValue.length() && arrayValue[pos] == '[')
             {
@@ -369,11 +411,11 @@ namespace lily_of_the_valley
                 }
             if (arrayValue[pos] == '(')
                 {
-                show_string(pdf_lexer::read_literal_string(arrayValue, pos), currentFont);
+                showRun(pdf_lexer::read_literal_string(arrayValue, pos));
                 }
             else if (arrayValue[pos] == '<')
                 {
-                show_string(pdf_lexer::read_hex_string(arrayValue, pos), currentFont);
+                showRun(pdf_lexer::read_hex_string(arrayValue, pos));
                 }
             else
                 {
@@ -387,9 +429,14 @@ namespace lily_of_the_valley
                 const double adjustment{ extract_text::to_double(token) };
                 // the adjustment is in unscaled text space, but Tz stretches or
                 // compresses how much actual displayed width it corresponds to
-                if ((adjustment * (m_horizScale / 100)) < -150)
+                const double displayedAdjustment{ adjustment * (m_horizScale / 100) };
+                if (displayedAdjustment < -150)
                     {
                     add_space();
+                    }
+                else if (displayedAdjustment > 150)
+                    {
+                    cancelLeadingSpace = true;
                     }
                 }
             }

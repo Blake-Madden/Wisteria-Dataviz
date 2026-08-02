@@ -556,6 +556,121 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Hello") == 0);
         }
+    SECTION("TJ Backward Kern Hides The Space After It")
+        {
+        // A magazine article set in InDesign, where a space stranded next to an "fi"
+        // ligature is closed up with a backward kern instead of being deleted. The
+        // pen steps back 250/1000 of an em, which is exactly the width of the space
+        // glyph that follows, so nothing of that space shows on the page and the
+        // reader sees "officers".
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT [(assessment offi) 249.7 ( cers, and)] TJ ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"assessment officers, and") == 0);
+        }
+    SECTION("TJ Small Backward Kern Keeps The Space After It")
+        {
+        // Ordinary tightening between two words, nowhere near wide enough to cover
+        // the space that follows it. The space is really on the page, so it stays.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT [(institutional) 37.1 ( research)] TJ ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"institutional research") == 0);
+        }
+    SECTION("Font Sized Through The Text Matrix Still Breaks Lines")
+        {
+        // A cover title in two lines, each selecting its font at size 1 and scaling
+        // it up through the text matrix. This is what Adobe products emit, so the
+        // font size operand doesn't describe the line height on its own. The two
+        // baselines sit 59 units apart, a full line at the 63-unit size the matrix
+        // scales the second one to, and belong on separate lines of the output.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+36 0 0 36 169.0891 727.92 Tm (A New Vision for) Tj
+63 0 0 63 56.7072 668.92 Tm (Institutional Research) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"A New Vision for\nInstitutional Research") == 0);
+        }
+    SECTION("Td To The Line's Hyphen Is Not A Word Gap")
+        {
+        // A justified paragraph, where the hyphen closing the line is placed by
+        // stepping out to the right margin and then stepping back for the next
+        // line. Td offsets are relative to the text line matrix, which the glyphs
+        // shown don't advance, so that step covers the width of the whole line
+        // rather than any gap. The hyphen belongs against the word it breaks, so
+        // that the line can be rejoined with the one under it.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+10.5 0 0 10.5 60 700 Tm
+(individuals throughout the institu) Tj
+16 0 Td
+(-) Tj
+-16 -1.19 Td
+(tion, understanding data) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"individuals throughout the institu-\ntion, understanding data") == 0);
+        }
+    SECTION("Font Sized Through The Text Matrix Still Joins Runs On One Line")
+        {
+        // The same size-1-scaled-through-the-matrix pattern, but with the two runs
+        // side by side on one baseline rather than stacked. A heading in faked small
+        // caps repositions the text once per letter, and those steps are far shorter
+        // than the gap that separates two independent runs, so the word stays whole.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+13 0 0 13 60 700 Tm (R) Tj
+9 0 0 9 68.5 700 Tm (ESEARCH) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"RESEARCH") == 0);
+        }
     SECTION("Bullet List Items")
         {
         const char* text = R"PDF(%PDF-1.4

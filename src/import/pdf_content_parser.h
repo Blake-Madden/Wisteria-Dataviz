@@ -122,9 +122,35 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static bool is_combining_mark(wchar_t character);
 
-        /// @returns The effective line height in text-space units.
+        /// @returns The effective line height in text-space units: the leading
+        ///     (TL), falling back to the font size when no leading was set.
         [[nodiscard]]
         double line_height() const;
+
+        /// @returns The effective line height in page-space units.
+        /// @details A minimum is applied so that the line-step threshold stays
+        ///     meaningful for a content stream that never sets a leading or a
+        ///     font size. That minimum belongs here rather than in
+        ///     line_height(). Generators often select a font at size 1 and
+        ///     scale it up through the text matrix. A minimum applied before
+        ///     that scaling would be multiplied by it. The threshold would then
+        ///     be far larger than the page's real line spacing, and every line
+        ///     break on the page would be lost.
+        [[nodiscard]]
+        double scaled_line_height() const;
+
+        /// @returns The page-space width of the text shown since the last move,
+        ///     estimated at a nominal half an em per character.
+        /// @details The pen isn't advanced for the glyphs that are shown, so a
+        ///     positioning operator that picks up where the last run left off
+        ///     reads as a jump covering everything already drawn on the line.
+        ///     Discounting that width is what leaves a jump's remainder as the
+        ///     real gap between two runs. The estimate is deliberately loose.
+        ///     It only has to keep a continuation from reading as a gap, and a
+        ///     true gap between two separately-placed runs is far wider than
+        ///     any error a half-em average introduces.
+        [[nodiscard]]
+        double shown_run_width() const;
 
         /// @brief Appends a line (or paragraph) break to the output.
         void add_newline(bool paragraphBreak);
@@ -154,7 +180,10 @@ namespace lily_of_the_valley
         void show_string(const std::string& stringBytes, const pdf_font_decoder* currentFont);
         /// @brief Decodes and appends a TJ array (strings mixed with kerning values).
         /// @details A kerning value's displayed width is scaled by the current
-        ///     horizontal scaling (Tz) before being checked against the word-gap threshold.
+        ///     horizontal scaling (Tz) before being checked against the word-gap
+        ///     threshold. A value past that threshold in the negative direction
+        ///     opens a gap wide enough to read as a space. One past it in the
+        ///     positive direction steps back over a space instead, hiding it.
         void show_array(std::string_view arrayValue, const pdf_font_decoder* currentFont);
 
         /// @brief Loads the resources (fonts and form XObjects) available
@@ -244,6 +273,9 @@ namespace lily_of_the_valley
         bool m_haveY{ false };         ///< Whether m_currentY has been initialized.
         bool m_atLineStart{ true };    ///< True when no glyphs emitted since the last newline.
         bool m_haveShownText{ false }; ///< Whether any glyph has been shown on this page yet.
+        /// Number of characters shown since the last positioning operator or line
+        /// break, used to estimate how far the pen has advanced along the line.
+        size_t m_shownSinceMove{ 0 };
         /// True between a `BT` operator and the first `Td`/`TD`/`Tm` after it (i.e.,
         /// while the text line matrix is still at its just-reset identity value).
         bool m_freshTextObject{ true };
