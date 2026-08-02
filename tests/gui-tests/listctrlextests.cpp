@@ -1252,7 +1252,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         CHECK(RemoveFontStyleSection(outputText) ==
               GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME</td></tr></thead>\n"
                                                   "    <tr><td>Text</td></tr>\n"
                                                   "    <tr><td>teXt2</td></tr>\n"
                                                   "    <tr><td>7</td></tr>\n"
@@ -1282,7 +1282,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         CHECK(RemoveFontStyleSection(outputText) ==
               GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME</td></tr></thead>\n"
                                                   "    <tr><td>teXt2</td></tr>\n"
                                                   "    <tr><td>text</td></tr>\n"
                                                   "    <tr><td>72</td></tr>\n"
@@ -1303,7 +1303,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         CHECK(RemoveFontStyleSection(outputText) ==
               GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME</td></tr></thead>\n"
                                                   "    <tr><td>Text</td></tr>\n"
                                                   "    <tr><td>tExt2</td></tr>\n"
                                                   "    <tr><td>text</td></tr>\n"
@@ -1317,7 +1317,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         CHECK(RemoveFontStyleSection(outputText) ==
               GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME</td></tr></thead>\n"
                                                   "    <tr><td>Text</td></tr>\n"
                                                   "    <tr><td>tExt2</td></tr>\n"
                                                   "    <tr><td>text</td></tr>\n"
@@ -1361,7 +1361,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
         CHECK(GetHtmlTableStyleBlock() +
                   wxString("\n<div class='list-table'>\n<table style=''>\n"
                            "    <thead><tr style='background:#337BC4; "
-                           "color:white;'><td>NAME</td><td>NAME2</td></tr></thead>\n"
+                           "color:#FFFFFF;'><td>NAME</td><td>NAME2</td></tr></thead>\n"
                            "    <tr><td>Text</td><td>2Text</td></tr>\n"
                            "    <tr><td>tExt2</td><td>2tExt2</td></tr>\n"
                            "    <tr><td>text</td><td>2text</td></tr>\n"
@@ -1376,7 +1376,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
                              0, 0, true);
         CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME</td></tr></thead>\n"
                                                   "    <tr><td>Text</td></tr>\n"
                                                   "    <tr><td>tExt2</td></tr>\n"
                                                   "    <tr><td>text</td></tr>\n"
@@ -1391,7 +1391,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
                              1, 1, true);
         CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME2</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME2</td></tr></thead>\n"
                                                   "    <tr><td>2Text</td></tr>\n"
                                                   "    <tr><td>2tExt2</td></tr>\n"
                                                   "    <tr><td>2text</td></tr>\n"
@@ -1439,7 +1439,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
                              -10, 0, true);
         CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME</td></tr></thead>\n"
                                                   "    <tr><td>Text</td></tr>\n"
                                                   "    <tr><td>tExt2</td></tr>\n"
                                                   "    <tr><td>text</td></tr>\n"
@@ -1458,7 +1458,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
                              1, -10, true);
         CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME2</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME2</td></tr></thead>\n"
                                                   "    <tr><td>2Text</td></tr>\n"
                                                   "    <tr><td>2tExt2</td></tr>\n"
                                                   "    <tr><td>2text</td></tr>\n"
@@ -1473,7 +1473,7 @@ TEST_CASE("ListCtrlEx Format", "[listctrlex]")
                              1, 10, true);
         CHECK(GetHtmlTableStyleBlock() + wxString("\n<div class='list-table'>\n<table style=''>\n"
                                                   "    <thead><tr style='background:#337BC4; "
-                                                  "color:white;'><td>NAME2</td></tr></thead>\n"
+                                                  "color:#FFFFFF;'><td>NAME2</td></tr></thead>\n"
                                                   "    <tr><td>2Text</td></tr>\n"
                                                   "    <tr><td>2tExt2</td></tr>\n"
                                                   "    <tr><td>2text</td></tr>\n"

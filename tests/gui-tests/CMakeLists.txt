@@ -96,6 +96,14 @@ target_include_directories(${TEST_APP} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/thirdparty/woff2/brotli/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/wxpdfdoc/src/crypto)
 
+if(WIN32 AND wxUSE_WEBVIEW_EDGE)
+    # The screenshot API calls ICoreWebView2::CapturePreview() directly, so it needs
+    # the WebView2 SDK headers. wxwebview adds them to itself as PRIVATE, so they
+    # don't propagate through wx::webview and have to be added here as well.
+    target_include_directories(${TEST_APP} PRIVATE
+        ${WEBVIEW2_PACKAGE_DIR}/build/native/include)
+endif()
+
 message(STATUS "Finding Catch2...")
 find_cmake_project_directory("Catch2" CATCH_DIR)
 # place Catch2 at the same folder level as this repo (or somewhere above it)
