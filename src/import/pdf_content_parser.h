@@ -139,16 +139,18 @@ namespace lily_of_the_valley
         [[nodiscard]]
         double scaled_line_height() const;
 
-        /// @returns The page-space width of the text shown since the last move,
-        ///     estimated at a nominal half an em per character.
+        /// @returns The page-space width of the text shown since the current run
+        ///     began, estimated at a nominal half an em per character.
         /// @details The pen isn't advanced for the glyphs that are shown, so a
-        ///     positioning operator that picks up where the last run left off
-        ///     reads as a jump covering everything already drawn on the line.
-        ///     Discounting that width is what leaves a jump's remainder as the
-        ///     real gap between two runs. The estimate is deliberately loose.
-        ///     It only has to keep a continuation from reading as a gap, and a
-        ///     true gap between two separately-placed runs is far wider than
-        ///     any error a half-em average introduces.
+        ///     positioning operator that picks up where the run left off reads as
+        ///     a jump covering everything already drawn in it. Discounting that
+        ///     width is what leaves a jump's remainder as the real gap between two
+        ///     runs. The width accumulates across any number of moves that only
+        ///     continue the run, and starts over at a line break or at a gap wide
+        ///     enough to begin a new run. The estimate is deliberately loose. It
+        ///     only has to keep a continuation from reading as a gap, and a true
+        ///     gap between two separately-placed runs is far wider than any error
+        ///     a half-em average introduces.
         [[nodiscard]]
         double shown_run_width() const;
 
@@ -273,9 +275,9 @@ namespace lily_of_the_valley
         bool m_haveY{ false };         ///< Whether m_currentY has been initialized.
         bool m_atLineStart{ true };    ///< True when no glyphs emitted since the last newline.
         bool m_haveShownText{ false }; ///< Whether any glyph has been shown on this page yet.
-        /// Number of characters shown since the last positioning operator or line
-        /// break, used to estimate how far the pen has advanced along the line.
-        size_t m_shownSinceMove{ 0 };
+        /// Number of characters shown since the current run began, used to estimate
+        /// how far the pen has advanced from the position that started it.
+        size_t m_shownInRun{ 0 };
         /// True between a `BT` operator and the first `Td`/`TD`/`Tm` after it (i.e.,
         /// while the text line matrix is still at its just-reset identity value).
         bool m_freshTextObject{ true };

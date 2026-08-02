@@ -648,6 +648,66 @@ endobj)PDF";
         CHECK(std::wcscmp(ext(text, std::strlen(text)),
                           L"individuals throughout the institu-\ntion, understanding data") == 0);
         }
+    SECTION("Tm Re-Anchored To The Left Margin Is Not A Word Gap")
+        {
+        // The other half of the same justified paragraph: rather than stepping on
+        // from where the line already is, the generator re-anchors at the left
+        // margin with a Tm and then steps back out to the pen with a Td. Neither
+        // half of that pair covers any real distance on the page, so the word the
+        // pair lands in the middle of stays whole. The width already drawn has to
+        // keep accumulating across the Tm for the Td after it to be measured right.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+10.5 0 0 10.5 79.236 494.8889 Tm
+(The CIRO is a leader of the institu) Tj
+10.5 0 0 10.5 70.5 494.8889 Tm
+16.468 0 Td
+(tional data governance strategy.) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"The CIRO is a leader of the institutional data governance strategy.") ==
+              0);
+        }
+    SECTION("A Run Gap Is Still Found After A Re-Anchored Line")
+        {
+        // The same re-anchoring, followed by a genuinely separate run further along
+        // the line (a right-aligned page number). The width discounted from a move
+        // is the width of the run being continued, so it stops accumulating once a
+        // move is wide enough to start a new run. Carrying it past that point would
+        // hide every gap that came after one of these paragraphs.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 1 Tf
+10.5 0 0 10.5 60 700 Tm
+(The office of institutional resear) Tj
+10.5 0 0 10.5 60 700 Tm
+17 0 Td
+(ch and analysts) Tj
+10.5 0 0 10.5 560 700 Tm
+(7) Tj
+ET
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)),
+                          L"The office of institutional research and analysts 7") == 0);
+        }
     SECTION("Font Sized Through The Text Matrix Still Joins Runs On One Line")
         {
         // The same size-1-scaled-through-the-matrix pattern, but with the two runs

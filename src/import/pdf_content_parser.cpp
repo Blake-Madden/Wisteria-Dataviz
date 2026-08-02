@@ -44,7 +44,7 @@ namespace lily_of_the_valley
         m_atLineStart = true;
         m_haveShownText = false;
         m_freshTextObject = true;
-        m_shownSinceMove = 0;
+        m_shownInRun = 0;
         m_matrixA = 1;
         m_matrixB = 0;
         m_matrixC = 0;
@@ -145,8 +145,7 @@ namespace lily_of_the_valley
     double pdf_content_parser::shown_run_width() const
         {
         constexpr double nominalCharacterWidth{ 0.5 };
-        return static_cast<double>(m_shownSinceMove) * nominalCharacterWidth * m_fontSize *
-               m_fontScale;
+        return static_cast<double>(m_shownInRun) * nominalCharacterWidth * m_fontSize * m_fontScale;
         }
 
     //------------------------------------------------------------------
@@ -169,7 +168,7 @@ namespace lily_of_the_valley
             m_text += L'\n';
             }
         m_atLineStart = true;
-        m_shownSinceMove = 0;
+        m_shownInRun = 0;
         }
 
     //------------------------------------------------------------------
@@ -186,7 +185,7 @@ namespace lily_of_the_valley
         {
         // the pen advances over every code in the run, including the ones
         // dropped below, so this is counted before any of them are filtered out
-        m_shownSinceMove += decodedText.length();
+        m_shownInRun += decodedText.length();
         for (const wchar_t curChar : decodedText)
             {
             wchar_t character{ curChar };
@@ -302,6 +301,7 @@ namespace lily_of_the_valley
             if (!wroteNewline)
                 {
                 add_space();
+                m_shownInRun = 0;
                 }
             return;
             }
@@ -352,16 +352,17 @@ namespace lily_of_the_valley
         // as several independent BT/Tm blocks (one per label) instead of one Tj/TJ
         // run. Without this check, such runs would be glued directly together.
         //
-        // The text drawn since the last move has to be discounted first. A move
-        // that resumes where the previous run ended covers that whole width, and
-        // reads as a gap otherwise. Justified paragraphs step that way to place the
-        // hyphen at the line's right edge, and to resume after a run set in a second
-        // font, each of which would take a space in the middle of a word.
+        // The text drawn on this line has to be discounted first. A move that
+        // resumes where the previous run ended covers that whole width, and reads
+        // as a gap otherwise. Justified paragraphs step that way to place the
+        // hyphen at the line's right edge, to resume after a run set in a second
+        // font, and to re-anchor at the left margin before stepping back out to
+        // the pen. Each of those would take a space in the middle of a word.
         else if (std::hypot(deltaX, deltaY) > (scaledLineHeight + shown_run_width()))
             {
             add_space();
+            m_shownInRun = 0;
             }
-        m_shownSinceMove = 0;
         m_currentX = newX;
         m_currentY = newY;
         return wroteNewline;
