@@ -107,9 +107,35 @@ namespace lily_of_the_valley
             size_t m_byte_length{ 1 };
             };
 
+        /// @returns The advance width of @p code (how far the pen moves after
+        ///     drawing it), as a fraction of the font size.
+        [[nodiscard]]
+        double get_width(const uint32_t code) const
+            {
+            const auto widthPos = m_widths.find(code);
+            return (widthPos != m_widths.cend()) ? widthPos->second : m_default_width;
+            }
+
+        /// @returns Whether the font states the advance widths of its glyphs, making
+        ///     get_width() a measurement rather than a nominal average.
+        [[nodiscard]]
+        bool has_widths() const noexcept
+            {
+            return !m_widths.empty();
+            }
+
         /// Character code -> Unicode mapping (from the font's ToUnicode CMap and/or
         /// its /Differences array).
         std::map<uint32_t, std::wstring> m_code_map;
+        /// Character code -> advance width, as a fraction of the font size. A font
+        /// states these in thousandths of an em (a simple font's /Widths array, a
+        /// composite font's /W array), which is divided out as they're loaded.
+        /// Empty for a font that states none.
+        std::map<uint32_t, double> m_widths;
+        /// The advance width for a code with no @c m_widths entry: the font's
+        /// /MissingWidth or /DW. For a font that states no widths at all, it stands
+        /// in for every code as a nominal average character width.
+        double m_default_width{ 0.5 };
         /// The codespace ranges declared by a composite font's ToUnicode CMap (if any);
         /// used to determine the byte length of each code when it varies across the
         /// string (e.g., a mix of 1-byte and 2-byte codes). Empty if the CMap declared
@@ -269,6 +295,18 @@ namespace lily_of_the_valley
         const std::vector<long>& get_scan_order() const noexcept;
 
       private:
+        /// @brief Loads a font's glyph advance widths into its decoder.
+        /// @details A simple font lists them in a /Widths array indexed from its
+        ///     /FirstChar, a composite font in its descendant's /W array keyed by
+        ///     CID. A code that neither covers falls back to /MissingWidth or /DW.
+        /// @param fontDictionary The font's raw dictionary value.
+        /// @param descendantFontDictionary The dictionary of a composite font's
+        ///     descendant, or empty for a simple font.
+        /// @param[in,out] decoder The decoder to load the widths into.
+        void load_font_widths(std::string_view fontDictionary,
+                              std::string_view descendantFontDictionary,
+                              pdf_font_decoder& decoder) const;
+
         /// @brief Decodes an ASCIIHexDecode filtered stream.
         [[nodiscard]]
         static std::string ascii_hex_decode(std::string_view data);

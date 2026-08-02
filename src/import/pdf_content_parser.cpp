@@ -41,10 +41,12 @@ namespace lily_of_the_valley
         m_fontScale = 1;
         m_leading = 0;
         m_horizScale = 100;
+        m_charSpacing = 0;
+        m_wordSpacing = 0;
         m_atLineStart = true;
         m_haveShownText = false;
         m_freshTextObject = true;
-        m_shownInRun = 0;
+        reset_shown_run();
         m_matrixA = 1;
         m_matrixB = 0;
         m_matrixC = 0;
@@ -142,10 +144,40 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    double pdf_content_parser::shown_run_width() const
+    double pdf_content_parser::scaled_text_width(const double textSpaceWidth) const
         {
-        constexpr double nominalCharacterWidth{ 0.5 };
-        return static_cast<double>(m_shownInRun) * nominalCharacterWidth * m_fontSize * m_fontScale;
+        return textSpaceWidth * m_fontScale * (m_horizScale / 100);
+        }
+
+    //------------------------------------------------------------------
+    double pdf_content_parser::word_gap_threshold() const
+        {
+        if (!m_shownRunMeasured)
+            {
+            return scaled_line_height();
+            }
+        constexpr double minimumWordGap{ 0.2 };
+        return std::max(scaled_text_width(minimumWordGap * m_fontSize), 1.0);
+        }
+
+    //------------------------------------------------------------------
+    double pdf_content_parser::shown_run_width() const { return m_shownRunWidth; }
+
+    //------------------------------------------------------------------
+    void pdf_content_parser::advance_shown_run(const double widthInTextSpace, const bool measured)
+        {
+        m_shownRunWidth += scaled_text_width(widthInTextSpace);
+        if (!measured)
+            {
+            m_shownRunMeasured = false;
+            }
+        }
+
+    //------------------------------------------------------------------
+    void pdf_content_parser::reset_shown_run()
+        {
+        m_shownRunWidth = 0;
+        m_shownRunMeasured = true;
         }
 
     //------------------------------------------------------------------
@@ -168,7 +200,7 @@ namespace lily_of_the_valley
             m_text += L'\n';
             }
         m_atLineStart = true;
-        m_shownInRun = 0;
+        reset_shown_run();
         }
 
     //------------------------------------------------------------------
@@ -183,9 +215,6 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void pdf_content_parser::add_text(const std::wstring& decodedText)
         {
-        // the pen advances over every code in the run, including the ones
-        // dropped below, so this is counted before any of them are filtered out
-        m_shownInRun += decodedText.length();
         for (const wchar_t curChar : decodedText)
             {
             wchar_t character{ curChar };
@@ -301,7 +330,7 @@ namespace lily_of_the_valley
             if (!wroteNewline)
                 {
                 add_space();
-                m_shownInRun = 0;
+                reset_shown_run();
                 }
             return;
             }
@@ -358,10 +387,10 @@ namespace lily_of_the_valley
         // hyphen at the line's right edge, to resume after a run set in a second
         // font, and to re-anchor at the left margin before stepping back out to
         // the pen. Each of those would take a space in the middle of a word.
-        else if (std::hypot(deltaX, deltaY) > (scaledLineHeight + shown_run_width()))
+        else if (std::hypot(deltaX, deltaY) > (word_gap_threshold() + shown_run_width()))
             {
             add_space();
-            m_shownInRun = 0;
+            reset_shown_run();
             }
         m_currentX = newX;
         m_currentY = newY;
@@ -384,6 +413,9 @@ namespace lily_of_the_valley
                                          const pdf_font_decoder* currentFont)
         {
         add_text(pdf_text_decoder::decode_string_bytes(stringBytes, currentFont));
+        advance_shown_run(pdf_text_decoder::string_width(stringBytes, currentFont, m_fontSize,
+                                                         m_charSpacing, m_wordSpacing),
+                          (currentFont != nullptr) && currentFont->has_widths());
         }
 
     //------------------------------------------------------------------
@@ -407,6 +439,9 @@ namespace lily_of_the_valley
                 cancelLeadingSpace = false;
                 }
             add_text(decoded);
+            advance_shown_run(pdf_text_decoder::string_width(runBytes, currentFont, m_fontSize,
+                                                             m_charSpacing, m_wordSpacing),
+                              (currentFont != nullptr) && currentFont->has_widths());
         };
 
         size_t pos{ 0 };
@@ -442,6 +477,8 @@ namespace lily_of_the_valley
                 // the adjustment is in unscaled text space, but Tz stretches or
                 // compresses how much actual displayed width it corresponds to
                 const double displayedAdjustment{ adjustment * (m_horizScale / 100) };
+                // a positive adjustment moves the pen back, a negative one forward
+                advance_shown_run((-adjustment / 1000) * m_fontSize, true);
                 if (displayedAdjustment < -150)
                     {
                     add_space();
@@ -777,8 +814,8 @@ namespace lily_of_the_valley
                     // Runs regardless of OCG visibility so the CTM and the save/restore
                     // balance stay correct across hidden content.
                     savedStates.push_back(graphics_state_snapshot{
-                        m_ctm, m_fontSize, m_fontScale, m_leading, m_horizScale,
-                        m_verticalWritingMode, currentFont });
+                        m_ctm, m_fontSize, m_fontScale, m_leading, m_horizScale, m_charSpacing,
+                        m_wordSpacing, m_verticalWritingMode, currentFont });
                     }
                 else if (keyword == "Q")
                     {
@@ -790,6 +827,8 @@ namespace lily_of_the_valley
                         m_fontScale = saved.m_fontScale;
                         m_leading = saved.m_leading;
                         m_horizScale = saved.m_horizScale;
+                        m_charSpacing = saved.m_charSpacing;
+                        m_wordSpacing = saved.m_wordSpacing;
                         m_verticalWritingMode = saved.m_verticalWritingMode;
                         currentFont = saved.m_font;
                         savedStates.pop_back();
@@ -848,6 +887,20 @@ namespace lily_of_the_valley
                         m_horizScale = numbers.back();
                         }
                     }
+                else if (keyword == "Tc")
+                    {
+                    if (!numbers.empty())
+                        {
+                        m_charSpacing = numbers.back();
+                        }
+                    }
+                else if (keyword == "Tw")
+                    {
+                    if (!numbers.empty())
+                        {
+                        m_wordSpacing = numbers.back();
+                        }
+                    }
                 else if (keyword == "Td" || keyword == "TD")
                     {
                     if (numbers.size() >= 2)
@@ -899,6 +952,13 @@ namespace lily_of_the_valley
                     }
                 else if (keyword == "'" || keyword == "\"")
                     {
+                    // the " form carries a word spacing and a character spacing
+                    // ahead of the string it shows
+                    if (keyword == "\"" && numbers.size() >= 2)
+                        {
+                        m_wordSpacing = numbers[numbers.size() - 2];
+                        m_charSpacing = numbers[numbers.size() - 1];
+                        }
                     handle_line_step();
                     if (havePendingString)
                         {

@@ -210,6 +210,24 @@ namespace lily_of_the_valley
         static std::wstring decode_string_bytes(const std::string& bytes,
                                                 const pdf_font_decoder* fontDecoder);
 
+        /// @brief Measures how far the pen advances while drawing a
+        ///     content-stream string.
+        /// @details The string is split into character codes the same way
+        ///     decode_string_bytes() splits it, and each code's width is taken
+        ///     from the font. The character spacing is added once per code, and
+        ///     the word spacing once per single-byte code 32, matching how a
+        ///     viewer advances the pen.
+        /// @param bytes The content-stream string's raw bytes.
+        /// @param fontDecoder The font decoder holding the widths, or null to
+        ///     measure at a nominal average character width.
+        /// @param fontSize The current font size (Tf).
+        /// @param charSpacing The current character spacing (Tc).
+        /// @param wordSpacing The current word spacing (Tw).
+        /// @returns The advance width, in text-space units.
+        [[nodiscard]]
+        static double string_width(const std::string& bytes, const pdf_font_decoder* fontDecoder,
+                                   double fontSize, double charSpacing, double wordSpacing);
+
       private:
         /// @brief Reads a big-endian @c uint16_t from TrueType binary data.
         /// @returns The value, or 0 if @p pos is out of range for @p data.

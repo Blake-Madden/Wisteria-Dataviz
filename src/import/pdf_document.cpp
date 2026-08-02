@@ -1228,7 +1228,114 @@ namespace lily_of_the_valley
                     }
                 }
             }
+
+        const pdf_object* widthsDescendantFont{ decoder->m_is_composite_font ?
+                                                    resolveDescendantFont() :
+                                                    nullptr };
+        load_font_widths(fontDictionary,
+                         (widthsDescendantFont != nullptr) ? widthsDescendantFont->m_dictionary :
+                                                             std::string_view{},
+                         *decoder);
         return decoder;
+        }
+
+    //------------------------------------------------------------------
+    void pdf_document::load_font_widths(const std::string_view fontDictionary,
+                                        const std::string_view descendantFontDictionary,
+                                        pdf_font_decoder& decoder) const
+        {
+        // a Type3 font's widths are in the glyph space its /FontMatrix defines,
+        // not thousandths of an em, so they aren't the same measure as the rest
+        if (pdf_lexer::trim(pdf_lexer::find_dictionary_value(fontDictionary, "Subtype")) ==
+            "/Type3")
+            {
+            return;
+            }
+        constexpr double unitsPerEm{ 1000.0 };
+        if (!descendantFontDictionary.empty())
+            {
+            const std::string_view defaultWidth{ pdf_lexer::trim(
+                resolve_value(pdf_lexer::find_dictionary_value(descendantFontDictionary, "DW"))) };
+            decoder.m_default_width =
+                defaultWidth.empty() ? 1.0 : (extract_text::to_double(defaultWidth) / unitsPerEm);
+            // /W entries take two shapes: a CID followed by an array of widths for
+            // consecutive CIDs, or a pair of CIDs followed by one width for every
+            // CID in that (inclusive) range
+            const std::vector<std::string_view> widthEntries{ pdf_lexer::read_array_elements(
+                pdf_lexer::trim(resolve_value(
+                    pdf_lexer::find_dictionary_value(descendantFontDictionary, "W")))) };
+            size_t entryIndex{ 0 };
+            while (entryIndex + 1 < widthEntries.size())
+                {
+                const auto firstCode{ static_cast<uint32_t>(
+                    extract_text::to_double(widthEntries[entryIndex])) };
+                const std::string_view nextEntry{ widthEntries[entryIndex + 1] };
+                if (!nextEntry.empty() && nextEntry.front() == '[')
+                    {
+                    uint32_t code{ firstCode };
+                    for (const auto& width : pdf_lexer::read_array_elements(nextEntry))
+                        {
+                        decoder.m_widths[code++] = extract_text::to_double(width) / unitsPerEm;
+                        }
+                    entryIndex += 2;
+                    continue;
+                    }
+                if (entryIndex + 2 >= widthEntries.size())
+                    {
+                    break;
+                    }
+                const auto lastCode{ static_cast<uint32_t>(
+                    extract_text::to_double(widthEntries[entryIndex + 1])) };
+                const double width{ extract_text::to_double(widthEntries[entryIndex + 2]) /
+                                    unitsPerEm };
+                // skip a malformed range that runs backwards or covers more codes
+                // than a 2-byte CID can address
+                if (lastCode >= firstCode && (lastCode - firstCode) <= 0xFFFF)
+                    {
+                    for (uint32_t code = firstCode; code <= lastCode; ++code)
+                        {
+                        decoder.m_widths[code] = width;
+                        }
+                    }
+                entryIndex += 3;
+                }
+            return;
+            }
+
+        const std::vector<std::string_view> widths{ pdf_lexer::read_array_elements(pdf_lexer::trim(
+            resolve_value(pdf_lexer::find_dictionary_value(fontDictionary, "Widths")))) };
+        if (widths.empty())
+            {
+            return;
+            }
+        long firstChar{ 0 };
+        if (!pdf_lexer::to_int(pdf_lexer::trim(resolve_value(
+                                   pdf_lexer::find_dictionary_value(fontDictionary, "FirstChar"))),
+                               firstChar) ||
+            firstChar < 0)
+            {
+            firstChar = 0;
+            }
+        auto code{ static_cast<uint32_t>(firstChar) };
+        for (const auto& width : widths)
+            {
+            decoder.m_widths[code++] = extract_text::to_double(width) / unitsPerEm;
+            }
+        // /MissingWidth covers the codes outside /Widths. Without one, those keep
+        // the nominal default rather than the zero the specification names, which
+        // would read as glyphs taking up no space.
+        const pdf_object* descriptorObject{ resolve_to_object(
+            pdf_lexer::find_dictionary_value(fontDictionary, "FontDescriptor")) };
+        if (descriptorObject != nullptr && !descriptorObject->m_dictionary.empty())
+            {
+            const std::string_view missingWidth{ pdf_lexer::trim(
+                resolve_value(pdf_lexer::find_dictionary_value(descriptorObject->m_dictionary,
+                                                               "MissingWidth"))) };
+            if (!missingWidth.empty())
+                {
+                decoder.m_default_width = extract_text::to_double(missingWidth) / unitsPerEm;
+                }
+            }
         }
 
     //------------------------------------------------------------------

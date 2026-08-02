@@ -789,6 +789,319 @@ endobj)PDF";
         pdf_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"RESEARCH") == 0);
         }
+    SECTION("Word Split Across Text Objects Rejoined At The Font's Widths")
+        {
+        // A tagged file draws each marked-content span as its own text object, so a
+        // Tm can land mid-word. The second Tm covers exactly the width the /Widths
+        // give the first run (a full em per glyph), so the word stays whole. The
+        // third is far past where the line's text ends, so it takes a space.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 1 0 0 1 72 700 Tm (data) Tj ET
+BT /F1 10 Tf 1 0 0 1 112 700 Tm (base) Tj ET
+BT /F1 10 Tf 1 0 0 1 400 700 Tm (7) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding
+/FirstChar 97 /LastChar 116
+/Widths [1000 1000 1000 1000 1000 1000 1000 1000 1000 1000
+         1000 1000 1000 1000 1000 1000 1000 1000 1000 1000] >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"database 7") == 0);
+        }
+    SECTION("Composite Font Widths From Its Descendant's W Array")
+        {
+        // The same word split, with the widths from a composite font's descendant.
+        // /W states them two ways: a CID followed by an array of widths for
+        // consecutive CIDs, and a pair of CIDs followed by one width for that
+        // range. Both are a full em here. /DW covers no CID this page draws.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 1 0 0 1 72 700 Tm <0001000200030002> Tj ET
+BT /F1 10 Tf 1 0 0 1 112 700 Tm <0004000200050006> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H
+/DescendantFonts [4 0 R] /ToUnicode 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /CIDFontType2 /DW 500 /W [1 [1000 1000 1000] 4 6 1000] >>
+endobj
+5 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+6 beginbfchar
+<0001> <0044>
+<0002> <0061>
+<0003> <0074>
+<0004> <0062>
+<0005> <0073>
+<0006> <0065>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Database") == 0);
+        }
+    SECTION("Words Drawn As Separate Text Objects Are Kept Apart")
+        {
+        // Every word is its own text object, positioned by a Tm. Each glyph is
+        // half an em wide, so "A" ends at 77 and "list" at 101, leaving a gap of
+        // a fifth of an em ahead of the next word. /MissingWidth covers the codes
+        // outside the one-entry /Widths array.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 1 0 0 1 72 700 Tm (A) Tj ET
+BT /F1 10 Tf 1 0 0 1 81 700 Tm (list) Tj ET
+BT /F1 10 Tf 1 0 0 1 110 700 Tm (of) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding
+/FirstChar 65 /LastChar 65 /Widths [500] /FontDescriptor 4 0 R >>
+endobj
+4 0 obj
+<< /Type /FontDescriptor /FontName /Test /MissingWidth 500 >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"A list of") == 0);
+        }
+    SECTION("Character Spacing Counts Toward A Run's Advance")
+        {
+        // The Tc of 2 widens each glyph's advance from 5 to 7, so "data" ends at
+        // 100, exactly where the next text object resumes. Overlooking the
+        // spacing would read that as a gap and split the word.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 2 Tc 1 0 0 1 72 700 Tm (data) Tj ET
+BT /F1 10 Tf 2 Tc 1 0 0 1 100 700 Tm (base) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding
+/FirstChar 97 /LastChar 97 /Widths [500] /FontDescriptor 4 0 R >>
+endobj
+4 0 obj
+<< /Type /FontDescriptor /FontName /Test /MissingWidth 500 >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"database") == 0);
+        }
+    SECTION("Quote Operator Sets The Word And Character Spacing")
+        {
+        // The " operator's operands are a word spacing then a character spacing.
+        // Reading them the other way around measures this run 10 units short,
+        // which would read as a gap ahead of the run that resumes at the pen.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 72 700 Tm
+1 6 (a b) "
+1 0 0 1 106 700 Tm
+(c)Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding
+/FirstChar 97 /LastChar 97 /Widths [500] /FontDescriptor 4 0 R >>
+endobj
+4 0 obj
+<< /Type /FontDescriptor /FontName /Test /MissingWidth 500 >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"a bc") == 0);
+        }
+    SECTION("Word Spacing Skips A Multi-Byte Code")
+        {
+        // Word spacing applies to the single-byte code 32, so the two-byte CID 32
+        // this composite font draws doesn't take it. The spacing is far wider than
+        // the gap that follows the run, so charging it would swallow that gap.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 100 Tw 1 0 0 1 72 700 Tm <00010020> Tj
+1 0 0 1 122 700 Tm <0003> Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type0 /Encoding /Identity-H
+/DescendantFonts [4 0 R] /ToUnicode 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /CIDFontType2 /DW 1000 /W [1 [500] 3 [500] 32 [500]] >>
+endobj
+5 0 obj
+<< >>
+stream
+begincmap
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+3 beginbfchar
+<0001> <0041>
+<0003> <0043>
+<0020> <0042>
+endbfchar
+endcmap
+endstream
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"AB C") == 0);
+        }
+    SECTION("q/Q Restore Character Spacing")
+        {
+        // The spacing is part of the graphics state, so the 0 Tc inside the q/Q
+        // pair is undone by the Q and the run after it is measured at the outer
+        // spacing of 6. Measured at 0 instead, the run falls 12 units short of
+        // where the next one starts and the word splits.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+6 Tc
+q
+0 Tc
+Q
+BT
+/F1 10 Tf
+1 0 0 1 72 700 Tm
+(ab)Tj
+1 0 0 1 94 700 Tm
+(cd)Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding
+/FirstChar 97 /LastChar 97 /Widths [500] /FontDescriptor 4 0 R >>
+endobj
+4 0 obj
+<< /Type /FontDescriptor /FontName /Test /MissingWidth 500 >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"abcd") == 0);
+        }
+    SECTION("Type3 Font Widths Are Not Read As Thousandths Of An Em")
+        {
+        // A Type3 font states its widths in the glyph space its /FontMatrix
+        // defines, where 100 is a whole em rather than a tenth of one. Those
+        // widths are left alone, so the font measures at the nominal average and
+        // keeps the wider threshold. Taken as thousandths, the run would measure
+        // a tenth of its real width and the word would split.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 1 0 0 1 72 700 Tm (ab) Tj 1 0 0 1 90 700 Tm (cd) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type3 /Encoding /WinAnsiEncoding
+/FontBBox [0 0 100 100] /FontMatrix [0.01 0 0 0.01 0 0] /CharProcs << >>
+/FirstChar 97 /LastChar 98 /Widths [100 100] >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"abcd") == 0);
+        }
+    SECTION("List Number Re-Anchored At Its Tab Stop")
+        {
+        // One text object, with the number and its text drawn by two Tj runs. The
+        // second re-anchors at the list's tab stop rather than resuming at the pen,
+        // and the gap it leaves is a fraction of the line height.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT
+/F1 9.5 Tf
+1 0 0 1 63 608.045 Tm
+(1.)Tj
+1 0 0 1 77.173 608.045 Tm
+(Open the data set)Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding
+/FirstChar 49 /LastChar 49 /Widths [500] /FontDescriptor 4 0 R >>
+endobj
+4 0 obj
+<< /Type /FontDescriptor /FontName /Test /MissingWidth 500 >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"1. Open the data set") == 0);
+        }
+    SECTION("Font Stating No Widths Keeps The Wider Word-Gap Threshold")
+        {
+        // The font states no widths, so the run is measured at a nominal average
+        // character width. That nominal lands 3 units short of where the second run
+        // starts, which a word-space-sized threshold would read as a gap. The
+        // threshold stays a line height wide for a run measured that way, so the
+        // two halves of the word still join.
+        const char* text = R"PDF(%PDF-1.4
+1 0 obj
+<< /Type /Page /Contents 2 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+2 0 obj
+<< >>
+stream
+BT /F1 10 Tf 1 0 0 1 72 400 Tm (Wo) Tj 1 0 0 1 85 400 Tm (rd) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Font /Subtype /TrueType /Encoding /WinAnsiEncoding >>
+endobj)PDF";
+        pdf_extract_text ext;
+        CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Word") == 0);
+        }
     SECTION("Bullet List Items")
         {
         const char* text = R"PDF(%PDF-1.4

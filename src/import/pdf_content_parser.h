@@ -139,20 +139,43 @@ namespace lily_of_the_valley
         [[nodiscard]]
         double scaled_line_height() const;
 
+        /// @returns @p textSpaceWidth expressed in page-space units, through the
+        ///     text matrix's scale and the horizontal scaling (Tz).
+        [[nodiscard]]
+        double scaled_text_width(double textSpaceWidth) const;
+
+        /// @returns The page-space width a gap has to reach, once the text already
+        ///     drawn is discounted, for the runs it separates to read as separate
+        ///     words.
+        /// @details A word space is around a quarter of an em in most fonts, and
+        ///     the gap between letters of one word is far less. A run measured at a
+        ///     nominal average character width instead of the font's own is only
+        ///     good to within a few characters, so the threshold widens to a line
+        ///     height there.
+        [[nodiscard]]
+        double word_gap_threshold() const;
+
         /// @returns The page-space width of the text shown since the current run
-        ///     began, estimated at a nominal half an em per character.
+        ///     began, from the glyph advance widths the fonts declare.
         /// @details The pen isn't advanced for the glyphs that are shown, so a
         ///     positioning operator that picks up where the run left off reads as
         ///     a jump covering everything already drawn in it. Discounting that
         ///     width is what leaves a jump's remainder as the real gap between two
         ///     runs. The width accumulates across any number of moves that only
         ///     continue the run, and starts over at a line break or at a gap wide
-        ///     enough to begin a new run. The estimate is deliberately loose. It
-        ///     only has to keep a continuation from reading as a gap, and a true
-        ///     gap between two separately-placed runs is far wider than any error
-        ///     a half-em average introduces.
+        ///     enough to begin a new run.
         [[nodiscard]]
         double shown_run_width() const;
+
+        /// @brief Adds a shown run's advance to the width tracked by
+        ///     shown_run_width(), scaling it from text space into page space.
+        /// @param widthInTextSpace The advance, in text-space units.
+        /// @param measured Whether that advance came from the font's own widths
+        ///     rather than a nominal average character width.
+        void advance_shown_run(double widthInTextSpace, bool measured);
+
+        /// @brief Starts a new run, discarding the width tracked by shown_run_width().
+        void reset_shown_run();
 
         /// @brief Appends a line (or paragraph) break to the output.
         void add_newline(bool paragraphBreak);
@@ -246,6 +269,8 @@ namespace lily_of_the_valley
             double m_fontScale{ 1 };
             double m_leading{ 0 };
             double m_horizScale{ 100 };
+            double m_charSpacing{ 0 };
+            double m_wordSpacing{ 0 };
             bool m_verticalWritingMode{ false };
             const pdf_font_decoder* m_font{ nullptr };
             };
@@ -277,14 +302,21 @@ namespace lily_of_the_valley
         /// (its /Encoding is one of Adobe's predefined "-V" CMaps), so a line step is
         /// a horizontal move across columns rather than a vertical move down the page.
         bool m_verticalWritingMode{ false };
-        double m_leading{ 0 };         ///< Current leading (line spacing, from TL).
-        double m_horizScale{ 100 };    ///< Current horizontal scaling percent (from Tz).
+        double m_leading{ 0 };      ///< Current leading (line spacing, from TL).
+        double m_horizScale{ 100 }; ///< Current horizontal scaling percent (from Tz).
+        /// Current character spacing (from Tc), added to every glyph's advance.
+        double m_charSpacing{ 0 };
+        /// Current word spacing (from Tw), added to the advance of the single-byte code 32.
+        double m_wordSpacing{ 0 };
         bool m_haveY{ false };         ///< Whether m_currentY has been initialized.
         bool m_atLineStart{ true };    ///< True when no glyphs emitted since the last newline.
         bool m_haveShownText{ false }; ///< Whether any glyph has been shown on this page yet.
-        /// Number of characters shown since the current run began, used to estimate
+        /// Page-space width of the text shown since the current run began, which is
         /// how far the pen has advanced from the position that started it.
-        size_t m_shownInRun{ 0 };
+        double m_shownRunWidth{ 0 };
+        /// Whether every glyph in the current run was measured at the width its font
+        /// states, rather than at a nominal average for a font that states none.
+        bool m_shownRunMeasured{ true };
         /// True between a `BT` operator and the first `Td`/`TD`/`Tm` after it (i.e.,
         /// while the text line matrix is still at its just-reset identity value).
         bool m_freshTextObject{ true };

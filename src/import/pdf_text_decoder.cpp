@@ -1116,6 +1116,40 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    double pdf_text_decoder::string_width(const std::string& bytes,
+                                          const pdf_font_decoder* fontDecoder,
+                                          const double fontSize, const double charSpacing,
+                                          const double wordSpacing)
+        {
+        if (fontDecoder == nullptr)
+            {
+            constexpr double nominalCharacterWidth{ 0.5 };
+            return static_cast<double>(bytes.length()) *
+                   ((nominalCharacterWidth * fontSize) + charSpacing);
+            }
+        double totalWidth{ 0 };
+        size_t i{ 0 };
+        while (i < bytes.length())
+            {
+            const size_t codeSize{ pdf_text_decoder::determine_code_length(bytes, i, fontDecoder) };
+            uint32_t code{ 0 };
+            for (size_t byteIndex = 0; byteIndex < codeSize; ++byteIndex)
+                {
+                code = (code << 8) | static_cast<unsigned char>(bytes[i + byteIndex]);
+                }
+            totalWidth += (fontDecoder->get_width(code) * fontSize) + charSpacing;
+            // word spacing applies to the single-byte code 32, so a multi-byte
+            // code that happens to contain that byte doesn't take it
+            if (codeSize == 1 && code == 32)
+                {
+                totalWidth += wordSpacing;
+                }
+            i += codeSize;
+            }
+        return totalWidth;
+        }
+
+    //------------------------------------------------------------------
     std::wstring pdf_text_decoder::decode_string_bytes(const std::string& bytes,
                                                        const pdf_font_decoder* fontDecoder)
         {
