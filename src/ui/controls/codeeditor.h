@@ -18,6 +18,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <wx/dnd.h>
 #include <wx/fdrepdlg.h>
 #include <wx/settings.h>
 #include <wx/stc/stc.h>
@@ -270,6 +271,20 @@ namespace Wisteria::UI
         constexpr static int EXECUTION_MARKER_NUM = 2;
 
       private:
+        /// @brief Drop target that inserts dropped filepaths into the editor as quoted strings.
+        class CodeEditorDropTarget final : public wxFileDropTarget
+            {
+          public:
+            /// @private
+            explicit CodeEditorDropTarget(CodeEditor* editor) noexcept : m_editor(editor) {}
+
+            /// @private
+            bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) final;
+
+          private:
+            CodeEditor* m_editor{ nullptr };
+            };
+
         struct wxStringCmpNoCase
             {
             [[nodiscard]]
@@ -306,6 +321,13 @@ namespace Wisteria::UI
         void OnAutoCompletionSelected(const wxStyledTextEvent& event);
         void OnKeyDownEvt(wxKeyEvent& event);
         void OnSysColourChanged(wxSysColourChangedEvent& event);
+        void OnUpdateUI(wxStyledTextEvent& event);
+
+        [[nodiscard]]
+        static bool IsBrace(wchar_t ch) noexcept
+            {
+            return ch == L'(' || ch == L')' || ch == L'[' || ch == L']' || ch == L'{' || ch == L'}';
+            }
 
         void ResetActiveFunctionMap() noexcept { m_activeFunctionsAndSignaturesMap = nullptr; }
 

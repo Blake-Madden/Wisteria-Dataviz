@@ -16,41 +16,28 @@
 
 namespace Wisteria::UI
     {
-    namespace
-        {
-        /// @brief Drops files into the editor as quoted file paths.
-        class CodeEditorDropTarget : public wxFileDropTarget
-            {
-          public:
-            /// @private
-            explicit CodeEditorDropTarget(CodeEditor* editor) : m_editor(editor) {}
-
-            /// @private
-            bool OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames) final
-                {
-                if (m_editor == nullptr)
-                    {
-                    return;
-                    }
-                for (const auto& file : filenames)
-                    {
-                    m_editor->AddText(L"\"" + file + L"\"");
-                    }
-                return true;
-                }
-
-          private:
-            CodeEditor* m_editor{ nullptr };
-            };
-        } // namespace
-
     wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 
         //-------------------------------------------------------------
-        CodeEditor::CodeEditor(wxWindow* parent, const int lang, wxWindowID id /*=wxID_ANY*/,
-                               const wxPoint& pos /*=wxDefaultPosition*/,
-                               const wxSize& size /*=wxDefaultSize*/, long style /*=0*/,
-                               const wxString& name /*"CodeEditor"*/)
+        bool CodeEditor::CodeEditorDropTarget::OnDropFiles(wxCoord, wxCoord,
+                                                           const wxArrayString& filenames)
+        {
+        if (m_editor == nullptr)
+            {
+            return false;
+            }
+        for (const auto& file : filenames)
+            {
+            m_editor->AddText(L"\"" + file + L"\"");
+            }
+        return true;
+        }
+
+    //-------------------------------------------------------------
+    CodeEditor::CodeEditor(wxWindow* parent, const int lang, wxWindowID id /*=wxID_ANY*/,
+                           const wxPoint& pos /*=wxDefaultPosition*/,
+                           const wxSize& size /*=wxDefaultSize*/, long style /*=0*/,
+                           const wxString& name /*"CodeEditor"*/)
         : wxStyledTextCtrl(parent, id, pos, size, style, name)
         {
         StyleClearAll();
@@ -94,6 +81,8 @@ namespace Wisteria::UI
         // turn off tabs
         SetUseTabs(false);
         SetTabWidth(4);
+        // indentation guides
+        SetIndentationGuides(wxSTC_IV_LOOKBOTH);
         // enable auto-completion
         AutoCompSetIgnoreCase(true);
         AutoCompSetAutoHide(true);
@@ -112,6 +101,7 @@ namespace Wisteria::UI
         Bind(wxEVT_STC_MARGINCLICK, &CodeEditor::OnMarginClick, this, wxID_ANY);
         Bind(wxEVT_STC_CHARADDED, &CodeEditor::OnCharAdded, this, wxID_ANY);
         Bind(wxEVT_STC_AUTOCOMP_SELECTION, &CodeEditor::OnAutoCompletionSelected, this, wxID_ANY);
+        Bind(wxEVT_STC_UPDATEUI, &CodeEditor::OnUpdateUI, this, wxID_ANY);
         Bind(wxEVT_SYS_COLOUR_CHANGED, &CodeEditor::OnSysColourChanged, this);
 
         SetDropTarget(new CodeEditorDropTarget(this));
@@ -140,6 +130,24 @@ namespace Wisteria::UI
         StyleSetForeground(wxSTC_STYLE_LINENUMBER, foreground);
         SetFoldMarginColour(true, background);
         SetFoldMarginHiColour(true, background);
+
+        StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, background);
+        StyleSetForeground(
+            wxSTC_STYLE_INDENTGUIDE,
+            wxSystemSettings::SelectLightDark(wxColour{ 200, 200, 200 }, wxColour{ 80, 80, 80 }));
+
+        // matching braces get a tinted background box, independent of the lexer's own coloring
+        StyleSetBackground(
+            wxSTC_STYLE_BRACELIGHT,
+            wxSystemSettings::SelectLightDark(wxColour{ 210, 230, 255 }, wxColour{ 40, 70, 110 }));
+        StyleSetForeground(wxSTC_STYLE_BRACELIGHT, foreground);
+        StyleSetBold(wxSTC_STYLE_BRACELIGHT, true);
+        // unmatched (bad) brace: red-tinted background box
+        StyleSetBackground(
+            wxSTC_STYLE_BRACEBAD,
+            wxSystemSettings::SelectLightDark(wxColour{ 255, 210, 210 }, wxColour{ 110, 40, 40 }));
+        StyleSetForeground(wxSTC_STYLE_BRACEBAD, foreground);
+        StyleSetBold(wxSTC_STYLE_BRACEBAD, true);
 
         for (int i = wxSTC_LUA_DEFAULT; i <= wxSTC_LUA_LABEL; ++i)
             {
@@ -565,6 +573,42 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------------------------
+    void CodeEditor::OnUpdateUI(wxStyledTextEvent& event)
+        {
+        const auto currentPos{ GetCurrentPos() };
+
+        int braceAtCaret{ wxSTC_INVALID_POSITION };
+        if (currentPos > 0 && IsBrace(static_cast<wchar_t>(GetCharAt(currentPos - 1))))
+            {
+            braceAtCaret = currentPos - 1;
+            }
+        if (braceAtCaret == wxSTC_INVALID_POSITION &&
+            IsBrace(static_cast<wchar_t>(GetCharAt(currentPos))))
+            {
+            braceAtCaret = currentPos;
+            }
+
+        if (braceAtCaret == wxSTC_INVALID_POSITION)
+            {
+            BraceHighlight(wxSTC_INVALID_POSITION, wxSTC_INVALID_POSITION);
+            }
+        else
+            {
+            const auto braceOpposite{ BraceMatch(braceAtCaret) };
+            if (braceOpposite == wxSTC_INVALID_POSITION)
+                {
+                BraceBadLight(braceAtCaret);
+                }
+            else
+                {
+                BraceHighlight(braceAtCaret, braceOpposite);
+                }
+            }
+
+        event.Skip();
+        }
+
+    //-------------------------------------------------------------
     void CodeEditor::OnMarginClick(const wxStyledTextEvent& event)
         {
         const int lineClick = LineFromPosition(event.GetPosition());
@@ -741,6 +785,48 @@ namespace Wisteria::UI
                 }
             return false;
         };
+
+        // whether a (trimmed) line ends with a token that opens a new indented block:
+        // a dangling, unmatched bracket (e.g. a call's argument list continuing onto
+        // the next line), or a language keyword that starts a block body
+        const auto endsWithBlockOpener = [this](const wxString& lineTrimmed)
+        {
+            if (lineTrimmed.EndsWith(L"(") || lineTrimmed.EndsWith(L"[") ||
+                lineTrimmed.EndsWith(L"{"))
+                {
+                return true;
+                }
+            if (wxSTC_LEX_LUA == m_lexer)
+                {
+                return lineTrimmed.EndsWith(L"then") || lineTrimmed.EndsWith(L"do") ||
+                       lineTrimmed.EndsWith(L"else") || lineTrimmed.EndsWith(L"repeat");
+                }
+            return false;
+        };
+
+        if (event.GetKey() == L'\r' || event.GetKey() == L'\n')
+            {
+            const int currentLine = GetCurrentLine();
+            if (currentLine > 0)
+                {
+                const wxString prevLineTrimmed{ GetLine(currentLine - 1).Trim(true).Trim(false) };
+                int newIndent = GetLineIndentation(currentLine - 1);
+                // a line continuing an argument/element list (ending in a comma)
+                // simply repeats the previous line's indentation, since that line
+                // is already correctly positioned
+                if (endsWithBlockOpener(prevLineTrimmed))
+                    {
+                    newIndent += GetTabWidth();
+                    }
+                if (newIndent > 0)
+                    {
+                    SetLineIndentation(currentLine, newIndent);
+                    GotoPos(GetLineIndentPosition(currentLine));
+                    }
+                }
+            event.Skip();
+            return;
+            }
 
         if (isInLineComment())
             {
