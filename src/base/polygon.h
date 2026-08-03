@@ -347,6 +347,15 @@ namespace Wisteria::GraphItems
             @warning It is assumed that there are four elements in @p points.*/
         [[nodiscard]]
         static wxRect GetRectFromPoints(const wxPoint* points);
+        /** @brief Builds a rectangle path for the glassy effect's shine overlay,
+                rounding only the corners shared with the box.
+            @param path The path to add the rectangle outline to.
+            @param rect The overlay's rectangle.
+            @param radius The corner radius (matching the box's own rounded corners).
+            @param isVertical @c true if the overlay is a horizontal band across the
+                top of the box, @c false if it is a vertical band down the left side.*/
+        static void AddGlassyOverlayPath(wxGraphicsPath& path, const wxRect& rect, double radius,
+                                         bool isVertical);
         void UpdatePointPositions();
         std::vector<wxPoint> m_points;
         // secondary cache used for actual (i.e., scaled) bounding box

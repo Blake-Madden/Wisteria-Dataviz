@@ -568,6 +568,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                       // leave this as std::nullopt to not create grouped boxes
                       _DT(L"class"));
 
+        plot->SetBoxEffect(Wisteria::BoxEffect::Glassy);
+
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
         // bee-swarm jittered to visualize the distribution.

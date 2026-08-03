@@ -302,7 +302,7 @@ namespace Wisteria::Graphs
 
             uint8_t m_opacity{ wxALPHA_OPAQUE };
             BoxEffect m_boxEffect{ BoxEffect::Solid };
-            BoxCorners m_boxCorners{ BoxCorners::Straight };
+            BoxCorners m_boxCorners{ BoxCorners::Rounded };
 
             std::shared_ptr<const Data::Dataset> m_data{ nullptr };
             wxString m_continuousColumnName;
@@ -636,7 +636,7 @@ namespace Wisteria::Graphs
         BoxEffect m_boxEffect{ BoxEffect::Solid };
 
         wxColour m_pointColour{ Colors::ColorBrewer::GetColor(Colors::Color::CelestialBlue) };
-        BoxCorners m_boxCorners{ BoxCorners::Straight };
+        BoxCorners m_boxCorners{ BoxCorners::Rounded };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };
         bool m_showMidpointConnection{ true };

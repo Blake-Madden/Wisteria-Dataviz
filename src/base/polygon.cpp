@@ -12,6 +12,34 @@
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
+    void Polygon::AddGlassyOverlayPath(wxGraphicsPath& path, const wxRect& rect,
+                                       const double radius, const bool isVertical)
+        {
+        const double left{ static_cast<double>(rect.GetX()) };
+        const double top{ static_cast<double>(rect.GetY()) };
+        const double right{ left + rect.GetWidth() };
+        const double bottom{ top + rect.GetHeight() };
+        const double topRightRadius{ isVertical ? radius : 0 };
+        const double bottomLeftRadius{ isVertical ? 0 : radius };
+
+        path.MoveToPoint(left + radius, top);
+        path.AddLineToPoint(right - topRightRadius, top);
+        if (topRightRadius > 0)
+            {
+            path.AddArcToPoint(right, top, right, top + topRightRadius, topRightRadius);
+            }
+        path.AddLineToPoint(right, bottom);
+        path.AddLineToPoint(left + bottomLeftRadius, bottom);
+        if (bottomLeftRadius > 0)
+            {
+            path.AddArcToPoint(left, bottom, left, bottom - bottomLeftRadius, bottomLeftRadius);
+            }
+        path.AddLineToPoint(left, top + radius);
+        path.AddArcToPoint(left, top, left + radius, top, radius);
+        path.CloseSubpath();
+        }
+
+    //-------------------------------------------
     void Polygon::SetPoints(const wxPoint* polygon, const size_t N)
         {
         if (N > 0)
@@ -215,20 +243,67 @@ namespace Wisteria::GraphItems
                     const bool isVertical =
                         (GetBackgroundFill().GetDirection() == FillDirection::South ||
                          GetBackgroundFill().GetDirection() == FillDirection::North);
-                    // fill with the color
-                    dc.GradientFillLinear(theRect, GetBackgroundFill().GetColor1(),
-                                          GetBackgroundFill().GetColor1().ChangeLightness(140),
-                                          isVertical ? wxSOUTH : wxEAST);
-                    // create a shiny overlay
-                    dc.GradientFillLinear(
-                        wxRect(theRect.GetX(), theRect.GetY(),
-                               isVertical ? theRect.GetWidth() :
-                                            theRect.GetWidth() * math_constants::quarter,
-                               isVertical ? theRect.GetHeight() * math_constants::quarter :
-                                            theRect.GetHeight()),
-                        GetBackgroundFill().GetColor1().ChangeLightness(115),
-                        GetBackgroundFill().GetColor1().ChangeLightness(155),
-                        isVertical ? wxSOUTH : wxEAST);
+                    const wxRect overlayRect(
+                        theRect.GetX(), theRect.GetY(),
+                        isVertical ? theRect.GetWidth() :
+                                     theRect.GetWidth() * math_constants::quarter,
+                        isVertical ? theRect.GetHeight() * math_constants::quarter :
+                                     theRect.GetHeight());
+
+                    const auto drawWithSquareCorners = [&]()
+                    {
+                        // fill with the color
+                        dc.GradientFillLinear(theRect, GetBackgroundFill().GetColor1(),
+                                              GetBackgroundFill().GetColor1().ChangeLightness(120),
+                                              isVertical ? wxSOUTH : wxEAST);
+                        // create a shiny overlay
+                        dc.GradientFillLinear(overlayRect,
+                                              GetBackgroundFill().GetColor1().ChangeLightness(108),
+                                              GetBackgroundFill().GetColor1().ChangeLightness(128),
+                                              isVertical ? wxSOUTH : wxEAST);
+                    };
+
+                    if (GetBoxCorners() == BoxCorners::Rounded)
+                        {
+                        const GraphicsContextFallback gcf{ &dc, theRect };
+                        auto* gc = gcf.GetGraphicsContext();
+                        wxASSERT_MSG(gc, L"Failed to get graphics context for glassy effect!");
+                        if (gc != nullptr)
+                            {
+                            const double radius{ Settings::GetBoxRoundedCornerRadius() };
+
+                            // base fill, rounded on all four corners
+                            gc->SetPen(*wxTRANSPARENT_PEN);
+                            gc->SetBrush(gc->CreateLinearGradientBrush(
+                                theRect.GetLeft(), theRect.GetTop(),
+                                isVertical ? theRect.GetLeft() : theRect.GetRight(),
+                                isVertical ? theRect.GetBottom() : theRect.GetTop(),
+                                GetBackgroundFill().GetColor1(),
+                                GetBackgroundFill().GetColor1().ChangeLightness(120)));
+                            gc->DrawRoundedRectangle(theRect.GetX(), theRect.GetY(),
+                                                     theRect.GetWidth(), theRect.GetHeight(),
+                                                     radius);
+
+                            // shiny overlay; only round the corners it shares with the box
+                            auto overlayPath = gc->CreatePath();
+                            AddGlassyOverlayPath(overlayPath, overlayRect, radius, isVertical);
+                            gc->SetBrush(gc->CreateLinearGradientBrush(
+                                overlayRect.GetLeft(), overlayRect.GetTop(),
+                                isVertical ? overlayRect.GetLeft() : overlayRect.GetRight(),
+                                isVertical ? overlayRect.GetBottom() : overlayRect.GetTop(),
+                                GetBackgroundFill().GetColor1().ChangeLightness(108),
+                                GetBackgroundFill().GetColor1().ChangeLightness(128)));
+                            gc->FillPath(overlayPath);
+                            }
+                        else
+                            {
+                            drawWithSquareCorners();
+                            }
+                        }
+                    else
+                        {
+                        drawWithSquareCorners();
+                        }
                     }
                 // a spline doesn't use a fill color, so just draw it
                 else if (GetShape() == PolygonShape::Spline && m_scaledPoints.size() >= 2)
