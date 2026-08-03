@@ -107,6 +107,7 @@ namespace lily_of_the_valley
             size_t m_byte_length{ 1 };
             };
 
+        /// @param code The character code whose advance width is being requested.
         /// @returns The advance width of @p code (how far the pen moves after
         ///     drawing it), as a fraction of the font size.
         [[nodiscard]]

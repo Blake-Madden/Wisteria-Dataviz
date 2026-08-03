@@ -557,4 +557,6 @@ namespace lily_of_the_valley
 
     } // namespace lily_of_the_valley
 
+/** @}*/
+
 #endif // PDF_EXTRACT_TEXT_H
