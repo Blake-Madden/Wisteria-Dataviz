@@ -98,7 +98,7 @@ wxString FilePathResolverBase::ResolvePath(
         // if not found, see if it might be file inside an archive or a cell in a spreadsheet.
         // a heuristic check to see if it at least is a real file path will then will use the
         // special file type that we determine here.
-        const wxRegEx excelRegEx(L"[.](xlsx|zip)#", wxRE_ICASE);
+        const wxRegEx excelRegEx(L"[.](xlsx|ods|zip)#", wxRE_ICASE);
         if (excelRegEx.Matches(GetResolvedPath()))
             {
             size_t start(0), len(0);
@@ -108,6 +108,10 @@ wxString FilePathResolverBase::ResolvePath(
                 if (extMatch.CmpNoCase(_DT(L".xlsx#")) == 0)
                     {
                     specificLocalType = FilePathType::ExcelCell;
+                    }
+                else if (extMatch.CmpNoCase(_DT(L".ods#")) == 0)
+                    {
+                    specificLocalType = FilePathType::OdsCell;
                     }
                 else if (extMatch.CmpNoCase(_DT(L".zip#")) == 0)
                     {
@@ -247,8 +251,9 @@ wxString ParseTitleFromFileName(wxString filename)
         }
     const FilePathResolverBase resolvePath(filename);
     filename = resolvePath.GetResolvedPath();
-    // paths to worksheet/cell inside Excel file should keep the spreadsheet file extension
-    if (resolvePath.IsExcelCell())
+    // paths to worksheet/cell inside a spreadsheet file should keep the spreadsheet
+    // file extension
+    if (resolvePath.IsExcelCell() || resolvePath.IsOdsCell())
         {
         filename.Replace(L".", wxString{}, true);
         }

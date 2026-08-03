@@ -39,10 +39,14 @@ enum class FilePathType
                         May or may not be an URL or local file--caller is responsible for
                         determining that and opening it accordingly.
                         @note The path syntax is `path/file.zip#subfile`.*/
-    ExcelCell        /*!< A cell address inside an Excel 2007 file.
+    ExcelCell,       /*!< A cell address inside an Excel 2007 file.
                         May or may not be an URL or local file--caller is responsible for
                         determining that and opening it accordingly.
                         @note The path syntax is `path/file.xlsx#sheet_name#cell`.*/
+    OdsCell          /*!< A cell address inside an ODS (OpenDocument Spreadsheet) file.
+                        May or may not be an URL or local file--caller is responsible for
+                        determining that and opening it accordingly.
+                        @note The path syntax is `path/file.ods#sheet_name#cell`.*/
     };
 
 /** @brief Class to determine which sort of filepath a string may resemble.
@@ -153,12 +157,22 @@ class FilePathResolverBase
         return m_fileType == FilePathType::ExcelCell;
         }
 
+    /** @returns @c true if path is a cell inside an ODS (OpenDocument Spreadsheet) file.
+        @note The file may actually be local (or on a network),
+            but because we use special syntax for paths to ODS cells
+            then we have to consider its path type as something special.*/
+    [[nodiscard]]
+    bool IsOdsCell() const noexcept
+        {
+        return m_fileType == FilePathType::OdsCell;
+        }
+
     /// @returns @c true if filepath has a supported spreadsheet extension.
     /// @param fn The filepath to review.
     [[nodiscard]]
     static bool IsSpreadsheet(const wxFileName& fn)
         {
-        return (fn.GetExt().CmpNoCase(L"xlsx") == 0);
+        return (fn.GetExt().CmpNoCase(L"xlsx") == 0 || fn.GetExt().CmpNoCase(L"ods") == 0);
         }
 
     /// @returns @c true if filepath has a supported archive extension.
