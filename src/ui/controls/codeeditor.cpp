@@ -8,6 +8,7 @@
 
 #include "codeeditor.h"
 #include "../../base/colorbrewer.h"
+#include <wx/dnd.h>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 #include <wx/tokenzr.h>
@@ -15,6 +16,34 @@
 
 namespace Wisteria::UI
     {
+    namespace
+        {
+        /// @brief Drops files into the editor as quoted file paths.
+        class CodeEditorDropTarget : public wxFileDropTarget
+            {
+          public:
+            /// @private
+            explicit CodeEditorDropTarget(CodeEditor* editor) : m_editor(editor) {}
+
+            /// @private
+            bool OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames) final
+                {
+                if (m_editor == nullptr)
+                    {
+                    return;
+                    }
+                for (const auto& file : filenames)
+                    {
+                    m_editor->AddText(L"\"" + file + L"\"");
+                    }
+                return true;
+                }
+
+          private:
+            CodeEditor* m_editor{ nullptr };
+            };
+        } // namespace
+
     wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 
         //-------------------------------------------------------------
@@ -84,6 +113,8 @@ namespace Wisteria::UI
         Bind(wxEVT_STC_CHARADDED, &CodeEditor::OnCharAdded, this, wxID_ANY);
         Bind(wxEVT_STC_AUTOCOMP_SELECTION, &CodeEditor::OnAutoCompletionSelected, this, wxID_ANY);
         Bind(wxEVT_SYS_COLOUR_CHANGED, &CodeEditor::OnSysColourChanged, this);
+
+        SetDropTarget(new CodeEditorDropTarget(this));
 
         SetLanguage(lang);
 
