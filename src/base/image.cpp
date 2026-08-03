@@ -134,6 +134,100 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         }
 
     //-------------------------------------------
+    wxImage Image::CropImageBorder(const wxImage& img, const uint8_t colorTolerance)
+        {
+        if (!img.IsOk())
+            {
+            return img;
+            }
+
+        const int width{ img.GetWidth() };
+        const int height{ img.GetHeight() };
+        const unsigned char* rgbData{ img.GetData() };
+        const unsigned char* alphaData{ img.HasAlpha() ? img.GetAlpha() : nullptr };
+
+        if (width <= 0 || height <= 0 || rgbData == nullptr)
+            {
+            return img;
+            }
+
+        // clamp to keep the white and black ranges below from overlapping
+        // (tolerances of 128+ would classify nearly every color as border)
+        const uint8_t tolerance{ std::min<uint8_t>(colorTolerance, 127) };
+
+        // true if the pixel at (x, y) is white, black, or transparent
+        const auto isBorderPixel = [&](const int x, const int y) noexcept
+        {
+            const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
+            if (alphaData != nullptr && alphaData[pixelIndex] == wxALPHA_TRANSPARENT)
+                {
+                return true;
+                }
+            const unsigned char red{ rgbData[pixelIndex * 3] };
+            const unsigned char green{ rgbData[(pixelIndex * 3) + 1] };
+            const unsigned char blue{ rgbData[(pixelIndex * 3) + 2] };
+            const bool isWhite{ red >= (255 - tolerance) && green >= (255 - tolerance) &&
+                                blue >= (255 - tolerance) };
+            const bool isBlack{ red <= tolerance && green <= tolerance && blue <= tolerance };
+            return isWhite || isBlack;
+        };
+
+        // true if every pixel across row y is a border pixel
+        const auto isBorderRow = [&](const int y) noexcept
+        {
+            for (int x = 0; x < width; ++x)
+                {
+                if (!isBorderPixel(x, y))
+                    {
+                    return false;
+                    }
+                }
+            return true;
+        };
+
+        // true if every pixel down column x is a border pixel
+        const auto isBorderColumn = [&](const int x) noexcept
+        {
+            for (int y = 0; y < height; ++y)
+                {
+                if (!isBorderPixel(x, y))
+                    {
+                    return false;
+                    }
+                }
+            return true;
+        };
+
+        int top{ 0 };
+        while (top < height && isBorderRow(top))
+            {
+            ++top;
+            }
+        int bottom{ height - 1 };
+        while (bottom > top && isBorderRow(bottom))
+            {
+            --bottom;
+            }
+        int left{ 0 };
+        while (left < width && isBorderColumn(left))
+            {
+            ++left;
+            }
+        int right{ width - 1 };
+        while (right > left && isBorderColumn(right))
+            {
+            --right;
+            }
+
+        if (top > bottom || left > right)
+            {
+            return img;
+            }
+
+        return img.GetSubImage(wxRect{ wxPoint{ left, top }, wxPoint{ right, bottom } });
+        }
+
+    //-------------------------------------------
     void Image::SetOpacity(wxImage & image, const uint8_t opacity, const wxColour& colorToPreserve)
         {
         if (!image.IsOk())
