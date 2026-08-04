@@ -135,6 +135,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/subsetdlg.cpp
     src/ui/dialogs/excelpreviewdlg.cpp
     src/ui/dialogs/gridexportdlg.cpp
+    src/ui/dialogs/imageeffectdlg.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp
     src/ui/dialogs/listctrlitemviewdlg.cpp

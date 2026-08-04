@@ -123,6 +123,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/editors/pivotlongerdlg.cpp
     src/ui/dialogs/editors/pivotwiderrdlg.cpp
     src/ui/dialogs/editors/subsetdlg.cpp
+    src/ui/dialogs/imageeffectdlg.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp
     src/ui/dialogs/odspreviewdlg.cpp
