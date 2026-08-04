@@ -14,6 +14,7 @@
 
 #include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
+#include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/filename.h>
 #include <wx/sizer.h>
@@ -65,10 +66,13 @@ namespace Wisteria::UI
       private:
         void CreateControls(const wxString& imgPath);
         void UpdatePreview();
+        [[nodiscard]]
+        wxImage GetSourceImage() const;
 
         wxFileName m_baseImagePath;
         wxImage m_originalImage;
         int m_imageEffect{ 0 };
+        bool m_cropImageBorder{ false };
 
         Thumbnail* m_thumbnail{ nullptr };
 

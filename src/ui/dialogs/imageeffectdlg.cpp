@@ -36,6 +36,11 @@ namespace Wisteria::UI
         optionsSizer->Add(effectChoice, wxSizerFlags{}.CenterVertical());
         mainSizer->Add(optionsSizer, wxSizerFlags{}.Border());
 
+        auto* cropCheckbox =
+            new wxCheckBox(this, wxID_ANY, _(L"Crop border around image"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_cropImageBorder));
+        mainSizer->Add(cropCheckbox, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
         auto* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
         m_thumbnail = new Thumbnail(previewSizer->GetStaticBox(), m_originalImage,
                                     Wisteria::ClickMode::FullSizeViewable, false);
@@ -59,6 +64,13 @@ namespace Wisteria::UI
                  UpdatePreview();
              });
 
+        Bind(wxEVT_CHECKBOX,
+             [this]([[maybe_unused]] const wxCommandEvent&)
+             {
+                 TransferDataFromWindow();
+                 UpdatePreview();
+             });
+
         Bind(
             wxEVT_BUTTON,
             [this]([[maybe_unused]] const wxCommandEvent&)
@@ -75,7 +87,7 @@ namespace Wisteria::UI
                 m_effectFilePath = fd.GetPath();
 
                 const auto effectImg = GraphItems::Image::ApplyEffect(
-                    static_cast<Wisteria::ImageEffect>(m_imageEffect), m_originalImage);
+                    static_cast<Wisteria::ImageEffect>(m_imageEffect), GetSourceImage());
                 if (!effectImg.SaveFile(m_effectFilePath))
                     {
                     wxMessageBox(_(L"Unable to save image."), _(L"Save"), wxOK);
@@ -98,7 +110,14 @@ namespace Wisteria::UI
     void ImageEffectDlg::UpdatePreview()
         {
         const auto effectImg = GraphItems::Image::ApplyEffect(
-            static_cast<Wisteria::ImageEffect>(m_imageEffect), m_originalImage);
+            static_cast<Wisteria::ImageEffect>(m_imageEffect), GetSourceImage());
         m_thumbnail->SetBitmap(effectImg);
+        }
+
+    //----------------------------------------
+    wxImage ImageEffectDlg::GetSourceImage() const
+        {
+        return m_cropImageBorder ? GraphItems::Image::CropImageBorder(m_originalImage) :
+                                   m_originalImage;
         }
     } // namespace Wisteria::UI
