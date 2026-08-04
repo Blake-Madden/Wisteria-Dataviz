@@ -611,6 +611,12 @@ namespace Wisteria
         /// @brief Automatically balances the colors and contrast of an image.
         ///     Useful for touching up faded or yellowed scans.
         ColorBalance,
+        /// @brief Reduces speckle noise (e.g., dust or scanner artifacts) by replacing
+        ///     each pixel with the median of its surrounding neighborhood.
+        Despeckle,
+        /// @brief Sharpens an image using an unsharp mask.
+        ///     Useful for restoring detail softened by scanning or print halftoning.
+        Sharpen,
         /// @private
         IMAGE_EFFECTS_COUNT
         };

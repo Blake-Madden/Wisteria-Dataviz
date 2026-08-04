@@ -406,6 +406,102 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         }
 
     //-------------------------------------------
+    wxImage Image::Despeckle(const wxImage& image, const uint8_t radius /*= 1*/)
+        {
+        if (!image.IsOk())
+            {
+            return wxNullImage;
+            }
+
+        wxImage outImg{ image.Copy() };
+        const auto* const imgInData = image.GetData();
+        auto* const imgOutData = outImg.GetData();
+
+        const int width{ image.GetWidth() };
+        const int height{ image.GetHeight() };
+
+        // derive the buffer size from the radius clamp so they can't drift out of sync
+        constexpr int MAX_DESPECKLE_RADIUS{ 4 };
+        constexpr size_t MAX_WINDOW_SIZE{ static_cast<size_t>(2 * MAX_DESPECKLE_RADIUS + 1) *
+                                          static_cast<size_t>(2 * MAX_DESPECKLE_RADIUS + 1) };
+        const int clampedRadius{ std::min<int>(radius, MAX_DESPECKLE_RADIUS) };
+        const int windowSize{ (2 * clampedRadius) + 1 };
+        const size_t neighborhoodCount{ static_cast<size_t>(windowSize) * windowSize };
+
+// Border pixels (within radius) are left untouched.
+// NOLINTBEGIN(openmp-use-default-none)
+#pragma omp parallel for
+        for (int y = clampedRadius; y < height - clampedRadius; ++y)
+            {
+            std::array<unsigned char, MAX_WINDOW_SIZE> redValues{ 0 };
+            std::array<unsigned char, MAX_WINDOW_SIZE> greenValues{ 0 };
+            std::array<unsigned char, MAX_WINDOW_SIZE> blueValues{ 0 };
+
+            for (int x = clampedRadius; x < width - clampedRadius; ++x)
+                {
+                size_t index{ 0 };
+                for (int yOffset = -clampedRadius; yOffset <= clampedRadius; ++yOffset)
+                    {
+                    for (int xOffset = -clampedRadius; xOffset <= clampedRadius; ++xOffset)
+                        {
+                        const size_t pixelIndex{ (static_cast<size_t>(y + yOffset) * width) +
+                                                 (x + xOffset) };
+                        redValues[index] = imgInData[pixelIndex * 3];
+                        greenValues[index] = imgInData[(pixelIndex * 3) + 1];
+                        blueValues[index] = imgInData[(pixelIndex * 3) + 2];
+                        ++index;
+                        }
+                    }
+
+                const auto medianPos{ neighborhoodCount / 2 };
+                std::nth_element(redValues.begin(), redValues.begin() + medianPos,
+                                 redValues.begin() + neighborhoodCount);
+                std::nth_element(greenValues.begin(), greenValues.begin() + medianPos,
+                                 greenValues.begin() + neighborhoodCount);
+                std::nth_element(blueValues.begin(), blueValues.begin() + medianPos,
+                                 blueValues.begin() + neighborhoodCount);
+
+                const size_t outIndex{ (static_cast<size_t>(y) * width) + x };
+                imgOutData[outIndex * 3] = redValues[medianPos];
+                imgOutData[(outIndex * 3) + 1] = greenValues[medianPos];
+                imgOutData[(outIndex * 3) + 2] = blueValues[medianPos];
+                }
+            }
+        // NOLINTEND(openmp-use-default-none)
+
+        return outImg;
+        }
+
+    //-------------------------------------------
+    wxImage Image::Sharpen(const wxImage& image, const uint8_t radius /*= 2*/,
+                           const float amount /*= 1.0F*/)
+        {
+        if (!image.IsOk())
+            {
+            return wxNullImage;
+            }
+
+        const wxImage blurredImg{ image.Blur(radius) };
+
+        wxImage outImg{ image.Copy() };
+        const auto* const imgInData = image.GetData();
+        const auto* const blurredData = blurredImg.GetData();
+        auto* const imgOutData = outImg.GetData();
+
+        const size_t byteCount{ static_cast<size_t>(image.GetWidth()) *
+                                static_cast<size_t>(image.GetHeight()) * 3 };
+
+        for (size_t i = 0; i < byteCount; ++i)
+            {
+            // unsharp mask: original + amount * (original - blurred)
+            const double sharpened{ imgInData[i] + (amount * (imgInData[i] - blurredData[i])) };
+            imgOutData[i] = static_cast<unsigned char>(std::clamp(sharpened, 0.0, 255.0));
+            }
+
+        return outImg;
+        }
+
+    //-------------------------------------------
     wxImage Image::ApplyEffect(const Wisteria::ImageEffect effect, const wxImage& img)
         {
         if (effect == Wisteria::ImageEffect::Grayscale)
@@ -435,6 +531,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         if (effect == Wisteria::ImageEffect::OilPainting)
             {
             return Wisteria::GraphItems::Image::OilPainting(img);
+            }
+        if (effect == Wisteria::ImageEffect::Despeckle)
+            {
+            return Wisteria::GraphItems::Image::Despeckle(img);
+            }
+        if (effect == Wisteria::ImageEffect::Sharpen)
+            {
+            return Wisteria::GraphItems::Image::Sharpen(img);
             }
         return img;
         }

@@ -32,6 +32,8 @@ namespace Wisteria::UI
         effectChoice->Append(_(L"Frosted glass"));
         effectChoice->Append(_(L"Oil painting"));
         effectChoice->Append(_(L"Color balance"));
+        effectChoice->Append(_(L"Despeckle"));
+        effectChoice->Append(_(L"Sharpen"));
         effectChoice->SetSelection(m_imageEffect);
         optionsSizer->Add(effectChoice, wxSizerFlags{}.CenterVertical());
         mainSizer->Add(optionsSizer, wxSizerFlags{}.Border());

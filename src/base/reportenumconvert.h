@@ -866,10 +866,12 @@ namespace Wisteria
                 { L"blur-horizontal", ImageEffect::BlurHorizontal },
                 { L"blur-vertical", ImageEffect::BlurVertical },
                 { L"color-balance", ImageEffect::ColorBalance },
+                { L"despeckle", ImageEffect::Despeckle },
                 { L"frosted-glass", ImageEffect::FrostedGlass },
                 { L"gray-scale", ImageEffect::Grayscale },
                 { L"oil-painting", ImageEffect::OilPainting },
                 { L"sepia", ImageEffect::Sepia },
+                { L"sharpen", ImageEffect::Sharpen },
                 { L"no-effect", ImageEffect::NoEffect }
             };
 
@@ -887,10 +889,12 @@ namespace Wisteria
                 { ImageEffect::BlurHorizontal, L"blur-horizontal" },
                 { ImageEffect::BlurVertical, L"blur-vertical" },
                 { ImageEffect::ColorBalance, L"color-balance" },
+                { ImageEffect::Despeckle, L"despeckle" },
                 { ImageEffect::FrostedGlass, L"frosted-glass" },
                 { ImageEffect::Grayscale, L"gray-scale" },
                 { ImageEffect::OilPainting, L"oil-painting" },
                 { ImageEffect::Sepia, L"sepia" },
+                { ImageEffect::Sharpen, L"sharpen" },
                 { ImageEffect::NoEffect, L"no-effect" }
             };
 

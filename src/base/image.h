@@ -452,6 +452,30 @@ namespace Wisteria::GraphItems
         static wxImage FrostedGlass(const wxImage& image,
                                     Wisteria::Orientation orientation = Orientation::Both,
                                     uint8_t coarseness = 50);
+        /** @brief Reduces speckle noise (e.g., dust or scanner artifacts) in an image
+                by replacing each pixel with the median value of its surrounding neighborhood.
+            @details This is a per-channel median filter, applied independently to the
+                red, green, and blue channels. It removes isolated specks of noise
+                while preserving edges better than a blur would.
+            @param image The original image.
+            @param radius How many pixels in each direction (from a given pixel) to
+                include in its neighborhood when computing the median.
+                Clamped to a maximum of 4 (i.e., a 9x9 neighborhood).
+            @returns The despeckled image.*/
+        [[nodiscard]]
+        static wxImage Despeckle(const wxImage& image, uint8_t radius = 1);
+        /** @brief Sharpens an image using an unsharp mask.
+            @details A blurred copy of the image is subtracted from the original, and the
+                resulting difference (the high-frequency detail) is added back to the
+                original, scaled by @p amount. Useful for restoring detail that was
+                softened by scanning or print halftoning.
+            @param image The original image.
+            @param radius The radius of the blur used to detect the detail to sharpen.
+                Must be at least 1; a radius of 0 leaves the image unchanged.
+            @param amount The strength of the sharpening effect.
+            @returns The sharpened image.*/
+        [[nodiscard]]
+        static wxImage Sharpen(const wxImage& image, uint8_t radius = 2, float amount = 1.0F);
         /** @returns An image with an effect applied to it.
             @param effect The effect to apply.
             @param img The basis image to apply the effect to.*/
