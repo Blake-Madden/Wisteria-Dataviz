@@ -424,6 +424,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             {
             return Wisteria::GraphItems::Image::Sepia(img);
             }
+        if (effect == Wisteria::ImageEffect::ColorBalance)
+            {
+            return Wisteria::GraphItems::Image::ColorBalance(img);
+            }
         if (effect == Wisteria::ImageEffect::FrostedGlass)
             {
             return Wisteria::GraphItems::Image::FrostedGlass(img);
@@ -593,6 +597,92 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             imgOutData[index] = static_cast<unsigned char>(std::clamp(dRed, 0.0, 255.0));
             imgOutData[index + 1] = static_cast<unsigned char>(std::clamp(dGreen, 0.0, 255.0));
             imgOutData[index + 2] = static_cast<unsigned char>(std::clamp(dBlue, 0.0, 255.0));
+            }
+
+        return outImg;
+        }
+
+    //-------------------------------------------
+    wxImage Image::ColorBalance(const wxImage& image, const uint8_t percentTrim /*= 1*/)
+        {
+        if (!image.IsOk())
+            {
+            return wxNullImage;
+            }
+
+        wxImage outImg{ image.Copy() };
+        const auto* const imgInData = image.GetData();
+        auto* const imgOutData = outImg.GetData();
+
+        const size_t pixelCount =
+            static_cast<size_t>(image.GetWidth()) * static_cast<size_t>(image.GetHeight());
+        const size_t byteCount = pixelCount * 3;
+
+        constexpr size_t RGB_BUFFER_SIZE{ 256 };
+        std::array<size_t, RGB_BUFFER_SIZE> redHistogram{ 0 };
+        std::array<size_t, RGB_BUFFER_SIZE> greenHistogram{ 0 };
+        std::array<size_t, RGB_BUFFER_SIZE> blueHistogram{ 0 };
+
+        for (size_t index = 0; index < byteCount; index += 3)
+            {
+            ++redHistogram[imgInData[index]];
+            ++greenHistogram[imgInData[index + 1]];
+            ++blueHistogram[imgInData[index + 2]];
+            }
+
+        // For a channel's histogram, find the low and high values that clip off
+        // percentTrim% of pixels from the dark and light ends, respectively.
+        const auto clipCount =
+            static_cast<size_t>(pixelCount * (std::clamp<uint8_t>(percentTrim, 0, 49) / 100.0));
+        const auto findLowHigh = [clipCount](const std::array<size_t, RGB_BUFFER_SIZE>& histogram)
+        {
+            uint8_t low{ 0 };
+            size_t runningCount{ 0 };
+            for (size_t i = 0; i < RGB_BUFFER_SIZE; ++i)
+                {
+                runningCount += histogram[i];
+                if (runningCount > clipCount)
+                    {
+                    low = static_cast<uint8_t>(i);
+                    break;
+                    }
+                }
+
+            uint8_t high{ 255 };
+            runningCount = 0;
+            for (size_t i = RGB_BUFFER_SIZE; i > 0; --i)
+                {
+                runningCount += histogram[i - 1];
+                if (runningCount > clipCount)
+                    {
+                    high = static_cast<uint8_t>(i - 1);
+                    break;
+                    }
+                }
+
+            return std::make_pair(low, high);
+        };
+
+        const auto [redLow, redHigh] = findLowHigh(redHistogram);
+        const auto [greenLow, greenHigh] = findLowHigh(greenHistogram);
+        const auto [blueLow, blueHigh] = findLowHigh(blueHistogram);
+
+        const auto stretch = [](const unsigned char value, const uint8_t low, const uint8_t high)
+        {
+            if (high <= low)
+                {
+                return value;
+                }
+            const double stretched =
+                (static_cast<double>(value) - low) * 255.0 / (static_cast<double>(high) - low);
+            return static_cast<unsigned char>(std::clamp(stretched, 0.0, 255.0));
+        };
+
+        for (size_t index = 0; index < byteCount; index += 3)
+            {
+            imgOutData[index] = stretch(imgInData[index], redLow, redHigh);
+            imgOutData[index + 1] = stretch(imgInData[index + 1], greenLow, greenHigh);
+            imgOutData[index + 2] = stretch(imgInData[index + 2], blueLow, blueHigh);
             }
 
         return outImg;

@@ -608,6 +608,9 @@ namespace Wisteria
         FrostedGlass,
         /// @brief An oil painting effect.
         OilPainting,
+        /// @brief Automatically balances the colors and contrast of an image.
+        ///     Useful for touching up faded or yellowed scans.
+        ColorBalance,
         /// @private
         IMAGE_EFFECTS_COUNT
         };

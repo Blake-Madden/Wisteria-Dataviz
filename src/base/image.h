@@ -424,6 +424,19 @@ namespace Wisteria::GraphItems
                 This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage Sepia(const wxImage& image, uint8_t magnitude = 75);
+        /** @brief Automatically balances the colors in an image and restores its contrast.
+            @details Useful for touching up faded or yellowed scans (e.g., of old photographs
+                or documents). For each of the red, green, and blue channels, the darkest and
+                lightest @p percentTrim percent of pixels are clipped, and the remaining range
+                is stretched to span the full 0-255 range. Because each channel is stretched
+                independently, this also corrects color casts (such as yellowing) in addition
+                to restoring contrast.
+            @param image The original image.
+            @param percentTrim The percentage (0-49) of the darkest and lightest pixels
+                (per channel) to clip before stretching the remaining range.
+            @returns The color-balanced image.*/
+        [[nodiscard]]
+        static wxImage ColorBalance(const wxImage& image, uint8_t percentTrim = 1);
         /** @brief Applies a frosted glass window effect to an image.
             @param image The original image.
             @param orientation The direction(s) of the frosting effect.

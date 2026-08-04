@@ -188,6 +188,7 @@ namespace Wisteria::UI
             effectChoice->Append(_(L"Sepia"));
             effectChoice->Append(_(L"Frosted glass"));
             effectChoice->Append(_(L"Oil painting"));
+            effectChoice->Append(_(L"Color balance"));
             optionsGrid->Add(effectChoice);
             }
 

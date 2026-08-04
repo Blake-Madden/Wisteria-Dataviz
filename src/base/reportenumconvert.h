@@ -865,6 +865,7 @@ namespace Wisteria
             static const std::map<std::wstring, ImageEffect> imgEffectValues = {
                 { L"blur-horizontal", ImageEffect::BlurHorizontal },
                 { L"blur-vertical", ImageEffect::BlurVertical },
+                { L"color-balance", ImageEffect::ColorBalance },
                 { L"frosted-glass", ImageEffect::FrostedGlass },
                 { L"gray-scale", ImageEffect::Grayscale },
                 { L"oil-painting", ImageEffect::OilPainting },
@@ -885,6 +886,7 @@ namespace Wisteria
             static const std::map<ImageEffect, wxString> values = {
                 { ImageEffect::BlurHorizontal, L"blur-horizontal" },
                 { ImageEffect::BlurVertical, L"blur-vertical" },
+                { ImageEffect::ColorBalance, L"color-balance" },
                 { ImageEffect::FrostedGlass, L"frosted-glass" },
                 { ImageEffect::Grayscale, L"gray-scale" },
                 { ImageEffect::OilPainting, L"oil-painting" },
