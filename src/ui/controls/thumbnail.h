@@ -19,6 +19,7 @@
 #include <wx/dnd.h>
 #include <wx/filename.h>
 #include <wx/image.h>
+#include <wx/timer.h>
 #include <wx/wx.h>
 
 /// @cond DOXYGEN_IGNORE
@@ -150,6 +151,10 @@ namespace Wisteria::UI
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         wxSize m_baseSize{ 128, 128 };
         wxString m_filePath;
+
+        // resize state variables
+        bool m_blockResize{ true };
+        wxTimer m_resizeTimer;
         };
 
     /// @brief Drop file handler for thumbnail control.

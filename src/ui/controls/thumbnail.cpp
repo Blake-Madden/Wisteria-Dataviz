@@ -10,6 +10,7 @@
 #include <utility>
 #include <wx/dc.h>
 #include <wx/statline.h>
+#include <wx/wupdlock.h>
 
 wxDEFINE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
 
@@ -132,6 +133,16 @@ namespace Wisteria::UI
             wxWindow::SetDropTarget(new DropThumbnailImageFile(this));
             }
 
+        m_resizeTimer.SetOwner(this);
+
+        Bind(wxEVT_TIMER,
+             [this]([[maybe_unused]] wxTimerEvent&)
+             {
+                 m_blockResize = false;
+                 wxSizeEvent event(GetSize());
+                 OnResize(event);
+             });
+
         Bind(wxEVT_SIZE, &Thumbnail::OnResize, this);
         Bind(wxEVT_LEFT_DOWN, &Thumbnail::OnClick, this);
         Bind(wxEVT_PAINT, &Thumbnail::OnPaint, this);
@@ -159,9 +170,7 @@ namespace Wisteria::UI
         m_img = GraphItems::Image((bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage));
         if (m_img.IsOk())
             {
-            // reset to a standard, square size and then
-            // adjust that to the image's aspect ratio
-            const wxSize newSize = m_img.SetBestSize(m_baseSize);
+            const wxSize newSize = m_img.SetBestSize(GetSize());
             SetSize(newSize);
             wxWindow::SetMinSize(newSize);
             }
@@ -180,7 +189,7 @@ namespace Wisteria::UI
         m_img = GraphItems::Image(GraphItems::Image::LoadFile(filePath));
         if (m_img.IsOk())
             {
-            const wxSize newSize = m_img.SetBestSize(m_baseSize);
+            const wxSize newSize = m_img.SetBestSize(GetSize());
             SetSize(newSize);
             wxWindow::SetMinSize(newSize);
             }
@@ -244,9 +253,20 @@ namespace Wisteria::UI
     //----------------------------------
     void Thumbnail::OnResize(wxSizeEvent& event)
         {
+        if (m_blockResize && IsShownOnScreen())
+            {
+            m_resizeTimer.Stop();
+            m_resizeTimer.StartOnce(250);
+            event.Skip();
+            return;
+            }
+
+        m_resizeTimer.Stop();
+        m_blockResize = true;
+
         if (m_img.IsOk())
             {
-            m_img.SetSize(event.GetSize());
+            m_img.SetBestSize(event.GetSize());
             }
         Refresh();
         Update();
@@ -315,6 +335,7 @@ namespace Wisteria::UI
                 wxFD_OPEN | wxFD_PREVIEW);
             if (fileDlg.ShowModal() == wxID_OK)
                 {
+                const wxWindowUpdateLocker noUpdates{ this };
                 LoadImage(fileDlg.GetPath());
                 }
             }
