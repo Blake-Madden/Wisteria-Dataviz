@@ -11,6 +11,7 @@
 #include "polygon.h"
 #include <algorithm>
 #include <array>
+#include <cstdlib>
 #include <wx/dcprint.h>
 #include <wx/pdfdc.h>
 #include <wx/rawbmp.h>
@@ -134,7 +135,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         }
 
     //-------------------------------------------
-    wxImage Image::CropImageBorder(const wxImage& img, const uint8_t colorTolerance)
+    wxImage Image::CropImageBorder(const wxImage& img, const uint8_t colorTolerance,
+                                   const wxColour& baseColor)
         {
         if (!img.IsOk())
             {
@@ -151,11 +153,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             return img;
             }
 
-        // clamp to keep the white and black ranges below from overlapping
-        // (tolerances of 128+ would classify nearly every color as border)
-        const uint8_t tolerance{ std::min<uint8_t>(colorTolerance, 127) };
+        const uint8_t tolerance{ colorTolerance };
+        const unsigned char baseRed{ baseColor.Red() };
+        const unsigned char baseGreen{ baseColor.Green() };
+        const unsigned char baseBlue{ baseColor.Blue() };
 
-        // true if the pixel at (x, y) is white, black, or transparent
+        // true if the pixel at (x, y) is close enough to baseColor (or transparent)
+        // to be considered part of the border
         const auto isBorderPixel = [&](const int x, const int y) noexcept
         {
             const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
@@ -166,58 +170,93 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             const unsigned char red{ rgbData[pixelIndex * 3] };
             const unsigned char green{ rgbData[(pixelIndex * 3) + 1] };
             const unsigned char blue{ rgbData[(pixelIndex * 3) + 2] };
-            const bool isWhite{ red >= (255 - tolerance) && green >= (255 - tolerance) &&
-                                blue >= (255 - tolerance) };
-            const bool isBlack{ red <= tolerance && green <= tolerance && blue <= tolerance };
-            return isWhite || isBlack;
+            return (std::abs(red - baseRed) <= tolerance) &&
+                   (std::abs(green - baseGreen) <= tolerance) &&
+                   (std::abs(blue - baseBlue) <= tolerance);
         };
 
-        // true if every pixel across row y is a border pixel
-        const auto isBorderRow = [&](const int y) noexcept
-        {
+        // for each row/column with any content, the nearest non-border pixel position
+        // from each side
+        std::vector<int> rowLeftEdges, rowRightEdges, colTopEdges, colBottomEdges;
+        rowLeftEdges.reserve(height);
+        rowRightEdges.reserve(height);
+        colTopEdges.reserve(width);
+        colBottomEdges.reserve(width);
+
+        for (int y = 0; y < height; ++y)
+            {
+            int left{ -1 };
             for (int x = 0; x < width; ++x)
                 {
                 if (!isBorderPixel(x, y))
                     {
-                    return false;
+                    left = x;
+                    break;
                     }
                 }
-            return true;
-        };
+            if (left == -1)
+                {
+                // entire row is border
+                continue;
+                }
+            int right{ left };
+            for (int x = width - 1; x > right; --x)
+                {
+                if (!isBorderPixel(x, y))
+                    {
+                    right = x;
+                    break;
+                    }
+                }
+            rowLeftEdges.push_back(left);
+            rowRightEdges.push_back(right);
+            }
 
-        // true if every pixel down column x is a border pixel
-        const auto isBorderColumn = [&](const int x) noexcept
-        {
+        for (int x = 0; x < width; ++x)
+            {
+            int top{ -1 };
             for (int y = 0; y < height; ++y)
                 {
                 if (!isBorderPixel(x, y))
                     {
-                    return false;
+                    top = y;
+                    break;
                     }
                 }
-            return true;
+            if (top == -1)
+                {
+                // entire column is border
+                continue;
+                }
+            int bottom{ top };
+            for (int y = height - 1; y > bottom; --y)
+                {
+                if (!isBorderPixel(x, y))
+                    {
+                    bottom = y;
+                    break;
+                    }
+                }
+            colTopEdges.push_back(top);
+            colBottomEdges.push_back(bottom);
+            }
+
+        // entirely border-colored; nothing to crop to
+        if (rowLeftEdges.empty() || colTopEdges.empty())
+            {
+            return img;
+            }
+
+        const auto median = [](std::vector<int>& values) noexcept
+        {
+            std::nth_element(values.begin(), values.begin() + (values.size() / 2), values.end());
+            return values[values.size() / 2];
         };
 
-        int top{ 0 };
-        while (top < height && isBorderRow(top))
-            {
-            ++top;
-            }
-        int bottom{ height - 1 };
-        while (bottom > top && isBorderRow(bottom))
-            {
-            --bottom;
-            }
-        int left{ 0 };
-        while (left < width && isBorderColumn(left))
-            {
-            ++left;
-            }
-        int right{ width - 1 };
-        while (right > left && isBorderColumn(right))
-            {
-            --right;
-            }
+        const int left{ median(rowLeftEdges) };
+        const int right{ median(rowRightEdges) };
+        const int top{ median(colTopEdges) };
+        const int bottom{ median(colBottomEdges) };
 
         if (top > bottom || left > right)
             {

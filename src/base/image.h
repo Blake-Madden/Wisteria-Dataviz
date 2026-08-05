@@ -231,24 +231,25 @@ namespace Wisteria::GraphItems
 
         /** @brief Removes the solid border surrounding a scanned image and returns
                 the cropped result.
-            @details Starting from each of the four edges, this steps inward
-                row-by-row (or column-by-column), treating a row/column as part of
-                the border for as long as every pixel in it is white, black, or
-                transparent. The first row/column encountered that isn't uniformly
-                one of these colors marks that side's crop boundary.\n
+            @details For each row, finds the nearest non-border (i.e., non-transparent
+                pixel that doesn't match @c baseColor) pixel from the left and from the
+                right. Likewise, for each column, finds the nearest non-border pixel
+                from the top and from the bottom. Each side is then cropped to the
+                median of its respective edge positions.\n
                 This is useful for trimming away the surrounding background left
-                behind when scanning a page on a flatbed scanner.
+                behind when scanning or photographing a page.
             @param img The image to crop.
             @param colorTolerance How far a pixel's color channels may deviate from
-                pure white or pure black and still be considered part of the border.
+                @c baseColor and still be considered part of the border.
                 Useful for tolerating scanner noise.
-                Clamped to a maximum of 127 (beyond that, the white and black
-                ranges overlap and would classify nearly every color as border).
+            @param baseColor The color of the border area to crop away (e.g., the
+                color of the wall or scanner bed surrounding the actual content).
             @returns The image with its border trimmed. If no border can be
                 detected (e.g., content touches every edge, or the image is
                 entirely blank), then the original image is returned unchanged.*/
         [[nodiscard]]
-        static wxImage CropImageBorder(const wxImage& img, uint8_t colorTolerance = 10);
+        static wxImage CropImageBorder(const wxImage& img, uint8_t colorTolerance = 10,
+                                       const wxColour& baseColor = *wxWHITE);
 
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
