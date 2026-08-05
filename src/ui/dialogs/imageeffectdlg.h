@@ -12,12 +12,17 @@
 #ifndef IMAGEEFFECT_DLG_H
 #define IMAGEEFFECT_DLG_H
 
+#include "../../base/settings.h"
 #include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
 #include <wx/checkbox.h>
 #include <wx/choice.h>
+#include <wx/clrpicker.h>
 #include <wx/filename.h>
+#include <wx/filepicker.h>
 #include <wx/sizer.h>
+#include <wx/spinctrl.h>
+#include <wx/stattext.h>
 #include <wx/string.h>
 
 namespace Wisteria::UI
@@ -68,13 +73,29 @@ namespace Wisteria::UI
         void UpdatePreview();
         [[nodiscard]]
         wxImage GetSourceImage() const;
+        // loads a new source image (from the image-path picker or a file dropped onto
+        // the preview) and refreshes the path controls and preview to match
+        void SetSourceImage(const wxString& path);
+        // builds a suggested (guaranteed non-existent) output path from a source path
+        [[nodiscard]]
+        static wxString CreateDefaultOutputPath(const wxFileName& sourcePath);
+        // enables/disables the crop border threshold controls based on the checkbox state
+        void UpdateCropBorderControls();
 
         wxFileName m_baseImagePath;
         wxImage m_originalImage;
         int m_imageEffect{ 0 };
         bool m_cropImageBorder{ false };
+        int m_cropBorderTolerance{ 10 };
+        wxColour m_cropBorderColor{ *wxWHITE };
 
         Thumbnail* m_thumbnail{ nullptr };
+        wxStaticText* m_imagePathLabel{ nullptr };
+        wxFilePickerCtrl* m_outputPathPicker{ nullptr };
+        wxStaticText* m_cropBorderToleranceLabel{ nullptr };
+        wxSpinCtrl* m_cropBorderToleranceCtrl{ nullptr };
+        wxStaticText* m_cropBorderColorLabel{ nullptr };
+        wxColourPickerCtrl* m_cropBorderColorCtrl{ nullptr };
 
         wxString m_effectFilePath;
         };
