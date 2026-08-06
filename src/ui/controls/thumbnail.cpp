@@ -13,6 +13,7 @@
 #include <wx/wupdlock.h>
 
 wxDEFINE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_THUMBNAIL_COLOR_PICKED, wxColourPickerEvent);
 
 namespace Wisteria::UI
     {
@@ -274,8 +275,88 @@ namespace Wisteria::UI
         }
 
     //----------------------------------
-    void Thumbnail::OnClick([[maybe_unused]] wxMouseEvent& event)
+    void Thumbnail::SetColorPickingMode(const bool enable)
         {
+        if (enable == m_colorPickingMode)
+            {
+            return;
+            }
+        m_colorPickingMode = enable;
+        if (enable)
+            {
+            m_previousCursor = GetCursor();
+            m_previousToolTip = (GetToolTip() != nullptr) ? GetToolTip()->GetTip() : wxString{};
+            wxWindow::SetCursor(wxCURSOR_CROSS);
+            SetToolTip(_(L"Click on the image to pick a color..."));
+            }
+        else
+            {
+            wxWindow::SetCursor(m_previousCursor);
+            if (m_previousToolTip.empty())
+                {
+                UnsetToolTip();
+                }
+            else
+                {
+                SetToolTip(m_previousToolTip);
+                }
+            }
+        }
+
+    //----------------------------------
+    void Thumbnail::PickColorAt(const wxPoint& clickPos)
+        {
+        SetColorPickingMode(false);
+
+        if (!m_img.IsOk())
+            {
+            return;
+            }
+
+        const wxImage& originalImg{ m_img.GetOriginalImage() };
+        const wxSize frameSize{ m_img.GetImageSize() };
+        if (!originalImg.IsOk() || frameSize.GetWidth() <= 0 || frameSize.GetHeight() <= 0)
+            {
+            return;
+            }
+
+        // the image is centered within the control, so map the click back to
+        // its position within the (possibly scaled) displayed image first
+        const wxPoint anchorOffset{ safe_divide(GetSize().GetWidth() - frameSize.GetWidth(), 2),
+                                    safe_divide(GetSize().GetHeight() - frameSize.GetHeight(), 2) };
+        const wxPoint posInImage{ clickPos - anchorOffset };
+        if (posInImage.x < 0 || posInImage.y < 0 || posInImage.x >= frameSize.GetWidth() ||
+            posInImage.y >= frameSize.GetHeight())
+            {
+            return;
+            }
+
+        const int srcX{ std::clamp(
+            static_cast<int>(posInImage.x *
+                             safe_divide<double>(originalImg.GetWidth(), frameSize.GetWidth())),
+            0, originalImg.GetWidth() - 1) };
+        const int srcY{ std::clamp(
+            static_cast<int>(posInImage.y *
+                             safe_divide<double>(originalImg.GetHeight(), frameSize.GetHeight())),
+            0, originalImg.GetHeight() - 1) };
+
+        const wxColour pickedColor{ originalImg.GetRed(srcX, srcY),
+                                    originalImg.GetGreen(srcX, srcY),
+                                    originalImg.GetBlue(srcX, srcY) };
+
+        wxColourPickerEvent cevent(this, GetId(), pickedColor);
+        cevent.SetEventType(wxEVT_THUMBNAIL_COLOR_PICKED);
+        GetEventHandler()->ProcessEvent(cevent);
+        }
+
+    //----------------------------------
+    void Thumbnail::OnClick(const wxMouseEvent& event)
+        {
+        if (m_colorPickingMode)
+            {
+            PickColorAt(event.GetPosition());
+            return;
+            }
         if ((m_clickMode == ClickMode::FullSizeViewable) && m_img.IsOk())
             {
             // if original image is smaller or same size as this control,

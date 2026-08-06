@@ -14,6 +14,7 @@
 
 #include "../../base/image.h"
 #include <wx/bitmap.h>
+#include <wx/clrpicker.h>
 #include <wx/dcbuffer.h>
 #include <wx/dialog.h>
 #include <wx/dnd.h>
@@ -24,6 +25,7 @@
 
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_THUMBNAIL_COLOR_PICKED, wxColourPickerEvent);
 
 #define EVT_THUMBNAIL_CHANGED(winId, fn)                                                           \
     wx__DECLARE_EVT1(wxEVT_THUMBNAIL_CHANGED, winId, wxCommandEventHandler(fn))
@@ -140,17 +142,38 @@ namespace Wisteria::UI
             return m_filePath;
             }
 
+        /** @brief Enables a one-shot mode where the next click samples a pixel's
+                color instead of the usual click behavior, firing
+                @c wxEVT_THUMBNAIL_COLOR_PICKED.
+            @param enable @c true to enable.*/
+        void SetColorPickingMode(bool enable);
+
+        /// @returns @c true if the control is currently in color-picking mode.
+        [[nodiscard]]
+        bool IsInColorPickingMode() const noexcept
+            {
+            return m_colorPickingMode;
+            }
+
       private:
         void OnResize(wxSizeEvent& event);
-        void OnClick([[maybe_unused]] wxMouseEvent& event);
+        void OnClick(const wxMouseEvent& event);
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
         void OnSysColourChanged(wxSysColourChangedEvent& event);
+        // samples the original image's color at a click position and fires
+        // wxEVT_THUMBNAIL_COLOR_PICKED
+        void PickColorAt(const wxPoint& clickPos);
 
         Wisteria::GraphItems::Image m_img;
         ClickMode m_clickMode{ ClickMode::FullSizeViewable };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         wxSize m_baseSize{ 128, 128 };
         wxString m_filePath;
+
+        // color-picking state
+        bool m_colorPickingMode{ false };
+        wxCursor m_previousCursor;
+        wxString m_previousToolTip;
 
         // resize state variables
         bool m_blockResize{ true };
