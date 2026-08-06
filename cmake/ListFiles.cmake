@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.25)
 # (excludes test files, demo, UI components not part of core library, and submodule extras)
 set(WISTERIA_LIB_EXCLUDE_FILTER "(testmainc|xml_format|rtf_extract|pdf_|postscript_extract|cpp_extract|\
 odt_odp_extract|doc_extract|docx_extract|ui/app[.]cpp|codeeditor[.]cpp|htmltablewin[.]cpp|\
-pdfreader[.]cpp|\
+pdfreader[.]cpp|benchmark[.]cpp|\
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
 htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdlg[.]cpp|\
@@ -16,7 +16,7 @@ demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdf
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/editors/insert[^/]*[.]cpp|\
-axisoptionspanel[.]cpp|accessibilityoptionspanel[.]cpp|\
+axisoptionspanel[.]cpp|accessibilityoptionspanel[.]cpp|benchmark[.]cpp|\
 dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
 utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|wxpdfdoc/)")
 
@@ -26,7 +26,7 @@ codeeditor[.]cpp|functionbrowserdlg[.]cpp|demo[.]cpp|main[.]cpp|\
 htmltablewinprintout[.]cpp|htmltablewin[.]cpp|archivedlg[.]cpp|htmltablepanel[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
 (cpp|doc|docx|html|markdown|ods|odt|postscript|rtf|odt_odp)_extract_text[.]cpp|\
-pdfreader[.]cpp|pdf_|\
+pdfreader[.]cpp|pdf_|benchmark[.]cpp|\
 utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
 
 # Use the directory containing this file to find the project root
