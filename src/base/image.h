@@ -610,6 +610,28 @@ namespace Wisteria::GraphItems
             return std::make_pair(sz.GetWidth(), sz.GetHeight());
             }
 
+        /// @brief The nearest non-border pixel positions found along each edge of a
+        ///     scanned image.
+        struct BorderEdges
+            {
+            std::vector<std::pair<int, int>> m_rowLeftEdges;
+            std::vector<std::pair<int, int>> m_rowRightEdges;
+            std::vector<std::pair<int, int>> m_colTopEdges;
+            std::vector<std::pair<int, int>> m_colBottomEdges;
+            };
+
+        /// @brief For each row/column of @p img with any content, finds the nearest
+        ///     non-border pixel position from each side.
+        /// @param img The image to scan.
+        /// @param colorTolerance How far a pixel's color channels may deviate from
+        ///     @c baseColor and still be considered part of the border.
+        /// @param baseColor The color of the border area (e.g., the color of the
+        ///     wall or scanner bed surrounding the actual content).
+        /// @returns The edge positions found along each side of the image.
+        [[nodiscard]]
+        static BorderEdges FindBorderEdges(const wxImage& img, uint8_t colorTolerance,
+                                           const wxColour& baseColor);
+
         wxImage m_originalImg;
         wxSize m_size{ 0, 0 };
         wxSize m_frameSize{ 0, 0 };

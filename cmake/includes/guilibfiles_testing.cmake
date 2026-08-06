@@ -14,6 +14,7 @@ SET(WISTERIA_SRC
     ../../src/base/graphitems.cpp
     ../../src/base/icons.cpp
     ../../src/base/image.cpp
+    ../../src/base/image_effects.cpp
     ../../src/base/label.cpp
     ../../src/base/lines.cpp
     ../../src/base/points.cpp
