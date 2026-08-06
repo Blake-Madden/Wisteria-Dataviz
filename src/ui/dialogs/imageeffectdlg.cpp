@@ -8,7 +8,9 @@
 
 #include "imageeffectdlg.h"
 #include "wx/valgen.h"
+#include <wx/artprov.h>
 #include <wx/datetime.h>
+#include <wx/utils.h>
 #include <wx/wupdlock.h>
 
 namespace Wisteria::UI
@@ -54,6 +56,11 @@ namespace Wisteria::UI
         m_cropBorderColorCtrl =
             new wxColourPickerCtrl(cropBorderSizer->GetStaticBox(), wxID_ANY, m_cropBorderColor);
         cropColorSizer->Add(m_cropBorderColorCtrl, wxSizerFlags{}.CenterVertical());
+        m_pickColorButton = new wxButton(cropBorderSizer->GetStaticBox(), wxID_ANY);
+        m_pickColorButton->SetBitmap(
+            wxArtProvider::GetBitmapBundle(L"ID_COLOR_PICKER", wxART_BUTTON));
+        m_pickColorButton->SetToolTip(_(L"Pick a color from the image"));
+        cropColorSizer->Add(m_pickColorButton, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
         cropBorderSizer->Add(cropColorSizer, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
         auto* cropToleranceSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -136,6 +143,17 @@ namespace Wisteria::UI
                                         UpdatePreview();
                                     });
 
+        m_pickColorButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] const wxCommandEvent&)
+                                { m_thumbnail->SetColorPickingMode(true); });
+
+        m_thumbnail->Bind(wxEVT_THUMBNAIL_COLOR_PICKED,
+                          [this](const wxColourPickerEvent& event)
+                          {
+                              m_cropBorderColor = event.GetColour();
+                              m_cropBorderColorCtrl->SetColour(m_cropBorderColor);
+                              UpdatePreview();
+                          });
+
         imagePathBrowseButton->Bind(wxEVT_BUTTON,
                                     [this]([[maybe_unused]] const wxCommandEvent&)
                                     {
@@ -145,7 +163,7 @@ namespace Wisteria::UI
                                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
                                         if (fd.ShowModal() == wxID_OK)
                                             {
-                                            SetSourceImage(fd.GetPath());
+                                            SetSourceImage(fd.GetPath(), wxGetKeyState(WXK_SHIFT));
                                             }
                                     });
 
@@ -229,10 +247,11 @@ namespace Wisteria::UI
         m_cropBorderColorLabel->Enable(m_cropImageBorder);
         m_cropBorderColorLabel->Refresh();
         m_cropBorderColorCtrl->Enable(m_cropImageBorder);
+        m_pickColorButton->Enable(m_cropImageBorder);
         }
 
     //----------------------------------------
-    void ImageEffectDlg::SetSourceImage(const wxString& path)
+    void ImageEffectDlg::SetSourceImage(const wxString& path, const bool useSourceAsOutputPath)
         {
         if (path.empty() || !wxFileExists(path))
             {
@@ -244,7 +263,9 @@ namespace Wisteria::UI
         m_baseImagePath = wxFileName{ path };
         m_originalImage = GraphItems::Image::LoadFile(path);
         m_imagePathLabel->SetLabel(m_baseImagePath.GetFullPath());
-        m_outputPathPicker->SetPath(CreateDefaultOutputPath(m_baseImagePath));
+        m_outputPathPicker->SetPath(useSourceAsOutputPath ?
+                                        m_baseImagePath.GetFullPath() :
+                                        CreateDefaultOutputPath(m_baseImagePath));
         UpdatePreview();
         }
 

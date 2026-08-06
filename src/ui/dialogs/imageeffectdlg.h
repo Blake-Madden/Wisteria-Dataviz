@@ -15,6 +15,7 @@
 #include "../../base/settings.h"
 #include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
+#include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
@@ -73,9 +74,11 @@ namespace Wisteria::UI
         void UpdatePreview();
         [[nodiscard]]
         wxImage GetSourceImage() const;
-        // loads a new source image (from the image-path picker or a file dropped onto
-        // the preview) and refreshes the path controls and preview to match
-        void SetSourceImage(const wxString& path);
+        // Loads a new source image (from the image-path picker or a file dropped onto
+        // the preview) and refreshes the path controls and preview to match.
+        // The output path is date-stamped unless @p useSourceAsOutputPath is true, in which
+        // case it's set to the source path.
+        void SetSourceImage(const wxString& path, bool useSourceAsOutputPath = false);
         // builds a suggested (guaranteed non-existent) output path from a source path
         [[nodiscard]]
         static wxString CreateDefaultOutputPath(const wxFileName& sourcePath);
@@ -96,6 +99,7 @@ namespace Wisteria::UI
         wxSpinCtrl* m_cropBorderToleranceCtrl{ nullptr };
         wxStaticText* m_cropBorderColorLabel{ nullptr };
         wxColourPickerCtrl* m_cropBorderColorCtrl{ nullptr };
+        wxButton* m_pickColorButton{ nullptr };
 
         wxString m_effectFilePath;
         };
