@@ -10,6 +10,7 @@
 #include <utility>
 #include <wx/dc.h>
 #include <wx/statline.h>
+#include <wx/tooltip.h>
 #include <wx/wupdlock.h>
 
 wxDEFINE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
