@@ -251,6 +251,49 @@ namespace Wisteria::GraphItems
         static wxImage CropImageBorder(const wxImage& img, uint8_t colorTolerance = 10,
                                        const wxColour& baseColor = *wxWHITE);
 
+        /** @brief Lightens the dark shadow that appears near the gutter (i.e., spine)
+                of a scanned book page.
+            @details Pixels are lightened by an amount that increases the closer they
+                are to the gutter's edge (or, for @c GutterSide::Centered, the closer
+                they are to the image's middle column), tapering off to no change
+                beyond @p gutterWidthProportion of the image's width.
+            @param img The image to correct.
+            @param side Which side of the image the gutter is on.
+            @param gutterWidthProportion The proportion (from `0.0` to `1.0`) of the
+                image's width over which the correction tapers off.
+            @returns The image with its gutter shadow lightened.*/
+        [[nodiscard]]
+        static wxImage RemoveGutterShadow(const wxImage& img, Wisteria::GutterSide side,
+                                          double gutterWidthProportion = 0.15);
+
+        /** @brief Lightens faint bleed-through (i.e., text or images showing through
+                from the reverse side of a scanned page).
+            @details Stretches each pixel's channel values so that anything at or above
+                @p whitePoint is pushed to pure white, tapering proportionally below that.
+            @param img The image to correct.
+            @param whitePoint The channel value (from `0` to `255`) at or above which a
+                pixel is treated as background and pushed to white. Lower values are
+                more aggressive at suppressing faint bleed-through.
+            @returns The image with bleed-through lightened.*/
+        [[nodiscard]]
+        static wxImage ReduceBleedThrough(const wxImage& img, uint8_t whitePoint = 200);
+
+        /** @brief Converts an image to pure black-and-white, using Otsu's method to
+                automatically select the threshold between the two.
+            @details Pixels whose luminance falls above the selected threshold become
+                white; the rest become black.
+            @param img The image to binarize.
+            @param thresholdAdjustment An offset added to the threshold that Otsu's
+                method selects, clamped to a valid luminance value (`0`-`255`).
+                Raising this preserves lighter grays as black; lowering it turns
+                more of them white.
+            @returns The black-and-white image.
+            @sa N. Otsu, "A Threshold Selection Method from Gray-Level Histograms,"
+                IEEE Transactions on Systems, Man, and Cybernetics, vol. 9, no. 1,
+                pp. 62-66, 1979.*/
+        [[nodiscard]]
+        static wxImage BinarizeOtsu(const wxImage& img, int thresholdAdjustment = 0);
+
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
             @returns The combined image.
@@ -631,6 +674,52 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static BorderEdges FindBorderEdges(const wxImage& img, uint8_t colorTolerance,
                                            const wxColour& baseColor);
+
+        /// @brief Applies an affine transform (`new = scale * original + offset`) to every
+        ///     color channel of every pixel in an image.
+        /// @param img The image to transform.
+        /// @param getPixelCoefficients A function taking a pixel's @c x and @c y position
+        ///     and returning the (scale, offset) pair to apply to that pixel's channels.
+        /// @returns A copy of @p img with the transform applied.
+        template<typename CoefficientFn>
+        [[nodiscard]]
+        static wxImage TransformChannelsAffine(const wxImage& img,
+                                               CoefficientFn getPixelCoefficients)
+            {
+            wxImage outImg{ img.Copy() };
+            const auto* const imgInData = img.GetData();
+            auto* const imgOutData = outImg.GetData();
+
+            const int width{ img.GetWidth() };
+            const int height{ img.GetHeight() };
+
+// NOLINTBEGIN(openmp-use-default-none)
+#pragma omp parallel for
+            for (int y = 0; y < height; ++y)
+                {
+                for (int x = 0; x < width; ++x)
+                    {
+                    const auto [scale, offset]{ getPixelCoefficients(x, y) };
+                    // no-op for this pixel; leave it as-is (already copied from the source)
+                    if (scale == 1.0 && offset == 0.0)
+                        {
+                        continue;
+                        }
+
+                    const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
+                    for (size_t channel = 0; channel < 3; ++channel)
+                        {
+                        const unsigned char original{ imgInData[(pixelIndex * 3) + channel] };
+                        const double transformed{ (scale * original) + offset };
+                        imgOutData[(pixelIndex * 3) + channel] =
+                            static_cast<unsigned char>(std::clamp(transformed, 0.0, 255.0));
+                        }
+                    }
+                }
+            // NOLINTEND(openmp-use-default-none)
+
+            return outImg;
+            }
 
         wxImage m_originalImg;
         wxSize m_size{ 0, 0 };

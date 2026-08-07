@@ -10,7 +10,9 @@
 #include "image.h"
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdlib>
+#include <vector>
 
 namespace Wisteria::GraphItems
     {
@@ -154,6 +156,146 @@ namespace Wisteria::GraphItems
             }
 
         return img.GetSubImage(wxRect{ wxPoint{ left, top }, wxPoint{ right, bottom } });
+        }
+
+    //-------------------------------------------
+    wxImage Image::RemoveGutterShadow(const wxImage& img, const Wisteria::GutterSide side,
+                                      const double gutterWidthProportion /*= 0.15*/)
+        {
+        if (!img.IsOk())
+            {
+            return img;
+            }
+
+        const int width{ img.GetWidth() };
+        const double gutterWidth{ std::max<double>(1.0, width * gutterWidthProportion) };
+        const double centerColumn{ (width - 1) / 2.0 };
+
+        return TransformChannelsAffine(
+            img,
+            [side, gutterWidth, centerColumn, width](const int x, [[maybe_unused]]
+                                                                  const int y)
+            {
+                const double distanceFromGutter{ (side == Wisteria::GutterSide::Left) ?
+                                                     x :
+                                                 (side == Wisteria::GutterSide::Right) ?
+                                                     (width - 1) - x :
+                                                     std::abs(x - centerColumn) };
+                const double weight{ std::clamp(1.0 - (distanceFromGutter / gutterWidth), 0.0,
+                                                1.0) };
+                // scale of (1 - weight) with an offset of (weight * 255) lightens the
+                // pixel towards white in proportion to its distance from the gutter
+                return std::make_pair(1.0 - weight, weight * 255.0);
+            });
+        }
+
+    //-------------------------------------------
+    wxImage Image::ReduceBleedThrough(const wxImage& img, const uint8_t whitePoint /*= 200*/)
+        {
+        if (!img.IsOk())
+            {
+            return img;
+            }
+
+        const double scale{ safe_divide<double>(255.0, whitePoint) };
+
+        return TransformChannelsAffine(img, [scale]([[maybe_unused]] const int x, [[maybe_unused]]
+                                                                                  const int y)
+                                       { return std::make_pair(scale, 0.0); });
+        }
+
+    //-------------------------------------------
+    wxImage Image::BinarizeOtsu(const wxImage& img, const int thresholdAdjustment /*= 0*/)
+        {
+        if (!img.IsOk())
+            {
+            return img;
+            }
+
+        wxImage outImg{ img.Copy() };
+        const auto* const imgInData = img.GetData();
+        auto* const imgOutData = outImg.GetData();
+
+        const int width{ img.GetWidth() };
+        const int height{ img.GetHeight() };
+        const size_t pixelCount{ static_cast<size_t>(width) * static_cast<size_t>(height) };
+
+        constexpr size_t GRAYSCALE_LEVELS{ 256 };
+        std::array<size_t, GRAYSCALE_LEVELS> histogram{ 0 };
+        std::vector<uint8_t> luminance(pixelCount);
+
+        for (size_t pixelIndex = 0; pixelIndex < pixelCount; ++pixelIndex)
+            {
+            const size_t byteIndex{ pixelIndex * 3 };
+            const auto gray{ static_cast<uint8_t>(std::clamp<double>(
+                (0.299 * imgInData[byteIndex]) + (0.587 * imgInData[byteIndex + 1]) +
+                    (0.114 * imgInData[byteIndex + 2]),
+                0.0, 255.0)) };
+            luminance[pixelIndex] = gray;
+            ++histogram[gray];
+            }
+
+        double sumTotal{ 0.0 };
+        for (size_t level = 0; level < GRAYSCALE_LEVELS; ++level)
+            {
+            sumTotal += static_cast<double>(level) * histogram[level];
+            }
+
+        // Otsu's method: step through every candidate threshold and keep the one that
+        // maximizes the variance between the two pixel groups it would split the
+        // histogram into.
+        size_t weightBelow{ 0 };
+        double sumBelow{ 0.0 };
+        uint8_t threshold{ 0 };
+        double maxVariance{ 0.0 };
+        for (size_t level = 0; level < GRAYSCALE_LEVELS; ++level)
+            {
+            weightBelow += histogram[level];
+            if (weightBelow == 0)
+                {
+                continue;
+                }
+            const size_t weightAbove{ pixelCount - weightBelow };
+            if (weightAbove == 0)
+                {
+                break;
+                }
+            sumBelow += static_cast<double>(level) * histogram[level];
+
+            const double meanBelow{ sumBelow / weightBelow };
+            const double meanAbove{ (sumTotal - sumBelow) / weightAbove };
+            const double meanDifference{ meanBelow - meanAbove };
+            const double variance{ static_cast<double>(weightBelow) * weightAbove * meanDifference *
+                                   meanDifference };
+
+            if (variance > maxVariance)
+                {
+                maxVariance = variance;
+                threshold = static_cast<uint8_t>(level);
+                }
+            }
+
+        const int adjustedThreshold{ std::clamp(static_cast<int>(threshold) + thresholdAdjustment,
+                                                0, 255) };
+
+// NOLINTBEGIN(openmp-use-default-none)
+#pragma omp parallel for
+        for (int y = 0; y < height; ++y)
+            {
+            for (int x = 0; x < width; ++x)
+                {
+                const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
+                const unsigned char binarized{ static_cast<unsigned char>(
+                    (luminance[pixelIndex] > adjustedThreshold) ? 255 : 0) };
+                for (size_t channel = 0; channel < 3; ++channel)
+                    {
+                    imgOutData[(pixelIndex * 3) + channel] = binarized;
+                    }
+                }
+            }
+        // NOLINTEND(openmp-use-default-none)
+
+        return outImg;
         }
 
     //-------------------------------------------

@@ -78,13 +78,91 @@ namespace Wisteria::UI
         cropBorderSizer->Add(cropToleranceSizer,
                              wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
-        mainSizer->Add(cropBorderSizer, wxSizerFlags{}.Expand().Border());
+        auto* gutterShadowSizer = new wxStaticBoxSizer(wxVERTICAL, this);
+        auto* gutterShadowCheckbox = new wxCheckBox(
+            gutterShadowSizer->GetStaticBox(), wxID_ANY, _(L"Remove gutter shadow"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_removeGutterShadow });
+        gutterShadowSizer->Add(gutterShadowCheckbox, wxSizerFlags{}.Border());
+
+        auto* gutterSideSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_gutterSideLabel =
+            new wxStaticText(gutterShadowSizer->GetStaticBox(), wxID_ANY, _(L"Gutter location:"));
+        gutterSideSizer->Add(m_gutterSideLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_gutterSideChoice =
+            new wxChoice(gutterShadowSizer->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                         wxDefaultSize, 0, nullptr, 0, wxGenericValidator{ &m_gutterSide });
+        m_gutterSideChoice->Append(_(L"Left"));
+        m_gutterSideChoice->Append(_(L"Right"));
+        m_gutterSideChoice->Append(_(L"Center"));
+        m_gutterSideChoice->SetSelection(m_gutterSide);
+        gutterSideSizer->Add(m_gutterSideChoice, wxSizerFlags{}.CenterVertical());
+        gutterShadowSizer->Add(gutterSideSizer, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        auto* gutterWidthSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_gutterWidthLabel =
+            new wxStaticText(gutterShadowSizer->GetStaticBox(), wxID_ANY, _(L"Gutter width (%):"));
+        gutterWidthSizer->Add(m_gutterWidthLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_gutterWidthCtrl =
+            new wxSpinCtrl(gutterShadowSizer->GetStaticBox(), wxID_ANY, wxString{},
+                           wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 50, m_gutterWidth);
+        m_gutterWidthCtrl->SetValidator(wxGenericValidator{ &m_gutterWidth });
+        gutterWidthSizer->Add(m_gutterWidthCtrl, wxSizerFlags{}.CenterVertical());
+        gutterShadowSizer->Add(gutterWidthSizer,
+                               wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        auto* cropAndGutterSizer = new wxBoxSizer(wxHORIZONTAL);
+        cropAndGutterSizer->Add(cropBorderSizer, wxSizerFlags{ 1 }.Expand());
+        cropAndGutterSizer->Add(gutterShadowSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT));
+        mainSizer->Add(cropAndGutterSizer, wxSizerFlags{}.Expand().Border());
+
+        auto* bleedThroughSizer = new wxStaticBoxSizer(wxVERTICAL, this);
+        auto* bleedThroughCheckbox = new wxCheckBox(
+            bleedThroughSizer->GetStaticBox(), wxID_ANY, _(L"Reduce bleed-through"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_reduceBleedThrough });
+        bleedThroughSizer->Add(bleedThroughCheckbox, wxSizerFlags{}.Border());
+
+        auto* bleedThroughWhitePointSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_bleedThroughWhitePointLabel =
+            new wxStaticText(bleedThroughSizer->GetStaticBox(), wxID_ANY, _(L"Sensitivity:"));
+        bleedThroughWhitePointSizer->Add(m_bleedThroughWhitePointLabel,
+                                         wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_bleedThroughWhitePointCtrl = new wxSpinCtrl(
+            bleedThroughSizer->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+            wxDefaultSize, wxSP_ARROW_KEYS, 1, 254, m_bleedThroughWhitePoint);
+        m_bleedThroughWhitePointCtrl->SetValidator(wxGenericValidator{ &m_bleedThroughWhitePoint });
+        bleedThroughWhitePointSizer->Add(m_bleedThroughWhitePointCtrl,
+                                         wxSizerFlags{}.CenterVertical());
+        bleedThroughSizer->Add(bleedThroughWhitePointSizer,
+                               wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        mainSizer->Add(bleedThroughSizer, wxSizerFlags{}.Expand().Border());
+
+        auto* binarizeSizer = new wxStaticBoxSizer(wxVERTICAL, this);
+        auto* binarizeCheckbox = new wxCheckBox(
+            binarizeSizer->GetStaticBox(), wxID_ANY, _(L"Otsu binarize (black && white)"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_binarize });
+        binarizeSizer->Add(binarizeCheckbox, wxSizerFlags{}.Border());
+
+        auto* binarizeThresholdSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_binarizeThresholdLabel =
+            new wxStaticText(binarizeSizer->GetStaticBox(), wxID_ANY, _(L"Threshold adjustment:"));
+        binarizeThresholdSizer->Add(m_binarizeThresholdLabel,
+                                    wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_binarizeThresholdCtrl = new wxSpinCtrl(
+            binarizeSizer->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+            wxSP_ARROW_KEYS, -100, 100, m_binarizeThresholdAdjustment);
+        m_binarizeThresholdCtrl->SetValidator(wxGenericValidator{ &m_binarizeThresholdAdjustment });
+        binarizeThresholdSizer->Add(m_binarizeThresholdCtrl, wxSizerFlags{}.CenterVertical());
+        binarizeSizer->Add(binarizeThresholdSizer,
+                           wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        mainSizer->Add(binarizeSizer, wxSizerFlags{}.Expand().Border());
 
         const wxSize previewSize{ FromDIP(wxSize{ 512, 512 }) };
 
         auto* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
         m_thumbnail = new Thumbnail(previewSizer->GetStaticBox(), m_originalImage,
-                                    Wisteria::ClickMode::BrowseForImageFile, true, wxID_ANY,
+                                    Wisteria::ClickMode::FullSizeViewable, false, wxID_ANY,
                                     wxDefaultPosition, previewSize);
         previewSizer->Add(m_thumbnail, wxSizerFlags{ 1 }.Expand().Border());
         mainSizer->Add(previewSizer, wxSizerFlags{ 1 }.Expand().Border());
@@ -119,6 +197,10 @@ namespace Wisteria::UI
         SetSizerAndFit(mainSizer);
 
         UpdateCropBorderControls();
+        UpdateGutterShadowControls();
+        UpdateBleedThroughControls();
+        UpdateBinarizeControls();
+        UpdateSaveInplaceControls();
 
         Bind(wxEVT_CHOICE,
              [this]([[maybe_unused]] const wxCommandEvent&)
@@ -132,6 +214,10 @@ namespace Wisteria::UI
              {
                  TransferDataFromWindow();
                  UpdateCropBorderControls();
+                 UpdateGutterShadowControls();
+                 UpdateBleedThroughControls();
+                 UpdateBinarizeControls();
+                 UpdateSaveInplaceControls();
                  UpdatePreview();
              });
 
@@ -148,6 +234,48 @@ namespace Wisteria::UI
                                             TransferDataFromWindow();
                                             UpdatePreview();
                                         });
+
+        m_gutterWidthCtrl->Bind(wxEVT_SPINCTRL,
+                                [this]([[maybe_unused]] wxSpinEvent&)
+                                {
+                                    TransferDataFromWindow();
+                                    UpdatePreview();
+                                });
+
+        m_gutterWidthCtrl->Bind(wxEVT_TEXT,
+                                [this]([[maybe_unused]] wxCommandEvent&)
+                                {
+                                    TransferDataFromWindow();
+                                    UpdatePreview();
+                                });
+
+        m_bleedThroughWhitePointCtrl->Bind(wxEVT_SPINCTRL,
+                                           [this]([[maybe_unused]] wxSpinEvent&)
+                                           {
+                                               TransferDataFromWindow();
+                                               UpdatePreview();
+                                           });
+
+        m_bleedThroughWhitePointCtrl->Bind(wxEVT_TEXT,
+                                           [this]([[maybe_unused]] wxCommandEvent&)
+                                           {
+                                               TransferDataFromWindow();
+                                               UpdatePreview();
+                                           });
+
+        m_binarizeThresholdCtrl->Bind(wxEVT_SPINCTRL,
+                                      [this]([[maybe_unused]] wxSpinEvent&)
+                                      {
+                                          TransferDataFromWindow();
+                                          UpdatePreview();
+                                      });
+
+        m_binarizeThresholdCtrl->Bind(wxEVT_TEXT,
+                                      [this]([[maybe_unused]] wxCommandEvent&)
+                                      {
+                                          TransferDataFromWindow();
+                                          UpdatePreview();
+                                      });
 
         m_cropBorderColorCtrl->Bind(wxEVT_COLOURPICKER_CHANGED,
                                     [this](const wxColourPickerEvent& event)
@@ -275,11 +403,30 @@ namespace Wisteria::UI
     //----------------------------------------
     wxImage ImageEffectDlg::GetSourceImage() const
         {
-        return m_cropImageBorder ?
-                   GraphItems::Image::CropImageBorder(m_originalImage,
-                                                      static_cast<uint8_t>(m_cropBorderTolerance),
-                                                      m_cropBorderColor) :
-                   m_originalImage;
+        wxImage img{ m_cropImageBorder ?
+                         GraphItems::Image::CropImageBorder(
+                             m_originalImage, static_cast<uint8_t>(m_cropBorderTolerance),
+                             m_cropBorderColor) :
+                         m_originalImage };
+
+        if (m_removeGutterShadow)
+            {
+            img = GraphItems::Image::RemoveGutterShadow(
+                img, static_cast<Wisteria::GutterSide>(m_gutterSide), m_gutterWidth / 100.0);
+            }
+
+        if (m_reduceBleedThrough)
+            {
+            img = GraphItems::Image::ReduceBleedThrough(
+                img, static_cast<uint8_t>(m_bleedThroughWhitePoint));
+            }
+
+        if (m_binarize)
+            {
+            img = GraphItems::Image::BinarizeOtsu(img, m_binarizeThresholdAdjustment);
+            }
+
+        return img;
         }
 
     //----------------------------------------
@@ -288,13 +435,53 @@ namespace Wisteria::UI
         m_cropBorderToleranceLabel->Enable(m_cropImageBorder);
         m_cropBorderToleranceLabel->Refresh();
         m_cropBorderToleranceCtrl->Enable(m_cropImageBorder);
+        m_cropBorderToleranceCtrl->Refresh();
         m_cropBorderColorLabel->Enable(m_cropImageBorder);
         m_cropBorderColorLabel->Refresh();
         m_cropBorderColorCtrl->Enable(m_cropImageBorder);
+        m_cropBorderColorCtrl->Refresh();
         m_pickColorButton->Enable(m_cropImageBorder);
+        m_pickColorButton->Refresh();
+        }
+
+    //----------------------------------------
+    void ImageEffectDlg::UpdateSaveInplaceControls()
+        {
         m_outputPathLabel->Enable(!m_saveInplace);
         m_outputPathLabel->Refresh();
         m_outputPathPicker->Enable(!m_saveInplace);
+        m_outputPathPicker->Refresh();
+        }
+
+    //----------------------------------------
+    void ImageEffectDlg::UpdateGutterShadowControls()
+        {
+        m_gutterSideLabel->Enable(m_removeGutterShadow);
+        m_gutterSideLabel->Refresh();
+        m_gutterSideChoice->Enable(m_removeGutterShadow);
+        m_gutterSideChoice->Refresh();
+        m_gutterWidthLabel->Enable(m_removeGutterShadow);
+        m_gutterWidthLabel->Refresh();
+        m_gutterWidthCtrl->Enable(m_removeGutterShadow);
+        m_gutterWidthCtrl->Refresh();
+        }
+
+    //----------------------------------------
+    void ImageEffectDlg::UpdateBleedThroughControls()
+        {
+        m_bleedThroughWhitePointLabel->Enable(m_reduceBleedThrough);
+        m_bleedThroughWhitePointLabel->Refresh();
+        m_bleedThroughWhitePointCtrl->Enable(m_reduceBleedThrough);
+        m_bleedThroughWhitePointCtrl->Refresh();
+        }
+
+    //----------------------------------------
+    void ImageEffectDlg::UpdateBinarizeControls()
+        {
+        m_binarizeThresholdLabel->Enable(m_binarize);
+        m_binarizeThresholdLabel->Refresh();
+        m_binarizeThresholdCtrl->Enable(m_binarize);
+        m_binarizeThresholdCtrl->Refresh();
         }
 
     //----------------------------------------

@@ -74,6 +74,18 @@ namespace Wisteria
         Bottom
         };
 
+    /// @brief Which side of a scanned page a gutter (i.e., spine) shadow appears on.
+    enum class GutterSide
+        {
+        /// @brief The gutter is along the left edge of the image.
+        Left,
+        /// @brief The gutter is along the right edge of the image.
+        Right,
+        /// @brief The gutter runs down the middle of the image
+        ///     (e.g., a two-page spread scanned as a single image).
+        Centered
+        };
+
     /// @brief Gender options.
     enum class Gender
         {

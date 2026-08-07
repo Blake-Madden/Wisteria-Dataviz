@@ -77,11 +77,14 @@ namespace Wisteria::UI
         // loads a new source image (from the image-path picker or a file dropped onto
         // the preview) and refreshes the path controls and preview to match
         void SetSourceImage(const wxString& path);
-        // builds a suggested (guaranteed non-existent) output path from a source path
+        // builds a suggested (non-existent) output path from a source path
         [[nodiscard]]
         static wxString CreateDefaultOutputPath(const wxFileName& sourcePath);
-        // enables/disables the crop border threshold controls based on the checkbox state
         void UpdateCropBorderControls();
+        void UpdateGutterShadowControls();
+        void UpdateBleedThroughControls();
+        void UpdateBinarizeControls();
+        void UpdateSaveInplaceControls();
 
         wxFileName m_baseImagePath;
         wxImage m_originalImage;
@@ -89,6 +92,13 @@ namespace Wisteria::UI
         bool m_cropImageBorder{ false };
         int m_cropBorderTolerance{ 10 };
         wxColour m_cropBorderColor{ *wxWHITE };
+        bool m_removeGutterShadow{ false };
+        int m_gutterSide{ 0 };
+        int m_gutterWidth{ 15 };
+        bool m_reduceBleedThrough{ false };
+        int m_bleedThroughWhitePoint{ 200 };
+        bool m_binarize{ false };
+        int m_binarizeThresholdAdjustment{ 0 };
         bool m_saveInplace{ false };
 
         Thumbnail* m_thumbnail{ nullptr };
@@ -100,6 +110,14 @@ namespace Wisteria::UI
         wxStaticText* m_cropBorderColorLabel{ nullptr };
         wxColourPickerCtrl* m_cropBorderColorCtrl{ nullptr };
         wxButton* m_pickColorButton{ nullptr };
+        wxStaticText* m_gutterSideLabel{ nullptr };
+        wxChoice* m_gutterSideChoice{ nullptr };
+        wxStaticText* m_gutterWidthLabel{ nullptr };
+        wxSpinCtrl* m_gutterWidthCtrl{ nullptr };
+        wxStaticText* m_bleedThroughWhitePointLabel{ nullptr };
+        wxSpinCtrl* m_bleedThroughWhitePointCtrl{ nullptr };
+        wxStaticText* m_binarizeThresholdLabel{ nullptr };
+        wxSpinCtrl* m_binarizeThresholdCtrl{ nullptr };
 
         wxString m_effectFilePath;
         };
