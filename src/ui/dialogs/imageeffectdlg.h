@@ -74,11 +74,9 @@ namespace Wisteria::UI
         void UpdatePreview();
         [[nodiscard]]
         wxImage GetSourceImage() const;
-        // Loads a new source image (from the image-path picker or a file dropped onto
-        // the preview) and refreshes the path controls and preview to match.
-        // The output path is date-stamped unless @p useSourceAsOutputPath is true, in which
-        // case it's set to the source path.
-        void SetSourceImage(const wxString& path, bool useSourceAsOutputPath = false);
+        // loads a new source image (from the image-path picker or a file dropped onto
+        // the preview) and refreshes the path controls and preview to match
+        void SetSourceImage(const wxString& path);
         // builds a suggested (guaranteed non-existent) output path from a source path
         [[nodiscard]]
         static wxString CreateDefaultOutputPath(const wxFileName& sourcePath);
@@ -91,10 +89,12 @@ namespace Wisteria::UI
         bool m_cropImageBorder{ false };
         int m_cropBorderTolerance{ 10 };
         wxColour m_cropBorderColor{ *wxWHITE };
+        bool m_saveInplace{ false };
 
         Thumbnail* m_thumbnail{ nullptr };
         wxStaticText* m_imagePathLabel{ nullptr };
         wxFilePickerCtrl* m_outputPathPicker{ nullptr };
+        wxStaticText* m_outputPathLabel{ nullptr };
         wxStaticText* m_cropBorderToleranceLabel{ nullptr };
         wxSpinCtrl* m_cropBorderToleranceCtrl{ nullptr };
         wxStaticText* m_cropBorderColorLabel{ nullptr };

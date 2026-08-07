@@ -7,7 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "imagemergedlg.h"
+#include "imageexportdlg.h"
 #include "wx/valgen.h"
+#include <wx/datetime.h>
+#include <wx/quantize.h>
 #include <wx/radiobox.h>
 #include <wx/richmsgdlg.h>
 
@@ -29,19 +32,13 @@ namespace Wisteria::UI
 
         m_horizontalThumbsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this);
 
-        m_baseImagePath =
-            wxFileName{ (!imgPaths.empty() ? wxFileName{ imgPaths[0] } : wxString{}) };
-
-        wxString imageNames;
         for (const auto& imgPath : imgPaths)
             {
-            imageNames += wxFileName{ imgPath }.GetName();
             m_horizontalThumbsSizer->Add(
                 new Thumbnail(m_horizontalThumbsSizer->GetStaticBox(),
                               Wisteria::GraphItems::Image::LoadFile(imgPath),
                               Wisteria::ClickMode::BrowseForImageFile, true));
             }
-        m_baseImagePath.SetName(imageNames);
 
         AdjustThumbnailsHorizontally();
 
@@ -65,6 +62,16 @@ namespace Wisteria::UI
                                         _(L"Click any thumbnail to select a different image.\n"
                                           "Click OK to combine images into a new one.")),
                        wxSizerFlags{}.Expand().Border());
+
+        auto* outputPathSizer = new wxBoxSizer(wxHORIZONTAL);
+        outputPathSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Output image:")),
+                             wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_outputPathPicker = new wxFilePickerCtrl(
+            this, wxID_ANY, CreateDefaultOutputPath(imgPaths), _(L"Select Output Image"),
+            GraphItems::Image::GetImageFileFilter(), wxDefaultPosition, wxDefaultSize,
+            wxFLP_SAVE | wxFLP_OVERWRITE_PROMPT | wxFLP_USE_TEXTCTRL);
+        outputPathSizer->Add(m_outputPathPicker, wxSizerFlags{ 1 }.CenterVertical());
+        mainSizer->Add(outputPathSizer, wxSizerFlags{}.Expand().Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
@@ -119,30 +126,57 @@ namespace Wisteria::UI
                         }
                     }
 
-                wxFileDialog fd(this, _(L"Select Output Image"), m_baseImagePath.GetPath(),
-                                m_baseImagePath.GetFullName(),
-                                GraphItems::Image::GetImageFileFilter(),
-                                wxFD_SAVE | wxFD_OVERWRITE_PROMPT | wxFD_PREVIEW);
-                if (fd.ShowModal() != wxID_OK)
+                m_mergedFilePath = m_outputPathPicker->GetPath();
+                if (m_mergedFilePath.empty())
+                    {
+                    wxMessageBox(_(L"Please select a path to save the image to."), _(L"Save"),
+                                 wxOK | wxICON_EXCLAMATION);
+                    return;
+                    }
+                if (wxFileName::Exists(m_mergedFilePath) &&
+                    wxMessageBox(
+                        wxString::Format(_(L"%s already exists.\nDo you want to replace it?"),
+                                         m_mergedFilePath),
+                        _(L"Save"), wxYES_NO | wxICON_QUESTION) != wxYES)
                     {
                     return;
                     }
 
-                m_mergedFilePath = fd.GetPath();
+                auto mergedImg = (m_orientRadio == 0) ?
+                                     GraphItems::Image::StitchHorizontally(images) :
+                                     GraphItems::Image::StitchVertically(images);
 
-                if (m_orientRadio == 0)
+                mergedImg.SetOption(wxIMAGE_OPTION_RESOLUTIONUNIT, wxIMAGE_RESOLUTION_INCHES);
+                mergedImg.SetOption(wxIMAGE_OPTION_RESOLUTIONX,
+                                    Settings::GetImageResolutionDPI().GetWidth());
+                mergedImg.SetOption(wxIMAGE_OPTION_RESOLUTIONY,
+                                    Settings::GetImageResolutionDPI().GetHeight());
+
+                wxString outputExt{ wxFileName{ m_mergedFilePath }.GetExt() };
+                const wxBitmapType outputImageType =
+                    GraphItems::Image::GetImageFileTypeFromExtension(outputExt);
+                if (outputImageType == wxBITMAP_TYPE_TIF)
                     {
-                    if (!GraphItems::Image::StitchHorizontally(images).SaveFile(m_mergedFilePath))
-                        {
-                        wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
-                        }
+                    mergedImg.SetOption(wxIMAGE_OPTION_COMPRESSION,
+                                        static_cast<int>(TiffCompression::CompressionNone));
                     }
-                else
+                else if (outputImageType == wxBITMAP_TYPE_JPEG)
                     {
-                    if (!GraphItems::Image::StitchVertically(images).SaveFile(m_mergedFilePath))
-                        {
-                        wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
-                        }
+                    mergedImg.SetOption(wxIMAGE_OPTION_QUALITY, 100);
+                    }
+                else if (outputImageType == wxBITMAP_TYPE_PNG)
+                    {
+                    mergedImg.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_LEVEL, 9);
+                    }
+                else if (outputImageType == wxBITMAP_TYPE_GIF)
+                    {
+                    wxQuantize::Quantize(mergedImg, mergedImg, 256);
+                    mergedImg.ConvertAlphaToMask();
+                    }
+
+                if (!mergedImg.SaveFile(m_mergedFilePath))
+                    {
+                    wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
                     }
 
                 if (IsModal())
@@ -162,29 +196,33 @@ namespace Wisteria::UI
         {
         const wxWindowUpdateLocker noUpdates(m_horizontalThumbsSizer->GetStaticBox());
         int maxHeight{ 0 };
+        int totalWidth{ 0 };
         for (const auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
             {
             if (const auto* thumb{ dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
                 thumb != nullptr)
                 {
                 maxHeight = std::max(thumb->GetImage().GetOriginalImage().GetHeight(), maxHeight);
+                totalWidth += thumb->GetImage().GetOriginalImage().GetWidth();
                 }
             }
+        const double scale{ std::min(safe_divide<double>(FromDIP(512), maxHeight),
+                                     safe_divide<double>(FromDIP(1000), totalWidth)) };
         for (auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
             {
             if (auto* thumb{ dynamic_cast<Thumbnail*>(sizerItem->GetWindow()) }; thumb != nullptr)
                 {
-                const double percentOfMaxHeight{ safe_divide<double>(
-                    thumb->GetImage().GetOriginalImage().GetHeight(), maxHeight) };
-                const wxSize bestSize = thumb->GetImage().GetBestSize(
-                    wxSize{ FromDIP(512), static_cast<int>(percentOfMaxHeight * FromDIP(512)) });
-                sizerItem->SetMinSize(bestSize);
+                const wxSize originalSize{ thumb->GetImage().GetOriginalImage().GetSize() };
+                sizerItem->SetMinSize(wxSize{
+                    std::max(FromDIP(32), static_cast<int>(originalSize.GetWidth() * scale)),
+                    std::max(FromDIP(32), static_cast<int>(originalSize.GetHeight() * scale)) });
                 }
             }
 
         if (GetSizer() != nullptr)
             {
             GetSizer()->Fit(this);
+            GetSizer()->SetSizeHints(this);
             }
         }
 
@@ -193,29 +231,57 @@ namespace Wisteria::UI
         {
         const wxWindowUpdateLocker noUpdates(m_verticalThumbsSizer->GetStaticBox());
         int maxWidth{ 0 };
+        int totalHeight{ 0 };
         for (const auto* sizerItem : m_verticalThumbsSizer->GetChildren())
             {
             if (const auto* thumb{ dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
                 thumb != nullptr)
                 {
                 maxWidth = std::max(thumb->GetImage().GetOriginalImage().GetWidth(), maxWidth);
+                totalHeight += thumb->GetImage().GetOriginalImage().GetHeight();
                 }
             }
+        const double scale{ std::min(safe_divide<double>(FromDIP(512), maxWidth),
+                                     safe_divide<double>(FromDIP(1000), totalHeight)) };
         for (auto* sizerItem : m_verticalThumbsSizer->GetChildren())
             {
             if (auto* thumb{ dynamic_cast<Thumbnail*>(sizerItem->GetWindow()) }; thumb != nullptr)
                 {
-                const double percentOfMaxWidth{ safe_divide<double>(
-                    thumb->GetImage().GetOriginalImage().GetWidth(), maxWidth) };
-                const wxSize bestSize = thumb->GetImage().GetBestSize(
-                    wxSize{ static_cast<int>(percentOfMaxWidth * FromDIP(512)), FromDIP(512) });
-                sizerItem->SetMinSize(bestSize);
+                const wxSize originalSize{ thumb->GetImage().GetOriginalImage().GetSize() };
+                sizerItem->SetMinSize(wxSize{
+                    std::max(FromDIP(32), static_cast<int>(originalSize.GetWidth() * scale)),
+                    std::max(FromDIP(32), static_cast<int>(originalSize.GetHeight() * scale)) });
                 }
             }
 
         if (GetSizer() != nullptr)
             {
             GetSizer()->Fit(this);
+            GetSizer()->SetSizeHints(this);
             }
+        }
+
+    //----------------------------------------
+    wxString ImageMergeDlg::CreateDefaultOutputPath(const wxArrayString& imgPaths)
+        {
+        if (imgPaths.empty())
+            {
+            return wxString{};
+            }
+
+        wxString combinedName;
+        for (const auto& imgPath : imgPaths)
+            {
+            combinedName += wxFileName{ imgPath }.GetName();
+            }
+
+        wxFileName outputPath{ imgPaths[0] };
+        outputPath.SetName(combinedName);
+        if (outputPath.Exists())
+            {
+            outputPath.SetName(combinedName + L"-" + wxDateTime::Now().Format(L"%Y%m%d%H%M%S"));
+            }
+
+        return outputPath.GetFullPath();
         }
     } // namespace Wisteria::UI

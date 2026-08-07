@@ -12,11 +12,13 @@
 #ifndef IMAGEMERGE_DLG_H
 #define IMAGEMERGE_DLG_H
 
+#include "../../base/settings.h"
 #include "../controls/listctrlex.h"
 #include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
 #include <vector>
 #include <wx/filename.h>
+#include <wx/filepicker.h>
 #include <wx/infobar.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
@@ -72,11 +74,16 @@ namespace Wisteria::UI
         void AdjustThumbnailsHorizontally();
         void AdjustThumbnailsVertically();
 
-        wxFileName m_baseImagePath;
+        // builds a suggested output path by combining the source images' file names;
+        // appends a datetime suffix if that combined name is already in use
+        [[nodiscard]]
+        static wxString CreateDefaultOutputPath(const wxArrayString& imgPaths);
+
         int m_orientRadio{ 0 };
 
         wxStaticBoxSizer* m_horizontalThumbsSizer{ nullptr };
         wxStaticBoxSizer* m_verticalThumbsSizer{ nullptr };
+        wxFilePickerCtrl* m_outputPathPicker{ nullptr };
 
         wxString m_mergedFilePath;
         };

@@ -7,9 +7,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "imageeffectdlg.h"
+#include "imageexportdlg.h"
 #include "wx/valgen.h"
 #include <wx/artprov.h>
 #include <wx/datetime.h>
+#include <wx/quantize.h>
 #include <wx/utils.h>
 #include <wx/wupdlock.h>
 
@@ -98,14 +100,18 @@ namespace Wisteria::UI
         mainSizer->Add(imagePathSizer, wxSizerFlags{}.Expand().Border());
 
         auto* outputPathSizer = new wxBoxSizer(wxHORIZONTAL);
-        outputPathSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Output image:")),
-                             wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        m_outputPathLabel = new wxStaticText(this, wxID_ANY, _(L"Output image:"));
+        outputPathSizer->Add(m_outputPathLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
         m_outputPathPicker = new wxFilePickerCtrl(
             this, wxID_ANY, CreateDefaultOutputPath(m_baseImagePath), _(L"Select Output Image"),
             GraphItems::Image::GetImageFileFilter(), wxDefaultPosition, wxDefaultSize,
             wxFLP_SAVE | wxFLP_OVERWRITE_PROMPT | wxFLP_USE_TEXTCTRL);
         outputPathSizer->Add(m_outputPathPicker, wxSizerFlags{ 1 }.CenterVertical());
         mainSizer->Add(outputPathSizer, wxSizerFlags{}.Expand().Border());
+
+        mainSizer->Add(new wxCheckBox(this, wxID_ANY, _("Save image inplace"), wxDefaultPosition,
+                                      wxDefaultSize, 0, wxGenericValidator{ &m_saveInplace }),
+                       wxSizerFlags{}.Expand().Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
@@ -131,6 +137,13 @@ namespace Wisteria::UI
 
         m_cropBorderToleranceCtrl->Bind(wxEVT_SPINCTRL,
                                         [this]([[maybe_unused]] wxSpinEvent&)
+                                        {
+                                            TransferDataFromWindow();
+                                            UpdatePreview();
+                                        });
+
+        m_cropBorderToleranceCtrl->Bind(wxEVT_TEXT,
+                                        [this]([[maybe_unused]] wxCommandEvent&)
                                         {
                                             TransferDataFromWindow();
                                             UpdatePreview();
@@ -163,7 +176,7 @@ namespace Wisteria::UI
                                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
                                         if (fd.ShowModal() == wxID_OK)
                                             {
-                                            SetSourceImage(fd.GetPath(), wxGetKeyState(WXK_SHIFT));
+                                            SetSourceImage(fd.GetPath());
                                             }
                                     });
 
@@ -181,14 +194,16 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [this]([[maybe_unused]] const wxCommandEvent&)
             {
-                m_effectFilePath = m_outputPathPicker->GetPath();
+                TransferDataFromWindow();
+                m_effectFilePath =
+                    m_saveInplace ? m_baseImagePath.GetFullPath() : m_outputPathPicker->GetPath();
                 if (m_effectFilePath.empty())
                     {
                     wxMessageBox(_(L"Please select a path to save the image to."), _(L"Save"),
                                  wxOK | wxICON_EXCLAMATION);
                     return;
                     }
-                if (wxFileExists(m_effectFilePath) &&
+                if (!m_saveInplace && wxFileName::Exists(m_effectFilePath) &&
                     wxMessageBox(
                         wxString::Format(_(L"%s already exists.\nDo you want to replace it?"),
                                          m_effectFilePath),
@@ -197,8 +212,37 @@ namespace Wisteria::UI
                     return;
                     }
 
-                const auto effectImg = GraphItems::Image::ApplyEffect(
+                auto effectImg = GraphItems::Image::ApplyEffect(
                     static_cast<Wisteria::ImageEffect>(m_imageEffect), GetSourceImage());
+
+                effectImg.SetOption(wxIMAGE_OPTION_RESOLUTIONUNIT, wxIMAGE_RESOLUTION_INCHES);
+                effectImg.SetOption(wxIMAGE_OPTION_RESOLUTIONX,
+                                    Settings::GetImageResolutionDPI().GetWidth());
+                effectImg.SetOption(wxIMAGE_OPTION_RESOLUTIONY,
+                                    Settings::GetImageResolutionDPI().GetHeight());
+
+                wxString outputExt{ wxFileName{ m_effectFilePath }.GetExt() };
+                const wxBitmapType outputImageType =
+                    GraphItems::Image::GetImageFileTypeFromExtension(outputExt);
+                if (outputImageType == wxBITMAP_TYPE_TIF)
+                    {
+                    effectImg.SetOption(wxIMAGE_OPTION_COMPRESSION,
+                                        static_cast<int>(TiffCompression::CompressionNone));
+                    }
+                else if (outputImageType == wxBITMAP_TYPE_JPEG)
+                    {
+                    effectImg.SetOption(wxIMAGE_OPTION_QUALITY, 100);
+                    }
+                else if (outputImageType == wxBITMAP_TYPE_PNG)
+                    {
+                    effectImg.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_LEVEL, 9);
+                    }
+                else if (outputImageType == wxBITMAP_TYPE_GIF)
+                    {
+                    wxQuantize::Quantize(effectImg, effectImg, 256);
+                    effectImg.ConvertAlphaToMask();
+                    }
+
                 if (!effectImg.SaveFile(m_effectFilePath))
                     {
                     wxMessageBox(_(L"Unable to save image."), _(L"Save"), wxOK);
@@ -248,12 +292,15 @@ namespace Wisteria::UI
         m_cropBorderColorLabel->Refresh();
         m_cropBorderColorCtrl->Enable(m_cropImageBorder);
         m_pickColorButton->Enable(m_cropImageBorder);
+        m_outputPathLabel->Enable(!m_saveInplace);
+        m_outputPathLabel->Refresh();
+        m_outputPathPicker->Enable(!m_saveInplace);
         }
 
     //----------------------------------------
-    void ImageEffectDlg::SetSourceImage(const wxString& path, const bool useSourceAsOutputPath)
+    void ImageEffectDlg::SetSourceImage(const wxString& path)
         {
-        if (path.empty() || !wxFileExists(path))
+        if (path.empty() || !wxFileName::Exists(path))
             {
             return;
             }
@@ -263,9 +310,7 @@ namespace Wisteria::UI
         m_baseImagePath = wxFileName{ path };
         m_originalImage = GraphItems::Image::LoadFile(path);
         m_imagePathLabel->SetLabel(m_baseImagePath.GetFullPath());
-        m_outputPathPicker->SetPath(useSourceAsOutputPath ?
-                                        m_baseImagePath.GetFullPath() :
-                                        CreateDefaultOutputPath(m_baseImagePath));
+        m_outputPathPicker->SetPath(CreateDefaultOutputPath(m_baseImagePath));
         UpdatePreview();
         }
 
@@ -273,8 +318,7 @@ namespace Wisteria::UI
     wxString ImageEffectDlg::CreateDefaultOutputPath(const wxFileName& sourcePath)
         {
         wxFileName outputPath{ sourcePath };
-        outputPath.SetName(wxString::Format(L"%s_edited_%s", sourcePath.GetName(),
-                                            wxDateTime::Now().Format(L"%Y%m%d%H%M%S")));
+        outputPath.SetName(sourcePath.GetName() + L"-" + wxDateTime::Now().Format(L"%Y%m%d%H%M%S"));
         return outputPath.GetFullPath();
         }
     } // namespace Wisteria::UI
