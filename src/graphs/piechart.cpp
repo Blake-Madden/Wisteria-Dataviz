@@ -303,7 +303,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         {
         wxPen scaledPen(GetPen().IsOk()   ? GetPen() :
                         GetBrush().IsOk() ? GetBrush().GetColour() :
-                                            wxColour{ 0, 0, 0, 0 });
+                                            *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
 
         const wxPoint centerPoint{ m_pieArea.GetWidth() / 2 + m_pieArea.GetLeft(),
@@ -3638,7 +3638,7 @@ namespace Wisteria::Graphs
             if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
                 (!parentIsGhosted || innerPie.IsGhosted()))
                 {
-                pSlice->GetBrush() = wxColour{ 0, 0, 0, 0 };
+                pSlice->GetBrush() = *wxTRANSPARENT_BRUSH;
                 }
 
             if (innerPie.m_showText)

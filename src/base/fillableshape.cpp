@@ -187,7 +187,7 @@ namespace Wisteria::GraphItems
         // draw the bounding box outline
         if (IsSelected())
             {
-            const wxDCBrushChanger bc{ dc, wxColour{ 0, 0, 0, 0 } };
+            const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
             const wxDCPenChanger pc{ dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT) };
             dc.DrawRectangle(drawRect);

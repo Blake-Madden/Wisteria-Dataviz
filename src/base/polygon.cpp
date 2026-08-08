@@ -162,7 +162,7 @@ namespace Wisteria::GraphItems
 
         const wxRect boundingBox = GetBoundingBox(dc);
 
-        wxPen scaledPen(GetPen().IsOk() ? GetPen() : wxColour{ 0, 0, 0, 0 });
+        wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
         const bool penIsLight{ (scaledPen.GetColour().IsOk() &&
                                 Wisteria::Colors::ColorContrast::IsLight(scaledPen.GetColour())) };
@@ -212,7 +212,7 @@ namespace Wisteria::GraphItems
                              GetBackgroundFill().GetDirection() == FillDirection::East  ? wxEAST :
                              GetBackgroundFill().GetDirection() == FillDirection::West  ? wxWEST :
                                                                                           wxSOUTH));
-                        const wxDCBrushChanger bc2(dc, wxColour{ 0, 0, 0, 0 });
+                        const wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
                         const wxDCPenChanger pc2(
                             dc, (usingCustomOutline ? *wxTRANSPARENT_PEN : dc.GetPen()));
                         dc.DrawRectangle(theRect);
@@ -488,7 +488,7 @@ namespace Wisteria::GraphItems
         // just drawing an outline (hasn't already be drawn with a background color above)
         else if (!GetBackgroundFill().IsOk())
             {
-            const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
+            const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
             if (GetShape() == PolygonShape::Spline && m_scaledPoints.size() >= 2)
                 {
                 dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
@@ -566,7 +566,7 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger bc{ dc, dc.GetPen().GetColour() };
         // need to turn off the pen because a thicker pen will cause an odd-looking
         // effect when the two lines converge at the tip of the arrowhead
-        const wxDCPenChanger pc{ dc, wxColour{ 0, 0, 0, 0 } };
+        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
         dc.DrawPolygon(arrowHead.size(), arrowHead.data());
         }
 

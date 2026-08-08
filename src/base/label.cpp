@@ -1096,7 +1096,7 @@ namespace Wisteria::GraphItems
         if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor() != wxTransparentColour)
             {
             const DCBrushChangerIfDifferent bcBg(dc, GetFontBackgroundColor());
-            const DCPenChangerIfDifferent pcBg(dc, wxColour{ 0, 0, 0, 0 });
+            const DCPenChangerIfDifferent pcBg(dc, *wxTRANSPARENT_PEN);
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
@@ -1238,7 +1238,7 @@ namespace Wisteria::GraphItems
                           .Cap(wxPenCap::wxCAP_BUTT)));
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
-                const DCBrushChangerIfDifferent bcBg(dc, wxColour{ 0, 0, 0, 0 });
+                const DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
                 }
             else if (GetTextOrientation() == Orientation::Horizontal)
@@ -1293,7 +1293,7 @@ namespace Wisteria::GraphItems
                 dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
                                        Colors::ColorBrewer::GetColor(Colors::Color::Black),
                           ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-            const DCBrushChangerIfDifferent bcBg(dc, wxColour{ 0, 0, 0, 0 });
+            const DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());

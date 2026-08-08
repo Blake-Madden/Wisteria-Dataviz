@@ -79,7 +79,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc(
             dc, wxPen(ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::YellowPepper)),
                       frameWidth));
-        const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
+        const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(dcRect);
 
         // draw "ABC" on the board
@@ -414,14 +414,14 @@ namespace Wisteria::GraphItems
             {
             const DCBrushChangerIfDifferent bc(
                 dc, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite)));
-            const DCPenChangerIfDifferent pc{ dc, wxColour{ 0, 0, 0, 0 } };
+            const DCPenChangerIfDifferent pc{ dc, *wxTRANSPARENT_PEN };
             dc.DrawPolygon(pagesFront.size(), pagesFront.data());
             }
 
             {
             const DCBrushChangerIfDifferent bc(
                 dc, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::LightGray)));
-            const DCPenChangerIfDifferent pc{ dc, wxColour{ 0, 0, 0, 0 } };
+            const DCPenChangerIfDifferent pc{ dc, *wxTRANSPARENT_PEN };
             dc.DrawPolygon(pagesSide.size(), pagesSide.data());
             }
 

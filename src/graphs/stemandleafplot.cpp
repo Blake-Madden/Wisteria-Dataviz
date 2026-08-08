@@ -597,7 +597,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
             legend->GetLegendIcons().emplace_back(
                 Icons::IconShape::HorizontalSeparator,
                 wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 2 },
-                wxColour{ 0, 0, 0, 0 });
+                *wxTRANSPARENT_BRUSH);
             }
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());

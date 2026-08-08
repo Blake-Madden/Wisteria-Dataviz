@@ -73,7 +73,7 @@ namespace Wisteria::Graphs
 
         legend.GetLegendIcons().emplace_back(
             Icons::IconShape::HorizontalSeparator,
-            wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2), wxColour{ 0, 0, 0, 0 });
+            wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2), *wxTRANSPARENT_BRUSH);
         wxString textLines;
 
         // combine lines with the same color and label,
