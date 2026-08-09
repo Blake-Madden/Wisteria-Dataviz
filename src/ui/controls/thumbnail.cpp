@@ -151,7 +151,6 @@ namespace Wisteria::UI
         Bind(wxEVT_SYS_COLOUR_CHANGED, &Thumbnail::OnSysColourChanged, this);
 
         wxWindow::Refresh();
-        wxWindow::Update();
         }
 
     //----------------------------------
@@ -177,7 +176,6 @@ namespace Wisteria::UI
             wxWindow::SetMinSize(newSize);
             }
         Refresh();
-        Update();
 
         wxCommandEvent cevent(wxEVT_THUMBNAIL_CHANGED, GetId());
         cevent.SetEventObject(this);
@@ -196,7 +194,6 @@ namespace Wisteria::UI
             wxWindow::SetMinSize(newSize);
             }
         Refresh();
-        Update();
 
         wxCommandEvent cevent(wxEVT_THUMBNAIL_CHANGED, GetId());
         cevent.SetEventObject(this);
@@ -248,7 +245,6 @@ namespace Wisteria::UI
     void Thumbnail::OnSysColourChanged(wxSysColourChangedEvent& event)
         {
         Refresh();
-        Update();
         event.Skip();
         }
 
@@ -271,7 +267,6 @@ namespace Wisteria::UI
             m_img.SetBestSize(event.GetSize());
             }
         Refresh();
-        Update();
         event.Skip();
         }
 

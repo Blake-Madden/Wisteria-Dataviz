@@ -212,6 +212,7 @@ namespace Wisteria::UI
         Bind(wxEVT_CHECKBOX,
              [this]([[maybe_unused]] const wxCommandEvent&)
              {
+                 const wxWindowUpdateLocker noUpdates{ this };
                  TransferDataFromWindow();
                  UpdateCropBorderControls();
                  UpdateGutterShadowControls();

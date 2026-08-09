@@ -9,6 +9,7 @@
 #include "insertsankeydiagramdlg.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
+#include <wx/wupdlock.h>
 
 namespace Wisteria::UI
     {
@@ -342,6 +343,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertSankeyDiagramDlg::UpdateColumnHeaderUI()
         {
+        const wxWindowUpdateLocker noUpdates{ this };
         const bool enabled = (GetColumnHeaderDisplay() != GraphColumnHeader::NoDisplay);
         m_fromColStaticLabel->Enable(enabled);
         m_fromColStaticLabel->Refresh();

@@ -8,6 +8,7 @@
 
 #include "insertshapedlg.h"
 #include <wx/valgen.h>
+#include <wx/wupdlock.h>
 
 namespace Wisteria::UI
     {
@@ -375,6 +376,7 @@ namespace Wisteria::UI
         {
         if (m_fillPercentSpin != nullptr && m_fillPercentLabel != nullptr)
             {
+            const wxWindowUpdateLocker noUpdates{ this };
             m_fillPercentSpin->Enable(enable);
             m_fillPercentLabel->Enable(enable);
             m_fillPercentLabel->Refresh();

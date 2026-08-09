@@ -9,6 +9,7 @@
 #include "accessibilityoptionspanel.h"
 #include <wx/sizer.h>
 #include <wx/stattext.h>
+#include <wx/wupdlock.h>
 
 namespace Wisteria::UI
     {
@@ -143,6 +144,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void AccessibilityOptionsPanel::OnAutoCheck(wxCommandEvent&)
         {
+        const wxWindowUpdateLocker noUpdates{ this };
         const bool isAuto = m_autoAccessibilityCheck->GetValue();
         const bool enable = !isAuto;
 

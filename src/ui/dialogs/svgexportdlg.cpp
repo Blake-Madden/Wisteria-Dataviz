@@ -14,6 +14,7 @@
 #include <wx/graphics.h>
 #include <wx/paper.h>
 #include <wx/valgen.h>
+#include <wx/wupdlock.h>
 
 namespace Wisteria::UI
     {
@@ -165,6 +166,8 @@ namespace Wisteria::UI
         // toggle logic
         const auto toggleSizeControls = [this]()
         {
+            const wxWindowUpdateLocker noUpdates{ this };
+
             const bool usePageSetup = m_usePageSetupRadio->GetValue();
             m_usePageSetup = usePageSetup;
 
@@ -234,8 +237,9 @@ namespace Wisteria::UI
 
         // enable/disable layout options
         layoutToggleCheck->Bind(wxEVT_CHECKBOX,
-                                [layoutRadio](wxCommandEvent& event)
+                                [this, layoutRadio](wxCommandEvent& event)
                                 {
+                                    const wxWindowUpdateLocker noUpdates{ this };
                                     layoutRadio->Enable(event.IsChecked());
                                     layoutRadio->Refresh();
                                 });
