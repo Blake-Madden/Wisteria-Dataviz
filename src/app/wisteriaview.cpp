@@ -5632,6 +5632,17 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
 
         plot->SetColumnHeaders(dlg.GetColumnHeaders());
 
+        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
+        if (!dlg.GetShowcaseStreams().empty())
+            {
+            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedGroups());
+            for (size_t i = 0; i < dlg.GetShowcaseStreams().size(); ++i)
+                {
+                plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",
+                                          dlg.GetShowcaseStreams()[i]);
+                }
+            }
+
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
         plot->SetPropertyTemplate(L"variables.from", dlg.GetFromVariable());
         plot->SetPropertyTemplate(L"variables.to", dlg.GetToVariable());
@@ -5713,6 +5724,18 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
                       fromWeightCol, toWeightCol, fromGroupCol);
         plot->SetColumnHeaders(dlg.GetColumnHeaders());
+
+        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
+        if (!dlg.GetShowcaseStreams().empty())
+            {
+            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedGroups());
+            for (size_t i = 0; i < dlg.GetShowcaseStreams().size(); ++i)
+                {
+                plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",
+                                          dlg.GetShowcaseStreams()[i]);
+                }
+            }
+
         dlg.ApplyAxisOverrides(*plot);
 
         // the dialog's variable/dataset getters return expanded values, so the

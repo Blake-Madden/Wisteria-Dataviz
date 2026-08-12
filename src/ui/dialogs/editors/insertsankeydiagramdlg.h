@@ -12,9 +12,11 @@
 #ifndef INSERT_SANKEYDIAGRAM_DIALOG_H
 #define INSERT_SANKEYDIAGRAM_DIALOG_H
 
+#include "../../base/settings.h"
 #include "../../graphs/sankeydiagram.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/editlbox.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -27,7 +29,9 @@ namespace Wisteria::UI
             - Labels showing the current variable selections.
             - A flow shape choice (Curvy or Jagged).
             - A group label display choice.
-            - A column header display choice.*/
+            - A column header display choice.
+            - A showcasing section for ghosting streams not flowing into
+              specific "to" labels.*/
     class InsertSankeyDiagramDlg final : public InsertGraphDlg
         {
       public:
@@ -177,6 +181,29 @@ namespace Wisteria::UI
             return m_toColumnLabel;
             }
 
+        /// @returns The opacity applied to ghosted streams (0-255).
+        [[nodiscard]]
+        int GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /// @returns @c true if the second column's boxes and labels are also ghosted
+        ///     for groups not included in the showcased streams.
+        [[nodiscard]]
+        bool IsGhostingNonShowcasedGroups() const noexcept
+            {
+            return m_ghostNonShowcasedGroups;
+            }
+
+        /// @returns The "to" labels being showcased (streams flowing into them stay
+        ///     fully opaque, while all other streams are ghosted).
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcaseStreams() const noexcept
+            {
+            return m_showcaseStreams;
+            }
+
         /// @brief Populates all dialog controls from an existing Sankey diagram.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -190,6 +217,8 @@ namespace Wisteria::UI
         void OnDatasetChanged();
         void UpdateVariableLabels();
         void UpdateColumnHeaderUI();
+        void RefreshShowcaseListBox();
+        wxArrayString GetToLabelChoices() const;
         Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
@@ -211,11 +240,15 @@ namespace Wisteria::UI
         wxStaticText* m_toColStaticLabel{ nullptr };
         wxTextCtrl* m_fromColText{ nullptr };
         wxTextCtrl* m_toColText{ nullptr };
+        wxCheckBox* m_ghostGroupsCheck{ nullptr };
+        wxEditableListBox* m_showcaseListBox{ nullptr };
 
         // DDX data members
         int m_flowShapeIndex{ 0 };
         int m_groupLabelDisplayIndex{ 0 };
         int m_columnHeaderDisplayIndex{ 0 };
+        int m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
+        bool m_ghostNonShowcasedGroups{ false };
 
         wxString m_fromVariable;
         wxString m_toVariable;
@@ -227,6 +260,7 @@ namespace Wisteria::UI
         wxString m_toColumnLabel{ L"@COLUMNNAME@" };
 
         std::vector<wxString> m_datasetNames;
+        std::vector<wxString> m_showcaseStreams;
         };
     } // namespace Wisteria::UI
 

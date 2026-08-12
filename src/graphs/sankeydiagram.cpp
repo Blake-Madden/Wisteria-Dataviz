@@ -336,8 +336,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         {
         std::array<wxPoint, 4> pts{};
 
-        for (const auto& col : m_sankeyColumns)
+        for (size_t colIndex = 0; colIndex < m_sankeyColumns.size(); ++colIndex)
             {
+            const auto& col = m_sankeyColumns[colIndex];
             // each column restarts its color cycle from the beginning of the scheme
             colorIndex = 0;
             for (const auto& group : col)
@@ -352,16 +353,45 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_currentYAxisPosition,
                                            pts[3]))
                     {
+                    const bool ghostBox{ colIndex > 0 && m_ghostNonShowcasedGroups &&
+                                         !IsStreamShowcased(group.m_label) };
+                    wxBrush groupBrush{ GetBrushScheme()->GetBrush(colorIndex) };
+                    if (ghostBox)
+                        {
+                        groupBrush.SetColour(Colors::ColorContrast::ChangeOpacity(
+                            groupBrush.GetColour(), GetGhostOpacity()));
+                        }
+
                     AddObject(std::make_unique<GraphItems::Polygon>(
                         GraphItems::GraphItemInfo{ group.m_label }
                             .Pen(wxNullPen)
-                            .Brush(GetBrushScheme()->GetBrush(colorIndex))
+                            .Brush(groupBrush)
                             .Scaling(GetScaling()),
                         pts));
                     }
                 ++colorIndex;
                 }
             }
+        }
+
+    //----------------------------------------------------------------
+    void SankeyDiagram::ShowcaseStreams(const std::vector<wxString>& toLabels,
+                                        const bool ghostNonShowcasedGroups /*= false*/)
+        {
+        if (toLabels.empty())
+            {
+            return;
+            }
+        m_showcasedStreams = toLabels;
+        m_ghostNonShowcasedGroups = ghostNonShowcasedGroups;
+        }
+
+    //----------------------------------------------------------------
+    bool SankeyDiagram::IsStreamShowcased(const wxString& toLabel) const
+        {
+        return m_showcasedStreams.empty() ||
+               std::ranges::any_of(m_showcasedStreams, [&toLabel](const auto& label)
+                                   { return label.CmpNoCase(toLabel) == 0; });
         }
 
     //----------------------------------------------------------------
@@ -447,11 +477,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                              GraphItems::Polygon::PointToPair(pts[7]),
                                              GraphItems::Polygon::PointToPair(pts[9])));
 
+                        const bool isShowcased{ IsStreamShowcased(downstreamGroup.first) };
+
                         auto streamRibbon{ std::make_unique<GraphItems::Polygon>(
                             GraphItems::GraphItemInfo{
                                 wxString::Format(L"%s → %s", group.m_label, downstreamGroup.first) }
                                 .Pen(wxNullPen)
-                                .Brush(Colors::ColorContrast::ChangeOpacity(currentColor, 100))
+                                .Brush(Colors::ColorContrast::ChangeOpacity(
+                                    currentColor,
+                                    isShowcased ? 100 : std::min<uint8_t>(100, GetGhostOpacity())))
                                 .Scaling(GetScaling()),
                             pts) };
                         streamRibbon->SetShape(
@@ -540,6 +574,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                             wxNumberFormatter::Style::Style_WithThousandsSep))) :
                                wxString{};
                 }();
+
+                const bool ghostLabel{ colIndex == 1 && m_ghostNonShowcasedGroups &&
+                                       !IsStreamShowcased(group.m_label) };
+
                 if (labelSide == Side::Right &&
                     GetPhysicalCoordinates(
                         group.m_xAxisRight,
@@ -553,8 +591,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
                             .Pen(wxNullPen)
-                            .FontColor(
-                                Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
+                            .FontColor(ghostLabel ? Colors::ColorContrast::ChangeOpacity(
+                                                        Colors::ColorContrast::BlackOrWhiteContrast(
+                                                            GetPlotOrCanvasColor()),
+                                                        GetGhostOpacity()) :
+                                                    Colors::ColorContrast::BlackOrWhiteContrast(
+                                                        GetPlotOrCanvasColor()))
                             .Padding(2, 2, 2, 2)
                             .AnchorPoint(pts[0])
                             .Anchoring(Anchoring::TopLeftCorner));
@@ -575,6 +617,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
                             .Pen(wxNullPen)
+                            .FontColor(ghostLabel ? Colors::ColorContrast::ChangeOpacity(
+                                                        *wxBLACK, GetGhostOpacity()) :
+                                                    *wxBLACK)
                             .Padding(2, 2, 2, 2)
                             .AnchorPoint(pts[0])
                             .Anchoring(Anchoring::TopRightCorner));

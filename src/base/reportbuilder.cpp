@@ -3985,6 +3985,20 @@ namespace Wisteria
                 !fromGroupVarName.empty() ? std::optional<wxString>(fromGroupVarName) :
                                             std::nullopt);
 
+            // showcasing
+            if (graphNode->HasProperty(L"ghost-opacity"))
+                {
+                sankey->SetGhostOpacity(
+                    graphNode->GetProperty(L"ghost-opacity")->AsDouble(Settings::GHOST_OPACITY));
+                }
+            if (const auto showcaseNode = graphNode->GetProperty(L"showcase-streams");
+                showcaseNode->IsOk() && showcaseNode->IsValueArray())
+                {
+                sankey->ShowcaseStreams(
+                    ExpandAndCache(sankey.get(), L"showcase-streams", showcaseNode->AsStrings()),
+                    graphNode->GetProperty(L"ghost-non-showcased-groups")->AsBool(false));
+                }
+
             LoadGraph(graphNode, canvas, currentRow, currentColumn, sankey);
             return sankey;
             }

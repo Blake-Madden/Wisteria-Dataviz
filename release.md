@@ -1,5 +1,9 @@
 # Releases
 
+## 1.2.2
+
+- Added showcasing support to Sankey diagrams.
+
 ## 1.2.1
 
 - Major improvements to stand-alone application

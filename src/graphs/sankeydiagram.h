@@ -230,6 +230,50 @@ namespace Wisteria::Graphs
             return m_initialColumnLabelDisplay;
             }
 
+        /// @returns The opacity level applied to "ghosted" streams.
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /** @brief Sets the opacity level for "ghosted" streams.\n
+                This is only used if ShowcaseStreams() is called; this is the
+                opacity applied to streams not being showcased.
+            @param opacity The opacity level (should be between @c 0 and @c 255).
+            @sa ShowcaseStreams().*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
+
+        /** @brief Brings to focus the stream(s) flowing into the specified label(s)
+                from the second (i.e., "to") column, making all other streams translucent.
+            @param toLabels The label(s) from the second column whose incoming streams
+                should remain fully opaque.
+            @param ghostNonShowcasedGroups @c true to also make the second column's boxes
+                and labels translucent for groups not included in @p toLabels.\n
+                The default is to leave the second column's boxes and labels fully opaque
+                and only ghost the streams.
+            @note If @p toLabels is empty, this call is a no-op and the current
+                showcasing/ghosting state is preserved.
+            @sa SetGhostOpacity(), GetShowcasedStreams().*/
+        void ShowcaseStreams(const std::vector<wxString>& toLabels,
+                             bool ghostNonShowcasedGroups = false);
+
+        /// @returns The "to" labels being showcased (i.e., streams flowing into them
+        ///     are fully opaque, while all other streams are ghosted).
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedStreams() const noexcept
+            {
+            return m_showcasedStreams;
+            }
+
+        /// @returns @c true if the second column's boxes and labels are also ghosted
+        ///     for groups not included in the showcased streams.
+        [[nodiscard]]
+        bool IsGhostingNonShowcasedGroups() const noexcept
+            {
+            return m_ghostNonShowcasedGroups;
+            }
+
         /// @}
 
         /// @private
@@ -308,6 +352,11 @@ namespace Wisteria::Graphs
             return expandedStr;
             }
 
+        /// @returns @c true if @p toLabel is showcased (i.e., its streams and,
+        ///     if enabled, its box and label should be drawn fully opaque).
+        [[nodiscard]]
+        bool IsStreamShowcased(const wxString& toLabel) const;
+
         std::vector<SankeyColumn> m_sankeyColumns;
         std::vector<SankeyAxisGroup> m_fromAxisGroups;
         std::vector<wxString> m_columnsNames;
@@ -318,6 +367,10 @@ namespace Wisteria::Graphs
         BinLabelDisplay m_initialColumnLabelDisplay{ BinLabelDisplay::NoDisplay };
         GraphColumnHeader m_columnDisplay{ GraphColumnHeader::NoDisplay };
         std::vector<wxString> m_columnHeaders;
+
+        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
+        std::vector<wxString> m_showcasedStreams;
+        bool m_ghostNonShowcasedGroups{ false };
 
         /// @brief After setting the data, homogenizes the columns and their groups.
         void AdjustColumns();

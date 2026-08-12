@@ -8,6 +8,7 @@
 
 #include "insertsankeydiagramdlg.h"
 #include "../variableselectdlg.h"
+#include <wx/spinctrl.h>
 #include <wx/valgen.h>
 #include <wx/wupdlock.h>
 
@@ -183,6 +184,112 @@ namespace Wisteria::UI
         clBox->Add(clGrid, wxSizerFlags{ 1 }.Expand().Border());
         optionsSizer->Add(clBox, wxSizerFlags{}.Expand().Border());
 
+        // showcasing
+        auto* showcaseBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Showcasing"));
+
+        auto* showcaseGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        showcaseGrid->Add(
+            new wxStaticText(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Ghost opacity:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* opacitySpin = new wxSpinCtrl(showcaseBox->GetStaticBox(), wxID_ANY);
+        opacitySpin->SetRange(0, 255);
+        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        showcaseGrid->Add(opacitySpin);
+        showcaseBox->Add(showcaseGrid, wxSizerFlags{}.Border());
+
+        m_ghostGroupsCheck = new wxCheckBox(
+            showcaseBox->GetStaticBox(), wxID_ANY, _(L"Also ghost \"To\" boxes and labels"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_ghostNonShowcasedGroups));
+        showcaseBox->Add(m_ghostGroupsCheck, wxSizerFlags{}.Border());
+
+        m_showcaseListBox = new wxEditableListBox(
+            showcaseBox->GetStaticBox(), wxID_ANY, _(L"\"To\" labels to showcase:"),
+            wxDefaultPosition, wxSize{ FromDIP(300), FromDIP(120) },
+            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        showcaseBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // override New button for showcased "to" labels
+        m_showcaseListBox->GetNewButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                if (GetSelectedDataset() == nullptr || m_toVariable.empty())
+                    {
+                    wxMessageBox(_(L"Select a \"To\" variable first to populate available labels."),
+                                 _(L"No Labels"), wxOK | wxICON_INFORMATION, this);
+                    return;
+                    }
+                const auto labelChoices = GetToLabelChoices();
+                if (labelChoices.empty())
+                    {
+                    return;
+                    }
+                wxSingleChoiceDialog dlg(this, _(L"Select \"to\" label to showcase:"),
+                                         _(L"Showcase Stream"), labelChoices);
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    const auto val = dlg.GetStringSelection();
+                    if (std::find(m_showcaseStreams.cbegin(), m_showcaseStreams.cend(), val) ==
+                        m_showcaseStreams.cend())
+                        {
+                        m_showcaseStreams.push_back(val);
+                        RefreshShowcaseListBox();
+                        }
+                    }
+            });
+
+        // override Edit button
+        m_showcaseListBox->GetEditButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                auto* listCtrl = m_showcaseListBox->GetListCtrl();
+                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseStreams.size()) ||
+                    GetSelectedDataset() == nullptr || m_toVariable.empty())
+                    {
+                    return;
+                    }
+                const auto labelChoices = GetToLabelChoices();
+                if (labelChoices.empty())
+                    {
+                    return;
+                    }
+                wxSingleChoiceDialog dlg(this, _(L"Select \"to\" label to showcase:"),
+                                         _(L"Showcase Stream"), labelChoices);
+                const int found = labelChoices.Index(m_showcaseStreams[sel]);
+                if (found != wxNOT_FOUND)
+                    {
+                    dlg.SetSelection(found);
+                    }
+                if (dlg.ShowModal() == wxID_OK)
+                    {
+                    m_showcaseStreams[sel] = dlg.GetStringSelection();
+                    RefreshShowcaseListBox();
+                    }
+            });
+
+        // override Delete button
+        m_showcaseListBox->GetDelButton()->Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event)
+            {
+                const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(
+                    -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseStreams.size()))
+                    {
+                    return;
+                    }
+                m_showcaseStreams.erase(std::next(m_showcaseStreams.cbegin(), sel));
+                RefreshShowcaseListBox();
+            });
+
+        optionsSizer->Add(showcaseBox, wxSizerFlags{}.Expand().Border());
+
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -199,6 +306,7 @@ namespace Wisteria::UI
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
         UpdateColumnHeaderUI();
+        RefreshShowcaseListBox();
 
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
@@ -212,6 +320,8 @@ namespace Wisteria::UI
         m_fromWeightVariable.clear();
         m_toWeightVariable.clear();
         m_fromGroupVariable.clear();
+        m_showcaseStreams.clear();
+        RefreshShowcaseListBox();
         UpdateVariableLabels();
         }
 
@@ -351,6 +461,44 @@ namespace Wisteria::UI
         m_toColStaticLabel->Enable(enabled);
         m_toColStaticLabel->Refresh();
         m_toColText->Enable(enabled);
+        }
+
+    //-------------------------------------------
+    void InsertSankeyDiagramDlg::RefreshShowcaseListBox()
+        {
+        if (m_showcaseListBox == nullptr)
+            {
+            return;
+            }
+        wxArrayString strings;
+        for (const auto& label : m_showcaseStreams)
+            {
+            strings.Add(label);
+            }
+        m_showcaseListBox->SetStrings(strings);
+        }
+
+    //-------------------------------------------
+    wxArrayString InsertSankeyDiagramDlg::GetToLabelChoices() const
+        {
+        wxArrayString choices;
+        const auto dataset = GetSelectedDataset();
+        if (dataset == nullptr || m_toVariable.empty())
+            {
+            return choices;
+            }
+        const auto col = dataset->GetCategoricalColumn(m_toVariable);
+        if (col != dataset->GetCategoricalColumns().cend())
+            {
+            for (const auto& [id, label] : col->GetStringTable())
+                {
+                if (!label.empty())
+                    {
+                    choices.Add(label);
+                    }
+                }
+            }
+        return choices;
         }
 
     //-------------------------------------------
@@ -517,6 +665,12 @@ namespace Wisteria::UI
             m_columnHeaderDisplayIndex = 0;
             break;
             }
+
+        // showcasing
+        m_ghostOpacity = static_cast<int>(sankey->GetGhostOpacity());
+        m_ghostNonShowcasedGroups = sankey->IsGhostingNonShowcasedGroups();
+        m_showcaseStreams = sankey->GetShowcasedStreams();
+        RefreshShowcaseListBox();
 
         TransferDataToWindow();
         UpdateColumnHeaderUI();

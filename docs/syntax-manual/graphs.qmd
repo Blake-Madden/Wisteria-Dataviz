@@ -556,6 +556,12 @@ Properties for `"sankey-diagram"` nodes:
   Available options are:
   - `"curvy"`: A flow with a spline-like shape (the default).
   - `"jagged"`: Straight lines between the points in the flow's shape.
+- `"ghost-opacity"`: A number specifying the opacity level of non-showcased streams. \
+  This will only have an effect if `"showcase-streams"` is in use.
+- `"showcase-streams"`: An array of strings specifying which "to" (i.e., right-side) labels to showcase.
+  Streams flowing into these labels stay fully opaque, while all other streams are ghosted.
+- `"ghost-non-showcased-groups"`: A boolean specifying whether the "to" column's boxes and labels are also ghosted for groups not included in `"showcase-streams"`. \
+  This will only have an effect if `"showcase-streams"` is in use. Default is `false`.
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}

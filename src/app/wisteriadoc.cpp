@@ -4350,6 +4350,34 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 node->Add(L"flow-shape", fsStr.value());
                 }
             }
+        if (sankey->GetGhostOpacity() != Wisteria::Settings::GHOST_OPACITY)
+            {
+            node->Add(L"ghost-opacity", static_cast<double>(sankey->GetGhostOpacity()));
+            }
+        // showcase-streams (indexed templates)
+        wxString showcaseStreamArr;
+        for (size_t i = 0;; ++i)
+            {
+            const auto val =
+                sankey->GetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]");
+            if (val.empty())
+                {
+                break;
+                }
+            if (!showcaseStreamArr.empty())
+                {
+                showcaseStreamArr += L", ";
+                }
+            showcaseStreamArr += L"\"" + EscapeJsonStr(val) + L"\"";
+            }
+        if (!showcaseStreamArr.empty())
+            {
+            node->Add(L"showcase-streams", wxSimpleJSON::Create(L"[" + showcaseStreamArr + L"]"));
+            if (sankey->IsGhostingNonShowcasedGroups())
+                {
+                node->Add(L"ghost-non-showcased-groups", true);
+                }
+            }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
         {
