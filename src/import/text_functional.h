@@ -74,7 +74,8 @@ namespace lily_of_the_valley
             const wchar_t* end = value + (length - 1);
             // trim leading quote
             const wchar_t* valueStart = value;
-            if (valueStart[0] == L'\"')
+            const bool hadLeadingQuote{ valueStart[0] == L'\"' };
+            if (hadLeadingQuote)
                 {
                 ++valueStart;
                 --length;
@@ -82,8 +83,9 @@ namespace lily_of_the_valley
             const wchar_t* start =
                 std::find_if_not(valueStart, valueStart + length,
                                  [](const auto ch) noexcept { return std::iswspace(ch); });
-            // remove trailing quote (just the last one)
-            if (end > start && end[0] == L'\"')
+            // remove trailing quote (just the last one),
+            // but only if it has a matching leading quote
+            if (hadLeadingQuote && end > start && end[0] == L'\"')
                 {
                 --end;
                 }
