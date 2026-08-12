@@ -1065,13 +1065,13 @@ namespace Wisteria::UI
 
         wxRect refreshRect{ GetClientRect() };
         refreshRect.SetTop(m_folders[item].m_Rect.GetTop());
-        refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
         // If changing from expanded to collapsed, then just collapse it;
         // nothing is being selected or de-selected, just closing the folder.
         // Because of this, we won't be firing a selection event.
         if (collapseIfExpanded && m_folders[item].m_isExpanded)
             {
+            refreshRect.Offset(0, -std::min(y, refreshRect.y));
             m_folders[item].Collapse();
             RecalcSizes();
             Refresh(true, &refreshRect);
@@ -1089,6 +1089,20 @@ namespace Wisteria::UI
             SelectSubItem(item, m_folders[item].m_selectedItem.value(), setFocus, sendEvent);
             return true;
             }
+
+        // whatever was previously selected (a folder or one of its subitems) may be
+        // above this folder, outside the downward-only refreshRect above, so its stale
+        // highlight needs to be included in the repaint too (unioned before the
+        // scroll offset below, since both rects are still in unscrolled coordinates here)
+        if (m_selectedFolder && *m_selectedFolder < m_folders.size())
+            {
+            const auto& previousFolder = m_folders[*m_selectedFolder];
+            refreshRect = refreshRect.Union(
+                previousFolder.IsSubItemSelected() ?
+                    previousFolder.m_subItems[previousFolder.m_selectedItem.value()].m_Rect :
+                    previousFolder.m_Rect);
+            }
+        refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
         m_selectedFolder = item;
         m_folders[GetSelectedFolder().value()].Expand();
