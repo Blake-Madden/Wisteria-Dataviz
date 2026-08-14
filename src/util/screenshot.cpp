@@ -862,9 +862,13 @@ wxString Screenshot::GetWebViewTextWalkerScript()
         var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT,
             { acceptNode: function(node)
                 {
-                var p = node.parentElement;
-                return (p && (p.tagName === 'SCRIPT' || p.tagName === 'STYLE')) ?
-                    NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+                var parent = node.parentElement;
+                if (parent && (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE'))
+                    { return NodeFilter.FILTER_REJECT; }
+                // skip hover-only tooltip text
+                if (parent && parent.closest('.tooltip-box'))
+                    { return NodeFilter.FILTER_REJECT; }
+                return NodeFilter.FILTER_ACCEPT;
                 } });
         )JS";
     }
