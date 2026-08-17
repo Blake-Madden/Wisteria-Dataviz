@@ -3,6 +3,7 @@
 ## 1.2.2
 
 - Added showcasing support to Sankey diagrams.
+- Added word balloon styles to labels.
 
 ## 1.2.1
 

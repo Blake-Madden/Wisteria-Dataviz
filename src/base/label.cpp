@@ -273,14 +273,13 @@ namespace Wisteria::GraphItems
                                DownscaleFromScreenAndCanvas(rect.GetHeight()));
 
         GetSize(dc, measuredWidth, measureHeight);
-        SetCachedContentBoundingBox(
-            wxRect(wxPoint(rect.GetTopLeft()), wxSize(measuredWidth, measureHeight)));
-        // if there is a minimum height that is taller than the text, then center
-        // the text vertically
-        auto contentRect = GetCachedContentBoundingBox();
-        contentRect.y += CalcPageVerticalOffset();
-        contentRect.x += CalcPageHorizontalOffset();
-        SetCachedContentBoundingBox(contentRect);
+        // the height that the bounding box will end up being
+        const auto fullBoxHeight = ((GetBoundingBoxToContentAdjustment() &
+                                     LabelBoundingBoxContentAdjustment::ContentAdjustHeight) != 0) ?
+                                       measureHeight :
+                                       rect.GetHeight();
+        CacheContentBoundingBox(rect.GetTopLeft(), wxSize(measuredWidth, measureHeight),
+                                fullBoxHeight);
 
         wxRect clippedRect{ rect };
         if ((GetBoundingBoxToContentAdjustment() &
@@ -385,14 +384,8 @@ namespace Wisteria::GraphItems
             }
 
         SetCachedBoundingBox(boundingBox);
-        SetCachedContentBoundingBox(
-            wxRect(wxPoint(boundingBox.GetTopLeft()), wxSize(measuredWidth, measuredHeight)));
-        // if there is a minimum height that is taller than the text, then center
-        // the text vertically
-        auto contentRect = GetCachedContentBoundingBox();
-        contentRect.y += CalcPageVerticalOffset();
-        contentRect.x += CalcPageHorizontalOffset();
-        SetCachedContentBoundingBox(contentRect);
+        CacheContentBoundingBox(boundingBox.GetTopLeft(), wxSize(measuredWidth, measuredHeight),
+                                height);
         // wxRect will be 1x1 if created with empty dimensions, so reset that
         // if this label is empty
         if (boundingBox.GetWidth() == 1 && boundingBox.GetHeight() == 1)
@@ -550,6 +543,14 @@ namespace Wisteria::GraphItems
                 }
             height += CalcLeftImageSize(width).GetWidth();
             width += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+            }
+
+        // reserve room above or beneath the text for the word balloon's tail
+        if (IsWordBalloon())
+            {
+            height += static_cast<wxCoord>(
+                std::min(height * math_constants::third,
+                         ScaleToScreenAndCanvas(MAX_BALLOON_TAIL_HEIGHT_DIPS)));
             }
         }
 
@@ -1033,6 +1034,149 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    void Label::CacheContentBoundingBox(const wxPoint topLeft, const wxSize measuredSize,
+                                        const double fullBoxHeight) const
+        {
+        // the space reserved for a word balloon's tail is not part of the content area
+        const auto reservedTailSpace =
+            static_cast<wxCoord>(std::ceil(CalcWordBalloonTailHeight(measuredSize.GetHeight())));
+        SetCachedContentBoundingBox(
+            wxRect(topLeft,
+                   wxSize(measuredSize.GetWidth(), measuredSize.GetHeight() - reservedTailSpace)));
+        // if there is a minimum height that is taller than the text, then center
+        // the text vertically; also, move the content below a tail that is on top
+        auto contentRect = GetCachedContentBoundingBox();
+        contentRect.y += CalcPageVerticalOffset() + CalcWordBalloonTopTailOffset(fullBoxHeight);
+        contentRect.x += CalcPageHorizontalOffset();
+        SetCachedContentBoundingBox(contentRect);
+        }
+
+    //-------------------------------------------
+    double Label::CalcWordBalloonTailHeight(const double fullBoxHeight) const
+        {
+        // GetSize() reserves a third of the text's height for the tail, so the tail
+        // is a quarter of the full height that it returns
+        return IsWordBalloon() ? std::min(fullBoxHeight * math_constants::quarter,
+                                          ScaleToScreenAndCanvas(MAX_BALLOON_TAIL_HEIGHT_DIPS)) :
+                                 0;
+        }
+
+    //-------------------------------------------
+    void Label::DrawWordBalloon(wxDC& dc, const wxRect balloonBody, const double tailHeight,
+                                const wxBrush& balloonBrush, const wxPen& balloonPen) const
+        {
+        if (balloonBody.IsEmpty())
+            {
+            return;
+            }
+
+        const double boxLeft{ static_cast<double>(balloonBody.GetLeft()) };
+        const double boxTop{ static_cast<double>(balloonBody.GetTop()) };
+        const double boxRight{ static_cast<double>(balloonBody.GetRight()) };
+        const double boxBottom{ static_cast<double>(balloonBody.GetBottom()) };
+        const double cornerRadius{ std::min(
+            ScaleToScreenAndCanvas(Settings::GetBoxRoundedCornerRadius()),
+            std::min(balloonBody.GetWidth(), balloonBody.GetHeight()) * math_constants::quarter) };
+
+        // The tail is a narrow spike attached to the top or bottom edge, angled toward the
+        // corner that it points at. Its tip sits just inside that corner, with its base
+        // set back from the tip, toward the middle of the box.
+        const bool tailOnTop{ IsWordBalloonTailOnTop() };
+        const bool pointingLeft{ IsWordBalloonTailPointingLeft() };
+        const double tailBaseWidth{ std::min(tailHeight * math_constants::half,
+                                             balloonBody.GetWidth() * math_constants::quarter) };
+        const double tailRun{ std::min<double>(tailHeight,
+                                               balloonBody.GetWidth() * math_constants::third) };
+        // how far the tip is from the corner that the tail points at
+        const double tipInset{ cornerRadius + (tailHeight * math_constants::half) };
+        // keep the tail's base clear of the rounded corners
+        const double tailBaseStart{ std::max(pointingLeft ?
+                                                 boxLeft + tipInset + tailRun :
+                                                 boxRight - tipInset - tailRun - tailBaseWidth,
+                                             boxLeft + cornerRadius) };
+        const double tailBaseEnd{ std::min(pointingLeft ?
+                                               boxLeft + tipInset + tailRun + tailBaseWidth :
+                                               boxRight - tipInset - tailRun,
+                                           boxRight - cornerRadius) };
+        const double tailBaseY{ tailOnTop ? boxTop : boxBottom };
+        const double tailTipX{ pointingLeft ? boxLeft + tipInset : boxRight - tipInset };
+        const double tailTipY{ tailOnTop ? boxTop - tailHeight : boxBottom + tailHeight };
+        // if the box is too narrow for the tail to fit, then just draw the box
+        const bool drawTail{ tailBaseEnd > tailBaseStart };
+
+        // the area being drawn to, including the tail and the outline's width
+        const auto tailSpace = static_cast<int>(std::ceil(tailHeight));
+        wxRect drawArea{ balloonBody };
+        drawArea.y -= (tailOnTop ? tailSpace : 0);
+        drawArea.height += tailSpace;
+        // the pen is expected to already be scaled by the caller
+        if (balloonPen.IsOk())
+            {
+            drawArea.Inflate(balloonPen.GetWidth());
+            }
+
+        const GraphicsContextFallback gcf{ &dc, drawArea };
+        auto* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for word balloon!");
+        if (gc == nullptr)
+            {
+            const DCBrushChangerIfDifferent bc{ dc, balloonBrush };
+            const DCPenChangerIfDifferent pc{ dc, balloonPen };
+            dc.DrawRoundedRectangle(balloonBody, cornerRadius);
+            if (drawTail)
+                {
+                const std::array<wxPoint, 3> tailPoints{
+                    wxPoint(static_cast<int>(tailBaseStart), static_cast<int>(tailBaseY)),
+                    wxPoint(static_cast<int>(tailTipX), static_cast<int>(tailTipY)),
+                    wxPoint(static_cast<int>(tailBaseEnd), static_cast<int>(tailBaseY))
+                };
+                dc.DrawPolygon(static_cast<int>(tailPoints.size()), tailPoints.data());
+                }
+            return;
+            }
+
+        gc->PushState();
+        gc->SetBrush(balloonBrush);
+        gc->SetPen(balloonPen);
+
+        auto balloonPath = gc->CreatePath();
+        // top edge (left-to-right), veering up into the tail along the way
+        balloonPath.MoveToPoint(boxLeft + cornerRadius, boxTop);
+        if (drawTail && tailOnTop)
+            {
+            balloonPath.AddLineToPoint(tailBaseStart, boxTop);
+            balloonPath.AddLineToPoint(tailTipX, tailTipY);
+            balloonPath.AddLineToPoint(tailBaseEnd, boxTop);
+            }
+        balloonPath.AddLineToPoint(boxRight - cornerRadius, boxTop);
+        balloonPath.AddQuadCurveToPoint(boxRight, boxTop, boxRight, boxTop + cornerRadius);
+        // right edge
+        balloonPath.AddLineToPoint(boxRight, boxBottom - cornerRadius);
+        balloonPath.AddQuadCurveToPoint(boxRight, boxBottom, boxRight - cornerRadius, boxBottom);
+        // bottom edge (right-to-left), dipping down into the tail along the way
+        if (drawTail && !tailOnTop)
+            {
+            balloonPath.AddLineToPoint(tailBaseEnd, boxBottom);
+            balloonPath.AddLineToPoint(tailTipX, tailTipY);
+            balloonPath.AddLineToPoint(tailBaseStart, boxBottom);
+            }
+        balloonPath.AddLineToPoint(boxLeft + cornerRadius, boxBottom);
+        balloonPath.AddQuadCurveToPoint(boxLeft, boxBottom, boxLeft, boxBottom - cornerRadius);
+        // left edge
+        balloonPath.AddLineToPoint(boxLeft, boxTop + cornerRadius);
+        balloonPath.AddQuadCurveToPoint(boxLeft, boxTop, boxLeft + cornerRadius, boxTop);
+        balloonPath.CloseSubpath();
+
+        gc->FillPath(balloonPath);
+        if (balloonPen.IsOk() && balloonPen.GetStyle() != wxPENSTYLE_TRANSPARENT)
+            {
+            gc->StrokePath(balloonPath);
+            }
+
+        gc->PopState();
+        }
+
+    //-------------------------------------------
     wxRect Label::Draw(wxDC& dc) const
         {
         if (!IsShown())
@@ -1069,12 +1213,27 @@ namespace Wisteria::GraphItems
 
         const wxRect boundingBox = GetBoundingBox(dc);
 
+        // a word balloon's body takes up the box, minus the space reserved for its tail
+        const double balloonTailHeight = CalcWordBalloonTailHeight(boundingBox.GetHeight());
+        const auto topTailOffset = CalcWordBalloonTopTailOffset(boundingBox.GetHeight());
+        wxRect balloonBody{ boundingBox };
+        balloonBody.y += topTailOffset;
+        balloonBody.height -= static_cast<int>(std::ceil(balloonTailHeight));
+
         // draw the shadow (only if box is outlined)
         if (GetShadowType() != ShadowType::NoDisplay && GetPen().IsOk() && !IsSelected())
             {
-            const DCPenChangerIfDifferent pcBg(dc, GetShadowColor());
-            const DCBrushChangerIfDifferent bcBg(dc, GetShadowColor());
-            if (GetBoxCorners() == BoxCorners::Rounded)
+            const DCPenChangerIfDifferent pcBg{ dc, GetShadowColor() };
+            const DCBrushChangerIfDifferent bcBg{ dc, GetShadowColor() };
+            if (IsWordBalloon())
+                {
+                wxRect shadowBody{ balloonBody };
+                shadowBody.Offset(ScaleToScreenAndCanvas(GetShadowOffset()),
+                                  ScaleToScreenAndCanvas(GetShadowOffset()));
+                DrawWordBalloon(dc, shadowBody, balloonTailHeight, wxBrush(GetShadowColor()),
+                                wxPen(GetShadowColor()));
+                }
+            else if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 dc.DrawRoundedRectangle(
                     wxRect(boundingBox.GetLeftTop() +
@@ -1095,9 +1254,14 @@ namespace Wisteria::GraphItems
         // (outline is drawn after the text)
         if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor() != wxTransparentColour)
             {
-            const DCBrushChangerIfDifferent bcBg(dc, GetFontBackgroundColor());
-            const DCPenChangerIfDifferent pcBg(dc, *wxTRANSPARENT_PEN);
-            if (GetBoxCorners() == BoxCorners::Rounded)
+            const DCBrushChangerIfDifferent bcBg{ dc, GetFontBackgroundColor() };
+            const DCPenChangerIfDifferent pcBg{ dc, *wxTRANSPARENT_PEN };
+            if (IsWordBalloon())
+                {
+                DrawWordBalloon(dc, balloonBody, balloonTailHeight,
+                                wxBrush(GetFontBackgroundColor()), *wxTRANSPARENT_PEN);
+                }
+            else if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
                 }
@@ -1221,7 +1385,9 @@ namespace Wisteria::GraphItems
         dc.SetTextForeground(GetFontColor());
         if (GetTextOrientation() == Orientation::Horizontal)
             {
-            DrawMultiLineText(dc, boundingBox.GetLeftTop());
+            // the cached content box is already moved below a balloon's tail,
+            // but the text is drawn from the top of the full box
+            DrawMultiLineText(dc, boundingBox.GetLeftTop() + wxPoint{ 0, topTailOffset });
             }
         else
             {
@@ -1231,14 +1397,19 @@ namespace Wisteria::GraphItems
         // draw the outline
         if (GetPen().IsOk() && !IsSelected())
             {
-            const DCPenChangerIfDifferent pc2(
-                dc,
-                wxPen(wxPenInfo(GetPen().GetColour(), ScaleToScreenAndCanvas(GetPen().GetWidth()),
-                                GetPen().GetStyle())
-                          .Cap(wxPenCap::wxCAP_BUTT)));
-            if (GetBoxCorners() == BoxCorners::Rounded)
+            const wxPen scaledPen(wxPenInfo(GetPen().GetColour(),
+                                            ScaleToScreenAndCanvas(GetPen().GetWidth()),
+                                            GetPen().GetStyle())
+                                      .Cap(wxPenCap::wxCAP_BUTT));
+            const DCPenChangerIfDifferent pc2{ dc, scaledPen };
+            if (IsWordBalloon())
                 {
-                const DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
+                DrawWordBalloon(dc, balloonBody, balloonTailHeight, *wxTRANSPARENT_BRUSH,
+                                scaledPen);
+                }
+            else if (GetBoxCorners() == BoxCorners::Rounded)
+                {
+                const DCBrushChangerIfDifferent bcBg{ dc, *wxTRANSPARENT_BRUSH };
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
                 }
             else if (GetTextOrientation() == Orientation::Horizontal)
@@ -1289,12 +1460,18 @@ namespace Wisteria::GraphItems
                  Wisteria::Colors::ColorContrast::IsLight(GetFontBackgroundColor())) ||
                 (GetFontColor().IsOk() && Wisteria::Colors::ColorContrast::IsLight(GetFontColor()))
             };
-            const DCPenChangerIfDifferent pc2(
-                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
-                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-            const DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
-            if (GetBoxCorners() == BoxCorners::Rounded)
+            const wxPen selectionPen(penIsLight ?
+                                         Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                         Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                     ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT);
+            const DCPenChangerIfDifferent pc2{ dc, selectionPen };
+            const DCBrushChangerIfDifferent bcBg{ dc, *wxTRANSPARENT_BRUSH };
+            if (IsWordBalloon())
+                {
+                DrawWordBalloon(dc, balloonBody, balloonTailHeight, *wxTRANSPARENT_BRUSH,
+                                selectionPen);
+                }
+            else if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
                 }

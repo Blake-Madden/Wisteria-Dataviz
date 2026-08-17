@@ -196,6 +196,14 @@ Properties for `"label"` nodes:
     Will use the same pen as the label's text.
   - `"right-arrow-lined-paper-with-margins"`: Display the label as lined paper (right arrow lines under each text line, within the margins of the label). \
     Will use the same pen as the label's text.
+- `"shape"`: The shape that the label's box is drawn as. \
+  A word balloon is filled with the label's `"background"` color and outlined with its `"pen"`, so both of these must be specified for it to be visible. \
+  Available options are:
+  - `"no-shape"`: A regular box (the default).
+  - `"word-balloon-top-left-tail"`: A word balloon with a tail above the box, pointing up and to the left.
+  - `"word-balloon-top-right-tail"`: A word balloon with a tail above the box, pointing up and to the right.
+  - `"word-balloon-bottom-left-tail"`: A word balloon with a tail beneath the box, pointing down and to the left.
+  - `"word-balloon-bottom-right-tail"`: A word balloon with a tail beneath the box, pointing down and to the right.
 - `"color"`: The font color. \
   This can be either a color name or hex-encoded value.
 - `"bold"`: `true` to make the text bold.

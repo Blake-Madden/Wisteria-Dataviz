@@ -400,6 +400,24 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<LabelShape> ConvertLabelShape(const wxString& value)
+            {
+            static const std::map<std::wstring, LabelShape> labelShapeValues = {
+                { L"no-shape", LabelShape::NoShape },
+                { L"word-balloon-top-left-tail", LabelShape::WordBalloonTopLeftTail },
+                { L"word-balloon-top-right-tail", LabelShape::WordBalloonTopRightTail },
+                { L"word-balloon-bottom-left-tail", LabelShape::WordBalloonBottomLeftTail },
+                { L"word-balloon-bottom-right-tail", LabelShape::WordBalloonBottomRightTail }
+            };
+
+            const auto foundValue = labelShapeValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != labelShapeValues.cend()) ?
+                        std::optional<LabelShape>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<GraphColumnHeader> ConvertGraphColumnHeader(const wxString& value)
             {
             static const std::map<std::wstring, GraphColumnHeader> graphColumnHeader = {
@@ -1314,6 +1332,23 @@ namespace Wisteria
                 { LabelStyle::RightArrowLinedPaper, L"right-arrow-lined-paper" },
                 { LabelStyle::RightArrowLinedPaperWithMargins,
                   L"right-arrow-lined-paper-with-margins" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString> ConvertLabelShapeToString(LabelShape value)
+            {
+            static const std::map<LabelShape, wxString> values = {
+                { LabelShape::NoShape, L"no-shape" },
+                { LabelShape::WordBalloonTopLeftTail, L"word-balloon-top-left-tail" },
+                { LabelShape::WordBalloonTopRightTail, L"word-balloon-top-right-tail" },
+                { LabelShape::WordBalloonBottomLeftTail, L"word-balloon-bottom-left-tail" },
+                { LabelShape::WordBalloonBottomRightTail, L"word-balloon-bottom-right-tail" }
             };
 
             const auto foundValue = values.find(value);

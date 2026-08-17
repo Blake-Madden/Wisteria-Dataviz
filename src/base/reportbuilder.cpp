@@ -1017,6 +1017,13 @@ namespace Wisteria
                 label->SetLabelStyle(labelStyle.value());
                 }
 
+            const auto labelShape =
+                ReportEnumConvert::ConvertLabelShape(labelNode->GetProperty(L"shape")->AsString());
+            if (labelShape.has_value())
+                {
+                label->SetShape(labelShape.value());
+                }
+
             label->SetLineSpacing(labelNode->GetProperty(L"line-spacing")->AsDouble(1));
 
             // font attributes

@@ -1067,6 +1067,17 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
             }
         }
 
+    // box shape (default is no-shape)
+    if (label->GetShape() != Wisteria::LabelShape::NoShape)
+        {
+        const auto shapeStr =
+            Wisteria::ReportEnumConvert::ConvertLabelShapeToString(label->GetShape());
+        if (shapeStr.has_value())
+            {
+            node->Add(L"shape", shapeStr.value());
+            }
+        }
+
     // line-spacing (default is 1)
     if (!compare_doubles(label->GetLineSpacing(), 1.0))
         {

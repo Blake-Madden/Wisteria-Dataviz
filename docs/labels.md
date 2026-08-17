@@ -9,6 +9,7 @@ annotations, decals, etc. Labels are self-contained text boxes that manage attri
 - Font color
 - Background color
 - Outline
+- Box shape (e.g., a word balloon)
 - Text alignment
 - Justification
 - Line spacing
@@ -38,6 +39,7 @@ The following table lists the most frequently used methods and what they control
 | `SplitTextByCharacter()` | Breaks text into stacked characters | `label.SplitTextByCharacter()`                                          |
 | `SplitTextToFitLength(maxLen)` | Wraps text to fit within a line length | `label.SplitTextToFitLength(20)`                                        |
 | `SetLabelStyle(style)` | Applies line decorations (e.g., dotted or arrowed) | `label.SetLabelStyle(LabelStyle::Arrowed)`                              |
+| `SetShape(shape)` | Draws the box as a word balloon | `label.SetShape(LabelShape::WordBalloonBottomRightTail)`                |
 | `SetMinimumUserSize(size)` | Sets minimum bounding box for the label | `label.SetMinimumUserSize(wxSize{ 200, std::nullopt })`                 |
 | `GetHeaderInfo()` | Configures the label’s header line | `label.GetHeaderInfo().Enable(true).Alignment(TextAlignment::Centered)` |
 | `GetLegendIcons()` | Adds icons when used as a legend | `label.GetLegendIcons().emplace_back(LegendIcon(...))`                  |
@@ -150,6 +152,31 @@ or even arrowed, lined paper:
     -------------->
 
 This is controlled via `Label::SetLabelStyle()`.
+
+Word Balloons
+=============================
+
+A label's box can be drawn as a word balloon (i.e., a comic-book speech bubble) via `Label::SetShape()`.
+The balloon is a rounded box with a tapered tail, where the shape's name is the corner
+that the tail points toward:
+
+| Shape | Tail |
+|--------|-------|
+| `LabelShape::WordBalloonTopLeftTail` | Above the box, pointing up and to the left |
+| `LabelShape::WordBalloonTopRightTail` | Above the box, pointing up and to the right |
+| `LabelShape::WordBalloonBottomLeftTail` | Beneath the box, pointing down and to the left |
+| `LabelShape::WordBalloonBottomRightTail` | Beneath the box, pointing down and to the right |
+
+```cpp
+Label balloon(
+    GraphItemInfo(_(L"What's up, doc?")).
+    Pen(*wxBLACK).FontBackgroundColor(*wxWHITE).
+    Padding(4, 4, 4, 4));
+balloon.SetShape(LabelShape::WordBalloonBottomRightTail);
+```
+
+The balloon is filled with the label's background color and outlined with its pen, so both of these
+must be set for it to be visible.
 
 Adding a Header
 =============================

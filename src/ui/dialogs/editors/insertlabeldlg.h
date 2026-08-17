@@ -207,6 +207,13 @@ namespace Wisteria::UI
             return static_cast<Wisteria::LabelStyle>(m_labelStyle);
             }
 
+        /// @returns The shape that the label's box is drawn as.
+        [[nodiscard]]
+        Wisteria::LabelShape GetLabelShape() const noexcept
+            {
+            return static_cast<Wisteria::LabelShape>(m_labelShape);
+            }
+
         /// @brief Populates controls from an existing label.
         /// @param label The label to read settings from.
         void LoadFromLabel(const Wisteria::GraphItems::Label& label);
@@ -258,6 +265,7 @@ namespace Wisteria::UI
         // appearance
         int m_orientation{ 0 }; // Horizontal
         int m_labelStyle{ 0 };  // NoLabelStyle
+        int m_labelShape{ 0 };  // NoShape
 
         // left image
         Thumbnail* m_leftImageThumbnail{ nullptr };

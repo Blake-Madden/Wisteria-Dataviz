@@ -642,6 +642,24 @@ namespace Wisteria
                        Settings::SetBoxRoundedCornerRadius().*/
         };
 
+    /// @brief The shape that a label's box is drawn as.
+    /// @details The word balloon shapes (i.e., comic-book speech bubbles) are rounded boxes
+    ///     with a tapered tail, where the shape's name is the corner that the tail
+    ///     points toward.
+    enum class LabelShape
+        {
+        NoShape,                   /*!< A regular box, using the label's corner and
+                                        outline settings.*/
+        WordBalloonTopLeftTail,    /*!< A word balloon with a tail above the left half of
+                                        the box, pointing up and to the left.*/
+        WordBalloonTopRightTail,   /*!< A word balloon with a tail above the right half of
+                                        the box, pointing up and to the right.*/
+        WordBalloonBottomLeftTail, /*!< A word balloon with a tail beneath the left half of
+                                        the box, pointing down and to the left.*/
+        WordBalloonBottomRightTail /*!< A word balloon with a tail beneath the right half of
+                                        the box, pointing down and to the right.*/
+        };
+
     /// @brief The type of label to display for a bin (i.e., a bar, pie slice, etc.).
     enum class BinLabelDisplay
         {

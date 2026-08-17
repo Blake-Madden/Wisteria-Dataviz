@@ -2614,7 +2614,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 .
             // will set the proportions of the note's row based on how tall the note is
             FitCanvasHeightToContent(true)
-                .Pen(wxNullPen));
+                // a word balloon needs an outline and background color to be visible
+                .Pen(*wxBLACK)
+                .FontBackgroundColor(
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AntiqueWhite))
+                .CanvasPadding(5, 5, 5, 5));
+        // draw the note as a word balloon, with its tail pointing up at the charts
+        note->SetShape(Wisteria::LabelShape::WordBalloonTopRightTail);
+        // shrink the balloon to the width of its text, instead of stretching it
+        // across the entire canvas row
+        note->SetBoundingBoxToContentAdjustment(
+            Wisteria::LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
         note->EnableMarkup(true);
         // make the font smaller, and customize the header's appearance
         note->GetFont().MakeSmaller().MakeSmaller();

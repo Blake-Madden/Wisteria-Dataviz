@@ -258,8 +258,33 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets how the corners are drawn.
             @details Only relevant if drawing an outline.
-            @param boxCorners The corner display to use.*/
+            @param boxCorners The corner display to use.
+            @note This may be overridden by SetShape(), depending on the shape.*/
         void SetBoxCorners(const BoxCorners boxCorners) noexcept { m_boxCorners = boxCorners; }
+
+        /// @returns The shape that the label's box is drawn as.
+        [[nodiscard]]
+        LabelShape GetShape() const noexcept
+            {
+            return m_shape;
+            }
+
+        /** @brief Sets the shape that the label's box is drawn as.
+            @param shape The shape to draw the box as.
+            @note A background color and pen must be set for a word balloon to be visible,
+                as the balloon is filled with the label's background color and outlined
+                with its pen.\n
+                Space for the balloon's tail is reserved above or beneath the text
+                (depending on which corner the tail points at), so the label's bounding box
+                 will be taller than the text that it contains.
+            @warning A word balloon overrides the corner display from SetBoxCorners();
+                its corners are always rounded. It also outlines the entire box,
+                ignoring which sides are turned on via `GetGraphItemInfo().Outline()`.*/
+        void SetShape(const LabelShape shape) noexcept
+            {
+            m_shape = shape;
+            InvalidateCachedBoundingBox();
+            }
 
         /** @brief Tilts the text by the provided degree.
             @param tiltAngle The angle to tilt the text.
@@ -598,6 +623,68 @@ namespace Wisteria::GraphItems
         /// @}
 
       private:
+        /// @returns @c true if the label's box is drawn as a word balloon.
+        [[nodiscard]]
+        bool IsWordBalloon() const noexcept
+            {
+            return (m_shape != LabelShape::NoShape);
+            }
+
+        /// @returns @c true if the word balloon's tail is above the box
+        ///     (rather than beneath it).
+        [[nodiscard]]
+        bool IsWordBalloonTailOnTop() const noexcept
+            {
+            return (m_shape == LabelShape::WordBalloonTopLeftTail ||
+                    m_shape == LabelShape::WordBalloonTopRightTail);
+            }
+
+        /// @returns @c true if the word balloon's tail points to the left
+        ///     (rather than to the right).
+        [[nodiscard]]
+        bool IsWordBalloonTailPointingLeft() const noexcept
+            {
+            return (m_shape == LabelShape::WordBalloonTopLeftTail ||
+                    m_shape == LabelShape::WordBalloonBottomLeftTail);
+            }
+
+        /** @returns The height of the word balloon's tail, or @c 0 if not drawing a balloon.
+            @param fullBoxHeight The height of the entire label (i.e., the balloon's body
+                and its tail).*/
+        [[nodiscard]]
+        double CalcWordBalloonTailHeight(double fullBoxHeight) const;
+
+        /// @returns The space reserved above the text for a word balloon's tail
+        ///     (i.e., @c 0 unless the tail is on top).
+        /// @param fullBoxHeight The height of the entire label (i.e., the balloon's body
+        ///     and its tail).
+        [[nodiscard]]
+        wxCoord CalcWordBalloonTopTailOffset(double fullBoxHeight) const
+            {
+            return IsWordBalloonTailOnTop() ?
+                       static_cast<wxCoord>(std::ceil(CalcWordBalloonTailHeight(fullBoxHeight))) :
+                       0;
+            }
+
+        /** @brief Caches the area that the label's content (i.e., text and images) is drawn in,
+                adjusting it for page alignment and any space reserved for a
+                word balloon's tail.
+            @param topLeft The top-left corner of the label's bounding box.
+            @param measuredSize The size of the label, as measured by GetSize().
+            @param fullBoxHeight The height of the label's bounding box.*/
+        void CacheContentBoundingBox(wxPoint topLeft, wxSize measuredSize,
+                                     double fullBoxHeight) const;
+
+        /** @brief Draws the label's box as a word balloon.
+            @param dc The dc to draw on.
+            @param balloonBody The area of the balloon's body (i.e., the box that the tail
+                is attached to).
+            @param tailHeight How far the tail extends above or beneath the body.
+            @param balloonBrush The brush to fill the balloon with.
+            @param balloonPen The pen to outline the balloon with.*/
+        void DrawWordBalloon(wxDC& dc, wxRect balloonBody, double tailHeight,
+                             const wxBrush& balloonBrush, const wxPen& balloonPen) const;
+
         /** @brief Draws the line styling onto the background of the label.
             @param dc The dc to draw on.*/
         void DrawLabelStyling(wxDC& dc) const;
@@ -707,6 +794,7 @@ namespace Wisteria::GraphItems
         size_t m_longestLineLength{ 0 };
         std::set<size_t> m_linesIgnoringLeftMargin;
         BoxCorners m_boxCorners{ BoxCorners::Straight };
+        LabelShape m_shape{ LabelShape::NoShape };
         wxBitmapBundle m_leftImage;
         wxBitmapBundle m_topImage;
         std::optional<std::vector<ShapeInfo>> m_topShape{ std::nullopt };
@@ -714,6 +802,9 @@ namespace Wisteria::GraphItems
         bool m_boundingBoxScalingLocked{ false };
         bool m_markupEnabled{ false };
         bool m_isLegend{ false };
+
+        /// @brief The tallest that a word balloon's tail can be.
+        constexpr static double MAX_BALLOON_TAIL_HEIGHT_DIPS{ 24 };
         };
     } // namespace Wisteria::GraphItems
 

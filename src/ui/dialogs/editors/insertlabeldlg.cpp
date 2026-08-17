@@ -164,6 +164,22 @@ namespace Wisteria::UI
             appearanceGrid->Add(styleChoice, wxSizerFlags{}.Expand());
             }
 
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_ANY, _(L"Box shape:")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* shapeChoice =
+                new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_labelShape));
+            // order must match Wisteria::LabelShape enum
+            shapeChoice->Append(_(L"None"));
+            shapeChoice->Append(_(L"Word balloon (tail pointing up-left)"));
+            shapeChoice->Append(_(L"Word balloon (tail pointing up-right)"));
+            shapeChoice->Append(_(L"Word balloon (tail pointing down-left)"));
+            shapeChoice->Append(_(L"Word balloon (tail pointing down-right)"));
+            appearanceGrid->Add(shapeChoice, wxSizerFlags{}.Expand());
+            }
+
         appearanceBox->Add(appearanceGrid, wxSizerFlags{}.Expand().Border());
         labelSizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border());
 
@@ -420,6 +436,7 @@ namespace Wisteria::UI
         // appearance
         m_orientation = (label.GetTextOrientation() == Wisteria::Orientation::Vertical) ? 1 : 0;
         m_labelStyle = static_cast<int>(label.GetLabelStyle());
+        m_labelShape = static_cast<int>(label.GetShape());
 
         // header
         const auto& headerInfo = label.GetHeaderInfo();
@@ -499,6 +516,7 @@ namespace Wisteria::UI
         label.SetLineSpacing(GetLineSpacing());
         label.SetTextOrientation(GetTextOrientation());
         label.SetLabelStyle(GetLabelStyle());
+        label.SetShape(GetLabelShape());
 
         auto& headerInfo = label.GetHeaderInfo();
         headerInfo.Enable(IsHeaderEnabled());
