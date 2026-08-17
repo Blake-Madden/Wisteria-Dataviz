@@ -461,6 +461,12 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
     const wxTextCtrl* textWindow = dynamic_cast<wxTextCtrl*>(windowToCapture);
+    const int highlightPenWidth{ std::max(1,
+                                          static_cast<int>(windowToCapture->GetDPIScaleFactor())) };
+    wxCoord lastHighlightBottom{ -1 };
+    // extra room below the last highlight so the decorative border doesn't get
+    // drawn on the same row as the highlight box's bottom border
+    const int borderClearance{ highlightPenWidth * 3 };
 
     for (const auto& highlightPoint : highlightPoints)
         {
@@ -497,21 +503,31 @@ bool Screenshot::SaveScreenshotOfTextWindow(
                                   memDC.GetSize().GetHeight() -
                                       static_cast<int>(windowToCapture->GetDPIScaleFactor() + 1));
 
-            memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
+            memDC.SetPen(GetScreenshotHighlightPen(highlightPenWidth));
             memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
             memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
             memDC.DrawLine(endPoint.x, endPoint.y, startPoint.x, endPoint.y);
             memDC.DrawLine(startPoint.x, endPoint.y, startPoint.x, startPoint.y);
+
+            // the pen straddles the drawn coordinate, so the bottom border
+            // extends past endPoint.y by roughly half its width
+            lastHighlightBottom = std::max(lastHighlightBottom, endPoint.y + highlightPenWidth);
             }
         }
 
     memDC.SelectObject(wxNullBitmap);
 
-    // always clip dead space at the bottom
+    // always clip dead space at the bottom, but never past a highlight box's bottom
+    // border, which can extend a pen-width or two below the actual text it outlines
     if (textWindow != nullptr)
         {
         wxPoint endOfWindowPoint = textWindow->PositionToCoords(textWindow->GetLastPosition());
         endOfWindowPoint.y += (textWindow->GetDefaultStyle().GetFontSize() * 2);
+        if (clipContents && !highlightPoints.empty() && lastHighlightBottom != -1)
+            {
+            endOfWindowPoint.y =
+                std::max(endOfWindowPoint.y, lastHighlightBottom + borderClearance);
+            }
         if (endOfWindowPoint.y < bitmap.GetHeight())
             {
             bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), endOfWindowPoint.y });
@@ -534,6 +550,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
             {
             endPoint.y += (textWindow->GetDefaultStyle().GetFontSize() * 2);
             }
+        endPoint.y = std::max(endPoint.y, lastHighlightBottom) + borderClearance;
         if (endPoint.y < bitmap.GetHeight())
             {
             bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), endPoint.y });
@@ -607,20 +624,43 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
         }
 
     // Builds a script that walks the page's text nodes and leaves a Range (named "range",
-    // with "started" set to true if it was resolved) spanning the given character positions;
-    // The caller appends the action to perform with that range.
+    // with "started" set to true if it was resolved) spanning the given character positions.
+    // Also leaves a "rects" array of each accepted text node's own client rect within that
+    // span; range.getBoundingClientRect() isn't used for drawing because it unions in every
+    // element between the start and end nodes, including invisible .tooltip-box popups that
+    // a fully-contained highlighted word carries, which can push the box well above the text.
+    // Each text node's enclosing .hl-* span (if any) has its own rect unioned in too, since
+    // its pill-style padding paints beyond the text's own line box and would otherwise clip.
+    // The caller appends the action to perform with the range and/or rects.
     const auto buildRangeScript = [totalTextLength](const long start, const long end)
     {
         return GetWebViewTextWalkerScript() + wxString::Format(LR"JS(
                    var start = %ld, end = %ld;
                    var pos = 0, node, range = document.createRange(), started = false;
+                   var rects = [];
+                   var HL_SELECTOR = '.hl-default, .hl-error, .hl-phrase, .hl-excluded, ' +
+                       '.hl-dolch-conjunction, .hl-dolch-preposition, .hl-dolch-pronoun, ' +
+                       '.hl-dolch-adverb, .hl-dolch-adjective, .hl-dolch-verb, .hl-dolch-noun';
                    while ((node = walker.nextNode()))
                        {
                        var nodeStart = pos, nodeEnd = pos + node.length;
-                       if (!started && end >= nodeStart && start < nodeEnd)
+                       if (end >= nodeStart && start < nodeEnd)
                            {
-                           range.setStart(node, Math.max(0, start - nodeStart));
-                           started = true;
+                           var subStart = Math.max(0, start - nodeStart);
+                           var subEnd = Math.min(node.length, end - nodeStart);
+                           if (!started)
+                               {
+                               range.setStart(node, subStart);
+                               started = true;
+                               }
+                           var subRange = document.createRange();
+                           subRange.setStart(node, subStart);
+                           subRange.setEnd(node, subEnd);
+                           var rr = subRange.getBoundingClientRect();
+                           if (rr.width > 0 || rr.height > 0) { rects.push(rr); }
+                           var hlEl = node.parentElement ?
+                               node.parentElement.closest(HL_SELECTOR) : null;
+                           if (hlEl) { rects.push(hlEl.getBoundingClientRect()); }
                            }
                        if (started && end <= nodeEnd)
                            {
@@ -636,12 +676,26 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
 
     if (!highlightPoints.empty())
         {
+        // Scroll to fit the whole span from the first to the last highlight, not just the
+        // first one's top; a short viewport (e.g., a single-sentence preview) may not have
+        // room for both the usual 40px top margin and a highlight that wraps onto multiple
+        // lines, in which case the bottom is brought into view instead of the top margin
+        // being kept, so the capture below doesn't clip a line that was never in view.
         const wxString scrollScript =
             L"(function() {" +
-            buildRangeScript(highlightPoints[0].first, highlightPoints[0].first) + LR"JS(
-            if (!started) { return '0'; }
-            var r = range.getBoundingClientRect();
-            window.scrollTo(0, Math.max(0, r.top + window.pageYOffset - 40));
+            buildRangeScript(highlightPoints.front().first, highlightPoints.back().second) + LR"JS(
+            if (!started || rects.length === 0) { return '0'; }
+            var top = Infinity, bottom = -Infinity;
+            for (var i = 0; i < rects.length; ++i)
+                {
+                top = Math.min(top, rects[i].top);
+                bottom = Math.max(bottom, rects[i].bottom);
+                }
+            var margin = 40;
+            var target = ((bottom - top) + margin <= window.innerHeight) ?
+                (top + window.pageYOffset - margin) :
+                (bottom + window.pageYOffset - window.innerHeight);
+            window.scrollTo(0, Math.max(0, target));
             return '1';
             })();
             )JS";
@@ -656,6 +710,10 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
     memDC.SelectObject(bitmap);
 
     wxCoord lastHighlightBottom{ -1 };
+    // extra room below the last highlight so the decorative border doesn't get
+    // drawn on the same row as the highlight box's bottom border
+    const int borderClearance{ std::max(1, static_cast<int>(windowToCapture->GetDPIScaleFactor())) *
+                               3 };
 
     for (const auto& highlightPoint : highlightPoints)
         {
@@ -665,9 +723,16 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
         const wxString rectScript = L"(function() {" +
                                     buildRangeScript(highlightPoint.first, highlightPoint.second) +
                                     LR"JS(
-            if (!started) { return ''; }
-            var r = range.getBoundingClientRect();
-            return r.left + ',' + r.top + ',' + r.right + ',' + r.bottom;
+            if (!started || rects.length === 0) { return ''; }
+            var left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+            for (var i = 0; i < rects.length; ++i)
+                {
+                left = Math.min(left, rects[i].left);
+                top = Math.min(top, rects[i].top);
+                right = Math.max(right, rects[i].right);
+                bottom = Math.max(bottom, rects[i].bottom);
+                }
+            return left + ',' + top + ',' + right + ',' + bottom;
             })();
             )JS";
 
@@ -708,7 +773,8 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
 
     memDC.SelectObject(wxNullBitmap);
 
-    // always clip dead space at the bottom
+    // always clip dead space at the bottom, but never past a highlight box's bottom
+    // border, which can extend a pen-width or two below the actual text it outlines
     wxString contentBottomOutput;
     long contentBottom{ 0 };
     if (webView->RunScript(L"Math.round(document.documentElement.scrollHeight - "
@@ -716,7 +782,12 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
                            &contentBottomOutput) &&
         contentBottomOutput.ToLong(&contentBottom) && contentBottom > 0)
         {
-        const int contentBottomDevicePx{ static_cast<int>(contentBottom * dpiScale) };
+        int contentBottomDevicePx{ static_cast<int>(contentBottom * dpiScale) };
+        if (clipContents && !highlightPoints.empty() && lastHighlightBottom != -1)
+            {
+            contentBottomDevicePx =
+                std::max(contentBottomDevicePx, lastHighlightBottom + borderClearance);
+            }
         if (contentBottomDevicePx < bitmap.GetHeight())
             {
             bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), contentBottomDevicePx });
@@ -725,9 +796,10 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
 
     // if clipping to highlights, additionally crop below the last highlighted section
     if (clipContents && !highlightPoints.empty() && lastHighlightBottom != -1 &&
-        lastHighlightBottom < bitmap.GetHeight())
+        lastHighlightBottom + borderClearance < bitmap.GetHeight())
         {
-        bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(), lastHighlightBottom });
+        bitmap = bitmap.GetSubBitmap(
+            wxRect{ 0, 0, bitmap.GetWidth(), lastHighlightBottom + borderClearance });
         }
 
     // draw a gray border around the image since we are saving the client area
