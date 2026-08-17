@@ -1078,6 +1078,19 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
             }
         }
 
+    // box-content-adjustment (default is no-adjustment)
+    if (label->GetBoundingBoxToContentAdjustment() !=
+        Wisteria::LabelBoundingBoxContentAdjustment::ContentAdjustNone)
+        {
+        const auto adjustStr =
+            Wisteria::ReportEnumConvert::ConvertLabelBoundingBoxContentAdjustmentToString(
+                label->GetBoundingBoxToContentAdjustment());
+        if (adjustStr.has_value())
+            {
+            node->Add(L"box-content-adjustment", adjustStr.value());
+            }
+        }
+
     // line-spacing (default is 1)
     if (!compare_doubles(label->GetLineSpacing(), 1.0))
         {

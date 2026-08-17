@@ -1024,6 +1024,13 @@ namespace Wisteria
                 label->SetShape(labelShape.value());
                 }
 
+            const auto boxAdjustment = ReportEnumConvert::ConvertLabelBoundingBoxContentAdjustment(
+                labelNode->GetProperty(L"box-content-adjustment")->AsString());
+            if (boxAdjustment.has_value())
+                {
+                label->SetBoundingBoxToContentAdjustment(boxAdjustment.value());
+                }
+
             label->SetLineSpacing(labelNode->GetProperty(L"line-spacing")->AsDouble(1));
 
             // font attributes

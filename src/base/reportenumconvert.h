@@ -418,6 +418,24 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<LabelBoundingBoxContentAdjustment>
+        ConvertLabelBoundingBoxContentAdjustment(const wxString& value)
+            {
+            static const std::map<std::wstring, LabelBoundingBoxContentAdjustment> adjustValues = {
+                { L"no-adjustment", LabelBoundingBoxContentAdjustment::ContentAdjustNone },
+                { L"adjust-height", LabelBoundingBoxContentAdjustment::ContentAdjustHeight },
+                { L"adjust-width", LabelBoundingBoxContentAdjustment::ContentAdjustWidth },
+                { L"adjust-all", LabelBoundingBoxContentAdjustment::ContentAdjustAll }
+            };
+
+            const auto foundValue = adjustValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != adjustValues.cend()) ?
+                        std::optional<LabelBoundingBoxContentAdjustment>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<GraphColumnHeader> ConvertGraphColumnHeader(const wxString& value)
             {
             static const std::map<std::wstring, GraphColumnHeader> graphColumnHeader = {
@@ -1349,6 +1367,23 @@ namespace Wisteria
                 { LabelShape::WordBalloonTopRightTail, L"word-balloon-top-right-tail" },
                 { LabelShape::WordBalloonBottomLeftTail, L"word-balloon-bottom-left-tail" },
                 { LabelShape::WordBalloonBottomRightTail, L"word-balloon-bottom-right-tail" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertLabelBoundingBoxContentAdjustmentToString(LabelBoundingBoxContentAdjustment value)
+            {
+            static const std::map<LabelBoundingBoxContentAdjustment, wxString> values = {
+                { LabelBoundingBoxContentAdjustment::ContentAdjustNone, L"no-adjustment" },
+                { LabelBoundingBoxContentAdjustment::ContentAdjustHeight, L"adjust-height" },
+                { LabelBoundingBoxContentAdjustment::ContentAdjustWidth, L"adjust-width" },
+                { LabelBoundingBoxContentAdjustment::ContentAdjustAll, L"adjust-all" }
             };
 
             const auto foundValue = values.find(value);

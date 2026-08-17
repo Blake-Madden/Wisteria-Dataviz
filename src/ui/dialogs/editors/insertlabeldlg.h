@@ -214,6 +214,13 @@ namespace Wisteria::UI
             return static_cast<Wisteria::LabelShape>(m_labelShape);
             }
 
+        /// @returns How the label's box is fitted to its content.
+        [[nodiscard]]
+        Wisteria::LabelBoundingBoxContentAdjustment GetBoxContentAdjustment() const noexcept
+            {
+            return static_cast<Wisteria::LabelBoundingBoxContentAdjustment>(m_boxContentAdjustment);
+            }
+
         /// @brief Populates controls from an existing label.
         /// @param label The label to read settings from.
         void LoadFromLabel(const Wisteria::GraphItems::Label& label);
@@ -263,9 +270,10 @@ namespace Wisteria::UI
         wxSpinCtrlDouble* m_headerScalingSpin{ nullptr };
 
         // appearance
-        int m_orientation{ 0 }; // Horizontal
-        int m_labelStyle{ 0 };  // NoLabelStyle
-        int m_labelShape{ 0 };  // NoShape
+        int m_orientation{ 0 };          // Horizontal
+        int m_labelStyle{ 0 };           // NoLabelStyle
+        int m_labelShape{ 0 };           // NoShape
+        int m_boxContentAdjustment{ 0 }; // ContentAdjustNone
 
         // left image
         Thumbnail* m_leftImageThumbnail{ nullptr };

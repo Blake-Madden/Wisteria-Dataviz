@@ -2614,7 +2614,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 .
             // will set the proportions of the note's row based on how tall the note is
             FitCanvasHeightToContent(true)
-                // a word balloon needs an outline and background color to be visible
+                // outline and fill the word balloon
                 .Pen(*wxBLACK)
                 .FontBackgroundColor(
                     Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AntiqueWhite))

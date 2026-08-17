@@ -271,9 +271,8 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the shape that the label's box is drawn as.
             @param shape The shape to draw the box as.
-            @note A background color and pen must be set for a word balloon to be visible,
-                as the balloon is filled with the label's background color and outlined
-                with its pen.\n
+            @note The balloon is filled with the label's background color and outlined with
+                its pen, so at least one of these must be set for it to be visible.\n
                 Space for the balloon's tail is reserved above or beneath the text
                 (depending on which corner the tail points at), so the label's bounding box
                  will be taller than the text that it contains.

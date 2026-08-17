@@ -175,8 +175,9 @@ Label balloon(
 balloon.SetShape(LabelShape::WordBalloonBottomRightTail);
 ```
 
-The balloon is filled with the label's background color and outlined with its pen, so both of these
-must be set for it to be visible.
+The balloon is filled with the label's background color and outlined with its pen, so at least one
+of these must be set for it to be visible. Setting only the pen yields an unfilled balloon, and
+setting only the background color yields one with no outline.
 
 Adding a Header
 =============================

@@ -180,6 +180,21 @@ namespace Wisteria::UI
             appearanceGrid->Add(shapeChoice, wxSizerFlags{}.Expand());
             }
 
+        appearanceGrid->Add(
+            new wxStaticText(appearanceBox->GetStaticBox(), wxID_ANY, _(L"Box sizing:")),
+            wxSizerFlags{}.CenterVertical());
+            {
+            auto* boxSizingChoice = new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY,
+                                                 wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
+                                                 wxGenericValidator(&m_boxContentAdjustment));
+            // order must match Wisteria::LabelBoundingBoxContentAdjustment enum
+            boxSizingChoice->Append(_(L"Fill the entire area"));
+            boxSizingChoice->Append(_(L"Shrink height to content"));
+            boxSizingChoice->Append(_(L"Shrink width to content"));
+            boxSizingChoice->Append(_(L"Shrink to content"));
+            appearanceGrid->Add(boxSizingChoice, wxSizerFlags{}.Expand());
+            }
+
         appearanceBox->Add(appearanceGrid, wxSizerFlags{}.Expand().Border());
         labelSizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border());
 
@@ -437,6 +452,7 @@ namespace Wisteria::UI
         m_orientation = (label.GetTextOrientation() == Wisteria::Orientation::Vertical) ? 1 : 0;
         m_labelStyle = static_cast<int>(label.GetLabelStyle());
         m_labelShape = static_cast<int>(label.GetShape());
+        m_boxContentAdjustment = static_cast<int>(label.GetBoundingBoxToContentAdjustment());
 
         // header
         const auto& headerInfo = label.GetHeaderInfo();
@@ -517,6 +533,7 @@ namespace Wisteria::UI
         label.SetTextOrientation(GetTextOrientation());
         label.SetLabelStyle(GetLabelStyle());
         label.SetShape(GetLabelShape());
+        label.SetBoundingBoxToContentAdjustment(GetBoxContentAdjustment());
 
         auto& headerInfo = label.GetHeaderInfo();
         headerInfo.Enable(IsHeaderEnabled());
