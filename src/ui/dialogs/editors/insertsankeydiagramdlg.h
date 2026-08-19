@@ -188,12 +188,12 @@ namespace Wisteria::UI
             return m_ghostOpacity;
             }
 
-        /// @returns @c true if the second column's boxes and labels are also ghosted
+        /// @returns @c true if the second column's labels are also ghosted
         ///     for groups not included in the showcased streams.
         [[nodiscard]]
-        bool IsGhostingNonShowcasedGroups() const noexcept
+        bool IsGhostingNonShowcasedLabels() const noexcept
             {
-            return m_ghostNonShowcasedGroups;
+            return m_ghostNonShowcasedLabels;
             }
 
         /// @returns The "to" labels being showcased (streams flowing into them stay
@@ -248,7 +248,7 @@ namespace Wisteria::UI
         int m_groupLabelDisplayIndex{ 0 };
         int m_columnHeaderDisplayIndex{ 0 };
         int m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
-        bool m_ghostNonShowcasedGroups{ false };
+        bool m_ghostNonShowcasedLabels{ false };
 
         wxString m_fromVariable;
         wxString m_toVariable;

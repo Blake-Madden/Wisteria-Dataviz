@@ -4010,7 +4010,7 @@ namespace Wisteria
                 {
                 sankey->ShowcaseStreams(
                     ExpandAndCache(sankey.get(), L"showcase-streams", showcaseNode->AsStrings()),
-                    graphNode->GetProperty(L"ghost-non-showcased-groups")->AsBool(false));
+                    graphNode->GetProperty(L"ghost-non-showcased-labels")->AsBool(false));
                 }
 
             LoadGraph(graphNode, canvas, currentRow, currentColumn, sankey);

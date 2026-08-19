@@ -353,8 +353,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_currentYAxisPosition,
                                            pts[3]))
                     {
-                    const bool ghostBox{ colIndex > 0 && m_ghostNonShowcasedGroups &&
-                                         !IsStreamShowcased(group.m_label) };
+                    const bool ghostBox{ colIndex > 0 && !IsStreamShowcased(group.m_label) };
                     wxBrush groupBrush{ GetBrushScheme()->GetBrush(colorIndex) };
                     if (ghostBox)
                         {
@@ -376,14 +375,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
 
     //----------------------------------------------------------------
     void SankeyDiagram::ShowcaseStreams(const std::vector<wxString>& toLabels,
-                                        const bool ghostNonShowcasedGroups /*= false*/)
+                                        const bool ghostNonShowcasedLabels /*= false*/)
         {
         if (toLabels.empty())
             {
             return;
             }
         m_showcasedStreams = toLabels;
-        m_ghostNonShowcasedGroups = ghostNonShowcasedGroups;
+        m_ghostNonShowcasedLabels = ghostNonShowcasedLabels;
         }
 
     //----------------------------------------------------------------
@@ -575,7 +574,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                                wxString{};
                 }();
 
-                const bool ghostLabel{ colIndex == 1 && m_ghostNonShowcasedGroups &&
+                const bool ghostLabel{ colIndex == 1 && IsGhostingNonShowcasedLabels() &&
                                        !IsStreamShowcased(group.m_label) };
 
                 if (labelSide == Side::Right &&

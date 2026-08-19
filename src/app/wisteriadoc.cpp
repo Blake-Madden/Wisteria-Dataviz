@@ -4397,9 +4397,9 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         if (!showcaseStreamArr.empty())
             {
             node->Add(L"showcase-streams", wxSimpleJSON::Create(L"[" + showcaseStreamArr + L"]"));
-            if (sankey->IsGhostingNonShowcasedGroups())
+            if (sankey->IsGhostingNonShowcasedLabels())
                 {
-                node->Add(L"ghost-non-showcased-groups", true);
+                node->Add(L"ghost-non-showcased-labels", true);
                 }
             }
         }

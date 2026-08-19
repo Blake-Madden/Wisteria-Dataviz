@@ -5635,7 +5635,7 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
         plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
         if (!dlg.GetShowcaseStreams().empty())
             {
-            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedGroups());
+            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedLabels());
             for (size_t i = 0; i < dlg.GetShowcaseStreams().size(); ++i)
                 {
                 plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",
@@ -5728,7 +5728,7 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
         plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
         if (!dlg.GetShowcaseStreams().empty())
             {
-            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedGroups());
+            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedLabels());
             for (size_t i = 0; i < dlg.GetShowcaseStreams().size(); ++i)
                 {
                 plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",

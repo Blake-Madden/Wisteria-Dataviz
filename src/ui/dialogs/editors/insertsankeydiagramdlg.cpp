@@ -199,8 +199,8 @@ namespace Wisteria::UI
         showcaseBox->Add(showcaseGrid, wxSizerFlags{}.Border());
 
         m_ghostGroupsCheck = new wxCheckBox(
-            showcaseBox->GetStaticBox(), wxID_ANY, _(L"Also ghost \"To\" boxes and labels"),
-            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_ghostNonShowcasedGroups));
+            showcaseBox->GetStaticBox(), wxID_ANY, _(L"Also ghost \"To\" labels"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_ghostNonShowcasedLabels));
         showcaseBox->Add(m_ghostGroupsCheck, wxSizerFlags{}.Border());
 
         m_showcaseListBox = new wxEditableListBox(
@@ -668,7 +668,7 @@ namespace Wisteria::UI
 
         // showcasing
         m_ghostOpacity = static_cast<int>(sankey->GetGhostOpacity());
-        m_ghostNonShowcasedGroups = sankey->IsGhostingNonShowcasedGroups();
+        m_ghostNonShowcasedLabels = sankey->IsGhostingNonShowcasedLabels();
         m_showcaseStreams = sankey->GetShowcasedStreams();
         RefreshShowcaseListBox();
 
