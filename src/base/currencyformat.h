@@ -29,7 +29,10 @@ namespace Wisteria
     inline wxString ToCurrency(double money, bool noTrailingZeroes = false)
         {
 #ifdef __WXMSW__
-        const wxString inputVal = wxString::FromCDouble(money);
+        // An explicit precision keeps this in fixed-point notation. Without it, values of a
+        // million or more get rendered in scientific notation, which GetCurrencyFormatEx()
+        // can't parse.
+        const wxString inputVal = wxString::FromCDouble(money, 2);
         if (!inputVal.empty())
             {
             // see how much space we need
