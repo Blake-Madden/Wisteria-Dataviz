@@ -344,14 +344,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             for (const auto& group : col)
                 {
                 if (group.m_isShown &&
-                    GetPhysicalCoordinates(group.m_xAxisLeft, group.m_currentYAxisPosition,
-                                           pts[0]) &&
+                    GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisTopPosition, pts[0]) &&
                     GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition,
                                            pts[1]) &&
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition,
                                            pts[2]) &&
-                    GetPhysicalCoordinates(group.m_xAxisRight, group.m_currentYAxisPosition,
-                                           pts[3]))
+                    GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisTopPosition, pts[3]))
                     {
                     const bool ghostBox{ colIndex > 0 && !IsStreamShowcased(group.m_label) };
                     wxBrush groupBrush{ GetBrushScheme()->GetBrush(colorIndex) };
@@ -704,9 +702,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             CalcColumn(1, 9.5, 10, yRangeStart, yRangeEnd, spacePadding);
 
             AlignColumns();
-            DrawColumns(colorIndex);
-
             DrawStreams(0, 0.5, 9.5);
+            DrawColumns(colorIndex);
 
             DrawLabels(0, Side::Right, GetInitialColumnLabels(), dc);
             DrawLabels(1, Side::Left, GetGroupLabelDisplay(), dc);
