@@ -61,6 +61,16 @@ namespace Wisteria::GraphItems
             }
         else
             {
+            // this context belongs to the DC, so leave its pen and brush
+            // matching what the DC reports
+            if (m_dc->GetPen().IsOk())
+                {
+                m_gc->SetPen(m_dc->GetPen());
+                }
+            if (m_dc->GetBrush().IsOk())
+                {
+                m_gc->SetBrush(m_dc->GetBrush());
+                }
             m_gc->Flush();
             }
         }
