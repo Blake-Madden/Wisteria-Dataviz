@@ -31,6 +31,7 @@
 #include "../ui/dialogs/editors/insertpagedlg.h"
 #include "../ui/dialogs/editors/insertpiechartdlg.h"
 #include "../ui/dialogs/editors/insertproconroadmapdlg.h"
+#include "../ui/dialogs/editors/insertracetrackchartdlg.h"
 #include "../ui/dialogs/editors/insertsankeydiagramdlg.h"
 #include "../ui/dialogs/editors/insertscalechartdlg.h"
 #include "../ui/dialogs/editors/insertscatterplotdlg.h"
@@ -281,6 +282,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertStemAndLeaf, this, ID_NEW_STEMANDLEAF);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaffleChart, this, ID_NEW_WAFFLE_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertRaceTrackChart, this, ID_NEW_RACETRACK_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScaleChart, this, ID_NEW_SCALE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertTable, this, ID_NEW_TABLE);
@@ -2773,6 +2775,8 @@ void WisteriaView::BuildGraphMenus()
     appendItem(m_basicGraphMenu, ID_NEW_TABLE, _(L"Table..."), L"table.svg");
     appendItem(m_basicGraphMenu, ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram..."), L"sankey.svg");
     appendItem(m_basicGraphMenu, ID_NEW_WAFFLE_CHART, _(L"Waffle Chart..."), L"waffle.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_RACETRACK_CHART, _(L"Race Track Chart..."),
+               L"racetrack.svg");
 
     // Business graphs
     appendItem(m_businessGraphMenu, ID_NEW_GANTT, _(L"Gantt Chart..."), L"gantt.svg");
@@ -4019,6 +4023,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
         {
         EditWaffleChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
+        {
+        EditRaceTrackChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
         {
@@ -8152,6 +8160,108 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
                                            .PlacementHint(hint))) :
                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertRaceTrackChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertRaceTrackChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"racetrack.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::RaceTrackChart>(canvas);
+        // the track lanes take their colors when the data is set, so the schemes
+        // from the dialog have to be in place before then
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetValueVariable(), dlg.GetLabelVariable());
+
+        plot->SetTrackCount(dlg.GetTrackCount());
+        plot->SetStartAngle(dlg.GetStartAngle());
+        plot->SetTrackProportion(dlg.GetTrackProportion());
+        plot->ShowLabels(dlg.IsShowingLabels());
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.value", dlg.GetValueVariable());
+        plot->SetPropertyTemplate(L"variables.label", dlg.GetLabelVariable());
+
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
+                                      Wisteria::Canvas* canvas, const size_t graphRow,
+                                      const size_t graphCol) const
+    {
+    Wisteria::UI::InsertRaceTrackChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Race Track Chart"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"racetrack.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::RaceTrackChart>(canvas);
+        plot->SetId(graph.GetId());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->SetData(dlg.GetSelectedDataset(), dlg.GetValueVariable(), dlg.GetLabelVariable());
+        dlg.ApplyAxisOverrides(*plot);
+
+        plot->SetTrackCount(dlg.GetTrackCount());
+        plot->SetStartAngle(dlg.GetStartAngle());
+        plot->SetTrackProportion(dlg.GetTrackProportion());
+        plot->ShowLabels(dlg.IsShowingLabels());
+
+        // carry forward property templates, preserving {{placeholders}}
+        const auto* oldChart = dynamic_cast<const Wisteria::Graphs::RaceTrackChart*>(&graph);
+
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.value", dlg.GetValueVariable(),
+                             oldChart != nullptr ? oldChart->GetValueColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.label", dlg.GetLabelVariable(),
+                             oldChart != nullptr ? oldChart->GetLabelColumnName() : wxString{});
+
+        // clear old legend if present
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {

@@ -253,6 +253,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"race-track-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadRaceTrackChart(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"gantt-chart") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadGanttChart(
@@ -2918,6 +2924,72 @@ namespace Wisteria
 
         LoadGraph(graphNode, canvas, currentRow, currentColumn, waffleChart);
         return waffleChart;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadRaceTrackChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                      size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for race track chart."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(_(L"Variables not defined for race track chart.").ToUTF8());
+            }
+
+        const auto valueVarNameRaw = variablesNode->GetProperty(L"value")->AsString();
+        const auto valueVarName = ExpandConstants(valueVarNameRaw);
+        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
+        const auto labelVarName = ExpandConstants(labelVarNameRaw);
+
+        auto raceTrackChart = std::make_shared<Graphs::RaceTrackChart>(
+            canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+            LoadGraphColorScheme(graphNode));
+        if (!valueVarNameRaw.empty())
+            {
+            raceTrackChart->SetPropertyTemplate(L"variables.value", valueVarNameRaw);
+            }
+        if (!labelVarNameRaw.empty())
+            {
+            raceTrackChart->SetPropertyTemplate(L"variables.label", labelVarNameRaw);
+            }
+
+        raceTrackChart->SetData(foundPos->second, valueVarName, labelVarName);
+
+        if (const auto trackCount = ReportEnumConvert::ConvertRaceTrackCount(
+                graphNode->GetProperty(L"track-count")->AsString());
+            trackCount.has_value())
+            {
+            raceTrackChart->SetTrackCount(trackCount.value());
+            }
+
+        if (graphNode->HasProperty(L"track-proportion"))
+            {
+            raceTrackChart->SetTrackProportion(
+                graphNode->GetProperty(L"track-proportion")->AsDouble(0.65));
+            }
+
+        if (graphNode->HasProperty(L"start-angle"))
+            {
+            raceTrackChart->SetStartAngle(graphNode->GetProperty(L"start-angle")->AsDouble(270.0));
+            }
+
+        if (graphNode->HasProperty(L"show-labels"))
+            {
+            raceTrackChart->ShowLabels(graphNode->GetProperty(L"show-labels")->AsBool());
+            }
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, raceTrackChart);
+        return raceTrackChart;
         }
 
     //---------------------------------------------------

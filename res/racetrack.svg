@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   viewBox="0 0 24 24"
+   width="24"
+   height="24">
+  <!-- parchment ground, in the manner of the Du Bois 1900 Paris Exposition plates -->
+  <circle
+     cx="12" cy="12" r="11.5"
+     fill="#ede1cf"
+     stroke="#1c1613"
+     stroke-width="0.6" />
+  <!-- track lanes run clockwise from 12 o'clock, longest on the outside -->
+  <path
+     d="M 12,2 A 10,10 0 1,1 5.572,4.34"
+     fill="none"
+     stroke="#ee1c25"
+     stroke-width="2.3" />
+  <path
+     d="M 12,4.7 A 7.3,7.3 0 1,1 6.408,16.692"
+     fill="none"
+     stroke="#ffc400"
+     stroke-width="2.3" />
+  <path
+     d="M 12,7.4 A 4.6,4.6 0 0,1 14.957,15.524"
+     fill="none"
+     stroke="#0a5bd3"
+     stroke-width="2.3" />
+  <!-- start line, where every track lane's label is squared up -->
+  <line
+     x1="12" y1="0.9"
+     x2="12" y2="8.6"
+     stroke="#1c1613"
+     stroke-width="0.8" />
+</svg>

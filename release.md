@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Add Race Track Chart.
 - Added showcasing support to Sankey diagrams.
 - Added word balloon styles to labels.
 

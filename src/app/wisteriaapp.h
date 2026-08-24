@@ -216,6 +216,7 @@ constexpr wxWindowID ID_NEW_TABLE{ wxID_HIGHEST + 14 };
 constexpr wxWindowID ID_NEW_SANKEY_DIAGRAM{ wxID_HIGHEST + 15 };
 constexpr wxWindowID ID_NEW_WAFFLE_CHART{ wxID_HIGHEST + 16 };
 constexpr wxWindowID ID_NEW_WORD_CLOUD{ wxID_HIGHEST + 17 };
+constexpr wxWindowID ID_NEW_RACETRACK_CHART{ wxID_HIGHEST + 77 };
 
 // Business graphs
 constexpr wxWindowID ID_NEW_GANTT{ wxID_HIGHEST + 18 };

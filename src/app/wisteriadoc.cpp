@@ -4266,6 +4266,31 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"row-count", static_cast<double>(waffle->GetRowCount().value()));
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
+        {
+        const auto* raceTrack = dynamic_cast<const Wisteria::Graphs::RaceTrackChart*>(graph);
+        if (raceTrack->GetTrackCount() != Wisteria::Graphs::RaceTrackChart::TrackCount::Auto)
+            {
+            const auto tcStr = Wisteria::ReportEnumConvert::ConvertRaceTrackCountToString(
+                raceTrack->GetTrackCount());
+            if (tcStr.has_value())
+                {
+                node->Add(L"track-count", tcStr.value());
+                }
+            }
+        if (!compare_doubles(raceTrack->GetTrackProportion(), 0.65))
+            {
+            node->Add(L"track-proportion", raceTrack->GetTrackProportion());
+            }
+        if (!compare_doubles(raceTrack->GetStartAngle(), 270.0))
+            {
+            node->Add(L"start-angle", raceTrack->GetStartAngle());
+            }
+        if (!raceTrack->IsShowingLabels())
+            {
+            node->Add(L"show-labels", false);
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
         const auto* candlePlot = dynamic_cast<const Wisteria::Graphs::CandlestickPlot*>(graph);

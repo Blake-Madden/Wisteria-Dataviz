@@ -58,6 +58,10 @@ Basic
 | :-------------- |
 | ![](docs/images/wordcloud.png) |
 
+| Race Track Chart (Wisteria::Graphs::RaceTrackChart) |
+| :-------------- |
+| ![](docs/images/racetrack.svg) |
+
 Business
 -----------------------------
 

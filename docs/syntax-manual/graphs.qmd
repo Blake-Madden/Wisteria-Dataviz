@@ -519,6 +519,43 @@ Properties for `"pro-con-roadmap"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Race Track Chart {#race-track-chart-properties .unnumbered}
+
+Properties for `"race-track-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"value"`: The continuous column containing the track lanes' values.
+  - `"label"`: The categorical column containing the track lanes' labels.
+- `"track-count"`: A string specifying how many concentric tracks the track lanes are spread across. \
+  Available options are:
+  - `"auto"`: Two tracks if the smallest track lane would end up too narrow to read on a single track, otherwise one (the default).
+  - `"one"`: A single track, so that no track lane runs past one revolution.
+  - `"two"`: Two tracks, giving every track lane twice the sweep to work with. \
+    Track lanes long enough to run past one revolution spiral inward to finish on the inner track.
+- `"start-angle"`: The angle (in degrees) where the track lanes start. \
+  `0` is 3 o'clock and `90` is 6 o'clock; the default is `270` (12 o'clock).
+- `"track-proportion"`: The proportion of the plot area used for the track, as opposed to the hollow center. \
+  This is clamped to the range `0.3`--`0.9` (default is `0.65`).
+- `"show-labels"`: If `false`, will hide the labels drawn at the track lanes' starting positions.
+- Some base properties available to [graphs](#graph-properties), including `"brush-scheme"` and `"color-scheme"` for coloring the track lanes. \
+  Each track lane is colored according to its position in the dataset.
+
+```json
+{
+  "type": "race-track-chart",
+  "dataset": "Enrollment",
+  "variables": {
+    "value": "Enrollment",
+    "label": "Course"
+  },
+  "color-scheme": "icecream",
+  "track-count": "auto",
+  "title": "Course Enrollment"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Sankey Diagram {#sankey-diagram-properties .unnumbered}
 
 Properties for `"sankey-diagram"` nodes:

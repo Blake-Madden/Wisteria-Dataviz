@@ -36,6 +36,7 @@
 #include "../src/graphs/multi_series_lineplot.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
+#include "../src/graphs/racetrackchart.h"
 #include "../src/graphs/sankeydiagram.h"
 #include "../src/graphs/scalechart.h"
 #include "../src/graphs/scatterplot.h"
@@ -119,7 +120,8 @@ class MyApp final : public wxApp
         ID_NEW_SCATTERPLOT,
         ID_NEW_BUBBLEPLOT,
         ID_NEW_CHERNOFFPLOT,
-        ID_NEW_STEMANDLEAF
+        ID_NEW_STEMANDLEAF,
+        ID_NEW_RACETRACK
         };
 
   private:

@@ -72,6 +72,7 @@ SET(WISTERIA_SRC
     src/graphs/multi_series_lineplot.cpp
     src/graphs/piechart.cpp
     src/graphs/proconroadmap.cpp
+    src/graphs/racetrackchart.cpp
     src/graphs/roadmap.cpp
     src/graphs/sankeydiagram.cpp
     src/graphs/scalechart.cpp
@@ -110,6 +111,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/editors/insertmultiserieslineplotdlg.cpp
     src/ui/dialogs/editors/insertpiechartdlg.cpp
     src/ui/dialogs/editors/insertproconroadmapdlg.cpp
+    src/ui/dialogs/editors/insertracetrackchartdlg.cpp
     src/ui/dialogs/editors/insertsankeydiagramdlg.cpp
     src/ui/dialogs/editors/insertscalechartdlg.cpp
     src/ui/dialogs/editors/insertscatterplotdlg.cpp

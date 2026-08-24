@@ -182,6 +182,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BUBBLEPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CHERNOFFPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -244,6 +245,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"));
     fileMenu->Append(MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM, _(L"Grouped Sankey Diagram"));
     fileMenu->Append(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"));
+    fileMenu->Append(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -2808,6 +2810,50 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
+    // Race Track Chart
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_RACETRACK)
+        {
+        subframe->SetTitle(_(L"Race Track Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto raceTrackData = std::make_shared<Wisteria::Data::Dataset>();
+        try
+            {
+            raceTrackData->ImportCSV(
+                appDir + L"/datasets/historical/furniture_ownership.csv",
+                Wisteria::Data::ImportInfo()
+                    .ContinuousColumns({ L"Value" })
+                    .CategoricalColumns(
+                        { { L"Year", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        // colors traced from the original Du Bois plate, one per track lane
+        const auto colors = std::make_shared<Wisteria::Colors::Schemes::ColorScheme>(
+            Wisteria::Colors::Schemes::ColorScheme{
+                wxColour{ 230, 170, 165 }, // 1875, pale salmon
+                wxColour{ 200, 130, 40 },  // 1880, muted amber
+                wxColour{ 140, 30, 45 },   // 1885, burgundy
+                wxColour{ 140, 155, 180 }, // 1890, slate blue-gray
+                wxColour{ 230, 160, 45 },  // 1895, golden yellow
+                wxColour{ 196, 42, 62 }    // 1899, crimson red
+            });
+
+        // aged-paper color from the original plate
+        subframe->m_canvas->SetBackgroundColor(wxColour{ 237, 228, 210 });
+
+        auto plot =
+            std::make_shared<Wisteria::Graphs::RaceTrackChart>(subframe->m_canvas, nullptr, colors);
+        plot->SetData(raceTrackData, L"Value", L"Year");
+        plot->SetValueFormat(Wisteria::NumberDisplay::Currency);
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
 
     subframe->Maximize(true);
     subframe->Show(true);
@@ -3031,6 +3077,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/wordcloud.svg", iconSize),
                      _(L"Word Cloud"));
+    toolBar->AddTool(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/racetrack.svg", iconSize),
+                     _(L"Race Track Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

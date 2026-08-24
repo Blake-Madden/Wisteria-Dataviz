@@ -73,6 +73,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/multi_series_lineplot.cpp
     ../../src/graphs/piechart.cpp
     ../../src/graphs/proconroadmap.cpp
+    ../../src/graphs/racetrackchart.cpp
     ../../src/graphs/roadmap.cpp
     ../../src/graphs/sankeydiagram.cpp
     ../../src/graphs/scalechart.cpp

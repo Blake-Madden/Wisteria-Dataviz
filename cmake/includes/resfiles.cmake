@@ -71,6 +71,7 @@ print-setup.svg
 print.svg
 project-settings.svg
 question-mark.svg
+racetrack.svg
 realtime.svg
 reload.svg
 report.svg

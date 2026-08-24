@@ -21,6 +21,7 @@
 #include "../graphs/likertchart.h"
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
+#include "../graphs/racetrackchart.h"
 #include "enums.h"
 #include <wx/wx.h>
 
@@ -684,6 +685,24 @@ namespace Wisteria
             const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());
             return ((foundValue != sliceEffects.cend()) ?
                         std::optional<PieStyle>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::RaceTrackChart::TrackCount>
+        ConvertRaceTrackCount(const wxString& value)
+            {
+            using TrackCount = Graphs::RaceTrackChart::TrackCount;
+            static const std::map<std::wstring_view, TrackCount> trackCounts = {
+                { L"auto", TrackCount::Auto },
+                { L"one", TrackCount::One },
+                { L"two", TrackCount::Two }
+            };
+
+            const auto foundValue = trackCounts.find(value.Lower().ToStdWstring());
+            return ((foundValue != trackCounts.cend()) ?
+                        std::optional<TrackCount>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -1666,6 +1685,23 @@ namespace Wisteria
                 { PieStyle::ChocolateChipCookie, L"chocolate-chip-cookie" },
                 { PieStyle::GlazedDonut, L"glazed-donut" }
             };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a RaceTrackChart::TrackCount enum to its JSON string representation.
+        /// @param value The track count enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertRaceTrackCountToString(Graphs::RaceTrackChart::TrackCount value)
+            {
+            using TrackCount = Graphs::RaceTrackChart::TrackCount;
+            static const std::map<TrackCount, wxString> values = { { TrackCount::Auto, L"auto" },
+                                                                   { TrackCount::One, L"one" },
+                                                                   { TrackCount::Two, L"two" } };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :

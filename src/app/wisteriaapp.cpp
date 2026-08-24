@@ -868,6 +868,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"waffle-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
+        {
+        return _DT(L"race-track-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
         {
         return _DT(L"word-cloud");
@@ -970,6 +974,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
         {
         return L"waffle.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
+        {
+        return L"racetrack.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
