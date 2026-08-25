@@ -22,6 +22,7 @@
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/racetrackchart.h"
+#include "../graphs/wilmarth_bridge_plot.h"
 #include "enums.h"
 #include <wx/wx.h>
 
@@ -703,6 +704,43 @@ namespace Wisteria
             const auto foundValue = trackCounts.find(value.Lower().ToStdWstring());
             return ((foundValue != trackCounts.cend()) ?
                         std::optional<TrackCount>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::WilmarthBridgePlot::FadeEffect>
+        ConvertWilmarthBridgeFadeEffect(const wxString& value)
+            {
+            using FadeEffect = Graphs::WilmarthBridgePlot::FadeEffect;
+            static const std::map<std::wstring_view, FadeEffect> fadeEffects = {
+                { L"none", FadeEffect::None },
+                { L"remaining-lifetime", FadeEffect::RemainingLifetime },
+                { L"elapsed-time", FadeEffect::ElapsedTime }
+            };
+
+            const auto foundValue = fadeEffects.find(value.Lower().ToStdWstring());
+            return ((foundValue != fadeEffects.cend()) ?
+                        std::optional<FadeEffect>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::WilmarthBridgePlot::SurvivalDisplay>
+        ConvertWilmarthBridgeSurvivalDisplay(const wxString& value)
+            {
+            using SurvivalDisplay = Graphs::WilmarthBridgePlot::SurvivalDisplay;
+            static const std::map<std::wstring_view, SurvivalDisplay> survivalDisplays = {
+                { L"none", SurvivalDisplay::None },
+                { L"at-risk-count", SurvivalDisplay::AtRiskCount },
+                { L"survival-percent", SurvivalDisplay::SurvivalPercent },
+                { L"both", SurvivalDisplay::Both }
+            };
+
+            const auto foundValue = survivalDisplays.find(value.Lower().ToStdWstring());
+            return ((foundValue != survivalDisplays.cend()) ?
+                        std::optional<SurvivalDisplay>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -1702,6 +1740,47 @@ namespace Wisteria
             static const std::map<TrackCount, wxString> values = { { TrackCount::Auto, L"auto" },
                                                                    { TrackCount::One, L"one" },
                                                                    { TrackCount::Two, L"two" } };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a WilmarthBridgePlot::FadeEffect enum to its JSON string
+        ///     representation.
+        /// @param value The fade effect enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertWilmarthBridgeFadeEffectToString(Graphs::WilmarthBridgePlot::FadeEffect value)
+            {
+            using FadeEffect = Graphs::WilmarthBridgePlot::FadeEffect;
+            static const std::map<FadeEffect, wxString> values = {
+                { FadeEffect::None, L"none" },
+                { FadeEffect::RemainingLifetime, L"remaining-lifetime" },
+                { FadeEffect::ElapsedTime, L"elapsed-time" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a WilmarthBridgePlot::SurvivalDisplay enum to its JSON string
+        ///     representation.
+        /// @param value The survival display enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertWilmarthBridgeSurvivalDisplayToString(
+            Graphs::WilmarthBridgePlot::SurvivalDisplay value)
+            {
+            using SurvivalDisplay = Graphs::WilmarthBridgePlot::SurvivalDisplay;
+            static const std::map<SurvivalDisplay, wxString> values = {
+                { SurvivalDisplay::None, L"none" },
+                { SurvivalDisplay::AtRiskCount, L"at-risk-count" },
+                { SurvivalDisplay::SurvivalPercent, L"survival-percent" },
+                { SurvivalDisplay::Both, L"both" }
+            };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :

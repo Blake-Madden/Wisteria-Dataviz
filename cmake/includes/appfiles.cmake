@@ -25,6 +25,7 @@ SET(APP_WISTERIA_SRC
     src/base/points.cpp
     src/base/polygon.cpp
     src/base/report_builder_formulas.cpp
+    src/base/report_builder_stat_graphs.cpp
     src/base/reportbuilder.cpp
     src/base/reportbuildercolors.cpp
     src/base/reportprintout.cpp
@@ -86,6 +87,7 @@ SET(APP_WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/waffle_chart.cpp
     src/graphs/wcurveplot.cpp
+    src/graphs/wilmarth_bridge_plot.cpp
     src/graphs/win_loss_sparkline.cpp
     src/graphs/wordcloud.cpp
     src/import/spreadsheet_extract_text.cpp
@@ -130,6 +132,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/inserttabledlg.cpp
     src/ui/dialogs/editors/insertwafflechartdlg.cpp
     src/ui/dialogs/editors/insertwcurvedlg.cpp
+    src/ui/dialogs/editors/insertwilmarthbridgeplotdlg.cpp
     src/ui/dialogs/editors/insertwlsparklinedlg.cpp
     src/ui/dialogs/editors/insertwordclouddlg.cpp
     src/ui/dialogs/editors/joindlg.cpp

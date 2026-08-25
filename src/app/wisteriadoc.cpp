@@ -4291,6 +4291,41 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"show-labels", false);
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
+        {
+        const auto* bridgePlot = dynamic_cast<const Wisteria::Graphs::WilmarthBridgePlot*>(graph);
+        if (bridgePlot->GetFadeEffect() != Wisteria::Graphs::WilmarthBridgePlot::FadeEffect::None)
+            {
+            const auto feStr = Wisteria::ReportEnumConvert::ConvertWilmarthBridgeFadeEffectToString(
+                bridgePlot->GetFadeEffect());
+            if (feStr.has_value())
+                {
+                node->Add(L"fade-effect", feStr.value());
+                }
+            }
+        if (bridgePlot->GetSurvivalDisplay() !=
+            Wisteria::Graphs::WilmarthBridgePlot::SurvivalDisplay::None)
+            {
+            const auto sdStr =
+                Wisteria::ReportEnumConvert::ConvertWilmarthBridgeSurvivalDisplayToString(
+                    bridgePlot->GetSurvivalDisplay());
+            if (sdStr.has_value())
+                {
+                node->Add(L"survival-display", sdStr.value());
+                }
+            }
+        if (!bridgePlot->IsShowingCensoredMarkers())
+            {
+            node->Add(L"show-censored-markers", false);
+            }
+        const auto terminalRowTmpl = bridgePlot->GetPropertyTemplate(L"terminal-row-label");
+        const auto& terminalRowLabel =
+            terminalRowTmpl.empty() ? bridgePlot->GetTerminalRowLabel() : terminalRowTmpl;
+        if (!terminalRowLabel.empty())
+            {
+            node->Add(L"terminal-row-label", terminalRowLabel);
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
         const auto* candlePlot = dynamic_cast<const Wisteria::Graphs::CandlestickPlot*>(graph);

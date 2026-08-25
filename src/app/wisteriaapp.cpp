@@ -872,6 +872,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"race-track-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
+        {
+        return _DT(L"wilmarth-bridge-plot");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
         {
         return _DT(L"word-cloud");
@@ -978,6 +982,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
         {
         return L"racetrack.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
+        {
+        return L"wilmarth-bridge.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {

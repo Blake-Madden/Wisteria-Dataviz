@@ -44,6 +44,7 @@
 #include "../src/graphs/table.h"
 #include "../src/graphs/waffle_chart.h"
 #include "../src/graphs/wcurveplot.h"
+#include "../src/graphs/wilmarth_bridge_plot.h"
 #include "../src/graphs/win_loss_sparkline.h"
 #include "../src/graphs/wordcloud.h"
 #include "../src/import/text_matrix.h"
@@ -121,7 +122,8 @@ class MyApp final : public wxApp
         ID_NEW_BUBBLEPLOT,
         ID_NEW_CHERNOFFPLOT,
         ID_NEW_STEMANDLEAF,
-        ID_NEW_RACETRACK
+        ID_NEW_RACETRACK,
+        ID_NEW_WILMARTH_BRIDGE
         };
 
   private:

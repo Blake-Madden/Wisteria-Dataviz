@@ -4,12 +4,6 @@
    viewBox="0 0 24 24"
    width="24"
    height="24">
-  <!-- parchment ground, in the manner of the Du Bois 1900 Paris Exposition plates -->
-  <circle
-     cx="12" cy="12" r="11.5"
-     fill="#ede1cf"
-     stroke="#1c1613"
-     stroke-width="0.6" />
   <!-- track lanes run clockwise from 12 o'clock, longest on the outside -->
   <path
      d="M 12,2 A 10,10 0 1,1 5.572,4.34"
@@ -30,6 +24,6 @@
   <line
      x1="12" y1="0.9"
      x2="12" y2="8.6"
-     stroke="#1c1613"
+     stroke="#808080"
      stroke-width="0.8" />
 </svg>

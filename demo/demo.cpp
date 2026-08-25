@@ -183,6 +183,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CHERNOFFPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -246,6 +247,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM, _(L"Grouped Sankey Diagram"));
     fileMenu->Append(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"));
     fileMenu->Append(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"));
+    fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -2854,6 +2856,33 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
+    // Wilmarth Bridge Plot
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE)
+        {
+        subframe->SetTitle(_(L"Wilmarth Bridge Plot"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto bridgeData = std::make_shared<Wisteria::Data::Dataset>();
+        try
+            {
+            bridgeData->ImportCSV(appDir + L"/datasets/historical/wilmarth_bridge.csv",
+                                  Wisteria::Data::ImportInfo()
+                                      .ContinuousColumns({ L"Entered", L"Faded" })
+                                      .CategoricalColumns({ { L"Letter" } }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<Wisteria::Graphs::WilmarthBridgePlot>(subframe->m_canvas);
+        plot->SetData(bridgeData, L"Letter", L"Faded", L"Entered");
+        plot->ShowTerminalRow(_(L"Oct 1971"));
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
 
     subframe->Maximize(true);
     subframe->Show(true);
@@ -3080,6 +3109,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/racetrack.svg", iconSize),
                      _(L"Race Track Chart"));
+    toolBar->AddTool(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/wilmarth-bridge.svg", iconSize),
+                     _(L"Wilmarth Bridge Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

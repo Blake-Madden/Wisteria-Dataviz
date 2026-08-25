@@ -963,6 +963,48 @@ Properties for `"waffle-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Wilmarth Bridge Plot {#wilmarth-bridge-plot-properties .unnumbered}
+
+Properties for `"wilmarth-bridge-plot"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"label"`: The categorical column containing the observations' labels.
+  - `"exit"`: The continuous or date column containing when each observation was last under observation.
+  - `"entered"`: The (optional) continuous or date column (matching the type of `"exit"`) containing when each observation entered the study. \
+    If not provided, every observation is assumed to enter at the first period.
+  - `"status"`: The (optional) continuous column containing each observation's status: `1` for an event, `0` for a right-censored observation, matching the polarity of R's `Surv(time, event)`. \
+    If not provided, every observation is assumed to have had an event.
+- `"fade-effect"`: A string specifying how an observation's label ink weakens over its lifetime. \
+  Available options are:
+  - `"none"`: Constant ink, as in the printed plate (the default).
+  - `"remaining-lifetime"`: An observation is palest during the period just before it exits the study.
+  - `"elapsed-time"`: Every row is fainter than the one above it, so the whole grid washes out from top to bottom.
+- `"survival-display"`: A string specifying what survival statistics to display alongside the grid. \
+  Available options are:
+  - `"none"`: Do not display any survival statistics (the default).
+  - `"at-risk-count"`: The number of observations still at risk at each period.
+  - `"survival-percent"`: The Kaplan-Meier survival estimate at each period.
+  - `"both"`: Both the at-risk count and the survival percent.
+- `"show-censored-markers"`: `false` to hide the arrow marking a censored observation's last cell (shown by default).
+- `"terminal-row-label"`: A string label for an extra row appended after the last observed period, confirming the study's actual endpoint. \
+  For example, the printed plate's `"Oct 1971"` row was added after the last annual observation to confirm that the final letters had faded away by then. \
+  Not shown by default, and only drawn if every observation had an event (i.e., none are right-censored).
+
+```json
+{
+  "type": "wilmarth-bridge-plot",
+  "dataset": "Inscription",
+  "variables": {
+    "label": "Letter",
+    "exit": "Faded",
+    "entered": "Entered"
+  },
+  "title": "The Wilmarth Bridge"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Win/Loss Sparkline {#win-loss-sparkline-properties .unnumbered}
 
 Properties for `"win-loss-sparkline"` nodes:

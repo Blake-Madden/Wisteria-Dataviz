@@ -89,5 +89,6 @@ subset.svg
 table.svg
 waffle.svg
 wcurve.svg
+wilmarth-bridge.svg
 wisteria.svg
 wordcloud.svg

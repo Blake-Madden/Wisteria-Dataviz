@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   viewBox="0 0 24 24"
+   width="24"
+   height="24">
+  <!-- three columns fading out over three rows, tracing the inscription's own fate -->
+  <g fill="none" stroke="#808080" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+    <!-- row 1: F O R, full strength -->
+    <g transform="translate(2.5,2)">
+      <path d="M0,0 L0,5 M0,0 L3.2,0 M0,2.4 L2.4,2.4" />
+    </g>
+    <g transform="translate(9.5,2)">
+      <ellipse cx="1.7" cy="2.5" rx="1.6" ry="2.4" />
+    </g>
+    <g transform="translate(16.5,2)">
+      <path d="M0,5 L0,0 L2.8,0 L2.8,2.4 L0,2.4 M1.1,2.4 L3.2,5" />
+    </g>
+
+    <!-- row 2: F and R only, O has already faded away -->
+    <g transform="translate(2.5,10)">
+      <path d="M0,0 L0,5 M0,0 L3.2,0 M0,2.4 L2.4,2.4" />
+    </g>
+    <g transform="translate(16.5,10)">
+      <path d="M0,5 L0,0 L2.8,0 L2.8,2.4 L0,2.4 M1.1,2.4 L3.2,5" />
+    </g>
+
+    <!-- row 3: just F remains, faint -->
+    <g transform="translate(2.5,18)" opacity="0.35">
+      <path d="M0,0 L0,5 M0,0 L3.2,0 M0,2.4 L2.4,2.4" />
+    </g>
+  </g>
+</svg>

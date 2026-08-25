@@ -102,6 +102,10 @@ Fully customizable with options for skin tone, hair color, and hair style!
 | :-------------- | :-------------------------------- |
 | ![](docs/images/stem-leaf.svg) | ![](docs/images/stem-leaf-grouped.svg) |
 
+| Wilmarth Bridge Plot (Wisteria::Graphs::WilmarthBridgePlot) |
+| :-------------- |
+| ![](docs/images/WilmarthBridgePlot.svg) |
+
 Survey Data
 -----------------------------
 

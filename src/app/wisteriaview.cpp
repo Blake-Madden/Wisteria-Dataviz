@@ -40,6 +40,7 @@
 #include "../ui/dialogs/editors/inserttabledlg.h"
 #include "../ui/dialogs/editors/insertwafflechartdlg.h"
 #include "../ui/dialogs/editors/insertwcurvedlg.h"
+#include "../ui/dialogs/editors/insertwilmarthbridgeplotdlg.h"
 #include "../ui/dialogs/editors/insertwlsparklinedlg.h"
 #include "../ui/dialogs/editors/insertwordclouddlg.h"
 #include "../ui/dialogs/editors/joindlg.h"
@@ -283,6 +284,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaffleChart, this, ID_NEW_WAFFLE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertRaceTrackChart, this, ID_NEW_RACETRACK_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWilmarthBridgePlot, this,
+                  ID_NEW_WILMARTH_BRIDGE_PLOT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScaleChart, this, ID_NEW_SCALE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertTable, this, ID_NEW_TABLE);
@@ -2797,6 +2800,9 @@ void WisteriaView::BuildGraphMenus()
     appendItem(m_statisticalGraphMenu, ID_NEW_BUBBLEPLOT, _(L"Bubble Plot..."), L"bubbleplot.svg");
     appendItem(m_statisticalGraphMenu, ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot..."),
                L"chernoffplot.svg");
+    m_statisticalGraphMenu.AppendSeparator();
+    appendItem(m_statisticalGraphMenu, ID_NEW_WILMARTH_BRIDGE_PLOT, _(L"Wilmarth Bridge Plot..."),
+               L"wilmarth-bridge.svg");
 
     // Survey graphs
     appendItem(m_surveyGraphMenu, ID_NEW_LIKERT, _(L"Likert Chart..."), L"likert7.svg");
@@ -4027,6 +4033,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
         {
         EditRaceTrackChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
+        {
+        EditWilmarthBridgePlot(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
         {
@@ -8255,6 +8265,144 @@ void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
                              oldChart != nullptr ? oldChart->GetValueColumnName() : wxString{});
         CarryForwardProperty(graph, *plot, L"variables.label", dlg.GetLabelVariable(),
                              oldChart != nullptr ? oldChart->GetLabelColumnName() : wxString{});
+
+        // clear old legend if present
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertWilmarthBridgePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"wilmarth-bridge.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::WilmarthBridgePlot>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->SetData(
+            dlg.GetSelectedDataset(), dlg.GetLabelVariable(), dlg.GetExitVariable(),
+            (dlg.GetEntryVariable().empty() ? std::nullopt :
+                                              std::optional<wxString>(dlg.GetEntryVariable())),
+            (dlg.GetStatusVariable().empty() ? std::nullopt :
+                                               std::optional<wxString>(dlg.GetStatusVariable())));
+
+        plot->SetFadeEffect(dlg.GetFadeEffect());
+        plot->SetSurvivalDisplay(dlg.GetSurvivalDisplay());
+        plot->ShowCensoredMarkers(dlg.IsShowingCensoredMarkers());
+        plot->ShowTerminalRow(dlg.GetTerminalRowLabel());
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.label", dlg.GetLabelVariable());
+        plot->SetPropertyTemplate(L"variables.exit", dlg.GetExitVariable());
+        if (!dlg.GetEntryVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.entered", dlg.GetEntryVariable());
+            }
+        if (!dlg.GetStatusVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.status", dlg.GetStatusVariable());
+            }
+        if (!dlg.GetTerminalRowLabel().empty())
+            {
+            plot->SetPropertyTemplate(L"terminal-row-label", dlg.GetTerminalRowLabel());
+            }
+
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph,
+                                          Wisteria::Canvas* canvas, const size_t graphRow,
+                                          const size_t graphCol) const
+    {
+    Wisteria::UI::InsertWilmarthBridgePlotDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Wilmarth Bridge Plot"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"wilmarth-bridge.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::WilmarthBridgePlot>(canvas);
+        plot->SetId(graph.GetId());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        plot->SetData(
+            dlg.GetSelectedDataset(), dlg.GetLabelVariable(), dlg.GetExitVariable(),
+            (dlg.GetEntryVariable().empty() ? std::nullopt :
+                                              std::optional<wxString>(dlg.GetEntryVariable())),
+            (dlg.GetStatusVariable().empty() ? std::nullopt :
+                                               std::optional<wxString>(dlg.GetStatusVariable())));
+        dlg.ApplyAxisOverrides(*plot);
+
+        plot->SetFadeEffect(dlg.GetFadeEffect());
+        plot->SetSurvivalDisplay(dlg.GetSurvivalDisplay());
+        plot->ShowCensoredMarkers(dlg.IsShowingCensoredMarkers());
+        plot->ShowTerminalRow(dlg.GetTerminalRowLabel());
+
+        // carry forward property templates, preserving {{placeholders}}
+        const auto* oldPlot = dynamic_cast<const Wisteria::Graphs::WilmarthBridgePlot*>(&graph);
+
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.label", dlg.GetLabelVariable(),
+                             oldPlot != nullptr ? oldPlot->GetLabelColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.exit", dlg.GetExitVariable(),
+                             oldPlot != nullptr ? oldPlot->GetExitColumnName() : wxString{});
+        if (!dlg.GetEntryVariable().empty())
+            {
+            CarryForwardProperty(graph, *plot, L"variables.entered", dlg.GetEntryVariable(),
+                                 oldPlot != nullptr ? oldPlot->GetEntryColumnName() : wxString{});
+            }
+        if (!dlg.GetStatusVariable().empty())
+            {
+            CarryForwardProperty(graph, *plot, L"variables.status", dlg.GetStatusVariable(),
+                                 oldPlot != nullptr ? oldPlot->GetStatusColumnName() : wxString{});
+            }
+        if (!dlg.GetTerminalRowLabel().empty())
+            {
+            CarryForwardProperty(graph, *plot, L"terminal-row-label", dlg.GetTerminalRowLabel(),
+                                 oldPlot != nullptr ? oldPlot->GetTerminalRowLabel() : wxString{});
+            }
 
         // clear old legend if present
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);

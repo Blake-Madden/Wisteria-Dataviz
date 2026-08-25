@@ -142,6 +142,9 @@ class WisteriaView final : public wxView
     void OnInsertRaceTrackChart(wxCommandEvent& event);
     void EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                             size_t graphRow, size_t graphCol) const;
+    void OnInsertWilmarthBridgePlot(wxCommandEvent& event);
+    void EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                size_t graphRow, size_t graphCol) const;
     void OnInsertScaleChart(wxCommandEvent& event);
     void EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                         size_t graphRow, size_t graphCol) const;
