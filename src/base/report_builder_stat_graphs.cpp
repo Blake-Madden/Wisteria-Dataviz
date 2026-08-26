@@ -445,6 +445,80 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadStemAndLeafPlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                       size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for stem-and-leaf plot."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(_(L"Variables not defined for stem-and-leaf plot.").ToUTF8());
+            }
+
+        const auto contVarNameRaw = variablesNode->GetProperty(L"continuous")->AsString();
+        const auto contVarName = ExpandConstants(contVarNameRaw);
+        const auto groupVarNameRaw = variablesNode->GetProperty(L"group")->AsString();
+        const auto groupVarName = ExpandConstants(groupVarNameRaw);
+
+        auto stemLeafPlot = std::make_shared<Graphs::StemAndLeafPlot>(canvas);
+        if (!contVarNameRaw.empty())
+            {
+            stemLeafPlot->SetPropertyTemplate(L"variables.continuous", contVarNameRaw);
+            }
+        if (!groupVarNameRaw.empty())
+            {
+            stemLeafPlot->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
+            }
+
+        stemLeafPlot->SetData(
+            foundPos->second, contVarName,
+            (!groupVarName.empty() ? std::optional<wxString>(groupVarName) : std::nullopt));
+
+        if (graphNode->HasProperty(L"stem-header-color"))
+            {
+            stemLeafPlot->SetStemHeaderColor(
+                ConvertColor(graphNode->GetProperty(L"stem-header-color")));
+            }
+        if (graphNode->HasProperty(L"leaf-header-color"))
+            {
+            stemLeafPlot->SetLeafHeaderColor(
+                ConvertColor(graphNode->GetProperty(L"leaf-header-color")));
+            }
+        if (graphNode->HasProperty(L"stem-header-font-color"))
+            {
+            stemLeafPlot->SetStemHeaderFontColor(
+                ConvertColor(graphNode->GetProperty(L"stem-header-font-color")));
+            }
+        if (graphNode->HasProperty(L"leaf-header-font-color"))
+            {
+            stemLeafPlot->SetLeafHeaderFontColor(
+                ConvertColor(graphNode->GetProperty(L"leaf-header-font-color")));
+            }
+        if (graphNode->HasProperty(L"stem-value-font-color"))
+            {
+            stemLeafPlot->SetStemValueFontColor(
+                ConvertColor(graphNode->GetProperty(L"stem-value-font-color")));
+            }
+        if (graphNode->HasProperty(L"leaf-value-font-color"))
+            {
+            stemLeafPlot->SetLeafValueFontColor(
+                ConvertColor(graphNode->GetProperty(L"leaf-value-font-color")));
+            }
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, stemLeafPlot);
+        return stemLeafPlot;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
     ReportBuilder::LoadWilmarthBridgePlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
                                           size_t& currentRow, size_t& currentColumn)
         {

@@ -265,6 +265,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"stem-and-leaf-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadStemAndLeafPlot(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"gantt-chart") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadGanttChart(

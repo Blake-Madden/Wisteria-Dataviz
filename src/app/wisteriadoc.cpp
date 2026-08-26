@@ -4326,6 +4326,32 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"terminal-row-label", terminalRowLabel);
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
+        {
+        const auto* stemLeaf = dynamic_cast<const Wisteria::Graphs::StemAndLeafPlot*>(graph);
+        node->Add(L"stem-header-color", ColorToStr(stemLeaf->GetStemHeaderColor()));
+        node->Add(L"leaf-header-color", ColorToStr(stemLeaf->GetLeafHeaderColor()));
+        if (stemLeaf->GetStemHeaderFontColor().has_value())
+            {
+            node->Add(L"stem-header-font-color",
+                      ColorToStr(stemLeaf->GetStemHeaderFontColor().value()));
+            }
+        if (stemLeaf->GetLeafHeaderFontColor().has_value())
+            {
+            node->Add(L"leaf-header-font-color",
+                      ColorToStr(stemLeaf->GetLeafHeaderFontColor().value()));
+            }
+        if (stemLeaf->GetStemValueFontColor().has_value())
+            {
+            node->Add(L"stem-value-font-color",
+                      ColorToStr(stemLeaf->GetStemValueFontColor().value()));
+            }
+        if (stemLeaf->GetLeafValueFontColor().has_value())
+            {
+            node->Add(L"leaf-value-font-color",
+                      ColorToStr(stemLeaf->GetLeafValueFontColor().value()));
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
         const auto* candlePlot = dynamic_cast<const Wisteria::Graphs::CandlestickPlot*>(graph);

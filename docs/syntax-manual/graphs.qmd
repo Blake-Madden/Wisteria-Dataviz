@@ -629,6 +629,37 @@ Properties for `"scale-chart"` nodes:
 - Some base properties available to [graphs](#graph-properties).
 :::
 
+::: {.minipage data-latex="{\textwidth}"}
+## Stem-and-Leaf Plot {#stem-and-leaf-plot-properties .unnumbered}
+
+Properties for `"stem-and-leaf-plot"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"continuous"`: The continuous column whose values will be displayed. \
+    Values are floored to integers.
+  - `"group"`: An (optional) grouping column. \
+    If provided, it must contain exactly two groups, which will produce a back-to-back display.
+- `"stem-header-color"`: The background color for the "Stem" header.
+- `"leaf-header-color"`: The background color for the "Leaf" header(s).
+- `"stem-header-font-color"`: The font color for the "Stem" header.
+- `"leaf-header-font-color"`: The font color for the "Leaf" header.
+- `"stem-value-font-color"`: The font color for the "Stem" values.
+- `"leaf-value-font-color"`: The font color for the "Leaf" values.
+- Some base properties available to [graphs](#graph-properties).
+
+```json
+{
+  "type": "stem-and-leaf-plot",
+  "dataset": "Students",
+  "variables": {
+    "continuous": "Score",
+    "group": "Gender"
+  },
+  "title": "Exam Scores"
+}
+```
+:::
+
 ## Table {#table-properties .unnumbered}
 
 Properties for `"table"` nodes:

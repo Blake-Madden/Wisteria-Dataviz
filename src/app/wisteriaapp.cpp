@@ -876,6 +876,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"wilmarth-bridge-plot");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
+        {
+        return _DT(L"stem-and-leaf-plot");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
         {
         return _DT(L"word-cloud");
