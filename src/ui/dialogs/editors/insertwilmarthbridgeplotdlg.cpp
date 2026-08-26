@@ -72,7 +72,7 @@ namespace Wisteria::UI
         // variable label grid
         auto* varGrid = new wxFlexGridSizer(2, wxSize{ FromDIP(12), FromDIP(2) });
 
-        const auto addVarRow = [this, varGrid, varsBox](const wxString& caption)
+        const auto addVarRow = [varGrid, varsBox](const wxString& caption)
         {
             auto* rowLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, caption);
             rowLabel->SetFont(rowLabel->GetFont().Bold());

@@ -8,6 +8,7 @@
 
 #include "racetrackchart.h"
 #include "../base/currencyformat.h"
+#include "../math/safe_math.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Graph2D)
 
@@ -149,7 +150,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
                 GetColorScheme() ?
                     GetColorScheme()->GetRecycledColor(m_trackLanes.size()) :
                     (GetBrushScheme() ?
-                         GetBrushScheme()->GetBrush(m_trackLanes.size() % brushCount).GetColour() :
+                         GetBrushScheme()
+                             ->GetBrush(safe_modulus(m_trackLanes.size(), brushCount))
+                             .GetColour() :
                          wxColour{ *wxBLUE });
 
             m_trackLanes.emplace_back(label, val, laneColor);
@@ -439,10 +442,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
 
         for (const auto& lane : m_trackLanes)
             {
-            /* TRANSLATORS: track lane label and its value in a race track chart.
-               1st %s is the track lane's label, 2nd %s is its value. */
             label +=
-                L". " + wxString::Format(_(L"%s: %s"), lane.GetLabel(),
+                L". " + wxString::Format(L"%s: %s", lane.GetLabel(),
                                          wxNumberFormatter::ToString(
                                              lane.GetValue(), 0,
                                              wxNumberFormatter::Style::Style_NoTrailingZeroes));
