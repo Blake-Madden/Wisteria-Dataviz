@@ -39,6 +39,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
         GetSelectedIds().clear();
         m_observations.clear();
         m_periods.clear();
+        m_gridColumnCount = 0;
         m_usingDateColumns = false;
 
         if (GetDataset() == nullptr)
@@ -196,21 +197,30 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                                     std::numeric_limits<double>::quiet_NaN();
         };
 
-        // grid column = row order, so a missing exit value just leaves its column blank
+        // continuation rows don't reserve a column, but a skipped row still does,
+        // leaving a blank column rather than closing up against its neighbors
         m_observations.reserve(GetDataset()->GetRowCount());
         // maps a label to its observation's index in m_observations, so that a later row
         // sharing the same label extends that observation instead of reserving its own column
         std::map<wxString, size_t> labelToObsIndex;
+        size_t gridColumn{ 0 };
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
+            const wxString label = getLabel(i);
+            const bool isContinuationRow =
+                hasIntermediateEventColumn && labelToObsIndex.find(label) != labelToObsIndex.cend();
+
             const bool exitMissing = m_usingDateColumns ? exitDateCol->IsMissingData(i) :
                                                           exitContinuousCol->IsMissingData(i);
             if (exitMissing)
                 {
+                if (!isContinuationRow)
+                    {
+                    ++gridColumn;
+                    }
                 continue;
                 }
 
-            const wxString label = getLabel(i);
             const double exit = m_usingDateColumns ? toAxisValue(exitDateCol->GetValue(i)) :
                                                      exitContinuousCol->GetValue(i);
 
@@ -235,27 +245,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                                      !intermediateEventAccessor->m_isMissing(i) &&
                                      intermediateEventAccessor->m_isOne(i);
 
-            if (hasIntermediateEventColumn)
+            if (isContinuationRow)
                 {
-                if (const auto existingObs = labelToObsIndex.find(label);
-                    existingObs != labelToObsIndex.cend())
+                // a continuation row for an already-seen observation; extend it
+                // rather than reserving another column for it
+                auto& obs = m_observations[labelToObsIndex.at(label)];
+                obs.m_exit = exit;
+                obs.m_censored = censored;
+                if (isPostEvent && std::isfinite(entered) &&
+                    !obs.m_intermediateEventPeriod.has_value())
                     {
-                    // a continuation row for an already-seen observation; extend it
-                    // rather than reserving another column for it
-                    auto& obs = m_observations[existingObs->second];
-                    obs.m_exit = exit;
-                    obs.m_censored = censored;
-                    if (isPostEvent && std::isfinite(entered) &&
-                        !obs.m_intermediateEventPeriod.has_value())
-                        {
-                        obs.m_intermediateEventPeriod = entered;
-                        }
-                    continue;
+                    obs.m_intermediateEventPeriod = entered;
                     }
+                continue;
                 }
 
             Observation obs;
-            obs.m_datasetRow = i;
+            obs.m_gridColumn = gridColumn++;
             obs.m_label = label;
             obs.m_exit = exit;
             obs.m_entered = entered;
@@ -271,6 +277,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 }
             m_observations.push_back(std::move(obs));
             }
+        m_gridColumnCount = gridColumn;
 
         if (m_observations.empty())
             {
@@ -458,7 +465,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             return;
             }
 
-        GetBottomXAxis().SetRange(0, static_cast<double>(GetDataset()->GetRowCount()), 0);
+        // one column per grid column (including blank ones reserved for skipped
+        // rows), so that every column is the same width
+        GetBottomXAxis().SetRange(0, static_cast<double>(m_gridColumnCount), 0);
 
         // the terminal row asserts that every observation had faded (had its event) by
         // then, so it is only truthful to draw when nothing is still censored
@@ -510,14 +519,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             return;
             }
 
-        const auto columnCount = GetDataset()->GetRowCount();
+        const auto columnCount = m_gridColumnCount;
+        // the row axis has a padding point on either side of the periods, so the rows
+        // are spread across one more interval than there are periods
+        const auto rowCount = m_periods.size() + 1;
 
-        // one cell box per column/row, used to fit (and, if needed, shrink) each label
+        // one cell box per column/row, used to fit (and, if needed, shrink) each label,
+        // inset so that neighboring cells never touch
         const auto plotArea = GetPlotAreaBoundingBox();
         const wxSize cellSize{ static_cast<int>(safe_divide<double>(
                                    plotArea.GetWidth(), std::max<size_t>(columnCount, 1))),
                                static_cast<int>(safe_divide<double>(
-                                   plotArea.GetHeight(), std::max<size_t>(m_periods.size(), 1))) };
+                                   plotArea.GetHeight(), std::max<size_t>(rowCount, 1))) };
+        // a share of the cell, rather than a fixed amount, so that the gap never eats
+        // into a small cell far enough to squeeze out its content
+        constexpr double cellFillRatio{ 0.9 };
+        const wxSize paddedCellSize{
+            std::max(static_cast<int>(cellSize.GetWidth() * cellFillRatio), 1),
+            std::max(static_cast<int>(cellSize.GetHeight() * cellFillRatio), 1)
+        };
         const wxColour baseFontColor = GetLeftYAxis().GetFontColor();
 
         double smallestTextScaling{ std::numeric_limits<double>::max() };
@@ -537,7 +557,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                     }
 
                 wxPoint pt;
-                if (GetPhysicalCoordinates(static_cast<double>(obs.m_datasetRow) + 0.5, period, pt))
+                if (GetPhysicalCoordinates(static_cast<double>(obs.m_gridColumn) + 0.5, period, pt))
                     {
                     const wxColour& cellBaseColor =
                         (obs.m_intermediateEventPeriod.has_value() &&
@@ -557,8 +577,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                             .Anchoring(Anchoring::Center)
                             .AnchorPoint(pt));
                     cellLabel->SetBoundingBox(
-                        wxRect{ pt - wxPoint{ cellSize.GetWidth() / 2, cellSize.GetHeight() / 2 },
-                                cellSize },
+                        wxRect{ pt - wxPoint{ paddedCellSize.GetWidth() / 2,
+                                              paddedCellSize.GetHeight() / 2 },
+                                paddedCellSize },
                         dc, GetScaling());
                     smallestTextScaling = std::min(smallestTextScaling, cellLabel->GetScaling());
                     cellLabels.push_back(std::move(cellLabel));
@@ -572,7 +593,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 lastActivePeriodIndex.value() + 1 < m_periods.size())
                 {
                 wxPoint shapePt;
-                if (GetPhysicalCoordinates(static_cast<double>(obs.m_datasetRow) + 0.5,
+                if (GetPhysicalCoordinates(static_cast<double>(obs.m_gridColumn) + 0.5,
                                            m_periods[lastActivePeriodIndex.value() + 1], shapePt))
                     {
                     censorShapePts.push_back(shapePt);
@@ -599,8 +620,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
         // As wide as the column it falls in, capped to the row height so it doesn't
         // overlap the period above it. Shape sizes are in DIPs, so convert from the
         // already-scaled cell size.
-        const auto censorShapeSideDIPs =
-            DownscaleFromScreenAndCanvas(std::min(cellSize.GetWidth(), cellSize.GetHeight()));
+        const auto censorShapeSideDIPs = DownscaleFromScreenAndCanvas(
+            std::min(paddedCellSize.GetWidth(), paddedCellSize.GetHeight()));
         const wxSize censorShapeSize{ static_cast<int>(censorShapeSideDIPs),
                                       static_cast<int>(censorShapeSideDIPs) };
         for (const auto& shapePt : censorShapePts)

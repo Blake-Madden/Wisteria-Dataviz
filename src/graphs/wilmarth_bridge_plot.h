@@ -345,7 +345,7 @@ namespace Wisteria::Graphs
             double m_entered{ 0 };
             double m_exit{ 0 };
             bool m_censored{ false };
-            size_t m_datasetRow{ 0 };
+            size_t m_gridColumn{ 0 };
             // the period at which this observation's intermediate event occurred
             std::optional<double> m_intermediateEventPeriod;
             };
@@ -394,6 +394,9 @@ namespace Wisteria::Graphs
 
         std::vector<Observation> m_observations;
         std::vector<double> m_periods;
+        // total number of grid columns, including blank ones reserved for
+        // skipped rows
+        size_t m_gridColumnCount{ 0 };
 
         // whether the exit/entry columns were resolved as dates (for label formatting)
         bool m_usingDateColumns{ false };
