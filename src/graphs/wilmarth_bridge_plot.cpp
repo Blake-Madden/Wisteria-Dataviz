@@ -277,6 +277,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             return;
             }
 
+        if (m_observations.size() > MAX_RECOMMENDED_OBS)
+            {
+            wxLogWarning(_(L"Wilmarth bridge plot has %zu observations "
+                           "(recommended maximum is %zu). "
+                           "Consider filtering the dataset to a smaller number of observations."),
+                         m_observations.size(), MAX_RECOMMENDED_OBS);
+            }
+
         // default any missing entry values to the earliest exit period seen in the data
         const double earliestExit = std::min_element(m_observations.cbegin(), m_observations.cend(),
                                                      [](const auto& first, const auto& second)
@@ -291,6 +299,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             }
 
         m_periods = BuildPeriods();
+
+        if (m_periods.size() > MAX_RECOMMENDED_PERIODS)
+            {
+            wxLogWarning(_(L"Wilmarth bridge plot has %zu periods "
+                           "(recommended maximum is %zu). "
+                           "Consider filtering the dataset to a smaller number of periods."),
+                         m_periods.size(), MAX_RECOMMENDED_PERIODS);
+            }
+
         UpdateAxes();
         }
 

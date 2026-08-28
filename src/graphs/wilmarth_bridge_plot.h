@@ -132,6 +132,16 @@ namespace Wisteria::Graphs
         WilmarthBridgePlot() = default;
 
       public:
+        /// @brief Recommended maximum number of observations (columns).
+        /// @details Beyond this, the column labels become too cramped to read.
+        ///     A warning is logged if exceeded, but the plot is still rendered.
+        constexpr static size_t MAX_RECOMMENDED_OBS = 60;
+
+        /// @brief Recommended maximum number of periods (rows).
+        /// @details Beyond this, the grid becomes too tall to read comfortably.
+        ///     A warning is logged if exceeded, but the plot is still rendered.
+        constexpr static size_t MAX_RECOMMENDED_PERIODS = 50;
+
         /// @brief How an observation's label ink weakens over its lifetime.
         enum class FadeEffect
             {
@@ -396,8 +406,7 @@ namespace Wisteria::Graphs
         SurvivalDisplay m_survivalDisplay{ SurvivalDisplay::None };
         bool m_showCensoredMarkers{ true };
         wxString m_terminalRowLabel;
-        wxColour m_intermediateEventColor{ Colors::ColorBrewer::GetColor(
-            Colors::Color::SeaGreen) };
+        wxColour m_intermediateEventColor{ Colors::ColorBrewer::GetColor(Colors::Color::SeaGreen) };
         };
     } // namespace Wisteria::Graphs
 
