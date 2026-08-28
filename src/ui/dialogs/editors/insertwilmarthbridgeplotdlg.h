@@ -15,6 +15,7 @@
 #include "../../graphs/wilmarth_bridge_plot.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/clrpicker.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -23,9 +24,10 @@ namespace Wisteria::UI
         @details Extends InsertGraphDlg with an "Options" page containing:
             - A dataset selector (from the project's datasets).
             - A "Variables..." button that opens a VariableSelectDlg
-              for selecting the label, exit, entry, and status columns.
+              for selecting the label, exit, entry, status, and intermediate event columns.
             - Labels showing the current variable selections.
-            - Display options (fade effect, survival statistics, censored markers).*/
+            - Display options (fade effect, survival statistics, censored markers,
+              intermediate event color).*/
     class InsertWilmarthBridgePlotDlg final : public InsertGraphDlg
         {
       public:
@@ -93,6 +95,18 @@ namespace Wisteria::UI
             return m_statusVariable;
             }
 
+        /// @returns The intermediate event variable name, or empty if not selected.
+        [[nodiscard]]
+        const wxString& GetIntermediateEventVariable() const noexcept
+            {
+            return m_intermediateEventVariable;
+            }
+
+        /// @returns The color used for an observation's cells from its intermediate
+        ///     event onward.
+        [[nodiscard]]
+        wxColour GetIntermediateEventColor() const;
+
         /// @returns How an observation's label ink weakens over its lifetime.
         [[nodiscard]]
         Graphs::WilmarthBridgePlot::FadeEffect GetFadeEffect() const noexcept;
@@ -140,12 +154,15 @@ namespace Wisteria::UI
         wxStaticText* m_exitVarLabel{ nullptr };
         wxStaticText* m_entryVarLabel{ nullptr };
         wxStaticText* m_statusVarLabel{ nullptr };
+        wxStaticText* m_intermediateEventVarLabel{ nullptr };
+        wxColourPickerCtrl* m_intermediateEventColorPicker{ nullptr };
 
         // DDX data members
         wxString m_labelVariable;
         wxString m_exitVariable;
         wxString m_entryVariable;
         wxString m_statusVariable;
+        wxString m_intermediateEventVariable;
         int m_fadeEffectSelection{ 0 }; // 0 = None, 1 = RemainingLifetime, 2 = ElapsedTime
         int m_survivalDisplaySelection{
             0

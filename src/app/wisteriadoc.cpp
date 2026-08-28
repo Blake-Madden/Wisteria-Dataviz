@@ -4318,6 +4318,12 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             node->Add(L"show-censored-markers", false);
             }
+        if (bridgePlot->GetIntermediateEventColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Firebrick))
+            {
+            node->Add(L"intermediate-event-color",
+                     ColorToStr(bridgePlot->GetIntermediateEventColor()));
+            }
         const auto terminalRowTmpl = bridgePlot->GetPropertyTemplate(L"terminal-row-label");
         const auto& terminalRowLabel =
             terminalRowTmpl.empty() ? bridgePlot->GetTerminalRowLabel() : terminalRowTmpl;

@@ -28,11 +28,15 @@ namespace Wisteria::Graphs
         @image html WilmarthBridgePlot.svg width=90%
 
         @par %Data:
-         This plot accepts a Data::Dataset with one categorical column for the observations'
-         labels and one continuous or date column for when each observation exited the
-         study. Optionally, a second continuous or date column (of the same type as the exit
-         column) can specify when each observation entered, and a continuous column can flag
-         whether an observation's exit was an event or a right-censoring.
+         This plot accepts a Data::Dataset with one categorical or continuous column for the
+         observations' labels (a continuous column works for discrete numeric IDs) and one
+         continuous or date column for when each observation exited the study. Optionally, a
+         second continuous or date column (of the same type as the exit column) can specify
+         when each observation entered, and a column can flag whether an observation's exit
+         was an event or a right-censoring.\n
+         \n
+         The status and intermediate event flags each accept either a continuous 0/1 column
+         or a categorical column of 0/1 codes.
 
          | Letter | Entered | Faded | Status |
          | :--    | --:     | --:   | --:    |
@@ -48,6 +52,10 @@ namespace Wisteria::Graphs
          - A missing entry value defaults to the first period on the chart.
          - A missing label is drawn and counted as an observation, just with blank cells.
          - A missing status value is treated as an event, not a censoring.
+         - A missing entry value on the row where an intermediate event occurred leaves that
+           observation's transition time unknown. It will be drawn in the normal label color
+           for its whole span instead of switching to GetIntermediateEventColor() partway
+           through.
 
         @par Censoring:
          The exit column always holds the last period an observation was under
@@ -63,6 +71,23 @@ namespace Wisteria::Graphs
          point is unknown. It is never drawn past its exit period, and it is never dropped
          from the survival statistics; dropping it would bias the estimate, since it is
          known to have lasted at least that long.
+
+        @par Intermediate Events:
+         Some studies record a time-dependent event partway through an observation's
+         timeline (e.g., a heart transplant received while awaiting one). Such an
+         observation is split across two rows: one spanning entry to the intermediate
+         event, the other spanning the intermediate event to the final exit. Passing an
+         intermediate event column to SetData() tells the plot to combine the two rows
+         into a single observation. Then it will color its cells from the intermediate event
+         onward with GetIntermediateEventColor(), leaving the earlier cells in the
+         normal label color.\n
+         \n
+         The intermediate event column holds @c 1 for a row occurring after the event and
+         @c 0 (or missing) beforehand. Rows sharing the same value in the label
+         column are combined into one observation, acting as the observation's ID.
+         Rows belonging to the same observation must appear in chronological order.
+         The observation's overall entry is taken from its first row and its exit and
+         status from its last.
 
         @par Example:
         @code
@@ -132,16 +157,25 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the data for the plot.
             @param data The data to use.
-            @param labelColumnName The categorical column containing the observations'
-                labels (e.g., the letters of the inscription).
+            @param labelColumnName The categorical or continuous column containing the
+                observations' labels/IDs (e.g., the letters of the inscription, or a column of
+                discrete numeric IDs).
             @param exitColumnName The continuous or date column containing when each
                 observation was last under observation.
             @param entryColumnName The continuous or date column (matching the type of
                 @p exitColumnName) containing when each observation entered the study.\n
                 If not provided, every observation is assumed to enter at the first period.
-            @param statusColumnName The continuous column containing each observation's
-                status: @c 1 for an event, @c 0 for a right-censored observation.\n
+            @param statusColumnName The continuous or categorical column containing each
+                observation's status: @c 1 for an event, @c 0 for a right-censored
+                observation.\n
                 If not provided, every observation is assumed to have had an event.
+            @param intermediateEventColumnName The continuous or categorical column flagging
+                whether a row occurred after a time-dependent intermediate event (@c 1) or
+                before it (@c 0 or missing).\n
+                If provided, contiguous rows sharing the same label/ID are combined into a single
+                observation, and its cells from the intermediate event onward are colored
+                with GetIntermediateEventColor(). Not provided by default, so every row is
+                treated as its own observation if not provided.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, or if the
@@ -152,7 +186,8 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& labelColumnName, const wxString& exitColumnName,
                      const std::optional<wxString>& entryColumnName = std::nullopt,
-                     const std::optional<wxString>& statusColumnName = std::nullopt);
+                     const std::optional<wxString>& statusColumnName = std::nullopt,
+                     const std::optional<wxString>& intermediateEventColumnName = std::nullopt);
 
         /// @returns How an observation's label ink weakens over its lifetime.
         [[nodiscard]]
@@ -214,6 +249,33 @@ namespace Wisteria::Graphs
             return m_statusColumnName;
             }
 
+        /// @returns The name of the column that the intermediate event flag came from,
+        ///     or an empty string if one wasn't provided.
+        [[nodiscard]]
+        const wxString& GetIntermediateEventColumnName() const noexcept
+            {
+            return m_intermediateEventColumnName;
+            }
+
+        /// @returns The color used for an observation's cells from its intermediate
+        ///     event onward.
+        [[nodiscard]]
+        const wxColour& GetIntermediateEventColor() const noexcept
+            {
+            return m_intermediateEventColor;
+            }
+
+        /// @brief Sets the color used for an observation's cells from its intermediate
+        ///     event onward.
+        /// @param color The color to use. Ignored if invalid.
+        void SetIntermediateEventColor(const wxColour& color)
+            {
+            if (color.IsOk())
+                {
+                m_intermediateEventColor = color;
+                }
+            }
+
         /// @returns @c true if censored observations are marked with an arrow.
         [[nodiscard]]
         bool IsShowingCensoredMarkers() const noexcept
@@ -272,6 +334,8 @@ namespace Wisteria::Graphs
             double m_exit{ 0 };
             bool m_censored{ false };
             size_t m_datasetRow{ 0 };
+            // the period at which this observation's intermediate event occurred
+            std::optional<double> m_intermediateEventPeriod;
             };
 
         void SetAutoAccessibilityAttributes() final;
@@ -326,11 +390,14 @@ namespace Wisteria::Graphs
         wxString m_exitColumnName;
         wxString m_entryColumnName;
         wxString m_statusColumnName;
+        wxString m_intermediateEventColumnName;
 
         FadeEffect m_fadeEffect{ FadeEffect::None };
         SurvivalDisplay m_survivalDisplay{ SurvivalDisplay::None };
         bool m_showCensoredMarkers{ true };
         wxString m_terminalRowLabel;
+        wxColour m_intermediateEventColor{ Colors::ColorBrewer::GetColor(
+            Colors::Color::SeaGreen) };
         };
     } // namespace Wisteria::Graphs
 

@@ -8,6 +8,8 @@
 
 #include "wilmarth_bridge_plot.h"
 #include "../math/safe_math.h"
+#include <functional>
+#include <map>
 #include <set>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs::Graph2D)
@@ -30,7 +32,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
         const std::shared_ptr<const Data::Dataset>& data, const wxString& labelColumnName,
         const wxString& exitColumnName,
         const std::optional<wxString>& entryColumnName /*= std::nullopt*/,
-        const std::optional<wxString>& statusColumnName /*= std::nullopt*/)
+        const std::optional<wxString>& statusColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& intermediateEventColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         GetSelectedIds().clear();
@@ -47,9 +50,40 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
         m_exitColumnName = exitColumnName;
         m_entryColumnName = entryColumnName.value_or(wxString{});
         m_statusColumnName = statusColumnName.value_or(wxString{});
+        m_intermediateEventColumnName = intermediateEventColumnName.value_or(wxString{});
 
-        // labels: required, categorical
-        const auto labelColumn = GetCategoricalColumn(m_labelColumnName);
+        // Labels/IDs are required, resolved as categorical first and continuous second (e.g., a
+        // column of discrete numeric IDs). When intermediate events are used, this same
+        // column's value also identifies which rows belong to the same observation.
+        auto labelCategoricalCol = GetDataset()->GetCategoricalColumn(m_labelColumnName);
+        auto labelContinuousCol = GetDataset()->GetContinuousColumns().cend();
+        bool labelIsContinuous{ false };
+        if (labelCategoricalCol == GetDataset()->GetCategoricalColumns().cend())
+            {
+            labelContinuousCol = GetDataset()->GetContinuousColumn(m_labelColumnName);
+            if (labelContinuousCol == GetDataset()->GetContinuousColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': label column not found for Wilmarth bridge plot."),
+                                     m_labelColumnName)
+                        .ToUTF8());
+                }
+            labelIsContinuous = true;
+            }
+
+        const auto getLabel =
+            [&labelIsContinuous, &labelContinuousCol, &labelCategoricalCol](const size_t i)
+        {
+            if (labelIsContinuous)
+                {
+                return labelContinuousCol->IsMissingData(i) ?
+                           wxString{} :
+                           wxNumberFormatter::ToString(
+                               labelContinuousCol->GetValue(i), 0,
+                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                }
+            return labelCategoricalCol->GetValueAsLabel(i);
+        };
 
         // exit: required, resolved as continuous first and date second
         auto exitContinuousCol = GetDataset()->GetContinuousColumn(m_exitColumnName);
@@ -101,10 +135,60 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 }
             }
 
-        // status: optional, continuous (1 = event, 0 = censored)
+        // Resolves a 0/1 flag column as continuous first and categorical second.
+        // A column with only two distinct integer values (e.g., "0"/"1") is often
+        // auto-detected as a dichotomous column on import and stored as
+        // categorical rather than continuous.
+        struct FlagColumnAccessor
+            {
+            std::function<bool(size_t)> m_isMissing;
+            std::function<bool(size_t)> m_isOne;
+            };
+
+        const auto resolveFlagColumn = [this](const wxString& columnName,
+                                              const wxString& role) -> FlagColumnAccessor
+        {
+            auto continuousCol = GetDataset()->GetContinuousColumn(columnName);
+            if (continuousCol != GetDataset()->GetContinuousColumns().cend())
+                {
+                return { [continuousCol](const size_t i)
+                         { return continuousCol->IsMissingData(i); },
+                         [continuousCol](const size_t i)
+                         { return compare_doubles(continuousCol->GetValue(i), 1.0); } };
+                }
+            auto categoricalCol = GetDataset()->GetCategoricalColumn(columnName);
+            if (categoricalCol != GetDataset()->GetCategoricalColumns().cend())
+                {
+                return { [categoricalCol](const size_t i)
+                         { return categoricalCol->IsMissingData(i); },
+                         [categoricalCol](const size_t i)
+                         {
+                             double val{ 0 };
+                             return categoricalCol->GetValueAsLabel(i).ToDouble(&val) &&
+                                    compare_doubles(val, 1.0);
+                         } };
+                }
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': %s column not found for Wilmarth bridge plot."),
+                                 columnName, role)
+                    .ToUTF8());
+        };
+
+        // status: optional (1 = event, 0 = censored)
         const bool hasStatusColumn = statusColumnName.has_value() && !statusColumnName->empty();
-        const auto statusCol = hasStatusColumn ? GetContinuousColumn(statusColumnName.value()) :
-                                                 GetDataset()->GetContinuousColumns().cend();
+        const std::optional<FlagColumnAccessor> statusAccessor =
+            hasStatusColumn ? std::optional<FlagColumnAccessor>(
+                                  resolveFlagColumn(statusColumnName.value(), _(L"status"))) :
+                              std::nullopt;
+
+        // intermediate event: optional (1 = row after the event, 0 = before)
+        const bool hasIntermediateEventColumn =
+            intermediateEventColumnName.has_value() && !intermediateEventColumnName->empty();
+        const std::optional<FlagColumnAccessor> intermediateEventAccessor =
+            hasIntermediateEventColumn ?
+                std::optional<FlagColumnAccessor>(resolveFlagColumn(
+                    intermediateEventColumnName.value(), _(L"intermediate event"))) :
+                std::nullopt;
 
         const auto toAxisValue = [](const wxDateTime& date)
         {
@@ -114,6 +198,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
 
         // grid column = row order, so a missing exit value just leaves its column blank
         m_observations.reserve(GetDataset()->GetRowCount());
+        // maps a label to its observation's index in m_observations, so that a later row
+        // sharing the same label extends that observation instead of reserving its own column
+        std::map<wxString, size_t> labelToObsIndex;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             const bool exitMissing = m_usingDateColumns ? exitDateCol->IsMissingData(i) :
@@ -123,30 +210,65 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 continue;
                 }
 
-            Observation obs;
-            obs.m_datasetRow = i;
-            obs.m_label = labelColumn->GetValueAsLabel(i);
-            obs.m_exit = m_usingDateColumns ? toAxisValue(exitDateCol->GetValue(i)) :
-                                              exitContinuousCol->GetValue(i);
+            const wxString label = getLabel(i);
+            const double exit = m_usingDateColumns ? toAxisValue(exitDateCol->GetValue(i)) :
+                                                     exitContinuousCol->GetValue(i);
 
-            // defaulted afterward if no entry column, or the entry value is missing
-            obs.m_entered = std::numeric_limits<double>::quiet_NaN();
+            double entered = std::numeric_limits<double>::quiet_NaN();
             if (hasEntryColumn)
                 {
                 if (m_usingDateColumns && !entryDateCol->IsMissingData(i))
                     {
-                    obs.m_entered = toAxisValue(entryDateCol->GetValue(i));
+                    entered = toAxisValue(entryDateCol->GetValue(i));
                     }
                 else if (!m_usingDateColumns && !entryContinuousCol->IsMissingData(i))
                     {
-                    obs.m_entered = entryContinuousCol->GetValue(i);
+                    entered = entryContinuousCol->GetValue(i);
                     }
                 }
 
             // a missing status value defaults to an event, same as no status column
-            obs.m_censored = hasStatusColumn && !statusCol->IsMissingData(i) &&
-                             compare_doubles(statusCol->GetValue(i), 0.0);
+            const bool censored =
+                hasStatusColumn && !statusAccessor->m_isMissing(i) && !statusAccessor->m_isOne(i);
 
+            const bool isPostEvent = hasIntermediateEventColumn &&
+                                     !intermediateEventAccessor->m_isMissing(i) &&
+                                     intermediateEventAccessor->m_isOne(i);
+
+            if (hasIntermediateEventColumn)
+                {
+                if (const auto existingObs = labelToObsIndex.find(label);
+                    existingObs != labelToObsIndex.cend())
+                    {
+                    // a continuation row for an already-seen observation; extend it
+                    // rather than reserving another column for it
+                    auto& obs = m_observations[existingObs->second];
+                    obs.m_exit = exit;
+                    obs.m_censored = censored;
+                    if (isPostEvent && std::isfinite(entered) &&
+                        !obs.m_intermediateEventPeriod.has_value())
+                        {
+                        obs.m_intermediateEventPeriod = entered;
+                        }
+                    continue;
+                    }
+                }
+
+            Observation obs;
+            obs.m_datasetRow = i;
+            obs.m_label = label;
+            obs.m_exit = exit;
+            obs.m_entered = entered;
+            obs.m_censored = censored;
+            if (isPostEvent && std::isfinite(entered))
+                {
+                obs.m_intermediateEventPeriod = entered;
+                }
+
+            if (hasIntermediateEventColumn)
+                {
+                labelToObsIndex[label] = m_observations.size();
+                }
             m_observations.push_back(std::move(obs));
             }
 
@@ -178,8 +300,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
         std::set<double, double_less> periodSet;
         for (const auto& obs : m_observations)
             {
-            periodSet.insert(obs.m_entered);
-            periodSet.insert(obs.m_exit);
+            if (std::isfinite(obs.m_entered))
+                {
+                periodSet.insert(obs.m_entered);
+                }
+            if (std::isfinite(obs.m_exit))
+                {
+                periodSet.insert(obs.m_exit);
+                }
+            if (obs.m_intermediateEventPeriod.has_value() &&
+                std::isfinite(obs.m_intermediateEventPeriod.value()))
+                {
+                periodSet.insert(obs.m_intermediateEventPeriod.value());
+                }
             }
         return { periodSet.cbegin(), periodSet.cend() };
         }
@@ -233,7 +366,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             const wxDateTime dateVal{ period };
             return dateVal.IsValid() ? dateVal.FormatDate() : wxString{};
             }
-        return wxNumberFormatter::ToString(period, 0,
+        // keeps a half-day period distinct from a whole one
+        return wxNumberFormatter::ToString(period, 2,
                                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
         }
 
@@ -371,7 +505,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
 
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         std::vector<std::unique_ptr<GraphItems::Label>> cellLabels;
-        std::vector<wxPoint> censorArrowPts;
+        std::vector<wxPoint> censorShapePts;
 
         for (const auto& obs : m_observations)
             {
@@ -388,13 +522,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 wxPoint pt;
                 if (GetPhysicalCoordinates(static_cast<double>(obs.m_datasetRow) + 0.5, period, pt))
                     {
+                    const wxColour& cellBaseColor =
+                        (obs.m_intermediateEventPeriod.has_value() &&
+                         compare_doubles_greater_or_equal(period,
+                                                          obs.m_intermediateEventPeriod.value())) ?
+                            m_intermediateEventColor :
+                            baseFontColor;
                     auto cellLabel = std::make_unique<GraphItems::Label>(
                         GraphItems::GraphItemInfo{ obs.m_label }
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
                             .Pen(wxNullPen)
                             .Padding(0, 0, 0, 0)
-                            .FontColor(FadeColor(baseFontColor, obs, period))
+                            .FontColor(FadeColor(cellBaseColor, obs, period))
                             .LabelPageVerticalAlignment(PageVerticalAlignment::Centered)
                             .LabelPageHorizontalAlignment(PageHorizontalAlignment::Centered)
                             .Anchoring(Anchoring::Center)
@@ -409,16 +549,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 lastActivePeriodIndex = periodIdx;
                 }
 
-            // a censored observation gets an arrow past its last cell, never extended
+            // a censored observation gets a special shape past its last cell, never extended
             // to the bottom of the chart
             if (obs.m_censored && m_showCensoredMarkers && lastActivePeriodIndex.has_value() &&
                 lastActivePeriodIndex.value() + 1 < m_periods.size())
                 {
-                wxPoint arrowPt;
+                wxPoint shapePt;
                 if (GetPhysicalCoordinates(static_cast<double>(obs.m_datasetRow) + 0.5,
-                                           m_periods[lastActivePeriodIndex.value() + 1], arrowPt))
+                                           m_periods[lastActivePeriodIndex.value() + 1], shapePt))
                     {
-                    censorArrowPts.push_back(arrowPt);
+                    censorShapePts.push_back(shapePt);
                     }
                 }
             }
@@ -439,9 +579,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             AddObject(std::move(cellLabel));
             }
 
-        const wxSize censorArrowSize{ wxRound(ScaleToScreenAndCanvas(6)),
-                                      wxRound(ScaleToScreenAndCanvas(6)) };
-        for (const auto& arrowPt : censorArrowPts)
+        // shape applies its own scaling and DPI factor when drawn, so this is in DIPs
+        const wxSize censorShapeSize{ 9, 9 };
+        for (const auto& shapePt : censorShapePts)
             {
             AddObject(std::make_unique<GraphItems::Shape>(GraphItems::GraphItemInfo{}
                                                               .Pen(wxPen{ baseFontColor })
@@ -449,9 +589,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                                                               .Scaling(smallestTextScaling)
                                                               .DPIScaling(GetDPIScaleFactor())
                                                               .Anchoring(Anchoring::Center)
-                                                              .AnchorPoint(arrowPt),
-                                                          Icons::IconShape::ArrowRight,
-                                                          censorArrowSize));
+                                                              .AnchorPoint(shapePt),
+                                                          Icons::IconShape::ProhibitedSign,
+                                                          censorShapeSize));
             }
         }
 

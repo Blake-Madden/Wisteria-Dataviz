@@ -1001,12 +1001,17 @@ Properties for `"waffle-chart"` nodes:
 Properties for `"wilmarth-bridge-plot"` nodes:
 
 - `"variables"`: An item containing the following properties:
-  - `"label"`: The categorical column containing the observations' labels.
+  - `"label"`: The categorical or continuous column containing the observations' labels (a continuous column works for discrete numeric IDs). \
+    When `"intermediate-event"` is provided, this same column's value also identifies which rows belong to the same observation.
   - `"exit"`: The continuous or date column containing when each observation was last under observation.
   - `"entered"`: The (optional) continuous or date column (matching the type of `"exit"`) containing when each observation entered the study. \
     If not provided, every observation is assumed to enter at the first period.
-  - `"status"`: The (optional) continuous column containing each observation's status: `1` for an event, `0` for a right-censored observation, matching the polarity of R's `Surv(time, event)`. \
+  - `"status"`: The (optional) continuous or categorical column containing each observation's status: `1` for an event, `0` for a right-censored observation, matching the polarity of R's `Surv(time, event)`. \
     If not provided, every observation is assumed to have had an event.
+  - `"intermediate-event"`: The (optional) continuous or categorical column flagging whether a row occurred after a time-dependent intermediate event (`1`) or before it (`0` or missing). \
+    If provided, rows sharing the same label are combined into a single observation, and its cells from the intermediate event onward are colored with `"intermediate-event-color"`. \
+    Rows belonging to the same observation must appear in chronological order.
+- `"intermediate-event-color"`: The (optional) color used for an observation's cells from its intermediate event onward.
 - `"fade-effect"`: A string specifying how an observation's label ink weakens over its lifetime. \
   Available options are:
   - `"none"`: Constant ink, as in the printed plate (the default).

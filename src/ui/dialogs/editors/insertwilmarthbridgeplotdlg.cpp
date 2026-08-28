@@ -84,9 +84,10 @@ namespace Wisteria::UI
         };
 
         m_labelVarLabel = addVarRow(_(L"Label:"));
-        m_exitVarLabel = addVarRow(_(L"Exit:"));
         m_entryVarLabel = addVarRow(_(L"Entry:"));
+        m_exitVarLabel = addVarRow(_(L"Exit:"));
         m_statusVarLabel = addVarRow(_(L"Status:"));
+        m_intermediateEventVarLabel = addVarRow(_(L"Intermediate event:"));
 
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
@@ -122,6 +123,12 @@ namespace Wisteria::UI
                                          wxDefaultSize, 0,
                                          wxGenericValidator{ &m_terminalRowLabel }));
 
+        displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Intermediate event color:")),
+                          wxSizerFlags{}.CenterVertical());
+        m_intermediateEventColorPicker = new wxColourPickerCtrl(
+            optionsPage, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::SeaGreen));
+        displaySizer->Add(m_intermediateEventColorPicker, wxSizerFlags{}.CenterVertical());
+
         optionsSizer->Add(displaySizer, wxSizerFlags{}.Border());
 
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show censored markers"),
@@ -147,6 +154,7 @@ namespace Wisteria::UI
         m_exitVariable.clear();
         m_entryVariable.clear();
         m_statusVariable.clear();
+        m_intermediateEventVariable.clear();
         UpdateVariableLabels();
         }
 
@@ -193,16 +201,8 @@ namespace Wisteria::UI
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
                                    Data::Dataset::ColumnImportType::Discrete,
                                    Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Exit"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_exitVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_exitVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::Date }),
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete,
+                                   Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
                   .Label(_(L"Entry"))
                   .SingleSelection(true)
@@ -213,13 +213,34 @@ namespace Wisteria::UI
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
                                    Data::Dataset::ColumnImportType::Date }),
               VLI{}
+                  .Label(_(L"Exit"))
+                  .SingleSelection(true)
+                  .Required(true)
+                  .DefaultVariables(m_exitVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_exitVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
+                                   Data::Dataset::ColumnImportType::Date }),
+              VLI{}
                   .Label(_(L"Status"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(m_statusVariable.empty() ?
                                         std::vector<wxString>{} :
                                         std::vector<wxString>{ m_statusVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
+                                   Data::Dataset::ColumnImportType::Discrete,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
+              VLI{}
+                  .Label(_(L"Intermediate Event"))
+                  .SingleSelection(true)
+                  .Required(false)
+                  .DefaultVariables(m_intermediateEventVariable.empty() ?
+                                        std::vector<wxString>{} :
+                                        std::vector<wxString>{ m_intermediateEventVariable })
+                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
+                                   Data::Dataset::ColumnImportType::Discrete,
+                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -229,14 +250,18 @@ namespace Wisteria::UI
         const auto labelVars = dlg.GetSelectedVariables(0);
         m_labelVariable = labelVars.empty() ? wxString{} : labelVars.front();
 
-        const auto exitVars = dlg.GetSelectedVariables(1);
-        m_exitVariable = exitVars.empty() ? wxString{} : exitVars.front();
-
-        const auto entryVars = dlg.GetSelectedVariables(2);
+        const auto entryVars = dlg.GetSelectedVariables(1);
         m_entryVariable = entryVars.empty() ? wxString{} : entryVars.front();
+
+        const auto exitVars = dlg.GetSelectedVariables(2);
+        m_exitVariable = exitVars.empty() ? wxString{} : exitVars.front();
 
         const auto statusVars = dlg.GetSelectedVariables(3);
         m_statusVariable = statusVars.empty() ? wxString{} : statusVars.front();
+
+        const auto intermediateEventVars = dlg.GetSelectedVariables(4);
+        m_intermediateEventVariable =
+            intermediateEventVars.empty() ? wxString{} : intermediateEventVars.front();
 
         UpdateVariableLabels();
         }
@@ -248,6 +273,7 @@ namespace Wisteria::UI
         m_exitVarLabel->SetLabel(m_exitVariable);
         m_entryVarLabel->SetLabel(m_entryVariable);
         m_statusVarLabel->SetLabel(m_statusVariable);
+        m_intermediateEventVarLabel->SetLabel(m_intermediateEventVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
@@ -291,6 +317,14 @@ namespace Wisteria::UI
         const auto& datasets = GetReportBuilder()->GetDatasets();
         const auto foundPos = datasets.find(m_datasetNames[sel]);
         return (foundPos != datasets.cend()) ? foundPos->second : nullptr;
+        }
+
+    //-------------------------------------------
+    wxColour InsertWilmarthBridgePlotDlg::GetIntermediateEventColor() const
+        {
+        return (m_intermediateEventColorPicker != nullptr) ?
+                   m_intermediateEventColorPicker->GetColour() :
+                   Colors::ColorBrewer::GetColor(Colors::Color::SeaGreen);
         }
 
     //-------------------------------------------
@@ -382,7 +416,13 @@ namespace Wisteria::UI
         m_exitVariable = bridgePlot->GetExitColumnName();
         m_entryVariable = bridgePlot->GetEntryColumnName();
         m_statusVariable = bridgePlot->GetStatusColumnName();
+        m_intermediateEventVariable = bridgePlot->GetIntermediateEventColumnName();
         UpdateVariableLabels();
+
+        if (m_intermediateEventColorPicker != nullptr)
+            {
+            m_intermediateEventColorPicker->SetColour(bridgePlot->GetIntermediateEventColor());
+            }
 
         // display options
         switch (bridgePlot->GetFadeEffect())

@@ -8316,12 +8316,16 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
             (dlg.GetEntryVariable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetEntryVariable())),
             (dlg.GetStatusVariable().empty() ? std::nullopt :
-                                               std::optional<wxString>(dlg.GetStatusVariable())));
+                                               std::optional<wxString>(dlg.GetStatusVariable())),
+            (dlg.GetIntermediateEventVariable().empty() ?
+                 std::nullopt :
+                 std::optional<wxString>(dlg.GetIntermediateEventVariable())));
 
         plot->SetFadeEffect(dlg.GetFadeEffect());
         plot->SetSurvivalDisplay(dlg.GetSurvivalDisplay());
         plot->ShowCensoredMarkers(dlg.IsShowingCensoredMarkers());
         plot->ShowTerminalRow(dlg.GetTerminalRowLabel());
+        plot->SetIntermediateEventColor(dlg.GetIntermediateEventColor());
 
         // cache dataset and variable names for round-tripping
         plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
@@ -8334,6 +8338,11 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
         if (!dlg.GetStatusVariable().empty())
             {
             plot->SetPropertyTemplate(L"variables.status", dlg.GetStatusVariable());
+            }
+        if (!dlg.GetIntermediateEventVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.intermediate-event",
+                                      dlg.GetIntermediateEventVariable());
             }
         if (!dlg.GetTerminalRowLabel().empty())
             {
@@ -8381,13 +8390,17 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
             (dlg.GetEntryVariable().empty() ? std::nullopt :
                                               std::optional<wxString>(dlg.GetEntryVariable())),
             (dlg.GetStatusVariable().empty() ? std::nullopt :
-                                               std::optional<wxString>(dlg.GetStatusVariable())));
+                                               std::optional<wxString>(dlg.GetStatusVariable())),
+            (dlg.GetIntermediateEventVariable().empty() ?
+                 std::nullopt :
+                 std::optional<wxString>(dlg.GetIntermediateEventVariable())));
         dlg.ApplyAxisOverrides(*plot);
 
         plot->SetFadeEffect(dlg.GetFadeEffect());
         plot->SetSurvivalDisplay(dlg.GetSurvivalDisplay());
         plot->ShowCensoredMarkers(dlg.IsShowingCensoredMarkers());
         plot->ShowTerminalRow(dlg.GetTerminalRowLabel());
+        plot->SetIntermediateEventColor(dlg.GetIntermediateEventColor());
 
         // carry forward property templates, preserving {{placeholders}}
         const auto* oldPlot = dynamic_cast<const Wisteria::Graphs::WilmarthBridgePlot*>(&graph);
@@ -8407,6 +8420,12 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
             {
             CarryForwardProperty(graph, *plot, L"variables.status", dlg.GetStatusVariable(),
                                  oldPlot != nullptr ? oldPlot->GetStatusColumnName() : wxString{});
+            }
+        if (!dlg.GetIntermediateEventVariable().empty())
+            {
+            CarryForwardProperty(
+                graph, *plot, L"variables.intermediate-event", dlg.GetIntermediateEventVariable(),
+                oldPlot != nullptr ? oldPlot->GetIntermediateEventColumnName() : wxString{});
             }
         if (!dlg.GetTerminalRowLabel().empty())
             {
