@@ -1166,6 +1166,9 @@ namespace Wisteria::Graphs
         void ClearSelections() final
             {
             GraphItemBase::SetSelected(false);
+            // drop the record of which subitems (and their nested subitems) were selected
+            GetSelectedIds().clear();
+            m_selectedItemsWithSubitems.clear();
             m_title.SetSelected(false);
             m_subtitle.SetSelected(false);
             m_caption.SetSelected(false);
@@ -1179,6 +1182,7 @@ namespace Wisteria::Graphs
                 }
             for (auto& object : m_plotObjects)
                 {
+                object->GetSelectedIds().clear();
                 if (object->IsSelected())
                     {
                     object->SetSelected(false);
@@ -1186,9 +1190,13 @@ namespace Wisteria::Graphs
                 }
             for (auto& object : m_embeddedObjects)
                 {
-                if (object.GetObject() != nullptr && object.GetObject()->IsSelected())
+                if (object.GetObject() != nullptr)
                     {
-                    object.GetObject()->SetSelected(false);
+                    object.GetObject()->GetSelectedIds().clear();
+                    if (object.GetObject()->IsSelected())
+                        {
+                        object.GetObject()->SetSelected(false);
+                        }
                     }
                 }
             }
