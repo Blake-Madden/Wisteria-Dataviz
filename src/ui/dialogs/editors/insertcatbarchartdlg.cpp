@@ -12,6 +12,7 @@
 #include "../variableselectdlg.h"
 #include "insertimgdlg.h"
 #include "insertshapedlg.h"
+#include <wx/clrpicker.h>
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>
@@ -660,6 +661,20 @@ namespace Wisteria::UI
 #endif
                 grid->Add(decalCtrl, wxSizerFlags{}.Expand());
 
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
+                auto* customColorCheck = new wxCheckBox(&dlg, wxID_ANY, _(L"Custom:"));
+                colorSizer->Add(customColorCheck, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+                auto* colorPicker = new wxColourPickerCtrl(&dlg, wxID_ANY, *wxWHITE);
+                colorPicker->Enable(false);
+                colorSizer->Add(colorPicker, wxSizerFlags{}.CenterVertical());
+                customColorCheck->Bind(wxEVT_CHECKBOX,
+                                       [colorPicker, customColorCheck]([[maybe_unused]]
+                                                                       wxCommandEvent& evt)
+                                       { colorPicker->Enable(customColorCheck->GetValue()); });
+                grid->Add(colorSizer, wxSizerFlags{}.Expand());
+
                 sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
                 sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
                            wxSizerFlags{}.Expand().Border());
@@ -679,8 +694,10 @@ namespace Wisteria::UI
                     return;
                     }
 
+                const wxColour groupColor =
+                    customColorCheck->GetValue() ? colorPicker->GetColour() : wxColour{};
                 m_barGroups.emplace_back(barChoices[startSel], barChoices[endSel],
-                                         decalCtrl->GetValue().Trim(true).Trim(false), wxColour{});
+                                         decalCtrl->GetValue().Trim(true).Trim(false), groupColor);
                 SyncBarGroupsToList();
             });
         m_barGroupListBox->GetNewButton()->SetBitmapLabel(
@@ -749,6 +766,23 @@ namespace Wisteria::UI
 #endif
                 grid->Add(decalCtrl, wxSizerFlags{}.Expand());
 
+                const bool hasCustomColor = group.m_color.IsOk();
+                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")),
+                          wxSizerFlags{}.CenterVertical());
+                auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
+                auto* customColorCheck = new wxCheckBox(&dlg, wxID_ANY, _(L"Custom:"));
+                customColorCheck->SetValue(hasCustomColor);
+                colorSizer->Add(customColorCheck, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+                auto* colorPicker = new wxColourPickerCtrl(
+                    &dlg, wxID_ANY, hasCustomColor ? group.m_color : *wxWHITE);
+                colorPicker->Enable(hasCustomColor);
+                colorSizer->Add(colorPicker, wxSizerFlags{}.CenterVertical());
+                customColorCheck->Bind(wxEVT_CHECKBOX,
+                                       [colorPicker, customColorCheck]([[maybe_unused]]
+                                                                       wxCommandEvent& evt)
+                                       { colorPicker->Enable(customColorCheck->GetValue()); });
+                grid->Add(colorSizer, wxSizerFlags{}.Expand());
+
                 sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
                 sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
                            wxSizerFlags{}.Expand().Border());
@@ -771,6 +805,8 @@ namespace Wisteria::UI
                 group.m_startLabel = barChoices[startSel2];
                 group.m_endLabel = barChoices[endSel2];
                 group.m_decal = decalCtrl->GetValue().Trim(true).Trim(false);
+                group.m_color =
+                    customColorCheck->GetValue() ? colorPicker->GetColour() : wxColour{};
                 SyncBarGroupsToList();
             });
 
@@ -788,6 +824,18 @@ namespace Wisteria::UI
                     }
                 m_barGroups.erase(m_barGroups.begin() + sel);
                 SyncBarGroupsToList();
+            });
+
+        // double-clicking a row triggers the Edit button
+        m_barGroupListBox->GetListCtrl()->Bind(
+            wxEVT_LIST_ITEM_ACTIVATED,
+            [this]([[maybe_unused]]
+                   wxListEvent& event)
+            {
+                auto* editBtn = m_barGroupListBox->GetEditButton();
+                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
+                clickEvent.SetEventObject(editBtn);
+                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
         // helper to collect available bar labels (sort list labels take priority,
@@ -1517,7 +1565,10 @@ namespace Wisteria::UI
         for (const auto& group : m_barGroups)
             {
             items.Add(group.m_startLabel + L" → " + group.m_endLabel +
-                      (group.m_decal.empty() ? wxString{} : L": " + group.m_decal));
+                      (group.m_decal.empty() ? wxString{} : L": " + group.m_decal) +
+                      (group.m_color.IsOk() ?
+                           L" [" + group.m_color.GetAsString(wxC2S_HTML_SYNTAX) + L"]" :
+                           wxString{}));
             }
         m_barGroupListBox->SetStrings(items);
         }
