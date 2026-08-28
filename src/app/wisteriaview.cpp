@@ -1868,6 +1868,10 @@ void WisteriaView::PlaceGraphWithLegend(
             }
         }
 
+    // a legend that was dropped or moved to another side leaves its row or column
+    // empty, so close the gap around the outside of the grid
+    canvas->RemoveEmptyOuterCells();
+
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);

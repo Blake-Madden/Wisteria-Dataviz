@@ -505,6 +505,16 @@ namespace Wisteria
         /// @brief Removes all fixed objects and sets the grid back to (0, 0).
         void ClearFixedObjects() { m_fixedObjects.clear(); }
 
+        /** @brief Removes the outermost rows and columns of the grid that contain no items.
+            @details Trimming stops at the first row or column that contains an item,
+                so empty rows and columns inside the grid are left in place.
+                A grid that is entirely empty is left alone.
+            @returns The number of leading rows and leading columns that were removed.
+                Callers holding onto a row or column index should subtract these from it.
+            @note The rows are given uniform height proportions again, the same as
+                when the grid is resized.*/
+        std::pair<size_t, size_t> RemoveEmptyOuterCells();
+
         /** @brief Sets the fixed object at the given row and column.
             @param row The row location of the item being set.
             @param column The column location of the item being set.

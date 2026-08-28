@@ -1447,6 +1447,83 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //---------------------------------------------------
+    std::pair<size_t, size_t> Canvas::RemoveEmptyOuterCells()
+        {
+        const auto [rowCount, columnCount] = GetFixedObjectsGridSize();
+        if (rowCount == 0 || columnCount == 0)
+            {
+            return { 0, 0 };
+            }
+
+        const auto isRowEmpty = [this](const size_t row)
+        {
+            return std::ranges::none_of(std::as_const(m_fixedObjects.at(row)),
+                                        [](const auto& item) noexcept { return item != nullptr; });
+        };
+        const auto isColumnEmpty = [this](const size_t column)
+        {
+            return std::ranges::none_of(std::as_const(m_fixedObjects),
+                                        [column](const auto& currentRow) noexcept
+                                        { return currentRow.at(column) != nullptr; });
+        };
+
+        size_t firstRow{ 0 };
+        while (firstRow < rowCount && isRowEmpty(firstRow))
+            {
+            ++firstRow;
+            }
+        // nothing is on the canvas, so there is no content to trim down to
+        if (firstRow == rowCount)
+            {
+            return { 0, 0 };
+            }
+        size_t lastRow{ rowCount - 1 };
+        while (lastRow > firstRow && isRowEmpty(lastRow))
+            {
+            --lastRow;
+            }
+
+        size_t firstColumn{ 0 };
+        while (firstColumn < columnCount && isColumnEmpty(firstColumn))
+            {
+            ++firstColumn;
+            }
+        size_t lastColumn{ columnCount - 1 };
+        while (lastColumn > firstColumn && isColumnEmpty(lastColumn))
+            {
+            --lastColumn;
+            }
+
+        if (firstRow == 0 && lastRow == rowCount - 1 && firstColumn == 0 &&
+            lastColumn == columnCount - 1)
+            {
+            return { 0, 0 };
+            }
+
+        decltype(m_fixedObjects) trimmedObjects;
+        trimmedObjects.reserve((lastRow - firstRow) + 1);
+        for (size_t row = firstRow; row <= lastRow; ++row)
+            {
+            const auto& sourceRow = m_fixedObjects.at(row);
+            trimmedObjects.emplace_back(
+                std::next(sourceRow.cbegin(), static_cast<ptrdiff_t>(firstColumn)),
+                std::next(sourceRow.cbegin(), static_cast<ptrdiff_t>(lastColumn) + 1));
+            }
+        m_fixedObjects = std::move(trimmedObjects);
+
+        m_rowsInfo.clear();
+        m_rowsInfo.resize(m_fixedObjects.size(),
+                          CanvasRowInfo{ safe_divide<double>(1.0, m_fixedObjects.size()) });
+
+        for (size_t row = 0; row < m_fixedObjects.size(); ++row)
+            {
+            CalcColumnWidths(row);
+            }
+
+        return { firstRow, firstColumn };
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<GraphItems::GraphItemBase> Canvas::GetFixedObject(const size_t row,
                                                                       const size_t column)
         {
