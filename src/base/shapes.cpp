@@ -276,7 +276,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::Pill, &ShapeRenderer::DrawPill },
             { Icons::IconShape::Tractor, &ShapeRenderer::DrawTractor },
             { Icons::IconShape::Butterfly, &ShapeRenderer::DrawButterfly },
-            { Icons::IconShape::Star, &ShapeRenderer::DrawStar }
+            { Icons::IconShape::Star, &ShapeRenderer::DrawStar },
+            { Icons::IconShape::ProhibitedSign, &ShapeRenderer::DrawProhibitedSign }
         };
 
         // connect the rendering function to the shape
@@ -587,6 +588,8 @@ namespace Wisteria::GraphItems
             return _(L"curving road");
         case Icons::IconShape::CrossedOut:
             return _(L"crossed-out symbol");
+        case Icons::IconShape::ProhibitedSign:
+            return _(L"prohibited sign");
         case Icons::IconShape::CrescentTop:
         case Icons::IconShape::CrescentBottom:
         case Icons::IconShape::CrescentRight:

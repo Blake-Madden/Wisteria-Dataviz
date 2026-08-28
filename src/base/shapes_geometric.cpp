@@ -303,6 +303,52 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawProhibitedSign(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for prohibited sign icon!");
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        const wxColour signColor{ ApplyColorOpacity(
+            Colors::ColorBrewer::GetColor(Colors::Color::Red)) };
+
+        const wxPoint2DDouble centerPt{ rect.GetLeft() + (rect.GetWidth() * math_constants::half),
+                                        rect.GetTop() + (rect.GetHeight() * math_constants::half) };
+        const double outerRadius{ GetRadius(rect) };
+        // the ring and the diagonal bar share the same thickness
+        const double strokeWidth{ std::max(2.5, outerRadius * 0.26) };
+        const double ringRadius{ outerRadius - (strokeWidth * math_constants::half) };
+        // run the bar into the middle of the ring band so the two always meet cleanly
+        const double halfBarLength{ ringRadius };
+        const double halfBarThickness{ strokeWidth * math_constants::half };
+
+        // red ring with a transparent interior
+        gc->SetPen(wxPen{ signColor, static_cast<int>(strokeWidth) });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawEllipse(centerPt.m_x - ringRadius, centerPt.m_y - ringRadius, ringRadius * 2,
+                        ringRadius * 2);
+
+        // red diagonal bar running from upper-left to lower-right
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ signColor });
+        gc->PushState();
+        gc->Translate(centerPt.m_x, centerPt.m_y);
+        gc->Rotate(geometry::degrees_to_radians(45));
+        gc->DrawRectangle(-halfBarLength, -halfBarThickness, halfBarLength * 2,
+                          halfBarThickness * 2);
+        gc->PopState();
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawDownwardTriangle(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();

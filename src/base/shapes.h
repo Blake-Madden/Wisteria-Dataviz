@@ -498,6 +498,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawTractor(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a red "prohibited" sign (a circle with a diagonal bar across it).
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawProhibitedSign(wxRect rect, wxDC& dc) const;
 
         /// @}
 

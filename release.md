@@ -6,6 +6,8 @@
 - Add Wilmarth Bridge Plot.
 - Added showcasing support to Sankey diagrams.
 - Added word balloon styles to labels.
+- Added new shapes:
+    - Prohibited sign
 
 ## 1.2.1
 

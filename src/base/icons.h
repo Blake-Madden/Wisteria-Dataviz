@@ -129,7 +129,9 @@ namespace Wisteria::Icons
         Pill,                     /*!< A medicine pill/capsule.*/
         Tractor,                  /*!< A side-view of a tractor.*/
         Butterfly,                /*!< A butterfly.*/
-        Star                      /*!< A star.*/
+        Star,                     /*!< A star.*/
+        ProhibitedSign            /*!< A red "prohibited" sign (a circle with a diagonal bar
+                                       across it), as in "not allowed".*/
         };
 
     /// @brief Item to draw on a legend.
