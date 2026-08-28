@@ -22,17 +22,7 @@ namespace Wisteria::UI
         wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
-        // load worksheet names for spreadsheet files
-        if (m_fileExt.CmpNoCase(L"xlsx") == 0)
-            {
-            const Data::ExcelReader xlReader(m_filePath);
-            m_worksheetNames = xlReader.GetWorksheetNames();
-            }
-        else if (m_fileExt.CmpNoCase(L"ods") == 0)
-            {
-            const Data::OdsReader odsReader(m_filePath);
-            m_worksheetNames = odsReader.GetWorksheetNames();
-            }
+        ReadWorksheetNames();
 
         CreateControls();
         RefreshPreview();
@@ -71,17 +61,7 @@ namespace Wisteria::UI
         wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
-        // load worksheet names for spreadsheet files
-        if (m_fileExt.CmpNoCase(L"xlsx") == 0)
-            {
-            const Data::ExcelReader xlReader(m_filePath);
-            m_worksheetNames = xlReader.GetWorksheetNames();
-            }
-        else if (m_fileExt.CmpNoCase(L"ods") == 0)
-            {
-            const Data::OdsReader odsReader(m_filePath);
-            m_worksheetNames = odsReader.GetWorksheetNames();
-            }
+        ReadWorksheetNames();
 
         // resolve worksheet selection to 0-based index
         if (const auto* wsIndex = std::get_if<size_t>(&worksheet))
@@ -128,10 +108,13 @@ namespace Wisteria::UI
         auto* filePathSizer = new wxBoxSizer(wxHORIZONTAL);
         filePathSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Filepath: ")),
                            wxSizerFlags{}.CenterVertical());
-        auto* fileLabel =
-            new wxStaticText(this, wxID_ANY, wxFileName{ m_filePath }.GetAbsolutePath());
-        fileLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
-        filePathSizer->Add(fileLabel, wxSizerFlags{ 1 }.CenterVertical());
+        m_fileLabel = new wxStaticText(this, wxID_ANY, wxFileName{ m_filePath }.GetAbsolutePath());
+        m_fileLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        filePathSizer->Add(m_fileLabel, wxSizerFlags{ 1 }.CenterVertical());
+
+        auto* browseButton = new wxButton(this, wxID_ANY, _(L"Change File..."));
+        browseButton->SetToolTip(_(L"Import a different data file"));
+        filePathSizer->Add(browseButton, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
 
         auto* refreshButton = new wxButton(this, wxID_REFRESH, _(L"Refresh from file"));
         refreshButton->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_REFRESH, wxART_BUTTON));
@@ -150,26 +133,26 @@ namespace Wisteria::UI
         // worksheet selector (spreadsheets only)
         const bool isSpreadsheet =
             (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0);
-        auto* worksheetLabel = new wxStaticText(this, wxID_ANY, _(L"Worksheet:"));
-        optionsSizer->Add(worksheetLabel, wxSizerFlags{}.CenterVertical());
+        m_worksheetLabel = new wxStaticText(this, wxID_ANY, _(L"Worksheet:"));
+        optionsSizer->Add(m_worksheetLabel, wxSizerFlags{}.CenterVertical());
 
-        auto* worksheetChoice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                             nullptr, 0, wxGenericValidator{ &m_worksheet });
+        m_worksheetChoice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                                         nullptr, 0, wxGenericValidator{ &m_worksheet });
         for (const auto& name : m_worksheetNames)
             {
-            worksheetChoice->Append(name);
+            m_worksheetChoice->Append(name);
             }
         if (!m_worksheetNames.empty())
             {
-            worksheetChoice->SetSelection(
+            m_worksheetChoice->SetSelection(
                 (m_worksheet >= 0 && std::cmp_less(m_worksheet, m_worksheetNames.size())) ?
                     m_worksheet :
                     0);
             }
-        optionsSizer->Add(worksheetChoice, wxSizerFlags{});
+        optionsSizer->Add(m_worksheetChoice, wxSizerFlags{});
 
-        worksheetLabel->Show(isSpreadsheet);
-        worksheetChoice->Show(isSpreadsheet);
+        m_worksheetLabel->Show(isSpreadsheet);
+        m_worksheetChoice->Show(isSpreadsheet);
 
         // skip rows
         optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Skip rows:")),
@@ -286,7 +269,7 @@ namespace Wisteria::UI
         SetSizer(mainSizer);
 
         // bind events
-        worksheetChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
+        m_worksheetChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
         skipRowsSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
         maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
         leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
@@ -299,6 +282,23 @@ namespace Wisteria::UI
         m_previewGrid->Bind(wxEVT_GRID_SELECT_CELL, &DatasetImportDlg::OnColumnSelected, this);
         m_columnTypeChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnColumnTypeChanged, this);
         refreshButton->Bind(wxEVT_BUTTON, &DatasetImportDlg::OnRefreshFromFile, this);
+        browseButton->Bind(wxEVT_BUTTON, &DatasetImportDlg::OnBrowseForFile, this);
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::ReadWorksheetNames()
+        {
+        m_worksheetNames.clear();
+        if (m_fileExt.CmpNoCase(L"xlsx") == 0)
+            {
+            const Data::ExcelReader xlReader(m_filePath);
+            m_worksheetNames = xlReader.GetWorksheetNames();
+            }
+        else if (m_fileExt.CmpNoCase(L"ods") == 0)
+            {
+            const Data::OdsReader odsReader(m_filePath);
+            m_worksheetNames = odsReader.GetWorksheetNames();
+            }
         }
 
     //----------------------------------------------
@@ -375,6 +375,87 @@ namespace Wisteria::UI
 
         RefreshPreview();
 
+        WarnAboutColumnChanges(previousNames, previousId);
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnBrowseForFile([[maybe_unused]] wxCommandEvent& event)
+        {
+        wxFileDialog fileDlg(this, _(L"Select Dataset"), wxFileName{ m_filePath }.GetPath(),
+                             wxString{}, Data::Dataset::GetDataFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const wxString newFilePath = fileDlg.GetPath();
+
+        TransferDataFromWindow();
+
+        // snapshot current state so we can diff after switching files
+        std::vector<wxString> previousNames;
+        previousNames.reserve(m_columnInfo.size());
+        for (const auto& col : m_columnInfo)
+            {
+            previousNames.push_back(col.m_name);
+            }
+        const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
+                                        m_idColumnChoice->GetStringSelection() :
+                                        wxString{};
+
+        const wxString previousFilePath = m_filePath;
+        const wxString previousFileExt = m_fileExt;
+        const auto previousWorksheetNames = m_worksheetNames;
+        const auto previousWorksheet = m_worksheet;
+
+        m_filePath = newFilePath;
+        m_fileExt = wxFileName{ m_filePath }.GetExt();
+        m_worksheet = 0;
+
+        try
+            {
+            ReadWorksheetNames();
+            }
+        catch (const std::exception& exc)
+            {
+            // restore the previous file on failure
+            m_filePath = previousFilePath;
+            m_fileExt = previousFileExt;
+            m_worksheetNames = previousWorksheetNames;
+            m_worksheet = previousWorksheet;
+            wxMessageBox(wxString::Format(_(L"Unable to read the file:\n%s"),
+                                          wxString::FromUTF8(exc.what())),
+                         _(L"Import Error"), wxOK | wxICON_ERROR, this);
+            return;
+            }
+
+        m_fileLabel->SetLabel(wxFileName{ m_filePath }.GetAbsolutePath());
+
+        const bool isSpreadsheet =
+            (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0);
+        m_worksheetChoice->Clear();
+        for (const auto& name : m_worksheetNames)
+            {
+            m_worksheetChoice->Append(name);
+            }
+        if (!m_worksheetNames.empty())
+            {
+            m_worksheetChoice->SetSelection(0);
+            }
+        m_worksheetLabel->Show(isSpreadsheet);
+        m_worksheetChoice->Show(isSpreadsheet);
+        Layout();
+
+        RefreshPreview();
+
+        WarnAboutColumnChanges(previousNames, previousId);
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::WarnAboutColumnChanges(const std::vector<wxString>& previousNames,
+                                                  const wxString& previousId)
+        {
         // detect removed columns
         std::vector<wxString> removedColumns;
         for (const auto& name : previousNames)

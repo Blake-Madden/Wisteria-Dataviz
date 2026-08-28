@@ -369,13 +369,14 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
         try
             {
+            // the user may have browsed to a different file from within the import dialog
+            initialFilePath = importDlg.GetFilePath();
             initialColumnInfo = importDlg.GetColumnPreviewInfo();
             initialImportInfo = importDlg.GetImportInfo();
             initialWorksheet = importDlg.GetWorksheet();
             initialDataset = std::make_shared<Wisteria::Data::Dataset>();
-            initialDataset->Import(filePath, initialImportInfo, initialWorksheet);
-            initialDatasetName = wxFileName{ filePath }.GetName();
-            initialFilePath = filePath;
+            initialDataset->Import(initialFilePath, initialImportInfo, initialWorksheet);
+            initialDatasetName = wxFileName{ initialFilePath }.GetName();
             initialFullColumnInfo = importDlg.GetFullColumnPreviewInfo();
             }
         catch (const std::exception& exc)
@@ -1396,7 +1397,8 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
             const auto& fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
             const auto importInfo = importDlg.GetImportInfo();
             const auto worksheet = importDlg.GetWorksheet();
-            const auto& filePath = foundDsImportOptions->second.m_filePath;
+            // the user may have browsed to a different file from within the import dialog
+            const auto filePath = importDlg.GetFilePath();
 
             // re-import the dataset with the new settings
             auto dataset = std::make_shared<Wisteria::Data::Dataset>();
@@ -1837,9 +1839,9 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const wxString filePath = fileDlg.GetPath();
+    const wxString initialFilePath = fileDlg.GetPath();
 
-    Wisteria::UI::DatasetImportDlg importDlg(m_frame, filePath);
+    Wisteria::UI::DatasetImportDlg importDlg(m_frame, initialFilePath);
     if (importDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1851,6 +1853,8 @@ void WisteriaView::OnInsertDataset([[maybe_unused]] wxCommandEvent& event)
         const auto& fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
         const auto importInfo = importDlg.GetImportInfo();
         const auto worksheet = importDlg.GetWorksheet();
+        // the user may have browsed to a different file from within the import dialog
+        const auto filePath = importDlg.GetFilePath();
         auto dataset = std::make_shared<Wisteria::Data::Dataset>();
         dataset->Import(filePath, importInfo, worksheet);
 

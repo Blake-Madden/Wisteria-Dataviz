@@ -118,11 +118,18 @@ namespace Wisteria::UI
         void OnColumnSelected(wxGridEvent& event);
         void OnColumnTypeChanged(wxCommandEvent& event);
         void OnRefreshFromFile(wxCommandEvent& event);
+        void OnBrowseForFile(wxCommandEvent& event);
         void UpdateColumnTypeControls();
+        void ReadWorksheetNames();
+        void WarnAboutColumnChanges(const std::vector<wxString>& previousNames,
+                                    const wxString& previousId);
 
         // controls
         wxChoice* m_idColumnChoice{ nullptr };
         wxChoice* m_columnTypeChoice{ nullptr };
+        wxStaticText* m_fileLabel{ nullptr };
+        wxStaticText* m_worksheetLabel{ nullptr };
+        wxChoice* m_worksheetChoice{ nullptr };
 
         wxGrid* m_previewGrid{ nullptr };
 
