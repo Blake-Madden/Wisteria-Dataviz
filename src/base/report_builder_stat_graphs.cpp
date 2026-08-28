@@ -540,21 +540,30 @@ namespace Wisteria
 
         auto bridgePlot = std::make_shared<Graphs::WilmarthBridgePlot>(canvas);
 
-        bridgePlot->SetData(foundPos->second,
-                            ExpandAndCache(bridgePlot.get(), L"variables.label",
-                                           variablesNode->GetProperty(L"label")->AsString()),
-                            ExpandAndCache(bridgePlot.get(), L"variables.exit",
-                                           variablesNode->GetProperty(L"exit")->AsString()),
-                            (variablesNode->HasProperty(L"entered") ?
-                                 std::optional<wxString>(ExpandAndCache(
-                                     bridgePlot.get(), L"variables.entered",
-                                     variablesNode->GetProperty(L"entered")->AsString())) :
-                                 std::nullopt),
-                            (variablesNode->HasProperty(L"status") ?
-                                 std::optional<wxString>(ExpandAndCache(
-                                     bridgePlot.get(), L"variables.status",
-                                     variablesNode->GetProperty(L"status")->AsString())) :
-                                 std::nullopt));
+        bridgePlot->SetData(
+            foundPos->second,
+            ExpandAndCache(bridgePlot.get(), L"variables.label",
+                           variablesNode->GetProperty(L"label")->AsString()),
+            ExpandAndCache(bridgePlot.get(), L"variables.exit",
+                           variablesNode->GetProperty(L"exit")->AsString()),
+            (variablesNode->HasProperty(L"entered") ?
+                 std::optional<wxString>(
+                     ExpandAndCache(bridgePlot.get(), L"variables.entered",
+                                    variablesNode->GetProperty(L"entered")->AsString())) :
+                 std::nullopt),
+            (variablesNode->HasProperty(L"status") ?
+                 std::optional<wxString>(
+                     ExpandAndCache(bridgePlot.get(), L"variables.status",
+                                    variablesNode->GetProperty(L"status")->AsString())) :
+                 std::nullopt),
+            (variablesNode->HasProperty(L"intermediate-event") ?
+                 std::optional<wxString>(ExpandAndCache(
+                     bridgePlot.get(), L"variables.intermediate-event",
+                     variablesNode->GetProperty(L"intermediate-event")->AsString())) :
+                 std::nullopt));
+
+        bridgePlot->SetIntermediateEventColor(
+            ConvertColor(graphNode->GetProperty(L"intermediate-event-color")));
 
         if (const auto fadeEffect = ReportEnumConvert::ConvertWilmarthBridgeFadeEffect(
                 graphNode->GetProperty(L"fade-effect")->AsString());

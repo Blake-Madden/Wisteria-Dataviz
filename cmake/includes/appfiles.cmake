@@ -7,6 +7,7 @@ SET(APP_WISTERIA_SRC
     src/app/wisteriaapp.cpp
     src/app/wisteriadoc.cpp
     src/app/wisteriaview.cpp
+    src/app/wisteriaview_edit_data.cpp
     src/base/axis.cpp
     src/base/brushes.cpp
     src/base/canvas.cpp
