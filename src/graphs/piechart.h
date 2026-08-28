@@ -1311,6 +1311,30 @@ namespace Wisteria::Graphs
         void AddDonutGlaze(const DrawAreas& drawAreas);
         void AddDonutSprinkles(const DrawAreas& drawAreas);
 
+        // bagel styling
+        /// @returns A golden baked-dough color for bagel slice fill.
+        [[nodiscard]]
+        static wxColour GetBagelDoughColor()
+            {
+            return wxColour{ 200, 145, 80 };
+            }
+
+        /// @returns The color for hulled (light) sesame seeds.
+        [[nodiscard]]
+        static wxColour GetSesameSeedLightColor()
+            {
+            return wxColour{ 240, 228, 195 };
+            }
+
+        /// @returns The color for unhulled (dark) sesame seeds.
+        [[nodiscard]]
+        static wxColour GetSesameSeedDarkColor()
+            {
+            return wxColour{ 35, 28, 20 };
+            }
+
+        void AddBagelSeeds(const DrawAreas& drawAreas);
+
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
 
             @details Given a bounding rectangle, treats the rectangle as the axis-aligned

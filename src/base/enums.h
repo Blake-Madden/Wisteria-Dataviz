@@ -599,7 +599,10 @@ namespace Wisteria
         /// @details If a donut hole is included, both the outer edge and the inner edge
         ///     (around the hole) are unevenly glazed. Otherwise, only the outer edge is
         ///     unevenly glazed, with the glaze covering most of the top of the pie.
-        GlazedDonut
+        GlazedDonut,
+        /// @brief A bagel topped with white and black sesame seeds.
+        ///     Slice colors will be overridden with a golden baked-dough color.
+        Bagel
         };
 
     /// @brief Effects that could be applied to an image.

@@ -1337,6 +1337,10 @@ namespace Wisteria::Graphs
             AddDonutGlaze(drawAreas);
             AddDonutSprinkles(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::Bagel)
+            {
+            AddBagelSeeds(drawAreas);
+            }
         }
 
     //----------------------------------------------------------------
@@ -2528,6 +2532,131 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void PieChart::AddBagelSeeds(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        constexpr int SEED_COUNT{ 140 };
+
+        const wxColour lightSeedColor{ GetSesameSeedLightColor() };
+        const wxColour darkSeedColor{ GetSesameSeedDarkColor() };
+        const wxColour sheenColor{ 255, 255, 255, 110 };
+
+        const wxPoint center(pieRect.GetX() + pieRect.GetWidth() / 2,
+                             pieRect.GetY() + pieRect.GetHeight() / 2);
+
+        const double pieRadius = std::min(pieRect.GetWidth(), pieRect.GetHeight()) / 2.0;
+
+        const bool hasHole = IsIncludingDonutHole();
+        const double holeRadius = hasHole ? pieRadius * GetDonutHoleProportion() : 0.0;
+
+        const double seedLength = std::max(ScaleToScreenAndCanvas(3), pieRadius * 0.05);
+        const double seedWidth = seedLength * 0.4;
+
+        const double minSeedDistance = (hasHole ? holeRadius + pieRadius * 0.06 : pieRadius * 0.08);
+        const double maxSeedDistance = pieRadius * 0.92;
+
+        constexpr int SEED_SAMPLES{ 12 };
+
+        auto& rng = GraphItems::ShapeRenderer::GetRNG();
+        std::uniform_real_distribution<double> angleDist{ 0.0, 360.0 };
+        // sample the radius from an area-uniform distribution (rather than a linear one)
+        // so seeds don't bunch up near the hole
+        std::uniform_real_distribution<double> radiusAreaDist{ minSeedDistance * minSeedDistance,
+                                                               maxSeedDistance * maxSeedDistance };
+        std::uniform_real_distribution<double> unitDist{ 0.0, 1.0 };
+        std::uniform_real_distribution<double> sizeVariationDist{ 0.75, 1.25 };
+        std::uniform_real_distribution<double> wobbleDist{ 0.94, 1.04 };
+
+        for (int seedIndex = 0; seedIndex < SEED_COUNT; ++seedIndex)
+            {
+            const double angleDegrees = angleDist(rng);
+            const double distance = std::sqrt(radiusAreaDist(rng));
+
+            const wxPoint seedCenter(
+                wxRound(center.x + std::cos(geometry::degrees_to_radians(angleDegrees)) * distance),
+                wxRound(center.y +
+                        std::sin(geometry::degrees_to_radians(angleDegrees)) * distance));
+
+            // each seed gets its own random tumble, independent of its position on the ring
+            const double rotationRadians = geometry::degrees_to_radians(angleDist(rng));
+
+            const double sizeVariation = sizeVariationDist(rng);
+            const double thisSeedLength = seedLength * sizeVariation;
+            const double thisSeedWidth = seedWidth * sizeVariation;
+
+            // most sesame seeds on a bagel are the hulled, light-colored variety, with
+            // fewer dark, unhulled ones mixed in
+            const bool isDarkSeed = unitDist(rng) < 0.35;
+            const wxColour& seedColor = isDarkSeed ? darkSeedColor : lightSeedColor;
+
+            // draw the seed as a smooth, slightly irregular oval
+            std::vector<wxPoint> seedPoints;
+            seedPoints.reserve(SEED_SAMPLES);
+
+            for (int sample = 0; sample < SEED_SAMPLES; ++sample)
+                {
+                const double angleDeg = (360.0 * sample) / static_cast<double>(SEED_SAMPLES);
+                const double wobble = wobbleDist(rng);
+
+                const double localX =
+                    std::cos(geometry::degrees_to_radians(angleDeg)) * thisSeedLength * wobble;
+                const double localY =
+                    std::sin(geometry::degrees_to_radians(angleDeg)) * thisSeedWidth * wobble;
+
+                const double rotatedX =
+                    localX * std::cos(rotationRadians) - localY * std::sin(rotationRadians);
+                const double rotatedY =
+                    localX * std::sin(rotationRadians) + localY * std::cos(rotationRadians);
+
+                seedPoints.emplace_back(wxRound(seedCenter.x + rotatedX),
+                                        wxRound(seedCenter.y + rotatedY));
+                }
+
+            AddObject(std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo{}
+                    .Brush(wxBrush{ seedColor })
+                    .Pen(wxPen(Colors::ColorContrast::Shade(seedColor),
+                               std::max<int>(1, ScaleToScreenAndCanvas(0.5))))
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                seedPoints));
+
+            // a thin, off-center highlight running along the seed to suggest its
+            // curved, glossy surface
+            const double sheenHalfLength = thisSeedLength * 0.6;
+            const double sheenOffset = thisSeedWidth * 0.3;
+            const std::array<std::pair<double, double>, 4> sheenLocalPoints{
+                std::make_pair(-sheenHalfLength, -sheenOffset - (thisSeedWidth * 0.12)),
+                std::make_pair(sheenHalfLength, -sheenOffset - (thisSeedWidth * 0.12)),
+                std::make_pair(sheenHalfLength, -sheenOffset + (thisSeedWidth * 0.12)),
+                std::make_pair(-sheenHalfLength, -sheenOffset + (thisSeedWidth * 0.12))
+            };
+
+            std::vector<wxPoint> sheenPoints;
+            sheenPoints.reserve(sheenLocalPoints.size());
+            for (const auto& [localX, localY] : sheenLocalPoints)
+                {
+                const double rotatedX =
+                    localX * std::cos(rotationRadians) - localY * std::sin(rotationRadians);
+                const double rotatedY =
+                    localX * std::sin(rotationRadians) + localY * std::cos(rotationRadians);
+                sheenPoints.emplace_back(wxRound(seedCenter.x + rotatedX),
+                                         wxRound(seedCenter.y + rotatedY));
+                }
+
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                .Brush(wxBrush{ sheenColor })
+                                                                .Pen(wxNullPen)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false),
+                                                            sheenPoints));
+            }
+        }
+
+    //----------------------------------------------------------------
     void PieChart::AddClockTicks(const DrawAreas& drawAreas)
         {
         const double diameter =
@@ -3519,6 +3648,18 @@ namespace Wisteria::Graphs
                 { GetDonutDoughColor(), Colors::ColorContrast::Shade(GetDonutDoughColor()) });
             return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
+        const auto bagelColors = [this]()
+        {
+            if (GetInnerPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetInnerPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale(
+                { GetBagelDoughColor(), Colors::ColorContrast::Shade(GetBagelDoughColor()) });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+        }();
 
         for (auto& innerPie : GetInnerPie())
             {
@@ -3585,6 +3726,11 @@ namespace Wisteria::Graphs
                 {
                 sliceBrushToUse.SetColour(donutColors[sliceCounter]);
                 sliceOutlinePen.SetColour(wxColour{ 235, 210, 175 });
+                }
+            else if (GetPieStyle() == PieStyle::Bagel)
+                {
+                sliceBrushToUse.SetColour(bagelColors[sliceCounter]);
+                sliceOutlinePen.SetColour(wxColour{ 150, 100, 55 });
                 }
 
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
@@ -3736,6 +3882,18 @@ namespace Wisteria::Graphs
                 { GetDonutDoughColor(), Colors::ColorContrast::Shade(GetDonutDoughColor()) });
             return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
         }();
+        const auto bagelColors = [this]()
+        {
+            if (GetOuterPie().empty())
+                {
+                return std::vector<wxColour>{};
+                }
+            const auto indices = std::views::iota(size_t{ 0 }, GetOuterPie().size());
+            Wisteria::Colors::ColorBrewer cb;
+            cb.SetColorScale(
+                { GetBagelDoughColor(), Colors::ColorContrast::Shade(GetBagelDoughColor()) });
+            return cb.BrewColors(std::vector<size_t>{ indices.begin(), indices.end() });
+        }();
 
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
@@ -3783,6 +3941,11 @@ namespace Wisteria::Graphs
                 {
                 sliceBrush.SetColour(donutColors[i]);
                 sliceOutlinePen.SetColour(wxColour{ 235, 210, 175 });
+                }
+            else if (GetPieStyle() == PieStyle::Bagel)
+                {
+                sliceBrush.SetColour(bagelColors[i]);
+                sliceOutlinePen.SetColour(wxColour{ 150, 100, 55 });
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
                 GraphItems::GraphItemInfo{ GetOuterPie().at(i).GetGroupLabel() }
@@ -4787,6 +4950,10 @@ namespace Wisteria::Graphs
             case PieStyle::GlazedDonut:
                 label = isDonut ? _(L"A donut chart in the style of a glazed donut") :
                                   _(L"A pie chart in the style of a glazed donut");
+                break;
+            case PieStyle::Bagel:
+                label = isDonut ? _(L"A donut chart in the style of a bagel") :
+                                  _(L"A pie chart in the style of a bagel");
                 break;
             default:
                 break;

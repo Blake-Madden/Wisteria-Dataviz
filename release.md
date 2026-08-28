@@ -8,6 +8,8 @@
 - Added word balloon styles to labels.
 - Added new shapes:
     - Prohibited sign
+- Added styling options to pie charts to make them look like:
+    - Bagels
 
 ## 1.2.1
 

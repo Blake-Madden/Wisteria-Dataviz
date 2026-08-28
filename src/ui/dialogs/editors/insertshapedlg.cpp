@@ -93,6 +93,7 @@ namespace Wisteria::UI
             { _(L"Pepperoni pizza"), Icons::IconShape::PepperoniPizza },
             { _(L"Pill"), Icons::IconShape::Pill },
             { _(L"Plus"), Icons::IconShape::Plus },
+            { _(L"Prohibited sign"), Icons::IconShape::ProhibitedSign },
             { _(L"Pumpkin"), Icons::IconShape::Pumpkin },
             { _(L"Ruler"), Icons::IconShape::Ruler },
             { _(L"Snowflake"), Icons::IconShape::Snowflake },

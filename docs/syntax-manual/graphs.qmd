@@ -376,6 +376,8 @@ Properties for `"pie-chart"` nodes:
      Slice colors will be overridden with a golden fried-dough color, which will peek through around the glaze's unevenly spread edge. \
      If a donut hole is included, both the outer edge and the inner edge (around the hole) are unevenly glazed. \
      Otherwise, only the outer edge is unevenly glazed, with the glaze covering most of the top of the pie.
+  - `"bagel"`: A bagel topped with white and black sesame seeds. \
+     Slice colors will be overridden with a golden baked-dough color.
 - `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"`: Labels are flush with the plotting area's left or right side (the default).
