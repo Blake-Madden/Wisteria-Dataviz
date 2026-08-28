@@ -7,11 +7,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriaapp.h"
+#include "../data/dataset.h"
 #include "../import/text_matrix.h"
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
 #include <array>
 #include <wx/aboutdlg.h>
+#include <wx/filedlg.h>
+#include <wx/filename.h>
 #include <wx/log.h>
 #include <wx/stdpaths.h>
 
@@ -183,6 +186,10 @@ void WisteriaApp::LoadInterface()
                                  ClearFileHistoryMenu();
                                  }
                          });
+
+    // let Open accept a dataset as well as a project file (bound on the
+    // document manager, which owns the default wxID_OPEN handler)
+    GetDocManager()->Bind(wxEVT_MENU, &WisteriaApp::OnOpenProjectOrDataset, this, wxID_OPEN);
 
     wxIcon appIcon;
     const auto appSvg = GetResourceManager().GetSVG(L"wisteria.svg");
@@ -404,6 +411,66 @@ void WisteriaApp::LoadInterface()
         }
     m_startPage->SetFocus();
     GetMainFrame()->Show(true);
+    }
+
+//-------------------------------------------
+wxString WisteriaApp::GetProjectOrDataFileFilter() const
+    {
+    const wxString projectWildcard = L"*." + GetAppFileExtension();
+    const wxString dataWildcards = Wisteria::Data::Dataset::GetDataFileWildcards();
+    return wxString::Format(_(L"All Supported Files (%s;%s)|%s;%s|"
+                              "Wisteria Project (%s)|%s|"),
+                            projectWildcard, dataWildcards, projectWildcard, dataWildcards,
+                            projectWildcard, projectWildcard) +
+           Wisteria::Data::Dataset::GetDataFileFilter();
+    }
+
+//-------------------------------------------
+void WisteriaApp::OnOpenProjectOrDataset([[maybe_unused]] wxCommandEvent& event)
+    {
+    wxFileDialog fileDlg(GetMainFrame(), _(L"Open"), wxString{}, wxString{},
+                         GetProjectOrDataFileFilter(),
+                         wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const wxString filePath = fileDlg.GetPath();
+    if (wxFileName{ filePath }.GetExt().CmpNoCase(GetAppFileExtension()) == 0)
+        {
+        if (GetDocManager()->CreateDocument(filePath, wxDOC_SILENT) == nullptr)
+            {
+            GetDocManager()->OnOpenFileFailure();
+            }
+        }
+    else
+        {
+        StartProjectFromDataset(filePath);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaApp::StartProjectFromDataset(const wxString& datasetPath)
+    {
+    // seed the chosen dataset so that WisteriaView::OnCreate() skips its own
+    // dataset prompt and imports this file
+    m_pendingDatasetImportPath = datasetPath;
+    GetDocManager()->CreateNewDocument();
+    m_pendingDatasetImportPath.clear();
+    }
+
+//-------------------------------------------
+void MainFrame::OpenFileNew(const wxString& path)
+    {
+    if (Wisteria::Data::Dataset::IsSupportedFileExtension(wxFileName{ path }.GetExt()))
+        {
+        wxGetApp().StartProjectFromDataset(path);
+        }
+    else
+        {
+        BaseMainFrame::OpenFileNew(path);
+        }
     }
 
 //-------------------------------------------

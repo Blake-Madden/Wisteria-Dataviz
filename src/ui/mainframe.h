@@ -84,8 +84,11 @@ namespace Wisteria::UI
 
         /// @private
         wxDocument* OpenFile(const wxString& path);
-        /// @private
-        void OpenFileNew(const wxString& path);
+        /// @brief Opens @p path as a brand new document (used for files whose
+        ///     extension is not one of the app's native document types).
+        /// @details Override this to handle non-native files differently.
+        /// @param path The file to open.
+        virtual void OpenFileNew(const wxString& path);
 
         /// @brief Holds printer settings for use globally.
         /// @param printData The printer settings to point to.

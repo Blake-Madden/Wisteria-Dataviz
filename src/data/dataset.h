@@ -28,6 +28,7 @@
 #include <set>
 #include <variant>
 #include <vector>
+#include <wx/arrstr.h>
 #include <wx/colour.h>
 #include <wx/datetime.h>
 #include <wx/filename.h>
@@ -1923,14 +1924,40 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportCSV(const wxString& filePath) const { ExportText(filePath, L',', true); }
 
+        /// @returns The semicolon-delimited wildcard pattern (e.g., "*.csv;*.xlsx")
+        ///     matching every supported data import type. Combine this into a
+        ///     larger filter when a dialog also accepts other file types.
+        [[nodiscard]]
+        static wxString GetDataFileWildcards()
+            {
+            return L"*.txt;*.csv;*.xlsx;*.ods";
+            }
+
+        /// @returns @c true if @p fileExtension (without a leading dot) is a
+        ///     supported data import type. Derived from GetDataFileWildcards()
+        ///     to keep the format list a single source of truth.
+        [[nodiscard]]
+        static bool IsSupportedFileExtension(const wxString& fileExtension)
+            {
+            const wxString pattern = L"*." + fileExtension;
+            for (const auto& wildcard : wxSplit(GetDataFileWildcards(), L';'))
+                {
+                if (wildcard.CmpNoCase(pattern) == 0)
+                    {
+                    return true;
+                    }
+                }
+            return false;
+            }
+
         /// @returns The file filter string for opening our supported data import types.
         [[nodiscard]]
         static wxString GetDataFileFilter()
             {
-            return _(LR"(All Data Files (*.txt;*.csv;*.xlsx;*.ods)|*.txt;*.csv;*.xlsx;*.ods|"
-                  "Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|"
-                  "Excel Files (*.xlsx)|*.xlsx|"
-                  "OpenDocument Spreadsheet Files (*.ods)|*.ods)");
+            return wxString::Format(_(L"All Data Files (%s)|%s|Tab Delimited Files (*.txt)|*.txt|"
+                                      "CSV Files (*.csv)|*.csv|Excel Files (*.xlsx)|*.xlsx|"
+                                      "OpenDocument Spreadsheet Files (*.ods)|*.ods"),
+                                    GetDataFileWildcards(), GetDataFileWildcards());
             }
 
         /// @}

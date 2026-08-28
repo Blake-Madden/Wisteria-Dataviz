@@ -62,6 +62,11 @@ class MainFrame final : public Wisteria::UI::BaseMainFrame
     /// @param enable @c true to enable auto-refresh.
     void SetLogAutoRefresh(bool enable);
 
+    /// @brief Opens a dropped data file as a new seeded project.
+    ///     Other non-native files fall back to the base behavior.
+    /// @param path The file to open.
+    void OpenFileNew(const wxString& path) override;
+
     friend class WisteriaApp;
 
   private:
@@ -156,6 +161,18 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         return m_appSettings;
         }
 
+    /// @returns The data file a newly created project should import, or an
+    ///     empty string if none.
+    [[nodiscard]]
+    const wxString& GetPendingDatasetImportPath() const noexcept
+        {
+        return m_pendingDatasetImportPath;
+        }
+
+    /// @brief Starts a new project that imports @p datasetPath, running the
+    ///     same flow as choosing New and picking that dataset.
+    void StartProjectFromDataset(const wxString& datasetPath);
+
   private:
     bool OnInit() override;
     int OnExit() override;
@@ -163,9 +180,19 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     void InitProjectSidebar();
     void LoadRibbonLogPage(wxRibbonBar* ribbon);
 
+    /// @brief Handler for @c wxID_OPEN. Accepts a project file or a dataset file.
+    ///     Choosing a dataset starts a new project seeded with it.
+    void OnOpenProjectOrDataset(wxCommandEvent& event);
+
+    /// @returns The Open dialog filter covering the project format and every
+    ///     supported dataset format.
+    [[nodiscard]]
+    wxString GetProjectOrDataFileFilter() const;
+
     std::unique_ptr<AppSettings> m_appSettings{ nullptr };
     wxStartPage* m_startPage{ nullptr };
     std::vector<wxBitmapBundle> m_projectSideBarImageList;
+    wxString m_pendingDatasetImportPath;
     };
 
 /// @brief Extended icon provider, which is connected to the

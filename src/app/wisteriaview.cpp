@@ -346,6 +346,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     std::variant<wxString, size_t> initialWorksheet{ static_cast<size_t>(1) };
     if (doc->GetFilename().empty())
         {
+        // when Open was used to pick a data file, that path seeds the import;
+        // otherwise prompt for one here
+        wxString filePath = wxGetApp().GetPendingDatasetImportPath();
+        if (filePath.empty())
+            {
         wxFileDialog fileDlg(wxGetApp().GetMainFrame(), _(L"Select Dataset"), wxString{},
                              wxString{}, Wisteria::Data::Dataset::GetDataFileFilter(),
                              wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
@@ -357,7 +362,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             return false;
             }
 
-        const wxString filePath = fileDlg.GetPath();
+            filePath = fileDlg.GetPath();
+            }
 
         Wisteria::UI::DatasetImportDlg importDlg(wxGetApp().GetMainFrame(), filePath);
         if (importDlg.ShowModal() != wxID_OK)
