@@ -418,10 +418,12 @@ wxString WisteriaApp::GetProjectOrDataFileFilter() const
     {
     const wxString projectWildcard = L"*." + GetAppFileExtension();
     const wxString dataWildcards = Wisteria::Data::Dataset::GetDataFileWildcards();
-    return wxString::Format(_(L"All Supported Files (%s;%s)|%s;%s|"
-                              "Wisteria Project (%s)|%s|"),
-                            projectWildcard, dataWildcards, projectWildcard, dataWildcards,
-                            projectWildcard, projectWildcard) +
+    return wxString::Format( // TRANSLATORS: %s are file wildcards. Do not reorder them,
+                             // and keep the '|' and ';' separators.
+               _(L"All Supported Files (%s;%s)|%s;%s|"
+                 "Wisteria Project (%s)|%s|"),
+               projectWildcard, dataWildcards, projectWildcard, dataWildcards, projectWildcard,
+               projectWildcard) +
            Wisteria::Data::Dataset::GetDataFileFilter();
     }
 
