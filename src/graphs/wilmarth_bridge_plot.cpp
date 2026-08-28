@@ -596,20 +596,87 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
             AddObject(std::move(cellLabel));
             }
 
-        // shape applies its own scaling and DPI factor when drawn, so this is in DIPs
-        const wxSize censorShapeSize{ 9, 9 };
+        // As wide as the column it falls in, capped to the row height so it doesn't
+        // overlap the period above it. Shape sizes are in DIPs, so convert from the
+        // already-scaled cell size.
+        const auto censorShapeSideDIPs =
+            DownscaleFromScreenAndCanvas(std::min(cellSize.GetWidth(), cellSize.GetHeight()));
+        const wxSize censorShapeSize{ static_cast<int>(censorShapeSideDIPs),
+                                      static_cast<int>(censorShapeSideDIPs) };
         for (const auto& shapePt : censorShapePts)
             {
             AddObject(std::make_unique<GraphItems::Shape>(GraphItems::GraphItemInfo{}
                                                               .Pen(wxPen{ baseFontColor })
                                                               .Brush(wxBrush{ baseFontColor })
-                                                              .Scaling(smallestTextScaling)
+                                                              .Scaling(GetScaling())
                                                               .DPIScaling(GetDPIScaleFactor())
                                                               .Anchoring(Anchoring::Center)
                                                               .AnchorPoint(shapePt),
                                                           Icons::IconShape::ProhibitedSign,
                                                           censorShapeSize));
             }
+        }
+
+    //----------------------------------------------------------------
+    std::unique_ptr<GraphItems::Label> WilmarthBridgePlot::CreateLegend(
+        const LegendOptions& options)
+        {
+        const bool showCensored =
+            m_showCensoredMarkers && std::any_of(m_observations.cbegin(), m_observations.cend(),
+                                                 [](const auto& obs) { return obs.m_censored; });
+        const bool showIntermediateEvent = !m_intermediateEventColumnName.empty();
+
+        if (!showCensored && !showIntermediateEvent)
+            {
+            return nullptr;
+            }
+
+        SetLegendInfo(options);
+
+        wxString legendText;
+        if (showCensored)
+            {
+            legendText += _(L"Censored") + L"\n";
+            }
+        if (showIntermediateEvent)
+            {
+            legendText +=
+                wxString::Format(_(L"%s (Intermediate event)"), m_intermediateEventColumnName);
+            }
+
+        // Beneath the graph, the legend's row is fit to its content, so the default label
+        // font reads at the same size as the cells. Off to the side, the legend is scaled
+        // to the canvas while the cells are shrunk to fit their columns, so start from the
+        // smaller axis font there to keep the two closer in size.
+        const bool besideGraph =
+            (options.GetPlacementHint() == LegendCanvasPlacementHint::LeftOfGraph ||
+             options.GetPlacementHint() == LegendCanvasPlacementHint::RightOfGraph);
+
+        auto legend =
+            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo{ legendText.Trim() }
+                                                    .DPIScaling(GetDPIScaleFactor())
+                                                    .Anchoring(Anchoring::TopLeftCorner)
+                                                    .LabelAlignment(TextAlignment::FlushLeft)
+                                                    .FontColor(GetLeftYAxis().GetFontColor()));
+        if (besideGraph)
+            {
+            legend->GetFont() = GetLeftYAxis().GetFont();
+            }
+
+        if (showCensored)
+            {
+            legend->GetLegendIcons().emplace_back(Icons::IconShape::ProhibitedSign,
+                                                  GetLeftYAxis().GetFontColor(),
+                                                  GetLeftYAxis().GetFontColor());
+            }
+        if (showIntermediateEvent)
+            {
+            legend->GetLegendIcons().emplace_back(
+                Icons::IconShape::Square, m_intermediateEventColor, m_intermediateEventColor);
+            }
+
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
+        return legend;
         }
 
     //----------------------------------------------------------------

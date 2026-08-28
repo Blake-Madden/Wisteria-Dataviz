@@ -325,13 +325,15 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /// @deprecated
-        [[deprecated("Wilmarth bridge plots do not support legends.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend([[maybe_unused]] const LegendOptions& options) final
-            {
-            return nullptr;
-            }
+        /// @brief Builds and returns a legend for the plot.
+        /// @details Includes an entry for the censoring marker (if shown) and, if an
+        ///     intermediate event column is being used, an entry for its color.
+        /// @param options Options for how to build the legend.
+        /// @returns The legend for the plot, or @c nullptr if there is nothing to show
+        ///     (i.e., censored markers are turned off and no intermediate event column
+        ///     is being used).
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
       private:
         /// @brief A single observation, resolved from the dataset into a common
@@ -406,7 +408,7 @@ namespace Wisteria::Graphs
         SurvivalDisplay m_survivalDisplay{ SurvivalDisplay::None };
         bool m_showCensoredMarkers{ true };
         wxString m_terminalRowLabel;
-        wxColour m_intermediateEventColor{ Colors::ColorBrewer::GetColor(Colors::Color::SeaGreen) };
+        wxColour m_intermediateEventColor{ Colors::ColorBrewer::GetColor(Colors::Color::Emerald) };
         };
     } // namespace Wisteria::Graphs
 

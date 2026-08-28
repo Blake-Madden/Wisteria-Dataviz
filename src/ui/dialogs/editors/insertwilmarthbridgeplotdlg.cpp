@@ -126,7 +126,7 @@ namespace Wisteria::UI
         displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Intermediate event color:")),
                           wxSizerFlags{}.CenterVertical());
         m_intermediateEventColorPicker = new wxColourPickerCtrl(
-            optionsPage, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::SeaGreen));
+            optionsPage, wxID_ANY, Colors::ColorBrewer::GetColor(Colors::Color::Emerald));
         displaySizer->Add(m_intermediateEventColorPicker, wxSizerFlags{}.CenterVertical());
 
         optionsSizer->Add(displaySizer, wxSizerFlags{}.Border());
@@ -143,6 +143,7 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        CreateLegendOptionsPage(false, 4);
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
@@ -324,7 +325,7 @@ namespace Wisteria::UI
         {
         return (m_intermediateEventColorPicker != nullptr) ?
                    m_intermediateEventColorPicker->GetColour() :
-                   Colors::ColorBrewer::GetColor(Colors::Color::SeaGreen);
+                   Colors::ColorBrewer::GetColor(Colors::Color::Emerald);
         }
 
     //-------------------------------------------
