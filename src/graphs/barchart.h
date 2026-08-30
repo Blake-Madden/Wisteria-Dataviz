@@ -1529,6 +1529,16 @@ namespace Wisteria::Graphs
             double m_axisOffset{ 0.0 };
             };
 
+        // Resolved fill colors and opacity for a single bar block, shared by the
+        // horizontal and vertical drawing paths.
+        struct BlockColors
+            {
+            wxColour m_fill;
+            wxColour m_lightened;
+            wxBrush m_brush;
+            uint8_t m_opacity{ wxALPHA_OPAQUE };
+            };
+
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
                         bool measureOnly = false);
         wxPoint DrawBarBlockHorizontal(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
@@ -1540,6 +1550,58 @@ namespace Wisteria::Graphs
                                      BarBlockRenderInfo& barBlockRenderInfo,
                                      bool measureOnly = false);
         void DrawBarGroups(BarRenderInfo& barRenderInfo);
+
+        /// @returns The resolved fill color, lightened color, brush, and opacity for a block,
+        ///     accounting for ghosting and the bar's opacity.
+        [[nodiscard]]
+        BlockColors ResolveBlockColors(const Bar& bar, const BarBlock& barBlock) const;
+        /// @returns The width (in pixels) that a bar block should be drawn at, honoring a
+        ///     custom block or bar width and otherwise dividing the plot area among the slots.
+        /// @param bar The bar being drawn.
+        /// @param barBlock The block being drawn.
+        /// @param barRenderInfo The current render state (used for bar spacing).
+        [[nodiscard]]
+        double CalcBarWidth(const Bar& bar, const BarBlock& barBlock,
+                            const BarRenderInfo& barRenderInfo) const;
+        /// @brief Adds the manual drop-shadow polygon under a rectangular bar block.
+        /// @details Polygons have no native drop shadow. Does nothing when shadows are off,
+        ///     the fill is translucent, the block is degenerate, or the bar is too thin.
+        /// @param barRect The block's pixel rectangle.
+        /// @param blockBrush The resolved fill brush (checked for opacity).
+        /// @param barBlock The block being drawn (checked for a non-empty length).
+        /// @param barRenderInfo The current render state (shadow offset).
+        void AddBarBlockShadow(const wxRect& barRect, const wxBrush& blockBrush,
+                               const BarBlock& barBlock, const BarRenderInfo& barRenderInfo);
+        /// @brief Applies pen, fill effect, shape, and clipping to a color-filled bar-block
+        ///     polygon, then adds it to the plot.
+        /// @param box The polygon to finish and add. Consumed by this call.
+        /// @param bar The bar being drawn.
+        /// @param barBlock The block being drawn.
+        /// @param colors The resolved block colors.
+        /// @param drawArea The plot draw area used for clipping.
+        /// @param barRenderInfo The current render state.
+        void ApplyBoxEffectToPolygon(std::unique_ptr<GraphItems::Polygon> box, const Bar& bar,
+                                     const BarBlock& barBlock, const BlockColors& colors,
+                                     const wxRect& drawArea, const BarRenderInfo& barRenderInfo);
+        /// @returns The decal label drawn on a bar block, configured for fit, alignment,
+        ///     and readability. The caller appends it to the deferred decal list.
+        /// @param bar The bar being drawn.
+        /// @param barBlock The block being drawn (source of the decal text and fit).
+        /// @param barNeckRect The block's inner rectangle the decal is aligned within.
+        /// @param barRenderInfo The current render state.
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label>
+        BuildBarBlockDecal(const Bar& bar, const BarBlock& barBlock, const wxRect& barNeckRect,
+                           const BarRenderInfo& barRenderInfo);
+        /// @brief Configures the bar's value label and places it at the end of the fully
+        ///     drawn bar, nudged inside the plot area and framed if it would overlap the bar.
+        /// @details The label's font, scaling, and color are refreshed even when it is
+        ///     hidden. Placement is skipped when the label is not shown.
+        /// @param bar The bar whose label to place. Its label object is updated in place.
+        /// @param barRenderInfo The current render state.
+        /// @param barBlockRenderInfo Running end-of-bar state; advanced past the label.
+        void PlaceEndOfBarLabel(Bar& bar, BarRenderInfo& barRenderInfo,
+                                BarBlockRenderInfo& barBlockRenderInfo);
 
         [[nodiscard]]
         wxRect GetDrawArea() const;
