@@ -246,6 +246,29 @@ namespace Wisteria::Graphs
         /// @brief Removes all embedded annotation objects from the plot.
         void ClearAnnotations() noexcept { m_embeddedObjects.clear(); }
 
+        /// @returns The number of render objects (boxes, images, labels, etc.) that the
+        ///     most recent layout pass generated into the plot.
+        /// @details This is a diagnostics and testing aid for verifying that a layout
+        ///     produces the expected number of drawn shapes. The count is only meaningful
+        ///     after the plot has been laid out by its parent canvas.
+        [[nodiscard]]
+        size_t GetObjectCount() const noexcept
+            {
+            return m_plotObjects.size();
+            }
+
+        /// @returns The render objects that the most recent layout pass generated, in the
+        ///     order that they were added to the plot.
+        /// @details This is a diagnostics and testing aid for inspecting what a layout
+        ///     drew and where. The objects are only meaningful after the plot has been
+        ///     laid out by its parent canvas.
+        /// @sa GetObjectCount().
+        [[nodiscard]]
+        const std::vector<std::unique_ptr<GraphItems::GraphItemBase>>& GetObjects() const noexcept
+            {
+            return m_plotObjects;
+            }
+
         /** @name Accessibility Functions
             @brief Functions that build human-readable descriptions of plot elements
                 for inclusion in ARIA labels.*/

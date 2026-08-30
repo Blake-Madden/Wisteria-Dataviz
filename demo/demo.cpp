@@ -10,8 +10,19 @@
 
 #include "demo.h"
 #include <array>
+#include <wx/choicdlg.h>
 
 wxIMPLEMENT_APP(MyApp);
+
+// Asks which bar orientation to use so both layouts can be checked from the demo.
+// Defaults to vertical if the prompt is dismissed.
+static Wisteria::Orientation PromptForBarOrientation(wxWindow* parent)
+    {
+    const wxArrayString choices{ _(L"Vertical"), _(L"Horizontal") };
+    const int selection =
+        wxGetSingleChoiceIndex(_(L"Bar orientation:"), _(L"Bar Chart"), choices, parent);
+    return (selection == 1) ? Wisteria::Orientation::Horizontal : Wisteria::Orientation::Vertical;
+    }
 
 /// @brief Extended icon provider, which is connected to application's
 ///     custom icons.
@@ -932,6 +943,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
 
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
+
         plot->SetData(mtcarsData, L"mpg",
                       // grouping variable, we won't use one here
                       std::nullopt,
@@ -982,6 +995,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto plot = std::make_shared<Wisteria::Graphs::Histogram>(
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
+
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
 
         plot->SetData(mpgData, _DT(L"cyl"), std::nullopt,
                       // don't create range-based bins;
@@ -1599,8 +1614,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
         auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
 
-        // make it a horizontal barchart
-        plot->SetBarOrientation(Wisteria::Orientation::Horizontal);
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
 
         auto barColor =
             Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue);
@@ -1651,8 +1665,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
 
-        // make it a horizontal barchart
-        plot->SetBarOrientation(Wisteria::Orientation::Horizontal);
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
 
         auto barColor =
             Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue);
@@ -1709,7 +1722,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             .Orient(Wisteria::Orientation::Horizontal)
             .Padding(5, 10, 0, 0)
             .LabelAlignment(Wisteria::TextAlignment::Centered);
-        plot->GetBarAxis().GetTitle().SplitTextByCharacter();
+
+        if (plot->GetBarOrientation() == Wisteria::Orientation::Horizontal)
+            {
+            plot->GetBarAxis().GetTitle().SplitTextByCharacter();
+            }
 
         // align the axis labels over to the left
         plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
@@ -1727,8 +1744,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
 
-        // make it a horizontal barchart
-        plot->SetBarOrientation(Wisteria::Orientation::Vertical);
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
 
         // Photo by ThisisEngineering RAEng on Unsplash
         auto bgImage = Wisteria::GraphItems::Image::LoadFile(
@@ -1823,6 +1839,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
 
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
+
         plot->SetData(mpgData, _DT(L"manufacturer"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -1852,6 +1870,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
             subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
                                     Wisteria::Colors::Schemes::Decade1980s()));
+
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
 
         plot->SetData(mpgData, _DT(L"manufacturer"), std::nullopt, _DT(L"class"));
         plot->SetBarOpacity(220);
@@ -1885,6 +1905,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(subframe->m_canvas);
+
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
 
         plot->SetData(mpgData, _DT(L"manufacturer"));
 

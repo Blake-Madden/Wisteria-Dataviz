@@ -3,26 +3,57 @@
 # DO NOT MODIFY MANUALLY!
 
 SET(TEST_SRC_FILES
+    barrendertests.cpp
     basetests.cpp
+    boxplotrendertests.cpp
+    bubbleplotrendertests.cpp
+    candlestickplotrendertests.cpp
+    categoricalbarchartrendertests.cpp
+    chernoffplotrendertests.cpp
     clipboardtests.cpp
     clonetests.cpp
     colortests.cpp
+    crawfordgraphrendertests.cpp
+    danielsonbryan2plotrendertests.cpp
     datatests.cpp
     fileutiltests.cpp
+    fleschchartrendertests.cpp
+    ganttchartrendertests.cpp
+    heatmaprendertests.cpp
+    histogramrendertests.cpp
     imagetests.cpp
+    infleszrendertests.cpp
     jittertests.cpp
     jointests.cpp
     labeltests.cpp
+    likertchartrendertests.cpp
+    lineplotrendertests.cpp
     listctrlextests.cpp
+    lixgaugegermanrendertests.cpp
+    lixgaugerendertests.cpp
+    lrroadmaprendertests.cpp
     memmaptests.cpp
+    multiserieslineplotrendertests.cpp
     pdfreadertests.cpp
+    piechartrendertests.cpp
     pivottests.cpp
     polygontests.cpp
+    proconroadmaprendertests.cpp
+    racetrackchartrendertests.cpp
+    sankeydiagramrendertests.cpp
+    scalechartrendertests.cpp
+    scatterplotrendertests.cpp
     sidebartests.cpp
+    stemandleafplotrendertests.cpp
     subsettests.cpp
+    tablerendertests.cpp
     testableframe.cpp
     testingmain.cpp
     testzip.cpp
     textclassifytests.cpp
     textstreamtests.cpp
+    wafflechartrendertests.cpp
+    wcurveplotrendertests.cpp
+    wilmarthbridgeplotrendertests.cpp
+    winlosssparklinerendertests.cpp
     xmlformattests.cpp)

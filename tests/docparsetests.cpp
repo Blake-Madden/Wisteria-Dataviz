@@ -70,7 +70,7 @@ static void doc_run_load_stream(word1997_extract_text& parser, const std::vector
     entry.m_type = word1997_extract_text::file_system_entry_type::stream_type;
     entry.m_size = contentRegion;
     entry.m_sectors = { 0, 1, 2, 3, 4, 5, 6, 7 };
-    entry.open();
+    (void)entry.open();
 
     parser.m_text_body_stream_length = static_cast<unsigned long>(content.size());
     parser.load_stream(&entry);
